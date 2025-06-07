@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, Map, Calendar, Star, TrendingUp, User, LogIn } from "lucide-react";
+import { BookOpen, Users, Calendar, User, LogIn, Rss, Library } from "lucide-react";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,13 +10,12 @@ const Navigation = () => {
 
   const navItems = [
     { name: "Home", path: "/", icon: BookOpen },
-    { name: "About", path: "/about", icon: BookOpen },
     { name: "My Bookshelf", path: "/bookshelf", icon: User },
-    { name: "Library", path: "/library", icon: BookOpen },
     { name: "Groups", path: "/groups", icon: Users },
-    { name: "Reviews", path: "/reviews", icon: Star },
     { name: "Authors", path: "/authors", icon: Calendar },
-    { name: "Map", path: "/map", icon: Map },
+    { name: "Feed", path: "/reviews", icon: Rss },
+    { name: "Library", path: "/library", icon: Library },
+    { name: "About", path: "/about", icon: BookOpen },
   ];
 
   return (
@@ -27,14 +26,14 @@ const Navigation = () => {
             <img 
               src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
               alt="Sahadhyayi" 
-              className="w-10 h-10" 
+              className="w-8 h-8 flex-shrink-0" 
             />
-            <span>Sahadhyayi</span>
+            <span className="whitespace-nowrap">Sahadhyayi</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <div className="flex space-x-6">
+          <div className="hidden lg:flex items-center space-x-6">
+            <div className="flex space-x-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -48,7 +47,7 @@ const Navigation = () => {
                     }`}
                   >
                     <Icon className="w-4 h-4" />
-                    <span>{item.name}</span>
+                    <span className="whitespace-nowrap">{item.name}</span>
                   </Link>
                 );
               })}
@@ -67,7 +66,7 @@ const Navigation = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <Button
               variant="ghost"
               onClick={() => setIsOpen(!isOpen)}
@@ -86,7 +85,7 @@ const Navigation = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white rounded-lg shadow-lg mt-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
