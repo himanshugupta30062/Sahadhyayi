@@ -1,48 +1,41 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Map, Calendar, Star, Headphones } from "lucide-react";
+import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
   const features = [
     {
       icon: BookOpen,
-      title: "Discover Books",
-      description: "Explore curated collections and discover your next great read with personalized recommendations."
+      title: "Personal Bookshelf",
+      description: "Track your reading progress, manage your book collection, and read directly on our platform."
     },
     {
       icon: Users,
-      title: "Join Reading Groups",
-      description: "Connect with fellow readers worldwide and engage in meaningful discussions about the books you love."
+      title: "Reading Groups",
+      description: "Join book-specific discussion groups and connect with readers worldwide."
     },
     {
       icon: Map,
-      title: "Find Local Community",
-      description: "Discover nearby bookstores and readers in your area using our interactive community map."
+      title: "Reader Map",
+      description: "Discover readers near you and find local book communities."
     },
     {
       icon: Calendar,
-      title: "Author Sessions",
-      description: "Schedule live Q&A sessions and conferences with your favorite authors and literary experts."
+      title: "Author Connect",
+      description: "Schedule live Q&A sessions and conferences with your favorite authors."
     },
     {
       icon: Star,
       title: "Reviews & Ratings",
-      description: "Share your thoughts and read authentic reviews from our global community of readers."
+      description: "Share your thoughts and discover great books through community reviews."
     },
     {
       icon: Headphones,
-      title: "Audio Content",
-      description: "Access podcasts, audiobooks, and author interviews to enhance your reading experience."
+      title: "AI Reading Assistant",
+      description: "Get instant explanations for any word, paragraph, or chapter while reading."
     }
-  ];
-
-  const stats = [
-    { number: "50K+", label: "Active Readers" },
-    { number: "10K+", label: "Books Available" },
-    { number: "500+", label: "Reading Groups" },
-    { number: "100+", label: "Author Sessions" }
   ];
 
   return (
@@ -50,25 +43,30 @@ const Index = () => {
       {/* Hero Section */}
       <section className="relative py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
+          <div className="flex justify-center mb-8">
+            <img 
+              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
+              alt="Sahadhyayi Logo" 
+              className="w-24 h-24" 
+            />
+          </div>
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Reviving the
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600"> Art of Reading</span>
+            Welcome to
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600"> Sahadhyayi</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed">
-            Join a global community dedicated to bringing back the transformative power of books. 
-            Connect, discuss, and grow through the timeless practice of deep reading.
+            Reviving the transformative power of deep reading through community, technology, and shared knowledge.
+            Join thousands of readers building a healthier, more focused reading culture.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/library">
-              <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg">
-                Explore Library
-              </Button>
-            </Link>
-            <Link to="/groups">
-              <Button variant="outline" size="lg" className="border-amber-600 text-amber-600 hover:bg-amber-50 px-8 py-3 text-lg">
-                Join Groups
-              </Button>
-            </Link>
+            <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg">
+              <UserPlus className="w-5 h-5 mr-2" />
+              Sign Up Free
+            </Button>
+            <Button variant="outline" size="lg" className="border-amber-600 text-amber-600 hover:bg-amber-50 px-8 py-3 text-lg">
+              <LogIn className="w-5 h-5 mr-2" />
+              Sign In
+            </Button>
           </div>
         </div>
       </section>
@@ -76,26 +74,29 @@ const Index = () => {
       {/* Mission Section */}
       <section className="py-16 px-4 bg-white/50">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">Our Mission</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-8">Why Sahadhyayi?</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="text-left">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">The Problem</h3>
               <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                In an era dominated by short-form content and digital distractions, we're witnessing the decline of deep reading habits. 
-                This shift towards consuming bite-sized information is impacting our ability to focus, comprehend complex ideas, and engage in meaningful reflection.
+                Modern digital consumption habits are shifting away from deep reading toward passive content like videos and podcasts. 
+                This change impacts our ability to focus deeply, comprehend complex ideas, and engage in meaningful reflection.
               </p>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Our Solution</h3>
               <p className="text-lg text-gray-700 leading-relaxed">
-                ReadTogether is more than just a platform—it's a movement to restore the transformative power of books. 
-                We believe that reading strengthens focus, enhances comprehension, and promotes mental clarity that's essential for personal and intellectual growth.
+                Sahadhyayi creates a social reading platform that makes books more accessible, interactive, and community-driven. 
+                We combine traditional reading with modern technology to build healthier intellectual habits.
               </p>
             </div>
             <div className="bg-gradient-to-br from-amber-100 to-orange-100 p-8 rounded-2xl">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Why Reading Matters</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Benefits of Deep Reading</h3>
               <ul className="space-y-3 text-gray-700">
-                <li>• Strengthens focus and attention span</li>
-                <li>• Improves comprehension and critical thinking</li>
-                <li>• Promotes mental clarity and reflection</li>
+                <li>• Improves focus and attention span</li>
+                <li>• Enhances critical thinking skills</li>
+                <li>• Reduces eye strain from screens</li>
                 <li>• Builds empathy and emotional intelligence</li>
-                <li>• Reduces screen time and digital fatigue</li>
+                <li>• Promotes mental clarity and reflection</li>
+                <li>• Creates lasting knowledge retention</li>
               </ul>
             </div>
           </div>
@@ -127,62 +128,21 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 px-4 bg-white/50">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-12">Growing Community</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl md:text-5xl font-bold text-amber-600 mb-2">{stat.number}</div>
-                <div className="text-gray-700 font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Future Vision Section */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">Future Vision</h2>
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="bg-gradient-to-br from-orange-100 to-red-100 p-8 rounded-2xl">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Physical Reading Centers</h3>
-              <p className="text-gray-700 leading-relaxed">
-                We envision establishing physical reading centers in major cities worldwide, where community members can meet, 
-                discuss books face-to-face, and participate in literary events. These spaces will bridge the gap between digital connection and real-world community.
-              </p>
-            </div>
-            <div className="text-left">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Global Impact</h3>
-              <p className="text-lg text-gray-700 leading-relaxed mb-4">
-                Our platform aims to create a cultural shift towards mindful reading, especially in India and other markets where digital consumption is rapidly replacing traditional reading habits.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                By fostering both online and offline reading communities, we're building a sustainable ecosystem that promotes intellectual growth, cultural preservation, and meaningful human connection.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Reading Journey?</h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of readers who are rediscovering the joy and power of books through our community-driven platform.
+            Join Sahadhyayi today and become part of a global community dedicated to deep, meaningful reading.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/library">
-              <Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
-                Start Reading Today
-              </Button>
-            </Link>
-            <Link to="/investors">
+            <Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
+              <UserPlus className="w-5 h-5 mr-2" />
+              Get Started Free
+            </Button>
+            <Link to="/about">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-amber-600 px-8 py-3 text-lg">
-                Investment Opportunities
+                Learn More
               </Button>
             </Link>
           </div>
