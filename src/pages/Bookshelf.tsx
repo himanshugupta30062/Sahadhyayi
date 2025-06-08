@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Download, Play, MessageCircle, Plus, Search, Filter } from "lucide-react";
+import AddBookDialog from "@/components/AddBookDialog";
 
 const Bookshelf = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [aiQuestion, setAiQuestion] = useState("");
 
-  const myBooks = [
+  const [myBooks, setMyBooks] = useState([
     {
       id: 1,
       title: "The Midnight Library",
@@ -61,7 +61,7 @@ const Bookshelf = () => {
       downloadUrl: "#",
       hasAiChat: false
     }
-  ];
+  ]);
 
   const statusColors = {
     "Reading": "bg-blue-100 text-blue-800",
@@ -90,6 +90,21 @@ const Bookshelf = () => {
     setAiQuestion("");
   };
 
+  const handleAddBook = (newBook: any) => {
+    const bookToAdd = {
+      ...newBook,
+      currentPage: 0,
+      status: "Want to Read",
+      progress: 0,
+      notes: "",
+      downloadUrl: "#",
+      hasAiChat: true,
+      totalPages: newBook.pages
+    };
+    setMyBooks(prevBooks => [...prevBooks, bookToAdd]);
+    console.log(`Added book: ${newBook.title}`);
+  };
+
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -113,10 +128,7 @@ const Bookshelf = () => {
                 className="pl-10"
               />
             </div>
-            <Button className="bg-amber-600 hover:bg-amber-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Book
-            </Button>
+            <AddBookDialog onAddBook={handleAddBook} />
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -286,10 +298,7 @@ const Bookshelf = () => {
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-medium text-gray-600 mb-2">No books found</h3>
             <p className="text-gray-500 mb-4">Start building your digital library</p>
-            <Button className="bg-amber-600 hover:bg-amber-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Your First Book
-            </Button>
+            <AddBookDialog onAddBook={handleAddBook} />
           </div>
         )}
       </div>
