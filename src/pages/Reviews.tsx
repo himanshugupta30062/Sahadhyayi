@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Star, BookOpen, Users, Calendar, ShoppingCart, CalendarPlus } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Star, BookOpen, Users, Calendar, ShoppingCart, CalendarPlus, Heart, MessageCircle, Share2, ThumbsUp, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Reviews = () => {
@@ -13,66 +14,123 @@ const Reviews = () => {
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const reviews = [
+  const feedPosts = [
     {
       id: 1,
-      bookTitle: "The Midnight Library",
-      author: "Matt Haig",
-      reviewer: "Priya Sharma",
+      type: "completed",
+      user: {
+        name: "Priya Sharma",
+        avatar: "/placeholder.svg",
+        initials: "PS"
+      },
+      timestamp: "2 hours ago",
+      book: {
+        title: "The Midnight Library",
+        author: "Matt Haig",
+        cover: "/placeholder.svg"
+      },
+      content: "Just finished this incredible book! 🌟 The concept of infinite parallel lives really made me think about the choices we make. Anyone else read this? Would love to discuss!",
       rating: 5,
-      date: "March 5, 2025",
-      readingGroup: "Midnight Dreamers",
-      review: "This book completely changed my perspective on life choices and regret. The concept of infinite parallel lives is beautifully explored, and the writing is both profound and accessible. Our reading group had amazing discussions about the philosophical implications. Highly recommend for anyone questioning their life path."
+      likes: 24,
+      comments: 8,
+      shares: 3
     },
     {
       id: 2,
-      bookTitle: "Atomic Habits",
-      author: "James Clear",
-      reviewer: "Rajesh Kumar",
-      rating: 5,
-      date: "March 3, 2025",
-      readingGroup: "Habit Builders",
-      review: "Practical, actionable, and life-changing. Clear's approach to habit formation is scientific yet easy to implement. I've already started applying the 1% rule and seeing results. The reading group helped me stay accountable to the changes I wanted to make. Essential reading for personal development."
+      type: "progress",
+      user: {
+        name: "Rajesh Kumar",
+        avatar: "/placeholder.svg",
+        initials: "RK"
+      },
+      timestamp: "4 hours ago",
+      book: {
+        title: "Atomic Habits",
+        author: "James Clear",
+        cover: "/placeholder.svg"
+      },
+      content: "Halfway through this amazing book and already implementing the 1% rule! The chapter on habit stacking is a game-changer. Who else is working on building better habits?",
+      progress: 67,
+      likes: 18,
+      comments: 12,
+      shares: 5
     },
     {
       id: 3,
-      bookTitle: "Sapiens",
-      author: "Yuval Noah Harari",
-      reviewer: "Ananya Patel",
-      rating: 4,
-      date: "February 28, 2025",
-      readingGroup: "History Enthusiasts",
-      review: "Fascinating journey through human history with thought-provoking insights. Harari's ability to connect historical events to modern society is remarkable. Some sections felt dense, but the group discussions helped clarify complex concepts. A must-read for understanding humanity's trajectory."
+      type: "recommendation",
+      user: {
+        name: "Ananya Patel",
+        avatar: "/placeholder.svg",
+        initials: "AP"
+      },
+      timestamp: "6 hours ago",
+      book: {
+        title: "Sapiens",
+        author: "Yuval Noah Harari",
+        cover: "/placeholder.svg"
+      },
+      content: "Recommending this to everyone interested in human history! Harari's perspective on how we evolved from hunter-gatherers to the dominant species is fascinating. Perfect for our History Enthusiasts book club!",
+      likes: 31,
+      comments: 15,
+      shares: 8
     },
     {
       id: 4,
-      bookTitle: "Educated",
-      author: "Tara Westover",
-      reviewer: "Vikram Singh",
-      rating: 5,
-      date: "February 25, 2025",
-      readingGroup: "Education & Growth",
-      review: "A powerful memoir that showcases the transformative power of education. Westover's journey from isolation to intellectual freedom is both heartbreaking and inspiring. The emotional depth and beautiful prose made this unputdownable. Our group had intense discussions about family, loyalty, and personal growth."
+      type: "quote",
+      user: {
+        name: "Vikram Singh",
+        avatar: "/placeholder.svg",
+        initials: "VS"
+      },
+      timestamp: "8 hours ago",
+      book: {
+        title: "Educated",
+        author: "Tara Westover",
+        cover: "/placeholder.svg"
+      },
+      content: "\"You can love someone and still choose to say goodbye to them... You can miss a person every day, and still be glad that they are no longer in your life.\" - This quote from Educated hit me hard. Such a powerful memoir about education and family.",
+      likes: 42,
+      comments: 20,
+      shares: 12
     },
     {
       id: 5,
-      bookTitle: "The Psychology of Money",
-      author: "Morgan Housel",
-      reviewer: "Meera Reddy",
-      rating: 4,
-      date: "February 20, 2025",
-      readingGroup: "Money Minds",
-      review: "Eye-opening insights into how psychology affects financial decisions. Housel's storytelling approach makes complex financial concepts relatable. The book challenges conventional wisdom about wealth and success. Great for book club discussions about personal finance philosophy."
+      type: "started",
+      user: {
+        name: "Meera Reddy",
+        avatar: "/placeholder.svg",
+        initials: "MR"
+      },
+      timestamp: "1 day ago",
+      book: {
+        title: "The Psychology of Money",
+        author: "Morgan Housel",
+        cover: "/placeholder.svg"
+      },
+      content: "Starting this book tonight! Heard great things about how it changes your perspective on wealth and financial decisions. Anyone read it already?",
+      likes: 16,
+      comments: 7,
+      shares: 2
     },
     {
       id: 6,
-      bookTitle: "Think Again",
-      author: "Adam Grant",
-      reviewer: "Arjun Gupta",
+      type: "review",
+      user: {
+        name: "Arjun Gupta",
+        avatar: "/placeholder.svg",
+        initials: "AG"
+      },
+      timestamp: "1 day ago",
+      book: {
+        title: "Think Again",
+        author: "Adam Grant",
+        cover: "/placeholder.svg"
+      },
+      content: "Detailed review: Grant's book is a masterclass in intellectual humility. While some sections felt repetitive, the core message about being willing to change our minds is crucial in today's polarized world. Great for sparking discussions in our Critical Thinkers group!",
       rating: 4,
-      date: "February 18, 2025",
-      readingGroup: "Critical Thinkers",
-      review: "Grant effectively challenges our tendency to stick to our beliefs. The book provides practical strategies for intellectual humility and changing minds. Some repetitive sections, but overall valuable lessons for personal and professional growth. Excellent discussion starter for our reading group."
+      likes: 28,
+      comments: 14,
+      shares: 6
     }
   ];
 
@@ -91,6 +149,65 @@ const Reviews = () => {
         className={`w-4 h-4 ${index < rating ? "text-yellow-500 fill-current" : "text-gray-300"}`}
       />
     ));
+  };
+
+  const getPostTypeIcon = (type: string) => {
+    switch (type) {
+      case "completed":
+        return <BookOpen className="w-4 h-4 text-green-600" />;
+      case "progress":
+        return <Clock className="w-4 h-4 text-blue-600" />;
+      case "recommendation":
+        return <ThumbsUp className="w-4 h-4 text-purple-600" />;
+      case "quote":
+        return <MessageCircle className="w-4 h-4 text-orange-600" />;
+      case "started":
+        return <BookOpen className="w-4 h-4 text-amber-600" />;
+      case "review":
+        return <Star className="w-4 h-4 text-yellow-600" />;
+      default:
+        return <BookOpen className="w-4 h-4 text-gray-600" />;
+    }
+  };
+
+  const getPostTypeText = (type: string) => {
+    switch (type) {
+      case "completed":
+        return "finished reading";
+      case "progress":
+        return "is reading";
+      case "recommendation":
+        return "recommends";
+      case "quote":
+        return "shared a quote from";
+      case "started":
+        return "started reading";
+      case "review":
+        return "reviewed";
+      default:
+        return "shared";
+    }
+  };
+
+  const handleLike = (postId: number) => {
+    toast({
+      title: "Liked!",
+      description: "You liked this post.",
+    });
+  };
+
+  const handleComment = (postId: number) => {
+    toast({
+      title: "Comment",
+      description: "Comment feature coming soon!",
+    });
+  };
+
+  const handleShare = (postId: number) => {
+    toast({
+      title: "Shared!",
+      description: "Post shared to your timeline.",
+    });
   };
 
   const handlePurchaseBook = (bookTitle: string, author: string) => {
@@ -131,16 +248,16 @@ const Reviews = () => {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Reviews & Ratings</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Book Community Feed</h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
-            Read authentic reviews from our community of passionate readers. Share your thoughts and help others discover their next great read.
+            Stay connected with your reading community. See what your friends are reading, share your thoughts, and discover your next great book.
           </p>
           <div className="flex gap-4 justify-center">
             <Button 
               onClick={() => setShowReviewForm(!showReviewForm)}
               className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
             >
-              Write a Review
+              Share Your Reading
             </Button>
             <Button 
               onClick={handleScheduleSession}
@@ -153,28 +270,38 @@ const Reviews = () => {
           </div>
         </div>
 
-        {/* Review Form */}
+        {/* Share Form */}
         {showReviewForm && (
           <Card className="mb-8 bg-white/70 backdrop-blur-sm border-amber-200">
             <CardHeader>
-              <CardTitle className="text-2xl text-gray-900">Write Your Review</CardTitle>
+              <CardTitle className="text-2xl text-gray-900">Share with Community</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <Input placeholder="Book Title" />
                 <Input placeholder="Author Name" />
               </div>
+              <div className="flex items-center space-x-4">
+                <span className="font-medium">What are you sharing?</span>
+                <select className="border rounded px-3 py-1">
+                  <option value="completed">Finished Reading</option>
+                  <option value="progress">Reading Progress</option>
+                  <option value="recommendation">Recommendation</option>
+                  <option value="quote">Book Quote</option>
+                  <option value="review">Book Review</option>
+                </select>
+              </div>
               <div className="flex items-center space-x-2">
-                <span className="font-medium">Rating:</span>
+                <span className="font-medium">Rating (optional):</span>
                 <div className="flex space-x-1">
                   {Array.from({ length: 5 }, (_, index) => (
                     <Star key={index} className="w-6 h-6 text-gray-300 hover:text-yellow-500 cursor-pointer" />
                   ))}
                 </div>
               </div>
-              <Textarea placeholder="Share your thoughts about this book..." rows={4} />
+              <Textarea placeholder="Share your thoughts, quotes, or progress..." rows={4} />
               <div className="flex space-x-4">
-                <Button onClick={handleSubmitReview} className="bg-amber-600 hover:bg-amber-700">Submit Review</Button>
+                <Button onClick={handleSubmitReview} className="bg-amber-600 hover:bg-amber-700">Share Post</Button>
                 <Button variant="outline" onClick={() => setShowReviewForm(false)}>Cancel</Button>
               </div>
             </CardContent>
@@ -182,68 +309,107 @@ const Reviews = () => {
         )}
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Reviews Feed */}
+          {/* Social Feed */}
           <div className="lg:col-span-2 space-y-6">
-            <h2 className="text-3xl font-bold text-gray-900">Latest Reviews</h2>
-            {reviews.map((review) => (
-              <Card key={review.id} className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-xl text-gray-900">{review.bookTitle}</CardTitle>
-                      <p className="text-gray-600">by {review.author}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center space-x-1 mb-1">
-                        {renderStars(review.rating)}
+            <h2 className="text-3xl font-bold text-gray-900">Community Feed</h2>
+            {feedPosts.map((post) => (
+              <Card key={post.id} className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start space-x-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={post.user.avatar} alt={post.user.name} />
+                      <AvatarFallback>{post.user.initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        {getPostTypeIcon(post.type)}
+                        <span className="font-medium text-gray-900">{post.user.name}</span>
+                        <span className="text-gray-600">{getPostTypeText(post.type)}</span>
+                        <span className="font-medium text-gray-900">{post.book.title}</span>
                       </div>
-                      <p className="text-sm text-gray-500">{review.date}</p>
+                      <p className="text-sm text-gray-500">{post.timestamp}</p>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span className="font-medium">Reviewed by {review.reviewer}</span>
-                    <Badge variant="outline" className="text-amber-700 border-amber-300">
-                      <Users className="w-3 h-3 mr-1" />
-                      {review.readingGroup}
-                    </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700 leading-relaxed">{review.review}</p>
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
-                      <button 
-                        onClick={() => handleHelpfulClick(review.id)}
-                        className="hover:text-amber-600 transition-colors"
-                      >
-                        Helpful
-                      </button>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <button className="hover:text-amber-600 transition-colors">Reply</button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Reply to {review.reviewer}'s Review</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <Textarea placeholder="Write your reply..." rows={3} />
-                            <div className="flex space-x-2">
-                              <Button className="bg-amber-600 hover:bg-amber-700">Post Reply</Button>
-                              <Button variant="outline">Cancel</Button>
-                            </div>
+                
+                <CardContent className="space-y-4">
+                  <div className="flex space-x-4">
+                    <div className="w-16 h-20 bg-gray-200 rounded flex-shrink-0 flex items-center justify-center">
+                      <BookOpen className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{post.book.title}</h4>
+                      <p className="text-sm text-gray-600">by {post.book.author}</p>
+                      {post.rating && (
+                        <div className="flex items-center space-x-1 mt-1">
+                          {renderStars(post.rating)}
+                        </div>
+                      )}
+                      {post.progress && (
+                        <div className="mt-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Progress</span>
+                            <span>{post.progress}%</span>
                           </div>
-                        </DialogContent>
-                      </Dialog>
-                      <button className="hover:text-amber-600 transition-colors">Share</button>
+                          <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                            <div 
+                              className="bg-amber-600 h-2 rounded-full" 
+                              style={{ width: `${post.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-700 leading-relaxed">{post.content}</p>
+                  
+                  {/* Engagement Stats */}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <div className="flex items-center space-x-6 text-sm text-gray-500">
+                      <span>{post.likes} likes</span>
+                      <span>{post.comments} comments</span>
+                      <span>{post.shares} shares</span>
                     </div>
                     <Button 
-                      onClick={() => handlePurchaseBook(review.bookTitle, review.author)}
+                      onClick={() => handlePurchaseBook(post.book.title, post.book.author)}
                       size="sm"
-                      className="bg-amber-600 hover:bg-amber-700"
+                      variant="outline"
+                      className="border-amber-600 text-amber-600 hover:bg-amber-50"
                     >
                       <ShoppingCart className="w-4 h-4 mr-1" />
-                      Purchase Book
+                      Buy Book
+                    </Button>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleLike(post.id)}
+                      className="flex items-center space-x-2 text-gray-600 hover:text-red-600"
+                    >
+                      <Heart className="w-4 h-4" />
+                      <span>Like</span>
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleComment(post.id)}
+                      className="flex items-center space-x-2 text-gray-600 hover:text-blue-600"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>Comment</span>
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleShare(post.id)}
+                      className="flex items-center space-x-2 text-gray-600 hover:text-green-600"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      <span>Share</span>
                     </Button>
                   </div>
                 </CardContent>
