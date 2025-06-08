@@ -55,13 +55,17 @@ const Navigation = () => {
             
             {/* Auth Buttons */}
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" className="text-gray-700">
-                <LogIn className="w-4 h-4 mr-1" />
-                Sign In
-              </Button>
-              <Button className="bg-amber-600 hover:bg-amber-700 text-white">
-                Sign Up
-              </Button>
+              <Link to="/signin">
+                <Button variant="ghost" className="text-gray-700">
+                  <LogIn className="w-4 h-4 mr-1" />
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="bg-amber-600 hover:bg-amber-700 text-white">
+                  Sign Up
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -106,13 +110,17 @@ const Navigation = () => {
                 );
               })}
               <div className="border-t pt-2 mt-2">
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-2">
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
-                </Button>
-                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
-                  Sign Up
-                </Button>
+                <Link to="/signin" onClick={() => setIsOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-gray-700 mb-2">
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
+                    Sign Up
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

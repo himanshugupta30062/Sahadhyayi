@@ -14,6 +14,8 @@ import Reviews from "./pages/Reviews";
 import AuthorConnect from "./pages/AuthorConnect";
 import ReaderMap from "./pages/ReaderMap";
 import Investors from "./pages/Investors";
+import SignUp from "./pages/SignUp";
+import SignIn from "./pages/SignIn";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +38,8 @@ const App = () => (
             <Route path="/authors" element={<AuthorConnect />} />
             <Route path="/map" element={<ReaderMap />} />
             <Route path="/investors" element={<Investors />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/signin" element={<SignIn />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
