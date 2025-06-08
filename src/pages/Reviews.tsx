@@ -1,14 +1,17 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, BookOpen, Users, Calendar } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Star, BookOpen, Users, Calendar, ShoppingCart, CalendarPlus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Reviews = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const reviews = [
     {
@@ -90,6 +93,40 @@ const Reviews = () => {
     ));
   };
 
+  const handlePurchaseBook = (bookTitle: string, author: string) => {
+    setSelectedBook(`${bookTitle} by ${author}`);
+    toast({
+      title: "Added to Cart",
+      description: `${bookTitle} has been added to your cart.`,
+    });
+  };
+
+  const handleScheduleSession = () => {
+    toast({
+      title: "Redirecting to Author Connect",
+      description: "Taking you to schedule a session with authors.",
+    });
+    // In a real app, this would navigate to /authors
+    setTimeout(() => {
+      window.location.href = '/authors';
+    }, 1000);
+  };
+
+  const handleSubmitReview = () => {
+    toast({
+      title: "Review Submitted",
+      description: "Thank you for sharing your review with the community!",
+    });
+    setShowReviewForm(false);
+  };
+
+  const handleHelpfulClick = (reviewId: number) => {
+    toast({
+      title: "Thank you!",
+      description: "Your feedback helps our community.",
+    });
+  };
+
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -98,12 +135,22 @@ const Reviews = () => {
           <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
             Read authentic reviews from our community of passionate readers. Share your thoughts and help others discover their next great read.
           </p>
-          <Button 
-            onClick={() => setShowReviewForm(!showReviewForm)}
-            className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
-          >
-            Write a Review
-          </Button>
+          <div className="flex gap-4 justify-center">
+            <Button 
+              onClick={() => setShowReviewForm(!showReviewForm)}
+              className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
+            >
+              Write a Review
+            </Button>
+            <Button 
+              onClick={handleScheduleSession}
+              variant="outline"
+              className="border-amber-600 text-amber-600 hover:bg-amber-50 px-8 py-3 text-lg"
+            >
+              <CalendarPlus className="w-5 h-5 mr-2" />
+              Schedule Author Session
+            </Button>
+          </div>
         </div>
 
         {/* Review Form */}
@@ -127,7 +174,7 @@ const Reviews = () => {
               </div>
               <Textarea placeholder="Share your thoughts about this book..." rows={4} />
               <div className="flex space-x-4">
-                <Button className="bg-amber-600 hover:bg-amber-700">Submit Review</Button>
+                <Button onClick={handleSubmitReview} className="bg-amber-600 hover:bg-amber-700">Submit Review</Button>
                 <Button variant="outline" onClick={() => setShowReviewForm(false)}>Cancel</Button>
               </div>
             </CardContent>
@@ -163,10 +210,41 @@ const Reviews = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700 leading-relaxed">{review.review}</p>
-                  <div className="flex items-center space-x-4 mt-4 text-sm text-gray-500">
-                    <button className="hover:text-amber-600 transition-colors">Helpful</button>
-                    <button className="hover:text-amber-600 transition-colors">Reply</button>
-                    <button className="hover:text-amber-600 transition-colors">Share</button>
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <button 
+                        onClick={() => handleHelpfulClick(review.id)}
+                        className="hover:text-amber-600 transition-colors"
+                      >
+                        Helpful
+                      </button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button className="hover:text-amber-600 transition-colors">Reply</button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Reply to {review.reviewer}'s Review</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <Textarea placeholder="Write your reply..." rows={3} />
+                            <div className="flex space-x-2">
+                              <Button className="bg-amber-600 hover:bg-amber-700">Post Reply</Button>
+                              <Button variant="outline">Cancel</Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      <button className="hover:text-amber-600 transition-colors">Share</button>
+                    </div>
+                    <Button 
+                      onClick={() => handlePurchaseBook(review.bookTitle, review.author)}
+                      size="sm"
+                      className="bg-amber-600 hover:bg-amber-700"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-1" />
+                      Purchase Book
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -185,8 +263,8 @@ const Reviews = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {topBooks.map((book, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div>
+                  <div key={index} className="flex items-center justify-between border-b border-amber-100 last:border-b-0 pb-3 last:pb-0">
+                    <div className="flex-1">
                       <p className="font-medium text-gray-900 text-sm">{book.title}</p>
                       <p className="text-gray-600 text-xs">by {book.author}</p>
                       <div className="flex items-center space-x-1 mt-1">
@@ -194,7 +272,18 @@ const Reviews = () => {
                         <span className="text-xs text-gray-500">({book.reviewCount})</span>
                       </div>
                     </div>
-                    <span className="text-lg font-bold text-amber-600">{book.avgRating}</span>
+                    <div className="flex flex-col items-end space-y-1">
+                      <span className="text-lg font-bold text-amber-600">{book.avgRating}</span>
+                      <Button 
+                        onClick={() => handlePurchaseBook(book.title, book.author)}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs border-amber-600 text-amber-600 hover:bg-amber-50"
+                      >
+                        <ShoppingCart className="w-3 h-3 mr-1" />
+                        Buy
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </CardContent>
@@ -218,6 +307,13 @@ const Reviews = () => {
                   <div className="text-3xl font-bold text-amber-600">89%</div>
                   <div className="text-gray-700">Books Rated 4+ Stars</div>
                 </div>
+                <Button 
+                  onClick={handleScheduleSession}
+                  className="w-full bg-amber-600 hover:bg-amber-700"
+                >
+                  <CalendarPlus className="w-4 h-4 mr-2" />
+                  Join Author Sessions
+                </Button>
               </CardContent>
             </Card>
 
@@ -246,6 +342,30 @@ const Reviews = () => {
             </Card>
           </div>
         </div>
+
+        {/* Purchase Book Dialog */}
+        {selectedBook && (
+          <Dialog open={!!selectedBook} onOpenChange={() => setSelectedBook(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Purchase Confirmation</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-gray-700">
+                  You've added <strong>{selectedBook}</strong> to your cart.
+                </p>
+                <div className="flex space-x-2">
+                  <Button className="bg-amber-600 hover:bg-amber-700">
+                    Go to Cart
+                  </Button>
+                  <Button variant="outline" onClick={() => setSelectedBook(null)}>
+                    Continue Shopping
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );
