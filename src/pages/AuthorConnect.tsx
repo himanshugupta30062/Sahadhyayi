@@ -1,10 +1,13 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Headphones, BookOpen, Star } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Calendar, Users, Headphones, BookOpen, Star, Play, Volume2, Maximize2 } from "lucide-react";
+import { useState } from "react";
 
 const AuthorConnect = () => {
+  const [openRecording, setOpenRecording] = useState<string | null>(null);
+
   const upcomingSessions = [
     {
       id: 1,
@@ -66,21 +69,27 @@ const AuthorConnect = () => {
       title: "The God of Small Things: 25 Years Later",
       date: "February 28, 2025",
       attendees: 2100,
-      rating: 4.9
+      rating: 4.9,
+      duration: "2h 15m",
+      highlights: ["Writing process insights", "Character development", "Cultural themes"]
     },
     {
       author: "Vikram Seth",
       title: "Poetry and Prose: Finding Your Voice",
       date: "February 15, 2025",
       attendees: 1300,
-      rating: 4.8
+      rating: 4.8,
+      duration: "1h 45m",
+      highlights: ["Poetry techniques", "Voice development", "Literary influences"]
     },
     {
       author: "Jhumpa Lahiri",
       title: "Writing Across Cultures",
       date: "February 10, 2025",
       attendees: 1800,
-      rating: 4.9
+      rating: 4.9,
+      duration: "2h 30m",
+      highlights: ["Cultural identity", "Language barriers", "Universal themes"]
     }
   ];
 
@@ -104,6 +113,10 @@ const AuthorConnect = () => {
       books: 40
     }
   ];
+
+  const handleWatchRecording = (sessionTitle: string) => {
+    setOpenRecording(sessionTitle);
+  };
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -200,9 +213,61 @@ const AuthorConnect = () => {
                           <span>{session.rating}/5 rating</span>
                         </div>
                       </div>
-                      <Button variant="outline" className="w-full mt-4 text-amber-600 border-amber-600 hover:bg-amber-50">
-                        Watch Recording
-                      </Button>
+                      <Dialog open={openRecording === session.title} onOpenChange={(open) => setOpenRecording(open ? session.title : null)}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            className="w-full mt-4 text-amber-600 border-amber-600 hover:bg-amber-50"
+                            onClick={() => handleWatchRecording(session.title)}
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Watch Recording
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
+                          <DialogHeader className="p-6 pb-4">
+                            <DialogTitle className="text-xl font-bold">{session.title}</DialogTitle>
+                            <DialogDescription>
+                              A recorded session with {session.author} • {session.duration} • {session.attendees} attendees
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="flex-1 bg-black rounded-lg mx-6 mb-6 relative overflow-hidden">
+                            <div className="aspect-video bg-gray-900 flex items-center justify-center">
+                              <div className="text-center text-white">
+                                <Play className="w-16 h-16 mx-auto mb-4 opacity-70" />
+                                <p className="text-lg font-medium">Video Player</p>
+                                <p className="text-sm opacity-70">Recording: {session.title}</p>
+                              </div>
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                              <div className="flex items-center justify-between text-white">
+                                <div className="flex items-center space-x-4">
+                                  <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                                    <Play className="w-4 h-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                                    <Volume2 className="w-4 h-4" />
+                                  </Button>
+                                  <span className="text-sm">00:00 / {session.duration}</span>
+                                </div>
+                                <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                                  <Maximize2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="px-6 pb-6">
+                            <h4 className="font-medium mb-2">Session Highlights</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {session.highlights.map((highlight, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {highlight}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </CardContent>
                   </Card>
                 ))}
