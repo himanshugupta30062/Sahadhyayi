@@ -1,8 +1,11 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Target, Users, TrendingUp, Heart, Globe } from "lucide-react";
+import { BookOpen, Target, Users, TrendingUp, Heart, Globe, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const About = () => {
   const values = [
@@ -34,6 +37,39 @@ const About = () => {
     { icon: BookOpen, number: "500+", label: "Reading Groups" },
     { icon: TrendingUp, number: "95%", label: "User Satisfaction" }
   ];
+
+  const { toast } = useToast();
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [loading, setLoading] = useState(false);
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!form.name || !form.email || !form.message) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill out all fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    // For actual email delivery, connect to Supabase function, EmailJS, Zapier, etc.
+    setTimeout(() => {
+      toast({
+        title: "Message sent!",
+        description: "Thank you for reaching out. We will respond soon.",
+      });
+      setForm({ name: "", email: "", message: "" });
+      setLoading(false);
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -168,6 +204,98 @@ const About = () => {
               </CardContent>
             </Card>
           </div>
+        </section>
+
+        {/* Founder Section */}
+        <section className="mb-16">
+          <Card className="bg-white/90 border-amber-200">
+            <CardHeader>
+              <CardTitle className="text-2xl text-gray-900 flex flex-row items-center gap-3">
+                <span>Meet the Founder</span>
+                <span role="img" aria-label="sparkles">✨</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row md:items-center gap-6">
+                <div>
+                  <div className="font-semibold text-lg text-amber-700">Himanshu Gupta</div>
+                  <div className="text-gray-700 text-base mb-1">Founder, Sahadhyayi</div>
+                  <div className="flex items-center text-gray-700 text-base mb-1">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="#fb923c" strokeWidth="2"/>
+                      <path d="M15 13C15 14.1046 13.6569 15 12 15C10.3431 15 9 14.1046 9 13" stroke="#fb923c" strokeWidth="2"/>
+                      <circle cx="9" cy="10" r="1" fill="#fb923c"/>
+                      <circle cx="15" cy="10" r="1" fill="#fb923c"/>
+                    </svg>
+                    <span className="ml-2">Phone: <a href="tel:8264135459" className="underline decoration-dotted hover:text-orange-600">8264135459</a></span>
+                  </div>
+                  <div className="flex items-center text-gray-700 text-base">
+                    <Mail className="w-4 h-4 text-amber-600" />
+                    <span className="ml-2">Email: <a href="mailto:himanshugupta30062@gmail.com" className="underline decoration-dotted hover:text-orange-600">himanshugupta30062@gmail.com</a></span>
+                  </div>
+                </div>
+                {/* Contact form */}
+                <div className="flex-1 mt-4 md:mt-0">
+                  <form className="space-y-4" onSubmit={handleContactSubmit}>
+                    <div>
+                      <label htmlFor="contact_name" className="block text-gray-800 mb-1">Your Name</label>
+                      <Input
+                        id="contact_name"
+                        name="name"
+                        placeholder="Enter your name"
+                        value={form.name}
+                        onChange={handleFormChange}
+                        disabled={loading}
+                        autoComplete="name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contact_email" className="block text-gray-800 mb-1">Your Email</label>
+                      <Input
+                        id="contact_email"
+                        name="email"
+                        type="email"
+                        placeholder="Enter your email address"
+                        value={form.email}
+                        onChange={handleFormChange}
+                        disabled={loading}
+                        autoComplete="email"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contact_message" className="block text-gray-800 mb-1">Message</label>
+                      <Textarea
+                        id="contact_message"
+                        name="message"
+                        placeholder="Write your message"
+                        value={form.message}
+                        onChange={handleFormChange}
+                        disabled={loading}
+                        required
+                        rows={4}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full mt-2"
+                      variant="default"
+                      size="lg"
+                      disabled={loading}
+                    >
+                      {loading ? "Sending..." : "Send Message"}
+                    </Button>
+                    <div className="text-xs text-gray-400 pt-2">
+                      Your message will be sent directly to Himanshu Gupta’s email.
+                      <br />
+                      {/* For real email delivery, connect the form to Supabase Edge Functions, EmailJS, or similar service. */}
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
         {/* CTA */}
