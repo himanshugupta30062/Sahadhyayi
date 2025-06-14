@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import DOMPurify from "dompurify";
 
 type StoriesSectionProps = {
   userId: string;
@@ -49,6 +49,8 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
     if (!error) {
       setStories((prev) => prev.filter((s) => s.id !== id));
       toast({ title: "Deleted", description: "The story was deleted." });
+      // Security: Log story deletion (you may upgrade this to an audit trail later)
+      console.log(`[AUDIT] User ${userId} deleted story ${id} at ${new Date().toISOString()}`);
     }
   };
 
@@ -84,7 +86,13 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
                   {new Date(story.created_at).toLocaleDateString()}
                 </div>
                 {story.description && (
-                  <div className="text-orange-800 text-base font-serif mt-2">{story.description}</div>
+                  // SECURITY: Sanitize description to prevent XSS
+                  <div
+                    className="text-orange-800 text-base font-serif mt-2"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(story.description),
+                    }}
+                  />
                 )}
               </div>
               <div className="absolute right-4 top-4 flex gap-2 opacity-80 group-hover:opacity-100 transition-opacity">

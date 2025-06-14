@@ -34,6 +34,10 @@ const SignUp = () => {
       setErrorMsg("Please fill in all fields.");
       return false;
     }
+    if (formData.password.length < 8) {
+      setErrorMsg("Password must be at least 8 characters.");
+      return false;
+    }
     if (formData.password !== formData.confirmPassword) {
       setErrorMsg("Passwords do not match.");
       return false;
