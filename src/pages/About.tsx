@@ -216,8 +216,17 @@ const About = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row md:items-center gap-6">
-                <div>
+              <div className="flex flex-col md:flex-row md:items-center gap-8">
+                {/* Founder Image */}
+                <div className="flex-shrink-0 w-full md:w-56 flex justify-center md:block">
+                  <img
+                    src="/lovable-uploads/3f0d5de6-4956-4feb-937f-90f70f359001.png"
+                    alt="Himanshu Gupta Founder"
+                    className="rounded-xl shadow-lg w-40 h-40 object-cover border-2 border-amber-200 mb-4 md:mb-0"
+                  />
+                </div>
+                {/* Founder Details and Contact */}
+                <div className="flex-1">
                   <div className="font-semibold text-lg text-amber-700">Himanshu Gupta</div>
                   <div className="text-gray-700 text-base mb-1">Founder, Sahadhyayi</div>
                   <div className="flex items-center text-gray-700 text-base mb-1">
@@ -227,15 +236,17 @@ const About = () => {
                       <circle cx="9" cy="10" r="1" fill="#fb923c"/>
                       <circle cx="15" cy="10" r="1" fill="#fb923c"/>
                     </svg>
-                    <span className="ml-2">Phone: <a href="tel:8264135459" className="underline decoration-dotted hover:text-orange-600">8264135459</a></span>
+                    <span className="ml-2">
+                      Phone: <a href="tel:8264135459" className="underline decoration-dotted hover:text-orange-600">8264135459</a>
+                    </span>
                   </div>
-                  <div className="flex items-center text-gray-700 text-base">
+                  <div className="flex items-center text-gray-700 text-base mb-4">
                     <Mail className="w-4 h-4 text-amber-600" />
-                    <span className="ml-2">Email: <a href="mailto:himanshugupta30062@gmail.com" className="underline decoration-dotted hover:text-orange-600">himanshugupta30062@gmail.com</a></span>
+                    <span className="ml-2">
+                      Email: <a href="mailto:himanshugupta30062@gmail.com" className="underline decoration-dotted hover:text-orange-600">himanshugupta30062@gmail.com</a>
+                    </span>
                   </div>
-                </div>
-                {/* Contact form */}
-                <div className="flex-1 mt-4 md:mt-0">
+                  {/* Contact form */}
                   <form className="space-y-4" onSubmit={handleContactSubmit}>
                     <div>
                       <label htmlFor="contact_name" className="block text-gray-800 mb-1">Your Name</label>
