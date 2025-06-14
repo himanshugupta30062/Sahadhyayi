@@ -131,6 +131,66 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_progress: {
+        Row: {
+          book_title: string
+          cover_image_url: string | null
+          current_page: number
+          id: number
+          total_pages: number
+          user_id: string | null
+        }
+        Insert: {
+          book_title: string
+          cover_image_url?: string | null
+          current_page?: number
+          id?: number
+          total_pages: number
+          user_id?: string | null
+        }
+        Update: {
+          book_title?: string
+          cover_image_url?: string | null
+          current_page?: number
+          id?: number
+          total_pages?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      stories: {
+        Row: {
+          audio_url: string | null
+          content: string | null
+          created_at: string
+          description: string | null
+          format: string | null
+          id: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          format?: string | null
+          id?: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          format?: string | null
+          id?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_books: {
         Row: {
           added_at: string
