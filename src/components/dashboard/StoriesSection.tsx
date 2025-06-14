@@ -1,10 +1,12 @@
 
-import React, { useEffect, useState } from "react";
-import { Edit, Trash2, BookOpen, ArrowUp } from "lucide-react";
+import React from "react";
+import { Edit, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AddStoryForm from "./AddStoryForm";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import Tooltip from "../ui/tooltip";
+import { useState, useEffect } from "react";
 
 type StoriesSectionProps = {
   userId: string;
@@ -48,66 +50,94 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
   };
 
   return (
-    <section>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-serif font-semibold text-stone-700">
+    <section className="relative mt-2">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-lora font-bold text-orange-900 tracking-tight">
           Your Life Stories
         </h2>
-        <Button
-          className="bg-stone-700 text-white hover:bg-stone-800 font-serif"
-          onClick={() => setShowForm(true)}
-        >
-          <ArrowUp className="w-4 h-4 mr-2" />
-          Write or Record New Story
-        </Button>
       </div>
-      {showForm && (
-        <AddStoryForm userId={userId} onClose={() => { setShowForm(false); fetchStories(); }} />
-      )}
-      {loading ? (
-        <div className="text-stone-500 font-serif py-4">Loading your stories...</div>
-      ) : stories.length === 0 ? (
-        <div className="text-stone-400 italic font-serif py-4">
-          You haven't written or recorded any stories yet.
-        </div>
-      ) : (
-        <div className="divide-y divide-stone-200 bg-white/60 rounded-md p-2">
-          {stories.map((story) => (
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {loading ? (
+          <div className="text-orange-500 font-serif py-4">Loading your stories…</div>
+        ) : stories.length === 0 ? (
+          <div className="text-orange-300 italic font-serif py-4">
+            You haven&apos;t written or recorded any stories yet.
+          </div>
+        ) : (
+          stories.map((story) => (
             <div
               key={story.id}
-              className="flex items-center justify-between py-3 group hover:bg-stone-50 transition rounded"
+              className="group bg-white rounded-2xl p-6 relative shadow transition-transform duration-200 hover:scale-105 hover:shadow-lg animate-fade-in-up flex flex-col justify-between min-h-[160px]"
             >
               <div>
-                <div className="font-serif text-stone-800 font-medium text-lg">{story.title}</div>
-                <div className="text-stone-500 text-xs">
-                  {story.format === "audio" ? "Voice" : "Text"} •{" "}
-                  {new Date(story.created_at).toLocaleString()}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-lora text-lg text-orange-900 font-semibold">{story.title}</span>
+                  <span className="bg-orange-100 text-orange-700 rounded-full px-3 py-0.5 ml-1 text-xs shadow font-sans uppercase">
+                    {story.format}
+                  </span>
+                </div>
+                <div className="text-orange-400 text-xs mb-1">
+                  {new Date(story.created_at).toLocaleDateString()}
                 </div>
                 {story.description && (
-                  <div className="text-stone-500 text-sm">{story.description}</div>
+                  <div className="text-orange-800 text-base font-serif mt-2">{story.description}</div>
                 )}
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Edit className="w-4 h-4" />
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(story.id)}
-                  className="text-red-600 border-red-300 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </Button>
+              <div className="absolute right-4 top-4 flex gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                <Tooltip content="Edit">
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-orange-50">
+                    <Edit className="w-5 h-5 text-orange-500 hover:scale-110 transition-transform" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Delete">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-orange-50"
+                    onClick={() => handleDelete(story.id)}
+                  >
+                    <Trash2 className="w-5 h-5 text-red-400 hover:scale-110 transition-transform" />
+                  </Button>
+                </Tooltip>
               </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
+      </div>
+      {showForm && (
+        <AddStoryForm
+          userId={userId}
+          onClose={() => {
+            setShowForm(false);
+            fetchStories();
+          }}
+        />
       )}
+      <button
+        onClick={() => setShowForm(true)}
+        className="fixed bottom-8 right-8 z-30 flex items-center px-6 py-3 bg-orange-600 text-white text-base font-sans font-semibold rounded-full shadow-lg hover:bg-orange-700 hover:scale-105 transition-all focus:ring-4 focus:ring-orange-300 animate-fade-in-up"
+        style={{
+          boxShadow: "0 4px 14px rgba(255, 152, 0, 0.15)"
+        }}
+      >
+        <Plus className="w-6 h-6 mr-2" />
+        Share a New Story
+      </button>
     </section>
   );
 };
+
+// Simple Tooltip
+function Tooltip({ content, children }: { content: string; children: React.ReactNode }) {
+  return (
+    <span className="group relative">
+      {children}
+      <span className="pointer-events-none absolute left-1/2 bottom-full mb-2 w-max -translate-x-1/2 scale-0 group-hover:scale-100 opacity-0 group-hover:opacity-100 bg-orange-600 text-white text-xs rounded-md px-2 py-1 font-sans shadow transition-all z-20">
+        {content}
+      </span>
+    </span>
+  );
+}
 
 export default StoriesSection;

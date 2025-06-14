@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import StoriesSection from "@/components/dashboard/StoriesSection";
 import ReadingTracker from "@/components/dashboard/ReadingTracker";
+import Footer from "@/components/dashboard/Footer";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -12,7 +13,6 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<{ full_name?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Handle session persistence + route protection
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
@@ -27,11 +27,10 @@ const Dashboard = () => {
     };
   }, [navigate]);
 
-  // Load user profile for welcome message
   useEffect(() => {
     async function loadProfile() {
       if (session?.user?.id) {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("profiles")
           .select("full_name")
           .eq("id", session.user.id)
@@ -45,22 +44,26 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-100 font-serif">
-        <span className="text-gray-700 text-xl">Loading dashboard...</span>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50 font-lora text-orange-800">
+        <span className="text-2xl font-bold">Loading dashboard…</span>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen font-serif bg-gradient-to-br from-neutral-100 to-stone-200">
-      <DashboardHeader 
-        user={session?.user} 
-        fullName={profile?.full_name || session?.user?.email?.split("@")[0]}
-      />
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-10">
+    <main
+      className="min-h-screen flex flex-col font-lora bg-dashboard-gradient bg-dashboard-texture
+      animate-fade-in-up transition-colors duration-500"
+    >
+      <div className="grow max-w-5xl mx-auto w-full px-3 py-6 flex flex-col gap-10">
+        <DashboardHeader
+          user={session?.user}
+          fullName={profile?.full_name || session?.user?.email?.split("@")[0]}
+        />
         <StoriesSection userId={session.user.id} />
         <ReadingTracker userId={session.user.id} />
       </div>
+      <Footer email={session?.user?.email} />
     </main>
   );
 };
