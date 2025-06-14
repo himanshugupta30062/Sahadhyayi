@@ -216,41 +216,40 @@ const About = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row md:items-start gap-8">
-                {/* Founder Image & Info column */}
-                <div className="flex-shrink-0 w-full md:w-56 flex flex-col items-center md:block">
+              <div className="flex flex-col md:flex-row gap-8 md:items-start">
+                {/* Left: Founder Image and Info */}
+                <div className="flex flex-col items-center md:items-start md:w-56 w-full gap-4">
                   <img
                     src="/lovable-uploads/3f0d5de6-4956-4feb-937f-90f70f359001.png"
                     alt="Himanshu Gupta Founder"
-                    className="rounded-xl shadow-lg w-40 h-40 object-cover border-2 border-amber-200 mb-4 md:mb-6"
+                    className="rounded-xl shadow-lg w-40 h-40 object-cover border-2 border-amber-200"
                   />
-                  {/* Info below image */}
-                  <div className="text-center md:text-left space-y-2">
-                    <div className="font-semibold text-lg text-amber-700">Himanshu Gupta</div>
+                  <div className="w-full flex flex-col items-center md:items-start gap-1">
+                    <h3 className="font-semibold text-lg text-amber-700">Himanshu Gupta</h3>
                     <div className="text-gray-700 text-base">Founder, Sahadhyayi</div>
-                    <div className="flex items-center justify-center md:justify-start text-gray-700 text-base gap-1">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <div className="flex items-center text-gray-700 text-base gap-2">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
                         <circle cx="12" cy="12" r="10" stroke="#fb923c" strokeWidth="2"/>
                         <path d="M15 13C15 14.1046 13.6569 15 12 15C10.3431 15 9 14.1046 9 13" stroke="#fb923c" strokeWidth="2"/>
                         <circle cx="9" cy="10" r="1" fill="#fb923c"/>
                         <circle cx="15" cy="10" r="1" fill="#fb923c"/>
                       </svg>
-                      <span className="ml-2">
+                      <span>
                         <span className="text-gray-800 font-medium">Phone:</span>
                         <a href="tel:8264135459" className="underline decoration-dotted hover:text-orange-600 ml-1">8264135459</a>
                       </span>
                     </div>
-                    <div className="flex items-center justify-center md:justify-start text-gray-700 text-base gap-1">
-                      <Mail className="w-4 h-4 text-amber-600" />
-                      <span className="ml-2">
+                    <div className="flex items-center text-gray-700 text-base gap-2">
+                      <Mail className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>
                         <span className="text-gray-800 font-medium">Email:</span>
-                        <a href="mailto:himanshugupta30062@gmail.com" className="underline decoration-dotted hover:text-orange-600 ml-1">himanshugupta30062@gmail.com</a>
+                        <a href="mailto:himanshugupta30062@gmail.com" className="underline decoration-dotted hover:text-orange-600 ml-1 break-all">himanshugupta30062@gmail.com</a>
                       </span>
                     </div>
                   </div>
                 </div>
-                {/* Contact form column */}
-                <div className="flex-1 mt-6 md:mt-0">
+                {/* Right: Contact Form */}
+                <div className="flex-1 mt-8 md:mt-0">
                   <form className="space-y-4" onSubmit={handleContactSubmit}>
                     <div>
                       <label htmlFor="contact_name" className="block text-gray-800 mb-1">Your Name</label>
