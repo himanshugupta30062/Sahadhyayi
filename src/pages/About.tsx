@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Target, Users, TrendingUp, Heart, Globe, Mail } from "lucide-react";
@@ -6,6 +7,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 
 const About = () => {
   const values = [
@@ -60,15 +62,38 @@ const About = () => {
 
     setLoading(true);
 
-    // For actual email delivery, connect to Supabase function, EmailJS, Zapier, etc.
-    setTimeout(() => {
+    try {
+      const { error } = await supabase
+        .from("contact_messages")
+        .insert([
+          {
+            name: form.name,
+            email: form.email,
+            message: form.message,
+          },
+        ]);
+      if (error) {
+        toast({
+          title: "Failed to send",
+          description: "There was an error sending your message. Please try again.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Message sent!",
+          description: "Thank you for reaching out. We will respond soon.",
+        });
+        setForm({ name: "", email: "", message: "" });
+      }
+    } catch (err) {
       toast({
-        title: "Message sent!",
-        description: "Thank you for reaching out. We will respond soon.",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
       });
-      setForm({ name: "", email: "", message: "" });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
