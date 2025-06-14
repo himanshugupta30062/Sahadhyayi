@@ -1,12 +1,15 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AddStoryForm from "./AddStoryForm";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import Tooltip from "../ui/tooltip";
-import { useState, useEffect } from "react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 type StoriesSectionProps = {
   userId: string;
@@ -85,20 +88,26 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
                 )}
               </div>
               <div className="absolute right-4 top-4 flex gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                <Tooltip content="Edit">
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-orange-50">
-                    <Edit className="w-5 h-5 text-orange-500 hover:scale-110 transition-transform" />
-                  </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-orange-50">
+                      <Edit className="w-5 h-5 text-orange-500 hover:scale-110 transition-transform" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit</TooltipContent>
                 </Tooltip>
-                <Tooltip content="Delete">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full hover:bg-orange-50"
-                    onClick={() => handleDelete(story.id)}
-                  >
-                    <Trash2 className="w-5 h-5 text-red-400 hover:scale-110 transition-transform" />
-                  </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full hover:bg-orange-50"
+                      onClick={() => handleDelete(story.id)}
+                    >
+                      <Trash2 className="w-5 h-5 text-red-400 hover:scale-110 transition-transform" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete</TooltipContent>
                 </Tooltip>
               </div>
             </div>
@@ -127,17 +136,5 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
     </section>
   );
 };
-
-// Simple Tooltip
-function Tooltip({ content, children }: { content: string; children: React.ReactNode }) {
-  return (
-    <span className="group relative">
-      {children}
-      <span className="pointer-events-none absolute left-1/2 bottom-full mb-2 w-max -translate-x-1/2 scale-0 group-hover:scale-100 opacity-0 group-hover:opacity-100 bg-orange-600 text-white text-xs rounded-md px-2 py-1 font-sans shadow transition-all z-20">
-        {content}
-      </span>
-    </span>
-  );
-}
 
 export default StoriesSection;
