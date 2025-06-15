@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { useUserProfile, useUpsertUserProfile, useDeleteUserProfile, uploadProfilePicture, UserProfile } from "@/hooks/useUserProfile";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -277,7 +277,7 @@ export const ProfileView: React.FC = () => {
                     <FormItem>
                       <FormLabel>About Me</FormLabel>
                       <FormControl>
-                        <Input as="textarea" {...field} placeholder="Your bio..." className="h-24" />
+                        <Textarea {...field} placeholder="Your bio..." className="h-24" />
                       </FormControl>
                     </FormItem>
                   )}
