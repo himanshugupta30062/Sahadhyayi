@@ -40,7 +40,7 @@ export const useProfile = () => {
         .maybeSingle();
 
       if (error) throw error;
-      if (!data) return null;
+      if (!data || typeof data !== 'object') return null;
 
       // Add notification_settings as undefined for TS compatibility with the old type usage
       return { ...data, notification_settings: undefined } as Profile;
