@@ -21,6 +21,7 @@ import ProfileTags from "./ProfileTags";
 import ProfileSocialLinks from "./ProfileSocialLinks";
 import EditProfileDialog from "./EditProfileDialog";
 import DeleteProfileDialog from "./DeleteProfileDialog";
+import { openPopupWindow } from "./openPopupWindow";
 
 // Options for gender
 const GENDER_OPTIONS = [
@@ -95,6 +96,10 @@ export const ProfileView: React.FC = () => {
 
   const handleCancelDelete = () => setEditMode("view");
 
+  const handleOpenLifeStories = () => {
+    openPopupWindow("https://jeevan-katha-anek-hai1.lovable.app/", "My Life Stories");
+  };
+
   const onSubmit = async (values: any) => {
     try {
       await upsertProfile.mutateAsync({
@@ -160,6 +165,15 @@ export const ProfileView: React.FC = () => {
               writingFrequency={writingFrequency}
               joined_at={profile?.joined_at}
             />
+            {/* "My Life Stories" button */}
+            <Button
+              onClick={handleOpenLifeStories}
+              className="bg-blue-700 text-white hover:bg-blue-800"
+              type="button"
+            >
+              My Life Stories
+            </Button>
+            {/* Stats */}
             <div className="mt-4 flex flex-wrap gap-4 justify-between w-full text-center sm:text-left">
               <div>
                 <span className="text-xs text-gray-600">Stories Written</span>
