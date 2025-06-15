@@ -34,7 +34,11 @@ cd Sahadhyayi
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: (optional) Run checks to ensure the project compiles.
+npm run lint
+npx tsc --noEmit
+
+# Step 5: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
