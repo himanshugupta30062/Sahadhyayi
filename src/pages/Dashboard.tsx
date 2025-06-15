@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -8,8 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil, Mic, Upload, Tag, BookOpen } from "lucide-react";
 import DashboardStats from '@/components/dashboard/DashboardStats';
-import Navigation from "@/components/Navigation";
-import { useStories } from '@/hooks/useStories'; // <-- fixed import
+import { useStories } from '@/hooks/useStories';
 
 const actionButtons = [
   {
@@ -42,7 +42,7 @@ const actionButtons = [
 const Dashboard = () => {
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
-  const { data: stories = [] } = useStories(); // <-- fixed usage
+  const { data: stories = [] } = useStories();
   const navigate = useNavigate();
 
   // MOCKED reading data; in reality, you would get this from a read-tracking table
@@ -75,8 +75,7 @@ const Dashboard = () => {
           <AppSidebar />
         </div>
         <div className="flex-1 flex flex-col bg-gradient-to-b from-amber-50 to-white">
-          {/* Sticky Top Navbar */}
-          <Navigation />
+          {/* Removed <Navigation /> */}
           <main className="flex-1 p-0 sm:p-8">
             {/* Welcome Header */}
             <div className="bg-gradient-to-r from-amber-100 to-orange-100 rounded-lg p-6 mt-4 shadow-sm">
