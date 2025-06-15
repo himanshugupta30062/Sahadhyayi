@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +9,6 @@ export interface Profile {
   username: string | null;
   email?: string | null; // Optional: not in table, but sometimes useful
   profile_photo_url: string | null;
-  avatar_url?: string | null; // Kept for legacy/compat
   bio: string | null;
   writing_frequency: string | null;
   stories_written_count: number | null;
@@ -33,9 +31,9 @@ export const useProfile = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select(`
-          id, full_name, username, profile_photo_url, avatar_url, bio, writing_frequency,
+          id, full_name, username, profile_photo_url, bio, writing_frequency,
           stories_written_count, stories_read_count, tags_used, created_at, updated_at
-        `)
+        `) // Removed avatar_url from select
         .eq('id', user.id)
         .maybeSingle();
 
