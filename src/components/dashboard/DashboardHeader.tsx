@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import type { User } from '@supabase/supabase-js';
 
 // Rotate quotes based on day of year
 const quotes = [
@@ -21,7 +22,7 @@ function getQuoteOfTheDay() {
 }
 
 type DashboardHeaderProps = {
-  user: any;
+  user: User | null;
   fullName: string;
 };
 

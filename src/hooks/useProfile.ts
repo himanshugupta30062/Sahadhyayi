@@ -7,7 +7,7 @@ interface Profile {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
-  notification_settings: any;
+  notification_settings: Record<string, unknown> | null;
   created_at: string;
 }
 
