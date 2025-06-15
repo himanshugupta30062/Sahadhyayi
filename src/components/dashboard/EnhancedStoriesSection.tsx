@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,12 +30,16 @@ const EnhancedStoriesSection = () => {
       return;
     }
 
-    createStory.mutate(formData, {
-      onSuccess: () => {
-        setIsDialogOpen(false);
-        setFormData({ title: '', description: '', content: '', format: 'text' });
-      },
-    });
+    // Fix: add audio_url: null for type compatibility
+    createStory.mutate(
+      { ...formData, audio_url: null },
+      {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          setFormData({ title: '', description: '', content: '', format: 'text' });
+        },
+      }
+    );
   };
 
   const handleDelete = (storyId: string) => {

@@ -38,21 +38,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('[AUTH] State change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Create profile if user signs up
-        if (event === 'SIGNED_UP' && session?.user) {
-          const { error } = await supabase
+        // Fix: Compare event to string "SIGNED_UP"
+        if (event === "SIGNED_UP" && session?.user) {
+          supabase
             .from('profiles')
             .insert({
               id: session.user.id,
               full_name: session.user.user_metadata?.full_name || '',
+            })
+            .then(({ error }) => {
+              if (error) console.error('Error creating profile:', error);
             });
-          if (error) console.error('Error creating profile:', error);
         }
       }
     );
