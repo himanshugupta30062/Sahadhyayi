@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil, Mic, Upload, Tag, BookOpen } from "lucide-react";
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import Navigation from "@/components/Navigation";
+import { useStories } from '@/hooks/useStories'; // <-- fixed import
 
 const actionButtons = [
   {
@@ -42,7 +43,7 @@ const actionButtons = [
 const Dashboard = () => {
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
-  const { data: stories = [] } = require('@/hooks/useStories').useStories?.() || { data: [] };
+  const { data: stories = [] } = useStories(); // <-- fixed usage
   const navigate = useNavigate();
 
   // MOCKED reading data; in reality, you would get this from a read-tracking table
