@@ -145,19 +145,43 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bio: string | null
           created_at: string
           full_name: string | null
           id: string
+          profile_photo_url: string | null
+          stories_read_count: number | null
+          stories_written_count: number | null
+          tags_used: Json | null
+          updated_at: string | null
+          username: string | null
+          writing_frequency: string | null
         }
         Insert: {
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id: string
+          profile_photo_url?: string | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          tags_used?: Json | null
+          updated_at?: string | null
+          username?: string | null
+          writing_frequency?: string | null
         }
         Update: {
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
+          profile_photo_url?: string | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          tags_used?: Json | null
+          updated_at?: string | null
+          username?: string | null
+          writing_frequency?: string | null
         }
         Relationships: []
       }
@@ -253,6 +277,66 @@ export type Database = {
           },
         ]
       }
+      user_profile: {
+        Row: {
+          bio: string | null
+          deleted: boolean | null
+          dob: string | null
+          email: string | null
+          gender: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          joined_at: string | null
+          last_updated: string | null
+          life_tags: string[] | null
+          location: string | null
+          name: string | null
+          profile_picture_url: string | null
+          social_links: Json | null
+          stories_read_count: number | null
+          stories_written_count: number | null
+          username: string | null
+          writing_frequency: string | null
+        }
+        Insert: {
+          bio?: string | null
+          deleted?: boolean | null
+          dob?: string | null
+          email?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          joined_at?: string | null
+          last_updated?: string | null
+          life_tags?: string[] | null
+          location?: string | null
+          name?: string | null
+          profile_picture_url?: string | null
+          social_links?: Json | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          username?: string | null
+          writing_frequency?: string | null
+        }
+        Update: {
+          bio?: string | null
+          deleted?: boolean | null
+          dob?: string | null
+          email?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          joined_at?: string | null
+          last_updated?: string | null
+          life_tags?: string[] | null
+          location?: string | null
+          name?: string | null
+          profile_picture_url?: string | null
+          social_links?: Json | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          username?: string | null
+          writing_frequency?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -261,7 +345,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      gender_type: "male" | "female" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -376,6 +460,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      gender_type: ["male", "female", "other"],
+    },
   },
 } as const
