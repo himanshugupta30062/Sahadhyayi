@@ -1,7 +1,9 @@
+
 # Welcome to your Lovable project
 
 ## Project info
 
+**Repository name:** Sahadhyayi  
 **URL**: https://lovable.dev/projects/c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0
 
 ## How can I edit this code?
@@ -27,7 +29,7 @@ Follow these steps:
 git clone <YOUR_GIT_URL>
 
 # Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+cd Sahadhyayi
 
 # Step 3: Install the necessary dependencies.
 npm i
@@ -71,3 +73,4 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
