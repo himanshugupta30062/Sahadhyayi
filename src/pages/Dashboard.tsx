@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -9,10 +8,18 @@ import LibraryPreview from '@/components/dashboard/LibraryPreview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User, Calendar, Trophy } from 'lucide-react';
+import DashboardStats from '@/components/dashboard/DashboardStats';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: stories = [] } = require('@/hooks/useStories').useStories?.() || { data: [] };
+
+  // MOCKED reading data; in reality, you would get this from a read-tracking table
+  const storiesReadThisMonth = 12; // ← TODO: get from backend
+
+  // Get date of most recent story (for writing frequency)
+  const lastStoryAt = stories.length > 0 ? stories[0].created_at : null;
 
   if (profileLoading) {
     return (
@@ -39,6 +46,12 @@ const Dashboard = () => {
         <p className="text-gray-600">
           Continue your reading journey and discover new stories.
         </p>
+        {/* FREQUENCY STATS */}
+        <DashboardStats
+          storiesCount={stories.length}
+          lastStoryAt={lastStoryAt}
+          storiesReadThisMonth={storiesReadThisMonth}
+        />
       </div>
 
       {/* Stats Overview */}
