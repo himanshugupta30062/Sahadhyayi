@@ -42,8 +42,8 @@ export const useProfile = () => {
       if (error) throw error;
       if (!data || typeof data !== 'object') return null;
 
-      // Add notification_settings as undefined for TS compatibility with the old type usage
-      return { ...data, notification_settings: undefined } as Profile;
+      // Only spread if data is a non-null object
+      return Object.assign({}, data, { notification_settings: undefined }) as Profile;
     },
     enabled: !!user,
   });
