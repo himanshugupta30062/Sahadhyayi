@@ -7,6 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, Download, Play, MessageCircle, Plus, Search, Filter } from "lucide-react";
 import AddBookDialog from "@/components/AddBookDialog";
 
+interface Book {
+  id: number;
+  title: string;
+  author: string;
+  genre: string;
+  pages: number;
+  summary: string;
+  rating: number;
+}
+
 const Bookshelf = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -90,7 +100,7 @@ const Bookshelf = () => {
     setAiQuestion("");
   };
 
-  const handleAddBook = (newBook: any) => {
+  const handleAddBook = (newBook: Book) => {
     const bookToAdd = {
       ...newBook,
       currentPage: 0,
