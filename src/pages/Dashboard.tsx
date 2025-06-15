@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -82,7 +81,7 @@ const Dashboard = () => {
             {/* Welcome Header */}
             <div className="bg-gradient-to-r from-amber-100 to-orange-100 rounded-lg p-6 mt-4 shadow-sm">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Welcome back, {firstName} 👋
+                Welcome Back, {firstName} 👋
               </h1>
               {/* Frequency & Stats Row */}
               <div className="py-2">
