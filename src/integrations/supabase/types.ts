@@ -145,19 +145,43 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bio: string | null
           created_at: string
           full_name: string | null
           id: string
+          profile_photo_url: string | null
+          stories_read_count: number | null
+          stories_written_count: number | null
+          tags_used: Json | null
+          updated_at: string | null
+          username: string | null
+          writing_frequency: string | null
         }
         Insert: {
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id: string
+          profile_photo_url?: string | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          tags_used?: Json | null
+          updated_at?: string | null
+          username?: string | null
+          writing_frequency?: string | null
         }
         Update: {
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
+          profile_photo_url?: string | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          tags_used?: Json | null
+          updated_at?: string | null
+          username?: string | null
+          writing_frequency?: string | null
         }
         Relationships: []
       }
