@@ -203,7 +203,22 @@ export const ProfileView: React.FC = () => {
               <div className="flex gap-2 flex-wrap mt-1">
                 {profile?.life_tags?.length
                   ? profile.life_tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="hover:scale-105 duration-200">{tag}</Badge>
+                      <a
+                        href="https://jeevan-katha-anek-hai1.lovable.app"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        key={tag}
+                        tabIndex={0}
+                        aria-label={`Go to Life Story for ${tag}`}
+                        className="focus:outline-none"
+                      >
+                        <Badge
+                          variant="secondary"
+                          className="hover:scale-105 duration-200 cursor-pointer"
+                        >
+                          {tag}
+                        </Badge>
+                      </a>
                     ))
                   : <span className="italic text-gray-400">None</span>
                 }
