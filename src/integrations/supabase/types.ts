@@ -36,6 +36,36 @@ export type Database = {
         }
         Relationships: []
       }
+      books_library: {
+        Row: {
+          author: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          genre: string | null
+          id: string
+          pdf_url: string | null
+          title: string
+        }
+        Insert: {
+          author?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          genre?: string | null
+          id?: string
+          pdf_url?: string | null
+          title: string
+        }
+        Update: {
+          author?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          genre?: string | null
+          id?: string
+          pdf_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
