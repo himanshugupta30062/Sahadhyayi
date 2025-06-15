@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -104,7 +103,7 @@ const Navigation = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full focus:ring-2 focus:ring-amber-500" aria-label="User Menu">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || user.email || ''} />
+                      <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
                       <AvatarFallback>{avatarFallback}</AvatarFallback>
                     </Avatar>
                   </Button>
@@ -112,7 +111,7 @@ const Navigation = () => {
                 <DropdownMenuContent className="w-64" align="end" forceMount>
                   <div className="flex items-center gap-2 p-2 border-b">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || user.email || ''} />
+                      <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
                       <AvatarFallback>{avatarFallback}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col ml-1">
@@ -231,7 +230,7 @@ const Navigation = () => {
                   <>
                     <div className="px-3 py-2 border-b mb-2 flex items-center">
                       <Avatar className="h-8 w-8 mr-2">
-                        <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || user.email || ''} />
+                        <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
                         <AvatarFallback>{avatarFallback}</AvatarFallback>
                       </Avatar>
                       <div>
@@ -307,4 +306,3 @@ const Navigation = () => {
 };
 
 export default Navigation;
-
