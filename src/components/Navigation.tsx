@@ -3,8 +3,27 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { BookOpen, Users, Calendar, User, LogIn, Rss, Library, LogOut, Settings } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import {
+  BookOpen,
+  Users,
+  Calendar,
+  User,
+  LogIn,
+  Rss,
+  Library,
+  LogOut,
+  Settings,
+  Bell,
+  Book,
+  Upload
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -17,21 +36,32 @@ const Navigation = () => {
 
   const navItems = [
     { name: "Home", path: "/", icon: BookOpen },
-    ...(user ? [
-      { name: "Dashboard", path: "/dashboard", icon: User },
-      { name: "My Bookshelf", path: "/bookshelf", icon: User },
-      { name: "Groups", path: "/groups", icon: Users },
-    ] : []),
+    ...(user
+      ? [
+          { name: "Dashboard", path: "/dashboard", icon: User },
+          { name: "My Bookshelf", path: "/bookshelf", icon: User },
+          { name: "Groups", path: "/groups", icon: Users }
+        ]
+      : []),
     { name: "Authors", path: "/authors", icon: Calendar },
     { name: "Feed", path: "/reviews", icon: Rss },
     { name: "Library", path: "/library", icon: Library },
-    { name: "About", path: "/about", icon: BookOpen },
+    { name: "About", path: "/about", icon: BookOpen }
   ];
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
+
+  // Display bell icon (notification) in avatar menu as an option
+  // You may want to mount an unread badge here in the future.
+
+  // Avatar fallback initial (first letter, or U)
+  const avatarFallback =
+    profile?.full_name?.charAt(0)
+      || user?.email?.charAt(0)
+      || 'U';
 
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-amber-200 sticky top-0 z-50">
@@ -41,7 +71,7 @@ const Navigation = () => {
             <img 
               src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
               alt="Sahadhyayi" 
-              className="w-8 h-8 flex-shrink-0" 
+              className="w-8 h-8 flex-shrink-0"
             />
             <span className="whitespace-nowrap">Sahadhyayi</span>
           </Link>
@@ -67,44 +97,74 @@ const Navigation = () => {
                 );
               })}
             </div>
-            
+
             {/* Auth Section */}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full focus:ring-2 focus:ring-amber-500" aria-label="User Menu">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || user.email || ''} />
-                      <AvatarFallback>
-                        {profile?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
-                      </AvatarFallback>
+                      <AvatarFallback>{avatarFallback}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1 leading-none">
+                <DropdownMenuContent className="w-64" align="end" forceMount>
+                  <div className="flex items-center gap-2 p-2 border-b">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || user.email || ''} />
+                      <AvatarFallback>{avatarFallback}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col ml-1">
                       <p className="font-medium">{profile?.full_name || 'User'}</p>
-                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                      <p className="w-[200px] truncate text-xs text-muted-foreground">
                         {user.email}
                       </p>
                     </div>
+                    {/* Bell Icon for Notifications */}
+                    <Button variant="ghost" className="ml-auto rounded-full p-2" aria-label="Notifications">
+                      <Bell className="w-5 h-5 text-amber-700" />
+                    </Button>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/dashboard">
+                    <Link to="/profile" tabIndex={0}>
                       <User className="mr-2 h-4 w-4" />
-                      Dashboard
+                      View My Profile
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                  <DropdownMenuItem asChild>
+                    <Link to="/stories" tabIndex={0}>
+                      <Book className="mr-2 h-4 w-4" />
+                      My Life Stories
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/stories/upload" tabIndex={0}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload New Story
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/stories/drafts" tabIndex={0}>
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Saved Drafts
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" tabIndex={0}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Account Settings
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    tabIndex={0}
+                    className="text-red-600"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -131,6 +191,7 @@ const Navigation = () => {
               variant="ghost"
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-700"
+              aria-label="Open main menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isOpen ? (
@@ -168,17 +229,57 @@ const Navigation = () => {
               <div className="border-t pt-2 mt-2">
                 {user ? (
                   <>
-                    <div className="px-3 py-2 border-b mb-2">
-                      <p className="font-medium">{profile?.full_name || 'User'}</p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
+                    <div className="px-3 py-2 border-b mb-2 flex items-center">
+                      <Avatar className="h-8 w-8 mr-2">
+                        <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || user.email || ''} />
+                        <AvatarFallback>{avatarFallback}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{profile?.full_name || 'User'}</p>
+                        <p className="text-sm text-gray-500">{user.email}</p>
+                      </div>
+                      {/* Bell Icon (optional notifications) */}
+                      <Button variant="ghost" className="ml-auto rounded-full p-2" aria-label="Notifications">
+                        <Bell className="w-5 h-5 text-amber-700" />
+                      </Button>
                     </div>
+                    <Link to="/profile" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                        <User className="w-4 h-4 mr-2" />
+                        View My Profile
+                      </Button>
+                    </Link>
+                    <Link to="/stories" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                        <Book className="w-4 h-4 mr-2" />
+                        My Life Stories
+                      </Button>
+                    </Link>
+                    <Link to="/stories/upload" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload New Story
+                      </Button>
+                    </Link>
+                    <Link to="/stories/drafts" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Saved Drafts
+                      </Button>
+                    </Link>
+                    <Link to="/settings" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Account Settings
+                      </Button>
+                    </Link>
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start text-gray-700"
-                      onClick={handleSignOut}
+                      className="w-full justify-start text-red-600 mt-1"
+                      onClick={() => { setIsOpen(false); handleSignOut(); }}
                     >
                       <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
+                      Logout
                     </Button>
                   </>
                 ) : (
@@ -206,3 +307,4 @@ const Navigation = () => {
 };
 
 export default Navigation;
+

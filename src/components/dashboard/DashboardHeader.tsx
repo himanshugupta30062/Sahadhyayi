@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import type { User } from '@supabase/supabase-js';
 
 // Rotate quotes based on day of year
 const quotes = [
@@ -21,7 +22,7 @@ function getQuoteOfTheDay() {
 }
 
 type DashboardHeaderProps = {
-  user: any;
+  user: User | null;
   fullName: string;
 };
 
@@ -41,9 +42,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, fullName }) => 
     window.location.replace("/signin");
   };
 
-  // Use Unsplash fallback avatar if no photo
-  const avatarUrl = user?.avatar_url
-    ? user.avatar_url
+  // Use avatar from user metadata if available
+  const avatarUrl = user?.user_metadata?.avatar_url
+    ? user.user_metadata.avatar_url
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=FFEDC5&color=6D4C1A&font-size=0.4`;
 
   return (
