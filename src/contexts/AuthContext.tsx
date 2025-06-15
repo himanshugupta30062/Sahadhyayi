@@ -37,8 +37,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getSession();
 
     // Listen for auth changes
+    // Explicitly set event as string to avoid TS type mismatch
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event: string, session) => {
         console.log('[AUTH] State change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
