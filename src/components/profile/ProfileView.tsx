@@ -15,6 +15,12 @@ import { Calendar } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Pencil, Trash, MapPin, AtSign, Mail, Hash, User, Link2 } from "lucide-react";
 import { format } from "date-fns";
+import ProfileAvatar from "./ProfileAvatar";
+import ProfileInfo from "./ProfileInfo";
+import ProfileTags from "./ProfileTags";
+import ProfileSocialLinks from "./ProfileSocialLinks";
+import EditProfileDialog from "./EditProfileDialog";
+import DeleteProfileDialog from "./DeleteProfileDialog";
 
 // Options for gender
 const GENDER_OPTIONS = [
@@ -139,50 +145,21 @@ export const ProfileView: React.FC = () => {
         <Card className="rounded-2xl shadow-lg p-6 bg-white/90">
           <div className="flex flex-col items-center gap-5">
             {/* Avatar */}
-            <div className="relative group cursor-pointer">
-              <Avatar className="h-24 w-24 ring-2 ring-amber-200 shadow">
-                <AvatarImage src={profile?.profile_picture_url ?? ""} alt={profile?.name ?? "Profile"} />
-                <AvatarFallback>{profile?.name?.[0] || "U"}</AvatarFallback>
-              </Avatar>
-              {/* Edit Button - triggers file input */}
-              <Button
-                type="button"
-                size="sm"
-                className="absolute bottom-0 right-0 bg-amber-600 text-white rounded-full p-0 w-9 h-9 flex items-center justify-center border shadow-lg hover:bg-amber-700 transition"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
-            </div>
+            <ProfileAvatar
+              name={profile?.name}
+              profile_picture_url={profile?.profile_picture_url}
+              onAvatarChange={handleAvatarChange}
+            />
             {/* Profile Fields */}
-            <div className="w-full flex flex-col items-center text-center">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
-                {profile?.name || "Unnamed"}
-                <span className="text-amber-500 font-mono text-base">{profile?.username && <>@{profile.username}</>}</span>
-              </h2>
-              <div className="flex justify-center items-center gap-2 mt-1 mb-2 text-gray-600 text-sm">
-                <Mail className="w-4 h-4" />
-                <span>{profile?.email || "No email"}</span>
-              </div>
-              <p className="text-gray-600 text-base mb-2">{profile?.bio}</p>
-              <div className="flex flex-wrap gap-2 items-center justify-center">
-                <Badge variant="secondary">{writingFrequency}</Badge>
-                <Badge variant="outline">{profile?.gender ? GENDER_OPTIONS.find((g) => g.value === profile.gender)?.label : "Not set"}</Badge>
-                {profile?.joined_at && (
-                  <Badge variant="outline">
-                    <Calendar className="w-4 h-4 mr-1 inline" />
-                    Joined {format(new Date(profile.joined_at), "MMM y")}
-                  </Badge>
-                )}
-              </div>
-            </div>
+            <ProfileInfo
+              name={profile?.name}
+              username={profile?.username}
+              email={profile?.email}
+              bio={profile?.bio}
+              gender={profile?.gender}
+              writingFrequency={writingFrequency}
+              joined_at={profile?.joined_at}
+            />
             <div className="mt-4 flex flex-wrap gap-4 justify-between w-full text-center sm:text-left">
               <div>
                 <span className="text-xs text-gray-600">Stories Written</span>
@@ -198,60 +175,9 @@ export const ProfileView: React.FC = () => {
               </div>
             </div>
             {/* Tags/Life phases */}
-            <div className="mt-4 w-full">
-              <span className="text-xs text-gray-600">Tags / Life Phases</span>
-              <div className="flex gap-2 flex-wrap mt-1">
-                {/* List tags as plain badges, no longer linking */}
-                {profile?.life_tags?.length
-                  ? profile.life_tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="cursor-default"
-                      >
-                        {tag}
-                      </Badge>
-                    ))
-                  : <span className="italic text-gray-400">None</span>
-                }
-              </div>
-              {/* "My Life Stories" Button/Section linking to external */}
-              <div className="mt-3 flex justify-center">
-                <a
-                  href="https://jeevan-katha-anek-hai1.lovable.app/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block"
-                  tabIndex={0}
-                  aria-label="Go to My Life Stories"
-                >
-                  <Button
-                    variant="secondary"
-                    className="mt-1 w-full min-w-[180px] sm:w-auto flex items-center justify-center gap-2 text-amber-700 hover:bg-amber-50 hover:text-amber-900 focus:ring-2 focus:ring-amber-400 transition"
-                    type="button"
-                  >
-                    <span className="text-xl mr-1" aria-hidden="true">📖</span>
-                    <span className="font-medium">My Life Stories</span>
-                  </Button>
-                </a>
-              </div>
-            </div>
+            <ProfileTags life_tags={profile?.life_tags ?? []} />
             {/* Social Links */}
-            <div className="mt-4 w-full">
-              <span className="text-xs text-gray-600">Social Links</span>
-              <div className="flex gap-2 flex-wrap mt-1">
-                {SOCIAL_FIELDS.map(({ key, label }) =>
-                  profile?.social_links?.[key] ? (
-                    <a key={key} href={profile.social_links[key]} target="_blank" rel="noopener noreferrer" className="text-amber-700 underline flex items-center gap-1 text-xs">
-                      <Link2 className="w-4 h-4" /> {label}
-                    </a>
-                  ) : null
-                )}
-                {!profile?.social_links || !Object.values(profile.social_links).filter(Boolean).length && (
-                  <span className="italic text-gray-400">None</span>
-                )}
-              </div>
-            </div>
+            <ProfileSocialLinks social_links={profile?.social_links} />
             {/* Action Buttons */}
             <div className="flex gap-4 mt-6">
               <Button onClick={handleEdit} className="bg-amber-600 text-white hover:bg-amber-700" type="button">
@@ -264,169 +190,21 @@ export const ProfileView: React.FC = () => {
           </div>
         </Card>
         {/* Edit Profile Dialog */}
-        <Dialog open={editMode === "edit"} onOpenChange={(open) => setEditMode(open ? "edit" : "view")}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Profile</DialogTitle>
-              <DialogDescription>Update your details and click Save.</DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
-                <FormField
-                  name="name"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Full Name" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="username"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Username</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Username" readOnly />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="bio"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>About Me</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} placeholder="Your bio..." className="h-24" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="dob"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date of Birth</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="gender"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Gender</FormLabel>
-                      <FormControl>
-                        <select {...field} className="border rounded w-full h-9 text-sm px-2">
-                          <option value="">Select gender</option>
-                          {GENDER_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                        </select>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="location"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Location / City</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Enter your city" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="life_tags"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Life Phases / Tags</FormLabel>
-                      <div className="flex gap-2 flex-wrap">
-                        {PHASES.map(phase => (
-                          <label key={phase} className="flex items-center gap-1 text-xs cursor-pointer bg-amber-50 rounded px-2 py-1 border">
-                            <input
-                              type="checkbox"
-                              checked={field.value?.includes(phase) || false}
-                              onChange={e => {
-                                const checked = e.target.checked;
-                                field.onChange(
-                                  checked
-                                    ? [...(field.value || []), phase]
-                                    : (field.value || []).filter((v: string) => v !== phase)
-                                );
-                              }}
-                              className="accent-amber-600"
-                            />
-                            {phase}
-                          </label>
-                        ))}
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                {/* Social links */}
-                <FormField
-                  name="social_links"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Social Links</FormLabel>
-                      <div className="flex flex-col gap-2">
-                        {SOCIAL_FIELDS.map(({ key, label }) => (
-                          <Input
-                            key={key}
-                            type="url"
-                            placeholder={label + " URL"}
-                            value={field.value?.[key] || ""}
-                            onChange={e => {
-                              const val = e.target.value;
-                              field.onChange({ ...field.value, [key]: val });
-                            }}
-                            className="text-sm"
-                          />
-                        ))}
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <Button type="submit" disabled={upsertProfile.isPending}>Save Changes</Button>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
-                  </DialogClose>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+        <EditProfileDialog
+          open={editMode === "edit"}
+          onOpenChange={(open) => setEditMode(open ? "edit" : "view")}
+          form={form}
+          onSubmit={onSubmit}
+          upsertProfilePending={upsertProfile.isPending}
+          defaultValues={defaultValues}
+        />
         {/* Delete Account Dialog */}
-        <Dialog open={editMode === "delete"} onOpenChange={(open) => setEditMode(open ? "delete" : "view")}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirm Delete Account</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to permanently delete your account? This action is irreversible.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button onClick={handleConfirmDelete} variant="destructive">Yes, Delete</Button>
-              <Button onClick={handleCancelDelete} variant="outline">Cancel</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <DeleteProfileDialog
+          open={editMode === "delete"}
+          onOpenChange={(open) => setEditMode(open ? "delete" : "view")}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
       </div>
     </div>
   );
