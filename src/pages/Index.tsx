@@ -1,10 +1,21 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus } from "lucide-react";
-import { Link } from "react-router-dom";
+import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus, User, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 
 const Index = () => {
+  const { user, signOut } = useAuth();
+  const { data: profile } = useProfile();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   const features = [
     {
       icon: BookOpen,
@@ -59,18 +70,53 @@ const Index = () => {
             Join thousands of readers building a healthier, more focused reading culture.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
-              <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg">
-                <UserPlus className="w-5 h-5 mr-2" />
-                Sign Up Free
-              </Button>
-            </Link>
-            <Link to="/signin">
-              <Button variant="outline" size="lg" className="border-amber-600 text-amber-600 hover:bg-amber-50 px-8 py-3 text-lg">
-                <LogIn className="w-5 h-5 mr-2" />
-                Sign In
-              </Button>
-            </Link>
+            {user ? (
+              // Logged in user content
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-200">
+                <div className="flex items-center justify-center mb-4">
+                  <User className="w-6 h-6 text-amber-600 mr-2" />
+                  <h3 className="text-2xl font-semibold text-gray-900">
+                    Welcome back, {profile?.full_name || user.email?.split('@')[0] || 'Reader'}!
+                  </h3>
+                </div>
+                <p className="text-gray-700 mb-6">
+                  Ready to continue your reading journey? Explore your dashboard or discover new books.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link to="/dashboard">
+                    <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg">
+                      <BookOpen className="w-5 h-5 mr-2" />
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="border-red-600 text-red-600 hover:bg-red-50 px-8 py-3 text-lg"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="w-5 h-5 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // Not logged in user content
+              <>
+                <Link to="/signup">
+                  <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg">
+                    <UserPlus className="w-5 h-5 mr-2" />
+                    Sign Up Free
+                  </Button>
+                </Link>
+                <Link to="/signin">
+                  <Button variant="outline" size="lg" className="border-amber-600 text-amber-600 hover:bg-amber-50 px-8 py-3 text-lg">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -140,10 +186,19 @@ const Index = () => {
             Join Sahadhyayi today and become part of a global community dedicated to deep, meaningful reading.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
-              <UserPlus className="w-5 h-5 mr-2" />
-              Get Started Free
-            </Button>
+            {user ? (
+              <Link to="/dashboard">
+                <Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
+                  <BookOpen className="w-5 h-5 mr-2" />
+                  Explore Your Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
+                <UserPlus className="w-5 h-5 mr-2" />
+                Get Started Free
+              </Button>
+            )}
             <Link to="/about">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-amber-600 px-8 py-3 text-lg">
                 Learn More
