@@ -6,11 +6,24 @@ import { Badge } from "@/components/ui/badge";
 import { Map, Users, MapPin, Search, BookOpen } from "lucide-react";
 import { useState } from "react";
 
+interface PopularBook {
+  title: string;
+  readers: number;
+}
+
+interface LocationData {
+  city: string;
+  state: string;
+  country: string;
+  totalReaders: number;
+  popularBooks: PopularBook[];
+}
+
 const ReaderMap = () => {
   const [searchLocation, setSearchLocation] = useState("");
   const [selectedBook, setSelectedBook] = useState("All Books");
 
-  const readerData = [
+  const readerData: LocationData[] = [
     {
       city: "Mumbai",
       state: "Maharashtra",
@@ -89,9 +102,9 @@ const ReaderMap = () => {
     return matchesSearch;
   });
 
-  const getBookReaders = (location: any, bookTitle: string) => {
+  const getBookReaders = (location: LocationData, bookTitle: string) => {
     if (bookTitle === "All Books") return location.totalReaders;
-    const book = location.popularBooks.find((b: any) => b.title === bookTitle);
+    const book = location.popularBooks.find((b) => b.title === bookTitle);
     return book ? book.readers : 0;
   };
 
