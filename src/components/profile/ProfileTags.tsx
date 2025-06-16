@@ -9,6 +9,7 @@ type ProfileTagsProps = {
 };
 
 const handlePopup = () => {
+  console.log("My Life Stories button clicked");
   openPopupWindow("https://jeevan-katha-anek-hai1.lovable.app/", "My Life Stories");
 };
 
@@ -28,7 +29,7 @@ const ProfileTags: React.FC<ProfileTagsProps> = ({ life_tags }) => (
     <div className="mt-3 flex justify-center">
       <Button
         variant="secondary"
-        className="mt-1 w-full min-w-[180px] sm:w-auto flex items-center justify-center gap-2 text-amber-700 hover:bg-amber-50 hover:text-amber-900 focus:ring-2 focus:ring-amber-400 transition"
+        className="mt-1 w-full min-w-[180px] sm:w-auto flex items-center justify-center gap-2 text-amber-700 hover:bg-amber-50 hover:text-amber-900 focus:ring-2 focus:ring-amber-400 transition cursor-pointer"
         type="button"
         onClick={handlePopup}
         aria-label="Open My Life Stories in popup"
@@ -41,4 +42,3 @@ const ProfileTags: React.FC<ProfileTagsProps> = ({ life_tags }) => (
 );
 
 export default ProfileTags;
-
