@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -82,62 +81,60 @@ const ReadingFeed: React.FC = () => {
 
   return (
     <Card className="w-full">
-      <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="flex items-center text-lg sm:text-xl">
+      <CardHeader className="p-3 sm:p-6">
+        <CardTitle className="flex items-center text-base sm:text-xl">
           <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-amber-600 flex-shrink-0" />
-          <span className="truncate">Reading Feed</span>
+          <span>Reading Feed</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
+      <CardContent className="p-3 sm:p-6 pt-0 space-y-4">
         {posts.map((post) => (
-          <div key={post.id} className="border-b border-gray-100 pb-4 sm:pb-6 last:border-b-0">
-            <div className="flex items-start space-x-2 sm:space-x-3">
+          <div key={post.id} className="border-b border-gray-100 pb-4 last:border-b-0">
+            <div className="flex items-start space-x-3">
               <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                 <AvatarImage src={post.user.avatar} />
-                <AvatarFallback className="bg-amber-100 text-amber-700 text-xs sm:text-sm">
+                <AvatarFallback className="bg-amber-100 text-amber-700 text-xs">
                   {post.user.name.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1 min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
-                  <span className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                <div className="flex flex-col gap-1 mb-2">
+                  <span className="font-medium text-gray-900 text-sm">
                     {post.user.name}
                   </span>
                   {post.book && (
-                    <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                      <span className="text-gray-400 hidden sm:inline">is reading</span>
-                      <span className="text-amber-600 font-medium truncate">
+                    <div className="flex items-center gap-1 text-xs text-amber-600">
+                      <BookOpen className="w-3 h-3 flex-shrink-0" />
+                      <span className="font-medium break-words">
                         {post.book.title}
                       </span>
                     </div>
                   )}
                 </div>
                 
-                <p className="text-gray-700 mb-3 text-sm sm:text-base leading-relaxed">
+                <p className="text-gray-700 mb-3 text-sm leading-relaxed break-words">
                   {post.content}
                 </p>
                 
-                <div className="flex items-center gap-2 sm:gap-4 mb-3">
+                <div className="flex items-center gap-3 mb-3">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleLike(post.id)}
-                    className={`${post.liked ? 'text-red-500' : 'text-gray-500'} hover:text-red-500 px-2 py-1 h-auto text-xs sm:text-sm`}
+                    className={`${post.liked ? 'text-red-500' : 'text-gray-500'} hover:text-red-500 px-2 py-1 h-7 text-xs min-w-0`}
                   >
-                    <Heart className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 ${post.liked ? 'fill-current' : ''}`} />
-                    <span className="hidden xs:inline">{post.likes}</span>
-                    <span className="xs:hidden">{post.likes}</span>
+                    <Heart className={`w-3 h-3 mr-1 flex-shrink-0 ${post.liked ? 'fill-current' : ''}`} />
+                    <span>{post.likes}</span>
                   </Button>
                   
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="text-gray-500 hover:text-amber-600 px-2 py-1 h-auto text-xs sm:text-sm"
+                    className="text-gray-500 hover:text-amber-600 px-2 py-1 h-7 text-xs min-w-0"
                   >
-                    <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    <span className="hidden xs:inline">{post.comments.length}</span>
-                    <span className="xs:hidden">{post.comments.length}</span>
+                    <MessageCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                    <span>{post.comments.length}</span>
                   </Button>
                 </div>
                 
@@ -145,12 +142,12 @@ const ReadingFeed: React.FC = () => {
                 {post.comments.length > 0 && (
                   <div className="space-y-2 mb-3">
                     {post.comments.map((comment) => (
-                      <div key={comment.id} className="bg-gray-50 rounded-lg p-2 sm:p-3">
-                        <div className="flex flex-col sm:flex-row sm:items-start gap-1">
-                          <span className="font-medium text-gray-900 text-xs sm:text-sm flex-shrink-0">
+                      <div key={comment.id} className="bg-gray-50 rounded-lg p-2">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-gray-900 text-xs">
                             {comment.user}
                           </span>
-                          <span className="text-gray-700 text-xs sm:text-sm break-words">
+                          <span className="text-gray-700 text-xs break-words">
                             {comment.content}
                           </span>
                         </div>
@@ -160,19 +157,19 @@ const ReadingFeed: React.FC = () => {
                 )}
                 
                 {/* Add Comment */}
-                <div className="flex flex-col xs:flex-row gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     placeholder="Write a comment..."
                     value={newComment[post.id] || ''}
                     onChange={(e) => setNewComment({ ...newComment, [post.id]: e.target.value })}
-                    className="flex-1 text-xs sm:text-sm h-8 sm:h-9"
+                    className="flex-1 text-xs h-8"
                     onKeyPress={(e) => e.key === 'Enter' && handleComment(post.id)}
                   />
                   <Button 
                     size="sm" 
                     onClick={() => handleComment(post.id)}
                     disabled={!newComment[post.id]?.trim()}
-                    className="w-full xs:w-auto h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4"
+                    className="w-full sm:w-auto h-8 text-xs px-3 bg-amber-600 hover:bg-amber-700"
                   >
                     Post
                   </Button>
