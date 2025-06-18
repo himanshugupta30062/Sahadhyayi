@@ -18,15 +18,15 @@ const Dashboard = () => {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <Skeleton className="h-24 w-full" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <Skeleton className="h-64 w-full" />
-              <Skeleton className="h-96 w-full" />
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+          <Skeleton className="h-20 sm:h-24 w-full" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+              <Skeleton className="h-48 sm:h-64 w-full" />
+              <Skeleton className="h-64 sm:h-96 w-full" />
             </div>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <Skeleton className="h-32 w-full" />
               <Skeleton className="h-48 w-full" />
             </div>
@@ -44,14 +44,14 @@ const Dashboard = () => {
         </div>
         
         <div className="flex-1 bg-gradient-to-b from-amber-50 to-white">
-          <main className="max-w-7xl mx-auto p-6">
+          <main className="max-w-7xl mx-auto p-3 sm:p-6">
             {/* Welcome Header */}
             <DashboardHeader user={user} profile={profile} />
             
             {/* Main Dashboard Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8">
               {/* Left Column - Main Content */}
-              <div className="lg:col-span-2 space-y-8">
+              <div className="lg:col-span-2 space-y-6 sm:space-y-8">
                 {/* Current Reads Section */}
                 <CurrentReads userId={user?.id} />
                 
@@ -63,7 +63,7 @@ const Dashboard = () => {
               </div>
               
               {/* Right Column - Sidebar Content */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Quick Actions Panel */}
                 <QuickActionsPanel />
                 

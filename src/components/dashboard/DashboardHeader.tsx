@@ -26,21 +26,21 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, profile }) => {
 
   return (
     <>
-      <div className="bg-gradient-to-r from-amber-100 to-orange-100 rounded-2xl p-8 shadow-sm border border-amber-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Avatar className="w-16 h-16 border-2 border-amber-300">
+      <div className="bg-gradient-to-r from-amber-100 to-orange-100 rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-sm border border-amber-200">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
+          <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+            <Avatar className="w-12 h-12 sm:w-16 sm:h-16 border-2 border-amber-300">
               <AvatarImage src={profile?.profile_photo_url} />
-              <AvatarFallback className="bg-amber-200 text-amber-800 text-lg font-semibold">
+              <AvatarFallback className="bg-amber-200 text-amber-800 text-sm sm:text-lg font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
                 Welcome back, {firstName}! 📚
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-gray-600 text-sm sm:text-lg">
                 Ready to continue your reading journey?
               </p>
             </div>
@@ -48,10 +48,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, profile }) => {
           
           <Button 
             onClick={() => setShowAddBook(true)}
-            className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 text-lg shadow-lg"
+            className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-lg shadow-lg w-full sm:w-auto"
             size="lg"
           >
-            <BookOpen className="w-5 h-5 mr-2" />
+            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Start Reading
           </Button>
         </div>

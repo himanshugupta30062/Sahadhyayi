@@ -10,8 +10,8 @@ const Navigation = () => {
 
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-amber-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           <NavLogo />
 
           {/* Desktop Navigation */}
@@ -23,11 +23,11 @@ const Navigation = () => {
           {/* Mobile menu button */}
           <div className="lg:hidden">
             <button
-              className="text-gray-700"
+              className="text-gray-700 p-2"
               aria-label="Open main menu"
               onClick={() => setIsOpen(!isOpen)}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (

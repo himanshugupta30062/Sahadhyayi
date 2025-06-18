@@ -48,7 +48,7 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
 
   return (
     <div className="lg:hidden">
-      <div className="px-2 pt-2 pb-3 space-y-1 bg-white rounded-lg shadow-lg mt-2">
+      <div className="px-2 pt-2 pb-3 space-y-1 bg-white rounded-lg shadow-lg mt-2 mx-2 sm:mx-0">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -56,13 +56,13 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
               key={item.name}
               to={item.path}
               onClick={() => setIsOpen(false)}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-3 py-3 rounded-md text-sm sm:text-base font-medium transition-colors ${
                 location.pathname === item.path
                   ? "text-amber-800 bg-amber-100"
                   : "text-gray-700 hover:text-amber-800 hover:bg-amber-50"
               }`}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span>{item.name}</span>
             </Link>
           );
@@ -70,52 +70,52 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
         <div className="border-t pt-2 mt-2">
           {user ? (
             <>
-              <div className="px-3 py-2 border-b mb-2 flex items-center">
-                <Avatar className="h-8 w-8 mr-2">
+              <div className="px-3 py-3 border-b mb-2 flex items-center">
+                <Avatar className="h-8 w-8 mr-3 flex-shrink-0">
                   <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
                   <AvatarFallback>{avatarFallback}</AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="font-medium">{profile?.full_name || 'User'}</p>
-                  <p className="text-sm text-gray-500">{user.email}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-sm truncate">{profile?.full_name || 'User'}</p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
-                <Button variant="ghost" className="ml-auto rounded-full p-2" aria-label="Notifications">
-                  <Bell className="w-5 h-5 text-amber-700" />
+                <Button variant="ghost" className="ml-2 rounded-full p-2 flex-shrink-0" aria-label="Notifications">
+                  <Bell className="w-4 h-4 text-amber-700" />
                 </Button>
               </div>
               <Link to="/profile" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1 text-sm py-3">
                   <User className="w-4 h-4 mr-2" />
                   View My Profile
                 </Button>
               </Link>
               <Link to="/stories" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1 text-sm py-3">
                   <Book className="w-4 h-4 mr-2" />
                   My Life Stories
                 </Button>
               </Link>
               <Link to="/stories/upload" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1 text-sm py-3">
                   <Upload className="w-4 h-4 mr-2" />
                   Upload New Story
                 </Button>
               </Link>
               <Link to="/stories/drafts" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1 text-sm py-3">
                   <BookOpen className="w-4 h-4 mr-2" />
                   Saved Drafts
                 </Button>
               </Link>
               <Link to="/settings" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
+                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1 text-sm py-3">
                   <Settings className="w-4 h-4 mr-2" />
                   Account Settings
                 </Button>
               </Link>
               <Button
                 variant="ghost"
-                className="w-full justify-start text-red-600 mt-1"
+                className="w-full justify-start text-red-600 mt-1 text-sm py-3"
                 onClick={handleSignOut}
               >
                 <LogOut className="w-4 h-4 mr-2" />
@@ -125,13 +125,13 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
           ) : (
             <>
               <Link to="/signin" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-2">
+                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-2 text-sm py-3">
                   <LogIn className="w-4 h-4 mr-2" />
                   Sign In
                 </Button>
               </Link>
               <Link to="/signup" onClick={() => setIsOpen(false)}>
-                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
+                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm py-3">
                   Sign Up
                 </Button>
               </Link>

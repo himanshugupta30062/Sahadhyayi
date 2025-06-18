@@ -49,25 +49,25 @@ const QuickActionsPanel: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Quick Actions</CardTitle>
+        <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {actions.map((action) => {
             const Icon = action.icon;
             return (
               <Button
                 key={action.title}
                 variant="outline"
-                className="w-full justify-start p-4 h-auto border-2 hover:border-amber-300 transition-colors"
+                className="w-full justify-start p-3 sm:p-4 h-auto border-2 hover:border-amber-300 transition-colors"
                 onClick={action.onClick}
               >
-                <div className={`p-2 rounded-lg ${action.color} text-white mr-3`}>
-                  <Icon className="w-4 h-4" />
+                <div className={`p-1.5 sm:p-2 rounded-lg ${action.color} text-white mr-2 sm:mr-3 flex-shrink-0`}>
+                  <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
                 </div>
-                <div className="text-left">
-                  <div className="font-medium text-gray-900">{action.title}</div>
-                  <div className="text-xs text-gray-500">{action.description}</div>
+                <div className="text-left min-w-0 flex-1">
+                  <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{action.title}</div>
+                  <div className="text-xs text-gray-500 hidden sm:block">{action.description}</div>
                 </div>
               </Button>
             );
