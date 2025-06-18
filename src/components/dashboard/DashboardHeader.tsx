@@ -18,6 +18,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, profile }) => {
     profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : 
     firstName.charAt(0).toUpperCase();
 
+  const handleAddBook = (book: any) => {
+    console.log('Adding book:', book);
+    // Here you would typically add the book to the user's library
+    setShowAddBook(false);
+  };
+
   return (
     <>
       <div className="bg-gradient-to-r from-amber-100 to-orange-100 rounded-2xl p-8 shadow-sm border border-amber-200">
@@ -51,7 +57,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, profile }) => {
         </div>
       </div>
       
-      <AddBookDialog open={showAddBook} onOpenChange={setShowAddBook} />
+      <AddBookDialog onAddBook={handleAddBook} />
     </>
   );
 };

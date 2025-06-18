@@ -12,7 +12,7 @@ interface CurrentReadsProps {
 }
 
 const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
-  const { data: readingProgress = [], isLoading } = useReadingProgress(userId);
+  const { data: readingProgress = [], isLoading } = useReadingProgress();
 
   if (isLoading) {
     return (
