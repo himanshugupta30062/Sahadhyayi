@@ -1,5 +1,6 @@
 
 import { Link, useNavigate } from "react-router-dom";
+import { openPopupWindow } from "../profile/openPopupWindow";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -28,6 +29,13 @@ const UserDropdownMenu = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleOpenStories = () => {
+    openPopupWindow(
+      "https://jeevan-katha-anek-hai1.lovable.app/",
+      "My Life Stories"
+    );
   };
 
   return (
@@ -63,11 +71,9 @@ const UserDropdownMenu = () => {
             View My Profile
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/stories" tabIndex={0}>
-            <Book className="mr-2 h-4 w-4" />
-            My Life Stories
-          </Link>
+        <DropdownMenuItem onClick={handleOpenStories} tabIndex={0}>
+          <Book className="mr-2 h-4 w-4" />
+          My Life Stories
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/stories/upload" tabIndex={0}>

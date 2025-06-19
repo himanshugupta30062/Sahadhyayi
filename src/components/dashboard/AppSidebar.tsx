@@ -3,6 +3,7 @@ import React from "react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { LayoutDashboard, BookOpen, Upload, Mic, Tag, Settings } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { openPopupWindow } from "../profile/openPopupWindow";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -42,7 +43,14 @@ const AppSidebar = () => {
                         : "hover:bg-orange-100 hover:text-amber-900"
                     }`}
                     tabIndex={0}
-                    onClick={() => navigate(item.url)}
+                    onClick={() =>
+                      item.url === "/stories"
+                        ? openPopupWindow(
+                            "https://jeevan-katha-anek-hai1.lovable.app/",
+                            "My Life Stories"
+                          )
+                        : navigate(item.url)
+                    }
                   >
                     <div className="flex items-center">
                       <item.icon className="w-5 h-5" />

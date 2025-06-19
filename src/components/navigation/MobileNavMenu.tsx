@@ -1,6 +1,7 @@
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { openPopupWindow } from "../profile/openPopupWindow";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +43,14 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
     await signOut();
     setIsOpen(false);
     navigate('/');
+  };
+
+  const handleOpenStories = () => {
+    setIsOpen(false);
+    openPopupWindow(
+      "https://jeevan-katha-anek-hai1.lovable.app/",
+      "My Life Stories"
+    );
   };
 
   if (!isOpen) return null;
@@ -89,12 +98,14 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
                   View My Profile
                 </Button>
               </Link>
-              <Link to="/stories" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
-                  <Book className="w-4 h-4 mr-2" />
-                  My Life Stories
-                </Button>
-              </Link>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-gray-700 mb-1"
+                onClick={handleOpenStories}
+              >
+                <Book className="w-4 h-4 mr-2" />
+                My Life Stories
+              </Button>
               <Link to="/stories/upload" onClick={() => setIsOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1">
                   <Upload className="w-4 h-4 mr-2" />
