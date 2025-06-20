@@ -1,89 +1,75 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { BookOpen, Star, Users, Headphones } from "lucide-react";
+import { BookOpen } from "lucide-react";
+
+const sampleBooks = [
+  {
+    id: 1,
+    title: "Atomic Habits",
+    author: "James Clear",
+    category: "Self Help",
+    cover_url: "https://m.media-amazon.com/images/I/91bYsX41DVL.jpg"
+  },
+  {
+    id: 2,
+    title: "Sapiens",
+    author: "Yuval Noah Harari",
+    category: "History",
+    cover_url: "https://m.media-amazon.com/images/I/713jIoMO3UL.jpg"
+  },
+  {
+    id: 3,
+    title: "The Intelligent Investor",
+    author: "Benjamin Graham",
+    category: "Finance",
+    cover_url: ""
+  },
+  {
+    id: 4,
+    title: "The Alchemist",
+    author: "Paulo Coelho",
+    category: "Fiction",
+    cover_url: ""
+  },
+  {
+    id: 5,
+    title: "Man’s Search for Meaning",
+    author: "Viktor Frankl",
+    category: "Memoir",
+    cover_url: ""
+  },
+  {
+    id: 6,
+    title: "Thinking, Fast and Slow",
+    author: "Daniel Kahneman",
+    category: "Psychology",
+    cover_url: ""
+  },
+  {
+    id: 7,
+    title: "Rich Dad Poor Dad",
+    author: "Robert Kiyosaki",
+    category: "Finance",
+    cover_url: ""
+  },
+  {
+    id: 8,
+    title: "1984",
+    author: "George Orwell",
+    category: "Fiction",
+    cover_url: ""
+  }
+];
 
 const BookLibrary = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const books = [
-    {
-      id: 1,
-      title: "The Midnight Library",
-      author: "Matt Haig",
-      rating: 4.8,
-      price: "$12.99",
-      category: "Fiction",
-      readers: 1250,
-      image: "/placeholder.svg",
-      summary: "A magical story about infinite possibilities and the art of living.",
-      hasAudio: true
-    },
-    {
-      id: 2,
-      title: "Atomic Habits",
-      author: "James Clear",
-      rating: 4.9,
-      price: "$14.99",
-      category: "Self-Help",
-      readers: 2100,
-      image: "/placeholder.svg",
-      summary: "Transform your life through the power of small, consistent changes.",
-      hasAudio: true
-    },
-    {
-      id: 3,
-      title: "Sapiens",
-      author: "Yuval Noah Harari",
-      rating: 4.7,
-      price: "$16.99",
-      category: "History",
-      readers: 1800,
-      image: "/placeholder.svg",
-      summary: "A brief history of humankind and our journey to dominance.",
-      hasAudio: false
-    },
-    {
-      id: 4,
-      title: "The Psychology of Money",
-      author: "Morgan Housel",
-      rating: 4.6,
-      price: "$13.99",
-      category: "Finance",
-      readers: 950,
-      image: "/placeholder.svg",
-      summary: "Timeless lessons on wealth, greed, and happiness.",
-      hasAudio: true
-    },
-    {
-      id: 5,
-      title: "Educated",
-      author: "Tara Westover",
-      rating: 4.8,
-      price: "$15.99",
-      category: "Memoir",
-      readers: 1650,
-      image: "/placeholder.svg",
-      summary: "A powerful memoir about education, family, and the struggle for self-invention.",
-      hasAudio: false
-    },
-    {
-      id: 6,
-      title: "Think Again",
-      author: "Adam Grant",
-      rating: 4.5,
-      price: "$14.99",
-      category: "Psychology",
-      readers: 1100,
-      image: "/placeholder.svg",
-      summary: "The power of knowing what you don't know.",
-      hasAudio: true
-    }
-  ];
+  const books = sampleBooks;
 
-  const categories = ["All", "Fiction", "Self-Help", "History", "Finance", "Memoir", "Psychology"];
+  const categories = ["All", ...Array.from(new Set(books.map((b) => b.category)))] as string[];
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   const filteredBooks = books.filter(book => {
@@ -133,49 +119,27 @@ const BookLibrary = () => {
         {/* Books Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredBooks.map((book) => (
-            <Card key={book.id} className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader>
-                <div className="aspect-[3/4] bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg mb-4 flex items-center justify-center">
+            <Card
+              key={book.id}
+              className="bg-white/70 backdrop-blur-sm border-amber-200 overflow-hidden hover:shadow-lg transition-all"
+            >
+              {book.cover_url ? (
+                <img
+                  src={book.cover_url}
+                  alt={book.title}
+                  className="w-full h-56 object-cover"
+                />
+              ) : (
+                <div className="w-full h-56 bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
                   <BookOpen className="w-16 h-16 text-amber-600" />
                 </div>
-                <CardTitle className="text-xl text-gray-900">{book.title}</CardTitle>
-                <p className="text-gray-600">by {book.author}</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-gray-700 text-sm">{book.summary}</p>
-                
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    <span className="font-medium">{book.rating}</span>
-                  </div>
-                  <div className="flex items-center space-x-1 text-gray-600">
-                    <Users className="w-4 h-4" />
-                    <span>{book.readers} readers</span>
-                  </div>
-                  {book.hasAudio && (
-                    <div className="flex items-center space-x-1 text-amber-600">
-                      <Headphones className="w-4 h-4" />
-                      <span>Audio</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-amber-600">{book.price}</span>
-                  <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
-                    {book.category}
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <Button className="w-full bg-amber-600 hover:bg-amber-700">
-                    Purchase Book
-                  </Button>
-                  <Button variant="outline" className="w-full border-amber-600 text-amber-600 hover:bg-amber-50">
-                    Join Reading Group
-                  </Button>
-                </div>
+              )}
+              <CardContent className="space-y-1">
+                <h3 className="font-bold text-lg text-gray-900">{book.title}</h3>
+                <p className="text-sm text-gray-500">{book.author}</p>
+                <span className="inline-block mt-2 bg-amber-100 text-amber-800 rounded-full text-xs px-2 py-1">
+                  {book.category}
+                </span>
               </CardContent>
             </Card>
           ))}
