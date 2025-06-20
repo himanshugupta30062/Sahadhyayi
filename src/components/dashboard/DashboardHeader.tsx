@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BookOpen, Plus } from 'lucide-react';
-import AddBookDialog from '@/components/AddBookDialog';
+import { BookOpen } from 'lucide-react';
+import AddBookDialog, { Book } from '@/components/AddBookDialog';
+import { User } from '@supabase/supabase-js';
+import { Profile } from '@/hooks/useProfile';
 
 interface DashboardHeaderProps {
-  user: any;
-  profile: any;
+  user: User | null;
+  profile: Profile | null;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, profile }) => {
@@ -18,7 +20,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, profile }) => {
     profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : 
     firstName.charAt(0).toUpperCase();
 
-  const handleAddBook = (book: any) => {
+  const handleAddBook = (book: Book) => {
     console.log('Adding book:', book);
     // Here you would typically add the book to the user's library
     setShowAddBook(false);

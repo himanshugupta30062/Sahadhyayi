@@ -13,11 +13,11 @@ export interface Profile {
   writing_frequency: string | null;
   stories_written_count: number | null;
   stories_read_count: number | null;
-  tags_used: any; // jsonb, typically string[]
+  tags_used: string[] | null; // jsonb, typically string[]
   created_at: string;
   updated_at: string | null;
   // The following fields are unused/substituted for legacy reasons — fill or omit as needed:
-  notification_settings?: any;
+  notification_settings?: Record<string, unknown>;
 }
 
 export const useProfile = () => {

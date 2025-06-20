@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Search, BookOpen } from "lucide-react";
 
-interface Book {
+export interface Book {
   id: number;
   title: string;
   author: string;
