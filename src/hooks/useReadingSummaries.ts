@@ -3,20 +3,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export interface ReadingSummary {
+export type ReadingSummary = {
   id: string;
   user_id: string;
-  book_id: string;
+  book_id: string | null;
   chapter_number: number;
   summary_text: string;
   created_at: string;
   updated_at: string;
-}
+};
 
 export const useReadingSummaries = (bookId?: string) => {
   const { user } = useAuth();
   
-  return useQuery<ReadingSummary[]>({
+  return useQuery({
     queryKey: ['reading_summaries', user?.id, bookId],
     queryFn: async () => {
       if (!user) return [];

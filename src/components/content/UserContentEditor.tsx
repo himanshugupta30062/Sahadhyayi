@@ -22,7 +22,7 @@ const UserContentEditor: React.FC<UserContentEditorProps> = ({
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    content_type: 'alternative_chapter' as const,
+    content_type: 'alternative_chapter',
     original_chapter_number: '',
     is_published: false,
   });
@@ -101,7 +101,7 @@ const UserContentEditor: React.FC<UserContentEditorProps> = ({
             <Label htmlFor="content_type">Content Type</Label>
             <Select 
               value={formData.content_type} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, content_type: value as any }))}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, content_type: value }))}
             >
               <SelectTrigger className="border-purple-200 focus:border-purple-400">
                 <SelectValue />

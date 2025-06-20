@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ThumbsUp, ThumbsDown, MessageCircle, Heart } from 'lucide-react';
-import { useUserGeneratedContent, useContentVotes, useVoteContent } from '@/hooks/useUserGeneratedContent';
+import { useUserGeneratedContent, useContentVotes, useVoteContent, UserGeneratedContent } from '@/hooks/useUserGeneratedContent';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface UserContentFeedProps {
@@ -47,7 +47,7 @@ const UserContentFeed: React.FC<UserContentFeedProps> = ({ bookId }) => {
     );
   }
 
-  if (content.length === 0) {
+  if (!Array.isArray(content) || content.length === 0) {
     return (
       <Card className="text-center py-8">
         <CardContent>
@@ -74,7 +74,7 @@ const UserContentFeed: React.FC<UserContentFeedProps> = ({ bookId }) => {
 };
 
 interface UserContentCardProps {
-  content: any;
+  content: UserGeneratedContent;
   onVote: (contentId: string, voteType: 'upvote' | 'downvote') => void;
   currentUserId?: string;
 }
@@ -86,9 +86,9 @@ const UserContentCard: React.FC<UserContentCardProps> = ({
 }) => {
   const { data: votes = [] } = useContentVotes(content.id);
   
-  const upvotes = votes.filter(v => v.vote_type === 'upvote').length;
-  const downvotes = votes.filter(v => v.vote_type === 'downvote').length;
-  const userVote = votes.find(v => v.user_id === currentUserId)?.vote_type;
+  const upvotes = Array.isArray(votes) ? votes.filter(v => v.vote_type === 'upvote').length : 0;
+  const downvotes = Array.isArray(votes) ? votes.filter(v => v.vote_type === 'downvote').length : 0;
+  const userVote = Array.isArray(votes) ? votes.find(v => v.user_id === currentUserId)?.vote_type : undefined;
 
   const getContentTypeColor = (type: string) => {
     switch (type) {

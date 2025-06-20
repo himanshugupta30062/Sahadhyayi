@@ -2,18 +2,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export interface AudioSummary {
+export type AudioSummary = {
   id: string;
-  book_id: string;
+  book_id: string | null;
   audio_url: string;
   duration_seconds: number;
   transcript: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
 export const useAudioSummary = (bookId: string) => {
-  return useQuery<AudioSummary | null>({
+  return useQuery({
     queryKey: ['audio_summary', bookId],
     queryFn: async () => {
       const { data, error } = await supabase

@@ -3,39 +3,40 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export interface UserGeneratedContent {
+// Use the generated types from Supabase
+export type UserGeneratedContent = {
   id: string;
   user_id: string;
-  book_id: string;
+  book_id: string | null;
   title: string;
   content: string;
-  content_type: 'alternative_chapter' | 'alternative_ending' | 'continuation';
+  content_type: string;
   original_chapter_number: number | null;
   is_published: boolean;
   is_approved: boolean;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface ContentFeedback {
+export type ContentFeedback = {
   id: string;
   user_id: string;
-  content_id: string;
-  feedback_type: 'like' | 'dislike' | 'suggestion';
+  content_id: string | null;
+  feedback_type: string;
   comment: string | null;
   created_at: string;
-}
+};
 
-export interface ContentVote {
+export type ContentVote = {
   id: string;
   user_id: string;
-  content_id: string;
-  vote_type: 'upvote' | 'downvote';
+  content_id: string | null;
+  vote_type: string;
   created_at: string;
-}
+};
 
 export const useUserGeneratedContent = (bookId?: string) => {
-  return useQuery<UserGeneratedContent[]>({
+  return useQuery({
     queryKey: ['user_generated_content', bookId],
     queryFn: async () => {
       let query = supabase
@@ -82,7 +83,7 @@ export const useCreateUserContent = () => {
 };
 
 export const useContentVotes = (contentId: string) => {
-  return useQuery<ContentVote[]>({
+  return useQuery({
     queryKey: ['content_votes', contentId],
     queryFn: async () => {
       const { data, error } = await supabase
