@@ -5,14 +5,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Download, Play, MessageCircle, Plus, Search, Filter } from "lucide-react";
-import AddBookDialog from "@/components/AddBookDialog";
+import AddBookDialog, { Book } from "@/components/AddBookDialog";
+
+interface ShelfBook extends Book {
+  currentPage: number;
+  status: string;
+  progress: number;
+  notes: string;
+  downloadUrl: string;
+  hasAiChat: boolean;
+  totalPages: number;
+}
 
 const Bookshelf = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [aiQuestion, setAiQuestion] = useState("");
 
-  const [myBooks, setMyBooks] = useState([
+  const [myBooks, setMyBooks] = useState<ShelfBook[]>([
     {
       id: 1,
       title: "The Midnight Library",
@@ -90,7 +100,7 @@ const Bookshelf = () => {
     setAiQuestion("");
   };
 
-  const handleAddBook = (newBook: any) => {
+  const handleAddBook = (newBook: Book) => {
     const bookToAdd = {
       ...newBook,
       currentPage: 0,

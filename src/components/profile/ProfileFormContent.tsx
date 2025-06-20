@@ -4,10 +4,12 @@ import { Form } from "@/components/ui/form";
 import BasicProfileFields from "./BasicProfileFields";
 import LifePhasesField from "./LifePhasesField";
 import SocialLinksField from "./SocialLinksField";
+import { UseFormReturn } from "react-hook-form";
+import { ProfileFormValues } from "./types";
 
 type ProfileFormContentProps = {
-  form: any;
-  onSubmit: (values: any) => Promise<void>;
+  form: UseFormReturn<ProfileFormValues>;
+  onSubmit: (values: ProfileFormValues) => Promise<void>;
 };
 
 const ProfileFormContent: React.FC<ProfileFormContentProps> = ({ form, onSubmit }) => {

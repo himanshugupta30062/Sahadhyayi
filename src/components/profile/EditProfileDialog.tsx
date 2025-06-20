@@ -1,19 +1,29 @@
 
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileFormContent from "./ProfileFormContent";
+import { UseFormReturn } from "react-hook-form";
+import { ProfileFormValues } from "./types";
 
 type EditProfileDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  form: any;
-  onSubmit: (values: any) => Promise<void>;
+  form: UseFormReturn<ProfileFormValues>;
+  onSubmit: (values: ProfileFormValues) => Promise<void>;
   upsertProfilePending: boolean;
-  defaultValues: any;
+  defaultValues: ProfileFormValues;
 };
 
 const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
@@ -44,7 +54,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
     return !data; // Available if no data found
   };
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: ProfileFormValues) => {
     // Check username availability before submitting
     if (values.username && values.username !== defaultValues.username) {
       const isAvailable = await checkUsernameAvailability(values.username);

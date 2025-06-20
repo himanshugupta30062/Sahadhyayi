@@ -13,6 +13,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { toast } from "@/components/ui/use-toast";
 import { Calendar } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { ProfileFormValues } from "./types";
 import { Pencil, Trash, MapPin, AtSign, Mail, Hash, User, Link2 } from "lucide-react";
 import { format } from "date-fns";
 import ProfileAvatar from "./ProfileAvatar";
@@ -53,7 +54,7 @@ export const ProfileView: React.FC = () => {
   const [editMode, setEditMode] = useState<EditMode>("view");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const defaultValues = {
+  const defaultValues: ProfileFormValues = {
     name: profile?.name || "",
     username: profile?.username || "",
     bio: profile?.bio || "",
@@ -64,7 +65,7 @@ export const ProfileView: React.FC = () => {
     social_links: profile?.social_links ?? {},
   };
 
-  const form = useForm({ defaultValues });
+  const form = useForm<ProfileFormValues>({ defaultValues });
 
   // Handle profile image upload
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,8 +76,9 @@ export const ProfileView: React.FC = () => {
       const url = await uploadProfilePicture(files[0], user.id);
       await upsertProfile.mutateAsync({ profile_picture_url: url });
       toast({ title: "Profile Picture Updated", description: "Your photo was uploaded successfully." });
-    } catch (err: any) {
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast({ title: "Upload failed", description: message, variant: "destructive" });
     }
   };
 
@@ -100,7 +102,7 @@ export const ProfileView: React.FC = () => {
     openPopupWindow("https://jeevan-katha-anek-hai1.lovable.app/", "My Life Stories");
   };
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: ProfileFormValues) => {
     try {
       await upsertProfile.mutateAsync({
         ...values,
@@ -112,8 +114,9 @@ export const ProfileView: React.FC = () => {
       });
       toast({ title: "Profile updated", description: "Your changes were saved." });
       setEditMode("view");
-    } catch (err: any) {
-      toast({ title: "Update failed", description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast({ title: "Update failed", description: message, variant: "destructive" });
     }
   };
 

@@ -41,8 +41,9 @@ const SignIn = () => {
       if (error) throw error;
 
       navigate('/dashboard');
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setError(message);
     } finally {
       setLoading(false);
     }

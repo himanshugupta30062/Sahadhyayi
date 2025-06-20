@@ -1,13 +1,15 @@
 
 import React from "react";
 import { FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { UseFormReturn } from "react-hook-form";
+import { ProfileFormValues } from "./types";
 
 const PHASES = [
   "School Life", "College Days", "Startup Journey", "Parenting", "Travelling", "Remote Work", "Self Discovery"
 ];
 
 type LifePhasesFieldProps = {
-  form: any;
+  form: UseFormReturn<ProfileFormValues>;
 };
 
 const LifePhasesField: React.FC<LifePhasesFieldProps> = ({ form }) => {

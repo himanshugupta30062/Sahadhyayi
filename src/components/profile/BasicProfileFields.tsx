@@ -1,8 +1,16 @@
 
 import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { UseFormReturn } from "react-hook-form";
+import { ProfileFormValues } from "./types";
 
 const GENDER_OPTIONS = [
   { label: "Male", value: "male" },
@@ -11,7 +19,7 @@ const GENDER_OPTIONS = [
 ];
 
 type BasicProfileFieldsProps = {
-  form: any;
+  form: UseFormReturn<ProfileFormValues>;
 };
 
 const BasicProfileFields: React.FC<BasicProfileFieldsProps> = ({ form }) => {

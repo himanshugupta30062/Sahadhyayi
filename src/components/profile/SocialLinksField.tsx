@@ -2,6 +2,8 @@
 import React from "react";
 import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { UseFormReturn } from "react-hook-form";
+import { ProfileFormValues } from "./types";
 
 const SOCIAL_FIELDS = [
   { key: "instagram", label: "Instagram" },
@@ -11,7 +13,7 @@ const SOCIAL_FIELDS = [
 ];
 
 type SocialLinksFieldProps = {
-  form: any;
+  form: UseFormReturn<ProfileFormValues>;
 };
 
 const SocialLinksField: React.FC<SocialLinksFieldProps> = ({ form }) => {

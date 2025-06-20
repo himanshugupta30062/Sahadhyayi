@@ -77,8 +77,9 @@ const SignUp = () => {
         navigate('/dashboard');
       }, 2000);
       
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setError(message);
     } finally {
       setLoading(false);
     }
