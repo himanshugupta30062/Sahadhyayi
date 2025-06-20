@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      book_audio_summaries: {
+        Row: {
+          audio_url: string
+          book_id: string | null
+          created_at: string
+          duration_seconds: number
+          id: string
+          transcript: string | null
+          updated_at: string
+        }
+        Insert: {
+          audio_url: string
+          book_id?: string | null
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string
+          book_id?: string | null
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_audio_summaries_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: true
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       books: {
         Row: {
           author: string | null
@@ -89,6 +127,168 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      content_comments: {
+        Row: {
+          comment_text: string
+          content_id: string | null
+          created_at: string
+          id: string
+          parent_comment_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_text: string
+          content_id?: string | null
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_text?: string
+          content_id?: string | null
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_comments_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "user_generated_content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "content_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_feedback: {
+        Row: {
+          comment: string | null
+          content_id: string | null
+          created_at: string
+          feedback_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          content_id?: string | null
+          created_at?: string
+          feedback_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          content_id?: string | null
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_feedback_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "user_generated_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_votes: {
+        Row: {
+          content_id: string | null
+          created_at: string
+          id: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          content_id?: string | null
+          created_at?: string
+          id?: string
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          content_id?: string | null
+          created_at?: string
+          id?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_votes_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "user_generated_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      detailed_reading_progress: {
+        Row: {
+          book_id: string | null
+          chapter_number: number
+          completed_at: string | null
+          completion_percentage: number
+          created_at: string
+          id: string
+          pages_read: number
+          time_spent_minutes: number
+          total_pages: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id?: string | null
+          chapter_number: number
+          completed_at?: string | null
+          completion_percentage?: number
+          created_at?: string
+          id?: string
+          pages_read?: number
+          time_spent_minutes?: number
+          total_pages: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string | null
+          chapter_number?: number
+          completed_at?: string | null
+          completion_percentage?: number
+          created_at?: string
+          id?: string
+          pages_read?: number
+          time_spent_minutes?: number
+          total_pages?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "detailed_reading_progress_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       group_members: {
         Row: {
@@ -212,6 +412,44 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_summaries: {
+        Row: {
+          book_id: string | null
+          chapter_number: number
+          created_at: string
+          id: string
+          summary_text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id?: string | null
+          chapter_number: number
+          created_at?: string
+          id?: string
+          summary_text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string | null
+          chapter_number?: number
+          created_at?: string
+          id?: string
+          summary_text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_summaries_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stories: {
         Row: {
           audio_url: string | null
@@ -270,6 +508,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "user_books_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_generated_content: {
+        Row: {
+          book_id: string | null
+          content: string
+          content_type: string
+          created_at: string
+          id: string
+          is_approved: boolean
+          is_published: boolean
+          original_chapter_number: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id?: string | null
+          content: string
+          content_type: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          is_published?: boolean
+          original_chapter_number?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string | null
+          content?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          is_published?: boolean
+          original_chapter_number?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_generated_content_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
