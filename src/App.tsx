@@ -17,6 +17,7 @@ import ReaderMap from "./pages/ReaderMap";
 import Investors from "./pages/Investors";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
+import Quotes from "./pages/Quotes";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
@@ -57,6 +58,11 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/reviews" element={<Reviews />} />
+              <Route path="/quotes" element={
+                <ProtectedRoute>
+                  <Quotes />
+                </ProtectedRoute>
+              } />
               <Route path="/authors" element={<AuthorConnect />} />
               <Route path="/map" element={<ReaderMap />} />
               

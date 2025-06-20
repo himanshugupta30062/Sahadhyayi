@@ -11,6 +11,7 @@ import ReadingFeed from '@/components/dashboard/ReadingFeed';
 import BookRecommendations from '@/components/dashboard/BookRecommendations';
 import QuickActionsPanel from '@/components/dashboard/QuickActionsPanel';
 import WeeklyReadingSummary from '@/components/dashboard/WeeklyReadingSummary';
+import ReadingGoalTracker from '@/components/dashboard/ReadingGoalTracker';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -66,7 +67,10 @@ const Dashboard = () => {
               <div className="space-y-4 sm:space-y-6">
                 {/* Quick Actions Panel */}
                 <QuickActionsPanel />
-                
+
+                {/* Reading Goal Tracker */}
+                <ReadingGoalTracker />
+
                 {/* Weekly Reading Summary */}
                 <WeeklyReadingSummary userId={user?.id} />
               </div>

@@ -34,6 +34,7 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
       : []),
     { name: "Authors", path: "/authors", icon: BookOpen },
     { name: "Feed", path: "/reviews", icon: BookOpen },
+    ...(user ? [{ name: "My Quotes", path: "/quotes", icon: BookOpen }] : []),
     { name: "Library", path: "/library", icon: BookOpen },
     { name: "About", path: "/about", icon: BookOpen }
   ];

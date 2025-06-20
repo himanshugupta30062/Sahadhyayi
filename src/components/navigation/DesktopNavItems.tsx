@@ -18,6 +18,7 @@ const DesktopNavItems = () => {
       : []),
     { name: "Authors", path: "/authors", icon: Calendar },
     { name: "Feed", path: "/reviews", icon: Rss },
+    ...(user ? [{ name: "My Quotes", path: "/quotes", icon: BookOpen }] : []),
     { name: "Library", path: "/library", icon: Library },
     { name: "About", path: "/about", icon: BookOpen }
   ];
