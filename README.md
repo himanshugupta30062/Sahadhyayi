@@ -67,12 +67,12 @@ This project is built with:
 
 ## Environment variables
 
-Create a `.env` file based on `.env.example` and add the Gemini API key:
+Create a `.env` file based on `.env.example` and provide your Gemini API key:
 
 ```env
-VITE_GEMINI_API_KEY=AIzaSyBwEOGoiOqVdqjEaraIeT48QIMKN8GeFnM
+VITE_GEMINI_API_KEY=your_key_here
 ```
-This key is required so the chatbot can fetch responses from the Gemini API.
+This key is required for the chatbot to fetch responses from the Gemini API.
 
 ## How can I deploy this project?
 
