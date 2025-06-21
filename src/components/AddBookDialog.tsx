@@ -124,15 +124,22 @@ const AddBookDialog = ({ onAddBook }: AddBookDialogProps) => {
           <div className="grid md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto">
             {filteredBooks.map((book) => (
               <Card key={book.id} className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg text-gray-900 mb-1">{book.title}</CardTitle>
-                      <p className="text-gray-600 text-sm">by {book.author}</p>
+                <CardHeader className="pb-3 flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0 items-start">
+                  <img
+                    src="https://via.placeholder.com/120x160.png?text=Cover"
+                    alt={`Cover of ${book.title}`}
+                    className="w-full sm:w-24 h-36 object-cover rounded-md"
+                  />
+                  <div className="flex-1 w-full">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg text-gray-900 mb-1">{book.title}</CardTitle>
+                        <p className="text-gray-600 text-sm">by {book.author}</p>
+                      </div>
+                      <Badge variant="outline" className="ml-2">
+                        {book.genre}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="ml-2">
-                      {book.genre}
-                    </Badge>
                   </div>
                 </CardHeader>
                 
