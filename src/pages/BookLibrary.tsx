@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { BookOpen } from "lucide-react";
+import BookCardGrid from "@/components/library/BookCardGrid";
 
 const sampleBooks = [
   {
@@ -81,6 +82,8 @@ const BookLibrary = () => {
 
   return (
     <div className="min-h-screen py-8 px-4">
+      {/* Sample book grid */}
+      <BookCardGrid />
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Book Library</h1>
