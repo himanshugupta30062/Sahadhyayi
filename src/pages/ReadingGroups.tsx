@@ -2,89 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, BookOpen, Calendar, Map } from "lucide-react";
+import { Users, Calendar, Map } from "lucide-react";
+import { readingGroups } from "@/mockData";
 
 const ReadingGroups = () => {
-  const readingGroups = [
-    {
-      id: 1,
-      bookTitle: "The Midnight Library",
-      author: "Matt Haig",
-      groupName: "Midnight Dreamers",
-      members: 45,
-      location: "Mumbai, India",
-      meetingType: "Hybrid",
-      nextMeeting: "March 15, 2025",
-      status: "Open",
-      description: "Exploring the philosophical depths of infinite possibilities and life choices.",
-      topics: ["Philosophy", "Life Choices", "Mental Health"]
-    },
-    {
-      id: 2,
-      bookTitle: "Atomic Habits",
-      author: "James Clear",
-      groupName: "Habit Builders",
-      members: 78,
-      location: "Delhi, India",
-      meetingType: "Online",
-      nextMeeting: "March 12, 2025",
-      status: "Open",
-      description: "Practical discussions on implementing habit changes in daily life.",
-      topics: ["Productivity", "Self-Improvement", "Behavioral Change"]
-    },
-    {
-      id: 3,
-      bookTitle: "Sapiens",
-      author: "Yuval Noah Harari",
-      groupName: "History Enthusiasts",
-      members: 92,
-      location: "Bangalore, India",
-      meetingType: "Physical",
-      nextMeeting: "March 20, 2025",
-      status: "Open",
-      description: "Deep dive into human evolution and societal development.",
-      topics: ["History", "Anthropology", "Society"]
-    },
-    {
-      id: 4,
-      bookTitle: "Educated",
-      author: "Tara Westover",
-      groupName: "Education & Growth",
-      members: 34,
-      location: "Pune, India",
-      meetingType: "Hybrid",
-      nextMeeting: "March 18, 2025",
-      status: "Closed",
-      description: "Discussing education, family dynamics, and personal transformation.",
-      topics: ["Education", "Family", "Personal Growth"]
-    },
-    {
-      id: 5,
-      bookTitle: "The Psychology of Money",
-      author: "Morgan Housel",
-      groupName: "Money Minds",
-      members: 56,
-      location: "Chennai, India",
-      meetingType: "Online",
-      nextMeeting: "March 14, 2025",
-      status: "Open",
-      description: "Understanding the psychological aspects of financial decisions.",
-      topics: ["Finance", "Psychology", "Investment"]
-    },
-    {
-      id: 6,
-      bookTitle: "Think Again",
-      author: "Adam Grant",
-      groupName: "Critical Thinkers",
-      members: 67,
-      location: "Hyderabad, India",
-      meetingType: "Physical",
-      nextMeeting: "March 22, 2025",
-      status: "Open",
-      description: "Challenging assumptions and embracing intellectual humility.",
-      topics: ["Critical Thinking", "Psychology", "Learning"]
-    }
-  ];
 
   const upcomingEvents = [
     {
