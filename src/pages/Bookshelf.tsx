@@ -200,31 +200,38 @@ const Bookshelf = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredBooks.map((book) => (
             <Card key={book.id} className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-xl transition-all duration-300">
-              <CardHeader>
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl text-gray-900 mb-2">{book.title}</CardTitle>
-                    <p className="text-gray-600">by {book.author}</p>
+              <CardHeader className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+                <img
+                  src="https://via.placeholder.com/120x160.png?text=Cover"
+                  alt={`Cover of ${book.title}`}
+                  className="w-full sm:w-32 h-48 object-cover rounded-md"
+                />
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <CardTitle className="text-xl text-gray-900 mb-2">{book.title}</CardTitle>
+                      <p className="text-gray-600">by {book.author}</p>
+                    </div>
+                    <Badge className={statusColors[book.status as keyof typeof statusColors]}>
+                      {book.status}
+                    </Badge>
                   </div>
-                  <Badge className={statusColors[book.status as keyof typeof statusColors]}>
-                    {book.status}
-                  </Badge>
-                </div>
-                
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Progress</span>
-                    <span>{book.currentPage} / {book.totalPages} pages</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-amber-600 h-2 rounded-full transition-all duration-300" 
-                      style={{ width: `${book.progress}%` }}
-                    ></div>
-                  </div>
-                  <div className="text-center text-sm font-medium text-amber-600">
-                    {book.progress}% Complete
+
+                  {/* Progress Bar */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Progress</span>
+                      <span>{book.currentPage} / {book.totalPages} pages</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-amber-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${book.progress}%` }}
+                      ></div>
+                    </div>
+                    <div className="text-center text-sm font-medium text-amber-600">
+                      {book.progress}% Complete
+                    </div>
                   </div>
                 </div>
               </CardHeader>
