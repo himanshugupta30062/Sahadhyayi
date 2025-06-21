@@ -36,6 +36,9 @@ npm i
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+
+# Step 5: Run the linter to check for code quality issues.
+npm run lint
 ```
 
 **Edit a file directly in GitHub**
