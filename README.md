@@ -72,8 +72,7 @@ Create a `.env` file based on `.env.example` and use the following Gemini API ke
 ```env
 VITE_GEMINI_API_KEY=AIzaSyBwEOGoiOqVdqjEaraIeT48QIMKN8GeFnM
 ```
-
-This key is required for the chatbot to fetch responses from the Gemini API.
+Add the same line to your local `.env` file so the chatbot can fetch responses from the Gemini API.
 
 ## How can I deploy this project?
 
