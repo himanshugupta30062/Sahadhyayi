@@ -7,6 +7,10 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 
 const About = () => {
@@ -41,55 +45,55 @@ const About = () => {
   ];
 
   const { toast } = useToast();
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const contactSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().min(1, "Email is required").email("Invalid email"),
+    message: z.string().min(1, "Message is required"),
+  });
 
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  type ContactFormValues = z.infer<typeof contactSchema>;
 
-    if (!form.name || !form.email || !form.message) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill out all fields.",
-        variant: "destructive"
-      });
-      return;
-    }
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: { name: "", email: "", message: "" },
+  });
 
+  const handleContactSubmit = async (values: ContactFormValues) => {
     setLoading(true);
+    setSuccess(false);
 
     try {
       const { error } = await supabase
         .from("contact_messages")
         .insert([
           {
-            name: form.name,
-            email: form.email,
-            message: form.message,
+            name: values.name,
+            email: values.email,
+            message: values.message,
           },
         ]);
       if (error) {
         toast({
           title: "Failed to send",
           description: "There was an error sending your message. Please try again.",
-          variant: "destructive"
+          variant: "destructive",
         });
       } else {
         toast({
           title: "Message sent!",
           description: "Thank you for reaching out. We will respond soon.",
         });
-        setForm({ name: "", email: "", message: "" });
+        form.reset();
+        setSuccess(true);
       }
     } catch (err) {
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -275,46 +279,52 @@ const About = () => {
                 </div>
                 {/* Right: Contact Form */}
                 <div className="flex-1 mt-8 md:mt-0">
-                  <form className="space-y-4" onSubmit={handleContactSubmit}>
+                  <form className="space-y-4" onSubmit={form.handleSubmit(handleContactSubmit)}>
                     <div>
                       <label htmlFor="contact_name" className="block text-gray-800 mb-1">Your Name</label>
                       <Input
                         id="contact_name"
-                        name="name"
+                        {...form.register("name")}
                         placeholder="Enter your name"
-                        value={form.name}
-                        onChange={handleFormChange}
                         disabled={loading}
                         autoComplete="name"
-                        required
                       />
+                      {form.formState.errors.name && (
+                        <p className="text-sm text-destructive mt-1">
+                          {form.formState.errors.name.message}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label htmlFor="contact_email" className="block text-gray-800 mb-1">Your Email</label>
                       <Input
                         id="contact_email"
-                        name="email"
                         type="email"
+                        {...form.register("email")}
                         placeholder="Enter your email address"
-                        value={form.email}
-                        onChange={handleFormChange}
                         disabled={loading}
                         autoComplete="email"
-                        required
                       />
+                      {form.formState.errors.email && (
+                        <p className="text-sm text-destructive mt-1">
+                          {form.formState.errors.email.message}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label htmlFor="contact_message" className="block text-gray-800 mb-1">Message</label>
                       <Textarea
                         id="contact_message"
-                        name="message"
+                        {...form.register("message")}
                         placeholder="Write your message"
-                        value={form.message}
-                        onChange={handleFormChange}
                         disabled={loading}
-                        required
                         rows={4}
                       />
+                      {form.formState.errors.message && (
+                        <p className="text-sm text-destructive mt-1">
+                          {form.formState.errors.message.message}
+                        </p>
+                      )}
                     </div>
                     <Button
                       type="submit"
@@ -325,6 +335,11 @@ const About = () => {
                     >
                       {loading ? "Sending..." : "Send Message"}
                     </Button>
+                    {success && (
+                      <Alert className="mt-2">
+                        <AlertDescription>Your message was sent successfully.</AlertDescription>
+                      </Alert>
+                    )}
                     <div className="text-xs text-gray-400 pt-2">
                       Your message will be sent directly to Himanshu Gupta’s email.
                       <br />
