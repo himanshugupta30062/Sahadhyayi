@@ -4,6 +4,7 @@ import NavLogo from "./navigation/NavLogo";
 import DesktopNavItems from "./navigation/DesktopNavItems";
 import AuthSection from "./navigation/AuthSection";
 import MobileNavMenu from "./navigation/MobileNavMenu";
+import DarkModeToggle from "./DarkModeToggle";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,11 +18,12 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6">
             <DesktopNavItems />
+            <DarkModeToggle />
             <AuthSection />
           </div>
 
           {/* Mobile menu button */}
-          <div className="lg:hidden">
+          <div className="lg:hidden flex items-center space-x-2">
             <button
               className="text-gray-700 p-2"
               aria-label="Open main menu"
@@ -35,6 +37,7 @@ const Navigation = () => {
                 )}
               </svg>
             </button>
+            <DarkModeToggle />
           </div>
         </div>
         {/* Mobile Navigation */}
