@@ -2,7 +2,19 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn } from "lucide-react";
+import {
+  Bell,
+  User,
+  Book,
+  Upload,
+  BookOpen,
+  Settings,
+  LogOut,
+  LogIn,
+  UserPlus,
+  Mail,
+  Users as UsersIcon,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useState } from "react";
@@ -39,6 +51,13 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
     { name: "About", path: "/about", icon: BookOpen }
   ];
 
+  const anchorItems = [
+    { name: "About", href: "#about", icon: BookOpen },
+    { name: "Community", href: "#community", icon: UsersIcon },
+    { name: "Join Us", href: "#join-us", icon: UserPlus },
+    { name: "Contact", href: "#contact", icon: Mail }
+  ];
+
   const handleSignOut = async () => {
     await signOut();
     setIsOpen(false);
@@ -66,6 +85,20 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
               <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span>{item.name}</span>
             </Link>
+          );
+        })}
+        {anchorItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <a
+              key={item.name}
+              href={item.href}
+              onClick={() => setIsOpen(false)}
+              className="flex items-center space-x-2 px-3 py-3 rounded-md text-sm sm:text-base font-medium text-gray-700 hover:text-amber-800 hover:bg-amber-50 transition-colors"
+            >
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>{item.name}</span>
+            </a>
           );
         })}
         <div className="border-t pt-2 mt-2">

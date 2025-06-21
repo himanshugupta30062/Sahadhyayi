@@ -1,6 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,7 +54,7 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 text-center">
+      <section id="about" className="relative py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center mb-8">
             <img 
@@ -154,7 +156,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 px-4">
+      <section id="community" className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Platform Features</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -179,7 +181,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white">
+      <section id="join-us" className="py-16 px-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Reading Journey?</h2>
           <p className="text-xl mb-8 opacity-90">
@@ -205,6 +207,28 @@ const Index = () => {
               </Button>
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-16 px-4 bg-white/50">
+        <div className="max-w-xl mx-auto">
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-8">Contact Us</h2>
+          <form className="space-y-4">
+            <div>
+              <label htmlFor="home_contact_name" className="block text-gray-800 mb-1">Name</label>
+              <Input id="home_contact_name" type="text" placeholder="Your Name" />
+            </div>
+            <div>
+              <label htmlFor="home_contact_email" className="block text-gray-800 mb-1">Email</label>
+              <Input id="home_contact_email" type="email" placeholder="you@example.com" />
+            </div>
+            <div>
+              <label htmlFor="home_contact_message" className="block text-gray-800 mb-1">Message</label>
+              <Textarea id="home_contact_message" rows={4} placeholder="How can we help?" />
+            </div>
+            <Button type="submit" className="w-full">Send</Button>
+          </form>
         </div>
       </section>
     </div>

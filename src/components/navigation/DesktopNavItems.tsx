@@ -1,12 +1,21 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Users, Calendar, User, Rss, Library } from "lucide-react";
+import {
+  BookOpen,
+  Users,
+  Calendar,
+  User,
+  Rss,
+  Library,
+  UserPlus,
+  Mail,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const DesktopNavItems = () => {
   const location = useLocation();
   const { user } = useAuth();
-  
+
   const navItems = [
     { name: "Home", path: "/", icon: BookOpen },
     ...(user
@@ -21,6 +30,13 @@ const DesktopNavItems = () => {
     ...(user ? [{ name: "My Quotes", path: "/quotes", icon: BookOpen }] : []),
     { name: "Library", path: "/library", icon: Library },
     { name: "About", path: "/about", icon: BookOpen }
+  ];
+
+  const anchorItems = [
+    { name: "About", href: "#about", icon: BookOpen },
+    { name: "Community", href: "#community", icon: Users },
+    { name: "Join Us", href: "#join-us", icon: UserPlus },
+    { name: "Contact", href: "#contact", icon: Mail }
   ];
 
   return (
@@ -40,6 +56,19 @@ const DesktopNavItems = () => {
             <Icon className="w-4 h-4" />
             <span className="whitespace-nowrap">{item.name}</span>
           </Link>
+        );
+      })}
+      {anchorItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <a
+            key={item.name}
+            href={item.href}
+            className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-amber-800 hover:bg-amber-50 transition-colors"
+          >
+            <Icon className="w-4 h-4" />
+            <span className="whitespace-nowrap">{item.name}</span>
+          </a>
         );
       })}
     </div>
