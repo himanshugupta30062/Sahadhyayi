@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { BookOpen } from "lucide-react";
+import BookCardGrid from "@/components/library/BookCardGrid";
 
 const sampleBooks = [
   {
@@ -80,15 +81,18 @@ const BookLibrary = () => {
   });
 
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Book Library</h1>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            Discover your next great read from our curated collection of books across various genres. 
-            Join reading groups and connect with fellow book lovers.
+    <div className="min-h-screen">
+      <section className="bg-gradient-to-r from-amber-600 to-orange-600 text-white py-20 px-4 text-center">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4">Book Library</h1>
+          <p className="text-xl md:text-2xl max-w-3xl mx-auto">
+            Discover your next great read from our curated collection and enjoy huge savings.
           </p>
         </div>
+      </section>
+      <div className="py-8 px-4 space-y-12">
+        <BookCardGrid />
+        <div className="max-w-7xl mx-auto">
 
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
@@ -154,6 +158,7 @@ const BookLibrary = () => {
         )}
       </div>
     </div>
+  </div>
   );
 };
 
