@@ -6,6 +6,7 @@ import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn } from "luc
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useState } from "react";
+import DarkModeToggle from "../DarkModeToggle";
 
 type Props = {
   isOpen: boolean;
@@ -68,6 +69,7 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
             </Link>
           );
         })}
+        <DarkModeToggle className="w-full justify-start" showLabel />
         <div className="border-t pt-2 mt-2">
           {user ? (
             <>
