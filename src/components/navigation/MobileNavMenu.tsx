@@ -52,10 +52,10 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
   ];
 
   const anchorItems = [
-    { name: "About", href: "#about", icon: BookOpen },
-    { name: "Community", href: "#community", icon: UsersIcon },
-    { name: "Join Us", href: "#join-us", icon: UserPlus },
-    { name: "Contact", href: "#contact", icon: Mail }
+    { name: "About", href: "/#about", icon: BookOpen },
+    { name: "Community", href: "/#community", icon: UsersIcon },
+    { name: "Join Us", href: "/#join-us", icon: UserPlus },
+    { name: "Contact", href: "/#contact", icon: Mail }
   ];
 
   const handleSignOut = async () => {
