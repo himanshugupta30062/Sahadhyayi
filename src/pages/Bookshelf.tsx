@@ -4,94 +4,40 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Download, Play, MessageCircle, Plus, Search, Filter } from "lucide-react";
-import AddBookDialog, { Book } from "@/components/AddBookDialog";
-
-interface ShelfBook extends Book {
-  currentPage: number;
-  status: string;
-  progress: number;
-  notes: string;
-  downloadUrl: string;
-  hasAiChat: boolean;
-  totalPages: number;
-}
+import { BookOpen, Download, Play, MessageCircle, Search, Filter } from "lucide-react";
+import { useUserBooks, useUpdateBookStatus } from "@/hooks/useBooks";
+import { Link } from "react-router-dom";
 
 const Bookshelf = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [aiQuestion, setAiQuestion] = useState("");
 
-  const [myBooks, setMyBooks] = useState<ShelfBook[]>([
-    {
-      id: 1,
-      title: "The Midnight Library",
-      author: "Matt Haig",
-      currentPage: 145,
-      totalPages: 288,
-      status: "Reading",
-      progress: 50,
-      notes: "Fascinating concept about infinite possibilities",
-      downloadUrl: "#",
-      hasAiChat: true
-    },
-    {
-      id: 2,
-      title: "Atomic Habits",
-      author: "James Clear",
-      currentPage: 278,
-      totalPages: 278,
-      status: "Completed",
-      progress: 100,
-      notes: "Life-changing insights on habit formation",
-      downloadUrl: "#",
-      hasAiChat: true
-    },
-    {
-      id: 3,
-      title: "Sapiens",
-      author: "Yuval Noah Harari",
-      currentPage: 89,
-      totalPages: 443,
-      status: "Reading",
-      progress: 20,
-      notes: "Complex but engaging historical perspective",
-      downloadUrl: "#",
-      hasAiChat: true
-    },
-    {
-      id: 4,
-      title: "The Psychology of Money",
-      author: "Morgan Housel",
-      currentPage: 0,
-      totalPages: 256,
-      status: "Want to Read",
-      progress: 0,
-      notes: "",
-      downloadUrl: "#",
-      hasAiChat: false
-    }
-  ]);
+  const { data: userBooks = [], isLoading } = useUserBooks();
+  const updateBookStatus = useUpdateBookStatus();
 
   const statusColors = {
-    "Reading": "bg-blue-100 text-blue-800",
-    "Completed": "bg-green-100 text-green-800",
-    "Want to Read": "bg-gray-100 text-gray-800",
-    "Paused": "bg-yellow-100 text-yellow-800"
+    "reading": "bg-blue-100 text-blue-800",
+    "completed": "bg-green-100 text-green-800",
+    "want_to_read": "bg-amber-100 text-amber-800",
+    "paused": "bg-yellow-100 text-yellow-800",
+    "unread": "bg-gray-100 text-gray-800"
   };
 
-  const filterOptions = ["All", "Reading", "Completed", "Want to Read", "Paused"];
+  const filterOptions = ["All", "reading", "completed", "want_to_read", "paused", "unread"];
 
-  const filteredBooks = myBooks.filter(book => {
+  const filteredBooks = userBooks.filter((userBook: any) => {
+    const book = userBook.books;
+    if (!book) return false;
+    
     const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         book.author.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === "All" || book.status === filterStatus;
+                         (book.author && book.author.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesFilter = filterStatus === "All" || userBook.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
-  const handlePageUpdate = (bookId: number, newPage: number) => {
-    console.log(`Updating book ${bookId} to page ${newPage}`);
-    // In a real app, this would update the database
+  const handleStatusChange = (userBookId: string, newStatus: string) => {
+    updateBookStatus.mutate({ id: userBookId, status: newStatus });
   };
 
   const handleAiQuestion = (bookTitle: string) => {
@@ -100,20 +46,18 @@ const Bookshelf = () => {
     setAiQuestion("");
   };
 
-  const handleAddBook = (newBook: Book) => {
-    const bookToAdd = {
-      ...newBook,
-      currentPage: 0,
-      status: "Want to Read",
-      progress: 0,
-      notes: "",
-      downloadUrl: "#",
-      hasAiChat: true,
-      totalPages: newBook.pages
-    };
-    setMyBooks(prevBooks => [...prevBooks, bookToAdd]);
-    console.log(`Added book: ${newBook.title}`);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen py-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">My Bookshelf</h1>
+            <div className="text-gray-500">Loading your books...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -138,7 +82,11 @@ const Bookshelf = () => {
                 className="pl-10"
               />
             </div>
-            <AddBookDialog onAddBook={handleAddBook} />
+            <Link to="/library">
+              <Button className="bg-amber-600 hover:bg-amber-700">
+                Add More Books
+              </Button>
+            </Link>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -154,7 +102,7 @@ const Bookshelf = () => {
                 onClick={() => setFilterStatus(status)}
                 className={filterStatus === status ? "bg-amber-600 hover:bg-amber-700" : ""}
               >
-                {status}
+                {status === "All" ? "All" : status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </Button>
             ))}
           </div>
@@ -165,7 +113,7 @@ const Bookshelf = () => {
           <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-blue-600 mb-2">
-                {myBooks.filter(book => book.status === "Reading").length}
+                {userBooks.filter((book: any) => book.status === "reading").length}
               </div>
               <div className="text-blue-800 font-medium">Currently Reading</div>
             </CardContent>
@@ -173,7 +121,7 @@ const Bookshelf = () => {
           <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-green-600 mb-2">
-                {myBooks.filter(book => book.status === "Completed").length}
+                {userBooks.filter((book: any) => book.status === "completed").length}
               </div>
               <div className="text-green-800 font-medium">Completed</div>
             </CardContent>
@@ -181,141 +129,136 @@ const Bookshelf = () => {
           <Card className="bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-amber-600 mb-2">
-                {Math.round(myBooks.reduce((sum, book) => sum + book.progress, 0) / myBooks.length)}%
+                {userBooks.filter((book: any) => book.status === "want_to_read").length}
               </div>
-              <div className="text-amber-800 font-medium">Avg Progress</div>
+              <div className="text-amber-800 font-medium">Want to Read</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-purple-600 mb-2">
-                {myBooks.reduce((sum, book) => sum + (book.currentPage || 0), 0)}
+                {userBooks.length}
               </div>
-              <div className="text-purple-800 font-medium">Pages Read</div>
+              <div className="text-purple-800 font-medium">Total Books</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Books Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBooks.map((book) => (
-            <Card key={book.id} className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-xl transition-all duration-300">
-              <CardHeader className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-                <img
-                  src="https://via.placeholder.com/120x160.png?text=Cover"
-                  alt={`Cover of ${book.title}`}
-                  className="w-full sm:w-32 h-48 object-cover rounded-md"
-                />
-                <div className="flex-1">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-xl text-gray-900 mb-2">{book.title}</CardTitle>
-                      <p className="text-gray-600">by {book.author}</p>
-                    </div>
-                    <Badge className={statusColors[book.status as keyof typeof statusColors]}>
-                      {book.status}
-                    </Badge>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Progress</span>
-                      <span>{book.currentPage} / {book.totalPages} pages</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-amber-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${book.progress}%` }}
-                      ></div>
-                    </div>
-                    <div className="text-center text-sm font-medium text-amber-600">
-                      {book.progress}% Complete
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {/* Page Update */}
-                {book.status === "Reading" && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Update Current Page</label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        placeholder={book.currentPage.toString()}
-                        max={book.totalPages}
-                        min={0}
-                        className="flex-1"
-                      />
-                      <Button 
-                        size="sm"
-                        onClick={() => handlePageUpdate(book.id, book.currentPage)}
-                        className="bg-amber-600 hover:bg-amber-700"
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Notes */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Personal Notes</label>
-                  <Textarea
-                    placeholder="Add your thoughts about this book..."
-                    value={book.notes}
-                    className="min-h-[60px]"
-                  />
-                </div>
-
-                {/* AI Assistant */}
-                {book.hasAiChat && (
-                  <div className="bg-blue-50 p-3 rounded-lg space-y-2">
-                    <label className="text-sm font-medium text-blue-800 flex items-center">
-                      <MessageCircle className="w-4 h-4 mr-1" />
-                      Ask AI Assistant
-                    </label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Ask about this book..."
-                        value={aiQuestion}
-                        onChange={(e) => setAiQuestion(e.target.value)}
-                        className="flex-1 text-sm"
-                      />
-                      <Button 
-                        size="sm"
-                        onClick={() => handleAiQuestion(book.title)}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        Ask
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1" size="sm">
-                    <Play className="w-4 h-4 mr-1" />
-                    Read
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Download className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredBooks.length === 0 && (
+        {filteredBooks.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-600 mb-2">No books found</h3>
-            <p className="text-gray-500 mb-4">Start building your digital library</p>
-            <AddBookDialog onAddBook={handleAddBook} />
+            <h3 className="text-xl font-medium text-gray-600 mb-2">
+              {userBooks.length === 0 ? "Your bookshelf is empty" : "No books found"}
+            </h3>
+            <p className="text-gray-500 mb-4">
+              {userBooks.length === 0 
+                ? "Start building your digital library" 
+                : "Try adjusting your search or filter criteria"
+              }
+            </p>
+            <Link to="/library">
+              <Button className="bg-amber-600 hover:bg-amber-700">
+                Browse Library
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredBooks.map((userBook: any) => {
+              const book = userBook.books;
+              if (!book) return null;
+
+              return (
+                <Card key={userBook.id} className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-xl transition-all duration-300">
+                  <CardHeader className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+                    {book.cover_url ? (
+                      <img
+                        src={book.cover_url}
+                        alt={`Cover of ${book.title}`}
+                        className="w-full sm:w-32 h-48 object-cover rounded-md"
+                      />
+                    ) : (
+                      <div className="w-full sm:w-32 h-48 bg-gradient-to-br from-amber-100 to-orange-100 rounded-md flex items-center justify-center">
+                        <BookOpen className="w-12 h-12 text-amber-600" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <CardTitle className="text-xl text-gray-900 mb-2">{book.title}</CardTitle>
+                          <p className="text-gray-600">{book.author || 'Unknown Author'}</p>
+                        </div>
+                        <Badge className={statusColors[userBook.status as keyof typeof statusColors] || statusColors.unread}>
+                          {userBook.status?.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Unread'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {/* Status Update */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Reading Status</label>
+                      <select
+                        value={userBook.status || 'unread'}
+                        onChange={(e) => handleStatusChange(userBook.id, e.target.value)}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                      >
+                        <option value="unread">Unread</option>
+                        <option value="want_to_read">Want to Read</option>
+                        <option value="reading">Currently Reading</option>
+                        <option value="completed">Completed</option>
+                        <option value="paused">Paused</option>
+                      </select>
+                    </div>
+
+                    {/* Notes */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Personal Notes</label>
+                      <Textarea
+                        placeholder="Add your thoughts about this book..."
+                        className="min-h-[60px]"
+                      />
+                    </div>
+
+                    {/* AI Assistant */}
+                    <div className="bg-blue-50 p-3 rounded-lg space-y-2">
+                      <label className="text-sm font-medium text-blue-800 flex items-center">
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        Ask AI Assistant
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Ask about this book..."
+                          value={aiQuestion}
+                          onChange={(e) => setAiQuestion(e.target.value)}
+                          className="flex-1 text-sm"
+                        />
+                        <Button 
+                          size="sm"
+                          onClick={() => handleAiQuestion(book.title)}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          Ask
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1" size="sm">
+                        <Play className="w-4 h-4 mr-1" />
+                        Read
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Download className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

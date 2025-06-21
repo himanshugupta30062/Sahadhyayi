@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -12,6 +11,8 @@ import BookRecommendations from '@/components/dashboard/BookRecommendations';
 import QuickActionsPanel from '@/components/dashboard/QuickActionsPanel';
 import WeeklyReadingSummary from '@/components/dashboard/WeeklyReadingSummary';
 import ReadingGoalTracker from '@/components/dashboard/ReadingGoalTracker';
+import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
+import MyGroups from '@/components/dashboard/MyGroups';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -55,6 +56,12 @@ const Dashboard = () => {
               <div className="lg:col-span-2 space-y-6 sm:space-y-8">
                 {/* Current Reads Section */}
                 <CurrentReads userId={user?.id} />
+                
+                {/* Enhanced Bookshelf */}
+                <EnhancedBookshelf />
+                
+                {/* My Groups */}
+                <MyGroups />
                 
                 {/* Reading Feed */}
                 <ReadingFeed />
