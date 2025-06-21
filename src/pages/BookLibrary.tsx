@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { SearchBar } from "@/components/ui/search-bar";
 import { BookOpen } from "lucide-react";
 
 const sampleBooks = [
@@ -93,11 +93,9 @@ const BookLibrary = () => {
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
           <div className="max-w-2xl mx-auto">
-            <Input
-              type="text"
-              placeholder="Search books or authors..."
+            <SearchBar
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onValueChange={(v) => setSearchTerm(v)}
               className="w-full"
             />
           </div>
