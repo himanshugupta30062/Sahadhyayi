@@ -15,199 +15,376 @@
                         'soft-coral': '#FFCAB1',
                         'gentle-rose': '#FFB3C6',
                         'warm-cream': '#FFF8E7',
-                        'deep-coral': '#E85A4F'
+                        'deep-coral': '#E85A4F',
+                        'lavender-mist': '#F3E8FF'
                     }
                 }
             }
         }
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+        }
+        .page-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        .book-card:hover {
+            transform: translateY(-5px);
+        }
+        .author-card:hover {
+            transform: scale(1.02);
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-warm-cream via-warm-peach to-soft-coral min-h-screen">
-    <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-gentle-rose/20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-heart text-deep-coral text-2xl"></i>
-                    <span class="text-2xl font-bold text-gray-800">Lovable</span>
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <button onclick="showTab('intro')" class="tab-btn text-gray-700 hover:text-deep-coral px-3 py-2 rounded-md text-sm font-medium transition-colors">Intro</button>
-                    <button onclick="showTab('library')" class="tab-btn text-gray-700 hover:text-deep-coral px-3 py-2 rounded-md text-sm font-medium transition-colors">Library</button>
-                    <button onclick="showTab('authors')" class="tab-btn text-gray-700 hover:text-deep-coral px-3 py-2 rounded-md text-sm font-medium transition-colors">Authors</button>
-                    <button onclick="showTab('about')" class="tab-btn text-gray-700 hover:text-deep-coral px-3 py-2 rounded-md text-sm font-medium transition-colors">About Us</button>
-                </div>
-                <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-            </div>
-            <!-- Mobile Menu -->
-            <div id="mobile-menu" class="md:hidden hidden pb-4">
-                <button onclick="showTab('intro')" class="block w-full text-left px-3 py-2 text-gray-700 hover:text-deep-coral">Intro</button>
-                <button onclick="showTab('library')" class="block w-full text-left px-3 py-2 text-gray-700 hover:text-deep-coral">Library</button>
-                <button onclick="showTab('authors')" class="block w-full text-left px-3 py-2 text-gray-700 hover:text-deep-coral">Authors</button>
-                <button onclick="showTab('about')" class="block w-full text-left px-3 py-2 text-gray-700 hover:text-deep-coral">About Us</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Intro Page -->
-        <div id="intro-tab" class="tab-content">
-            <div class="text-center max-w-4xl mx-auto">
-                <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight">
-                    Welcome to Lovable – Where Reading Becomes an <span class="text-deep-coral">Affair of the Heart</span>
-                </h1>
-                <h2 class="text-2xl md:text-3xl text-gray-600 mb-8 font-light">
-                    Discover, Connect, Cherish.
-                </h2>
-                <p class="text-lg text-gray-700 mb-12 max-w-3xl mx-auto leading-relaxed">
-                    At Lovable, we believe that every great book deserves a passionate reader, and every passionate reader deserves a community. 
-                    Our mission is to help people rediscover the pure joy of reading while fostering meaningful connections over shared stories, 
-                    ideas, and the transformative power of literature. Join us in creating a world where books bring hearts together.
-                </p>
-                <button onclick="showTab('library')" class="bg-deep-coral hover:bg-red-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all transform hover:scale-105 shadow-lg">
-                    <i class="fas fa-book-open mr-2"></i>
-                    Join the Library
-                </button>
-            </div>
-        </div>
-
-        <!-- Library Page -->
-        <div id="library-tab" class="tab-content hidden">
-            <div class="mb-8">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center">Our Library</h1>
-                
-                <!-- Search and Filters -->
-                <div class="flex flex-col md:flex-row gap-4 mb-8">
-                    <div class="flex-1 relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" id="search-input" placeholder="Search books..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-coral focus:border-transparent">
+<body class="bg-gradient-to-br from-warm-cream via-warm-peach to-lavender-mist min-h-screen">
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <nav class="w-64 bg-white/90 backdrop-blur-md shadow-lg border-r border-gentle-rose/30 sticky top-0 h-screen overflow-y-auto">
+            <div class="p-6">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="w-10 h-10 bg-gradient-to-br from-deep-coral to-gentle-rose rounded-full flex items-center justify-center">
+                        <i class="fas fa-heart text-white text-lg"></i>
                     </div>
-                    <select id="genre-filter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-coral focus:border-transparent">
-                        <option value="">All Genres</option>
-                        <option value="fiction">Fiction</option>
-                        <option value="mystery">Mystery</option>
-                        <option value="romance">Romance</option>
-                        <option value="sci-fi">Sci-Fi</option>
-                        <option value="biography">Biography</option>
-                    </select>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">Lovable</h1>
+                        <p class="text-xs text-gray-600">Reading Community</p>
+                    </div>
                 </div>
 
-                <!-- Books Grid -->
-                <div id="books-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <!-- Books will be populated by JavaScript -->
-                </div>
-            </div>
-        </div>
+                <!-- Navigation Menu -->
+                <ul class="space-y-2">
+                    <li>
+                        <button onclick="showPage('intro')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors flex items-center space-x-3">
+                            <i class="fas fa-home"></i>
+                            <span>Intro / Home</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showPage('library')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors flex items-center space-x-3">
+                            <i class="fas fa-book"></i>
+                            <span>Library</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showPage('authors')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors flex items-center space-x-3">
+                            <i class="fas fa-user-friends"></i>
+                            <span>Authors</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showPage('about')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors flex items-center space-x-3">
+                            <i class="fas fa-info-circle"></i>
+                            <span>About Us</span>
+                        </button>
+                    </li>
+                </ul>
 
-        <!-- Authors Page -->
-        <div id="authors-tab" class="tab-content hidden">
-            <div class="mb-8">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center">Meet Our Authors</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- Authors will be populated by JavaScript -->
-                </div>
-            </div>
-        </div>
-
-        <!-- About Us Page -->
-        <div id="about-tab" class="tab-content hidden">
-            <div class="max-w-4xl mx-auto">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center">About Lovable</h1>
-                
-                <div class="prose prose-lg max-w-none text-gray-700 mb-12">
-                    <p class="text-xl leading-relaxed mb-6">
-                        In a world increasingly dominated by digital distractions, Lovable emerged from a simple belief: 
-                        that reading is not just a hobby, but a profound way to connect with ourselves and others.
+                <!-- Quote Section -->
+                <div class="mt-8 p-4 bg-gradient-to-r from-gentle-rose/20 to-warm-peach/20 rounded-lg">
+                    <p class="text-sm text-gray-700 italic text-center">
+                        "A room without books is like a body without a soul."
                     </p>
-                    
-                    <p class="mb-6">
-                        Founded by a team of passionate readers, writers, and dreamers, Lovable is more than just a platform—it's a 
-                        movement to revive the intimate relationship between readers and books. We understand that every book carries 
-                        within it the power to change lives, spark conversations, and create lasting bonds between people who might 
-                        otherwise never meet.
-                    </p>
-                    
-                    <p class="mb-6">
-                        Our vision extends beyond simply cataloging books. We're building a sanctuary where literary souls can find 
-                        their tribe, where authors can connect directly with their readers, and where every story—whether read or 
-                        written—becomes a bridge to deeper human connection.
-                    </p>
-                </div>
-
-                <div class="bg-white/50 rounded-lg p-8 mb-8">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Our Mission</h2>
-                    <p class="text-lg text-gray-700 text-center italic">
-                        "To create meaningful connections through the transformative power of literature, 
-                        fostering a global community where every reader feels heard, valued, and inspired."
-                    </p>
-                </div>
-
-                <div class="text-center">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Get in Touch</h3>
-                    <p class="text-gray-600 mb-2">Have questions or want to collaborate?</p>
-                    <a href="mailto:hello@lovable.com" class="text-deep-coral hover:underline font-medium">hello@lovable.com</a>
+                    <p class="text-xs text-gray-500 text-center mt-1">- Cicero</p>
                 </div>
             </div>
-        </div>
-    </main>
+        </nav>
 
-    <!-- Footer -->
-    <footer class="bg-white/80 backdrop-blur-sm border-t border-gentle-rose/20 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <!-- Reader Count -->
-            <div class="text-center mb-8">
-                <p class="text-2xl font-semibold text-gray-800 mb-2">
-                    <span id="reader-count">1,247</span> readers have joined the Lovable community!
-                </p>
-                <p class="text-lg text-deep-coral font-medium italic">
-                    "Great stories find great hearts."
-                </p>
-            </div>
+        <!-- Main Content -->
+        <main class="flex-1 overflow-x-hidden">
+            <!-- Intro/Home Page -->
+            <div id="intro-page" class="page-content">
+                <div class="min-h-screen bg-gradient-to-br from-warm-cream via-warm-peach to-soft-coral">
+                    <!-- Hero Section -->
+                    <section class="relative py-20 px-8">
+                        <div class="max-w-4xl mx-auto text-center">
+                            <!-- Background Pattern -->
+                            <div class="absolute inset-0 opacity-10">
+                                <div class="absolute top-10 left-10 w-20 h-20 bg-deep-coral rounded-full"></div>
+                                <div class="absolute top-32 right-20 w-16 h-16 bg-gentle-rose rounded-full"></div>
+                                <div class="absolute bottom-20 left-32 w-12 h-12 bg-soft-coral rounded-full"></div>
+                            </div>
 
-            <!-- Comment Section -->
-            <div class="max-w-2xl mx-auto mb-8">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Leave a Message</h3>
-                <div class="bg-white/50 rounded-lg p-6">
-                    <textarea id="comment-input" placeholder="Share your thoughts about reading, books, or Lovable..." 
-                              class="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-deep-coral focus:border-transparent"></textarea>
-                    <button onclick="submitComment()" class="mt-4 bg-deep-coral hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                        <i class="fas fa-paper-plane mr-2"></i>
-                        Submit Message
-                    </button>
+                            <div class="relative z-10">
+                                <h1 class="text-5xl md:text-7xl font-bold text-gray-800 mb-6 leading-tight">
+                                    Welcome to <span class="text-deep-coral">Lovable</span>
+                                </h1>
+                                <h2 class="text-3xl md:text-4xl text-deep-coral mb-4 font-light italic">
+                                    Where Reading Becomes an Affair of the Heart
+                                </h2>
+                                <h3 class="text-2xl md:text-3xl text-gray-600 mb-8 font-medium">
+                                    Discover, Connect, Cherish.
+                                </h3>
+                                
+                                <p class="text-lg text-gray-700 mb-12 max-w-3xl mx-auto leading-relaxed">
+                                    At Lovable, we believe that every great book deserves a passionate reader, and every passionate reader deserves a community. 
+                                    Our mission is to help people rediscover the pure joy of reading while fostering meaningful connections over shared stories, 
+                                    ideas, and the transformative power of literature. Join us in creating a world where books bring hearts together.
+                                </p>
+
+                                <button onclick="showPage('library')" class="bg-deep-coral hover:bg-red-600 text-white px-12 py-4 rounded-full text-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
+                                    <i class="fas fa-book-open mr-3"></i>
+                                    Join the Library
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Features Preview -->
+                    <section class="py-16 px-8 bg-white/50">
+                        <div class="max-w-6xl mx-auto">
+                            <h3 class="text-3xl font-bold text-center text-gray-800 mb-12">Why Choose Lovable?</h3>
+                            <div class="grid md:grid-cols-3 gap-8">
+                                <div class="text-center p-6 rounded-xl bg-white/70 backdrop-blur-sm shadow-md">
+                                    <div class="w-16 h-16 bg-deep-coral/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-users text-deep-coral text-2xl"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-800 mb-3">Connect</h4>
+                                    <p class="text-gray-600">Find like-minded readers and build lasting friendships through shared literary experiences.</p>
+                                </div>
+                                <div class="text-center p-6 rounded-xl bg-white/70 backdrop-blur-sm shadow-md">
+                                    <div class="w-16 h-16 bg-gentle-rose/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-search text-gentle-rose text-2xl"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-800 mb-3">Discover</h4>
+                                    <p class="text-gray-600">Explore curated book collections and find your next favorite read through community recommendations.</p>
+                                </div>
+                                <div class="text-center p-6 rounded-xl bg-white/70 backdrop-blur-sm shadow-md">
+                                    <div class="w-16 h-16 bg-soft-coral/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-heart text-soft-coral text-2xl"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-800 mb-3">Cherish</h4>
+                                    <p class="text-gray-600">Create meaningful moments and memories through deep discussions and shared reading journeys.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
-                
-                <!-- Comments Display -->
-                <div id="comments-display" class="mt-6 space-y-4">
-                    <!-- Comments will be displayed here -->
+            </div>
+
+            <!-- Library Page -->
+            <div id="library-page" class="page-content hidden">
+                <div class="min-h-screen p-8">
+                    <div class="max-w-7xl mx-auto">
+                        <!-- Header -->
+                        <div class="text-center mb-12">
+                            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Our Library</h1>
+                            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                                Discover your next favorite book from our curated collection of literary treasures.
+                            </p>
+                        </div>
+
+                        <!-- Search and Filter -->
+                        <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 mb-8 shadow-md">
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1 relative">
+                                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <input type="text" id="search-input" placeholder="Search books by title or author..." 
+                                           class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-coral focus:border-transparent">
+                                </div>
+                                <select id="genre-filter" class="px-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-coral focus:border-transparent bg-white">
+                                    <option value="">All Genres</option>
+                                    <option value="fiction">Fiction</option>
+                                    <option value="mystery">Mystery</option>
+                                    <option value="romance">Romance</option>
+                                    <option value="sci-fi">Sci-Fi</option>
+                                    <option value="biography">Biography</option>
+                                    <option value="self-help">Self-Help</option>
+                                </select>
+                                <select id="sort-filter" class="px-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-coral focus:border-transparent bg-white">
+                                    <option value="">Sort By</option>
+                                    <option value="title">Title A-Z</option>
+                                    <option value="rating">Highest Rated</option>
+                                    <option value="author">Author A-Z</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Books Grid -->
+                        <div id="books-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <!-- Books will be populated by JavaScript -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Social Links -->
-            <div class="flex justify-center space-x-6 mb-8">
-                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
-                    <i class="fab fa-facebook"></i>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
-                    <i class="fab fa-twitter"></i>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
-                    <i class="fab fa-instagram"></i>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
-                    <i class="fab fa-goodreads"></i>
-                </a>
+            <!-- Authors Page -->
+            <div id="authors-page" class="page-content hidden">
+                <div class="min-h-screen p-8">
+                    <div class="max-w-7xl mx-auto">
+                        <!-- Header -->
+                        <div class="text-center mb-12">
+                            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Meet Our Authors</h1>
+                            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                                Connect with brilliant minds and the creators of the stories that move us.
+                            </p>
+                        </div>
+
+                        <!-- Authors Grid -->
+                        <div id="authors-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <!-- Authors will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Copyright -->
-            <div class="text-center text-gray-500">
-                <p>&copy; 2024 Lovable. Made with <i class="fas fa-heart text-deep-coral"></i> for book lovers everywhere.</p>
+            <!-- About Us Page -->
+            <div id="about-page" class="page-content hidden">
+                <div class="min-h-screen p-8">
+                    <div class="max-w-5xl mx-auto">
+                        <!-- Header -->
+                        <div class="text-center mb-12">
+                            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">About Lovable</h1>
+                            <p class="text-xl text-gray-600">
+                                Our story, vision, and passion for bringing readers together.
+                            </p>
+                        </div>
+
+                        <!-- Mission Statement -->
+                        <div class="bg-gradient-to-r from-gentle-rose/20 to-warm-peach/20 rounded-2xl p-8 mb-12 border border-gentle-rose/30">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Our Mission</h2>
+                            <blockquote class="text-xl text-gray-700 italic text-center leading-relaxed">
+                                "To create meaningful connections through the transformative power of literature, 
+                                fostering a global community where every reader feels heard, valued, and inspired."
+                            </blockquote>
+                        </div>
+
+                        <!-- Story -->
+                        <div class="prose prose-lg max-w-none text-gray-700 mb-12">
+                            <div class="bg-white/50 rounded-xl p-8 mb-8">
+                                <h3 class="text-2xl font-bold text-gray-800 mb-4">Our Story</h3>
+                                <p class="mb-6 leading-relaxed">
+                                    In a world increasingly dominated by digital distractions, Lovable emerged from a simple belief: 
+                                    that reading is not just a hobby, but a profound way to connect with ourselves and others.
+                                </p>
+                                
+                                <p class="mb-6 leading-relaxed">
+                                    Founded by a team of passionate readers, writers, and dreamers, Lovable is more than just a platform—it's a 
+                                    movement to revive the intimate relationship between readers and books. We understand that every book carries 
+                                    within it the power to change lives, spark conversations, and create lasting bonds between people who might 
+                                    otherwise never meet.
+                                </p>
+                                
+                                <p class="leading-relaxed">
+                                    Our vision extends beyond simply cataloging books. We're building a sanctuary where literary souls can find 
+                                    their tribe, where authors can connect directly with their readers, and where every story—whether read or 
+                                    written—becomes a bridge to deeper human connection.
+                                </p>
+                            </div>
+
+                            <div class="bg-white/50 rounded-xl p-8">
+                                <h3 class="text-2xl font-bold text-gray-800 mb-4">Our Values</h3>
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-deep-coral mb-2">Community First</h4>
+                                        <p class="text-gray-600">We believe that the best reading experiences happen when shared with others who understand the magic of a great story.</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-deep-coral mb-2">Authentic Connections</h4>
+                                        <p class="text-gray-600">We foster genuine relationships built on shared literary interests and meaningful conversations.</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-deep-coral mb-2">Inclusive Spaces</h4>
+                                        <p class="text-gray-600">Every reader, regardless of their preferences or reading level, deserves a welcoming place in our community.</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-deep-coral mb-2">Love for Literature</h4>
+                                        <p class="text-gray-600">At our core, we're driven by an unwavering passion for books and the transformative power of reading.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact -->
+                        <div class="text-center bg-white/70 rounded-xl p-8">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Get in Touch</h3>
+                            <p class="text-gray-600 mb-4">Have questions, suggestions, or want to collaborate with us?</p>
+                            <a href="mailto:hello@lovable.com" class="text-deep-coral hover:underline font-semibold text-lg">
+                                <i class="fas fa-envelope mr-2"></i>
+                                hello@lovable.com
+                            </a>
+                            
+                            <div class="flex justify-center space-x-6 mt-6">
+                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                                    <i class="fab fa-facebook"></i>
+                                </a>
+                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                                    <i class="fab fa-goodreads"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </footer>
+
+            <!-- Footer -->
+            <footer class="bg-white/80 backdrop-blur-sm border-t border-gentle-rose/30 mt-8">
+                <div class="max-w-7xl mx-auto px-8 py-12">
+                    <!-- Reader Count -->
+                    <div class="text-center mb-8">
+                        <div class="bg-gradient-to-r from-gentle-rose/20 to-warm-peach/20 rounded-2xl p-8 mb-6">
+                            <p class="text-3xl font-bold text-gray-800 mb-2">
+                                <span id="reader-count">1,247</span> readers have joined the Lovable community!
+                            </p>
+                            <p class="text-xl text-deep-coral font-medium italic">
+                                "Great stories find great hearts."
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Comment Section -->
+                    <div class="max-w-2xl mx-auto mb-8">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Share Your Thoughts</h3>
+                        <div class="bg-white/70 rounded-xl p-6 shadow-md">
+                            <textarea id="comment-input" placeholder="Share your love for reading, favorite books, or thoughts about Lovable..." 
+                                      class="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-deep-coral focus:border-transparent"></textarea>
+                            <button onclick="submitComment()" class="mt-4 bg-deep-coral hover:bg-red-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Submit Message
+                            </button>
+                        </div>
+                        
+                        <!-- Comments Display -->
+                        <div id="comments-display" class="mt-8 space-y-4">
+                            <!-- Comments will be displayed here -->
+                        </div>
+                    </div>
+
+                    <!-- Social Links -->
+                    <div class="flex justify-center space-x-8 mb-8">
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                            <i class="fab fa-goodreads"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                            <i class="fab fa-pinterest"></i>
+                        </a>
+                    </div>
+
+                    <!-- Copyright -->
+                    <div class="text-center text-gray-500 border-t border-gentle-rose/20 pt-6">
+                        <p>&copy; 2024 Lovable. Made with <i class="fas fa-heart text-deep-coral"></i> for book lovers everywhere.</p>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
 
     <script>
         // Sample data
@@ -226,21 +403,21 @@
             { 
                 id: 1, 
                 name: "Matt Haig", 
-                bio: "British author known for his novels, children's books, and memoirs. His work often explores themes of mental health and human connection.",
+                bio: "British author known for his novels, children's books, and memoirs. His work often explores themes of mental health and human connection through beautiful storytelling.",
                 image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop",
                 books: ["The Midnight Library", "The Humans", "Reasons to Stay Alive"]
             },
             { 
                 id: 2, 
                 name: "Taylor Jenkins Reid", 
-                bio: "American author of historical fiction and contemporary women's fiction, known for her compelling storytelling and complex characters.",
+                bio: "American author of historical fiction and contemporary women's fiction, known for her compelling storytelling and beautifully complex characters.",
                 image: "https://images.unsplash.com/photo-1494790108755-2616c67ee9d4?w=300&h=300&fit=crop",
                 books: ["The Seven Husbands of Evelyn Hugo", "Daisy Jones & The Six", "Malibu Rising"]
             },
             { 
                 id: 3, 
                 name: "James Clear", 
-                bio: "Author and speaker focused on habits, decision making, and continuous improvement. His work helps people build better systems.",
+                bio: "Author and speaker focused on habits, decision making, and continuous improvement. His work helps millions build better systems for success.",
                 image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop",
                 books: ["Atomic Habits", "Clear Thinking"]
             },
@@ -254,67 +431,65 @@
             { 
                 id: 5, 
                 name: "Tara Westover", 
-                bio: "American historian and author known for her memoir 'Educated', which explores themes of education, family, and self-discovery.",
+                bio: "American historian and author known for her powerful memoir 'Educated', which explores themes of education, family, and self-discovery.",
                 image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop",
                 books: ["Educated"]
             },
             { 
                 id: 6, 
                 name: "Richard Osman", 
-                bio: "British television presenter, producer, and author known for his Thursday Murder Club mystery series.",
+                bio: "British television presenter, producer, and author known for his Thursday Murder Club mystery series and wit that charms readers worldwide.",
                 image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop",
                 books: ["The Thursday Murder Club", "The Man Who Died Twice"]
             }
         ];
 
-        // Tab functionality
-        function showTab(tabName) {
-            // Hide all tabs
-            const tabs = document.querySelectorAll('.tab-content');
-            tabs.forEach(tab => tab.classList.add('hidden'));
+        // Navigation functionality
+        function showPage(pageName) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(page => {
+                page.classList.add('hidden');
+                page.classList.remove('page-transition');
+            });
             
-            // Show selected tab
-            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            // Show selected page with transition
+            const selectedPage = document.getElementById(pageName + '-page');
+            selectedPage.classList.remove('hidden');
+            setTimeout(() => {
+                selectedPage.classList.add('page-transition');
+            }, 10);
             
             // Update nav button styles
-            const buttons = document.querySelectorAll('.tab-btn');
+            const buttons = document.querySelectorAll('.nav-btn');
             buttons.forEach(btn => {
-                btn.classList.remove('text-deep-coral', 'bg-gentle-rose/20');
+                btn.classList.remove('bg-deep-coral', 'text-white');
                 btn.classList.add('text-gray-700');
             });
             
             // Highlight active button
             event.target.classList.remove('text-gray-700');
-            event.target.classList.add('text-deep-coral', 'bg-gentle-rose/20');
-            
-            // Close mobile menu if open
-            document.getElementById('mobile-menu').classList.add('hidden');
-        }
-
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
+            event.target.classList.add('bg-deep-coral', 'text-white');
         }
 
         // Render books
         function renderBooks(booksToRender = books) {
             const grid = document.getElementById('books-grid');
             grid.innerHTML = booksToRender.map(book => `
-                <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+                <div class="book-card bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                     <img src="${book.image}" alt="${book.title}" class="w-full h-64 object-cover">
-                    <div class="p-4">
-                        <h3 class="font-bold text-lg text-gray-800 mb-2">${book.title}</h3>
-                        <p class="text-gray-600 mb-2">by ${book.author}</p>
-                        <p class="text-sm text-gray-500 mb-3 capitalize">${book.genre}</p>
+                    <div class="p-6">
+                        <h3 class="font-bold text-xl text-gray-800 mb-2 line-clamp-2">${book.title}</h3>
+                        <p class="text-gray-600 mb-2 font-medium">by ${book.author}</p>
+                        <p class="text-sm text-gray-500 mb-4 capitalize bg-gentle-rose/20 px-3 py-1 rounded-full inline-block">${book.genre}</p>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
-                                <div class="flex text-yellow-400">
+                                <div class="flex text-yellow-400 mr-2">
                                     ${generateStars(book.rating)}
                                 </div>
-                                <span class="ml-2 text-sm text-gray-600">${book.rating}</span>
+                                <span class="text-sm text-gray-600 font-medium">${book.rating}</span>
                             </div>
-                            <button class="text-deep-coral hover:text-red-600 font-medium">
+                            <button class="text-deep-coral hover:text-red-600 font-medium transition-colors">
                                 <i class="fas fa-heart mr-1"></i>
                                 Add to Favorites
                             </button>
@@ -326,26 +501,26 @@
 
         // Render authors
         function renderAuthors() {
-            const container = document.querySelector('#authors-tab .grid');
-            container.innerHTML = authors.map(author => `
-                <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-6">
-                    <img src="${author.image}" alt="${author.name}" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
-                    <h3 class="font-bold text-xl text-gray-800 mb-2 text-center">${author.name}</h3>
-                    <p class="text-gray-600 mb-4 text-center">${author.bio}</p>
-                    <div class="mb-4">
-                        <h4 class="font-medium text-gray-800 mb-2">Notable Works:</h4>
-                        <ul class="text-sm text-gray-600">
-                            ${author.books.map(book => `<li>• ${book}</li>`).join('')}
-                        </ul>
+            const grid = document.getElementById('authors-grid');
+            grid.innerHTML = authors.map(author => `
+                <div class="author-card bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8">
+                    <img src="${author.image}" alt="${author.name}" class="w-32 h-32 rounded-full mx-auto mb-6 object-cover border-4 border-gentle-rose/30">
+                    <h3 class="font-bold text-2xl text-gray-800 mb-3 text-center">${author.name}</h3>
+                    <p class="text-gray-600 mb-6 text-center leading-relaxed">${author.bio}</p>
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3 text-center">Notable Works:</h4>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            ${author.books.map(book => `<span class="text-sm bg-warm-peach/50 px-3 py-1 rounded-full text-gray-700">${book}</span>`).join('')}
+                        </div>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <button class="flex-1 bg-deep-coral hover:bg-red-600 text-white px-4 py-2 rounded font-medium transition-colors">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button class="flex-1 bg-deep-coral hover:bg-red-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors">
                             <i class="fas fa-video mr-2"></i>
                             Request Live Session
                         </button>
-                        <button class="flex-1 border border-deep-coral text-deep-coral hover:bg-deep-coral hover:text-white px-4 py-2 rounded font-medium transition-colors">
+                        <button class="flex-1 border-2 border-deep-coral text-deep-coral hover:bg-deep-coral hover:text-white px-4 py-3 rounded-lg font-semibold transition-colors">
                             <i class="fas fa-envelope mr-2"></i>
-                            Connect
+                            Connect with Author
                         </button>
                     </div>
                 </div>
@@ -366,23 +541,46 @@
                 stars += '<i class="fas fa-star-half-alt"></i>';
             }
             
+            // Fill remaining with empty stars
+            const remainingStars = 5 - Math.ceil(rating);
+            for (let i = 0; i < remainingStars; i++) {
+                stars += '<i class="far fa-star"></i>';
+            }
+            
             return stars;
         }
 
         // Search and filter functionality
-        document.getElementById('search-input').addEventListener('input', filterBooks);
-        document.getElementById('genre-filter').addEventListener('change', filterBooks);
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            const genreFilter = document.getElementById('genre-filter');
+            const sortFilter = document.getElementById('sort-filter');
+
+            if (searchInput) searchInput.addEventListener('input', filterBooks);
+            if (genreFilter) genreFilter.addEventListener('change', filterBooks);
+            if (sortFilter) sortFilter.addEventListener('change', filterBooks);
+        });
 
         function filterBooks() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const selectedGenre = document.getElementById('genre-filter').value.toLowerCase();
+            const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
+            const selectedGenre = document.getElementById('genre-filter')?.value.toLowerCase() || '';
+            const sortBy = document.getElementById('sort-filter')?.value || '';
             
-            const filteredBooks = books.filter(book => {
+            let filteredBooks = books.filter(book => {
                 const matchesSearch = book.title.toLowerCase().includes(searchTerm) || 
                                     book.author.toLowerCase().includes(searchTerm);
                 const matchesGenre = !selectedGenre || book.genre.toLowerCase() === selectedGenre;
                 return matchesSearch && matchesGenre;
             });
+
+            // Sort books
+            if (sortBy === 'title') {
+                filteredBooks.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (sortBy === 'rating') {
+                filteredBooks.sort((a, b) => b.rating - a.rating);
+            } else if (sortBy === 'author') {
+                filteredBooks.sort((a, b) => a.author.localeCompare(b.author));
+            }
             
             renderBooks(filteredBooks);
         }
@@ -400,7 +598,8 @@
                 const newComment = {
                     id: Date.now(),
                     text: comment,
-                    timestamp: new Date().toLocaleString()
+                    timestamp: new Date().toLocaleString(),
+                    likes: 0
                 };
                 
                 comments.unshift(newComment);
@@ -413,6 +612,9 @@
                 
                 // Display comments
                 displayComments();
+                
+                // Show success message
+                showNotification('Thank you for sharing your thoughts! ❤️');
             }
         }
 
@@ -420,12 +622,46 @@
             const comments = JSON.parse(localStorage.getItem('lovableComments') || '[]');
             const container = document.getElementById('comments-display');
             
-            container.innerHTML = comments.slice(0, 5).map(comment => `
-                <div class="bg-white/50 rounded-lg p-4">
-                    <p class="text-gray-700 mb-2">"${comment.text}"</p>
-                    <p class="text-sm text-gray-500">${comment.timestamp}</p>
+            if (comments.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 italic">No comments yet. Be the first to share your love for reading!</p>';
+                return;
+            }
+            
+            container.innerHTML = comments.slice(0, 10).map(comment => `
+                <div class="bg-white/70 backdrop-blur-sm rounded-lg p-6 shadow-md">
+                    <p class="text-gray-700 mb-3 leading-relaxed">"${comment.text}"</p>
+                    <div class="flex justify-between items-center text-sm text-gray-500">
+                        <span><i class="fas fa-clock mr-1"></i>${comment.timestamp}</span>
+                        <button onclick="likeComment(${comment.id})" class="text-deep-coral hover:text-red-600 transition-colors">
+                            <i class="fas fa-heart mr-1"></i>
+                            <span id="likes-${comment.id}">${comment.likes}</span>
+                        </button>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        function likeComment(commentId) {
+            let comments = JSON.parse(localStorage.getItem('lovableComments') || '[]');
+            const commentIndex = comments.findIndex(c => c.id === commentId);
+            
+            if (commentIndex !== -1) {
+                comments[commentIndex].likes++;
+                localStorage.setItem('lovableComments', JSON.stringify(comments));
+                document.getElementById(`likes-${commentId}`).textContent = comments[commentIndex].likes;
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-deep-coral text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
 
         // Initialize the app
@@ -437,17 +673,28 @@
             // Simulate reader count increase
             let readerCount = 1247;
             setInterval(() => {
-                if (Math.random() < 0.3) {
+                if (Math.random() < 0.2) {
                     readerCount++;
-                    document.getElementById('reader-count').textContent = readerCount.toLocaleString();
+                    const countElement = document.getElementById('reader-count');
+                    if (countElement) {
+                        countElement.textContent = readerCount.toLocaleString();
+                    }
                 }
-            }, 30000);
+            }, 45000);
+
+            // Set default active page
+            showPage('intro');
         });
 
         // Add Enter key support for comment submission
-        document.getElementById('comment-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && e.ctrlKey) {
-                submitComment();
+        document.addEventListener('DOMContentLoaded', function() {
+            const commentInput = document.getElementById('comment-input');
+            if (commentInput) {
+                commentInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        submitComment();
+                    }
+                });
             }
         });
     </script>
