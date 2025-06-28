@@ -137,7 +137,7 @@ export const useGenres = () => {
       }
       
       // Extract unique genres and create the expected format
-      const uniqueGenres = [...new Set(data?.map(item => item.genre).filter(Boolean))] || [];
+      const uniqueGenres = [...new Set(data?.map(item => item.genre).filter(genre => genre != null))] || [];
       return uniqueGenres.map((genre, index) => ({
         id: (index + 1).toString(),
         name: genre
