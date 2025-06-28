@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,23 +36,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle new user profile creation with proper error handling
-        if (event === 'SIGNED_IN' && session?.user && session.user.email_confirmed_at) {
-          // Use setTimeout to prevent potential callback deadlock
-          setTimeout(() => {
-            supabase
-              .from('profiles')
-              .insert({
-                id: session.user.id,
-                full_name: session.user.user_metadata?.full_name || '',
-              })
-              .then(({ error }) => {
-                if (error) {
-                  console.error('Error creating profile:', error);
-                  // Don't throw here as it would break auth flow
-                }
-              });
-          }, 0);
+        // Handle new user profile creation when user signs in for the first time
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Check if this is a new user by looking for email confirmation
+          const isNewUser = session.user.email_confirmed_at && 
+                           new Date(session.user.email_confirmed_at).getTime() > 
+                           new Date(Date.now() - 60000).getTime(); // Within last minute
+          
+          if (isNewUser) {
+            // Use setTimeout to prevent potential callback deadlock
+            setTimeout(() => {
+              supabase
+                .from('profiles')
+                .insert({
+                  id: session.user.id,
+                  full_name: session.user.user_metadata?.full_name || '',
+                })
+                .then(({ error }) => {
+                  if (error) {
+                    console.error('Error creating profile:', error);
+                    // Don't throw here as it would break auth flow
+                  }
+                });
+            }, 0);
+          }
         }
       }
     );
