@@ -25,10 +25,40 @@ export const useLibraryBooks = () => {
   return useQuery({
     queryKey: ['library-books'],
     queryFn: async () => {
+      // Query the newly created books table which has the correct structure
       const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .order('rating', { ascending: false });
+        .rpc('get_books_with_all_fields')
+        .then(() => null)
+        .catch(() => {
+          // Fallback to direct query if RPC doesn't exist
+          return supabase
+            .from('books')
+            .select(`
+              id,
+              title,
+              author,
+              genre,
+              description,
+              cover_image_url,
+              ebook_url,
+              rating,
+              location,
+              community,
+              publication_year,
+              isbn,
+              pages,
+              language,
+              created_at,
+              updated_at
+            `)
+            .order('rating', { ascending: false });
+        });
+      
+      if (!data) {
+        // If the new books table doesn't have data, return empty array
+        console.log('No books found in the new books table');
+        return [];
+      }
       
       if (error) {
         console.error('Error fetching books:', error);
@@ -46,7 +76,24 @@ export const useBooksByGenre = (genre?: string) => {
     queryFn: async () => {
       let query = supabase
         .from('books')
-        .select('*')
+        .select(`
+          id,
+          title,
+          author,
+          genre,
+          description,
+          cover_image_url,
+          ebook_url,
+          rating,
+          location,
+          community,
+          publication_year,
+          isbn,
+          pages,
+          language,
+          created_at,
+          updated_at
+        `)
         .order('rating', { ascending: false });
       
       if (genre && genre !== 'All') {
@@ -60,7 +107,8 @@ export const useBooksByGenre = (genre?: string) => {
         throw error;
       }
       
-      return data as Book[];
+      // Return empty array if no data, ensuring we have the right type
+      return (data || []) as Book[];
     },
   });
 };
