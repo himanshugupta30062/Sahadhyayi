@@ -1,8 +1,8 @@
-
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn, Share2, Library } from "lucide-react";
+import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn, Share2, Library, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -16,6 +16,7 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { data: profile } = useProfile();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const avatarFallback =
     profile?.full_name?.charAt(0) ||
@@ -44,11 +45,35 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
     navigate('/');
   };
 
+  const handleSignInClick = () => {
+    alert("Sign In clicked");
+    setIsOpen(false);
+  };
+
+  const handleSignUpClick = () => {
+    alert("Sign Up clicked");
+    setIsOpen(false);
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="lg:hidden">
       <div className="px-2 pt-2 pb-3 space-y-1 bg-white rounded-lg shadow-lg mt-2 mx-2 sm:mx-0">
+        {/* Mobile Search */}
+        <div className="px-3 pb-3 mb-2 border-b">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 focus:border-orange-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+          </div>
+        </div>
+
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -67,9 +92,11 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
             </Link>
           );
         })}
+        
         <div className="border-t pt-2 mt-2">
           {user ? (
             <>
+              
               <div className="px-3 py-3 border-b mb-2 flex items-center">
                 <Avatar className="h-8 w-8 mr-3 flex-shrink-0">
                   <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
@@ -124,17 +151,18 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
             </>
           ) : (
             <>
-              <Link to="/signin" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-2 text-sm py-3">
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
-                </Button>
-              </Link>
-              <Link to="/signup" onClick={() => setIsOpen(false)}>
-                <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white text-sm py-3">
-                  Sign Up
-                </Button>
-              </Link>
+              <button
+                onClick={handleSignInClick}
+                className="w-full mb-2 px-6 py-3 bg-gradient-to-r from-pink-400 to-purple-500 text-white font-medium rounded-full transition-all duration-300 hover:from-pink-500 hover:to-purple-600 hover:shadow-lg"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={handleSignUpClick}
+                className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-full transition-all duration-300 hover:from-purple-600 hover:to-pink-600 hover:shadow-lg"
+              >
+                Sign Up
+              </button>
             </>
           )}
         </div>
