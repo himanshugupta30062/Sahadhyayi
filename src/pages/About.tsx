@@ -272,7 +272,7 @@ const About = () => {
                       <Mail className="w-4 h-4 text-amber-600 shrink-0" />
                       <span>
                         <span className="text-gray-800 font-medium">Email:</span>
-                        <a href="mailto:himanshugupta30062@gmail.com" className="underline decoration-dotted hover:text-orange-600 ml-1 break-all">himanshugupta30062@gmail.com</a>
+                        <a href="mailto:gyan@sahadhyayi.com" className="underline decoration-dotted hover:text-orange-600 ml-1 break-all">gyan@sahadhyayi.com</a>
                       </span>
                     </div>
                   </div>
