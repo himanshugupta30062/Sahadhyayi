@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/ui/search-bar";
 import { BookOpen, Plus, Users, MessageCircle, MapPin, Star, Heart, Share2 } from "lucide-react";
-import { useBooks, useLibraryBooks } from "@/hooks/useLibrary";
+import { useLibraryBooks } from "@/hooks/useLibrary";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,9 +41,9 @@ const BookLibrary = () => {
       cover_url: '/placeholder.svg',
       rating: 4.5,
       readingFriends: [
-        { name: 'Sarah M.', avatar: '/placeholder.svg', status: 'reading' },
-        { name: 'John D.', avatar: '/placeholder.svg', status: 'completed' },
-        { name: 'Emma R.', avatar: '/placeholder.svg', status: 'want_to_read' }
+        { name: 'Sarah M.', avatar: '/placeholder.svg', status: 'reading' as const },
+        { name: 'John D.', avatar: '/placeholder.svg', status: 'completed' as const },
+        { name: 'Emma R.', avatar: '/placeholder.svg', status: 'want_to_read' as const }
       ],
       comments: [
         { user: 'Sarah M.', text: 'This book changed my perspective on life!', time: '2 hours ago' },
@@ -64,8 +63,8 @@ const BookLibrary = () => {
       cover_url: '/placeholder.svg',
       rating: 4.8,
       readingFriends: [
-        { name: 'Mike K.', avatar: '/placeholder.svg', status: 'reading' },
-        { name: 'Lisa P.', avatar: '/placeholder.svg', status: 'completed' }
+        { name: 'Mike K.', avatar: '/placeholder.svg', status: 'reading' as const },
+        { name: 'Lisa P.', avatar: '/placeholder.svg', status: 'completed' as const }
       ],
       comments: [
         { user: 'Mike K.', text: 'Great practical advice for building better habits!', time: '3 hours ago' }
@@ -73,8 +72,7 @@ const BookLibrary = () => {
       locations: [
         { city: 'Chennai', country: 'India', readers: 20 },
         { city: 'Pune', country: 'India', readers: 10 }
-      ],
-      podcastUrl: null
+      ]
     }
   ];
 

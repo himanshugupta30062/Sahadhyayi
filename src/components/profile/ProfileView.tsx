@@ -107,7 +107,7 @@ export const ProfileView: React.FC = () => {
       await upsertProfile.mutateAsync({
         ...values,
         dob: values.dob ? values.dob : null,
-        gender: values.gender || null,
+        gender: values.gender as "male" | "female" | "other" || null,
         location: values.location || null,
         life_tags: values.life_tags || [],
         social_links: values.social_links || {},
