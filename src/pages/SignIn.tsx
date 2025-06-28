@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Mail, Lock } from 'lucide-react';
 
@@ -18,7 +17,7 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signIn } = useAuth();
 
   // Redirect if already signed in
   React.useEffect(() => {
@@ -27,33 +26,74 @@ const SignIn = () => {
     }
   }, [user, navigate]);
 
+  const validateForm = () => {
+    if (!formData.email?.trim() || !formData.password) {
+      setError("Please fill in all fields.");
+      return false;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
+    if (!validateForm()) {
+      setLoading(false);
+      return;
+    }
 
-      if (error) throw error;
+    try {
+      const { error } = await signIn(formData.email.trim(), formData.password);
+
+      if (error) {
+        // Enhanced error handling with user-friendly messages
+        let errorMessage = error.message;
+        
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Please check your email and click the confirmation link before signing in.';
+        } else if (error.message.includes('rate limit')) {
+          errorMessage = 'Too many sign-in attempts. Please wait a moment before trying again.';
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = 'Please enter a valid email address.';
+        }
+        
+        setError(errorMessage);
+        return;
+      }
 
       navigate('/dashboard');
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      setError(message);
+      console.error('Signin error:', error);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (error) {
+      setError('');
+    }
   };
 
   return (
@@ -85,6 +125,7 @@ const SignIn = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="pl-10"
+                  maxLength={254}
                   required
                 />
               </div>
@@ -102,6 +143,7 @@ const SignIn = () => {
                   value={formData.password}
                   onChange={handleChange}
                   className="pl-10"
+                  maxLength={128}
                   required
                 />
               </div>
