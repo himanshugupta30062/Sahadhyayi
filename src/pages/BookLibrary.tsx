@@ -100,7 +100,7 @@ const BookLibrary = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Social Library</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Library (पुस्तकालय)</h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
             Discover books, connect with reading friends, and join vibrant reading communities.
           </p>
