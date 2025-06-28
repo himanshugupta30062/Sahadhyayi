@@ -9,18 +9,18 @@ const DesktopNavItems = () => {
   
   const navItems = [
     { name: "Home", path: "/", icon: BookOpen },
+    { name: "Library", path: "/library", icon: Library },
+    { name: "Authors", path: "/authors", icon: Calendar },
+    { name: "Feed", path: "/reviews", icon: Rss },
+    { name: "About", path: "/about", icon: BookOpen },
     ...(user
       ? [
           { name: "Dashboard", path: "/dashboard", icon: User },
           { name: "My Bookshelf", path: "/bookshelf", icon: User },
-          { name: "Groups", path: "/groups", icon: Users }
+          { name: "Groups", path: "/groups", icon: Users },
+          { name: "My Quotes", path: "/quotes", icon: BookOpen }
         ]
-      : []),
-    { name: "Authors", path: "/authors", icon: Calendar },
-    { name: "Feed", path: "/reviews", icon: Rss },
-    ...(user ? [{ name: "My Quotes", path: "/quotes", icon: BookOpen }] : []),
-    { name: "Library", path: "/library", icon: Library },
-    { name: "About", path: "/about", icon: BookOpen }
+      : [])
   ];
 
   return (

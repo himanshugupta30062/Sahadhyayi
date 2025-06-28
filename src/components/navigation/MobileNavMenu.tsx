@@ -26,18 +26,18 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
 
   const navItems = [
     { name: "Home", path: "/", icon: BookOpen },
+    { name: "Library", path: "/library", icon: BookOpen },
+    { name: "Authors", path: "/authors", icon: BookOpen },
+    { name: "Feed", path: "/reviews", icon: BookOpen },
+    { name: "About", path: "/about", icon: BookOpen },
     ...(user
       ? [
           { name: "Dashboard", path: "/dashboard", icon: User },
           { name: "My Bookshelf", path: "/bookshelf", icon: User },
-          { name: "Groups", path: "/groups", icon: User }
+          { name: "Groups", path: "/groups", icon: User },
+          { name: "My Quotes", path: "/quotes", icon: BookOpen }
         ]
-      : []),
-    { name: "Authors", path: "/authors", icon: BookOpen },
-    { name: "Feed", path: "/reviews", icon: BookOpen },
-    ...(user ? [{ name: "My Quotes", path: "/quotes", icon: BookOpen }] : []),
-    { name: "Library", path: "/library", icon: BookOpen },
-    { name: "About", path: "/about", icon: BookOpen }
+      : [])
   ];
 
   const handleSignOut = async () => {
