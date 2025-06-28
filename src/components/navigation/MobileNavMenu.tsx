@@ -2,7 +2,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn } from "lucide-react";
+import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn, Share2, Library } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -24,9 +24,9 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
 
   const navItems = [
     { name: "Home", path: "/", icon: BookOpen },
-    { name: "Library", path: "/library", icon: BookOpen },
+    { name: "Library", path: "/library", icon: Library },
     { name: "Authors", path: "/authors", icon: BookOpen },
-    { name: "Feed", path: "/reviews", icon: BookOpen },
+    { name: "Social Media", path: "/reviews", icon: Share2 },
     { name: "About", path: "/about", icon: BookOpen },
     ...(user
       ? [

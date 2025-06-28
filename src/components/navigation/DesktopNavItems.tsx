@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Users, Calendar, User, Rss, Library } from "lucide-react";
+import { BookOpen, Users, Calendar, User, Share2, Library } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const DesktopNavItems = () => {
@@ -11,7 +11,7 @@ const DesktopNavItems = () => {
     { name: "Home", path: "/", icon: BookOpen },
     { name: "Library", path: "/library", icon: Library },
     { name: "Authors", path: "/authors", icon: Calendar },
-    { name: "Feed", path: "/reviews", icon: Rss },
+    { name: "Social Media", path: "/reviews", icon: Share2 },
     { name: "About", path: "/about", icon: BookOpen },
     ...(user
       ? [
