@@ -28,67 +28,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: AuthChangeEvent, session) => {
+      async (event: AuthChangeEvent, session) => {
         console.log('[AUTH] State change:', event, session?.user?.email);
+        
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle new user profile creation when user signs in for the first time
+        // Handle new user profile creation
         if (event === 'SIGNED_IN' && session?.user) {
-          // Check if this is a new user by looking for email confirmation
-          const isNewUser = session.user.email_confirmed_at && 
-                           new Date(session.user.email_confirmed_at).getTime() > 
-                           new Date(Date.now() - 60000).getTime(); // Within last minute
-          
-          if (isNewUser) {
-            // Use setTimeout to prevent potential callback deadlock
-            setTimeout(() => {
-              supabase
+          try {
+            const { data: existingProfile } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('id', session.user.id)
+              .single();
+
+            if (!existingProfile) {
+              const { error } = await supabase
                 .from('profiles')
                 .insert({
                   id: session.user.id,
                   full_name: session.user.user_metadata?.full_name || '',
-                })
-                .then(({ error }) => {
-                  if (error) {
-                    console.error('Error creating profile:', error);
-                    // Don't throw here as it would break auth flow
-                  }
                 });
-            }, 0);
+              
+              if (error) {
+                console.error('Error creating profile:', error);
+              }
+            }
+          } catch (error) {
+            console.error('Error checking/creating profile:', error);
           }
         }
       }
     );
 
-    // THEN check for existing session
+    // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('Error getting session:', error);
-        } else {
+        }
+        
+        if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
+          setLoading(false);
         }
       } catch (error) {
         console.error('Error in getSession:', error);
-      } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     getInitialSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
-      // Input validation
       if (!email || !password) {
         return { error: new Error('Email and password are required') };
       }
@@ -97,13 +108,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error('Password must be at least 8 characters long') };
       }
       
-      // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return { error: new Error('Please enter a valid email address') };
       }
 
-      // Configure proper redirect URL for security
       const redirectUrl = `${window.location.origin}/dashboard`;
       
       const { error } = await supabase.auth.signUp({
@@ -126,12 +135,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Input validation
       if (!email || !password) {
         return { error: new Error('Email and password are required') };
       }
       
-      // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return { error: new Error('Please enter a valid email address') };
