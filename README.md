@@ -6,6 +6,11 @@
 **Repository name:** Sahadhyayi  
 **URL**: https://lovable.dev/projects/c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0
 
+## Live Website
+
+This project is deployed using **GitHub Pages**. You can access it at [https://www.sahadhyayi.com](https://www.sahadhyayi.com).
+Changes pushed to the `main` branch will automatically update the site.
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
