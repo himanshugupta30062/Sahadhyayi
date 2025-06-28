@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
 
         // Handle new user profile creation with proper error handling
-        if (event === 'SIGNED_UP' && session?.user) {
+        if (event === 'SIGNED_IN' && session?.user && session.user.email_confirmed_at) {
           // Use setTimeout to prevent potential callback deadlock
           setTimeout(() => {
             supabase
