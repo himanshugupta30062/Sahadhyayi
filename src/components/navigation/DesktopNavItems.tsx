@@ -12,7 +12,7 @@ const DesktopNavItems = () => {
     { name: "Library", path: "/library", icon: Library },
     { name: "Authors", path: "/authors", icon: Calendar },
     { name: "Social Media", path: "/reviews", icon: Share2 },
-    { name: "About", path: "/about", icon: BookOpen },
+    { name: "About Us", path: "/about", icon: BookOpen },
     ...(user
       ? [
           { name: "Dashboard", path: "/dashboard", icon: User },
@@ -33,8 +33,8 @@ const DesktopNavItems = () => {
             to={item.path}
             className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
               location.pathname === item.path
-                ? "text-amber-800 bg-amber-100"
-                : "text-gray-700 hover:text-amber-800 hover:bg-amber-50"
+                ? "text-orange-800 bg-orange-100"
+                : "text-gray-700 hover:text-orange-800 hover:bg-orange-50"
             }`}
           >
             <Icon className="w-4 h-4" />

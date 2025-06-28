@@ -27,7 +27,7 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
     { name: "Library", path: "/library", icon: Library },
     { name: "Authors", path: "/authors", icon: BookOpen },
     { name: "Social Media", path: "/reviews", icon: Share2 },
-    { name: "About", path: "/about", icon: BookOpen },
+    { name: "About Us", path: "/about", icon: BookOpen },
     ...(user
       ? [
           { name: "Dashboard", path: "/dashboard", icon: User },
@@ -58,8 +58,8 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
               onClick={() => setIsOpen(false)}
               className={`flex items-center space-x-2 px-3 py-3 rounded-md text-sm sm:text-base font-medium transition-colors ${
                 location.pathname === item.path
-                  ? "text-amber-800 bg-amber-100"
-                  : "text-gray-700 hover:text-amber-800 hover:bg-amber-50"
+                  ? "text-orange-800 bg-orange-100"
+                  : "text-gray-700 hover:text-orange-800 hover:bg-orange-50"
               }`}
             >
               <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
@@ -80,7 +80,7 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
                 <Button variant="ghost" className="ml-2 rounded-full p-2 flex-shrink-0" aria-label="Notifications">
-                  <Bell className="w-4 h-4 text-amber-700" />
+                  <Bell className="w-4 h-4 text-orange-700" />
                 </Button>
               </div>
               <Link to="/profile" onClick={() => setIsOpen(false)}>
@@ -131,7 +131,7 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
                 </Button>
               </Link>
               <Link to="/signup" onClick={() => setIsOpen(false)}>
-                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm py-3">
+                <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white text-sm py-3">
                   Sign Up
                 </Button>
               </Link>

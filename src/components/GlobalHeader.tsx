@@ -27,19 +27,17 @@ const GlobalHeader = ({ onSearch }: GlobalHeaderProps) => {
   };
 
   return (
-    <div className="w-full bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-40">
+    <div className="w-full bg-orange-50 border-b border-orange-200 px-4 py-3 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo/Brand */}
+        {/* Empty space where logo was */}
         <div className="flex items-center">
-          <span className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-            Lovable
-          </span>
+          <div className="w-20"></div>
         </div>
 
         {/* Search Bar */}
         <div className="flex-1 max-w-2xl mx-8">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search books, authors, posts..."
@@ -47,10 +45,10 @@ const GlobalHeader = ({ onSearch }: GlobalHeaderProps) => {
               onChange={handleSearchChange}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
+              className={`w-full pl-10 pr-4 py-3 border border-orange-300 rounded-full bg-orange-50 text-gray-900 placeholder-orange-400 transition-all duration-300 ${
                 isSearchFocused 
-                  ? 'border-pink-400 bg-white shadow-lg ring-2 ring-pink-200 scale-105' 
-                  : 'hover:bg-white hover:border-gray-400'
+                  ? 'border-orange-400 bg-white shadow-lg ring-2 ring-orange-200 scale-105' 
+                  : 'hover:bg-white hover:border-orange-400'
               }`}
             />
           </div>
@@ -60,13 +58,13 @@ const GlobalHeader = ({ onSearch }: GlobalHeaderProps) => {
         <div className="flex items-center space-x-3">
           <button
             onClick={handleSignInClick}
-            className="px-6 py-2.5 bg-gradient-to-r from-pink-400 to-purple-500 text-white font-medium rounded-full transition-all duration-300 hover:from-pink-500 hover:to-purple-600 hover:shadow-lg hover:scale-105 transform"
+            className="px-6 py-2.5 bg-gradient-to-r from-orange-300 to-orange-400 text-white font-medium rounded-full transition-all duration-300 hover:from-orange-400 hover:to-orange-500 hover:shadow-lg hover:scale-105 transform"
           >
             Sign In
           </button>
           <button
             onClick={handleSignUpClick}
-            className="px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-full transition-all duration-300 hover:from-purple-600 hover:to-pink-600 hover:shadow-lg hover:scale-105 transform"
+            className="px-6 py-2.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white font-medium rounded-full transition-all duration-300 hover:from-orange-500 hover:to-orange-600 hover:shadow-lg hover:scale-105 transform"
           >
             Sign Up
           </button>
