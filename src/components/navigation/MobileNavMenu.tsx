@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn, Share2, Library, Search } from "lucide-react";
+import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn, Share2, Library, Search, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -149,20 +149,23 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
               </Button>
             </>
           ) : (
-            <>
-              <button
+            <div className="flex flex-col space-y-2 px-3">
+              <Button
+                variant="ghost"
                 onClick={handleSignInClick}
-                className="w-full mb-2 px-5 py-2.5 bg-white text-gray-800 font-medium rounded-lg border border-gray-300 transition-all duration-300 hover:bg-gray-50 hover:shadow-md"
+                className="w-full justify-center text-gray-700 hover:text-orange-700 hover:bg-orange-50 py-2.5"
               >
+                <LogIn className="w-4 h-4 mr-2" />
                 Sign In
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSignUpClick}
-                className="w-full px-5 py-2.5 bg-white text-gray-800 font-medium rounded-lg border border-gray-300 transition-all duration-300 hover:bg-gray-50 hover:shadow-md"
+                className="w-full justify-center bg-orange-600 hover:bg-orange-700 text-white py-2.5"
               >
+                <UserPlus className="w-4 h-4 mr-2" />
                 Sign Up
-              </button>
-            </>
+              </Button>
+            </div>
           )}
         </div>
       </div>
