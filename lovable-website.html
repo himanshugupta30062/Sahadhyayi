@@ -1,0 +1,455 @@
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lovable - Where Reading Becomes an Affair of the Heart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'warm-peach': '#FFE5D9',
+                        'soft-coral': '#FFCAB1',
+                        'gentle-rose': '#FFB3C6',
+                        'warm-cream': '#FFF8E7',
+                        'deep-coral': '#E85A4F'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-warm-cream via-warm-peach to-soft-coral min-h-screen">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-gentle-rose/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-heart text-deep-coral text-2xl"></i>
+                    <span class="text-2xl font-bold text-gray-800">Lovable</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <button onclick="showTab('intro')" class="tab-btn text-gray-700 hover:text-deep-coral px-3 py-2 rounded-md text-sm font-medium transition-colors">Intro</button>
+                    <button onclick="showTab('library')" class="tab-btn text-gray-700 hover:text-deep-coral px-3 py-2 rounded-md text-sm font-medium transition-colors">Library</button>
+                    <button onclick="showTab('authors')" class="tab-btn text-gray-700 hover:text-deep-coral px-3 py-2 rounded-md text-sm font-medium transition-colors">Authors</button>
+                    <button onclick="showTab('about')" class="tab-btn text-gray-700 hover:text-deep-coral px-3 py-2 rounded-md text-sm font-medium transition-colors">About Us</button>
+                </div>
+                <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="md:hidden hidden pb-4">
+                <button onclick="showTab('intro')" class="block w-full text-left px-3 py-2 text-gray-700 hover:text-deep-coral">Intro</button>
+                <button onclick="showTab('library')" class="block w-full text-left px-3 py-2 text-gray-700 hover:text-deep-coral">Library</button>
+                <button onclick="showTab('authors')" class="block w-full text-left px-3 py-2 text-gray-700 hover:text-deep-coral">Authors</button>
+                <button onclick="showTab('about')" class="block w-full text-left px-3 py-2 text-gray-700 hover:text-deep-coral">About Us</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Intro Page -->
+        <div id="intro-tab" class="tab-content">
+            <div class="text-center max-w-4xl mx-auto">
+                <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight">
+                    Welcome to Lovable – Where Reading Becomes an <span class="text-deep-coral">Affair of the Heart</span>
+                </h1>
+                <h2 class="text-2xl md:text-3xl text-gray-600 mb-8 font-light">
+                    Discover, Connect, Cherish.
+                </h2>
+                <p class="text-lg text-gray-700 mb-12 max-w-3xl mx-auto leading-relaxed">
+                    At Lovable, we believe that every great book deserves a passionate reader, and every passionate reader deserves a community. 
+                    Our mission is to help people rediscover the pure joy of reading while fostering meaningful connections over shared stories, 
+                    ideas, and the transformative power of literature. Join us in creating a world where books bring hearts together.
+                </p>
+                <button onclick="showTab('library')" class="bg-deep-coral hover:bg-red-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-book-open mr-2"></i>
+                    Join the Library
+                </button>
+            </div>
+        </div>
+
+        <!-- Library Page -->
+        <div id="library-tab" class="tab-content hidden">
+            <div class="mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center">Our Library</h1>
+                
+                <!-- Search and Filters -->
+                <div class="flex flex-col md:flex-row gap-4 mb-8">
+                    <div class="flex-1 relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="search-input" placeholder="Search books..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-coral focus:border-transparent">
+                    </div>
+                    <select id="genre-filter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-coral focus:border-transparent">
+                        <option value="">All Genres</option>
+                        <option value="fiction">Fiction</option>
+                        <option value="mystery">Mystery</option>
+                        <option value="romance">Romance</option>
+                        <option value="sci-fi">Sci-Fi</option>
+                        <option value="biography">Biography</option>
+                    </select>
+                </div>
+
+                <!-- Books Grid -->
+                <div id="books-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Books will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Authors Page -->
+        <div id="authors-tab" class="tab-content hidden">
+            <div class="mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center">Meet Our Authors</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Authors will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- About Us Page -->
+        <div id="about-tab" class="tab-content hidden">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center">About Lovable</h1>
+                
+                <div class="prose prose-lg max-w-none text-gray-700 mb-12">
+                    <p class="text-xl leading-relaxed mb-6">
+                        In a world increasingly dominated by digital distractions, Lovable emerged from a simple belief: 
+                        that reading is not just a hobby, but a profound way to connect with ourselves and others.
+                    </p>
+                    
+                    <p class="mb-6">
+                        Founded by a team of passionate readers, writers, and dreamers, Lovable is more than just a platform—it's a 
+                        movement to revive the intimate relationship between readers and books. We understand that every book carries 
+                        within it the power to change lives, spark conversations, and create lasting bonds between people who might 
+                        otherwise never meet.
+                    </p>
+                    
+                    <p class="mb-6">
+                        Our vision extends beyond simply cataloging books. We're building a sanctuary where literary souls can find 
+                        their tribe, where authors can connect directly with their readers, and where every story—whether read or 
+                        written—becomes a bridge to deeper human connection.
+                    </p>
+                </div>
+
+                <div class="bg-white/50 rounded-lg p-8 mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Our Mission</h2>
+                    <p class="text-lg text-gray-700 text-center italic">
+                        "To create meaningful connections through the transformative power of literature, 
+                        fostering a global community where every reader feels heard, valued, and inspired."
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Get in Touch</h3>
+                    <p class="text-gray-600 mb-2">Have questions or want to collaborate?</p>
+                    <a href="mailto:hello@lovable.com" class="text-deep-coral hover:underline font-medium">hello@lovable.com</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white/80 backdrop-blur-sm border-t border-gentle-rose/20 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <!-- Reader Count -->
+            <div class="text-center mb-8">
+                <p class="text-2xl font-semibold text-gray-800 mb-2">
+                    <span id="reader-count">1,247</span> readers have joined the Lovable community!
+                </p>
+                <p class="text-lg text-deep-coral font-medium italic">
+                    "Great stories find great hearts."
+                </p>
+            </div>
+
+            <!-- Comment Section -->
+            <div class="max-w-2xl mx-auto mb-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Leave a Message</h3>
+                <div class="bg-white/50 rounded-lg p-6">
+                    <textarea id="comment-input" placeholder="Share your thoughts about reading, books, or Lovable..." 
+                              class="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-deep-coral focus:border-transparent"></textarea>
+                    <button onclick="submitComment()" class="mt-4 bg-deep-coral hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Submit Message
+                    </button>
+                </div>
+                
+                <!-- Comments Display -->
+                <div id="comments-display" class="mt-6 space-y-4">
+                    <!-- Comments will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="flex justify-center space-x-6 mb-8">
+                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                    <i class="fab fa-goodreads"></i>
+                </a>
+            </div>
+
+            <!-- Copyright -->
+            <div class="text-center text-gray-500">
+                <p>&copy; 2024 Lovable. Made with <i class="fas fa-heart text-deep-coral"></i> for book lovers everywhere.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sample data
+        const books = [
+            { id: 1, title: "The Midnight Library", author: "Matt Haig", genre: "fiction", rating: 4.5, image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop" },
+            { id: 2, title: "Atomic Habits", author: "James Clear", genre: "self-help", rating: 4.8, image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300&h=400&fit=crop" },
+            { id: 3, title: "The Seven Husbands of Evelyn Hugo", author: "Taylor Jenkins Reid", genre: "romance", rating: 4.7, image: "https://images.unsplash.com/photo-1592496431122-2349e0fbc666?w=300&h=400&fit=crop" },
+            { id: 4, title: "Dune", author: "Frank Herbert", genre: "sci-fi", rating: 4.6, image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=400&fit=crop" },
+            { id: 5, title: "The Thursday Murder Club", author: "Richard Osman", genre: "mystery", rating: 4.4, image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=400&fit=crop" },
+            { id: 6, title: "Educated", author: "Tara Westover", genre: "biography", rating: 4.9, image: "https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=300&h=400&fit=crop" },
+            { id: 7, title: "The Invisible Man", author: "H.G. Wells", genre: "sci-fi", rating: 4.2, image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop" },
+            { id: 8, title: "Where the Crawdads Sing", author: "Delia Owens", genre: "fiction", rating: 4.5, image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&h=400&fit=crop" }
+        ];
+
+        const authors = [
+            { 
+                id: 1, 
+                name: "Matt Haig", 
+                bio: "British author known for his novels, children's books, and memoirs. His work often explores themes of mental health and human connection.",
+                image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop",
+                books: ["The Midnight Library", "The Humans", "Reasons to Stay Alive"]
+            },
+            { 
+                id: 2, 
+                name: "Taylor Jenkins Reid", 
+                bio: "American author of historical fiction and contemporary women's fiction, known for her compelling storytelling and complex characters.",
+                image: "https://images.unsplash.com/photo-1494790108755-2616c67ee9d4?w=300&h=300&fit=crop",
+                books: ["The Seven Husbands of Evelyn Hugo", "Daisy Jones & The Six", "Malibu Rising"]
+            },
+            { 
+                id: 3, 
+                name: "James Clear", 
+                bio: "Author and speaker focused on habits, decision making, and continuous improvement. His work helps people build better systems.",
+                image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop",
+                books: ["Atomic Habits", "Clear Thinking"]
+            },
+            { 
+                id: 4, 
+                name: "Frank Herbert", 
+                bio: "American science fiction author best known for his Dune series, which is considered one of the greatest science fiction novels ever written.",
+                image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop",
+                books: ["Dune", "Dune Messiah", "Children of Dune"]
+            },
+            { 
+                id: 5, 
+                name: "Tara Westover", 
+                bio: "American historian and author known for her memoir 'Educated', which explores themes of education, family, and self-discovery.",
+                image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop",
+                books: ["Educated"]
+            },
+            { 
+                id: 6, 
+                name: "Richard Osman", 
+                bio: "British television presenter, producer, and author known for his Thursday Murder Club mystery series.",
+                image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop",
+                books: ["The Thursday Murder Club", "The Man Who Died Twice"]
+            }
+        ];
+
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Update nav button styles
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('text-deep-coral', 'bg-gentle-rose/20');
+                btn.classList.add('text-gray-700');
+            });
+            
+            // Highlight active button
+            event.target.classList.remove('text-gray-700');
+            event.target.classList.add('text-deep-coral', 'bg-gentle-rose/20');
+            
+            // Close mobile menu if open
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Render books
+        function renderBooks(booksToRender = books) {
+            const grid = document.getElementById('books-grid');
+            grid.innerHTML = booksToRender.map(book => `
+                <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+                    <img src="${book.image}" alt="${book.title}" class="w-full h-64 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg text-gray-800 mb-2">${book.title}</h3>
+                        <p class="text-gray-600 mb-2">by ${book.author}</p>
+                        <p class="text-sm text-gray-500 mb-3 capitalize">${book.genre}</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400">
+                                    ${generateStars(book.rating)}
+                                </div>
+                                <span class="ml-2 text-sm text-gray-600">${book.rating}</span>
+                            </div>
+                            <button class="text-deep-coral hover:text-red-600 font-medium">
+                                <i class="fas fa-heart mr-1"></i>
+                                Add to Favorites
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render authors
+        function renderAuthors() {
+            const container = document.querySelector('#authors-tab .grid');
+            container.innerHTML = authors.map(author => `
+                <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-6">
+                    <img src="${author.image}" alt="${author.name}" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+                    <h3 class="font-bold text-xl text-gray-800 mb-2 text-center">${author.name}</h3>
+                    <p class="text-gray-600 mb-4 text-center">${author.bio}</p>
+                    <div class="mb-4">
+                        <h4 class="font-medium text-gray-800 mb-2">Notable Works:</h4>
+                        <ul class="text-sm text-gray-600">
+                            ${author.books.map(book => `<li>• ${book}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button class="flex-1 bg-deep-coral hover:bg-red-600 text-white px-4 py-2 rounded font-medium transition-colors">
+                            <i class="fas fa-video mr-2"></i>
+                            Request Live Session
+                        </button>
+                        <button class="flex-1 border border-deep-coral text-deep-coral hover:bg-deep-coral hover:text-white px-4 py-2 rounded font-medium transition-colors">
+                            <i class="fas fa-envelope mr-2"></i>
+                            Connect
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Generate star rating
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 !== 0;
+            let stars = '';
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '<i class="fas fa-star"></i>';
+            }
+            
+            if (hasHalfStar) {
+                stars += '<i class="fas fa-star-half-alt"></i>';
+            }
+            
+            return stars;
+        }
+
+        // Search and filter functionality
+        document.getElementById('search-input').addEventListener('input', filterBooks);
+        document.getElementById('genre-filter').addEventListener('change', filterBooks);
+
+        function filterBooks() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const selectedGenre = document.getElementById('genre-filter').value.toLowerCase();
+            
+            const filteredBooks = books.filter(book => {
+                const matchesSearch = book.title.toLowerCase().includes(searchTerm) || 
+                                    book.author.toLowerCase().includes(searchTerm);
+                const matchesGenre = !selectedGenre || book.genre.toLowerCase() === selectedGenre;
+                return matchesSearch && matchesGenre;
+            });
+            
+            renderBooks(filteredBooks);
+        }
+
+        // Comment functionality
+        function submitComment() {
+            const commentInput = document.getElementById('comment-input');
+            const comment = commentInput.value.trim();
+            
+            if (comment) {
+                // Get existing comments from localStorage
+                let comments = JSON.parse(localStorage.getItem('lovableComments') || '[]');
+                
+                // Add new comment
+                const newComment = {
+                    id: Date.now(),
+                    text: comment,
+                    timestamp: new Date().toLocaleString()
+                };
+                
+                comments.unshift(newComment);
+                
+                // Save to localStorage
+                localStorage.setItem('lovableComments', JSON.stringify(comments));
+                
+                // Clear input
+                commentInput.value = '';
+                
+                // Display comments
+                displayComments();
+            }
+        }
+
+        function displayComments() {
+            const comments = JSON.parse(localStorage.getItem('lovableComments') || '[]');
+            const container = document.getElementById('comments-display');
+            
+            container.innerHTML = comments.slice(0, 5).map(comment => `
+                <div class="bg-white/50 rounded-lg p-4">
+                    <p class="text-gray-700 mb-2">"${comment.text}"</p>
+                    <p class="text-sm text-gray-500">${comment.timestamp}</p>
+                </div>
+            `).join('');
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            renderBooks();
+            renderAuthors();
+            displayComments();
+            
+            // Simulate reader count increase
+            let readerCount = 1247;
+            setInterval(() => {
+                if (Math.random() < 0.3) {
+                    readerCount++;
+                    document.getElementById('reader-count').textContent = readerCount.toLocaleString();
+                }
+            }, 30000);
+        });
+
+        // Add Enter key support for comment submission
+        document.getElementById('comment-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                submitComment();
+            }
+        });
+    </script>
+</body>
+</html>
