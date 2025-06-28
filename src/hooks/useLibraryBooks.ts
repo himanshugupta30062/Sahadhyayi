@@ -69,17 +69,21 @@ export const useGenres = () => {
   return useQuery({
     queryKey: ['genres'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('genres')
-        .select('*')
-        .order('name');
+      // Since genres table doesn't exist yet, return hardcoded genres
+      const genres = [
+        { id: '1', name: 'Fiction' },
+        { id: '2', name: 'Science Fiction' },
+        { id: '3', name: 'Mystery' },
+        { id: '4', name: 'Romance' },
+        { id: '5', name: 'Fantasy' },
+        { id: '6', name: 'Non-Fiction' },
+        { id: '7', name: 'Biography' },
+        { id: '8', name: 'History' },
+        { id: '9', name: 'Self-Help' },
+        { id: '10', name: 'Thriller' },
+      ];
       
-      if (error) {
-        console.error('Error fetching genres:', error);
-        throw error;
-      }
-      
-      return data;
+      return genres;
     },
   });
 };
