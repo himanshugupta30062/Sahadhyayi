@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, StarHalf, ExternalLink, Eye, BookOpen, Download } from 'lucide-react';
+import { Star, StarHalf, ExternalLink, Eye } from 'lucide-react';
 import BookDetailModal from './BookDetailModal';
 import BookReader from './BookReader';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -159,16 +159,6 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleReadBook(book)}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
-                >
-                  <BookOpen className="w-4 h-4 mr-1" />
-                  Read Now
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
                   onClick={() => handleViewBook(book)}
                   className="flex-1"
                 >
@@ -176,18 +166,6 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                   Details
                 </Button>
               </div>
-
-              {/* Download PDF Button */}
-              {book.pdf_url && (
-                <Button
-                  size="sm"
-                  onClick={() => handleDownloadPDF(book)}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Download className="w-4 h-4 mr-1" />
-                  Download PDF
-                </Button>
-              )}
 
               {/* External Link */}
               {getPrimaryPurchaseUrl(book) && (

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Download, Play, MessageCircle, Search, Filter } from "lucide-react";
+import { BookOpen, MessageCircle, Search, Filter } from "lucide-react";
 import { useUserBooks, useUpdateBookStatus } from "@/hooks/useBooks";
 import type { UserBook } from "@/hooks/useBooks";
 import { Link } from "react-router-dom";
@@ -247,15 +247,7 @@ const Bookshelf = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1" size="sm">
-                        <Play className="w-4 h-4 mr-1" />
-                        Read
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <div className="flex gap-2"></div>
                   </CardContent>
                 </Card>
               );
