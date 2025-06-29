@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, BookOpen, Eye, Library, Download } from 'lucide-react';
+import { Star, Eye, Library } from 'lucide-react';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
 import InternetArchiveReader from './InternetArchiveReader';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -172,27 +172,6 @@ const BooksCollection = ({
                     </div>
                   </div>
                   
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                    <Button
-                      onClick={() => handleReadBook(book)}
-                      className="bg-white text-black hover:bg-gray-100 transform scale-90 group-hover:scale-100 transition-transform duration-300"
-                      size="sm"
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
-                      Read
-                    </Button>
-                    {book.pdf_url && (
-                      <Button
-                        onClick={() => handleDownloadPDF(book)}
-                        className="bg-green-600 text-white hover:bg-green-700 transform scale-90 group-hover:scale-100 transition-transform duration-300"
-                        size="sm"
-                      >
-                        <Download className="w-4 h-4 mr-1" />
-                        Download
-                      </Button>
-                    )}
-                  </div>
                 </div>
 
                 <CardContent className="p-4 space-y-3">
@@ -225,26 +204,7 @@ const BooksCollection = ({
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      onClick={() => handleReadBook(book)}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                      size="sm"
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
-                      Read Now
-                    </Button>
-                    {book.pdf_url && (
-                      <Button
-                        onClick={() => handleDownloadPDF(book)}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                        size="sm"
-                      >
-                        <Download className="w-4 h-4 mr-1" />
-                        Download PDF
-                      </Button>
-                    )}
-                  </div>
+                  <div className="flex gap-2 pt-2"></div>
                 </CardContent>
               </Card>
             ))}
