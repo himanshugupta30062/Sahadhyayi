@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
+import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
@@ -8,8 +8,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: AuthError | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -98,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
+  const signUp = async (email: string, password: string, fullName?: string): Promise<{ error: AuthError | null }> => {
     try {
       if (!email || !password) {
         return { error: new Error('Email and password are required') };
@@ -129,11 +129,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error };
     } catch (error) {
       console.error('Signup error:', error);
-      return { error: error instanceof Error ? error : new Error('An unexpected error occurred') };
+      return { error: error instanceof Error ? (error as AuthError) : new AuthError('An unexpected error occurred') };
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<{ error: AuthError | null }> => {
     try {
       if (!email || !password) {
         return { error: new Error('Email and password are required') };
@@ -152,7 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error };
     } catch (error) {
       console.error('Signin error:', error);
-      return { error: error instanceof Error ? error : new Error('An unexpected error occurred') };
+      return { error: error instanceof Error ? (error as AuthError) : new AuthError('An unexpected error occurred') };
     }
   };
 
