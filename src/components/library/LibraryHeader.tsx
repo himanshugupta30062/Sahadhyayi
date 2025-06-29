@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { SearchBar } from '@/components/ui/search-bar';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Grid2X2, List } from 'lucide-react';
+import { Search, Grid, List, SortAsc } from 'lucide-react';
 
 interface LibraryHeaderProps {
   searchQuery: string;
@@ -23,53 +23,62 @@ const LibraryHeader = ({
   onSortChange
 }: LibraryHeaderProps) => {
   return (
-    <div className="bg-white border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+    <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
           {/* Search Bar */}
-          <div className="flex-1 max-w-lg">
-            <SearchBar
-              value={searchQuery}
-              onValueChange={onSearchChange}
-              placeholder="Search by title, author, or ISBN..."
-              className="w-full"
-            />
+          <div className="flex-1 max-w-2xl relative">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                type="text"
+                placeholder="Search books by title, author, or genre..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="pl-10 pr-4 py-3 w-full text-lg border-2 border-gray-200 focus:border-orange-500 rounded-lg"
+              />
+            </div>
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {/* Sort Dropdown */}
-            <Select value={sortBy} onValueChange={onSortChange}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="title-asc">Title A-Z</SelectItem>
-                <SelectItem value="title-desc">Title Z-A</SelectItem>
-                <SelectItem value="author-asc">Author A-Z</SelectItem>
-                <SelectItem value="author-desc">Author Z-A</SelectItem>
-                <SelectItem value="rating-desc">Highest Rated</SelectItem>
-                <SelectItem value="rating-asc">Lowest Rated</SelectItem>
-                <SelectItem value="date-desc">Newest First</SelectItem>
-                <SelectItem value="date-asc">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <SortAsc className="w-5 h-5 text-gray-500" />
+              <Select value={sortBy} onValueChange={onSortChange}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="title-asc">Title A-Z</SelectItem>
+                  <SelectItem value="title-desc">Title Z-A</SelectItem>
+                  <SelectItem value="author-asc">Author A-Z</SelectItem>
+                  <SelectItem value="author-desc">Author Z-A</SelectItem>
+                  <SelectItem value="rating-desc">Highest Rated</SelectItem>
+                  <SelectItem value="rating-asc">Lowest Rated</SelectItem>
+                  <SelectItem value="date-desc">Newest First</SelectItem>
+                  <SelectItem value="date-asc">Oldest First</SelectItem>
+                  <SelectItem value="price-asc">Price Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* View Toggle */}
-            <div className="flex border rounded-lg overflow-hidden">
+            {/* View Mode Toggle */}
+            <div className="flex items-center border rounded-lg overflow-hidden">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onViewModeChange('grid')}
-                className="rounded-none border-0"
+                className="rounded-none"
               >
-                <Grid2X2 className="w-4 h-4" />
+                <Grid className="w-4 h-4" />
               </Button>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onViewModeChange('list')}
-                className="rounded-none border-0"
+                className="rounded-none"
               >
                 <List className="w-4 h-4" />
               </Button>

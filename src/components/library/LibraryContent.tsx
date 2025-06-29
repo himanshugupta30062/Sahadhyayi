@@ -32,7 +32,8 @@ const LibraryContent = ({
         const query = searchQuery.toLowerCase();
         return (
           book.title.toLowerCase().includes(query) ||
-          book.author.toLowerCase().includes(query)
+          book.author.toLowerCase().includes(query) ||
+          (book.genre && book.genre.toLowerCase().includes(query))
         );
       }
       return true;
@@ -59,6 +60,10 @@ const LibraryContent = ({
           return (b.rating || 0) - (a.rating || 0);
         case 'rating-asc':
           return (a.rating || 0) - (b.rating || 0);
+        case 'price-asc':
+          return (a.price || 0) - (b.price || 0);
+        case 'price-desc':
+          return (b.price || 0) - (a.price || 0);
         case 'date-desc':
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         case 'date-asc':
@@ -76,7 +81,7 @@ const LibraryContent = ({
       <div className="flex-1">
         <div className="animate-pulse space-y-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+            <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
           ))}
         </div>
       </div>
@@ -87,7 +92,7 @@ const LibraryContent = ({
     <div className="flex-1">
       {/* Results count */}
       <div className="mb-6">
-        <p className="text-gray-600">
+        <p className="text-gray-600 text-lg">
           Showing {filteredBooks.length} book{filteredBooks.length !== 1 ? 's' : ''}
           {searchQuery && ` for "${searchQuery}"`}
         </p>

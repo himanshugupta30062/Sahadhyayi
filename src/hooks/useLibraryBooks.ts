@@ -8,15 +8,21 @@ export interface Book {
   author: string;
   genre?: string;
   description?: string;
+  author_bio?: string;
   cover_image_url?: string;
   ebook_url?: string;
+  pdf_url?: string;
+  price?: number;
+  amazon_url?: string;
+  google_books_url?: string;
+  internet_archive_url?: string;
+  isbn?: string;
+  publication_year?: number;
+  pages?: number;
+  language?: string;
   rating?: number;
   location?: string;
   community?: string;
-  publication_year?: number;
-  isbn?: string;
-  pages?: number;
-  language?: string;
   created_at: string;
   updated_at?: string;
 }
@@ -30,7 +36,6 @@ export const useLibraryBooks = () => {
   return useQuery({
     queryKey: ['library-books'],
     queryFn: async () => {
-      // Query the books_library table which has more fields
       const { data, error } = await supabase
         .from('books_library')
         .select(`
@@ -38,8 +43,18 @@ export const useLibraryBooks = () => {
           title,
           author,
           genre,
+          description,
+          author_bio,
           cover_image_url,
           pdf_url,
+          price,
+          amazon_url,
+          google_books_url,
+          internet_archive_url,
+          isbn,
+          publication_year,
+          pages,
+          language,
           created_at
         `)
         .order('created_at', { ascending: false });
@@ -49,16 +64,25 @@ export const useLibraryBooks = () => {
         throw error;
       }
       
-      // Transform the data to match our Book interface
       const transformedBooks = (data || []).map(book => ({
         id: book.id,
         title: book.title,
         author: book.author || 'Unknown Author',
-        genre: book.genre || 'Fiction',
-        description: `A great book by ${book.author || 'Unknown Author'}`,
+        genre: book.genre,
+        description: book.description,
+        author_bio: book.author_bio,
         cover_image_url: book.cover_image_url,
         ebook_url: book.pdf_url,
-        rating: Math.random() * 2 + 3, // Random rating between 3-5 for demo
+        pdf_url: book.pdf_url,
+        price: book.price,
+        amazon_url: book.amazon_url,
+        google_books_url: book.google_books_url,
+        internet_archive_url: book.internet_archive_url,
+        isbn: book.isbn,
+        publication_year: book.publication_year,
+        pages: book.pages,
+        language: book.language,
+        rating: Math.random() * 2 + 3.5, // Random rating between 3.5-5.5 for demo
         created_at: book.created_at || new Date().toISOString(),
       }));
       
@@ -78,8 +102,18 @@ export const useBooksByGenre = (genre?: string) => {
           title,
           author,
           genre,
+          description,
+          author_bio,
           cover_image_url,
           pdf_url,
+          price,
+          amazon_url,
+          google_books_url,
+          internet_archive_url,
+          isbn,
+          publication_year,
+          pages,
+          language,
           created_at
         `)
         .order('created_at', { ascending: false });
@@ -95,16 +129,25 @@ export const useBooksByGenre = (genre?: string) => {
         throw error;
       }
       
-      // Transform the data to match our Book interface
       const transformedBooks = (data || []).map(book => ({
         id: book.id,
         title: book.title,
         author: book.author || 'Unknown Author',
-        genre: book.genre || 'Fiction',
-        description: `A great book by ${book.author || 'Unknown Author'}`,
+        genre: book.genre,
+        description: book.description,
+        author_bio: book.author_bio,
         cover_image_url: book.cover_image_url,
         ebook_url: book.pdf_url,
-        rating: Math.random() * 2 + 3, // Random rating between 3-5 for demo
+        pdf_url: book.pdf_url,
+        price: book.price,
+        amazon_url: book.amazon_url,
+        google_books_url: book.google_books_url,
+        internet_archive_url: book.internet_archive_url,
+        isbn: book.isbn,
+        publication_year: book.publication_year,
+        pages: book.pages,
+        language: book.language,
+        rating: Math.random() * 2 + 3.5, // Random rating between 3.5-5.5 for demo
         created_at: book.created_at || new Date().toISOString(),
       }));
       
@@ -117,7 +160,6 @@ export const useGenres = () => {
   return useQuery<Genre[]>({
     queryKey: ['genres'],
     queryFn: async () => {
-      // Get unique genres from books_library table
       const { data, error } = await supabase
         .from('books_library')
         .select('genre')
@@ -125,23 +167,19 @@ export const useGenres = () => {
       
       if (error) {
         console.error('Error fetching genres:', error);
-        // Return hardcoded genres as fallback
         const genres: Genre[] = [
-          { id: '1', name: 'Fiction' },
-          { id: '2', name: 'Science Fiction' },
-          { id: '3', name: 'Mystery' },
-          { id: '4', name: 'Romance' },
-          { id: '5', name: 'Fantasy' },
-          { id: '6', name: 'Non-Fiction' },
-          { id: '7', name: 'Biography' },
-          { id: '8', name: 'History' },
-          { id: '9', name: 'Self-Help' },
-          { id: '10', name: 'Thriller' },
+          { id: '1', name: 'Science' },
+          { id: '2', name: 'Fiction' },
+          { id: '3', name: 'Non-Fiction' },
+          { id: '4', name: 'Biography' },
+          { id: '5', name: 'History' },
+          { id: '6', name: 'Philosophy' },
+          { id: '7', name: 'Technology' },
+          { id: '8', name: 'Self-Help' },
         ];
         return genres;
       }
       
-      // Extract unique genres and create the expected format
       const genreValues = data?.map(item => item.genre) || [];
       const uniqueGenres = [...new Set(genreValues.filter((genre): genre is string => typeof genre === 'string' && genre !== null))];
       return uniqueGenres.map((genre, index) => ({

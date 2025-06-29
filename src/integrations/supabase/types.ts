@@ -76,30 +76,60 @@ export type Database = {
       }
       books_library: {
         Row: {
+          amazon_url: string | null
           author: string | null
+          author_bio: string | null
           cover_image_url: string | null
           created_at: string | null
+          description: string | null
           genre: string | null
+          google_books_url: string | null
           id: string
+          internet_archive_url: string | null
+          isbn: string | null
+          language: string | null
+          pages: number | null
           pdf_url: string | null
+          price: number | null
+          publication_year: number | null
           title: string
         }
         Insert: {
+          amazon_url?: string | null
           author?: string | null
+          author_bio?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          description?: string | null
           genre?: string | null
+          google_books_url?: string | null
           id?: string
+          internet_archive_url?: string | null
+          isbn?: string | null
+          language?: string | null
+          pages?: number | null
           pdf_url?: string | null
+          price?: number | null
+          publication_year?: number | null
           title: string
         }
         Update: {
+          amazon_url?: string | null
           author?: string | null
+          author_bio?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          description?: string | null
           genre?: string | null
+          google_books_url?: string | null
           id?: string
+          internet_archive_url?: string | null
+          isbn?: string | null
+          language?: string | null
+          pages?: number | null
           pdf_url?: string | null
+          price?: number | null
+          publication_year?: number | null
           title?: string
         }
         Relationships: []
