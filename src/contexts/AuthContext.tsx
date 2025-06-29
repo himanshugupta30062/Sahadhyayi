@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -101,16 +100,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, fullName?: string): Promise<{ error: AuthError | null }> => {
     try {
       if (!email || !password) {
-        return { error: new Error('Email and password are required') };
+        return { error: { message: 'Email and password are required' } as AuthError };
       }
       
       if (password.length < 8) {
-        return { error: new Error('Password must be at least 8 characters long') };
+        return { error: { message: 'Password must be at least 8 characters long' } as AuthError };
       }
       
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        return { error: new Error('Please enter a valid email address') };
+        return { error: { message: 'Please enter a valid email address' } as AuthError };
       }
 
       const redirectUrl = `${window.location.origin}/dashboard`;
@@ -129,19 +128,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error };
     } catch (error) {
       console.error('Signup error:', error);
-      return { error: error instanceof Error ? (error as AuthError) : new AuthError('An unexpected error occurred') };
+      return { error: error as AuthError };
     }
   };
 
   const signIn = async (email: string, password: string): Promise<{ error: AuthError | null }> => {
     try {
       if (!email || !password) {
-        return { error: new Error('Email and password are required') };
+        return { error: { message: 'Email and password are required' } as AuthError };
       }
       
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        return { error: new Error('Please enter a valid email address') };
+        return { error: { message: 'Please enter a valid email address' } as AuthError };
       }
 
       const { error } = await supabase.auth.signInWithPassword({
@@ -152,7 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error };
     } catch (error) {
       console.error('Signin error:', error);
-      return { error: error instanceof Error ? (error as AuthError) : new AuthError('An unexpected error occurred') };
+      return { error: error as AuthError };
     }
   };
 

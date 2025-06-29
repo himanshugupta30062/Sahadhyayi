@@ -16,6 +16,7 @@ export interface GroupMember {
   group_id: string | null;
   user_id: string | null;
   joined_at: string;
+  groups?: Group | null;
 }
 
 export const useGroups = () => {
