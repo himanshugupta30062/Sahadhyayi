@@ -114,6 +114,9 @@ image programmatically:
 const publicUrl = await uploadBookCover(file, bookId);
 ```
 
+The helper trims slashes from the book ID and sanitizes the filename so the
+final URL won't contain double slashes or other invalid characters.
+
 Store the returned URL in the `cover_image_url` column of `books_library`.
 Check that the final URL looks correct (no double slashes) and that the bucket
 is public. The library pages will automatically use this URL to display the
