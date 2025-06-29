@@ -20,8 +20,8 @@ const InternetArchiveReader = ({ book, isOpen, onClose }: InternetArchiveReaderP
   const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Extract Internet Archive identifier from the book's internet_archive_url
-  const archiveId = book?.internet_archive_url ? 
-    book.internet_archive_url.match(/archive\.org\/details\/([^\/\?]+)/)?.[1] : null;
+  const archiveId = book?.internet_archive_url ?
+    book.internet_archive_url.match(/archive\.org\/details\/([^/?]+)/)?.[1] : null;
 
   const { data: bookMetadata, isLoading: isMetadataLoading } = useInternetArchiveBook(archiveId || '');
   const { data: pages = [], isLoading: isPagesLoading } = useBookPages(archiveId || '');

@@ -94,6 +94,6 @@ export const useBookPages = (identifier: string) => {
 
 export const getInternetArchiveBookId = (url: string): string | null => {
   // Extract book ID from Internet Archive URL
-  const match = url.match(/archive\.org\/details\/([^\/\?]+)/);
+  const match = url.match(/archive\.org\/details\/([^/?]+)/);
   return match ? match[1] : null;
 };
