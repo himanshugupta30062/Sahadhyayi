@@ -1,7 +1,6 @@
 
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star } from 'lucide-react';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
 
 const TrendingCarousel = () => {
@@ -30,10 +29,7 @@ const TrendingCarousel = () => {
                     </div>
                     <h3 className="font-medium text-sm line-clamp-2 mb-1">{book.title}</h3>
                     <p className="text-xs text-gray-600 mb-2">{book.author}</p>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs font-medium">{book.rating?.toFixed(1)}</span>
-                    </div>
+                    {/* Removed ratings display */}
                   </CardContent>
                 </Card>
               ))}
