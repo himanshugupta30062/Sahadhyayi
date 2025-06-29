@@ -72,12 +72,16 @@ This project is built with:
 
 ## Environment variables
 
-Create a `.env` file based on `.env.example` and provide your Gemini API key:
+Create a `.env` file based on `.env.example` and add your Supabase credentials
+along with the Gemini API key:
 
 ```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_GEMINI_API_KEY=your_key_here
 ```
-This key is required for the chatbot to fetch responses from the Gemini API.
+These values are required for the application to connect to Supabase and for the
+chatbot to fetch responses from the Gemini API.
 
 ## How can I deploy this project?
 
