@@ -92,10 +92,14 @@ const BooksCollection = ({
       <div className="space-y-6">
         {/* Section Header */}
         <div className="flex items-center gap-3">
-          <Library className="w-6 h-6 text-blue-600" />
-          <h2 className="text-2xl font-bold text-gray-900">Books Collection</h2>
+          <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
+            <Library className="w-5 h-5 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+            Books Collection
+          </h2>
           {filteredBooks.length > 0 && (
-            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+            <span className="text-sm text-gray-500 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
               {filteredBooks.length} books found
             </span>
           )}

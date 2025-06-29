@@ -1,8 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Book } from '@/hooks/useLibraryBooks';
 import { renderStars } from './utils/starRating';
@@ -13,16 +12,27 @@ interface BookCardProps {
 }
 
 const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDownloadPDF(book);
+  };
+
   return (
-    <Card className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white/90 backdrop-blur-sm border-0 overflow-hidden">
-      <div className="aspect-[3/4] bg-gradient-to-br from-blue-500 to-purple-600 relative overflow-hidden">
+    <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/90 backdrop-blur-sm border-amber-200 overflow-hidden">
+      <div 
+        className="aspect-[3/4] bg-gradient-to-br from-amber-500 to-orange-600 relative overflow-hidden cursor-pointer"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         {book.cover_image_url ? (
           <img
             src={book.cover_image_url}
             alt={book.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
-              // Fallback to placeholder if image fails to load
               e.currentTarget.style.display = 'none';
               e.currentTarget.nextElementSibling?.classList.remove('hidden');
             }}
@@ -38,11 +48,34 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
             </div>
           </div>
         </div>
+
+        {/* Hover Overlay with Action Links */}
+        <div className={`absolute inset-0 bg-black/60 flex items-center justify-center gap-4 transition-all duration-300 ${
+          isHovered ? 'opacity-100' : 'opacity-0'
+        }`}>
+          <button
+            onClick={handleDownload}
+            className="flex flex-col items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-4 py-3 rounded-lg transition-all duration-200 hover:scale-105"
+            title="Download PDF"
+          >
+            <Download className="w-6 h-6" />
+            <span className="text-xs font-medium">Download</span>
+          </button>
+          
+          <Link
+            to={`/books/${book.id}`}
+            className="flex flex-col items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-4 py-3 rounded-lg transition-all duration-200 hover:scale-105"
+            title="View Details"
+          >
+            <Info className="w-6 h-6" />
+            <span className="text-xs font-medium">About</span>
+          </Link>
+        </div>
       </div>
 
       <CardContent className="p-4 space-y-3">
         <div>
-          <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
+          <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 group-hover:text-amber-600 transition-colors duration-200">
             {book.title}
           </h3>
           <p className="text-gray-600 text-sm">{book.author}</p>
@@ -60,7 +93,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
 
         {book.genre && (
           <div className="flex items-center gap-2">
-            <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+            <span className="inline-block bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">
               {book.genre}
             </span>
             {book.publication_year && (
@@ -68,15 +101,6 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
             )}
           </div>
         )}
-
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-2">
-          <Link to={`/books/${book.id}`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full">
-              About
-            </Button>
-          </Link>
-        </div>
       </CardContent>
     </Card>
   );
