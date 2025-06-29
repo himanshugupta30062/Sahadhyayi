@@ -6,6 +6,7 @@ import { Star, Eye, Library } from 'lucide-react';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
 import InternetArchiveReader from './InternetArchiveReader';
 import type { Book } from '@/hooks/useLibraryBooks';
+import { Link } from 'react-router-dom';
 
 interface BooksCollectionProps {
   searchQuery: string;
@@ -204,7 +205,13 @@ const BooksCollection = ({
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2 pt-2"></div>
+                  <div className="flex gap-2 pt-2">
+                    <Link to={`/books/${book.id}`} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        About
+                      </Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             ))}

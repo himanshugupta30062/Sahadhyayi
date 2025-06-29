@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Link } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import { useBooksByGenre, useGenres } from '@/hooks/useLibraryBooks';
 import type { Book, Genre } from '@/hooks/useLibraryBooks';
@@ -76,14 +77,11 @@ const BookGrid = () => {
               )}
             </CardContent>
             <CardFooter className="pt-0">
-              <Button
-                size="sm"
-                onClick={() => markAsRead(book.id)}
-                disabled={readIds.includes(book.id)}
-                className="ml-auto bg-amber-600 hover:bg-amber-700"
-              >
-                {readIds.includes(book.id) ? "Read" : "Mark as Read"}
-              </Button>
+              <Link to={`/books/${book.id}`} className="ml-auto">
+                <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
+                  About
+                </Button>
+              </Link>
             </CardFooter>
           </Card>
         ))}

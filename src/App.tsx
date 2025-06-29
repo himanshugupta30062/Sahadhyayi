@@ -25,6 +25,7 @@ import Quotes from "./pages/Quotes";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import BookDetails from "./pages/BookDetails";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,6 +66,7 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="/library" element={<BookLibrary />} />
+                  <Route path="/books/:id" element={<BookDetails />} />
                   <Route path="/groups" element={
                     <ProtectedRoute>
                       <ReadingGroups />
