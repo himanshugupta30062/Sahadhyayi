@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn, Share2, Library, Search, UserPlus } from "lucide-react";
+import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn, Share2, Library, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -16,7 +16,6 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { data: profile } = useProfile();
-  const [searchQuery, setSearchQuery] = useState("");
 
   const avatarFallback =
     profile?.full_name?.charAt(0) ||
@@ -60,19 +59,6 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
   return (
     <div className="lg:hidden">
       <div className="px-2 pt-2 pb-3 space-y-1 bg-white rounded-lg shadow-lg mt-2 mx-2 sm:mx-0">
-        {/* Mobile Search */}
-        <div className="px-3 pb-3 mb-2 border-b">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 focus:border-orange-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-200"
-            />
-          </div>
-        </div>
 
         {navItems.map((item) => {
           const Icon = item.icon;
