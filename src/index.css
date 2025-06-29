@@ -110,3 +110,9 @@
 .animate-vibrant {
   animation: vibrant 2s linear infinite;
 }
+
+/* Highlight style for search matches */
+mark.search-highlight {
+  background-color: yellow;
+  padding: 0;
+}

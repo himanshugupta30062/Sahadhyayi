@@ -12,10 +12,42 @@ const Navigation = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    // This will be implemented based on the current page context
-    console.log("Search:", query);
+    setSearchQuery(e.target.value);
+  };
+
+  const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const clearHighlights = () => {
+    document.querySelectorAll("mark.search-highlight").forEach((mark) => {
+      const text = document.createTextNode(mark.textContent || "");
+      mark.replaceWith(text);
+    });
+    document.body.normalize();
+  };
+
+  const highlightElement = (el: HTMLElement, term: string) => {
+    const regex = new RegExp(`(${escapeRegExp(term)})`, "gi");
+    if (!regex.test(el.textContent || "")) return;
+    el.innerHTML = (el.textContent || "").replace(regex, '<mark class="search-highlight">$1</mark>');
+  };
+
+  const handleSearch = () => {
+    const term = searchQuery.trim();
+    if (!term) return;
+    clearHighlights();
+    const elements = document.querySelectorAll(
+      "#root h1, #root h2, #root h3, #root p, #root li"
+    );
+    let firstMatch: HTMLElement | null = null;
+    elements.forEach((el) => {
+      if (el.textContent?.toLowerCase().includes(term.toLowerCase())) {
+        if (!firstMatch) firstMatch = el as HTMLElement;
+        highlightElement(el as HTMLElement, term);
+      }
+    });
+    if (firstMatch) {
+      firstMatch.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   };
 
   return (
@@ -28,20 +60,29 @@ const Navigation = () => {
             {/* Compact Search Bar */}
             <div className="hidden md:block">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={handleSearchChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSearch();
+                  }}
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
-                  className={`pl-9 pr-4 py-2 w-64 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
-                    isSearchFocused 
-                      ? 'border-orange-400 bg-white shadow-md ring-2 ring-orange-200 scale-105' 
+                  className={`pl-4 pr-9 py-2 w-64 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
+                    isSearchFocused
+                      ? 'border-orange-400 bg-white shadow-md ring-2 ring-orange-200 scale-105'
                       : 'hover:bg-white hover:border-gray-400'
                   }`}
                 />
+                <button
+                  onClick={handleSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-600"
+                  aria-label="Search"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
