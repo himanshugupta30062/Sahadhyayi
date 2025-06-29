@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Star, StarHalf, ExternalLink, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import BookDetailModal from './BookDetailModal';
 import BookReader from './BookReader';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -156,15 +157,12 @@ const BookGridView = ({ books }: BookGridViewProps) => {
             <CardFooter className="p-4 pt-0 space-y-2">
               {/* Action Buttons */}
               <div className="flex gap-2 w-full">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleViewBook(book)}
-                  className="flex-1"
-                >
-                  <Eye className="w-4 h-4 mr-1" />
-                  Details
-                </Button>
+                <Link to={`/books/${book.id}`} className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Eye className="w-4 h-4 mr-1" />
+                    About
+                  </Button>
+                </Link>
               </div>
 
               {/* External Link */}
