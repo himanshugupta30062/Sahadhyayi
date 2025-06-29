@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star, BookOpen, Eye, TrendingUp } from 'lucide-react';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
-import BookReader from './BookReader';
+import InternetArchiveReader from './InternetArchiveReader';
 import type { Book } from '@/hooks/useLibraryBooks';
 
 interface MostReadBooksProps {
@@ -193,8 +193,8 @@ const MostReadBooks = ({
         )}
       </div>
 
-      {/* Book Reader */}
-      <BookReader
+      {/* Internet Archive Book Reader */}
+      <InternetArchiveReader
         book={readerBook}
         isOpen={isReaderOpen}
         onClose={() => setIsReaderOpen(false)}
