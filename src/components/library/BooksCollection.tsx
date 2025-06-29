@@ -2,12 +2,12 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, BookOpen, Eye, TrendingUp } from 'lucide-react';
+import { Star, BookOpen, Eye, Library } from 'lucide-react';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
 import InternetArchiveReader from './InternetArchiveReader';
 import type { Book } from '@/hooks/useLibraryBooks';
 
-interface MostReadBooksProps {
+interface BooksCollectionProps {
   searchQuery: string;
   selectedGenre: string;
   selectedAuthor: string;
@@ -16,14 +16,14 @@ interface MostReadBooksProps {
   priceRange: [number, number];
 }
 
-const MostReadBooks = ({
+const BooksCollection = ({
   searchQuery,
   selectedGenre,
   selectedAuthor,
   selectedYear,
   selectedLanguage,
   priceRange
-}: MostReadBooksProps) => {
+}: BooksCollectionProps) => {
   const { data: books = [], isLoading } = useLibraryBooks();
   const [isReaderOpen, setIsReaderOpen] = React.useState(false);
   const [readerBook, setReaderBook] = React.useState<Book | null>(null);
@@ -59,8 +59,7 @@ const MostReadBooks = ({
       return true;
     });
 
-    // Sort by rating (simulating "most read" with highest rated books)
-    return filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    return filtered;
   }, [books, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
   const handleReadBook = (book: Book) => {
@@ -104,8 +103,8 @@ const MostReadBooks = ({
       <div className="space-y-6">
         {/* Section Header */}
         <div className="flex items-center gap-3">
-          <TrendingUp className="w-6 h-6 text-blue-600" />
-          <h2 className="text-2xl font-bold text-gray-900">Most Read Books</h2>
+          <Library className="w-6 h-6 text-blue-600" />
+          <h2 className="text-2xl font-bold text-gray-900">Books Collection</h2>
           {filteredBooks.length > 0 && (
             <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
               {filteredBooks.length} books found
@@ -203,4 +202,4 @@ const MostReadBooks = ({
   );
 };
 
-export default MostReadBooks;
+export default BooksCollection;
