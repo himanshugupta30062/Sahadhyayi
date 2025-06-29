@@ -5,6 +5,7 @@ import { SearchBar } from '@/components/ui/search-bar';
 import FilterPopup from '@/components/library/FilterPopup';
 import BooksCollection from '@/components/library/BooksCollection';
 import GenreSelector from '@/components/library/GenreSelector';
+import TrendingCarousel from '@/components/library/TrendingCarousel';
 
 const BookLibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,6 +43,8 @@ const BookLibrary = () => {
           </div>
         </div>
       </div>
+
+      <TrendingCarousel />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
