@@ -2,6 +2,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { BookOpen, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useChatbot } from '@/contexts/ChatbotContext';
 import { cn } from '@/lib/utils';
 
@@ -27,19 +32,26 @@ const Chatbot = () => {
   };
 
   if (!isOpen) {
-    return (
+    const button = (
       <button
         id="chatbot-icon"
         onClick={toggleChat}
         className={cn(
-          'fixed z-50 flex items-center justify-center rounded-full bg-black text-white cursor-pointer',
-          floating && 'animate-float'
+          'fixed z-50 flex items-center justify-center rounded-full text-white cursor-pointer',
+          floating ? 'animate-float animate-vibrant' : 'bg-black'
         )}
         style={{ width: '50px', height: '50px', bottom: '30px', right: '30px' }}
         aria-label="Open chat with Book Expert"
       >
         <BookOpen className="h-6 w-6" />
       </button>
+    );
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent>Book Expert</TooltipContent>
+      </Tooltip>
     );
   }
 
