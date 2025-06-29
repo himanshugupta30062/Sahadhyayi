@@ -96,3 +96,7 @@ To connect a domain, navigate to Project > Settings > Domains and click Connect 
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
 
+
+## Adding Books to the Library
+
+To display custom books in the Library section you must populate the `books_library` table in Supabase. See [docs/AddBooksToLibrary.md](docs/AddBooksToLibrary.md) for a step-by-step guide on creating the table and uploading covers and PDFs.
