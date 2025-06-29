@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, Eye, Library } from 'lucide-react';
+import { Star, Eye, Library, BookOpen } from 'lucide-react';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
 import InternetArchiveReader from './InternetArchiveReader';
 import type { Book } from '@/hooks/useLibraryBooks';
