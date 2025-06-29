@@ -98,3 +98,15 @@
 .animate-float {
   animation: float 2s ease-in-out infinite;
 }
+
+@keyframes vibrant {
+  0% { background-color: #f43f5e; }
+  25% { background-color: #f97316; }
+  50% { background-color: #eab308; }
+  75% { background-color: #22c55e; }
+  100% { background-color: #3b82f6; }
+}
+
+.animate-vibrant {
+  animation: vibrant 2s linear infinite;
+}
