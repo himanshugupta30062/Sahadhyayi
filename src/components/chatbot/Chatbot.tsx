@@ -8,11 +8,17 @@ import { cn } from '@/lib/utils';
 const Chatbot = () => {
   const { isOpen, toggleChat, closeChat, messages, sendMessage } = useChatbot();
   const [input, setInput] = useState('');
+  const [floating, setFloating] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setFloating(false), 10000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -23,11 +29,16 @@ const Chatbot = () => {
   if (!isOpen) {
     return (
       <button
+        id="chatbot-icon"
         onClick={toggleChat}
-        className="fixed bottom-4 right-4 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg transition-transform duration-200 hover:scale-105"
+        className={cn(
+          'fixed z-50 flex items-center justify-center rounded-full bg-black text-white cursor-pointer',
+          floating && 'animate-float'
+        )}
+        style={{ width: '50px', height: '50px', bottom: '30px', right: '30px' }}
         aria-label="Open chat with Book Expert"
       >
-        <BookOpen className="h-8 w-8 animate-bounce" />
+        <BookOpen className="h-6 w-6" />
       </button>
     );
   }
