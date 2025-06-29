@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { Book, X } from 'lucide-react';
+import { BookOpen, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useChatbot } from '@/contexts/ChatbotContext';
 import { cn } from '@/lib/utils';
@@ -24,10 +24,10 @@ const Chatbot = () => {
     return (
       <button
         onClick={toggleChat}
-        className="fixed bottom-4 right-4 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform duration-200"
+        className="fixed bottom-4 right-4 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg transition-transform duration-200 hover:scale-105"
         aria-label="Open chat with Book Expert"
       >
-        <Book className="h-8 w-8" />
+        <BookOpen className="h-8 w-8 animate-bounce" />
       </button>
     );
   }
@@ -44,8 +44,8 @@ const Chatbot = () => {
         {messages.map((m, i) => (
           <div key={i} className={cn('flex items-end gap-2', m.sender === 'user' && 'justify-end')}>
             {m.sender === 'bot' && (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
-                <Book className="h-3 w-3" />
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow animate-pulse">
+                <BookOpen className="h-3 w-3" />
               </div>
             )}
             <div
