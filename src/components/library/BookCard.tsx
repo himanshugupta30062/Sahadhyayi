@@ -4,7 +4,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Book } from '@/hooks/useLibraryBooks';
-import { renderStars } from './utils/starRating';
 
 interface BookCardProps {
   book: Book;
@@ -78,17 +77,6 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 group-hover:text-amber-600 transition-colors duration-200">
             {book.title}
           </h3>
-          <p className="text-gray-600 text-sm">{book.author}</p>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            {renderStars(book.rating || 0)}
-            <span className="text-sm font-medium ml-1">{(book.rating || 0).toFixed(1)}</span>
-          </div>
-          {book.price && (
-            <span className="text-lg font-bold text-green-600">${book.price}</span>
-          )}
         </div>
 
         {book.genre && (
