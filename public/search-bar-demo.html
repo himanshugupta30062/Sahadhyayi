@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Demo</title>
+<style>
+  body {font-family: Arial, sans-serif; margin:0; padding-top:60px;}
+  header {position:fixed; top:0; left:0; right:0; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.1); padding:10px 20px; z-index:1000;}
+  .search-container {position:relative; max-width:400px; margin:auto;}
+  .search-container input {width:100%; padding:10px 40px 10px 12px; border:1px solid #ccc; border-radius:20px; font-size:16px;}
+  .search-container button {position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:18px; color:#555;}
+  .highlight {background:yellow;}
+  section {padding:40px 20px; border-bottom:1px solid #eee;}
+</style>
+</head>
+<body>
+<header>
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search...">
+    <button id="searchBtn">🔍</button>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>Introduction</h2>
+    <p>Welcome to this sample page. Use the search bar to find content on the page.</p>
+  </section>
+  <section>
+    <h2>Features</h2>
+    <p>This demo highlights matches and scrolls smoothly to the first result found.</p>
+  </section>
+  <section>
+    <h2>More Content</h2>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent malesuada.</p>
+  </section>
+  <section>
+    <h2>Conclusion</h2>
+    <p>Thank you for trying out the search functionality.</p>
+  </section>
+</main>
+
+<script>
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+function clearHighlights() {
+  document.querySelectorAll('.highlight').forEach(el => {
+    const text = document.createTextNode(el.textContent);
+    el.parentNode.replaceChild(text, el);
+  });
+  document.body.normalize();
+}
+function highlightElement(el, term) {
+  const regex = new RegExp('(' + escapeRegExp(term) + ')', 'gi');
+  if (!regex.test(el.textContent)) return;
+  el.innerHTML = el.textContent.replace(regex, '<span class="highlight">$1</span>');
+}
+function searchPage() {
+  const term = document.getElementById('searchInput').value.trim();
+  if (!term) return;
+  clearHighlights();
+  const elements = document.querySelectorAll('main h1, main h2, main h3, main p, main li');
+  let firstMatch;
+  elements.forEach(el => {
+    if (el.textContent.toLowerCase().includes(term.toLowerCase())) {
+      if (!firstMatch) firstMatch = el;
+      highlightElement(el, term);
+    }
+  });
+  if (firstMatch) {
+    firstMatch.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+}
+
+document.getElementById('searchBtn').addEventListener('click', searchPage);
+document.getElementById('searchInput').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') {
+    searchPage();
+  }
+});
+</script>
+</body>
+</html>
