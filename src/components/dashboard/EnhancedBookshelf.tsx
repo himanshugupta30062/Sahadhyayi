@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Clock, CheckCircle, Plus } from 'lucide-react';
 import { useUserBooks } from '@/hooks/useBooks';
+import type { UserBook } from '@/hooks/useBooks';
 import { Link } from 'react-router-dom';
 
 const EnhancedBookshelf = () => {
@@ -69,7 +70,7 @@ const EnhancedBookshelf = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {userBooks.slice(0, 5).map((userBook: any) => (
+            {userBooks.slice(0, 5).map((userBook: UserBook) => (
               <div key={userBook.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 {userBook.books?.cover_url ? (
                   <img

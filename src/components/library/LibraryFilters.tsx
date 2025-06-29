@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { useGenres } from '@/hooks/useLibraryBooks';
+import type { Genre } from '@/hooks/useLibraryBooks';
 
 interface LibraryFiltersProps {
   selectedGenre: string;
@@ -46,7 +47,7 @@ const LibraryFilters = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All Genres</SelectItem>
-              {genres.map((genre: any) => (
+              {genres.map((genre: Genre) => (
                 <SelectItem key={genre.id} value={genre.name}>
                   {genre.name}
                 </SelectItem>
