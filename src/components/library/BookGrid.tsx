@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BookOpen } from 'lucide-react';
 import { useBooksByGenre, useGenres } from '@/hooks/useLibraryBooks';
-import type { Book } from '@/hooks/useLibraryBooks';
+import type { Book, Genre } from '@/hooks/useLibraryBooks';
 
 const BookGrid = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
@@ -50,7 +50,7 @@ const BookGrid = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Genres</SelectItem>
-            {genres.map((genre: any) => (
+            {genres.map((genre: Genre) => (
               <SelectItem key={genre.id} value={genre.name}>
                 {genre.name}
               </SelectItem>

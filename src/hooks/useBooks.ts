@@ -11,6 +11,20 @@ export interface Book {
   created_at: string;
 }
 
+export interface UserBook {
+  id: string;
+  book_id: string;
+  status: string;
+  added_at: string;
+  books: {
+    id: string;
+    title: string;
+    author: string | null;
+    description: string | null;
+    cover_url: string | null;
+  } | null;
+}
+
 export const useBooks = () => {
   return useQuery({
     queryKey: ['books'],
@@ -66,7 +80,7 @@ export const useUserBooks = () => {
         .order('added_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as UserBook[];
     },
   });
 };

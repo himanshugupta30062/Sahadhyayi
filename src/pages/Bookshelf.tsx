@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Download, Play, MessageCircle, Search, Filter } from "lucide-react";
 import { useUserBooks, useUpdateBookStatus } from "@/hooks/useBooks";
+import type { UserBook } from "@/hooks/useBooks";
 import { Link } from "react-router-dom";
 
 const Bookshelf = () => {
@@ -26,7 +27,7 @@ const Bookshelf = () => {
 
   const filterOptions = ["All", "reading", "completed", "want_to_read", "paused", "unread"];
 
-  const filteredBooks = userBooks.filter((userBook: any) => {
+  const filteredBooks = userBooks.filter((userBook: UserBook) => {
     const book = userBook.books;
     if (!book) return false;
     
@@ -113,7 +114,7 @@ const Bookshelf = () => {
           <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-blue-600 mb-2">
-                {userBooks.filter((book: any) => book.status === "reading").length}
+                {userBooks.filter((book: UserBook) => book.status === "reading").length}
               </div>
               <div className="text-blue-800 font-medium">Currently Reading</div>
             </CardContent>
@@ -121,7 +122,7 @@ const Bookshelf = () => {
           <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-green-600 mb-2">
-                {userBooks.filter((book: any) => book.status === "completed").length}
+                {userBooks.filter((book: UserBook) => book.status === "completed").length}
               </div>
               <div className="text-green-800 font-medium">Completed</div>
             </CardContent>
@@ -129,7 +130,7 @@ const Bookshelf = () => {
           <Card className="bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-amber-600 mb-2">
-                {userBooks.filter((book: any) => book.status === "want_to_read").length}
+                {userBooks.filter((book: UserBook) => book.status === "want_to_read").length}
               </div>
               <div className="text-amber-800 font-medium">Want to Read</div>
             </CardContent>
@@ -165,7 +166,7 @@ const Bookshelf = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredBooks.map((userBook: any) => {
+            {filteredBooks.map((userBook: UserBook) => {
               const book = userBook.books;
               if (!book) return null;
 

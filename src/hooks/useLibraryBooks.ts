@@ -21,6 +21,11 @@ export interface Book {
   updated_at?: string;
 }
 
+export interface Genre {
+  id: string;
+  name: string;
+}
+
 export const useLibraryBooks = () => {
   return useQuery({
     queryKey: ['library-books'],
@@ -109,7 +114,7 @@ export const useBooksByGenre = (genre?: string) => {
 };
 
 export const useGenres = () => {
-  return useQuery({
+  return useQuery<Genre[]>({
     queryKey: ['genres'],
     queryFn: async () => {
       // Get unique genres from books_library table
@@ -121,7 +126,7 @@ export const useGenres = () => {
       if (error) {
         console.error('Error fetching genres:', error);
         // Return hardcoded genres as fallback
-        const genres = [
+        const genres: Genre[] = [
           { id: '1', name: 'Fiction' },
           { id: '2', name: 'Science Fiction' },
           { id: '3', name: 'Mystery' },
@@ -142,7 +147,7 @@ export const useGenres = () => {
       return uniqueGenres.map((genre, index) => ({
         id: (index + 1).toString(),
         name: genre
-      }));
+      })) as Genre[];
     },
   });
 };
