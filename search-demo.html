@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Highlight Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    .search-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: flex;
+      gap: 4px;
+    }
+    .search-bar input {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .search-bar button {
+      padding: 6px 12px;
+      font-size: 1rem;
+      border: none;
+      background: #007BFF;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .search-bar button:hover {
+      background: #0056b3;
+    }
+    .content {
+      padding: 80px 20px 20px; /* space for fixed bar */
+    }
+    mark.search-highlight {
+      background: yellow;
+    }
+  </style>
+</head>
+<body>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search..." />
+    <button id="searchButton">Search</button>
+  </div>
+
+  <div class="content" id="content">
+    <h1>Demo Page</h1>
+    <p>This is a simple page demonstrating a custom search bar. Type some text and press Enter or click Search to highlight matches. Delete the query to remove highlights.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam.</p>
+    <p>Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris.</p>
+    <p>Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.</p>
+    <p>Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>
+    <button id="addContent">Add Dynamic Content</button>
+  </div>
+
+  <script>
+    (function() {
+      const searchInput = document.getElementById('searchInput');
+      const searchButton = document.getElementById('searchButton');
+      let currentTerm = '';
+
+      function removeHighlights() {
+        document.querySelectorAll('mark.search-highlight').forEach(el => {
+          const parent = el.parentNode;
+          parent.replaceChild(document.createTextNode(el.textContent), el);
+          parent.normalize();
+        });
+      }
+
+      function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      function isHidden(el) {
+        const style = window.getComputedStyle(el);
+        return style.display === 'none' || style.visibility === 'hidden';
+      }
+
+      function walk(node, regex, highlights) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent;
+          let match;
+          regex.lastIndex = 0;
+          if ((match = regex.exec(text))) {
+            const frag = document.createDocumentFragment();
+            let lastIndex = 0;
+            regex.lastIndex = 0;
+            while ((match = regex.exec(text))) {
+              const before = text.slice(lastIndex, match.index);
+              if (before) frag.appendChild(document.createTextNode(before));
+              const mark = document.createElement('mark');
+              mark.className = 'search-highlight';
+              mark.textContent = match[0];
+              frag.appendChild(mark);
+              highlights.push(mark);
+              lastIndex = regex.lastIndex;
+            }
+            const after = text.slice(lastIndex);
+            if (after) frag.appendChild(document.createTextNode(after));
+            node.replaceWith(frag);
+          }
+        } else if (node.nodeType === Node.ELEMENT_NODE && !isHidden(node) && !node.classList.contains('search-bar')) {
+          if (['SCRIPT','STYLE','NOSCRIPT'].includes(node.tagName)) return;
+          Array.from(node.childNodes).forEach(child => walk(child, regex, highlights));
+        }
+      }
+
+      function highlight(term) {
+        removeHighlights();
+        if (!term) return;
+        const regex = new RegExp(escapeRegExp(term), 'gi');
+        const highlights = [];
+        walk(document.body, regex, highlights);
+        if (highlights.length) {
+          highlights[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
+      function handleSearch() {
+        currentTerm = searchInput.value.trim();
+        highlight(currentTerm);
+      }
+
+      searchButton.addEventListener('click', handleSearch);
+      searchInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleSearch();
+        }
+      });
+      searchInput.addEventListener('input', () => {
+        if (!searchInput.value.trim()) {
+          currentTerm = '';
+          removeHighlights();
+        }
+      });
+
+      const observer = new MutationObserver(() => {
+        if (currentTerm) highlight(currentTerm);
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      document.getElementById('addContent').addEventListener('click', () => {
+        const p = document.createElement('p');
+        p.textContent = 'New dynamic paragraph containing the word lorem to demonstrate dynamic highlighting.';
+        document.getElementById('content').appendChild(p);
+      });
+    })();
+  </script>
+</body>
+</html>
