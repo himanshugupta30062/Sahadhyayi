@@ -29,7 +29,7 @@ const MostReadBooks = ({
   const [readerBook, setReaderBook] = React.useState<Book | null>(null);
 
   const filteredBooks = useMemo(() => {
-    let filtered = books.filter(book => {
+    const filtered = books.filter(book => {
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
