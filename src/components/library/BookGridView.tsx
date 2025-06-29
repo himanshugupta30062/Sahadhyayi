@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, StarHalf, ExternalLink, Eye, BookOpen } from 'lucide-react';
+import { Star, StarHalf, ExternalLink, Eye, BookOpen, Download } from 'lucide-react';
 import BookDetailModal from './BookDetailModal';
 import BookReader from './BookReader';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -17,6 +18,26 @@ const BookGridView = ({ books }: BookGridViewProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReaderOpen, setIsReaderOpen] = useState(false);
   const [readerBook, setReaderBook] = useState<Book | null>(null);
+
+  const handleDownloadPDF = async (book: Book) => {
+    if (!book.pdf_url) {
+      alert('PDF not available for this book');
+      return;
+    }
+
+    try {
+      const link = document.createElement('a');
+      link.href = book.pdf_url;
+      link.download = `${book.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download PDF. Please try again.');
+    }
+  };
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -79,12 +100,17 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                   alt={book.title}
                   className="w-full h-full object-cover"
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
                 />
-              ) : (
-                <div className="text-center p-4">
-                  <div className="text-sm">{book.title}</div>
-                </div>
-              )}
+              ) : null}
+              
+              {/* Fallback placeholder */}
+              <div className={`text-center p-4 ${book.cover_image_url ? 'hidden' : ''}`}>
+                <div className="text-sm">{book.title}</div>
+              </div>
               
               {/* Hover Overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -150,6 +176,18 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                   Details
                 </Button>
               </div>
+
+              {/* Download PDF Button */}
+              {book.pdf_url && (
+                <Button
+                  size="sm"
+                  onClick={() => handleDownloadPDF(book)}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  Download PDF
+                </Button>
+              )}
 
               {/* External Link */}
               {getPrimaryPurchaseUrl(book) && (

@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, BookOpen, Eye, Library } from 'lucide-react';
+import { Star, BookOpen, Eye, Library, Download } from 'lucide-react';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
 import InternetArchiveReader from './InternetArchiveReader';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -65,6 +65,27 @@ const BooksCollection = ({
   const handleReadBook = (book: Book) => {
     setReaderBook(book);
     setIsReaderOpen(true);
+  };
+
+  const handleDownloadPDF = async (book: Book) => {
+    if (!book.pdf_url) {
+      alert('PDF not available for this book');
+      return;
+    }
+
+    try {
+      // Create a temporary link element to trigger download
+      const link = document.createElement('a');
+      link.href = book.pdf_url;
+      link.download = `${book.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download PDF. Please try again.');
+    }
   };
 
   const renderStars = (rating: number) => {
@@ -133,27 +154,44 @@ const BooksCollection = ({
                       src={book.cover_image_url}
                       alt={book.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        // Fallback to placeholder if image fails to load
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white p-4">
-                      <div className="text-center">
-                        <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
-                        <div className="text-sm font-medium leading-tight">
-                          {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
-                        </div>
+                  ) : null}
+                  
+                  {/* Fallback placeholder */}
+                  <div className={`w-full h-full flex items-center justify-center text-white p-4 ${book.cover_image_url ? 'hidden' : ''}`}>
+                    <div className="text-center">
+                      <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
+                      <div className="text-sm font-medium leading-tight">
+                        {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
                       </div>
                     </div>
-                  )}
+                  </div>
                   
                   {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
                     <Button
                       onClick={() => handleReadBook(book)}
                       className="bg-white text-black hover:bg-gray-100 transform scale-90 group-hover:scale-100 transition-transform duration-300"
+                      size="sm"
                     >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Read Now
+                      <Eye className="w-4 h-4 mr-1" />
+                      Read
                     </Button>
+                    {book.pdf_url && (
+                      <Button
+                        onClick={() => handleDownloadPDF(book)}
+                        className="bg-green-600 text-white hover:bg-green-700 transform scale-90 group-hover:scale-100 transition-transform duration-300"
+                        size="sm"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Download
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -185,6 +223,28 @@ const BooksCollection = ({
                       )}
                     </div>
                   )}
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      onClick={() => handleReadBook(book)}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                      size="sm"
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      Read Now
+                    </Button>
+                    {book.pdf_url && (
+                      <Button
+                        onClick={() => handleDownloadPDF(book)}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        size="sm"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Download PDF
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}
