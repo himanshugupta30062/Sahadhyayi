@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { SearchBar } from '@/components/ui/search-bar';
-import LibraryFilters from '@/components/library/LibraryFilters';
+import FilterPopup from '@/components/library/FilterPopup';
 import MostReadBooks from '@/components/library/MostReadBooks';
 
 const BookLibrary = () => {
@@ -12,6 +12,14 @@ const BookLibrary = () => {
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+
+  const handleClearFilters = () => {
+    setSelectedGenre('All');
+    setSelectedAuthor('All');
+    setSelectedYear('');
+    setSelectedLanguage('All');
+    setPriceRange([0, 100]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -34,31 +42,34 @@ const BookLibrary = () => {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search Bar */}
+        {/* Search Bar with Filter */}
         <div className="mb-8">
           <div className="max-w-2xl mx-auto">
-            <SearchBar
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-              placeholder="Search books by title, author, or genre..."
-              className="h-14 text-lg shadow-lg border-2 border-blue-100 focus-within:border-blue-400 rounded-2xl"
-            />
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <SearchBar
+                  value={searchQuery}
+                  onValueChange={setSearchQuery}
+                  placeholder="Search books by title, author, or genre..."
+                  className="h-14 text-lg shadow-lg border-2 border-blue-100 focus-within:border-blue-400 rounded-2xl"
+                />
+              </div>
+              <FilterPopup
+                selectedGenre={selectedGenre}
+                onGenreChange={setSelectedGenre}
+                selectedAuthor={selectedAuthor}
+                onAuthorChange={setSelectedAuthor}
+                selectedYear={selectedYear}
+                onYearChange={setSelectedYear}
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={setSelectedLanguage}
+                priceRange={priceRange}
+                onPriceRangeChange={setPriceRange}
+                onClearFilters={handleClearFilters}
+              />
+            </div>
           </div>
         </div>
-
-        {/* Filters */}
-        <LibraryFilters
-          selectedGenre={selectedGenre}
-          onGenreChange={setSelectedGenre}
-          selectedAuthor={selectedAuthor}
-          onAuthorChange={setSelectedAuthor}
-          selectedYear={selectedYear}
-          onYearChange={setSelectedYear}
-          selectedLanguage={selectedLanguage}
-          onLanguageChange={setSelectedLanguage}
-          priceRange={priceRange}
-          onPriceRangeChange={setPriceRange}
-        />
 
         {/* Most Read Books */}
         <MostReadBooks

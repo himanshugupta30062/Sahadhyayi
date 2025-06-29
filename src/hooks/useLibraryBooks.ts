@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -71,7 +72,7 @@ export const useLibraryBooks = () => {
         description: book.description,
         author_bio: book.author_bio,
         cover_image_url: book.title.toLowerCase().includes('brief history of time') ? 
-          'https://upload.wikimedia.org/wikipedia/en/4/44/The_Brief_History_of_Time_%28book%29.jpg' : 
+          'https://m.media-amazon.com/images/I/A1gXUtzHh6L._SY466_.jpg' : 
           book.cover_image_url,
         ebook_url: book.pdf_url,
         pdf_url: book.pdf_url,
