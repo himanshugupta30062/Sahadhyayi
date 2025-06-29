@@ -1,38 +1,33 @@
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Upload a book cover image to the public `book-covers` bucket and
- * return the public URL of the uploaded file.
+ * Upload a book cover image to the `book-covers` bucket in Supabase Storage.
+ * Ensures the bucket exists and returns the public URL of the uploaded image.
  */
-export async function uploadBookCover(file: File, bookId: string): Promise<string> {
+export async function uploadBookCover(
+  file: File,
+  bookId: string,
+): Promise<string> {
+  const bucket = 'book-covers';
+  const filePath = `${bookId}/${Date.now()}_${file.name}`;
+
   if (!file.type.startsWith('image/')) {
     throw new Error('Only image uploads allowed');
   }
 
-  const bucket = 'book-covers';
-  const safeBookId = bookId.replace(/^\/+|\/+$/g, '');
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const filePath = `${safeBookId}/${Date.now()}_${safeName}`;
+  // Create the bucket if it doesn't already exist
+  await supabase.storage
+    .createBucket(bucket, { public: true })
+    .catch(() => ({ error: null }));
 
-  await supabase.storage.createBucket(bucket, { public: true }).catch(() => ({ error: null }));
+  const { error: uploadError } = await supabase.storage
+    .from(bucket)
+    .upload(filePath, file, { upsert: true });
+  if (uploadError) throw uploadError;
 
-  const { error } = await supabase.storage.from(bucket).upload(filePath, file, { upsert: true });
-  if (error) throw error;
+  const publicUrl = supabase.storage
+    .from(bucket)
+    .getPublicUrl(filePath).data.publicUrl;
 
-  return supabase.storage.from(bucket).getPublicUrl(filePath).data.publicUrl;
-}
-
-/**
- * Convenience helper that uploads the book cover and saves the URL in the
- * `cover_image_url` column of `books_library`.
- */
-export async function uploadAndSaveBookCover(file: File, bookId: string): Promise<string> {
-  const publicUrl = await uploadBookCover(file, bookId);
-  const { error } = await supabase
-    .from('books_library')
-    .update({ cover_image_url: publicUrl })
-    .eq('id', bookId);
-  if (error) throw error;
   return publicUrl;
 }
-

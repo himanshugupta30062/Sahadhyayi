@@ -71,13 +71,17 @@ export const useLibraryBooks = () => {
         genre: book.genre,
         description: book.description,
         author_bio: book.author_bio,
-        cover_image_url: book.cover_image_url,
+        cover_image_url: book.title.toLowerCase().includes('brief history of time') ? 
+          'https://m.media-amazon.com/images/I/A1gXUtzHh6L._SY466_.jpg' : 
+          book.cover_image_url,
         ebook_url: book.pdf_url,
         pdf_url: book.pdf_url,
         price: book.price,
         amazon_url: book.amazon_url,
         google_books_url: book.google_books_url,
-        internet_archive_url: book.internet_archive_url,
+        internet_archive_url: book.title.toLowerCase().includes('brief history of time') ? 
+          'https://archive.org/details/briefhistoryofti0000hawk' : 
+          book.internet_archive_url,
         isbn: book.isbn,
         publication_year: book.publication_year,
         pages: book.pages,
