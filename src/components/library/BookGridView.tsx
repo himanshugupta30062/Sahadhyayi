@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, StarHalf, ExternalLink, Eye } from 'lucide-react';
+import { Star, StarHalf, ExternalLink, Eye, BookOpen } from 'lucide-react';
 import BookDetailModal from './BookDetailModal';
+import BookReader from './BookReader';
 import type { Book } from '@/hooks/useLibraryBooks';
 
 interface BookGridViewProps {
@@ -15,6 +15,8 @@ const BookGridView = ({ books }: BookGridViewProps) => {
   const [userShelves, setUserShelves] = useState<Record<string, string>>({});
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReaderOpen, setIsReaderOpen] = useState(false);
+  const [readerBook, setReaderBook] = useState<Book | null>(null);
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -44,6 +46,11 @@ const BookGridView = ({ books }: BookGridViewProps) => {
   const handleViewBook = (book: Book) => {
     setSelectedBook(book);
     setIsModalOpen(true);
+  };
+
+  const handleReadBook = (book: Book) => {
+    setReaderBook(book);
+    setIsReaderOpen(true);
   };
 
   const getPrimaryPurchaseUrl = (book: Book) => {
@@ -126,26 +133,38 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => handleReadBook(book)}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  <BookOpen className="w-4 h-4 mr-1" />
+                  Read Now
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleViewBook(book)}
                   className="flex-1"
                 >
                   <Eye className="w-4 h-4 mr-1" />
-                  View Details
+                  Details
                 </Button>
-                
-                {getPrimaryPurchaseUrl(book) && (
-                  <Button
-                    size="sm"
-                    asChild
-                    className="flex-1 bg-orange-600 hover:bg-orange-700"
-                  >
-                    <a href={getPrimaryPurchaseUrl(book)} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-4 h-4 mr-1" />
-                      {book.amazon_url ? 'Buy Now' : 'Read'}
-                    </a>
-                  </Button>
-                )}
               </div>
+
+              {/* External Link */}
+              {getPrimaryPurchaseUrl(book) && (
+                <Button
+                  size="sm"
+                  asChild
+                  variant="outline"
+                  className="w-full"
+                >
+                  <a href={getPrimaryPurchaseUrl(book)} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-4 h-4 mr-1" />
+                    {book.amazon_url ? 'Buy on Amazon' : 'View External'}
+                  </a>
+                </Button>
+              )}
 
               {/* Shelf Selector */}
               <Select
@@ -172,6 +191,13 @@ const BookGridView = ({ books }: BookGridViewProps) => {
         book={selectedBook}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {/* Book Reader */}
+      <BookReader
+        book={readerBook}
+        isOpen={isReaderOpen}
+        onClose={() => setIsReaderOpen(false)}
       />
     </>
   );
