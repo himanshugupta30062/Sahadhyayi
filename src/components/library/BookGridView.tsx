@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, StarHalf, ExternalLink, Eye } from 'lucide-react';
+import { ExternalLink, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BookDetailModal from './BookDetailModal';
 import BookReader from './BookReader';
@@ -40,26 +40,6 @@ const BookGridView = ({ books }: BookGridViewProps) => {
     }
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />);
-    }
-
-    if (hasHalfStar) {
-      stars.push(<StarHalf key="half" className="w-4 h-4 fill-yellow-400 text-yellow-400" />);
-    }
-
-    const remainingStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    for (let i = 0; i < remainingStars; i++) {
-      stars.push(<Star key={`empty-${i}`} className="w-4 h-4 text-gray-300" />);
-    }
-
-    return stars;
-  };
 
   const handleShelfChange = (bookId: string, shelf: string) => {
     setUserShelves(prev => ({ ...prev, [bookId]: shelf }));
@@ -126,32 +106,11 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                 {book.title}
               </h3>
 
-              {/* Author */}
-              <p className="text-gray-600 text-sm">{book.author}</p>
-
               {/* Genre and Year */}
               <div className="flex items-center justify-between text-xs text-gray-500">
                 {book.genre && <span className="bg-gray-100 px-2 py-1 rounded">{book.genre}</span>}
                 {book.publication_year && <span>{book.publication_year}</span>}
               </div>
-
-              {/* Rating and Price */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                  {renderStars(book.rating || 0)}
-                  <span className="text-sm font-medium ml-1">{(book.rating || 0).toFixed(1)}</span>
-                </div>
-                {book.price && (
-                  <span className="text-lg font-bold text-green-600">${book.price}</span>
-                )}
-              </div>
-
-              {/* Description Preview */}
-              {book.description && (
-                <p className="text-sm text-gray-700 line-clamp-2 leading-relaxed">
-                  {book.description}
-                </p>
-              )}
             </CardContent>
 
             <CardFooter className="p-4 pt-0 space-y-2">
