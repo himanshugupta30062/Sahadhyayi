@@ -95,3 +95,22 @@ To connect a domain, navigate to Project > Settings > Domains and click Connect 
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
 
+## Uploading book cover images
+
+To display your own book covers in the Library, you need a public Storage bucket:
+
+1. Sign in to your **Supabase** project and open **Storage** from the sidebar.
+2. Click **Create bucket** and name it `book-covers`.
+3. Leave the bucket **Public** so the app can load images directly.
+4. Save the bucket. You can now upload files into `book-covers/`.
+
+The helper function in `src/hooks/useBookCoverUpload.ts` can be used to upload an
+image programmatically:
+
+```ts
+const publicUrl = await uploadBookCover(file, bookId);
+```
+
+Store the returned URL in the `cover_image_url` column of `books_library`. The
+library pages will automatically use this URL to display the cover image.
+
