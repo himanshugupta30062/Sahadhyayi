@@ -1,5 +1,6 @@
+
 import { useEffect, useRef, useState } from 'react';
-import { MessageCircle, X } from 'lucide-react';
+import { Book, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useChatbot } from '@/contexts/ChatbotContext';
 import { cn } from '@/lib/utils';
@@ -23,10 +24,10 @@ const Chatbot = () => {
     return (
       <button
         onClick={toggleChat}
-        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"
-        aria-label="Open chat"
+        className="fixed bottom-4 right-4 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform duration-200"
+        aria-label="Open chat with Book Expert"
       >
-        <MessageCircle className="h-6 w-6" />
+        <Book className="h-8 w-8" />
       </button>
     );
   }
@@ -34,7 +35,7 @@ const Chatbot = () => {
   return (
     <div className="fixed bottom-4 right-4 z-50 flex h-96 w-80 flex-col overflow-hidden rounded-2xl border bg-white shadow-2xl dark:border-gray-700">
       <div className="flex items-center justify-between border-b bg-gradient-to-r from-gray-800 to-gray-900 p-3 text-white">
-        <span className="font-semibold">Assistant</span>
+        <span className="font-semibold">Book Expert</span>
         <button onClick={closeChat} aria-label="Close chat" className="p-1 text-white">
           <X className="h-4 w-4" />
         </button>
@@ -43,11 +44,9 @@ const Chatbot = () => {
         {messages.map((m, i) => (
           <div key={i} className={cn('flex items-end gap-2', m.sender === 'user' && 'justify-end')}>
             {m.sender === 'bot' && (
-              <img
-                src="/lovable-uploads/3f0d5de6-4956-4feb-937f-90f70f359001.png"
-                alt="Assistant"
-                className="h-6 w-6 rounded-full shadow"
-              />
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
+                <Book className="h-3 w-3" />
+              </div>
             )}
             <div
               className={cn(
@@ -70,11 +69,10 @@ const Chatbot = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type a message..."
+            placeholder="Ask about books, reading, or literature..."
             className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none"
           />
-          <Button size="sm" onClick={handleSend}
-            >
+          <Button size="sm" onClick={handleSend}>
             Send
           </Button>
         </div>

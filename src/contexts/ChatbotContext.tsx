@@ -27,7 +27,7 @@ export const useChatbot = () => {
 export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { sender: 'bot', text: 'Hello! I\'m your AI reading assistant. How can I help you today?' }
+    { sender: 'bot', text: 'Hello! I\'m your Book Expert AI assistant. I can help you with book recommendations, literary discussions, reading tips, and more. What would you like to know?' }
   ]);
 
   const toggleChat = () => setIsOpen((prev) => !prev);
@@ -58,7 +58,7 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
           body: JSON.stringify({ 
             contents: [{ 
               parts: [{ 
-                text: `You are a helpful AI assistant for Sahadhyayi, a reading platform. Please provide helpful, concise responses related to reading, books, and literature. User question: ${text}` 
+                text: `You are Book Expert, a knowledgeable AI assistant specializing in books, literature, reading recommendations, and literary discussions. You help users discover new books, understand literary concepts, discuss authors and their works, and provide reading guidance. Please provide helpful, engaging, and well-informed responses about books and literature. User question: ${text}` 
               }] 
             }] 
           }),
