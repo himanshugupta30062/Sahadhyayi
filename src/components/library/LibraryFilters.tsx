@@ -1,128 +1,131 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import { useGenres } from '@/hooks/useLibraryBooks';
-import type { Genre } from '@/hooks/useLibraryBooks';
+import { Filter } from 'lucide-react';
 
 interface LibraryFiltersProps {
   selectedGenre: string;
   onGenreChange: (genre: string) => void;
-  ratingFilter: number[];
-  onRatingFilterChange: (rating: number[]) => void;
-  shelfFilter: string;
-  onShelfFilterChange: (shelf: string) => void;
+  selectedAuthor: string;
+  onAuthorChange: (author: string) => void;
+  selectedYear: string;
+  onYearChange: (year: string) => void;
+  selectedLanguage: string;
+  onLanguageChange: (language: string) => void;
+  priceRange: [number, number];
+  onPriceRangeChange: (range: [number, number]) => void;
 }
 
 const LibraryFilters = ({
   selectedGenre,
   onGenreChange,
-  ratingFilter,
-  onRatingFilterChange,
-  shelfFilter,
-  onShelfFilterChange
+  selectedAuthor,
+  onAuthorChange,
+  selectedYear,
+  onYearChange,
+  selectedLanguage,
+  onLanguageChange,
+  priceRange,
+  onPriceRangeChange
 }: LibraryFiltersProps) => {
-  const { data: genres = [] } = useGenres();
-
-  const shelves = [
-    { id: 'all', name: 'All Books' },
-    { id: 'want-to-read', name: 'Want to Read' },
-    { id: 'currently-reading', name: 'Currently Reading' },
-    { id: 'read', name: 'Read' },
-    { id: 'did-not-finish', name: 'Did Not Finish' }
-  ];
+  const genres = ['All', 'Fiction', 'Science', 'History', 'Biography', 'Philosophy', 'Technology', 'Self-Help'];
+  const authors = ['All', 'J.K. Rowling', 'Stephen King', 'Agatha Christie', 'Isaac Asimov', 'Maya Angelou'];
+  const languages = ['All', 'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'];
 
   return (
-    <div className="w-64 space-y-6">
-      {/* Genres Filter */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Genres</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={selectedGenre} onValueChange={onGenreChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select genre" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Genres</SelectItem>
-              {genres.map((genre: Genre) => (
-                <SelectItem key={genre.id} value={genre.name}>
-                  {genre.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+    <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="w-5 h-5 text-blue-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Filter Books</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Genre Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Genre</label>
+            <Select value={selectedGenre} onValueChange={onGenreChange}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Select genre" />
+              </SelectTrigger>
+              <SelectContent>
+                {genres.map((genre) => (
+                  <SelectItem key={genre} value={genre}>
+                    {genre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Rating Filter */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Average Rating</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>{ratingFilter[0]} stars</span>
-              <span>{ratingFilter[1]} stars</span>
-            </div>
-            <Slider
-              value={ratingFilter}
-              onValueChange={onRatingFilterChange}
-              max={5}
-              min={0}
-              step={0.5}
-              className="w-full"
+          {/* Author Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Author</label>
+            <Select value={selectedAuthor} onValueChange={onAuthorChange}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Select author" />
+              </SelectTrigger>
+              <SelectContent>
+                {authors.map((author) => (
+                  <SelectItem key={author} value={author}>
+                    {author}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Year Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Publication Year</label>
+            <Input
+              type="number"
+              placeholder="e.g. 2020"
+              value={selectedYear}
+              onChange={(e) => onYearChange(e.target.value)}
+              className="h-10"
             />
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Shelf Filter */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">My Shelves</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={shelfFilter} onValueChange={onShelfFilterChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select shelf" />
-            </SelectTrigger>
-            <SelectContent>
-              {shelves.map((shelf) => (
-                <SelectItem key={shelf.id} value={shelf.id}>
-                  {shelf.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+          {/* Language Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Language</label>
+            <Select value={selectedLanguage} onValueChange={onLanguageChange}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((language) => (
+                  <SelectItem key={language} value={language}>
+                    {language}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Publication Year - Simple for now */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Publication Year</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select defaultValue="all">
-            <SelectTrigger>
-              <SelectValue placeholder="Select year range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Years</SelectItem>
-              <SelectItem value="2020s">2020s</SelectItem>
-              <SelectItem value="2010s">2010s</SelectItem>
-              <SelectItem value="2000s">2000s</SelectItem>
-              <SelectItem value="1990s">1990s</SelectItem>
-              <SelectItem value="older">Before 1990</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
-    </div>
+          {/* Price Range Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Price Range: ${priceRange[0]} - ${priceRange[1]}
+            </label>
+            <div className="pt-2">
+              <Slider
+                value={priceRange}
+                onValueChange={(value) => onPriceRangeChange(value as [number, number])}
+                max={100}
+                min={0}
+                step={5}
+                className="w-full"
+              />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

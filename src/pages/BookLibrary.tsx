@@ -1,74 +1,74 @@
 
 import React, { useState } from 'react';
 import { BookOpen } from 'lucide-react';
-import LibraryHeader from '@/components/library/LibraryHeader';
+import { SearchBar } from '@/components/ui/search-bar';
 import LibraryFilters from '@/components/library/LibraryFilters';
-import LibraryContent from '@/components/library/LibraryContent';
-import TrendingCarousel from '@/components/library/TrendingCarousel';
+import MostReadBooks from '@/components/library/MostReadBooks';
 
 const BookLibrary = () => {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
-  const [sortBy, setSortBy] = useState<string>('title-asc');
-  const [ratingFilter, setRatingFilter] = useState<number[]>([0, 5]);
-  const [shelfFilter, setShelfFilter] = useState<string>('all');
+  const [selectedAuthor, setSelectedAuthor] = useState<string>('All');
+  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center space-x-3">
-            <BookOpen className="w-8 h-8 text-orange-600" />
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Library (पुस्तकालय)
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <BookOpen className="w-10 h-10 text-blue-600" />
+              <h1 className="text-4xl font-bold text-gray-900">
+                Digital Library
               </h1>
-              <p className="text-gray-600 mt-1">
-                Discover and explore our collection of books
-              </p>
             </div>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Discover and explore our vast collection of books from around the world
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Trending Carousel */}
-      <TrendingCarousel />
-
-      {/* Library Header with Search and Controls */}
-      <LibraryHeader
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-      />
-
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-8">
-          {/* Filters Sidebar */}
-          <LibraryFilters
-            selectedGenre={selectedGenre}
-            onGenreChange={setSelectedGenre}
-            ratingFilter={ratingFilter}
-            onRatingFilterChange={setRatingFilter}
-            shelfFilter={shelfFilter}
-            onShelfFilterChange={setShelfFilter}
-          />
-
-          {/* Books Content */}
-          <LibraryContent
-            viewMode={viewMode}
-            searchQuery={searchQuery}
-            selectedGenre={selectedGenre}
-            sortBy={sortBy}
-            ratingFilter={ratingFilter}
-            shelfFilter={shelfFilter}
-          />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search Bar */}
+        <div className="mb-8">
+          <div className="max-w-2xl mx-auto">
+            <SearchBar
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+              placeholder="Search books by title, author, or genre..."
+              className="h-14 text-lg shadow-lg border-2 border-blue-100 focus-within:border-blue-400 rounded-2xl"
+            />
+          </div>
         </div>
+
+        {/* Filters */}
+        <LibraryFilters
+          selectedGenre={selectedGenre}
+          onGenreChange={setSelectedGenre}
+          selectedAuthor={selectedAuthor}
+          onAuthorChange={setSelectedAuthor}
+          selectedYear={selectedYear}
+          onYearChange={setSelectedYear}
+          selectedLanguage={selectedLanguage}
+          onLanguageChange={setSelectedLanguage}
+          priceRange={priceRange}
+          onPriceRangeChange={setPriceRange}
+        />
+
+        {/* Most Read Books */}
+        <MostReadBooks
+          searchQuery={searchQuery}
+          selectedGenre={selectedGenre}
+          selectedAuthor={selectedAuthor}
+          selectedYear={selectedYear}
+          selectedLanguage={selectedLanguage}
+          priceRange={priceRange}
+        />
       </div>
     </div>
   );

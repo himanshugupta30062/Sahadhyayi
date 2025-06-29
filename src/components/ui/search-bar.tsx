@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Search, X } from "lucide-react"
 
@@ -13,23 +14,22 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
   ({ className, value, onValueChange, ...props }, ref) => {
     return (
       <div className={cn("relative w-full", className)}>
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
         {value && (
           <button
             type="button"
             onClick={() => onValueChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         )}
         <Input
           ref={ref}
           type="text"
-          placeholder="Search books or groups..."
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
-          className="pl-9 pr-9"
+          className={cn("pl-12 pr-12", className)}
           {...props}
         />
       </div>
