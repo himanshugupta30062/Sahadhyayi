@@ -32,25 +32,33 @@ const Chatbot = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex h-96 w-80 flex-col overflow-hidden rounded-lg border bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
-      <div className="flex items-center justify-between border-b bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-800">
+    <div className="fixed bottom-4 right-4 z-50 flex h-96 w-80 flex-col overflow-hidden rounded-2xl border bg-white shadow-2xl dark:border-gray-700">
+      <div className="flex items-center justify-between border-b bg-gradient-to-r from-gray-800 to-gray-900 p-3 text-white">
         <span className="font-semibold">Assistant</span>
-        <button onClick={closeChat} aria-label="Close chat" className="p-1">
+        <button onClick={closeChat} aria-label="Close chat" className="p-1 text-white">
           <X className="h-4 w-4" />
         </button>
       </div>
-      <div className="flex-1 space-y-2 overflow-y-auto p-3 text-sm">
+      <div className="flex-1 space-y-3 overflow-y-auto bg-white p-3 text-sm">
         {messages.map((m, i) => (
-          <div
-            key={i}
-            className={cn(
-              'max-w-[80%] rounded-lg px-3 py-2',
-              m.sender === 'user'
-                ? 'ml-auto bg-primary text-primary-foreground'
-                : 'bg-muted'
+          <div key={i} className={cn('flex items-end gap-2', m.sender === 'user' && 'justify-end')}>
+            {m.sender === 'bot' && (
+              <img
+                src="/lovable-uploads/3f0d5de6-4956-4feb-937f-90f70f359001.png"
+                alt="Assistant"
+                className="h-6 w-6 rounded-full shadow"
+              />
             )}
-          >
-            {m.text}
+            <div
+              className={cn(
+                'max-w-[80%] rounded-lg px-3 py-2 shadow',
+                m.sender === 'user'
+                  ? 'ml-auto bg-primary text-primary-foreground'
+                  : 'bg-muted'
+              )}
+            >
+              {m.text}
+            </div>
           </div>
         ))}
         <div ref={bottomRef} />
@@ -65,7 +73,8 @@ const Chatbot = () => {
             placeholder="Type a message..."
             className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none"
           />
-          <Button size="sm" onClick={handleSend}>
+          <Button size="sm" onClick={handleSend}
+            >
             Send
           </Button>
         </div>
