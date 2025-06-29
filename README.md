@@ -95,3 +95,23 @@ To connect a domain, navigate to Project > Settings > Domains and click Connect 
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
 
+## Uploading book covers
+
+To store custom cover images in Supabase Storage:
+
+1. In your Supabase project, create a **public** bucket named `book-covers`.
+2. Use the `uploadBookCover` helper to upload an image for each book:
+
+   ```ts
+   import { uploadBookCover } from '@/hooks/useBookCoverUpload';
+
+   const url = await uploadBookCover(file, bookId);
+   // Save `url` to the book's `cover_image_url` column
+   ```
+
+   The helper trims slashes from the ID and sanitizes the filename so the final URL
+   doesn't contain double slashes or invalid characters.
+
+3. Update the book's `cover_image_url` field in `books_library` with the returned URL.
+   The library page will automatically display the uploaded cover.
+
