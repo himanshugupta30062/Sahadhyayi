@@ -68,20 +68,20 @@ const AudioSummaryButton = ({ bookId, bookContent }: AudioSummaryButtonProps) =>
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 w-full">
       <Button
         onClick={handleAudioSummary}
         disabled={createAudioSummary.isPending}
-        className="bg-orange-600 hover:bg-orange-700 text-white"
+        className="bg-orange-600 hover:bg-orange-700 text-white flex-1 h-12 text-base"
       >
         {createAudioSummary.isPending ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
             Generating Audio...
           </>
         ) : (
           <>
-            <Headphones className="w-4 h-4 mr-2" />
+            <Headphones className="w-5 h-5 mr-2" />
             15 Min Audio Summary
           </>
         )}
@@ -91,12 +91,12 @@ const AudioSummaryButton = ({ bookId, bookContent }: AudioSummaryButtonProps) =>
         <Button
           onClick={togglePlayPause}
           variant="outline"
-          size="icon"
+          className="h-12 w-12 flex-shrink-0"
         >
           {isPlaying ? (
-            <Pause className="w-4 h-4" />
+            <Pause className="w-5 h-5" />
           ) : (
-            <Play className="w-4 h-4" />
+            <Play className="w-5 h-5" />
           )}
         </Button>
       )}

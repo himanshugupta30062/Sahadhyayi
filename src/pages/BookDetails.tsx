@@ -61,172 +61,200 @@ const BookDetails = () => {
   const readFreeLink = book.internet_archive_url;
 
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Link to="/library" className="inline-flex items-center text-sm text-blue-600 hover:underline">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 py-8 px-4">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <Link to="/library" className="inline-flex items-center text-sm text-blue-600 hover:underline font-medium">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Library
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">{book.title}</h1>
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="md:col-span-1">
-            <div className="aspect-[3/4] bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg overflow-hidden shadow-lg">
-              {book.cover_image_url ? (
-                <img src={book.cover_image_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
-              ) : (
-                <div className="flex items-center justify-center h-full text-white font-bold text-lg p-4 text-center">
-                  {book.title}
+        
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-6">{book.title}</h1>
+            
+            <div className="grid lg:grid-cols-5 gap-8">
+              {/* Book Cover - Left Column */}
+              <div className="lg:col-span-2">
+                <div className="aspect-[3/4] bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl overflow-hidden shadow-lg mb-6">
+                  {book.cover_image_url ? (
+                    <img src={book.cover_image_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-white font-bold text-lg p-4 text-center">
+                      {book.title}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="mt-4 space-y-3">
-              {book.price && (
-                <div className="text-center">
-                  <span className="text-2xl font-bold text-green-600">${book.price}</span>
-                </div>
-              )}
-              <div className="space-y-2">
-                {/* Read Free link */}
-                {readFreeLink && (
-                  <Button asChild className="w-full" variant="outline">
-                    <a href={readFreeLink} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Read Free
-                    </a>
-                  </Button>
-                )}
+                
+                {/* Action Buttons */}
+                <div className="space-y-4">
+                  {book.price && (
+                    <div className="text-center">
+                      <span className="text-3xl font-bold text-green-600">${book.price}</span>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-3">
+                    {/* Read Free Button */}
+                    {readFreeLink && (
+                      <Button asChild className="w-full h-12 text-base" variant="outline">
+                        <a href={readFreeLink} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-5 h-5 mr-2" />
+                          Read Free
+                        </a>
+                      </Button>
+                    )}
 
-                {/* Audio Summary Button */}
-                <AudioSummaryButton
-                  bookId={book.id}
-                  bookContent={book.description}
-                />
+                    {/* Audio Summary Button - Full Width */}
+                    <div className="w-full">
+                      <AudioSummaryButton
+                        bookId={book.id}
+                        bookContent={book.description}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Book Details - Right Column */}
+              <div className="lg:col-span-3 space-y-8">
+                {/* Author and Rating */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h2 className="text-2xl font-semibold text-gray-800">by {book.author}</h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleAuthorClick}
+                      className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                      title="Learn more about the author"
+                    >
+                      <Info className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-1">
+                      {renderStars(book.rating || 0)}
+                      <span className="ml-2 font-medium text-lg">{(book.rating || 0).toFixed(1)}</span>
+                    </div>
+                    {book.genre && <Badge variant="secondary" className="text-sm px-3 py-1">{book.genre}</Badge>}
+                  </div>
+                  
+                  {/* Book Metadata */}
+                  <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    {book.publication_year && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        <span>Published {book.publication_year}</span>
+                      </div>
+                    )}
+                    {book.pages && (
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        <span>{book.pages} pages</span>
+                      </div>
+                    )}
+                    {book.language && (
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4" />
+                        <span>{book.language}</span>
+                      </div>
+                    )}
+                    {book.isbn && (
+                      <div className="text-xs">
+                        <span className="font-medium">ISBN:</span> {book.isbn}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Book Description */}
+                {book.description && (
+                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <h3 className="font-semibold text-xl text-blue-900">About the Book</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowSummaryModal(true)}
+                        className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                        title="View detailed summary"
+                      >
+                        <Info className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">{book.description}</p>
+                  </div>
+                )}
+                
+                {/* Author Bio */}
+                {book.author_bio && (
+                  <div className="bg-green-50 p-6 rounded-xl border border-green-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <h3 className="font-semibold text-xl text-green-900">About the Author</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleAuthorClick}
+                        className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                        title="Learn more about the author"
+                      >
+                        <Info className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">{book.author_bio}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-          <div className="md:col-span-2 space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-xl font-semibold">by {book.author}</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleAuthorClick}
-                  className="p-1 h-auto text-blue-600 hover:text-blue-800"
-                  title="Learn more about the author"
+        </div>
+
+        {/* Interactive Sections */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Page Summary Section */}
+          <div className="bg-white rounded-xl shadow-lg">
+            <PageSummarySection bookId={book.id} bookTitle={book.title} />
+          </div>
+          
+          {/* Reading Statistics */}
+          <div className="bg-white rounded-xl shadow-lg">
+            <ReadingStats bookId={book.id} bookTitle={book.title} />
+          </div>
+        </div>
+        
+        {/* User Content Creation Section */}
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-xl border border-purple-200">
+            <h3 className="font-semibold text-2xl mb-4 text-purple-900">Create Your Own Version</h3>
+            <p className="text-gray-700 mb-6 text-lg">
+              Want to reimagine a chapter or create an alternative ending? Share your creative interpretation of this book!
+            </p>
+            {user ? (
+              <div className="space-y-6">
+                {!showContentEditor ? (
+                  <Button 
+                    onClick={() => setShowContentEditor(true)}
+                    className="bg-purple-600 hover:bg-purple-700 h-12 px-8 text-base"
+                  >
+                    Start Writing Your Version
+                  </Button>
+                ) : (
+                  <UserContentEditor 
+                    bookId={book.id}
+                    onSuccess={() => setShowContentEditor(false)}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="text-center p-6 bg-white rounded-lg border border-purple-200">
+                <p className="text-gray-600 mb-4 text-lg">Sign in to create your own version of this book</p>
+                <Button 
+                  onClick={() => navigate('/signin')}
+                  className="bg-purple-600 hover:bg-purple-700 h-12 px-8 text-base"
                 >
-                  <Info className="w-4 h-4" />
+                  Sign In to Continue
                 </Button>
               </div>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center gap-1">
-                  {renderStars(book.rating || 0)}
-                  <span className="ml-2 font-medium">{(book.rating || 0).toFixed(1)}</span>
-                </div>
-                {book.genre && <Badge variant="secondary">{book.genre}</Badge>}
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-                {book.publication_year && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>Published {book.publication_year}</span>
-                  </div>
-                )}
-                {book.pages && (
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4" />
-                    <span>{book.pages} pages</span>
-                  </div>
-                )}
-                {book.language && (
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    <span>{book.language}</span>
-                  </div>
-                )}
-                {book.isbn && (
-                  <div className="text-xs">
-                    <span className="font-medium">ISBN:</span> {book.isbn}
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {book.description && (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <h4 className="font-semibold text-lg">About the Book</h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowSummaryModal(true)}
-                    className="p-1 h-auto text-blue-600 hover:text-blue-800"
-                    title="View detailed summary"
-                  >
-                    <Info className="w-4 h-4" />
-                  </Button>
-                </div>
-                <p className="text-gray-700 leading-relaxed">{book.description}</p>
-              </div>
             )}
-            
-            {book.author_bio && (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <h4 className="font-semibold text-lg">About the Author</h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleAuthorClick}
-                    className="p-1 h-auto text-blue-600 hover:text-blue-800"
-                    title="Learn more about the author"
-                  >
-                    <Info className="w-4 h-4" />
-                  </Button>
-                </div>
-                <p className="text-gray-700 leading-relaxed">{book.author_bio}</p>
-              </div>
-            )}
-            
-            {/* Page Summary Section */}
-            <PageSummarySection bookId={book.id} bookTitle={book.title} />
-            
-            {/* Reading Statistics */}
-            <ReadingStats bookId={book.id} bookTitle={book.title} />
-            
-            {/* User Content Creation Section */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
-              <h4 className="font-semibold text-lg mb-3 text-purple-900">Create Your Own Version</h4>
-              <p className="text-gray-700 mb-4">
-                Want to reimagine a chapter or create an alternative ending? Share your creative interpretation of this book!
-              </p>
-              {user ? (
-                <div className="space-y-4">
-                  {!showContentEditor ? (
-                    <Button 
-                      onClick={() => setShowContentEditor(true)}
-                      className="bg-purple-600 hover:bg-purple-700"
-                    >
-                      Start Writing Your Version
-                    </Button>
-                  ) : (
-                    <UserContentEditor 
-                      bookId={book.id}
-                      onSuccess={() => setShowContentEditor(false)}
-                    />
-                  )}
-                </div>
-              ) : (
-                <div className="text-center p-4 bg-white rounded-lg border border-purple-200">
-                  <p className="text-gray-600 mb-3">Sign in to create your own version of this book</p>
-                  <Button 
-                    onClick={() => navigate('/signin')}
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    Sign In to Continue
-                  </Button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
