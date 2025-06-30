@@ -63,13 +63,7 @@ const BookDetails = () => {
                 </div>
               )}
               <div className="space-y-2">
-                {/* Audio Summary Button */}
-                <AudioSummaryButton 
-                  bookId={book.id} 
-                  bookContent={book.description}
-                />
-                
-                {/* Only Read Free link */}
+                {/* Read Free link */}
                 {readFreeLink && (
                   <Button asChild className="w-full" variant="outline">
                     <a href={readFreeLink} target="_blank" rel="noopener noreferrer">
@@ -78,6 +72,12 @@ const BookDetails = () => {
                     </a>
                   </Button>
                 )}
+
+                {/* Audio Summary Button */}
+                <AudioSummaryButton
+                  bookId={book.id}
+                  bookContent={book.description}
+                />
               </div>
             </div>
           </div>
