@@ -82,8 +82,8 @@ const BookDetails = () => {
               bookId={book.id}
               coverImageUrl={book.cover_image_url}
               price={book.price}
-              readFreeLink={book.internet_archive_url}
               description={book.description}
+              pdfUrl={book.pdf_url}
             />
           </div>
 
@@ -207,6 +207,7 @@ const BookDetails = () => {
               <BookContinuationSection 
                 bookId={book.id}
                 bookTitle={book.title}
+                genre={book.genre}
               />
             </CardContent>
           </Card>

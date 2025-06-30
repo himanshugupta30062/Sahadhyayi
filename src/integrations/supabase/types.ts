@@ -83,7 +83,6 @@ export type Database = {
           description: string | null
           genre: string | null
           id: string
-          internet_archive_url: string | null
           isbn: string | null
           language: string | null
           pages: number | null
@@ -99,7 +98,6 @@ export type Database = {
           description?: string | null
           genre?: string | null
           id?: string
-          internet_archive_url?: string | null
           isbn?: string | null
           language?: string | null
           pages?: number | null
@@ -115,7 +113,6 @@ export type Database = {
           description?: string | null
           genre?: string | null
           id?: string
-          internet_archive_url?: string | null
           isbn?: string | null
           language?: string | null
           pages?: number | null

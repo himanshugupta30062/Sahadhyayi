@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -14,7 +15,6 @@ export interface Book {
   price?: number;
   amazon_url?: string;
   google_books_url?: string;
-  internet_archive_url?: string;
   isbn?: string;
   publication_year?: number;
   pages?: number;
@@ -46,7 +46,6 @@ export const useLibraryBooks = () => {
           author_bio,
           cover_image_url,
           pdf_url,
-          internet_archive_url,
           isbn,
           publication_year,
           pages,
@@ -68,12 +67,11 @@ export const useLibraryBooks = () => {
         description: book.description,
         author_bio: book.author_bio,
         cover_image_url: book.cover_image_url,
-        ebook_url: book.internet_archive_url,
+        ebook_url: undefined,
         pdf_url: book.pdf_url,
         price: undefined, // Remove price since it doesn't exist in database
         amazon_url: undefined,
         google_books_url: undefined,
-        internet_archive_url: book.internet_archive_url,
         isbn: book.isbn,
         publication_year: book.publication_year,
         pages: book.pages,
@@ -102,7 +100,6 @@ export const useBooksByGenre = (genre?: string) => {
           author_bio,
           cover_image_url,
           pdf_url,
-          internet_archive_url,
           isbn,
           publication_year,
           pages,
@@ -112,7 +109,12 @@ export const useBooksByGenre = (genre?: string) => {
         .order('created_at', { ascending: false });
       
       if (genre && genre !== 'All') {
-        query = query.eq('genre', genre);
+        // Handle Hindi language filter specifically
+        if (genre === 'Hindi') {
+          query = query.eq('language', 'Hindi');
+        } else {
+          query = query.eq('genre', genre);
+        }
       }
       
       const { data, error } = await query;
@@ -130,12 +132,11 @@ export const useBooksByGenre = (genre?: string) => {
         description: book.description,
         author_bio: book.author_bio,
         cover_image_url: book.cover_image_url,
-        ebook_url: book.internet_archive_url,
+        ebook_url: undefined,
         pdf_url: book.pdf_url,
         price: undefined, // Remove price since it doesn't exist in database
         amazon_url: undefined,
         google_books_url: undefined,
-        internet_archive_url: book.internet_archive_url,
         isbn: book.isbn,
         publication_year: book.publication_year,
         pages: book.pages,
@@ -155,7 +156,7 @@ export const useGenres = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('books_library')
-        .select('genre')
+        .select('genre, language')
         .order('genre');
       
       if (error) {
@@ -169,15 +170,21 @@ export const useGenres = () => {
           { id: '6', name: 'Philosophy' },
           { id: '7', name: 'Technology' },
           { id: '8', name: 'Self-Help' },
+          { id: '9', name: 'Hindi' },
         ];
         return genres;
       }
       
       const genreValues = data?.map(item => item.genre) || [];
-      const uniqueGenres = [...new Set(genreValues.filter((genre): genre is string => typeof genre === 'string' && genre !== null))];
-      return uniqueGenres.map((genre, index) => ({
+      const languageValues = data?.map(item => item.language) || [];
+      
+      // Combine genres and languages, with special handling for Hindi
+      const allValues = [...genreValues, ...languageValues];
+      const uniqueValues = [...new Set(allValues.filter((value): value is string => typeof value === 'string' && value !== null))];
+      
+      return uniqueValues.map((value, index) => ({
         id: (index + 1).toString(),
-        name: genre
+        name: value
       })) as Genre[];
     },
   });

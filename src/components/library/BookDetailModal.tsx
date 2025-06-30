@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, ExternalLink, BookOpen, Calendar, Globe, Info } from 'lucide-react';
+import { Star, BookOpen, Calendar, Globe, Info, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -63,8 +64,18 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
     setShowContentEditor(true);
   };
 
-  // Only keep Internet Archive (Read Free) link
-  const readFreeLink = book.internet_archive_url;
+  const handleDownloadPDF = () => {
+    if (book.pdf_url) {
+      const link = document.createElement('a');
+      link.href = book.pdf_url;
+      link.download = `${book.title}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      console.log('PDF download requested for:', book.title);
+    }
+  };
 
   return (
     <>
@@ -92,7 +103,7 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
                 )}
               </div>
               
-              {/* Price and Purchase Links */}
+              {/* Price and Action Buttons */}
               <div className="mt-4 space-y-3">
                 {book.price && (
                   <div className="text-center">
@@ -101,15 +112,15 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
                 )}
                 
                 <div className="space-y-2">
-                  {/* Read Free link */}
-                  {readFreeLink && (
-                    <Button asChild className="w-full" variant="outline">
-                      <a href={readFreeLink} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Read Free
-                      </a>
-                    </Button>
-                  )}
+                  {/* Download PDF Button */}
+                  <Button 
+                    onClick={handleDownloadPDF}
+                    className="w-full bg-gray-700 hover:bg-gray-800" 
+                    variant="default"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </Button>
 
                   {/* Audio Summary Button */}
                   <AudioSummaryButton

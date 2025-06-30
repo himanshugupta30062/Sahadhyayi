@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Download, Info, ExternalLink } from 'lucide-react';
+import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Book } from '@/hooks/useLibraryBooks';
 
@@ -18,14 +18,6 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
     e.preventDefault();
     e.stopPropagation();
     onDownloadPDF(book);
-  };
-
-  const handleReadFree = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (book.internet_archive_url) {
-      window.open(book.internet_archive_url, '_blank');
-    }
   };
 
   return (
@@ -64,7 +56,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           {/* Download Button */}
           <button
             onClick={handleDownload}
-            className="flex flex-col items-center gap-2 bg-green-500/80 backdrop-blur-sm hover:bg-green-600/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
+            className="flex flex-col items-center gap-2 bg-gray-700/80 backdrop-blur-sm hover:bg-gray-800/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
             title="Download PDF"
           >
             <Download className="w-5 h-5" />
@@ -74,7 +66,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           {/* Details Button */}
           <Link
             to={`/books/${book.id}`}
-            className="flex flex-col items-center gap-2 bg-blue-500/80 backdrop-blur-sm hover:bg-blue-600/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
+            className="flex flex-col items-center gap-2 bg-gray-500/80 backdrop-blur-sm hover:bg-gray-600/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
             title="View Details"
           >
             <Info className="w-5 h-5" />
@@ -111,20 +103,6 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
             <span className="text-xs text-gray-500 font-medium">{book.publication_year}</span>
           )}
         </div>
-
-        {/* Read Free Online Button (if available) */}
-        {book.internet_archive_url && (
-          <div className="pt-2">
-            <Button
-              onClick={handleReadFree}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              size="sm"
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Read Free Online
-            </Button>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
