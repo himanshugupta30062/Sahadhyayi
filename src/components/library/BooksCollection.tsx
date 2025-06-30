@@ -2,7 +2,6 @@
 import React, { useMemo } from 'react';
 import { Library } from 'lucide-react';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
-import InternetArchiveReader from './InternetArchiveReader';
 import type { Book } from '@/hooks/useLibraryBooks';
 import BooksGrid from './BooksGrid';
 import LoadingGrid from './LoadingGrid';
@@ -25,8 +24,6 @@ const BooksCollection = ({
   priceRange
 }: BooksCollectionProps) => {
   const { data: books = [], isLoading } = useLibraryBooks();
-  const [isReaderOpen, setIsReaderOpen] = React.useState(false);
-  const [readerBook, setReaderBook] = React.useState<Book | null>(null);
 
   const filteredBooks = useMemo(() => {
     const filtered = books.filter(book => {
@@ -88,34 +85,25 @@ const BooksCollection = ({
   }
 
   return (
-    <>
-      <div className="space-y-6">
-        {/* Section Header */}
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
-            <Library className="w-5 h-5 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-            Books Collection
-          </h2>
-          {filteredBooks.length > 0 && (
-            <span className="text-sm text-gray-500 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
-              {filteredBooks.length} books found
-            </span>
-          )}
+    <div className="space-y-6">
+      {/* Section Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
+          <Library className="w-5 h-5 text-white" />
         </div>
-
-        {/* Books Grid */}
-        <BooksGrid books={filteredBooks} onDownloadPDF={handleDownloadPDF} />
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+          Books Collection
+        </h2>
+        {filteredBooks.length > 0 && (
+          <span className="text-sm text-gray-500 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
+            {filteredBooks.length} books found
+          </span>
+        )}
       </div>
 
-      {/* Internet Archive Book Reader */}
-      <InternetArchiveReader
-        book={readerBook}
-        isOpen={isReaderOpen}
-        onClose={() => setIsReaderOpen(false)}
-      />
-    </>
+      {/* Books Grid */}
+      <BooksGrid books={filteredBooks} onDownloadPDF={handleDownloadPDF} />
+    </div>
   );
 };
 
