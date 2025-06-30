@@ -154,11 +154,13 @@ const BookDetails = () => {
             </div>
 
             {/* Book Description */}
-            <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
-              <CardContent className="p-6">
-                <BookDescription description={book.description} />
-              </CardContent>
-            </Card>
+            {book.description && (
+              <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
+                <CardContent className="p-6">
+                  <BookDescription description={book.description} />
+                </CardContent>
+              </Card>
+            )}
 
             {/* Author Bio */}
             {book.author_bio && (
@@ -181,14 +183,18 @@ const BookDetails = () => {
           {/* Ideas & Feedback Section */}
           <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
             <CardContent className="p-6">
-              <BookIdeasSection bookId={book.id} />
+              <BookIdeasSection bookId={book.id} bookTitle={book.title} />
             </CardContent>
           </Card>
 
           {/* Book Continuation Section */}
           <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
             <CardContent className="p-6">
-              <BookContinuationSection bookId={book.id} />
+              <BookContinuationSection 
+                bookId={book.id} 
+                bookTitle={book.title}
+                genre={book.genre}
+              />
             </CardContent>
           </Card>
         </div>

@@ -5,10 +5,19 @@ import { Info } from 'lucide-react';
 
 interface BookDescriptionProps {
   description: string;
-  onViewSummary: () => void;
+  onViewSummary?: () => void;
 }
 
 const BookDescription = ({ description, onViewSummary }: BookDescriptionProps) => {
+  const handleViewSummary = () => {
+    if (onViewSummary) {
+      onViewSummary();
+    } else {
+      // Default behavior - could show a modal or navigate to a summary page
+      console.log('View summary clicked');
+    }
+  };
+
   return (
     <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
       <div className="flex items-center gap-2 mb-3">
@@ -16,7 +25,7 @@ const BookDescription = ({ description, onViewSummary }: BookDescriptionProps) =
         <Button
           variant="ghost"
           size="sm"
-          onClick={onViewSummary}
+          onClick={handleViewSummary}
           className="p-1 h-auto text-blue-600 hover:text-blue-800"
           title="View detailed summary"
         >
