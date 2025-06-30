@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,8 @@ import PageSummarySection from '@/components/books/PageSummarySection';
 import BookSummaryModal from '@/components/books/BookSummaryModal';
 import ReadingStats from '@/components/books/ReadingStats';
 import UserContentEditor from '@/components/content/UserContentEditor';
+import BookIdeasSection from '@/components/books/BookIdeasSection';
+import BookContinuationSection from '@/components/books/BookContinuationSection';
 
 interface BookDetailModalProps {
   book: Book | null;
@@ -68,7 +69,7 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">{book.title}</DialogTitle>
           </DialogHeader>
@@ -221,6 +222,21 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
               
               {/* Reading Statistics */}
               <ReadingStats bookId={book.id} bookTitle={book.title} />
+              
+              {/* User-Generated Content Sections for Signed-in Users */}
+              {user && (
+                <div className="space-y-6">
+                  {/* Ideas & Feedback Section */}
+                  <BookIdeasSection bookId={book.id} bookTitle={book.title} />
+                  
+                  {/* Book Continuation Section - Only for Fiction Books */}
+                  <BookContinuationSection 
+                    bookId={book.id} 
+                    bookTitle={book.title} 
+                    genre={book.genre}
+                  />
+                </div>
+              )}
               
               {/* User Content Creation Section */}
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">

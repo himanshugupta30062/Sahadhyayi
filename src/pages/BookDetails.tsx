@@ -1,4 +1,3 @@
-
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,8 @@ import PageSummarySection from '@/components/books/PageSummarySection';
 import BookSummaryModal from '@/components/books/BookSummaryModal';
 import ReadingStats from '@/components/books/ReadingStats';
 import UserContentEditor from '@/components/content/UserContentEditor';
+import BookIdeasSection from '@/components/books/BookIdeasSection';
+import BookContinuationSection from '@/components/books/BookContinuationSection';
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -220,6 +221,25 @@ const BookDetails = () => {
             <ReadingStats bookId={book.id} bookTitle={book.title} />
           </div>
         </div>
+        
+        {/* User-Generated Content Sections */}
+        {user && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Ideas & Feedback Section */}
+            <div className="bg-white rounded-xl shadow-lg">
+              <BookIdeasSection bookId={book.id} bookTitle={book.title} />
+            </div>
+            
+            {/* Book Continuation Section - Only for Fiction Books */}
+            <div className="bg-white rounded-xl shadow-lg">
+              <BookContinuationSection 
+                bookId={book.id} 
+                bookTitle={book.title} 
+                genre={book.genre}
+              />
+            </div>
+          </div>
+        )}
         
         {/* User Content Creation Section */}
         <div className="bg-white rounded-xl shadow-lg p-8">
