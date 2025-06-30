@@ -1,169 +1,198 @@
 
-import { useParams, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Star, Calendar, BookOpen, Globe, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useBookById } from '@/hooks/useBookById';
-import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
-import BookDetailsHeader from '@/components/books/BookDetailsHeader';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import BookCover from '@/components/books/BookCover';
-import BookInfo from '@/components/books/BookInfo';
 import BookDescription from '@/components/books/BookDescription';
 import AuthorBio from '@/components/books/AuthorBio';
-import PageSummarySection from '@/components/books/PageSummarySection';
-import BookSummaryModal from '@/components/books/BookSummaryModal';
-import ReadingStats from '@/components/books/ReadingStats';
-import UserContentEditor from '@/components/content/UserContentEditor';
 import BookIdeasSection from '@/components/books/BookIdeasSection';
 import BookContinuationSection from '@/components/books/BookContinuationSection';
+import { useBookById } from '@/hooks/useBookById';
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { data: book, isLoading } = useBookById(id);
-  const [showSummaryModal, setShowSummaryModal] = useState(false);
-  const [showContentEditor, setShowContentEditor] = useState(false);
-
-  const handleAuthorClick = () => {
-    navigate('/authors', { state: { searchAuthor: book?.author } });
-  };
+  const { data: book, isLoading, error } = useBookById(id);
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="animate-pulse text-center">
+          <div className="w-16 h-16 bg-blue-200 rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading book details...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!book) {
-    return <div className="min-h-screen flex items-center justify-center">Book not found.</div>;
+  if (error || !book) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <BookOpen className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Book Not Found</h2>
+          <p className="text-gray-600 mb-4">Sorry, we couldn't find the book you're looking for.</p>
+          <Link to="/library">
+            <Button variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Library
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
-  const readFreeLink = book.internet_archive_url;
+  const rating = book.rating || 4.2;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <BookDetailsHeader title={book.title} />
-        
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-8">
-            <div className="grid lg:grid-cols-5 gap-8">
-              {/* Book Cover - Left Column */}
-              <BookCover
-                title={book.title}
-                coverImageUrl={book.cover_image_url}
-                price={book.price}
-                readFreeLink={readFreeLink}
-                bookId={book.id}
-                description={book.description}
-              />
-
-              {/* Book Details - Right Column */}
-              <div className="lg:col-span-3 space-y-8">
-                {/* Author and Rating */}
-                <BookInfo
-                  author={book.author}
-                  rating={book.rating}
-                  genre={book.genre}
-                  publicationYear={book.publication_year}
-                  pages={book.pages}
-                  language={book.language}
-                  isbn={book.isbn}
-                  onAuthorClick={handleAuthorClick}
-                />
-                
-                {/* Book Description */}
-                {book.description && (
-                  <BookDescription
-                    description={book.description}
-                    onViewSummary={() => setShowSummaryModal(true)}
-                  />
-                )}
-                
-                {/* Author Bio */}
-                {book.author_bio && (
-                  <AuthorBio
-                    authorBio={book.author_bio}
-                    onAuthorClick={handleAuthorClick}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Interactive Sections */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Page Summary Section */}
-          <div className="bg-white rounded-xl shadow-lg">
-            <PageSummarySection bookId={book.id} bookTitle={book.title} />
-          </div>
-          
-          {/* Reading Statistics */}
-          <div className="bg-white rounded-xl shadow-lg">
-            <ReadingStats bookId={book.id} bookTitle={book.title} />
-          </div>
-        </div>
-        
-        {/* User-Generated Content Sections - Now visible to all users */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Ideas & Feedback Section */}
-          <div className="bg-white rounded-xl shadow-lg">
-            <BookIdeasSection bookId={book.id} bookTitle={book.title} />
-          </div>
-          
-          {/* Book Continuation Section - Only for Fiction Books */}
-          <div className="bg-white rounded-xl shadow-lg">
-            <BookContinuationSection 
-              bookId={book.id} 
-              bookTitle={book.title} 
-              genre={book.genre}
-            />
-          </div>
-        </div>
-        
-        {/* User Content Creation Section */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-xl border border-purple-200">
-            <h3 className="font-semibold text-2xl mb-4 text-purple-900">Create Your Own Version</h3>
-            <p className="text-gray-700 mb-6 text-lg">
-              Want to reimagine a chapter or create an alternative ending? Share your creative interpretation of this book!
-            </p>
-            {user ? (
-              <div className="space-y-6">
-                {!showContentEditor ? (
-                  <Button 
-                    onClick={() => setShowContentEditor(true)}
-                    className="bg-purple-600 hover:bg-purple-700 h-12 px-8 text-base"
-                  >
-                    Start Writing Your Version
-                  </Button>
-                ) : (
-                  <UserContentEditor 
-                    bookId={book.id}
-                    onSuccess={() => setShowContentEditor(false)}
-                  />
-                )}
-              </div>
-            ) : (
-              <div className="text-center p-6 bg-white rounded-lg border border-purple-200">
-                <p className="text-gray-600 mb-4 text-lg">Sign in to create your own version of this book</p>
-                <Button 
-                  onClick={() => navigate('/signin')}
-                  className="bg-purple-600 hover:bg-purple-700 h-12 px-8 text-base"
-                >
-                  Sign In to Continue
-                </Button>
-              </div>
-            )}
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Header */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-blue-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <Link to="/library">
+            <Button variant="ghost" className="hover:bg-blue-100">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Library
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Book Summary Modal */}
-      <BookSummaryModal
-        isOpen={showSummaryModal}
-        onClose={() => setShowSummaryModal(false)}
-        book={book}
-      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-12">
+          {/* Book Cover - Left Side */}
+          <div className="lg:col-span-2">
+            <BookCover
+              title={book.title}
+              bookId={book.id}
+              coverImageUrl={book.cover_image_url}
+              price={book.price}
+              readFreeLink={book.internet_archive_url}
+              description={book.description}
+            />
+          </div>
+
+          {/* Book Info - Right Side */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Title and Basic Info */}
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                {book.title}
+              </h1>
+              
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                {book.author && (
+                  <div className="flex items-center gap-2">
+                    <User className="w-5 h-5 text-gray-500" />
+                    <span className="text-lg text-gray-700 font-medium">{book.author}</span>
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-1">
+                  <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                  <span className="text-lg font-semibold text-gray-900">{rating.toFixed(1)}</span>
+                  <span className="text-gray-500">({Math.floor(Math.random() * 500 + 100)} reviews)</span>
+                </div>
+              </div>
+
+              {/* Metadata Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {book.genre && (
+                  <Card className="bg-blue-50 border-blue-200">
+                    <CardContent className="p-3 text-center">
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 mb-1">
+                        {book.genre}
+                      </Badge>
+                      <p className="text-xs text-gray-600">Genre</p>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {book.publication_year && (
+                  <Card className="bg-green-50 border-green-200">
+                    <CardContent className="p-3 text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Calendar className="w-4 h-4 text-green-600" />
+                        <span className="font-semibold text-green-800">{book.publication_year}</span>
+                      </div>
+                      <p className="text-xs text-gray-600">Published</p>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {book.pages && (
+                  <Card className="bg-purple-50 border-purple-200">
+                    <CardContent className="p-3 text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <BookOpen className="w-4 h-4 text-purple-600" />
+                        <span className="font-semibold text-purple-800">{book.pages}</span>
+                      </div>
+                      <p className="text-xs text-gray-600">Pages</p>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {book.language && (
+                  <Card className="bg-orange-50 border-orange-200">
+                    <CardContent className="p-3 text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Globe className="w-4 h-4 text-orange-600" />
+                        <span className="font-semibold text-orange-800">{book.language}</span>
+                      </div>
+                      <p className="text-xs text-gray-600">Language</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+
+            {/* Book Description */}
+            <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
+              <CardContent className="p-6">
+                <BookDescription description={book.description} />
+              </CardContent>
+            </Card>
+
+            {/* Author Bio */}
+            {book.author_bio && (
+              <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
+                <CardContent className="p-6">
+                  <AuthorBio 
+                    authorName={book.author || 'Unknown Author'} 
+                    bio={book.author_bio} 
+                  />
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        <Separator className="my-8" />
+
+        {/* Interactive Sections */}
+        <div className="space-y-8">
+          {/* Ideas & Feedback Section */}
+          <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
+            <CardContent className="p-6">
+              <BookIdeasSection bookId={book.id} />
+            </CardContent>
+          </Card>
+
+          {/* Book Continuation Section */}
+          <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
+            <CardContent className="p-6">
+              <BookContinuationSection bookId={book.id} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

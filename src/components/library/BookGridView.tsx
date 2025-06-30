@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ExternalLink, Eye } from 'lucide-react';
+import { ExternalLink, Eye, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BookDetailModal from './BookDetailModal';
 import BookReader from './BookReader';
@@ -21,25 +21,13 @@ const BookGridView = ({ books }: BookGridViewProps) => {
   const [readerBook, setReaderBook] = useState<Book | null>(null);
 
   const handleDownloadPDF = async (book: Book) => {
-    if (!book.pdf_url) {
-      alert('PDF not available for this book');
+    if (!book.internet_archive_url) {
+      alert('Reading link not available for this book');
       return;
     }
 
-    try {
-      const link = document.createElement('a');
-      link.href = book.pdf_url;
-      link.download = `${book.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
-      alert('Failed to download PDF. Please try again.');
-    }
+    window.open(book.internet_archive_url, '_blank');
   };
-
 
   const handleShelfChange = (bookId: string, shelf: string) => {
     setUserShelves(prev => ({ ...prev, [bookId]: shelf }));
@@ -55,14 +43,11 @@ const BookGridView = ({ books }: BookGridViewProps) => {
     setIsReaderOpen(true);
   };
 
-  const getPrimaryPurchaseUrl = (book: Book) => {
-    return book.amazon_url || book.google_books_url || book.internet_archive_url;
-  };
-
   if (books.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No books found matching your criteria.</p>
+        <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-500 text-lg">No books found matching your criteria.</p>
       </div>
     );
   }
@@ -71,7 +56,7 @@ const BookGridView = ({ books }: BookGridViewProps) => {
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {books.map((book) => (
-          <Card key={book.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <Card key={book.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-gray-200">
             {/* Book Cover */}
             <div className="aspect-[3/4] bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg relative group cursor-pointer"
                  onClick={() => handleViewBook(book)}>
@@ -79,7 +64,7 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                 <img
                   src={book.cover_image_url}
                   alt={book.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
@@ -90,7 +75,10 @@ const BookGridView = ({ books }: BookGridViewProps) => {
               
               {/* Fallback placeholder */}
               <div className={`text-center p-4 ${book.cover_image_url ? 'hidden' : ''}`}>
-                <div className="text-sm">{book.title}</div>
+                <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
+                <div className="text-sm leading-tight">
+                  {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
+                </div>
               </div>
               
               {/* Hover Overlay */}
@@ -101,44 +89,58 @@ const BookGridView = ({ books }: BookGridViewProps) => {
 
             <CardContent className="p-4 space-y-3">
               {/* Title */}
-              <h3 className="font-semibold text-lg leading-tight line-clamp-2 hover:text-orange-600 cursor-pointer"
+              <h3 className="font-semibold text-lg leading-tight line-clamp-2 hover:text-blue-600 cursor-pointer transition-colors"
                   onClick={() => handleViewBook(book)}>
                 {book.title}
               </h3>
 
-              {/* Genre and Year */}
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                {book.genre && <span className="bg-gray-100 px-2 py-1 rounded">{book.genre}</span>}
-                {book.publication_year && <span>{book.publication_year}</span>}
-              </div>
+              {/* Author */}
+              {book.author && (
+                <p className="text-gray-600 text-sm">{book.author}</p>
+              )}
 
+              {/* Genre, Year, and Language */}
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex flex-wrap gap-1">
+                  {book.genre && (
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                      {book.genre}
+                    </span>
+                  )}
+                  {book.language && book.language !== 'English' && (
+                    <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-medium">
+                      {book.language}
+                    </span>
+                  )}
+                </div>
+                {book.publication_year && (
+                  <span className="text-gray-500 font-medium">{book.publication_year}</span>
+                )}
+              </div>
             </CardContent>
 
             <CardFooter className="p-4 pt-0 space-y-2">
+              {/* Read Free Button - Show for books with internet_archive_url */}
+              {book.internet_archive_url && (
+                <Button
+                  size="sm"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => window.open(book.internet_archive_url, '_blank')}
+                >
+                  <ExternalLink className="w-4 h-4 mr-1" />
+                  Read Free Online
+                </Button>
+              )}
+
               {/* Action Buttons */}
               <div className="flex gap-2 w-full">
                 <Link to={`/books/${book.id}`} className="flex-1">
                   <Button variant="outline" size="sm" className="w-full">
                     <Eye className="w-4 h-4 mr-1" />
-                    About
+                    Details
                   </Button>
                 </Link>
               </div>
-
-              {/* External Link */}
-              {getPrimaryPurchaseUrl(book) && (
-                <Button
-                  size="sm"
-                  asChild
-                  variant="outline"
-                  className="w-full"
-                >
-                  <a href={getPrimaryPurchaseUrl(book)} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="w-4 h-4 mr-1" />
-                    {book.amazon_url ? 'Buy on Amazon' : 'View External'}
-                  </a>
-                </Button>
-              )}
 
               {/* Shelf Selector */}
               <Select
