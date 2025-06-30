@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -91,13 +90,6 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           </div>
         )}
       </CardContent>
-      <CardFooter className="pt-0 px-4 pb-4">
-        <Link to={`/books/${book.id}`} className="w-full">
-          <Button variant="outline" size="sm" className="w-full">
-            Read More
-          </Button>
-        </Link>
-      </CardFooter>
     </Card>
   );
 };
