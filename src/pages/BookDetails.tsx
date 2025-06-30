@@ -1,14 +1,24 @@
-import { Link, useParams } from 'react-router-dom';
+
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, ExternalLink, BookOpen, Calendar, Globe, ArrowLeft } from 'lucide-react';
+import { Star, ExternalLink, BookOpen, Calendar, Globe, ArrowLeft, Info } from 'lucide-react';
 import { useBookById } from '@/hooks/useBookById';
+import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 import AudioSummaryButton from '@/components/books/AudioSummaryButton';
 import PageSummarySection from '@/components/books/PageSummarySection';
+import BookSummaryModal from '@/components/books/BookSummaryModal';
+import ReadingStats from '@/components/books/ReadingStats';
+import UserContentEditor from '@/components/content/UserContentEditor';
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { data: book, isLoading } = useBookById(id);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [showContentEditor, setShowContentEditor] = useState(false);
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -25,6 +35,18 @@ const BookDetails = () => {
       stars.push(<Star key={`empty-${i}`} className="w-4 h-4 text-gray-300" />);
     }
     return stars;
+  };
+
+  const handleAuthorClick = () => {
+    navigate('/authors', { state: { searchAuthor: book?.author } });
+  };
+
+  const handleCreateContent = () => {
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+    setShowContentEditor(true);
   };
 
   if (isLoading) {
@@ -83,7 +105,18 @@ const BookDetails = () => {
           </div>
           <div className="md:col-span-2 space-y-6">
             <div>
-              <h3 className="text-xl font-semibold mb-2">by {book.author}</h3>
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-xl font-semibold">by {book.author}</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleAuthorClick}
+                  className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                  title="Learn more about the author"
+                >
+                  <Info className="w-4 h-4" />
+                </Button>
+              </div>
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-1">
                   {renderStars(book.rating || 0)}
@@ -117,24 +150,93 @@ const BookDetails = () => {
                 )}
               </div>
             </div>
+            
             {book.description && (
               <div>
-                <h4 className="font-semibold text-lg mb-2">About the Book</h4>
+                <div className="flex items-center gap-2 mb-2">
+                  <h4 className="font-semibold text-lg">About the Book</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowSummaryModal(true)}
+                    className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                    title="View detailed summary"
+                  >
+                    <Info className="w-4 h-4" />
+                  </Button>
+                </div>
                 <p className="text-gray-700 leading-relaxed">{book.description}</p>
               </div>
             )}
+            
             {book.author_bio && (
               <div>
-                <h4 className="font-semibold text-lg mb-2">About the Author</h4>
+                <div className="flex items-center gap-2 mb-2">
+                  <h4 className="font-semibold text-lg">About the Author</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleAuthorClick}
+                    className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                    title="Learn more about the author"
+                  >
+                    <Info className="w-4 h-4" />
+                  </Button>
+                </div>
                 <p className="text-gray-700 leading-relaxed">{book.author_bio}</p>
               </div>
             )}
             
             {/* Page Summary Section */}
             <PageSummarySection bookId={book.id} bookTitle={book.title} />
+            
+            {/* Reading Statistics */}
+            <ReadingStats bookId={book.id} bookTitle={book.title} />
+            
+            {/* User Content Creation Section */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
+              <h4 className="font-semibold text-lg mb-3 text-purple-900">Create Your Own Version</h4>
+              <p className="text-gray-700 mb-4">
+                Want to reimagine a chapter or create an alternative ending? Share your creative interpretation of this book!
+              </p>
+              {user ? (
+                <div className="space-y-4">
+                  {!showContentEditor ? (
+                    <Button 
+                      onClick={() => setShowContentEditor(true)}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      Start Writing Your Version
+                    </Button>
+                  ) : (
+                    <UserContentEditor 
+                      bookId={book.id}
+                      onSuccess={() => setShowContentEditor(false)}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="text-center p-4 bg-white rounded-lg border border-purple-200">
+                  <p className="text-gray-600 mb-3">Sign in to create your own version of this book</p>
+                  <Button 
+                    onClick={() => navigate('/signin')}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    Sign In to Continue
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Book Summary Modal */}
+      <BookSummaryModal
+        isOpen={showSummaryModal}
+        onClose={() => setShowSummaryModal(false)}
+        book={book}
+      />
     </div>
   );
 };
