@@ -57,25 +57,24 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           </div>
         </div>
 
-        {/* Hover Overlay with Action Links */}
+        {/* Hover Overlay with Download and Details Buttons */}
         <div className={`absolute inset-0 bg-black/60 flex items-center justify-center gap-3 transition-all duration-300 ${
           isHovered ? 'opacity-100' : 'opacity-0'
         }`}>
-          {/* Read Free Button - Show if internet_archive_url exists */}
-          {book.internet_archive_url && (
-            <button
-              onClick={handleReadFree}
-              className="flex flex-col items-center gap-2 bg-blue-500/80 backdrop-blur-sm hover:bg-blue-600/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
-              title="Read Free Online"
-            >
-              <ExternalLink className="w-5 h-5" />
-              <span className="text-xs font-medium">Read Free</span>
-            </button>
-          )}
+          {/* Download Button */}
+          <button
+            onClick={handleDownload}
+            className="flex flex-col items-center gap-2 bg-green-500/80 backdrop-blur-sm hover:bg-green-600/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
+            title="Download PDF"
+          >
+            <Download className="w-5 h-5" />
+            <span className="text-xs font-medium">Download</span>
+          </button>
           
+          {/* Details Button */}
           <Link
             to={`/books/${book.id}`}
-            className="flex flex-col items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
+            className="flex flex-col items-center gap-2 bg-blue-500/80 backdrop-blur-sm hover:bg-blue-600/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
             title="View Details"
           >
             <Info className="w-5 h-5" />
@@ -113,9 +112,9 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           )}
         </div>
 
-        {/* Action Button */}
-        <div className="pt-2">
-          {book.internet_archive_url ? (
+        {/* Read Free Online Button (if available) */}
+        {book.internet_archive_url && (
+          <div className="pt-2">
             <Button
               onClick={handleReadFree}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
@@ -124,15 +123,8 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
               <ExternalLink className="w-4 h-4 mr-2" />
               Read Free Online
             </Button>
-          ) : (
-            <Link to={`/books/${book.id}`} className="block">
-              <Button variant="outline" size="sm" className="w-full">
-                <Info className="w-4 h-4 mr-2" />
-                View Details
-              </Button>
-            </Link>
-          )}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
