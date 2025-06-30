@@ -9,7 +9,6 @@ interface LibraryBook {
   author: string | null;
   genre: string | null;
   cover_image_url: string | null;
-  internet_archive_url: string | null;
   created_at: string;
 }
 

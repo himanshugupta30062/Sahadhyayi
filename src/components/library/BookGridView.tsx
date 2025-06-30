@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ExternalLink, Eye, BookOpen } from 'lucide-react';
+import { Download, Eye, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BookDetailModal from './BookDetailModal';
 import BookReader from './BookReader';
@@ -21,12 +21,16 @@ const BookGridView = ({ books }: BookGridViewProps) => {
   const [readerBook, setReaderBook] = useState<Book | null>(null);
 
   const handleDownloadPDF = async (book: Book) => {
-    if (!book.internet_archive_url) {
-      alert('Reading link not available for this book');
-      return;
+    if (book.pdf_url) {
+      const link = document.createElement('a');
+      link.href = book.pdf_url;
+      link.download = `${book.title}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert('PDF not available for this book');
     }
-
-    window.open(book.internet_archive_url, '_blank');
   };
 
   const handleShelfChange = (bookId: string, shelf: string) => {
@@ -120,17 +124,16 @@ const BookGridView = ({ books }: BookGridViewProps) => {
             </CardContent>
 
             <CardFooter className="p-4 pt-0 space-y-2">
-              {/* Read Free Button - Show for books with internet_archive_url */}
-              {book.internet_archive_url && (
-                <Button
-                  size="sm"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => window.open(book.internet_archive_url, '_blank')}
-                >
-                  <ExternalLink className="w-4 h-4 mr-1" />
-                  Read Free Online
-                </Button>
-              )}
+              {/* Download PDF Button */}
+              <Button
+                size="sm"
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white"
+                onClick={() => handleDownloadPDF(book)}
+                disabled={!book.pdf_url}
+              >
+                <Download className="w-4 h-4 mr-1" />
+                Download PDF
+              </Button>
 
               {/* Action Buttons */}
               <div className="flex gap-2 w-full">
