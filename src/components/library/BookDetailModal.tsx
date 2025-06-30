@@ -11,9 +11,9 @@ import AudioSummaryButton from '@/components/books/AudioSummaryButton';
 import PageSummarySection from '@/components/books/PageSummarySection';
 import BookSummaryModal from '@/components/books/BookSummaryModal';
 import ReadingStats from '@/components/books/ReadingStats';
-import UserContentEditor from '@/components/content/UserContentEditor';
 import BookIdeasSection from '@/components/books/BookIdeasSection';
 import BookContinuationSection from '@/components/books/BookContinuationSection';
+import CreateYourVersionSection from '@/components/books/CreateYourVersionSection';
 
 interface BookDetailModalProps {
   book: Book | null;
@@ -25,7 +25,6 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showSummaryModal, setShowSummaryModal] = useState(false);
-  const [showContentEditor, setShowContentEditor] = useState(false);
 
   if (!book) return null;
 
@@ -53,15 +52,6 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
   const handleAuthorClick = () => {
     onClose();
     navigate('/authors', { state: { searchAuthor: book.author } });
-  };
-
-  const handleCreateContent = () => {
-    if (!user) {
-      onClose();
-      navigate('/signin');
-      return;
-    }
-    setShowContentEditor(true);
   };
 
   const handleDownloadPDF = () => {
@@ -234,8 +224,16 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
               {/* Reading Statistics */}
               <ReadingStats bookId={book.id} bookTitle={book.title} />
               
-              {/* User-Generated Content Sections - Now visible to all users */}
+              {/* User-Generated Content Sections */}
               <div className="space-y-6">
+                {/* Create Your Own Version Section - Now prominently displayed */}
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                  <CreateYourVersionSection 
+                    bookId={book.id} 
+                    bookTitle={book.title}
+                  />
+                </div>
+                
                 {/* Ideas & Feedback Section */}
                 <BookIdeasSection bookId={book.id} bookTitle={book.title} />
                 
@@ -245,43 +243,6 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
                   bookTitle={book.title} 
                   genre={book.genre}
                 />
-              </div>
-              
-              {/* User Content Creation Section */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-lg mb-2 text-purple-900">Create Your Own Version</h4>
-                <p className="text-gray-700 mb-3 text-sm">
-                  Want to reimagine a chapter? Share your creative interpretation!
-                </p>
-                {user ? (
-                  <div className="space-y-3">
-                    {!showContentEditor ? (
-                      <Button 
-                        onClick={() => setShowContentEditor(true)}
-                        size="sm"
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        Start Writing Your Version
-                      </Button>
-                    ) : (
-                      <UserContentEditor 
-                        bookId={book.id}
-                        onSuccess={() => setShowContentEditor(false)}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center p-3 bg-white rounded border border-purple-200">
-                    <p className="text-gray-600 mb-2 text-sm">Sign in to create your own version</p>
-                    <Button 
-                      onClick={handleCreateContent}
-                      size="sm"
-                      className="bg-purple-600 hover:bg-purple-700"
-                    >
-                      Sign In to Continue
-                    </Button>
-                  </div>
-                )}
               </div>
             </div>
           </div>

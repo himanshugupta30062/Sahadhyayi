@@ -11,6 +11,7 @@ import BookDescription from '@/components/books/BookDescription';
 import AuthorBio from '@/components/books/AuthorBio';
 import BookIdeasSection from '@/components/books/BookIdeasSection';
 import BookContinuationSection from '@/components/books/BookContinuationSection';
+import CreateYourVersionSection from '@/components/books/CreateYourVersionSection';
 import { useBookById } from '@/hooks/useBookById';
 
 const BookDetails = () => {
@@ -191,6 +192,16 @@ const BookDetails = () => {
 
         {/* Interactive Sections */}
         <div className="space-y-8">
+          {/* Create Your Own Version Section - Now prominently displayed */}
+          <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 shadow-lg">
+            <CardContent className="p-6">
+              <CreateYourVersionSection 
+                bookId={book.id}
+                bookTitle={book.title}
+              />
+            </CardContent>
+          </Card>
+
           {/* Ideas & Feedback Section */}
           <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
             <CardContent className="p-6">
