@@ -1,0 +1,47 @@
+-- Insert Hindi classics Godan and Gunaho Ka Devta into books_library
+INSERT INTO public.books_library (
+  title,
+  author,
+  genre,
+  description,
+  author_bio,
+  cover_image_url,
+  price,
+  amazon_url,
+  google_books_url,
+  internet_archive_url,
+  isbn,
+  publication_year,
+  pages,
+  language
+) VALUES (
+  'Godan',
+  'Munshi Premchand',
+  'Fiction',
+  'Godan is Premchand''s celebrated novel portraying the hardships of the peasant Hori and a vivid picture of rural India under colonial rule.',
+  'Munshi Premchand (1880–1936) was a pioneering writer of Hindi and Urdu literature, noted for his social realism.',
+  'https://covers.openlibrary.org/b/id/8101347-L.jpg',
+  5.99,
+  'https://www.amazon.in/dp/818357886X',
+  'https://books.google.com/books?id=apwEAAAACAAJ',
+  'https://archive.org/details/godan_201909',
+  '9788183578861',
+  1936,
+  384,
+  'Hindi'
+), (
+  'Gunaho Ka Devta',
+  'Dharamvir Bharati',
+  'Fiction',
+  'Gunaho Ka Devta is a classic love story set in Allahabad that explores youth, idealism and sacrifice.',
+  'Dharamvir Bharati (1926–1997) was an influential Hindi novelist, poet and playwright who edited the popular magazine Dharamyug.',
+  'https://covers.openlibrary.org/b/id/9251153-L.jpg',
+  6.99,
+  'https://www.amazon.in/dp/817028403X',
+  'https://books.google.com/books?id=jApXAAAACAAJ',
+  'https://archive.org/details/gunahokadevta',
+  '9788170284031',
+  1949,
+  248,
+  'Hindi'
+);
