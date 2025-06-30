@@ -50,6 +50,14 @@ const BookDetails = () => {
 
   const rating = book.rating || 4.2;
 
+  const handleViewSummary = () => {
+    console.log('View summary clicked for book:', book.title);
+  };
+
+  const handleAuthorClick = () => {
+    console.log('Author clicked:', book.author);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -154,19 +162,24 @@ const BookDetails = () => {
             </div>
 
             {/* Book Description */}
-            <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
-              <CardContent className="p-6">
-                <BookDescription description={book.description} />
-              </CardContent>
-            </Card>
+            {book.description && (
+              <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
+                <CardContent className="p-6">
+                  <BookDescription 
+                    description={book.description} 
+                    onViewSummary={handleViewSummary}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
             {/* Author Bio */}
             {book.author_bio && (
               <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
                 <CardContent className="p-6">
                   <AuthorBio 
-                    authorName={book.author || 'Unknown Author'} 
-                    bio={book.author_bio} 
+                    authorBio={book.author_bio}
+                    onAuthorClick={handleAuthorClick}
                   />
                 </CardContent>
               </Card>
@@ -181,14 +194,20 @@ const BookDetails = () => {
           {/* Ideas & Feedback Section */}
           <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
             <CardContent className="p-6">
-              <BookIdeasSection bookId={book.id} />
+              <BookIdeasSection 
+                bookId={book.id} 
+                bookTitle={book.title}
+              />
             </CardContent>
           </Card>
 
           {/* Book Continuation Section */}
           <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
             <CardContent className="p-6">
-              <BookContinuationSection bookId={book.id} />
+              <BookContinuationSection 
+                bookId={book.id}
+                bookTitle={book.title}
+              />
             </CardContent>
           </Card>
         </div>
