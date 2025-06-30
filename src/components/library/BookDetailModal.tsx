@@ -223,20 +223,18 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
               {/* Reading Statistics */}
               <ReadingStats bookId={book.id} bookTitle={book.title} />
               
-              {/* User-Generated Content Sections for Signed-in Users */}
-              {user && (
-                <div className="space-y-6">
-                  {/* Ideas & Feedback Section */}
-                  <BookIdeasSection bookId={book.id} bookTitle={book.title} />
-                  
-                  {/* Book Continuation Section - Only for Fiction Books */}
-                  <BookContinuationSection 
-                    bookId={book.id} 
-                    bookTitle={book.title} 
-                    genre={book.genre}
-                  />
-                </div>
-              )}
+              {/* User-Generated Content Sections - Now visible to all users */}
+              <div className="space-y-6">
+                {/* Ideas & Feedback Section */}
+                <BookIdeasSection bookId={book.id} bookTitle={book.title} />
+                
+                {/* Book Continuation Section - Only for Fiction Books */}
+                <BookContinuationSection 
+                  bookId={book.id} 
+                  bookTitle={book.title} 
+                  genre={book.genre}
+                />
+              </div>
               
               {/* User Content Creation Section */}
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">

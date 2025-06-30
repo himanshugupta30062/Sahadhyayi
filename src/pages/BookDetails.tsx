@@ -103,24 +103,22 @@ const BookDetails = () => {
           </div>
         </div>
         
-        {/* User-Generated Content Sections */}
-        {user && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Ideas & Feedback Section */}
-            <div className="bg-white rounded-xl shadow-lg">
-              <BookIdeasSection bookId={book.id} bookTitle={book.title} />
-            </div>
-            
-            {/* Book Continuation Section - Only for Fiction Books */}
-            <div className="bg-white rounded-xl shadow-lg">
-              <BookContinuationSection 
-                bookId={book.id} 
-                bookTitle={book.title} 
-                genre={book.genre}
-              />
-            </div>
+        {/* User-Generated Content Sections - Now visible to all users */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Ideas & Feedback Section */}
+          <div className="bg-white rounded-xl shadow-lg">
+            <BookIdeasSection bookId={book.id} bookTitle={book.title} />
           </div>
-        )}
+          
+          {/* Book Continuation Section - Only for Fiction Books */}
+          <div className="bg-white rounded-xl shadow-lg">
+            <BookContinuationSection 
+              bookId={book.id} 
+              bookTitle={book.title} 
+              genre={book.genre}
+            />
+          </div>
+        </div>
         
         {/* User Content Creation Section */}
         <div className="bg-white rounded-xl shadow-lg p-8">

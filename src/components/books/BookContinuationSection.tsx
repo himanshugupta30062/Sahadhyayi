@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, PenTool, Vote, Users } from 'lucide-react';
+import { BookOpen, PenTool, Vote, Users, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface BookContinuationSectionProps {
   bookId: string;
@@ -17,6 +18,7 @@ interface BookContinuationSectionProps {
 const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationSectionProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [continuationSummary, setContinuationSummary] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [voteForSequel, setVoteForSequel] = useState<'yes' | 'no' | null>(null);
@@ -29,7 +31,16 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
                    genre?.toLowerCase().includes('romance') ||
                    genre?.toLowerCase().includes('mystery');
 
+  const handleSignInPrompt = () => {
+    navigate('/signin');
+  };
+
   const handleSubmitContinuation = async () => {
+    if (!user) {
+      handleSignInPrompt();
+      return;
+    }
+
     if (!continuationSummary.trim()) {
       toast({
         title: "Missing Content",
@@ -67,6 +78,11 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
   };
 
   const handleVote = (vote: 'yes' | 'no') => {
+    if (!user) {
+      handleSignInPrompt();
+      return;
+    }
+
     setVoteForSequel(vote);
     toast({
       title: "Vote Recorded!",
@@ -74,7 +90,7 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
     });
   };
 
-  if (!user || !isFiction) return null;
+  if (!isFiction) return null;
 
   return (
     <Card className="w-full border-0 shadow-none">
@@ -95,12 +111,28 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
           <p className="text-gray-700 mb-4 text-sm">
             Vote whether you think "{bookTitle}" deserves a continuation or sequel.
           </p>
+
+          {!user && (
+            <div className="mb-4 p-4 bg-white rounded-lg border border-purple-200">
+              <div className="text-center">
+                <p className="text-gray-600 mb-3">Sign in to vote and share your sequel ideas</p>
+                <Button 
+                  onClick={handleSignInPrompt}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In to Vote
+                </Button>
+              </div>
+            </div>
+          )}
           
           <div className="flex gap-3 mb-4">
             <Button
               variant={voteForSequel === 'yes' ? 'default' : 'outline'}
               onClick={() => handleVote('yes')}
               className={voteForSequel === 'yes' ? 'bg-green-600 hover:bg-green-700' : 'border-green-300 text-green-700 hover:bg-green-50'}
+              disabled={!user}
             >
               Yes, I want a sequel!
             </Button>
@@ -108,12 +140,13 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
               variant={voteForSequel === 'no' ? 'default' : 'outline'}
               onClick={() => handleVote('no')}
               className={voteForSequel === 'no' ? 'bg-red-600 hover:bg-red-700' : 'border-red-300 text-red-700 hover:bg-red-50'}
+              disabled={!user}
             >
               No, it's perfect as is
             </Button>
           </div>
 
-          {/* Sample voting results */}
+          {/* Sample voting results - visible to all users */}
           <div className="bg-white p-3 rounded border border-purple-100">
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-2">
@@ -148,8 +181,9 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
                 id="continuation"
                 value={continuationSummary}
                 onChange={(e) => setContinuationSummary(e.target.value)}
-                placeholder="What happens next in your version? Describe the main plot points, character developments, and how the story would unfold..."
+                placeholder={user ? "What happens next in your version? Describe the main plot points, character developments, and how the story would unfold..." : "Sign in to write your sequel summary..."}
                 className="min-h-[150px]"
+                disabled={!user}
               />
               <p className="text-xs text-gray-500 mt-1">
                 {continuationSummary.length}/500 characters
@@ -158,10 +192,15 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
 
             <Button
               onClick={handleSubmitContinuation}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !user}
               className="w-full bg-orange-600 hover:bg-orange-700"
             >
-              {isSubmitting ? (
+              {!user ? (
+                <>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In to Publish
+                </>
+              ) : isSubmitting ? (
                 'Publishing...'
               ) : (
                 <>
@@ -173,7 +212,7 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
           </div>
         </div>
 
-        {/* Community Continuations */}
+        {/* Community Continuations - visible to all users */}
         <div className="space-y-3">
           <h4 className="font-semibold text-gray-800 flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-orange-600" />
