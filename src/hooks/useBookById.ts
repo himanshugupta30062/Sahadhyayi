@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Book } from './useLibraryBooks';
@@ -18,7 +17,10 @@ export const useBookById = (id?: string) => {
           description,
           author_bio,
           cover_image_url,
+          pdf_url,
           price,
+          amazon_url,
+          google_books_url,
           internet_archive_url,
           isbn,
           publication_year,
@@ -44,11 +46,11 @@ export const useBookById = (id?: string) => {
         description: data.description,
         author_bio: data.author_bio,
         cover_image_url: data.cover_image_url,
-        ebook_url: data.internet_archive_url,
-        pdf_url: data.internet_archive_url,
+        ebook_url: data.pdf_url,
+        pdf_url: data.pdf_url,
         price: data.price,
-        amazon_url: undefined,
-        google_books_url: undefined,
+        amazon_url: data.amazon_url,
+        google_books_url: data.google_books_url,
         internet_archive_url: data.internet_archive_url,
         isbn: data.isbn,
         publication_year: data.publication_year,

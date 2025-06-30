@@ -8,8 +8,8 @@ interface LibraryBook {
   title: string;
   author: string | null;
   genre: string | null;
+  pdf_url: string | null;
   cover_image_url: string | null;
-  internet_archive_url: string | null;
   created_at: string;
 }
 
