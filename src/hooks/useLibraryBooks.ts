@@ -59,6 +59,8 @@ export const useLibraryBooks = () => {
         throw error;
       }
       
+      console.log('Raw books data from database:', data);
+      
       const transformedBooks = (data || []).map(book => ({
         id: book.id,
         title: book.title,
@@ -69,16 +71,19 @@ export const useLibraryBooks = () => {
         cover_image_url: book.cover_image_url,
         ebook_url: undefined,
         pdf_url: book.pdf_url,
-        price: undefined, // Remove price since it doesn't exist in database
+        price: undefined,
         amazon_url: undefined,
         google_books_url: undefined,
         isbn: book.isbn,
         publication_year: book.publication_year,
         pages: book.pages,
         language: book.language,
-        rating: Math.random() * 2 + 3.5, // Random rating between 3.5-5.5 for demo
+        rating: Math.random() * 2 + 3.5,
         created_at: book.created_at || new Date().toISOString(),
       }));
+      
+      console.log('Transformed books:', transformedBooks);
+      console.log('Hindi books:', transformedBooks.filter(book => book.language === 'Hindi'));
       
       return transformedBooks as Book[];
     },
@@ -89,6 +94,8 @@ export const useBooksByGenre = (genre?: string) => {
   return useQuery({
     queryKey: ['books-by-genre', genre],
     queryFn: async () => {
+      console.log('Filtering by genre:', genre);
+      
       let query = supabase
         .from('books_library')
         .select(`
@@ -111,8 +118,10 @@ export const useBooksByGenre = (genre?: string) => {
       if (genre && genre !== 'All') {
         // Handle Hindi language filter specifically
         if (genre === 'Hindi') {
+          console.log('Applying Hindi language filter');
           query = query.eq('language', 'Hindi');
         } else {
+          console.log('Applying genre filter for:', genre);
           query = query.eq('genre', genre);
         }
       }
@@ -124,6 +133,9 @@ export const useBooksByGenre = (genre?: string) => {
         throw error;
       }
       
+      console.log('Filtered books data:', data);
+      console.log('Found books count:', data?.length || 0);
+      
       const transformedBooks = (data || []).map(book => ({
         id: book.id,
         title: book.title,
@@ -134,16 +146,18 @@ export const useBooksByGenre = (genre?: string) => {
         cover_image_url: book.cover_image_url,
         ebook_url: undefined,
         pdf_url: book.pdf_url,
-        price: undefined, // Remove price since it doesn't exist in database
+        price: undefined,
         amazon_url: undefined,
         google_books_url: undefined,
         isbn: book.isbn,
         publication_year: book.publication_year,
         pages: book.pages,
         language: book.language,
-        rating: Math.random() * 2 + 3.5, // Random rating between 3.5-5.5 for demo
+        rating: Math.random() * 2 + 3.5,
         created_at: book.created_at || new Date().toISOString(),
       }));
+      
+      console.log('Transformed filtered books:', transformedBooks);
       
       return transformedBooks as Book[];
     },
@@ -161,6 +175,7 @@ export const useGenres = () => {
       
       if (error) {
         console.error('Error fetching genres:', error);
+        // Return default genres including Hindi
         const genres: Genre[] = [
           { id: '1', name: 'Science' },
           { id: '2', name: 'Fiction' },
@@ -171,21 +186,33 @@ export const useGenres = () => {
           { id: '7', name: 'Technology' },
           { id: '8', name: 'Self-Help' },
           { id: '9', name: 'Hindi' },
+          { id: '10', name: 'Devotional' },
         ];
         return genres;
       }
       
-      const genreValues = data?.map(item => item.genre) || [];
-      const languageValues = data?.map(item => item.language) || [];
+      console.log('Genre data from database:', data);
+      
+      const genreValues = data?.map(item => item.genre).filter(Boolean) || [];
+      const languageValues = data?.map(item => item.language).filter(Boolean) || [];
       
       // Combine genres and languages, with special handling for Hindi
       const allValues = [...genreValues, ...languageValues];
       const uniqueValues = [...new Set(allValues.filter((value): value is string => typeof value === 'string' && value !== null))];
       
-      return uniqueValues.map((value, index) => ({
+      // Always include Hindi as a filter option
+      if (!uniqueValues.includes('Hindi')) {
+        uniqueValues.push('Hindi');
+      }
+      
+      const genres = uniqueValues.map((value, index) => ({
         id: (index + 1).toString(),
         name: value
       })) as Genre[];
+      
+      console.log('Generated genres:', genres);
+      
+      return genres;
     },
   });
 };

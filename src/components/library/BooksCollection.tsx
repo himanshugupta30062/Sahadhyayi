@@ -26,7 +26,19 @@ const BooksCollection = ({
   const { data: books = [], isLoading } = useLibraryBooks();
 
   const filteredBooks = useMemo(() => {
+    console.log('Filtering books with criteria:', {
+      searchQuery,
+      selectedGenre,
+      selectedAuthor,
+      selectedYear,
+      selectedLanguage,
+      priceRange,
+      totalBooks: books.length
+    });
+
     const filtered = books.filter(book => {
+      console.log('Checking book:', book.title, 'Language:', book.language, 'Genre:', book.genre);
+      
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -34,28 +46,57 @@ const BooksCollection = ({
           book.title.toLowerCase().includes(query) ||
           book.author.toLowerCase().includes(query) ||
           (book.genre && book.genre.toLowerCase().includes(query));
-        if (!matchesSearch) return false;
+        if (!matchesSearch) {
+          console.log('Book filtered out by search:', book.title);
+          return false;
+        }
       }
 
-      // Genre filter
-      if (selectedGenre !== 'All' && book.genre !== selectedGenre) return false;
+      // Genre filter - Handle Hindi specially
+      if (selectedGenre !== 'All') {
+        if (selectedGenre === 'Hindi') {
+          if (book.language !== 'Hindi') {
+            console.log('Book filtered out by Hindi language filter:', book.title, 'Language:', book.language);
+            return false;
+          }
+        } else if (book.genre !== selectedGenre) {
+          console.log('Book filtered out by genre filter:', book.title, 'Expected:', selectedGenre, 'Actual:', book.genre);
+          return false;
+        }
+      }
 
       // Author filter
-      if (selectedAuthor !== 'All' && book.author !== selectedAuthor) return false;
+      if (selectedAuthor !== 'All' && book.author !== selectedAuthor) {
+        console.log('Book filtered out by author filter:', book.title);
+        return false;
+      }
 
       // Year filter
-      if (selectedYear && book.publication_year !== parseInt(selectedYear)) return false;
+      if (selectedYear && book.publication_year !== parseInt(selectedYear)) {
+        console.log('Book filtered out by year filter:', book.title);
+        return false;
+      }
 
       // Language filter
-      if (selectedLanguage !== 'All' && book.language !== selectedLanguage) return false;
+      if (selectedLanguage !== 'All' && book.language !== selectedLanguage) {
+        console.log('Book filtered out by language filter:', book.title);
+        return false;
+      }
 
       // Price filter
       const bookPrice = book.price || 0;
-      if (bookPrice < priceRange[0] || bookPrice > priceRange[1]) return false;
+      if (bookPrice < priceRange[0] || bookPrice > priceRange[1]) {
+        console.log('Book filtered out by price filter:', book.title);
+        return false;
+      }
 
+      console.log('Book passed all filters:', book.title);
       return true;
     });
 
+    console.log('Filtered books result:', filtered.length, 'books');
+    console.log('Hindi books in result:', filtered.filter(book => book.language === 'Hindi').map(book => book.title));
+    
     return filtered;
   }, [books, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
