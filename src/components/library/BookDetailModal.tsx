@@ -1,10 +1,11 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, ExternalLink, BookOpen, Calendar, Globe } from 'lucide-react';
 import type { Book } from '@/hooks/useLibraryBooks';
+import AudioSummaryButton from '@/components/books/AudioSummaryButton';
+import PageSummarySection from '@/components/books/PageSummarySection';
 
 interface BookDetailModalProps {
   book: Book | null;
@@ -36,11 +37,8 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
     return stars;
   };
 
-  const purchaseLinks = [
-    { name: 'Amazon', url: book.amazon_url, icon: ExternalLink },
-    { name: 'Google Books', url: book.google_books_url, icon: ExternalLink },
-    { name: 'Internet Archive', url: book.internet_archive_url, icon: ExternalLink },
-  ].filter(link => link.url);
+  // Only keep Internet Archive (Read Free) link
+  const readFreeLink = book.internet_archive_url;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -76,21 +74,21 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
               )}
               
               <div className="space-y-2">
-                {purchaseLinks.map((link) => (
-                  <Button
-                    key={link.name}
-                    asChild
-                    className="w-full"
-                    variant={link.name === 'Amazon' ? 'default' : 'outline'}
-                  >
-                    <a href={link.url} target="_blank" rel="noopener noreferrer">
-                      <link.icon className="w-4 h-4 mr-2" />
-                      {link.name === 'Amazon' ? 'Buy on Amazon' : 
-                       link.name === 'Google Books' ? 'Google Books' : 
-                       'Read Free'}
+                {/* Audio Summary Button */}
+                <AudioSummaryButton 
+                  bookId={book.id} 
+                  bookContent={book.description}
+                />
+                
+                {/* Only Read Free link */}
+                {readFreeLink && (
+                  <Button asChild className="w-full" variant="outline">
+                    <a href={readFreeLink} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Read Free
                     </a>
                   </Button>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -158,6 +156,9 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
                 <p className="text-gray-700 leading-relaxed">{book.author_bio}</p>
               </div>
             )}
+            
+            {/* Page Summary Section */}
+            <PageSummarySection bookId={book.id} bookTitle={book.title} />
           </div>
         </div>
       </DialogContent>

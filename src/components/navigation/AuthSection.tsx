@@ -25,7 +25,7 @@ const AuthSection = () => {
         variant="ghost"
         size="sm"
         onClick={handleSignInClick}
-        className="text-gray-700 hover:text-orange-700 hover:bg-orange-50 font-medium"
+        className="text-gray-700 hover:text-orange-700 hover:bg-orange-50 font-medium border-2 border-orange-500"
       >
         <LogIn className="w-4 h-4 mr-1" />
         Sign In
