@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -46,7 +45,7 @@ export const useLibraryBooks = () => {
           description,
           author_bio,
           cover_image_url,
-          price,
+          pdf_url,
           internet_archive_url,
           isbn,
           publication_year,
@@ -70,8 +69,8 @@ export const useLibraryBooks = () => {
         author_bio: book.author_bio,
         cover_image_url: book.cover_image_url,
         ebook_url: book.internet_archive_url,
-        pdf_url: book.internet_archive_url,
-        price: book.price,
+        pdf_url: book.pdf_url,
+        price: undefined, // Remove price since it doesn't exist in database
         amazon_url: undefined,
         google_books_url: undefined,
         internet_archive_url: book.internet_archive_url,
@@ -102,7 +101,7 @@ export const useBooksByGenre = (genre?: string) => {
           description,
           author_bio,
           cover_image_url,
-          price,
+          pdf_url,
           internet_archive_url,
           isbn,
           publication_year,
@@ -132,8 +131,8 @@ export const useBooksByGenre = (genre?: string) => {
         author_bio: book.author_bio,
         cover_image_url: book.cover_image_url,
         ebook_url: book.internet_archive_url,
-        pdf_url: book.internet_archive_url,
-        price: book.price,
+        pdf_url: book.pdf_url,
+        price: undefined, // Remove price since it doesn't exist in database
         amazon_url: undefined,
         google_books_url: undefined,
         internet_archive_url: book.internet_archive_url,
