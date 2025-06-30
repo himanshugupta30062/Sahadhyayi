@@ -139,7 +139,7 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
               <Button
                 variant="ghost"
                 onClick={handleSignInClick}
-                className="w-full justify-center text-gray-700 hover:text-orange-700 hover:bg-orange-50 py-2.5"
+                className="w-full justify-center text-gray-700 hover:text-orange-700 hover:bg-orange-50 border-2 border-orange-500 py-2.5"
               >
                 <LogIn className="w-4 h-4 mr-2" />
                 Sign In
