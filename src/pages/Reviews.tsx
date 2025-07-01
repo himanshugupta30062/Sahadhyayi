@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import SEO from "@/components/SEO";
 
 const Reviews = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -125,7 +126,11 @@ const Reviews = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <>
+      <SEO
+        title="Community Reviews"
+        description="Read and share book reviews with the Sahadhyayi community."/>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <div className="max-w-7xl mx-auto py-8 px-4">
         {/* SEO-optimized Header */}
         <div className="text-center mb-12">
@@ -364,6 +369,7 @@ const Reviews = () => {
         </section>
       </div>
     </div>
+    </>
   );
 };
 

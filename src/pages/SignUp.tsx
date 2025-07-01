@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserPlus, Mail, Lock, User } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -162,7 +163,9 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <>
+      <SEO title="Sign Up - Sahadhyayi" description="Create your free Sahadhyayi account to join the reading community." />
+      <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center gap-2 text-2xl">
@@ -275,6 +278,7 @@ const SignUp = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 

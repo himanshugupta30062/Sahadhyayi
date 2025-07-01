@@ -5,6 +5,7 @@ import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus, User
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import SEO from "@/components/SEO";
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -50,7 +51,13 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+    <>
+      <SEO
+        title="Sahadhyayi - Reviving Deep Reading Culture"
+        description="Join Sahadhyayi's digital library and community to connect with readers worldwide."
+        canonical="https://www.sahadhyayi.com/"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
       {/* Hero Section */}
       <section className="relative py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
@@ -259,6 +266,7 @@ const Index = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

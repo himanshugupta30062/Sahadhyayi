@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Target, Users, TrendingUp, Heart, Globe, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -101,7 +102,11 @@ const About = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <>
+      <SEO
+        title="About Sahadhyayi"
+        description="Learn about Sahadhyayi's mission to revive deep reading and connect book lovers."/>
+      <div className="min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
@@ -377,6 +382,7 @@ const About = () => {
         </section>
       </div>
     </div>
+    </>
   );
 };
 
