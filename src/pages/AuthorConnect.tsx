@@ -110,53 +110,87 @@ const AuthorConnect = () => {
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
       </script>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 py-8 px-4">
-        <div className="max-w-6xl mx-auto">
-          {/* Header Section */}
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center space-x-3 mb-6">
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
-                <User className="w-8 h-8 text-white" />
+      
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+        {/* Hero Header Section */}
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+          <div className="max-w-6xl mx-auto px-4 py-16">
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-3 mb-6">
+                <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg">
+                  <User className="w-10 h-10 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2">
+                    Connect with Authors
+                  </h1>
+                  <p className="text-xl text-purple-100 font-medium">
+                    Meet the Minds Behind Great Books
+                  </p>
+                </div>
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Connect with Authors - Meet the Minds Behind Great Books
-              </h1>
-            </div>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
-              Connect with talented authors, schedule live Q&A sessions, and discover the stories behind your favorite books. 
-              Join our vibrant community of writers and readers.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500 mb-6">
-              <span>👥 50+ Active Authors</span>
-              <span>📚 Live Q&A Sessions</span>
-              <span>✍️ Writing Workshops</span>
-              <span>🎯 Personalized Recommendations</span>
+              
+              <p className="text-xl text-purple-100 max-w-4xl mx-auto mb-8 leading-relaxed">
+                Connect with talented authors, schedule live Q&A sessions, and discover the stories behind your favorite books. 
+                Join our vibrant community of writers and readers.
+              </p>
+              
+              <div className="flex flex-wrap items-center justify-center gap-6 text-lg text-purple-100 mb-8">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  <span>50+ Active Authors</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5" />
+                  <span>Live Q&A Sessions</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  <span>Writing Workshops</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5" />
+                  <span>Personalized Recommendations</span>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
+        <div className="max-w-6xl mx-auto px-4 py-12">
           {/* Search Section */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Find Your Favorite Authors</h2>
-            <div className="relative max-w-md mx-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <section className="mb-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Find Your Favorite Authors</h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Search through our community of talented writers and discover new voices in literature
+              </p>
+            </div>
+            
+            <div className="relative max-w-lg mx-auto">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="text"
                 placeholder="Search authors, genres, or books..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 bg-white/90 backdrop-blur-sm border-2 border-purple-200 focus:border-purple-400 rounded-xl"
+                className="pl-12 h-14 text-lg bg-white border-2 border-purple-200 focus:border-purple-400 rounded-xl shadow-sm"
               />
             </div>
-          </div>
+          </section>
 
-          {/* Authors Grid */}
-          <section aria-labelledby="authors-grid-heading">
-            <h2 id="authors-grid-heading" className="text-2xl font-bold text-gray-900 mb-6">Featured Authors</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {/* Authors Grid Section */}
+          <section aria-labelledby="authors-grid-heading" className="mb-16">
+            <div className="text-center mb-10">
+              <h2 id="authors-grid-heading" className="text-3xl font-bold text-gray-900 mb-4">Featured Authors</h2>
+              <p className="text-lg text-gray-600">Meet the talented writers in our community</p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredAuthors.map((author) => (
-                <Card key={author.id} className="bg-white/80 backdrop-blur-sm border-purple-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <Card key={author.id} className="group bg-white/90 backdrop-blur-sm border-purple-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-purple-300">
                   <CardHeader className="text-center pb-4">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-4 border-purple-200">
+                    <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-purple-200 group-hover:border-purple-400 transition-colors">
                       <img
                         src={author.image}
                         alt={`${author.name} - Author profile picture`}
@@ -164,49 +198,50 @@ const AuthorConnect = () => {
                       />
                     </div>
                     <CardTitle className="text-xl text-gray-900 mb-2">{author.name}</CardTitle>
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-800 mb-2">
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-800 mb-3 px-3 py-1">
                       {author.genre}
                     </Badge>
-                    <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span>{author.rating}</span>
+                        <span className="font-medium">{author.rating}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        <span>{author.followers.toLocaleString()}</span>
+                        <span className="font-medium">{author.followers.toLocaleString()}</span>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-gray-700 text-sm leading-relaxed">{author.bio}</p>
+                  
+                  <CardContent className="space-y-5">
+                    <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">{author.bio}</p>
                     
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                        <BookOpen className="w-4 h-4" />
+                      <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-purple-600" />
                         Featured Books
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {author.books.map((book, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
+                          <Badge key={index} variant="outline" className="text-xs border-purple-200 text-purple-700">
                             {book}
                           </Badge>
                         ))}
                       </div>
                     </div>
 
-                    <div className="bg-purple-50 p-3 rounded-lg">
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100">
                       <div className="flex items-center gap-2 mb-2">
                         <Clock className="w-4 h-4 text-purple-600" />
-                        <span className="font-semibold text-purple-900 text-sm">Next Session</span>
+                        <span className="font-semibold text-purple-900 text-sm">Next Available Session</span>
                       </div>
-                      <p className="text-sm text-purple-800">{author.nextSession}</p>
+                      <p className="text-sm text-purple-800 font-medium">{author.nextSession}</p>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-3 pt-2">
                       <Button 
                         size="sm" 
-                        className="flex-1 bg-purple-600 hover:bg-purple-700"
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-md"
                       >
                         <Calendar className="w-4 h-4 mr-2" />
                         Schedule Session
@@ -214,7 +249,7 @@ const AuthorConnect = () => {
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50"
+                        className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
                       >
                         <MessageSquare className="w-4 h-4 mr-2" />
                         Message
@@ -227,53 +262,71 @@ const AuthorConnect = () => {
           </section>
 
           {/* Benefits Section */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Why Connect with Authors?</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card className="bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200">
-                <CardContent className="p-6 text-center">
-                  <MessageSquare className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Direct Interaction</h3>
-                  <p className="text-gray-700">Get personal insights from authors about their writing process, inspirations, and upcoming works.</p>
+          <section className="mb-16">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Connect with Authors?</h2>
+              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                Discover the unique benefits of engaging directly with the creative minds behind your favorite books
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              <Card className="bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <MessageSquare className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Direct Interaction</h3>
+                  <p className="text-gray-700 leading-relaxed">Get personal insights from authors about their writing process, inspirations, and upcoming works through live sessions.</p>
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200">
-                <CardContent className="p-6 text-center">
-                  <BookOpen className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Exclusive Content</h3>
-                  <p className="text-gray-700">Access exclusive previews, behind-the-scenes content, and early releases from your favorite authors.</p>
+              
+              <Card className="bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <BookOpen className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Exclusive Content</h3>
+                  <p className="text-gray-700 leading-relaxed">Access exclusive previews, behind-the-scenes content, and early releases from your favorite authors before anyone else.</p>
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200">
-                <CardContent className="p-6 text-center">
-                  <Users className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Community Events</h3>
-                  <p className="text-gray-700">Join book launches, reading sessions, and literary discussions with authors and fellow readers.</p>
+              
+              <Card className="bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Users className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Community Events</h3>
+                  <p className="text-gray-700 leading-relaxed">Join book launches, reading sessions, and literary discussions with authors and fellow readers in our community.</p>
                 </CardContent>
               </Card>
             </div>
           </section>
 
           {/* CTA Section */}
-          <section className="text-center bg-gradient-to-r from-purple-600 to-pink-600 text-white p-8 rounded-2xl">
-            <h2 className="text-3xl font-bold mb-4">Ready to Connect with Authors?</h2>
-            <p className="text-xl mb-6 opacity-90">
-              Join thousands of readers connecting with their favorite authors on Sahadhyayi.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/library">
-                <Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
-                  <BookOpen className="w-5 h-5 mr-2" />
-                  Browse books by these authors
-                </Button>
-              </Link>
-              <Link to="/reviews">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-purple-600 px-8 py-3 text-lg">
-                  <Users className="w-5 h-5 mr-2" />
-                  Join author discussions
-                </Button>
-              </Link>
-            </div>
+          <section className="text-center">
+            <Card className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 shadow-2xl">
+              <CardContent className="p-12">
+                <h2 className="text-4xl font-bold mb-6">Ready to Connect with Authors?</h2>
+                <p className="text-xl mb-8 opacity-95 max-w-2xl mx-auto leading-relaxed">
+                  Join thousands of readers connecting with their favorite authors on Sahadhyayi and discover new literary adventures.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link to="/library">
+                    <Button size="lg" variant="secondary" className="px-8 py-4 text-lg font-semibold hover:shadow-lg transition-all">
+                      <BookOpen className="w-5 h-5 mr-2" />
+                      Browse books by these authors
+                    </Button>
+                  </Link>
+                  <Link to="/reviews">
+                    <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 text-lg font-semibold transition-all">
+                      <Users className="w-5 h-5 mr-2" />
+                      Join author discussions
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </section>
         </div>
       </div>
