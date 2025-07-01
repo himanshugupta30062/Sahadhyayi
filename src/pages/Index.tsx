@@ -19,33 +19,33 @@ const Index = () => {
   const features = [
     {
       icon: BookOpen,
-      title: "Personal Bookshelf",
-      description: "Track your reading progress, manage your book collection, and read directly on our platform."
+      title: "Personal Digital Bookshelf",
+      description: "Track your reading progress, manage your book collection, and read directly on our platform with advanced reading tools."
     },
     {
       icon: Users,
-      title: "Reading Groups",
-      description: "Join book-specific discussion groups and connect with readers worldwide."
+      title: "Global Reading Communities",
+      description: "Join book-specific discussion groups and connect with passionate readers from around the world."
     },
     {
       icon: Map,
-      title: "Reader Map",
-      description: "Discover readers near you and find local book communities."
+      title: "Local Reader Discovery",
+      description: "Discover readers near you and find local book communities through our interactive reader map."
     },
     {
       icon: Calendar,
-      title: "Author Connect",
-      description: "Schedule live Q&A sessions and conferences with your favorite authors."
+      title: "Author Connect Sessions",
+      description: "Schedule live Q&A sessions and conferences with your favorite authors and literary experts."
     },
     {
       icon: Star,
-      title: "Reviews & Ratings",
-      description: "Share your thoughts and discover great books through community reviews."
+      title: "Community Reviews & Ratings",
+      description: "Share your thoughts and discover great books through our comprehensive community review system."
     },
     {
       icon: Headphones,
-      title: "AI Reading Assistant",
-      description: "Get instant explanations for any word, paragraph, or chapter while reading."
+      title: "AI-Powered Reading Assistant",
+      description: "Get instant explanations for any word, paragraph, or chapter while reading with our intelligent AI companion."
     }
   ];
 
@@ -57,7 +57,7 @@ const Index = () => {
           <div className="flex justify-center mb-8">
             <img 
               src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
-              alt="Sahadhyayi Logo" 
+              alt="Sahadhyayi logo - A stylized book icon representing digital reading and community" 
               className="w-24 h-24" 
             />
           </div>
@@ -124,29 +124,29 @@ const Index = () => {
       {/* Mission Section */}
       <section className="py-16 px-4 bg-white/60 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">Why Sahadhyayi?</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-8">Why Choose Sahadhyayi for Your Reading Journey?</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="text-left">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">The Problem</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">The Digital Reading Challenge</h3>
               <p className="text-lg text-gray-700 leading-relaxed mb-6">
                 Modern digital consumption habits are shifting away from deep reading toward passive content like videos and podcasts. 
                 This change impacts our ability to focus deeply, comprehend complex ideas, and engage in meaningful reflection.
               </p>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Our Solution</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Our Revolutionary Solution</h3>
               <p className="text-lg text-gray-700 leading-relaxed">
                 Sahadhyayi creates a social reading platform that makes books more accessible, interactive, and community-driven. 
                 We combine traditional reading with modern technology to build healthier intellectual habits.
               </p>
             </div>
             <div className="bg-gradient-to-br from-orange-100 to-red-100 p-8 rounded-2xl backdrop-blur-sm border border-orange-200 shadow-lg">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Benefits of Deep Reading</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Scientifically Proven Benefits of Deep Reading</h3>
               <ul className="space-y-3 text-gray-700">
-                <li>• Improves focus and attention span</li>
-                <li>• Enhances critical thinking skills</li>
-                <li>• Reduces eye strain from screens</li>
+                <li>• Improves focus and attention span significantly</li>
+                <li>• Enhances critical thinking and analytical skills</li>
+                <li>• Reduces digital eye strain from screens</li>
                 <li>• Builds empathy and emotional intelligence</li>
-                <li>• Promotes mental clarity and reflection</li>
-                <li>• Creates lasting knowledge retention</li>
+                <li>• Promotes mental clarity and deep reflection</li>
+                <li>• Creates lasting knowledge retention and understanding</li>
               </ul>
             </div>
           </div>
@@ -156,7 +156,10 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Platform Features</h2>
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">Comprehensive Platform Features</h2>
+          <p className="text-xl text-gray-600 text-center mb-12 max-w-3xl mx-auto">
+            Discover powerful tools designed to enhance your reading experience and connect you with a global community of book lovers.
+          </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon;
@@ -178,12 +181,58 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Internal Links Section */}
+      <section className="py-16 px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-gray-900 mb-8">Explore Our Platform</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Link to="/library" className="block">
+              <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <BookOpen className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Digital Library</h3>
+                  <p className="text-gray-600">Browse thousands of books across all genres</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/groups" className="block">
+              <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <Users className="w-12 h-12 text-green-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Reading Groups</h3>
+                  <p className="text-gray-600">Join discussions with fellow readers</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/reader-map" className="block">
+              <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <Map className="w-12 h-12 text-purple-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Reader Map</h3>
+                  <p className="text-gray-600">Find readers in your local area</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/author-connect" className="block">
+              <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <Calendar className="w-12 h-12 text-orange-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Author Connect</h3>
+                  <p className="text-gray-600">Meet and interact with authors</p>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-orange-600 to-red-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Reading Journey?</h2>
           <p className="text-xl mb-8 opacity-90">
             Join Sahadhyayi today and become part of a global community dedicated to deep, meaningful reading.
+            Start your journey towards better focus, enhanced comprehension, and meaningful literary connections.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {user ? (
@@ -203,7 +252,7 @@ const Index = () => {
             )}
             <Link to="/about">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600 px-8 py-3 text-lg">
-                Learn More
+                Learn More About Us
               </Button>
             </Link>
           </div>

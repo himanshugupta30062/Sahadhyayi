@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,7 +66,7 @@ const BookGridView = ({ books }: BookGridViewProps) => {
               {book.cover_image_url ? (
                 <img
                   src={book.cover_image_url}
-                  alt={book.title}
+                  alt={`Book cover of "${book.title}" by ${book.author || 'Unknown Author'} - Click to view details`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                   onError={(e) => {
@@ -100,7 +99,7 @@ const BookGridView = ({ books }: BookGridViewProps) => {
 
               {/* Author */}
               {book.author && (
-                <p className="text-gray-600 text-sm">{book.author}</p>
+                <p className="text-gray-600 text-sm">by {book.author}</p>
               )}
 
               {/* Genre, Year, and Language */}
@@ -130,6 +129,7 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                 className="w-full bg-gray-600 hover:bg-gray-700 text-white"
                 onClick={() => handleDownloadPDF(book)}
                 disabled={!book.pdf_url}
+                aria-label={`Download PDF of ${book.title}`}
               >
                 <Download className="w-4 h-4 mr-1" />
                 Download PDF
