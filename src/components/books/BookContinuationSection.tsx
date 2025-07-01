@@ -52,7 +52,6 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
 
     setIsSubmitting(true);
     try {
-      // Here you would typically save to database
       console.log('Submitting continuation:', {
         bookId,
         continuationSummary,
@@ -94,31 +93,32 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
 
   return (
     <Card className="w-full border-0 shadow-none">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-orange-900">
-          <BookOpen className="w-6 h-6 text-orange-600" />
-          Book Continuation
+      <CardHeader className="pb-3 px-4 sm:px-6">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-orange-900">
+          <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 flex-shrink-0" />
+          <span>Book Continuation</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="px-4 sm:px-6 space-y-4 sm:space-y-6">
         {/* Sequel Vote Section */}
-        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-lg border border-purple-200">
-          <div className="flex items-center gap-2 mb-4">
-            <Vote className="w-4 h-4 text-purple-600" />
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 sm:p-6 rounded-lg border border-purple-200">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Vote className="w-4 h-4 text-purple-600 flex-shrink-0" />
             <span className="text-sm font-medium text-purple-800">Should there be a sequel?</span>
           </div>
           
-          <p className="text-gray-700 mb-4 text-sm">
+          <p className="text-gray-700 mb-4 text-sm sm:text-base">
             Vote whether you think "{bookTitle}" deserves a continuation or sequel.
           </p>
 
           {!user && (
-            <div className="mb-4 p-4 bg-white rounded-lg border border-purple-200">
+            <div className="mb-4 p-3 sm:p-4 bg-white rounded-lg border border-purple-200">
               <div className="text-center">
-                <p className="text-gray-600 mb-3">Sign in to vote and share your sequel ideas</p>
+                <p className="text-sm sm:text-base text-gray-600 mb-3">Sign in to vote and share your sequel ideas</p>
                 <Button 
                   onClick={handleSignInPrompt}
-                  className="bg-purple-600 hover:bg-purple-700"
+                  className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto"
+                  size="sm"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
                   Sign In to Vote
@@ -127,34 +127,36 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
             </div>
           )}
           
-          <div className="flex gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
             <Button
               variant={voteForSequel === 'yes' ? 'default' : 'outline'}
               onClick={() => handleVote('yes')}
-              className={voteForSequel === 'yes' ? 'bg-green-600 hover:bg-green-700' : 'border-green-300 text-green-700 hover:bg-green-50'}
+              className={`${voteForSequel === 'yes' ? 'bg-green-600 hover:bg-green-700' : 'border-green-300 text-green-700 hover:bg-green-50'} w-full sm:w-auto text-sm`}
               disabled={!user}
+              size="sm"
             >
               Yes, I want a sequel!
             </Button>
             <Button
               variant={voteForSequel === 'no' ? 'default' : 'outline'}
               onClick={() => handleVote('no')}
-              className={voteForSequel === 'no' ? 'bg-red-600 hover:bg-red-700' : 'border-red-300 text-red-700 hover:bg-red-50'}
+              className={`${voteForSequel === 'no' ? 'bg-red-600 hover:bg-red-700' : 'border-red-300 text-red-700 hover:bg-red-50'} w-full sm:w-auto text-sm`}
               disabled={!user}
+              size="sm"
             >
               No, it's perfect as is
             </Button>
           </div>
 
-          {/* Sample voting results - visible to all users */}
+          {/* Voting results */}
           <div className="bg-white p-3 rounded border border-purple-100">
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-green-600" />
+                <Users className="w-4 h-4 text-green-600 flex-shrink-0" />
                 <span className="text-green-700 font-medium">147 want sequel</span>
               </div>
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-red-600" />
+                <Users className="w-4 h-4 text-red-600 flex-shrink-0" />
                 <span className="text-red-700 font-medium">23 satisfied</span>
               </div>
             </div>
@@ -162,17 +164,17 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
         </div>
 
         {/* Write Your Continuation Section */}
-        <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-lg border border-orange-200">
-          <div className="flex items-center gap-2 mb-4">
-            <PenTool className="w-4 h-4 text-orange-600" />
+        <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 sm:p-6 rounded-lg border border-orange-200">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <PenTool className="w-4 h-4 text-orange-600 flex-shrink-0" />
             <span className="text-sm font-medium text-orange-800">Write Your Own Sequel Summary</span>
           </div>
           
-          <p className="text-gray-700 mb-4 text-sm">
+          <p className="text-gray-700 mb-4 text-sm sm:text-base">
             Imagine what happens next! Write a brief summary of how you would continue this story.
           </p>
           
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <label htmlFor="continuation" className="block text-sm font-medium mb-2 text-gray-700">
                 Your Sequel Summary (200-500 words)
@@ -182,7 +184,7 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
                 value={continuationSummary}
                 onChange={(e) => setContinuationSummary(e.target.value)}
                 placeholder={user ? "What happens next in your version? Describe the main plot points, character developments, and how the story would unfold..." : "Sign in to write your sequel summary..."}
-                className="min-h-[150px]"
+                className="min-h-[120px] sm:min-h-[150px] text-sm sm:text-base"
                 disabled={!user}
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -193,7 +195,8 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
             <Button
               onClick={handleSubmitContinuation}
               disabled={isSubmitting || !user}
-              className="w-full bg-orange-600 hover:bg-orange-700"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-sm sm:text-base"
+              size="sm"
             >
               {!user ? (
                 <>
@@ -212,22 +215,22 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
           </div>
         </div>
 
-        {/* Community Continuations - visible to all users */}
+        {/* Community Continuations */}
         <div className="space-y-3">
-          <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-orange-600" />
+          <h4 className="font-semibold text-sm sm:text-base text-gray-800 flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-orange-600 flex-shrink-0" />
             Community Sequel Ideas
           </h4>
           
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex items-center gap-2">
+          <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-gray-800">StoryTeller99</span>
                 <Badge variant="secondary" className="text-xs">Top Rated</Badge>
               </div>
-              <span className="text-xs text-gray-500">1 week ago</span>
+              <span className="text-xs text-gray-500 self-start sm:self-auto">1 week ago</span>
             </div>
-            <p className="text-sm text-gray-700 mb-2">
+            <p className="text-sm text-gray-700 mb-2 leading-relaxed">
               "In my sequel, the protagonist would return to their hometown after 10 years, only to discover that the magical events from the first book have left lasting changes in the community. The story would explore themes of homecoming and responsibility..."
             </p>
             <div className="flex items-center gap-3 text-xs text-gray-500">

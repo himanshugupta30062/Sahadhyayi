@@ -45,8 +45,6 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
 
     setIsSubmitting(true);
     try {
-      // Here you would typically save to database
-      // For now, we'll just show a success message
       console.log('Submitting idea:', {
         bookId,
         sectionReference,
@@ -60,7 +58,6 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
         description: "Your feedback has been shared with the community.",
       });
 
-      // Reset form
       setSectionReference('');
       setComment('');
       setFeedbackType('neutral');
@@ -78,26 +75,27 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
 
   return (
     <Card className="w-full border-0 shadow-none">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-orange-900">
-          <MessageSquare className="w-6 h-6 text-orange-600" />
-          Ideas & Feedback
+      <CardHeader className="pb-3 px-4 sm:px-6">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-orange-900">
+          <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 flex-shrink-0" />
+          <span>Ideas & Feedback</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
-          <div className="flex items-center gap-2 mb-4">
-            <MessageSquare className="w-4 h-4 text-blue-600" />
+      <CardContent className="px-4 sm:px-6 space-y-4 sm:space-y-6">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <MessageSquare className="w-4 h-4 text-blue-600 flex-shrink-0" />
             <span className="text-sm font-medium text-blue-800">Share Your Thoughts</span>
           </div>
           
           {!user && (
-            <div className="mb-4 p-4 bg-white rounded-lg border border-blue-200">
+            <div className="mb-4 p-3 sm:p-4 bg-white rounded-lg border border-blue-200">
               <div className="text-center">
-                <p className="text-gray-600 mb-3">Sign in to share your thoughts and feedback about this book</p>
+                <p className="text-sm sm:text-base text-gray-600 mb-3">Sign in to share your thoughts and feedback about this book</p>
                 <Button 
                   onClick={handleSignInPrompt}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                  size="sm"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
                   Sign In to Share Ideas
@@ -106,54 +104,54 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
             </div>
           )}
           
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <label htmlFor="sectionRef" className="block text-sm font-medium mb-2 text-gray-700">
-                Section Reference (e.g., "Chapter 5", "Page 45-50", "The ending")
+                Section Reference
               </label>
               <Input
                 id="sectionRef"
                 value={sectionReference}
                 onChange={(e) => setSectionReference(e.target.value)}
-                placeholder="Which part of the book are you commenting on?"
-                className="h-10"
+                placeholder="e.g., Chapter 5, Page 45-50"
+                className="h-9 sm:h-10"
                 disabled={!user}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700">
-                Your Feedback Type
+                Feedback Type
               </label>
-              <div className="flex gap-2 mb-3">
+              <div className="flex flex-wrap gap-2 mb-3">
                 <Button
                   variant={feedbackType === 'like' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => user ? setFeedbackType('like') : handleSignInPrompt()}
-                  className={feedbackType === 'like' ? 'bg-green-600 hover:bg-green-700' : ''}
+                  className={`${feedbackType === 'like' ? 'bg-green-600 hover:bg-green-700' : ''} text-xs sm:text-sm`}
                   disabled={!user}
                 >
-                  <ThumbsUp className="w-4 h-4 mr-1" />
+                  <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   Like
                 </Button>
                 <Button
                   variant={feedbackType === 'dislike' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => user ? setFeedbackType('dislike') : handleSignInPrompt()}
-                  className={feedbackType === 'dislike' ? 'bg-red-600 hover:bg-red-700' : ''}
+                  className={`${feedbackType === 'dislike' ? 'bg-red-600 hover:bg-red-700' : ''} text-xs sm:text-sm`}
                   disabled={!user}
                 >
-                  <ThumbsDown className="w-4 h-4 mr-1" />
+                  <ThumbsDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   Dislike
                 </Button>
                 <Button
                   variant={feedbackType === 'neutral' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => user ? setFeedbackType('neutral') : handleSignInPrompt()}
-                  className={feedbackType === 'neutral' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  className={`${feedbackType === 'neutral' ? 'bg-blue-600 hover:bg-blue-700' : ''} text-xs sm:text-sm`}
                   disabled={!user}
                 >
-                  <MessageSquare className="w-4 h-4 mr-1" />
+                  <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   General
                 </Button>
               </div>
@@ -167,8 +165,8 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
                 id="comment"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder={user ? "Share your thoughts, suggestions, or feedback about this section..." : "Sign in to share your thoughts..."}
-                className="min-h-[100px]"
+                placeholder={user ? "Share your thoughts, suggestions, or feedback..." : "Sign in to share your thoughts..."}
+                className="min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
                 disabled={!user}
               />
             </div>
@@ -176,7 +174,8 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
             <Button
               onClick={handleSubmitIdea}
               disabled={isSubmitting || !user}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
+              size="sm"
             >
               {!user ? (
                 <>
@@ -195,15 +194,15 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
           </div>
         </div>
 
-        {/* Sample existing ideas - visible to all users */}
+        {/* Community Ideas */}
         <div className="space-y-3">
-          <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-orange-600" />
+          <h4 className="font-semibold text-sm sm:text-base text-gray-800 flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-orange-600 flex-shrink-0" />
             Community Ideas
           </h4>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex items-center gap-2">
+          <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-gray-800">BookLover23</span>
                 <Badge variant="secondary" className="text-xs">Chapter 3</Badge>
                 <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
@@ -211,9 +210,9 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
                   Like
                 </Badge>
               </div>
-              <span className="text-xs text-gray-500">2 days ago</span>
+              <span className="text-xs text-gray-500 self-start sm:self-auto">2 days ago</span>
             </div>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-700 leading-relaxed">
               "The character development in this chapter was amazing! I loved how the author revealed the protagonist's backstory."
             </p>
           </div>
