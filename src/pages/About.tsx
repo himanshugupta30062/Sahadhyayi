@@ -101,11 +101,56 @@ const About = () => {
     }
   };
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About Sahadhyayi",
+    "description": "Learn about Sahadhyayi's mission to revive reading culture",
+    "url": "https://sahadhyayi.com/about",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Sahadhyayi",
+      "description": "Digital platform dedicated to reviving deep reading culture",
+      "url": "https://sahadhyayi.com",
+      "foundingDate": "2024",
+      "mission": "To revive deep reading culture and connect readers worldwide",
+      "founder": {
+        "@type": "Person",
+        "name": "Himanshu Gupta",
+        "jobTitle": "Founder",
+        "email": "gyan@sahadhyayi.com",
+        "telephone": "8264135459"
+      }
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://sahadhyayi.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "About",
+          "item": "https://sahadhyayi.com/about"
+        }
+      ]
+    }
+  };
+
   return (
     <>
       <SEO
-        title="About Sahadhyayi"
-        description="Learn about Sahadhyayi's mission to revive deep reading and connect book lovers."/>
+        title="About Sahadhyayi - Reviving Reading Culture Worldwide"
+        description="Learn about Sahadhyayi's mission to revive deep reading culture. Discover how we connect readers globally and promote meaningful literary engagement."
+        canonical="https://sahadhyayi.com/about"
+      />
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
       <div className="min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -113,11 +158,13 @@ const About = () => {
           <div className="flex justify-center mb-6">
             <img 
               src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
-              alt="Sahadhyayi Logo" 
+              alt="Sahadhyayi Logo - Digital reading platform for community connection" 
               className="w-20 h-20" 
             />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">About Sahadhyayi</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            About Sahadhyayi - Reviving the Joy of Deep Reading
+          </h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
             We're on a mission to revive the lost art of deep reading and build a global community 
             that values knowledge, focus, and meaningful intellectual growth.
@@ -127,7 +174,7 @@ const About = () => {
         {/* Vision Section */}
         <section className="mb-16">
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 md:p-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Our Vision</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Our Vision for a Reading Renaissance</h2>
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div>
                 <h3 className="text-2xl font-semibold text-gray-900 mb-4">Why Reading Matters More Than Ever</h3>
@@ -137,7 +184,8 @@ const About = () => {
                 </p>
                 <p className="text-gray-700 leading-relaxed">
                   Reading, on the other hand, strengthens focus, enhances comprehension, and promotes mental clarity. 
-                  It's active learning that builds lasting knowledge and critical thinking skills.
+                  It's active learning that builds lasting knowledge and critical thinking skills. 
+                  <Link to="/library" className="text-orange-600 hover:text-orange-700 font-medium ml-1">Start your reading journey</Link> today.
                 </p>
               </div>
               <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -211,7 +259,7 @@ const About = () => {
 
         {/* Future Plans */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Building the Future</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Building the Future of Reading</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <Card className="bg-gradient-to-br from-amber-100 to-orange-100 border-amber-200">
               <CardHeader>
@@ -368,12 +416,14 @@ const About = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/library">
                   <Button size="lg" variant="secondary" className="px-8 py-3 text-lg">
-                    Start Reading
+                    <BookOpen className="w-5 h-5 mr-2" />
+                    Start your reading journey
                   </Button>
                 </Link>
-                <Link to="/groups">
+                <Link to="/authors">
                   <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-amber-600 px-8 py-3 text-lg">
-                    Join Community
+                    <Users className="w-5 h-5 mr-2" />
+                    Meet inspiring authors
                   </Button>
                 </Link>
               </div>

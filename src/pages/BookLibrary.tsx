@@ -6,6 +6,7 @@ import FilterPopup from '@/components/library/FilterPopup';
 import BooksCollection from '@/components/library/BooksCollection';
 import GenreSelector from '@/components/library/GenreSelector';
 import SEO from '@/components/SEO';
+import { Link } from 'react-router-dom';
 
 const BookLibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,26 +24,61 @@ const BookLibrary = () => {
     setPriceRange([0, 100]);
   };
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Sahadhyayi Digital Library",
+    "description": "Comprehensive digital book collection with thousands of titles",
+    "url": "https://sahadhyayi.com/library",
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "Book Collection",
+      "description": "Digital books across multiple genres and languages"
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://sahadhyayi.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Library",
+          "item": "https://sahadhyayi.com/library"
+        }
+      ]
+    }
+  };
+
   return (
     <>
       <SEO
-        title="Sahadhyayi Digital Library"
-        description="Browse thousands of books across genres in Sahadhyayi's online library."/>
+        title="Digital Book Library - Browse 10,000+ Books | Sahadhyayi"
+        description="Browse our extensive digital library with 10,000+ books across all genres. Find your next great read with free PDFs, community reviews, and personalized recommendations."
+        canonical="https://sahadhyayi.com/library"
+      />
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       {/* SEO-optimized header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-amber-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-3 mb-6">
               <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
                 <BookOpen className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                Digital Library Collection
+                Digital Library - Discover Your Next Great Read
               </h1>
             </div>
             <p className="text-gray-600 text-lg max-w-3xl mx-auto mb-6">
-              Discover and explore our vast collection of books from around the world. Browse through thousands of titles across multiple genres and languages. Connect with fellow readers and join our vibrant reading community.
+              Browse our extensive digital library with 10,000+ books across all genres. Find your next great read with free PDFs, community reviews, and personalized recommendations from fellow readers.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
               <span>📚 10,000+ Books</span>
@@ -114,13 +150,13 @@ const BookLibrary = () => {
             <h2 id="books-collection-heading" className="text-2xl font-bold text-gray-900">
               Available Books
             </h2>
-            <a 
-              href="/reviews" 
+            <Link 
+              to="/reviews" 
               className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors font-medium"
             >
               <Users className="w-4 h-4" />
-              Join Reading Community
-            </a>
+              Join our reading community
+            </Link>
           </div>
           <BooksCollection
             searchQuery={searchQuery}
@@ -181,27 +217,28 @@ const BookLibrary = () => {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Connect with Fellow Readers</h3>
                 <p className="text-gray-600 mb-4">
-                  Share your reading journey, discover what others are reading, and join discussions about your favorite books.
+                  Share your reading journey, discover what others are reading, and join discussions about your favorite books. 
+                  <Link to="/authors" className="text-amber-600 hover:text-amber-700 font-medium ml-1">Connect with authors</Link> too!
                 </p>
-                <a 
-                  href="/reviews" 
+                <Link 
+                  to="/reviews" 
                   className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors font-medium"
                 >
                   <Users className="w-4 h-4" />
                   Explore Social Feed
-                </a>
+                </Link>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Find Reading Partners</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Track Your Reading Progress</h3>
                 <p className="text-gray-600 mb-4">
-                  Discover readers who are enjoying the same books as you and start meaningful conversations.
+                  Monitor your reading goals, track book completion, and celebrate your achievements with the community.
                 </p>
-                <a 
-                  href="/reading-groups" 
+                <Link 
+                  to="/dashboard" 
                   className="text-amber-600 hover:text-amber-700 font-medium"
                 >
-                  Join Reading Groups →
-                </a>
+                  Track your reading progress →
+                </Link>
               </div>
             </div>
           </div>

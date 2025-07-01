@@ -50,13 +50,43 @@ const Index = () => {
     }
   ];
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Sahadhyayi",
+    "alternateName": "Sahadhyayi Reading Community",
+    "url": "https://sahadhyayi.com",
+    "description": "Digital reading community platform connecting readers and authors worldwide",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://sahadhyayi.com/library?search={search_term_string}",
+      "query-input": "required name=search_term_string"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Sahadhyayi",
+      "url": "https://sahadhyayi.com",
+      "logo": "https://sahadhyayi.com/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png",
+      "foundingDate": "2024",
+      "mission": "To revive deep reading culture and connect readers worldwide",
+      "sameAs": [
+        "https://sahadhyayi.com/library",
+        "https://sahadhyayi.com/authors",
+        "https://sahadhyayi.com/about"
+      ]
+    }
+  };
+
   return (
     <>
       <SEO
-        title="Sahadhyayi - Reviving Deep Reading Culture"
-        description="Join Sahadhyayi's digital library and community to connect with readers worldwide."
-        canonical="https://www.sahadhyayi.com/"
+        title="Sahadhyayi - Digital Reading Community & Book Library"
+        description="Join Sahadhyayi's vibrant reading community. Discover thousands of books, connect with fellow readers, track your progress, and explore our digital library platform."
+        canonical="https://sahadhyayi.com/"
       />
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
       {/* Hero Section */}
       <section className="relative py-20 px-4 text-center">
@@ -71,6 +101,8 @@ const Index = () => {
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
             Welcome to
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600"> Sahadhyayi</span>
+            <br />
+            <span className="text-3xl md:text-4xl">Your Digital Reading Community</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed">
             Reviving the transformative power of deep reading through community, technology, and shared knowledge.
@@ -82,12 +114,12 @@ const Index = () => {
               <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-orange-200 shadow-lg">
                 <div className="flex items-center justify-center mb-4">
                   <User className="w-6 h-6 text-orange-600 mr-2" />
-                  <h3 className="text-2xl font-semibold text-gray-900">
+                  <h2 className="text-2xl font-semibold text-gray-900">
                     Welcome back, {profile?.full_name || user.email?.split('@')[0] || 'Reader'}!
-                  </h3>
+                  </h2>
                 </div>
                 <p className="text-gray-700 mb-6">
-                  Ready to continue your reading journey? Explore your dashboard or discover new books.
+                  Ready to continue your reading journey? <Link to="/library" className="text-orange-600 hover:text-orange-700 font-medium">Explore our digital library</Link> or discover new books.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link to="/dashboard">
@@ -142,7 +174,8 @@ const Index = () => {
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Our Revolutionary Solution</h3>
               <p className="text-lg text-gray-700 leading-relaxed">
                 Sahadhyayi creates a social reading platform that makes books more accessible, interactive, and community-driven. 
-                We combine traditional reading with modern technology to build healthier intellectual habits.
+                We combine traditional reading with modern technology to build healthier intellectual habits. 
+                <Link to="/about" className="text-orange-600 hover:text-orange-700 font-medium ml-1">Learn about our mission</Link>.
               </p>
             </div>
             <div className="bg-gradient-to-br from-orange-100 to-red-100 p-8 rounded-2xl backdrop-blur-sm border border-orange-200 shadow-lg">
@@ -211,7 +244,7 @@ const Index = () => {
                 </CardContent>
               </Card>
             </Link>
-            <Link to="/reader-map" className="block">
+            <Link to="/map" className="block">
               <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-6 text-center">
                   <Map className="w-12 h-12 text-purple-600 mx-auto mb-4" />
@@ -220,12 +253,12 @@ const Index = () => {
                 </CardContent>
               </Card>
             </Link>
-            <Link to="/author-connect" className="block">
+            <Link to="/authors" className="block">
               <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-6 text-center">
                   <Calendar className="w-12 h-12 text-orange-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Author Connect</h3>
-                  <p className="text-gray-600">Meet and interact with authors</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Meet Authors</h3>
+                  <p className="text-gray-600">Connect with inspiring authors</p>
                 </CardContent>
               </Card>
             </Link>
