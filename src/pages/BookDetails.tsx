@@ -12,6 +12,7 @@ import AuthorBio from '@/components/books/AuthorBio';
 import BookIdeasSection from '@/components/books/BookIdeasSection';
 import BookContinuationSection from '@/components/books/BookContinuationSection';
 import CreateYourVersionSection from '@/components/books/CreateYourVersionSection';
+import BookReadersConnection from '@/components/books/BookReadersConnection';
 import { useBookById } from '@/hooks/useBookById';
 
 const BookDetails = () => {
@@ -192,7 +193,13 @@ const BookDetails = () => {
 
         {/* Interactive Sections */}
         <div className="space-y-8">
-          {/* Create Your Own Version Section - Now prominently displayed */}
+          {/* Readers Connection Section - New prominent section */}
+          <BookReadersConnection 
+            bookId={book.id}
+            bookTitle={book.title}
+          />
+
+          {/* Create Your Own Version Section */}
           <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 shadow-lg">
             <CardContent className="p-6">
               <CreateYourVersionSection 
