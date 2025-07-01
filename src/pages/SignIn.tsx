@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Mail, Lock } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -97,7 +98,9 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <>
+      <SEO title="Sign In - Sahadhyayi" description="Access your Sahadhyayi account and continue reading." />
+      <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center gap-2 text-2xl">
@@ -165,6 +168,7 @@ const SignIn = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 

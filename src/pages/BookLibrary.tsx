@@ -5,6 +5,7 @@ import { SearchBar } from '@/components/ui/search-bar';
 import FilterPopup from '@/components/library/FilterPopup';
 import BooksCollection from '@/components/library/BooksCollection';
 import GenreSelector from '@/components/library/GenreSelector';
+import SEO from '@/components/SEO';
 
 const BookLibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,7 +24,11 @@ const BookLibrary = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <>
+      <SEO
+        title="Sahadhyayi Digital Library"
+        description="Browse thousands of books across genres in Sahadhyayi's online library."/>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       {/* SEO-optimized header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-amber-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -203,6 +208,7 @@ const BookLibrary = () => {
         </section>
       </div>
     </div>
+    </>
   );
 };
 

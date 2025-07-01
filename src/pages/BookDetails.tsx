@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import BookCover from '@/components/books/BookCover';
 import BookDescription from '@/components/books/BookDescription';
+import SEO from '@/components/SEO';
 import AuthorBio from '@/components/books/AuthorBio';
 import BookIdeasSection from '@/components/books/BookIdeasSection';
 import BookContinuationSection from '@/components/books/BookContinuationSection';
@@ -61,7 +62,9 @@ const BookDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <>
+      <SEO title={`${book.title} - Sahadhyayi`} description={book.description} />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-blue-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -232,6 +235,7 @@ const BookDetails = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
