@@ -58,7 +58,8 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
 
   return (
     <div className="lg:hidden">
-      <div className="px-2 pt-2 pb-3 space-y-1 bg-white rounded-lg shadow-lg mt-2 mx-2 sm:mx-0">
+      <div className="fixed inset-x-0 top-16 z-40 max-h-[calc(100vh-4rem)] overflow-y-auto bg-white border-t border-gray-200 shadow-lg">
+        <div className="px-2 pt-2 pb-3 space-y-1">
 
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -153,6 +154,7 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
               </Button>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>
