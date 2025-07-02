@@ -229,27 +229,27 @@ const Index = () => {
             <Link to="/library" className="block">
               <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-6 text-center">
-                  <BookOpen className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <BookOpen className="w-12 h-12 text-orange-600 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Digital Library</h3>
-                  <p className="text-gray-600">Browse thousands of books across all genres</p>
+                  <p className="text-gray-600 text-sm">Browse thousands of books across all genres</p>
                 </CardContent>
               </Card>
             </Link>
             <Link to="/groups" className="block">
               <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-6 text-center">
-                  <Users className="w-12 h-12 text-green-600 mx-auto mb-4" />
+                  <Users className="w-12 h-12 text-orange-600 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Reading Groups</h3>
-                  <p className="text-gray-600">Join discussions with fellow readers</p>
+                  <p className="text-gray-600 text-sm">Join discussions with fellow readers</p>
                 </CardContent>
               </Card>
             </Link>
             <Link to="/map" className="block">
               <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-6 text-center">
-                  <Map className="w-12 h-12 text-purple-600 mx-auto mb-4" />
+                  <Map className="w-12 h-12 text-orange-600 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Reader Map</h3>
-                  <p className="text-gray-600">Find readers in your local area</p>
+                  <p className="text-gray-600 text-sm">Find readers in your local area</p>
                 </CardContent>
               </Card>
             </Link>
@@ -258,7 +258,7 @@ const Index = () => {
                 <CardContent className="p-6 text-center">
                   <Calendar className="w-12 h-12 text-orange-600 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Meet Authors</h3>
-                  <p className="text-gray-600">Connect with inspiring authors</p>
+                  <p className="text-gray-600 text-sm">Connect with inspiring authors</p>
                 </CardContent>
               </Card>
             </Link>
