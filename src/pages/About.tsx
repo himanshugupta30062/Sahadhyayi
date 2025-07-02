@@ -162,9 +162,9 @@ const About = () => {
               className="w-20 h-20" 
             />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            About Sahadhyayi - Reviving the Joy of Deep Reading
-          </h1>
+           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+             About Us - Reviving the Joy of Deep Reading
+           </h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
             We're on a mission to revive the lost art of deep reading and build a global community 
             that values knowledge, focus, and meaningful intellectual growth.

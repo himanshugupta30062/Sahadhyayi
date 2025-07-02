@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react";
-import { Heart, MessageCircle, Search, Plus, BookOpen, Users, Camera, MapPin } from "lucide-react";
+import { Heart, MessageCircle, Search, Plus, BookOpen, Users, Camera, MapPin, UserPlus, UserCheck, Dot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SEO from "@/components/SEO";
 
 const Reviews = () => {
@@ -11,6 +13,20 @@ const Reviews = () => {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [newPostText, setNewPostText] = useState("");
   const { toast } = useToast();
+
+  // Sample friend suggestions and online friends
+  const friendSuggestions = [
+    { id: 1, name: "Emma Wilson", avatar: "", readingGenre: "Fiction", mutualFriends: 5 },
+    { id: 2, name: "David Chen", avatar: "", readingGenre: "Science", mutualFriends: 3 },
+    { id: 3, name: "Sarah Johnson", avatar: "", readingGenre: "Biography", mutualFriends: 8 },
+  ];
+
+  const onlineFriends = [
+    { id: 1, name: "Alice Reader", avatar: "", currentBook: "The Great Gatsby", status: "online" },
+    { id: 2, name: "Bob Bookworm", avatar: "", currentBook: "Sapiens", status: "online" },
+    { id: 3, name: "Carol Pages", avatar: "", currentBook: "1984", status: "online" },
+    { id: 4, name: "Dan Stories", avatar: "", currentBook: "Pride and Prejudice", status: "online" },
+  ];
 
   // Sample social media posts with book-related content
   const socialPosts = [
@@ -125,13 +141,60 @@ const Reviews = () => {
     });
   };
 
+  const addFriend = (friendId: number) => {
+    toast({
+      title: "Friend Request Sent!",
+      description: "Your friend request has been sent successfully.",
+    });
+  };
+
   return (
     <>
       <SEO
         title="Community Reviews"
         description="Read and share book reviews with the Sahadhyayi community."/>
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-      <div className="max-w-7xl mx-auto py-8 px-4">
+      <div className="flex max-w-7xl mx-auto py-8 px-4 gap-6">
+        
+        {/* Left Sidebar - Friend Suggestions */}
+        <div className="hidden lg:block w-80 space-y-6">
+          <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+            <CardHeader>
+              <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-amber-600" />
+                Friend Suggestions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {friendSuggestions.map((friend) => (
+                <div key={friend.id} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarFallback className="bg-amber-200 text-amber-800">
+                        {friend.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium text-gray-900 text-sm">{friend.name}</p>
+                      <p className="text-xs text-gray-600">{friend.readingGenre} • {friend.mutualFriends} mutual</p>
+                    </div>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    onClick={() => addFriend(friend.id)}
+                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1"
+                  >
+                    Add
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1">
+        
         {/* SEO-optimized Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center space-x-3 mb-6">
@@ -145,6 +208,7 @@ const Reviews = () => {
           <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
             Share your reading moments, discover book inspiration, and connect with fellow book lovers around the world. Join our vibrant community of readers and bookworms.
           </p>
+          
           
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
@@ -367,6 +431,38 @@ const Reviews = () => {
             </div>
           </div>
         </section>
+        </div>
+
+        {/* Right Sidebar - Online Friends */}
+        <div className="hidden lg:block w-80 space-y-6">
+          <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+            <CardHeader>
+              <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+                <Dot className="w-5 h-5 text-green-500" />
+                Online Friends ({onlineFriends.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {onlineFriends.map((friend) => (
+                <div key={friend.id} className="flex items-center space-x-3 p-2 hover:bg-amber-50 rounded-lg transition-colors">
+                  <div className="relative">
+                    <Avatar className="w-10 h-10">
+                      <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
+                        {friend.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 text-sm truncate">{friend.name}</p>
+                    <p className="text-xs text-gray-600 truncate">Reading: {friend.currentBook}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+        
       </div>
     </div>
     </>

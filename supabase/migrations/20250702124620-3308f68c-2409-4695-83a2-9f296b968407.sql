@@ -1,0 +1,17 @@
+-- Add more books to the library
+INSERT INTO public.books_library (title, author, genre, description, author_bio, cover_image_url, pdf_url, isbn, publication_year, pages, language) VALUES
+('The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 'A classic American novel about the Jazz Age and the American Dream.', 'F. Scott Fitzgerald was an American novelist and short story writer.', '', '', '9780743273565', 1925, 180, 'English'),
+('Pride and Prejudice', 'Jane Austen', 'Romance', 'A romantic novel about Elizabeth Bennet and Mr. Darcy.', 'Jane Austen was an English novelist known for her social commentary.', '', '', '9780141439518', 1813, 279, 'English'),
+('1984', 'George Orwell', 'Dystopian Fiction', 'A dystopian novel about totalitarian control and surveillance.', 'George Orwell was an English writer known for his political fiction.', '', '', '9780451524935', 1949, 328, 'English'),
+('To Kill a Mockingbird', 'Harper Lee', 'Fiction', 'A novel about racial injustice in the American South.', 'Harper Lee was an American novelist best known for this Pulitzer Prize-winning work.', '', '', '9780061120084', 1960, 281, 'English'),
+('The Catcher in the Rye', 'J.D. Salinger', 'Fiction', 'A coming-of-age story about Holden Caulfield.', 'J.D. Salinger was an American writer known for his reclusive nature.', '', '', '9780316769174', 1951, 277, 'English'),
+('Harry Potter and the Philosopher''s Stone', 'J.K. Rowling', 'Fantasy', 'The first book in the magical Harry Potter series.', 'J.K. Rowling is a British author who created the Harry Potter universe.', '', '', '9780747532699', 1997, 223, 'English'),
+('The Lord of the Rings', 'J.R.R. Tolkien', 'Fantasy', 'An epic fantasy adventure in Middle-earth.', 'J.R.R. Tolkien was an English writer and philologist.', '', '', '9780544003415', 1954, 1216, 'English'),
+('Sapiens', 'Yuval Noah Harari', 'Non-Fiction', 'A brief history of humankind and our species.', 'Yuval Noah Harari is an Israeli historian and philosopher.', '', '', '9780062316097', 2014, 443, 'English'),
+('The Alchemist', 'Paulo Coelho', 'Philosophy', 'A philosophical novel about following your dreams.', 'Paulo Coelho is a Brazilian lyricist and novelist.', '', '', '9780062315007', 1988, 163, 'English'),
+('Becoming', 'Michelle Obama', 'Biography', 'The memoir of former First Lady Michelle Obama.', 'Michelle Obama is an American attorney and author.', '', '', '9781524763138', 2018, 448, 'English'),
+('गोदान', 'मुंशी प्रेमचंद', 'उपन्यास', 'हिंदी साहित्य का एक महत्वपूर्ण उपन्यास।', 'मुंशी प्रेमचंद हिंदी उर्दू के महान कथाकार थे।', '', '', '', 1936, 400, 'Hindi'),
+('गुनाहों का देवता', 'धर्मवीर भारती', 'उपन्यास', 'प्रेम और संघर्ष की कहानी।', 'धर्मवीर भारती हिंदी के प्रसिद्ध साहित्यकार थे।', '', '', '', 1949, 350, 'Hindi'),
+('कमला दास की आत्मकथा', 'कमला दास', 'आत्मकथा', 'एक स्त्री की सच्ची कहानी।', 'कमला दास मलयालम और अंग्रेजी की प्रसिद्ध लेखिका थीं।', '', '', '', 1976, 200, 'Hindi'),
+('रागदरबारी', 'श्रीलाल शुक्ल', 'व्यंग्य', 'भारतीय राजनीति पर तीखा व्यंग्य।', 'श्रीलाल शुक्ल हिंदी के प्रसिद्ध व्यंग्यकार थे।', '', '', '', 1968, 300, 'Hindi'),
+('गिरगिट', 'मन्नू भंडारी', 'कहानी संग्रह', 'मानवीय रिश्तों की कहानियां।', 'मन्नू भंडारी हिंदी की प्रसिद्ध लेखिका थीं।', '', '', '', 1962, 150, 'Hindi');

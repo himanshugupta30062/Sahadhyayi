@@ -27,6 +27,7 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import BookDetails from "./pages/BookDetails";
+import GlobalFooter from "./components/GlobalFooter";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,6 +92,7 @@ const App = () => (
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                <GlobalFooter />
                 <Chatbot />
               </div>
             </BrowserRouter>
