@@ -13,6 +13,7 @@ import WeeklyReadingSummary from '@/components/dashboard/WeeklyReadingSummary';
 import ReadingGoalTracker from '@/components/dashboard/ReadingGoalTracker';
 import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
 import MyGroups from '@/components/dashboard/MyGroups';
+import SEO from '@/components/SEO';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -40,6 +41,9 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
+      <SEO
+        title="Dashboard - Overview of Your Reading | Sahadhyayi"
+        description="View your current reads, reading goals, groups, and recommendations on your personal dashboard." />
       <div className="flex min-h-screen w-full">
         <div className="hidden lg:block w-64 flex-shrink-0">
           <AppSidebar />
