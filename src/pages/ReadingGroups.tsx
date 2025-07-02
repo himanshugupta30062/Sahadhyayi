@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Users, Calendar, Map, Plus } from "lucide-react";
 import { useGroups, useCreateGroup } from "@/hooks/useGroups";
 import GroupCard from "@/components/groups/GroupCard";
+import SEO from "@/components/SEO";
 
 const ReadingGroups = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -56,7 +57,13 @@ const ReadingGroups = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <>
+      <SEO
+        title="Reading Groups - Connect with Fellow Readers | Sahadhyayi"
+        description="Join or create book discussion groups and participate in engaging events with readers who share your interests."
+        canonical="https://sahadhyayi.com/groups"
+        url="https://sahadhyayi.com/groups" />
+      <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Reading Groups</h1>
@@ -204,6 +211,7 @@ const ReadingGroups = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

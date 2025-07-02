@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Map, Users, MapPin, Search, BookOpen } from "lucide-react";
+import SEO from "@/components/SEO";
 import { useState } from "react";
 
 interface ReaderLocation {
@@ -106,7 +107,13 @@ const ReaderMap = () => {
   const totalGlobalReaders = readerData.reduce((sum, location) => sum + location.totalReaders, 0);
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <>
+      <SEO
+        title="Reader Map - Find Local Book Communities | Sahadhyayi"
+        description="Discover reading groups near you and see where book lovers are located around the world."
+        canonical="https://sahadhyayi.com/map"
+        url="https://sahadhyayi.com/map" />
+      <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Reader Map</h1>
@@ -265,6 +272,7 @@ const ReaderMap = () => {
         </Card>
       </div>
     </div>
+    </>
   );
 };
 
