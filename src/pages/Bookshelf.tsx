@@ -8,6 +8,7 @@ import { BookOpen, MessageCircle, Search, Filter } from "lucide-react";
 import { useUserBooks, useUpdateBookStatus } from "@/hooks/useBooks";
 import type { UserBook } from "@/hooks/useBooks";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 const Bookshelf = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +62,11 @@ const Bookshelf = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <>
+      <SEO
+        title="My Bookshelf - Track Your Reading | Sahadhyayi"
+        description="Manage your books, track reading progress, and get AI-powered assistance in your personal digital bookshelf." />
+      <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">My Bookshelf</h1>
@@ -256,6 +261,7 @@ const Bookshelf = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
