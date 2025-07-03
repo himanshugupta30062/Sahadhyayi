@@ -35,7 +35,7 @@ const Chatbot = () => {
   useEffect(() => {
     const colorInterval = setInterval(() => {
       setColorIndex((prev) => (prev + 1) % colorClasses.length);
-    }, 500);
+    }, 2000);
 
     const stopTimeout = setTimeout(() => {
       clearInterval(colorInterval);
