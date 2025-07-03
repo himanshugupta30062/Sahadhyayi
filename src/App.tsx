@@ -12,6 +12,7 @@ import Chatbot from "@/components/chatbot/Chatbot";
 import Navigation from "./components/Navigation";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoadingSpinner from "./components/LoadingSpinner";
+import ScrollToTop from "./components/ScrollToTop";
 
 const Index = React.lazy(() => import("./pages/Index"));
 const About = React.lazy(() => import("./pages/About"));
@@ -51,6 +52,7 @@ const App = () => (
               <Toaster />
               <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
                 <Navigation />
                 <Suspense fallback={<LoadingSpinner type="page" />}>
