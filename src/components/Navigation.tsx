@@ -5,7 +5,6 @@ import NavLogo from "./navigation/NavLogo";
 import DesktopNavItems from "./navigation/DesktopNavItems";
 import AuthSection from "./navigation/AuthSection";
 import MobileNavMenu from "./navigation/MobileNavMenu";
-import ThemeToggle from "./ThemeToggle";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -105,9 +104,6 @@ const Navigation = () => {
             </div>
             <div className="flex-shrink-0">
               <AuthSection />
-            </div>
-            <div className="flex-shrink-0">
-              <ThemeToggle />
             </div>
           </div>
 
