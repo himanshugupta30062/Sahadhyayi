@@ -583,6 +583,30 @@ export type Database = {
           },
         ]
       }
+      gemini_training_data: {
+        Row: {
+          id: string
+          user_id: string | null
+          prompt: string
+          completion: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          prompt: string
+          completion: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          prompt?: string
+          completion?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       user_profile: {
         Row: {
           bio: string | null

@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState } from 'react';
+import { useGeminiTraining } from '@/hooks/useGeminiTrainingData';
 
 export interface ChatMessage {
   sender: 'user' | 'bot';
@@ -29,6 +30,7 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [messages, setMessages] = useState<ChatMessage[]>([
     { sender: 'bot', text: 'Hello! I\'m your Book Expert AI assistant. I can help you with book recommendations, literary discussions, reading tips, and more. What would you like to know?' }
   ]);
+  const { saveSample } = useGeminiTraining();
 
   const toggleChat = () => setIsOpen((prev) => !prev);
   const closeChat = () => setIsOpen(false);
@@ -75,6 +77,9 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
         'Sorry, I could not process your request at the moment.';
 
       setMessages((prev) => [...prev, { sender: 'bot', text: reply }]);
+      saveSample(text, reply).catch((err) =>
+        console.error('Failed to save training data:', err),
+      );
     } catch (error) {
       console.error('Chatbot error:', error);
       setMessages((prev) => [
