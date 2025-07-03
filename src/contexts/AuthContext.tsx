@@ -162,6 +162,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error signing out:', error);
         throw error;
       }
+
+      // Explicitly remove persisted session tokens
+      localStorage.removeItem('sb-rknxtatvlzunatpyqxro-auth-token');
+
       // Ensure local auth state is cleared immediately
       setUser(null);
       setSession(null);
