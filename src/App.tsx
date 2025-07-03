@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Chatbot from "@/components/chatbot/Chatbot";
 import Navigation from "./components/Navigation";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LoadingSpinner from "./components/LoadingSpinner";
+
 const Index = React.lazy(() => import("./pages/Index"));
 const About = React.lazy(() => import("./pages/About"));
 const Bookshelf = React.lazy(() => import("./pages/Bookshelf"));
@@ -28,6 +29,7 @@ const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Profile = React.lazy(() => import("./pages/Profile"));
 const BookDetails = React.lazy(() => import("./pages/BookDetails"));
+
 import GlobalFooter from "./components/GlobalFooter";
 
 const queryClient = new QueryClient({
@@ -51,7 +53,7 @@ const App = () => (
             <BrowserRouter>
               <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
                 <Navigation />
-                <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+                <Suspense fallback={<LoadingSpinner type="page" />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
@@ -91,6 +93,15 @@ const App = () => (
                       <Profile />
                     </ProtectedRoute>
                   } />
+
+                  {/* Footer Pages */}
+                  <Route path="/privacy" element={<ComingSoonPage title="Privacy Policy" />} />
+                  <Route path="/terms" element={<ComingSoonPage title="Terms of Service" />} />
+                  <Route path="/cookies" element={<ComingSoonPage title="Cookie Policy" />} />
+                  <Route path="/dmca" element={<ComingSoonPage title="DMCA" />} />
+                  <Route path="/help" element={<ComingSoonPage title="Help Center" />} />
+                  <Route path="/feedback" element={<ComingSoonPage title="Feedback" />} />
+                  <Route path="/contact" element={<ComingSoonPage title="Contact Us" />} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
@@ -106,5 +117,41 @@ const App = () => (
     </HelmetProvider>
   </ErrorBoundary>
 );
+
+// Coming Soon Page Component
+const ComingSoonPage = ({ title }: { title: string }) => {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-orange-50">
+      <div className="text-center max-w-md mx-auto p-8">
+        <div className="mb-6">
+          <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">🚧</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
+          <p className="text-gray-600 mb-6">
+            This page is currently under construction. Please revisit after some time.
+          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500">We're working hard to bring you this feature!</p>
+            <p className="text-xs text-gray-400">Expected completion: Coming Soon</p>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <a
+            href="/"
+            className="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors"
+          >
+            ← Return to Home
+          </a>
+          <div className="flex justify-center space-x-4 text-sm">
+            <a href="/about" className="text-amber-600 hover:text-amber-700">About Us</a>
+            <a href="/reviews" className="text-amber-600 hover:text-amber-700">Community</a>
+            <a href="/library" className="text-amber-600 hover:text-amber-700">Library</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default App;

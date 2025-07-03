@@ -6,12 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import SEO from "@/components/SEO";
 
 const Reviews = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [newPostText, setNewPostText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   // Sample friend suggestions and online friends
@@ -110,24 +112,28 @@ const Reviews = () => {
 
   const handleCreatePost = () => {
     if (newPostText.trim()) {
-      const newPost = {
-        id: posts.length + 1,
-        username: "you",
-        image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-        caption: newPostText,
-        likes: 0,
-        comments: 0,
-        liked: false,
-        bookTitle: "New Book",
-        readingLocation: "Your Location"
-      };
-      setPosts([newPost, ...posts]);
-      setNewPostText("");
-      setShowCreatePost(false);
-      toast({
-        title: "Post Created!",
-        description: "Your reading update has been shared with the community.",
-      });
+      setIsLoading(true);
+      setTimeout(() => {
+        const newPost = {
+          id: posts.length + 1,
+          username: "you",
+          image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
+          caption: newPostText,
+          likes: 0,
+          comments: 0,
+          liked: false,
+          bookTitle: "New Book",
+          readingLocation: "Your Location"
+        };
+        setPosts([newPost, ...posts]);
+        setNewPostText("");
+        setShowCreatePost(false);
+        setIsLoading(false);
+        toast({
+          title: "Post Created!",
+          description: "Your reading update has been shared with the community.",
+        });
+      }, 1000);
     }
   };
 
@@ -148,6 +154,28 @@ const Reviews = () => {
     });
   };
 
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <div className="space-y-6">
+      {[...Array(3)].map((_, i) => (
+        <Card key={i} className="bg-white/90 backdrop-blur-sm">
+          <div className="p-4">
+            <div className="flex items-center space-x-3 mb-4">
+              <Skeleton className="w-10 h-10 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+            <Skeleton className="h-48 w-full rounded-lg mb-4" />
+            <Skeleton className="h-4 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+
   return (
     <>
       <SEO
@@ -156,327 +184,287 @@ const Reviews = () => {
         canonical="https://sahadhyayi.com/reviews"
         url="https://sahadhyayi.com/reviews"
       />
-      <script type="application/ld+json">
-        {JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'WebPage',
-          name: 'Community Reviews',
-          description: 'Read and share book reviews with the Sahadhyayi community.',
-          url: 'https://sahadhyayi.com/reviews'
-        })}
-      </script>
+      
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-      <div className="flex max-w-7xl mx-auto py-8 px-4 gap-6">
-        
-        {/* Left Sidebar - Friend Suggestions */}
-        <div className="hidden lg:block w-80 space-y-6">
-          <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-            <CardHeader>
-              <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-amber-600" />
-                Friend Suggestions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {friendSuggestions.map((friend) => (
-                <div key={friend.id} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="bg-amber-200 text-amber-800">
-                        {friend.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-gray-900 text-sm">{friend.name}</p>
-                      <p className="text-xs text-gray-600">{friend.readingGenre} • {friend.mutualFriends} mutual</p>
-                    </div>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    onClick={() => addFriend(friend.id)}
-                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1"
-                  >
-                    Add
-                  </Button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1">
-        
-        {/* SEO-optimized Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center space-x-3 mb-6">
-            <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
-              <Users className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-              Reading Community
-            </h1>
-          </div>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
-            Share your reading moments, discover book inspiration, and connect with fellow book lovers around the world. Join our vibrant community of readers and bookworms.
-          </p>
+        <div className="container mx-auto px-4 py-6">
           
-          
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-            <Button 
-              onClick={() => setShowCreatePost(!showCreatePost)}
-              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-medium"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Share Your Reading
-            </Button>
-            <a href="/library" className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-amber-200 hover:border-amber-300 text-amber-700 rounded-lg font-medium transition-colors">
-              <BookOpen className="w-4 h-4" />
-              Browse Library
-            </a>
-          </div>
-          
-          {/* Search Bar */}
-          <div className="max-w-md mx-auto relative mb-8">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search posts, books, or readers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border-2 border-amber-200 focus:border-amber-400 rounded-xl bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-amber-100 transition-all duration-300"
-            />
-          </div>
-        </div>
-
-        {/* Create Post Section */}
-        {showCreatePost && (
-          <Card className="mb-8 border-amber-200 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                Share Your Reading Moment
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                placeholder="What are you reading? Share your thoughts, progress, or a beautiful quote..."
-                value={newPostText}
-                onChange={(e) => setNewPostText(e.target.value)}
-                className="min-h-[100px] border-amber-200 focus:border-amber-400"
-              />
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <button className="flex items-center gap-2 hover:text-amber-600">
-                    <Camera className="w-4 h-4" />
-                    Add Photo
-                  </button>
-                  <button className="flex items-center gap-2 hover:text-amber-600">
-                    <MapPin className="w-4 h-4" />
-                    Add Location
-                  </button>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowCreatePost(false)}
-                    className="border-gray-300"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleCreatePost}
-                    className="bg-amber-600 hover:bg-amber-700"
-                  >
-                    Share Post
-                  </Button>
-                </div>
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
+                <Users className="w-6 h-6 text-white" />
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Community Stats Section */}
-        <section aria-labelledby="community-stats-heading" className="mb-12">
-          <h2 id="community-stats-heading" className="text-2xl font-bold text-gray-900 mb-6">
-            Community Highlights
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-amber-200 text-center">
-              <div className="text-2xl font-bold text-amber-600 mb-1">2,847</div>
-              <div className="text-sm text-gray-600">Active Readers</div>
+              <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                Reading Community
+              </h1>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-amber-200 text-center">
-              <div className="text-2xl font-bold text-amber-600 mb-1">15,632</div>
-              <div className="text-sm text-gray-600">Books Shared</div>
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-amber-200 text-center">
-              <div className="text-2xl font-bold text-amber-600 mb-1">8,429</div>
-              <div className="text-sm text-gray-600">Reading Posts</div>
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-amber-200 text-center">
-              <div className="text-2xl font-bold text-amber-600 mb-1">156</div>
-              <div className="text-sm text-gray-600">Countries</div>
-            </div>
-          </div>
-        </section>
-
-        {/* Posts Section */}
-        <section aria-labelledby="posts-section-heading">
-          <h2 id="posts-section-heading" className="text-2xl font-bold text-gray-900 mb-6">
-            Recent Reading Updates
-          </h2>
-          
-          {/* Posts Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredPosts.map((post) => (
-              <Card key={post.id} className="group bg-white/90 backdrop-blur-sm border-amber-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                {/* Image */}
-                <div className="relative overflow-hidden aspect-[4/5]">
-                  <img
-                    src={post.image}
-                    alt={`Reading post by ${post.username} about ${post.bookTitle || 'books'}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
-                  
-                  {/* Book Info Overlay */}
-                  {post.bookTitle && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                      <div className="text-white text-xs font-medium mb-1">Currently Reading:</div>
-                      <div className="text-white text-sm font-semibold">{post.bookTitle}</div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Content */}
-                <CardContent className="p-4">
-                  {/* Username and Location */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        {post.username.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="ml-2 font-medium text-gray-900">{post.username}</span>
-                    </div>
-                    {post.readingLocation && (
-                      <div className="flex items-center text-xs text-gray-500">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        {post.readingLocation.split(',')[0]}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Caption */}
-                  <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
-                    {post.caption}
-                  </p>
-
-                  {/* Find Reading Partners Button */}
-                  {post.bookTitle && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => findReadingPartners(post.bookTitle)}
-                      className="w-full mb-3 border-amber-200 hover:border-amber-300 text-amber-700 hover:bg-amber-50"
-                    >
-                      <Users className="w-3 h-3 mr-1" />
-                      Find Reading Partners
-                    </Button>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <button
-                        onClick={() => handleLike(post.id)}
-                        className={`flex items-center space-x-1 transition-colors duration-200 ${
-                          post.liked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
-                        }`}
-                      >
-                        <Heart className={`w-4 h-4 ${post.liked ? 'fill-current' : ''}`} />
-                        <span className="text-sm font-medium">{post.likes}</span>
-                      </button>
-                      
-                      <button
-                        onClick={() => handleComment(post.id)}
-                        className="flex items-center space-x-1 text-gray-500 hover:text-amber-600 transition-colors duration-200"
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        <span className="text-sm font-medium">{post.comments}</span>
-                      </button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {filteredPosts.length === 0 && searchQuery && (
-            <div className="text-center py-12">
-              <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No posts found matching "{searchQuery}"</p>
-              <p className="text-gray-400 text-sm mt-2">Try searching for different books or authors</p>
-            </div>
-          )}
-        </section>
-
-        {/* Join Community CTA */}
-        <section className="mt-16 bg-gradient-to-r from-amber-100 to-orange-100 p-8 rounded-2xl border border-amber-200">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Join Our Global Reading Community</h2>
-            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Connect with thousands of book lovers worldwide. Share your reading journey, discover new books, and find your next reading partner.
+            <p className="text-gray-700 max-w-2xl mx-auto mb-6 text-sm md:text-base">
+              Share your reading moments, discover book inspiration, and connect with fellow book lovers.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-4">
+            
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
               <Button 
-                onClick={() => setShowCreatePost(true)}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3"
+                onClick={() => setShowCreatePost(!showCreatePost)}
+                className="bg-amber-600 hover:bg-amber-700 text-white text-sm md:text-base"
+                size="sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Share Your First Post
+                Share Reading
               </Button>
-              <a href="/library" className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-amber-300 hover:border-amber-400 text-amber-700 rounded-lg font-medium transition-colors">
-                <BookOpen className="w-4 h-4" />
-                Explore Book Library
-              </a>
+              <Button variant="outline" size="sm" className="border-amber-200 text-amber-700">
+                <BookOpen className="w-4 h-4 mr-2" />
+                Browse Library
+              </Button>
+            </div>
+            
+            {/* Search Bar */}
+            <div className="max-w-md mx-auto relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search posts, books, or readers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border-2 border-amber-200 focus:border-amber-400 rounded-lg bg-white text-gray-900 placeholder-gray-500 text-sm"
+              />
             </div>
           </div>
-        </section>
-        </div>
 
-        {/* Right Sidebar - Online Friends */}
-        <div className="hidden lg:block w-80 space-y-6">
-          <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-            <CardHeader>
-              <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
-                <Dot className="w-5 h-5 text-green-500" />
-                Online Friends ({onlineFriends.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {onlineFriends.map((friend) => (
-                <div key={friend.id} className="flex items-center space-x-3 p-2 hover:bg-amber-50 rounded-lg transition-colors">
-                  <div className="relative">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
-                        {friend.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm truncate">{friend.name}</p>
-                    <p className="text-xs text-gray-600 truncate">Reading: {friend.currentBook}</p>
-                  </div>
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            {/* Left Sidebar - Friend Suggestions */}
+            <div className="lg:col-span-1 order-3 lg:order-1">
+              <Card className="bg-white/90 backdrop-blur-sm border-amber-200 sticky top-4">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base text-gray-900 flex items-center gap-2">
+                    <UserPlus className="w-4 h-4 text-amber-600" />
+                    Friend Suggestions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {friendSuggestions.map((friend) => (
+                    <div key={friend.id} className="flex items-center justify-between p-2 bg-amber-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className="bg-amber-200 text-amber-800 text-xs">
+                            {friend.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-gray-900 text-xs">{friend.name}</p>
+                          <p className="text-xs text-gray-600">{friend.mutualFriends} mutual</p>
+                        </div>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        onClick={() => addFriend(friend.id)}
+                        className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-2 py-1 h-auto"
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-2 order-1 lg:order-2">
+              
+              {/* Create Post Section */}
+              {showCreatePost && (
+                <Card className="mb-6 border-amber-200 shadow-lg">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-semibold text-gray-900">
+                      Share Your Reading Moment
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Textarea
+                      placeholder="What are you reading? Share your thoughts..."
+                      value={newPostText}
+                      onChange={(e) => setNewPostText(e.target.value)}
+                      className="min-h-[80px] border-amber-200 focus:border-amber-400 text-sm"
+                    />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-sm text-gray-500">
+                        <button className="flex items-center gap-1 hover:text-amber-600">
+                          <Camera className="w-3 h-3" />
+                          Photo
+                        </button>
+                        <button className="flex items-center gap-1 hover:text-amber-600">
+                          <MapPin className="w-3 h-3" />
+                          Location
+                        </button>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowCreatePost(false)}
+                          size="sm"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleCreatePost}
+                          className="bg-amber-600 hover:bg-amber-700"
+                          size="sm"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? "Posting..." : "Share Post"}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Community Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-amber-200 text-center">
+                  <div className="text-lg font-bold text-amber-600">2,847</div>
+                  <div className="text-xs text-gray-600">Active Readers</div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+                <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-amber-200 text-center">
+                  <div className="text-lg font-bold text-amber-600">15,632</div>
+                  <div className="text-xs text-gray-600">Books Shared</div>
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-amber-200 text-center">
+                  <div className="text-lg font-bold text-amber-600">8,429</div>
+                  <div className="text-xs text-gray-600">Reading Posts</div>
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-amber-200 text-center">
+                  <div className="text-lg font-bold text-amber-600">156</div>
+                  <div className="text-xs text-gray-600">Countries</div>
+                </div>
+              </div>
+
+              {/* Posts Section */}
+              {isLoading ? (
+                <LoadingSkeleton />
+              ) : (
+                <div className="space-y-6">
+                  {filteredPosts.map((post) => (
+                    <Card key={post.id} className="bg-white/90 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300">
+                      <div className="p-4">
+                        {/* User Info */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                              {post.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-900 text-sm">{post.username}</span>
+                              {post.readingLocation && (
+                                <div className="flex items-center text-xs text-gray-500">
+                                  <MapPin className="w-3 h-3 mr-1" />
+                                  {post.readingLocation.split(',')[0]}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Post Image */}
+                        <div className="relative mb-4 rounded-lg overflow-hidden">
+                          <img
+                            src={post.image}
+                            alt={`Reading post by ${post.username}`}
+                            className="w-full h-64 object-cover"
+                          />
+                          {post.bookTitle && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                              <div className="text-white text-xs">Currently Reading:</div>
+                              <div className="text-white text-sm font-semibold">{post.bookTitle}</div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Caption */}
+                        <p className="text-gray-700 text-sm mb-4">{post.caption}</p>
+
+                        {/* Find Reading Partners */}
+                        {post.bookTitle && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => findReadingPartners(post.bookTitle)}
+                            className="w-full mb-3 border-amber-200 hover:border-amber-300 text-amber-700 text-xs"
+                          >
+                            <Users className="w-3 h-3 mr-1" />
+                            Find Reading Partners
+                          </Button>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex items-center space-x-6">
+                          <button
+                            onClick={() => handleLike(post.id)}
+                            className={`flex items-center space-x-2 transition-colors ${
+                              post.liked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                            }`}
+                          >
+                            <Heart className={`w-4 h-4 ${post.liked ? 'fill-current' : ''}`} />
+                            <span className="text-sm font-medium">{post.likes}</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => handleComment(post.id)}
+                            className="flex items-center space-x-2 text-gray-500 hover:text-amber-600 transition-colors"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span className="text-sm font-medium">{post.comments}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {filteredPosts.length === 0 && searchQuery && (
+                <div className="text-center py-12">
+                  <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No posts found matching "{searchQuery}"</p>
+                </div>
+              )}
+            </div>
+
+            {/* Right Sidebar - Online Friends */}
+            <div className="lg:col-span-1 order-2 lg:order-3">
+              <Card className="bg-white/90 backdrop-blur-sm border-amber-200 sticky top-4">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base text-gray-900 flex items-center gap-2">
+                    <Dot className="w-4 h-4 text-green-500" />
+                    Online ({onlineFriends.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {onlineFriends.map((friend) => (
+                    <div key={friend.id} className="flex items-center space-x-2 p-2 hover:bg-amber-50 rounded-lg transition-colors">
+                      <div className="relative">
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white text-xs">
+                            {friend.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 text-xs truncate">{friend.name}</p>
+                        <p className="text-xs text-gray-600 truncate">Reading: {friend.currentBook}</p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+            
+          </div>
         </div>
-        
       </div>
-    </div>
     </>
   );
 };

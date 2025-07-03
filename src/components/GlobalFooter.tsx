@@ -1,10 +1,13 @@
+
 import { useState, useEffect } from "react";
-import { Users } from "lucide-react";
+import { Users, Mail, Heart, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const GlobalFooter = () => {
   const [memberCount, setMemberCount] = useState(15847);
   const [showCount, setShowCount] = useState(false);
+  const { toast } = useToast();
 
   // Simulate real-time member count updates
   useEffect(() => {
@@ -14,6 +17,17 @@ const GlobalFooter = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleEmailClick = () => {
+    window.location.href = 'mailto:gyan@sahadhyayi.com';
+  };
+
+  const handleSocialClick = (platform: string) => {
+    toast({
+      title: `${platform} Coming Soon!`,
+      description: "We're working on our social media presence. Stay tuned!",
+    });
+  };
 
   return (
     <footer className="bg-gradient-to-r from-orange-600 to-amber-600 text-white">
@@ -46,8 +60,9 @@ const GlobalFooter = () => {
             
             {showCount && (
               <div className="bg-orange-500/30 p-3 rounded-lg backdrop-blur-sm">
-                <p className="text-sm text-orange-100">
-                  🎉 Join <span className="font-bold text-white">{memberCount.toLocaleString()}</span> readers worldwide!
+                <p className="text-sm text-orange-100 flex items-center">
+                  <Heart className="w-4 h-4 mr-2 text-red-300" />
+                  Join <span className="font-bold text-white mx-1">{memberCount.toLocaleString()}</span> readers worldwide!
                 </p>
                 <p className="text-xs text-orange-200 mt-1">Growing every day</p>
               </div>
@@ -56,12 +71,33 @@ const GlobalFooter = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-semibold text-lg mb-4">Quick Links</h4>
+            <h4 className="font-semibold text-lg mb-4">Explore</h4>
             <ul className="space-y-2 text-orange-100">
-              <li><a href="/library" className="hover:text-white transition-colors">Digital Library</a></li>
-              <li><a href="/authors" className="hover:text-white transition-colors">Meet Authors</a></li>
-              <li><a href="/groups" className="hover:text-white transition-colors">Reading Groups</a></li>
-              <li><a href="/reviews" className="hover:text-white transition-colors">Community</a></li>
+              <li>
+                <a href="/library" className="hover:text-white transition-colors flex items-center">
+                  Digital Library
+                </a>
+              </li>
+              <li>
+                <a href="/authors" className="hover:text-white transition-colors">
+                  Meet Authors
+                </a>
+              </li>
+              <li>
+                <a href="/groups" className="hover:text-white transition-colors">
+                  Reading Groups
+                </a>
+              </li>
+              <li>
+                <a href="/reviews" className="hover:text-white transition-colors">
+                  Community
+                </a>
+              </li>
+              <li>
+                <a href="/map" className="hover:text-white transition-colors">
+                  Reader Map
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -69,21 +105,57 @@ const GlobalFooter = () => {
           <div>
             <h4 className="font-semibold text-lg mb-4">Support</h4>
             <ul className="space-y-2 text-orange-100">
-              <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="mailto:gyan@sahadhyayi.com" className="hover:text-white transition-colors">Contact</a></li>
-              <li><a href="/help" className="hover:text-white transition-colors">Help Center</a></li>
-              <li><a href="/feedback" className="hover:text-white transition-colors">Feedback</a></li>
+              <li>
+                <a href="/about" className="hover:text-white transition-colors">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <button 
+                  onClick={handleEmailClick}
+                  className="hover:text-white transition-colors flex items-center text-left"
+                >
+                  <Mail className="w-3 h-3 mr-2" />
+                  Contact Us
+                </button>
+              </li>
+              <li>
+                <a href="/help" className="hover:text-white transition-colors">
+                  Help Center
+                </a>
+              </li>
+              <li>
+                <a href="/feedback" className="hover:text-white transition-colors">
+                  Send Feedback
+                </a>
+              </li>
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Legal & Policies */}
           <div>
             <h4 className="font-semibold text-lg mb-4">Legal</h4>
             <ul className="space-y-2 text-orange-100">
-              <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="/cookies" className="hover:text-white transition-colors">Cookie Policy</a></li>
-              <li><a href="/dmca" className="hover:text-white transition-colors">DMCA</a></li>
+              <li>
+                <a href="/privacy" className="hover:text-white transition-colors">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="/terms" className="hover:text-white transition-colors">
+                  Terms of Service
+                </a>
+              </li>
+              <li>
+                <a href="/cookies" className="hover:text-white transition-colors">
+                  Cookie Policy
+                </a>
+              </li>
+              <li>
+                <a href="/dmca" className="hover:text-white transition-colors">
+                  DMCA Policy
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -94,22 +166,38 @@ const GlobalFooter = () => {
             © 2024 Sahadhyayi. All rights reserved. Building a global reading community.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <a href="#" className="text-orange-100 hover:text-white transition-colors">
+            <button 
+              onClick={() => handleSocialClick('Facebook')}
+              className="text-orange-100 hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
+              title="Facebook"
+            >
               <span className="sr-only">Facebook</span>
               📘
-            </a>
-            <a href="#" className="text-orange-100 hover:text-white transition-colors">
+            </button>
+            <button 
+              onClick={() => handleSocialClick('Twitter')}
+              className="text-orange-100 hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
+              title="Twitter"
+            >
               <span className="sr-only">Twitter</span>
               🐦
-            </a>
-            <a href="#" className="text-orange-100 hover:text-white transition-colors">
+            </button>
+            <button 
+              onClick={() => handleSocialClick('Instagram')}
+              className="text-orange-100 hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
+              title="Instagram"
+            >
               <span className="sr-only">Instagram</span>
               📷
-            </a>
-            <a href="#" className="text-orange-100 hover:text-white transition-colors">
+            </button>
+            <button 
+              onClick={() => handleSocialClick('LinkedIn')}
+              className="text-orange-100 hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
+              title="LinkedIn"
+            >
               <span className="sr-only">LinkedIn</span>
               💼
-            </a>
+            </button>
           </div>
         </div>
       </div>
