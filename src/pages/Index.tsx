@@ -83,6 +83,7 @@ const Index = () => {
         title="Sahadhyayi - Digital Reading Community & Book Library"
         description="Join Sahadhyayi's vibrant reading community. Discover thousands of books, connect with fellow readers, track your progress, and explore our digital library platform."
         canonical="https://sahadhyayi.com/"
+        url="https://sahadhyayi.com/"
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}

@@ -147,6 +147,7 @@ const About = () => {
         title="About Sahadhyayi - Reviving Reading Culture Worldwide"
         description="Learn about Sahadhyayi's mission to revive deep reading culture. Discover how we connect readers globally and promote meaningful literary engagement."
         canonical="https://sahadhyayi.com/about"
+        url="https://sahadhyayi.com/about"
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}

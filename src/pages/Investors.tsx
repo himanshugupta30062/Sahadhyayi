@@ -102,7 +102,10 @@ const Investors = () => {
     <>
       <SEO
         title="Invest in Sahadhyayi - Reading Community Platform"
-        description="Learn about our market opportunity, growth plans, and how you can support Sahadhyayi's mission." />
+        description="Learn about our market opportunity, growth plans, and how you can support Sahadhyayi's mission."
+        canonical="https://sahadhyayi.com/investors"
+        url="https://sahadhyayi.com/investors"
+      />
       <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}

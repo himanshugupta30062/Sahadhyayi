@@ -99,7 +99,12 @@ const SignIn = () => {
 
   return (
     <>
-      <SEO title="Sign In - Sahadhyayi" description="Access your Sahadhyayi account and continue reading." />
+      <SEO
+        title="Sign In - Sahadhyayi"
+        description="Access your Sahadhyayi account and continue reading."
+        canonical="https://sahadhyayi.com/signin"
+        url="https://sahadhyayi.com/signin"
+      />
       <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">

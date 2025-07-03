@@ -43,7 +43,10 @@ const Dashboard = () => {
     <SidebarProvider>
       <SEO
         title="Dashboard - Overview of Your Reading | Sahadhyayi"
-        description="View your current reads, reading goals, groups, and recommendations on your personal dashboard." />
+        description="View your current reads, reading goals, groups, and recommendations on your personal dashboard."
+        canonical="https://sahadhyayi.com/dashboard"
+        url="https://sahadhyayi.com/dashboard"
+      />
       <div className="flex min-h-screen w-full">
         <div className="hidden lg:block w-64 flex-shrink-0">
           <AppSidebar />

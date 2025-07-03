@@ -107,6 +107,7 @@ const AuthorConnect = () => {
         title="Meet Authors - Connect with Writers & Creators | Sahadhyayi"
         description="Connect with talented authors on Sahadhyayi. Read biographies, schedule live sessions, and discover books by your favorite writers in our author community."
         canonical="https://sahadhyayi.com/authors"
+        url="https://sahadhyayi.com/authors"
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}

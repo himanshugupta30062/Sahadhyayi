@@ -110,7 +110,10 @@ const ReaderMap = () => {
     <>
       <SEO
         title="Reader Map - Find Local Book Communities | Sahadhyayi"
-        description="Discover reading groups near you and see where book lovers are located around the world." />
+        description="Discover reading groups near you and see where book lovers are located around the world."
+        canonical="https://sahadhyayi.com/map"
+        url="https://sahadhyayi.com/map"
+      />
       <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">

@@ -16,7 +16,10 @@ const NotFound = () => {
     <>
       <SEO
         title="Page Not Found - Sahadhyayi"
-        description="Sorry, the page you're looking for doesn't exist. Return to the Sahadhyayi home page." />
+        description="Sorry, the page you're looking for doesn't exist. Return to the Sahadhyayi home page."
+        canonical="https://sahadhyayi.com/404"
+        url="https://sahadhyayi.com/404"
+      />
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">404</h1>
