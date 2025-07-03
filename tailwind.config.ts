@@ -32,7 +32,8 @@ export default {
 				sans: ['Open Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
 			},
 			backgroundImage: {
-				'dashboard-gradient': 'linear-gradient(135deg, #FFF6E5 0%, #FDEAD8 100%)',
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-warm': 'var(--gradient-warm)',
 				'dashboard-texture': "url('https://www.transparenttextures.com/patterns/cream-dust.png')",
 			},
 			colors: {
@@ -69,6 +70,14 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				sahadhyayi: {
+					orange: 'hsl(var(--sahadhyayi-orange))',
+					'orange-light': 'hsl(var(--sahadhyayi-orange-light))',
+					amber: 'hsl(var(--sahadhyayi-amber))',
+					'amber-light': 'hsl(var(--sahadhyayi-amber-light))',
+					warm: 'hsl(var(--sahadhyayi-warm))',
+					'warm-light': 'hsl(var(--sahadhyayi-warm-light))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -79,6 +88,10 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			boxShadow: {
+				'warm': 'var(--shadow-warm)',
+				'soft': 'var(--shadow-soft)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

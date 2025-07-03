@@ -20,23 +20,23 @@ const AuthSection = () => {
   return user ? (
     <UserDropdownMenu />
   ) : (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-2 flex-shrink-0">
       <Button
         variant="ghost"
         size="sm"
         onClick={handleSignInClick}
-        className="text-gray-700 hover:text-orange-700 hover:bg-orange-50 font-medium border-2 border-orange-500"
+        className="text-sahadhyayi-warm hover:text-sahadhyayi-orange hover:bg-sahadhyayi-orange-light font-medium border-2 border-sahadhyayi-orange transition-all duration-200 flex-shrink-0"
       >
         <LogIn className="w-4 h-4 mr-1" />
-        Sign In
+        <span className="hidden sm:inline">Sign In</span>
       </Button>
       <Button
         size="sm"
         onClick={handleSignUpClick}
-        className="bg-orange-600 hover:bg-orange-700 text-white font-medium shadow-sm"
+        className="bg-sahadhyayi-orange hover:bg-sahadhyayi-orange/90 text-white font-medium shadow-warm transition-all duration-200 flex-shrink-0"
       >
         <UserPlus className="w-4 h-4 mr-1" />
-        Sign Up
+        <span className="hidden sm:inline">Sign Up</span>
       </Button>
     </div>
   );

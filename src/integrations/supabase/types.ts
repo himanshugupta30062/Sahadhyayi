@@ -47,6 +47,53 @@ export type Database = {
           },
         ]
       }
+      book_summaries: {
+        Row: {
+          book_id: string | null
+          chapter_number: number | null
+          content: string
+          created_at: string | null
+          duration_minutes: number | null
+          id: string
+          page_end: number | null
+          page_start: number | null
+          summary_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          book_id?: string | null
+          chapter_number?: number | null
+          content: string
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          page_end?: number | null
+          page_start?: number | null
+          summary_type?: string
+          updated_at?: string | null
+        }
+        Update: {
+          book_id?: string | null
+          chapter_number?: number | null
+          content?: string
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          page_end?: number | null
+          page_start?: number | null
+          summary_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_summaries_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       books: {
         Row: {
           author: string | null

@@ -54,8 +54,8 @@ const Navigation = () => {
   return (
     <nav className="w-full bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between items-center h-16 overflow-hidden">
-          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 min-w-0">
             <NavLogo />
 
             {/* Mobile Search Icon */}
@@ -98,13 +98,11 @@ const Navigation = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-2 xl:space-x-4 flex-shrink-0 overflow-hidden">
-            <div className="flex-shrink-0 overflow-hidden">
+          <div className="hidden lg:flex items-center space-x-2 xl:space-x-4 flex-shrink-0">
+            <div className="flex-shrink-0">
               <DesktopNavItems />
             </div>
-            <div className="flex-shrink-0">
-              <AuthSection />
-            </div>
+            <AuthSection />
           </div>
 
           {/* Mobile menu button */}
