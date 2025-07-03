@@ -14,16 +14,39 @@ const Chatbot = () => {
   const { isOpen, toggleChat, closeChat, messages, sendMessage } = useChatbot();
   const [input, setInput] = useState('');
   const [floating, setFloating] = useState(true);
+  const [colorIndex, setColorIndex] = useState(0);
   const [isMinimized, setIsMinimized] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const colorClasses = [
+    'bg-gradient-to-r from-red-500 to-pink-500',
+    'bg-gradient-to-r from-orange-500 to-amber-500',
+    'bg-gradient-to-r from-lime-500 to-green-600',
+    'bg-gradient-to-r from-teal-500 to-cyan-600',
+    'bg-gradient-to-r from-sky-500 to-blue-600',
+    'bg-gradient-to-r from-violet-500 to-purple-600',
+    'bg-gradient-to-r from-fuchsia-500 to-rose-600',
+  ];
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setFloating(false), 10000);
-    return () => clearTimeout(timer);
+    const colorInterval = setInterval(() => {
+      setColorIndex((prev) => (prev + 1) % colorClasses.length);
+    }, 2000);
+
+    const stopColorTimer = setTimeout(() => {
+      clearInterval(colorInterval);
+    }, 60000);
+
+    const timer = setTimeout(() => setFloating(false), 60000);
+
+    return () => {
+      clearInterval(colorInterval);
+      clearTimeout(stopColorTimer);
+      clearTimeout(timer);
+    };
   }, []);
 
   const handleSend = () => {
@@ -53,8 +76,8 @@ const Chatbot = () => {
         onClick={toggleChat}
         className={cn(
           'fixed z-50 flex items-center justify-center rounded-full text-white cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300',
-          floating 
-            ? 'animate-pulse bg-gradient-to-r from-amber-500 to-orange-600' 
+          floating
+            ? `animate-pulse ${colorClasses[colorIndex]}`
             : 'bg-gradient-to-r from-gray-700 to-gray-900 hover:from-amber-500 hover:to-orange-600'
         )}
         style={{ width: '56px', height: '56px', bottom: '24px', right: '24px' }}
