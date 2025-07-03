@@ -98,17 +98,17 @@ const Index = () => {
       <section className="relative py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center mb-8">
-            <img 
-              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
-              alt="Sahadhyayi logo - A stylized book icon representing digital reading and community" 
-              className="w-24 h-24" 
+            <img
+              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
+              alt="Sahadhyayi logo - your Sahpathi book reader social media community"
+              className="w-24 h-24"
             />
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
             Welcome to
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600"> Sahadhyayi</span>
             <br />
-            <span className="text-3xl md:text-4xl">Your Digital Reading Community</span>
+            <span className="text-3xl md:text-4xl">Your Sahpathi – Digital Reading Community</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed">
             Reviving the transformative power of deep reading through community, technology, and shared knowledge.
