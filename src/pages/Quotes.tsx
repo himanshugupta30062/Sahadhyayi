@@ -30,7 +30,10 @@ const QuotesPage = () => {
     <>
       <SEO
         title="Save Favorite Quotes - Sahadhyayi"
-        description="Store inspiring book quotes, add sources, and revisit them anytime in your personal collection." />
+        description="Store inspiring book quotes, add sources, and revisit them anytime in your personal collection."
+        canonical="https://sahadhyayi.com/quotes"
+        url="https://sahadhyayi.com/quotes"
+      />
       <div className="min-h-screen py-8 px-4">
       <div className="max-w-xl mx-auto space-y-6">
         <Card>

@@ -164,7 +164,12 @@ const SignUp = () => {
 
   return (
     <>
-      <SEO title="Sign Up - Sahadhyayi" description="Create your free Sahadhyayi account to join the reading community." />
+      <SEO
+        title="Sign Up - Sahadhyayi"
+        description="Create your free Sahadhyayi account to join the reading community."
+        canonical="https://sahadhyayi.com/signup"
+        url="https://sahadhyayi.com/signup"
+      />
       <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">

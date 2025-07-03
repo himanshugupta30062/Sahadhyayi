@@ -61,9 +61,17 @@ const BookDetails = () => {
     console.log('Author clicked:', book.author);
   };
 
+  const canonicalUrl = `https://sahadhyayi.com/books/${id}`;
+
   return (
     <>
-      <SEO title={`${book.title} - Sahadhyayi`} description={book.description} />
+      <SEO
+        title={`${book.title} - Sahadhyayi`}
+        description={book.description}
+        canonical={canonicalUrl}
+        url={canonicalUrl}
+        image={book.cover_image_url}
+      />
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-blue-200 sticky top-0 z-10">

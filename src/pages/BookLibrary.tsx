@@ -60,6 +60,7 @@ const BookLibrary = () => {
         title="Digital Book Library - Browse 10,000+ Books | Sahadhyayi"
         description="Browse our extensive digital library with 10,000+ books across all genres. Find your next great read with free PDFs, community reviews, and personalized recommendations."
         canonical="https://sahadhyayi.com/library"
+        url="https://sahadhyayi.com/library"
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}

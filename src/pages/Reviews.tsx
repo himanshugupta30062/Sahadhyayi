@@ -152,7 +152,19 @@ const Reviews = () => {
     <>
       <SEO
         title="Community Reviews"
-        description="Read and share book reviews with the Sahadhyayi community."/>
+        description="Read and share book reviews with the Sahadhyayi community."
+        canonical="https://sahadhyayi.com/reviews"
+        url="https://sahadhyayi.com/reviews"
+      />
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Community Reviews',
+          description: 'Read and share book reviews with the Sahadhyayi community.',
+          url: 'https://sahadhyayi.com/reviews'
+        })}
+      </script>
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <div className="flex max-w-7xl mx-auto py-8 px-4 gap-6">
         

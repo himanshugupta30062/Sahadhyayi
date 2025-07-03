@@ -1,3 +1,6 @@
 User-agent: *
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /signin
 Allow: /
 Sitemap: https://www.sahadhyayi.com/sitemap.xml
