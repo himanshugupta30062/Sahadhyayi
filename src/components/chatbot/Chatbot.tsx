@@ -56,7 +56,7 @@ const Chatbot = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex h-96 w-80 flex-col overflow-hidden rounded-2xl border bg-white shadow-2xl dark:border-gray-700">
+    <div className="fixed bottom-4 right-4 z-50 flex h-96 w-80 flex-col overflow-hidden rounded-2xl border bg-white shadow-2xl">
       <div className="flex items-center justify-between border-b bg-gradient-to-r from-gray-800 to-gray-900 p-3 text-white">
         <span className="font-semibold">Book Expert</span>
         <button onClick={closeChat} aria-label="Close chat" className="p-1 text-white">
@@ -85,7 +85,7 @@ const Chatbot = () => {
         ))}
         <div ref={bottomRef} />
       </div>
-      <div className="border-t p-2 dark:border-gray-700">
+      <div className="border-t p-2">
         <div className="flex items-center gap-2">
           <input
             type="text"

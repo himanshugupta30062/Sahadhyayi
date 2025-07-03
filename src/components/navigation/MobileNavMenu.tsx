@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn, Share2, Library, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
-import ThemeToggle from "../ThemeToggle";
 
 type Props = {
   isOpen: boolean;
@@ -155,10 +154,6 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
               </Button>
             </div>
           )}
-        </div>
-        <div className="px-3 py-3 border-t flex items-center justify-between">
-          <span className="text-sm text-gray-700">Dark Mode</span>
-          <ThemeToggle />
         </div>
         </div>
       </div>
