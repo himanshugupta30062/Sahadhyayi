@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TrendingUp, Users, BookOpen, Map, Target, DollarSign, Globe, Calendar } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const Investors = () => {
   const marketStats = [
@@ -98,7 +99,13 @@ const Investors = () => {
   ];
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <>
+      <SEO
+        title="Invest in Sahadhyayi - Reading Community Platform"
+        description="Learn about our market opportunity, growth plans, and how you can support Sahadhyayi's mission."
+        canonical="https://sahadhyayi.com/investors"
+        url="https://sahadhyayi.com/investors" />
+      <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-12">
@@ -328,6 +335,7 @@ const Investors = () => {
         </section>
       </div>
     </div>
+    </>
   );
 };
 

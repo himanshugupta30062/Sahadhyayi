@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import SEO from '@/components/SEO';
 
 interface Quote {
   id: number;
@@ -26,7 +27,13 @@ const QuotesPage = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <>
+      <SEO
+        title="Save Favorite Quotes - Sahadhyayi"
+        description="Store inspiring book quotes, add sources, and revisit them anytime in your personal collection."
+        canonical="https://sahadhyayi.com/quotes"
+        url="https://sahadhyayi.com/quotes" />
+      <div className="min-h-screen py-8 px-4">
       <div className="max-w-xl mx-auto space-y-6">
         <Card>
           <CardHeader>
@@ -56,6 +63,7 @@ const QuotesPage = () => {
         ))}
       </div>
     </div>
+    </>
   );
 };
 
