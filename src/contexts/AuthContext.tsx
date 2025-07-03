@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -138,8 +139,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: { message: 'Email and password are required' } as AuthError };
       }
       
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      const emailRegix = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegix.test(email)) {
         return { error: { message: 'Please enter a valid email address' } as AuthError };
       }
 
@@ -157,21 +158,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
+      console.log('[AUTH] Starting sign out process...');
+      
+      // First, sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Error signing out:', error);
+        console.error('Error signing out from Supabase:', error);
         throw error;
       }
 
-      // Explicitly remove persisted session tokens
-      localStorage.removeItem('sb-rknxtatvlzunatpyqxro-auth-token');
-
-      // Ensure local auth state is cleared immediately
+      // Clear local state immediately
       setUser(null);
       setSession(null);
+      
+      // Clear any stored auth tokens
+      localStorage.removeItem('sb-rknxtatvlzunatpyqxro-auth-token');
+      sessionStorage.clear();
+      
+      console.log('[AUTH] Sign out completed successfully');
+      
+      // Force redirect to home page
+      window.location.href = '/';
     } catch (error) {
       console.error('Signout error:', error);
-      throw error;
+      // Even if there's an error, clear local state and redirect
+      setUser(null);
+      setSession(null);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/';
     }
   };
 

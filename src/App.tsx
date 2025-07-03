@@ -1,11 +1,12 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import React, { Suspense } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ChatbotProvider } from "@/contexts/ChatbotContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Chatbot from "@/components/chatbot/Chatbot";
@@ -42,6 +43,22 @@ const queryClient = new QueryClient({
   },
 });
 
+// Route wrapper to handle authenticated user redirects
+const AuthenticatedRouteWrapper = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <LoadingSpinner type="page" />;
+  }
+  
+  // If user is authenticated and tries to access home page, redirect to dashboard
+  if (user && window.location.pathname === '/') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
@@ -57,7 +74,11 @@ const App = () => (
                 <Navigation />
                 <Suspense fallback={<LoadingSpinner type="page" />}>
                 <Routes>
-                  <Route path="/" element={<Index />} />
+                  <Route path="/" element={
+                    <AuthenticatedRouteWrapper>
+                      <Index />
+                    </AuthenticatedRouteWrapper>
+                  } />
                   <Route path="/about" element={<About />} />
                   <Route path="/signup" element={<SignUp />} />
                   <Route path="/signin" element={<SignIn />} />
@@ -93,6 +114,11 @@ const App = () => (
                   <Route path="/profile" element={
                     <ProtectedRoute>
                       <Profile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <ComingSoonPage title="Account Settings" />
                     </ProtectedRoute>
                   } />
 
@@ -140,13 +166,12 @@ const ComingSoonPage = ({ title }: { title: string }) => {
         </div>
         <div className="space-y-4">
           <a
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors"
           >
-            ← Return to Home
+            ← Return to Dashboard
           </a>
           <div className="flex justify-center space-x-4 text-sm">
-            <a href="/about" className="text-amber-600 hover:text-amber-700">About Us</a>
             <a href="/reviews" className="text-amber-600 hover:text-amber-700">Community</a>
             <a href="/library" className="text-amber-600 hover:text-amber-700">Library</a>
           </div>

@@ -5,11 +5,12 @@ import { useProfile } from '@/hooks/useProfile';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Plus, TrendingUp, Users, Target } from 'lucide-react';
+import { BookOpen, Plus, TrendingUp, Users, Target, Clock, Star, BookMarked } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
 import CurrentReads from '@/components/dashboard/CurrentReads';
+import ReadingTracker from '@/components/dashboard/ReadingTracker';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -35,6 +36,8 @@ const Dashboard = () => {
     );
   }
 
+  const userName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader';
+
   return (
     <>
       <SEO
@@ -52,20 +55,87 @@ const Dashboard = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                    Welcome back, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader'}! 📚
+                    Welcome back, {userName}! 📚
                   </h1>
                   <p className="text-gray-600 text-sm sm:text-base">
                     Continue your reading journey and discover new books in your personal library.
                   </p>
                 </div>
-                <Link to="/library">
-                  <Button className="bg-amber-600 hover:bg-amber-700 shadow-lg">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add New Books
-                  </Button>
-                </Link>
+                <div className="flex gap-2">
+                  <Link to="/library">
+                    <Button className="bg-amber-600 hover:bg-amber-700 shadow-lg">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Books
+                    </Button>
+                  </Link>
+                  <Link to="/reviews">
+                    <Button variant="outline" className="border-amber-200 hover:bg-amber-50">
+                      <Users className="w-4 h-4 mr-2" />
+                      Community
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
+          </div>
+
+          {/* Stats Overview */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-600 rounded-lg">
+                    <BookOpen className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-lg text-blue-800">0</div>
+                    <div className="text-sm text-blue-600">Books Read</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-600 rounded-lg">
+                    <Clock className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-lg text-green-800">0</div>
+                    <div className="text-sm text-green-600">Reading Now</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-600 rounded-lg">
+                    <BookMarked className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-lg text-purple-800">0</div>
+                    <div className="text-sm text-purple-600">Want to Read</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-600 rounded-lg">
+                    <Star className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-lg text-amber-800">0</div>
+                    <div className="text-sm text-amber-600">Reviews</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Main Content Grid */}
@@ -75,6 +145,9 @@ const Dashboard = () => {
               {/* Current Reading Section */}
               <CurrentReads userId={user?.id} />
               
+              {/* Reading Progress Tracker */}
+              {user?.id && <ReadingTracker userId={user.id} />}
+              
               {/* My Library Section */}
               <EnhancedBookshelf />
               
@@ -83,7 +156,7 @@ const Dashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
                     <TrendingUp className="w-5 h-5 mr-2 text-amber-600" />
-                    Quick Actions
+                    Discover & Connect
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -97,13 +170,13 @@ const Dashboard = () => {
                     <Link to="/reviews">
                       <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
                         <Users className="w-5 h-5 text-amber-600" />
-                        <span className="text-sm">Connect with Readers</span>
+                        <span className="text-sm">Social Feed</span>
                       </Button>
                     </Link>
                     <Link to="/groups">
                       <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
                         <Target className="w-5 h-5 text-amber-600" />
-                        <span className="text-sm">Join Reading Groups</span>
+                        <span className="text-sm">Reading Groups</span>
                       </Button>
                     </Link>
                   </div>
@@ -113,28 +186,26 @@ const Dashboard = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Reading Stats */}
+              {/* Reading Goal */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Your Reading Stats</CardTitle>
+                  <CardTitle className="text-base">2024 Reading Goal</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg">
-                    <div className="text-2xl font-bold text-amber-600">0</div>
-                    <div className="text-sm text-gray-600">Books Completed</div>
-                  </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">0</div>
-                    <div className="text-sm text-gray-600">Currently Reading</div>
-                  </div>
                   <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">0</div>
-                    <div className="text-sm text-gray-600">Reading Goal</div>
+                    <div className="text-2xl font-bold text-green-600">0 / 12</div>
+                    <div className="text-sm text-gray-600">Books This Year</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                    </div>
                   </div>
+                  <Button size="sm" variant="outline" className="w-full">
+                    Set Reading Goal
+                  </Button>
                 </CardContent>
               </Card>
 
-              {/* Social Activity */}
+              {/* Recent Activity */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Recent Activity</CardTitle>
@@ -145,7 +216,25 @@ const Dashboard = () => {
                     <p className="text-sm mb-4">No recent activity</p>
                     <Link to="/reviews">
                       <Button size="sm" variant="outline">
-                        Connect with Community
+                        Join Community
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recommendations */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Recommended for You</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-6 text-gray-500">
+                    <BookOpen className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm mb-4">Start reading to get personalized recommendations!</p>
+                    <Link to="/library">
+                      <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
+                        Explore Books
                       </Button>
                     </Link>
                   </div>
