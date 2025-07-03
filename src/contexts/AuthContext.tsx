@@ -162,6 +162,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error signing out:', error);
         throw error;
       }
+      // Ensure local auth state is cleared immediately
+      setUser(null);
+      setSession(null);
     } catch (error) {
       console.error('Signout error:', error);
       throw error;
