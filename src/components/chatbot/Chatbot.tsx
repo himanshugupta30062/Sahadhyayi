@@ -14,6 +14,7 @@ const Chatbot = () => {
   const { isOpen, toggleChat, closeChat, messages, sendMessage } = useChatbot();
   const [input, setInput] = useState('');
   const [colorIndex, setColorIndex] = useState(0);
+  const [floating, setFloating] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const colorClasses = [
@@ -36,8 +37,14 @@ const Chatbot = () => {
       setColorIndex((prev) => (prev + 1) % colorClasses.length);
     }, 500);
 
+    const stopTimeout = setTimeout(() => {
+      clearInterval(colorInterval);
+      setFloating(false);
+    }, 60000); // stop after 1 minute
+
     return () => {
       clearInterval(colorInterval);
+      clearTimeout(stopTimeout);
     };
   }, [colorClasses.length]);
 
@@ -67,8 +74,10 @@ const Chatbot = () => {
         id="chatbot-icon"
         onClick={toggleChat}
         className={cn(
-          'fixed z-50 flex items-center justify-center rounded-full text-white cursor-pointer shadow-lg hover:shadow-xl transition-colors duration-500',
-          colorClasses[colorIndex]
+          'fixed z-50 flex items-center justify-center rounded-full text-white cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300',
+          floating
+            ? `animate-pulse ${colorClasses[colorIndex]}`
+            : 'bg-gradient-to-r from-gray-700 to-gray-900 hover:from-amber-500 hover:to-orange-600'
         )}
         style={{ width: '56px', height: '56px', bottom: '24px', right: '24px' }}
         aria-label="Open chat with Book Expert"
