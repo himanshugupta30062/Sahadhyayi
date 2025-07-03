@@ -29,7 +29,7 @@
             font-family: 'Georgia', serif;
         }
         .page-transition {
-            transition: all 0.3s ease-in-out;
+            transition: all 0.7s ease-in-out;
         }
         .book-card:hover {
             transform: translateY(-5px);
@@ -58,25 +58,25 @@
                 <!-- Navigation Menu -->
                 <ul class="space-y-2">
                     <li>
-                        <button onclick="showPage('intro')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors flex items-center space-x-3">
+                        <button onclick="showPage('intro')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors duration-500 flex items-center space-x-3">
                             <i class="fas fa-home"></i>
                             <span>Intro / Home</span>
                         </button>
                     </li>
                     <li>
-                        <button onclick="showPage('library')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors flex items-center space-x-3">
+                        <button onclick="showPage('library')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors duration-500 flex items-center space-x-3">
                             <i class="fas fa-book"></i>
                             <span>Library</span>
                         </button>
                     </li>
                     <li>
-                        <button onclick="showPage('authors')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors flex items-center space-x-3">
+                        <button onclick="showPage('authors')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors duration-500 flex items-center space-x-3">
                             <i class="fas fa-user-friends"></i>
                             <span>Authors</span>
                         </button>
                     </li>
                     <li>
-                        <button onclick="showPage('about')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors flex items-center space-x-3">
+                        <button onclick="showPage('about')" class="nav-btn w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gentle-rose/20 hover:text-deep-coral transition-colors duration-500 flex items-center space-x-3">
                             <i class="fas fa-info-circle"></i>
                             <span>About Us</span>
                         </button>
@@ -125,7 +125,7 @@
                                     ideas, and the transformative power of literature. Join us in creating a world where books bring hearts together.
                                 </p>
 
-                                <button onclick="showPage('library')" class="bg-deep-coral hover:bg-red-600 text-white px-12 py-4 rounded-full text-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
+                                <button onclick="showPage('library')" class="bg-deep-coral hover:bg-red-600 text-white px-12 py-4 rounded-full text-xl font-semibold transition-all duration-500 transform hover:scale-105 shadow-lg hover:shadow-xl">
                                     <i class="fas fa-book-open mr-3"></i>
                                     Join the Library
                                 </button>
@@ -308,16 +308,16 @@
                             </a>
                             
                             <div class="flex justify-center space-x-6 mt-6">
-                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors duration-500">
                                     <i class="fab fa-twitter"></i>
                                 </a>
-                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors duration-500">
                                     <i class="fab fa-instagram"></i>
                                 </a>
-                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors duration-500">
                                     <i class="fab fa-facebook"></i>
                                 </a>
-                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors">
+                                <a href="#" class="text-gray-400 hover:text-deep-coral text-2xl transition-colors duration-500">
                                     <i class="fab fa-goodreads"></i>
                                 </a>
                             </div>
@@ -347,7 +347,7 @@
                         <div class="bg-white/70 rounded-xl p-6 shadow-md">
                             <textarea id="comment-input" placeholder="Share your love for reading, favorite books, or thoughts about Lovable..." 
                                       class="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-deep-coral focus:border-transparent"></textarea>
-                            <button onclick="submitComment()" class="mt-4 bg-deep-coral hover:bg-red-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+                            <button onclick="submitComment()" class="mt-4 bg-deep-coral hover:bg-red-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-500">
                                 <i class="fas fa-paper-plane mr-2"></i>
                                 Submit Message
                             </button>
@@ -361,19 +361,19 @@
 
                     <!-- Social Links -->
                     <div class="flex justify-center space-x-8 mb-8">
-                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors duration-500">
                             <i class="fab fa-facebook"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors duration-500">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors duration-500">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors duration-500">
                             <i class="fab fa-goodreads"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors">
+                        <a href="#" class="text-gray-400 hover:text-deep-coral text-3xl transition-colors duration-500">
                             <i class="fab fa-pinterest"></i>
                         </a>
                     </div>
@@ -477,7 +477,7 @@
         function renderBooks(booksToRender = books) {
             const grid = document.getElementById('books-grid');
             grid.innerHTML = booksToRender.map(book => `
-                <div class="book-card bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div class="book-card bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden">
                     <img src="${book.image}" alt="${book.title}" class="w-full h-64 object-cover">
                     <div class="p-6">
                         <h3 class="font-bold text-xl text-gray-800 mb-2 line-clamp-2">${book.title}</h3>
@@ -490,7 +490,7 @@
                                 </div>
                                 <span class="text-sm text-gray-600 font-medium">${book.rating}</span>
                             </div>
-                            <button class="text-deep-coral hover:text-red-600 font-medium transition-colors">
+                            <button class="text-deep-coral hover:text-red-600 font-medium transition-colors duration-500">
                                 <i class="fas fa-heart mr-1"></i>
                                 Add to Favorites
                             </button>
@@ -504,7 +504,7 @@
         function renderAuthors() {
             const grid = document.getElementById('authors-grid');
             grid.innerHTML = authors.map(author => `
-                <div class="author-card bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8">
+                <div class="author-card bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-500 p-8">
                     <img src="${author.image}" alt="${author.name}" class="w-32 h-32 rounded-full mx-auto mb-6 object-cover border-4 border-gentle-rose/30">
                     <h3 class="font-bold text-2xl text-gray-800 mb-3 text-center">${author.name}</h3>
                     <p class="text-gray-600 mb-6 text-center leading-relaxed">${author.bio}</p>
@@ -515,11 +515,11 @@
                         </div>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <button class="flex-1 bg-deep-coral hover:bg-red-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors">
+                        <button class="flex-1 bg-deep-coral hover:bg-red-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors duration-500">
                             <i class="fas fa-video mr-2"></i>
                             Request Live Session
                         </button>
-                        <button class="flex-1 border-2 border-deep-coral text-deep-coral hover:bg-deep-coral hover:text-white px-4 py-3 rounded-lg font-semibold transition-colors">
+                        <button class="flex-1 border-2 border-deep-coral text-deep-coral hover:bg-deep-coral hover:text-white px-4 py-3 rounded-lg font-semibold transition-colors duration-500">
                             <i class="fas fa-envelope mr-2"></i>
                             Connect with Author
                         </button>
@@ -633,7 +633,7 @@
                     <p class="text-gray-700 mb-3 leading-relaxed">"${comment.text}"</p>
                     <div class="flex justify-between items-center text-sm text-gray-500">
                         <span><i class="fas fa-clock mr-1"></i>${comment.timestamp}</span>
-                        <button onclick="likeComment(${comment.id})" class="text-deep-coral hover:text-red-600 transition-colors">
+                        <button onclick="likeComment(${comment.id})" class="text-deep-coral hover:text-red-600 transition-colors duration-500">
                             <i class="fas fa-heart mr-1"></i>
                             <span id="likes-${comment.id}">${comment.likes}</span>
                         </button>
@@ -655,7 +655,7 @@
 
         function showNotification(message) {
             const notification = document.createElement('div');
-            notification.className = 'fixed top-4 right-4 bg-deep-coral text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';
+            notification.className = 'fixed top-4 right-4 bg-deep-coral text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-500';
             notification.textContent = message;
             document.body.appendChild(notification);
             
