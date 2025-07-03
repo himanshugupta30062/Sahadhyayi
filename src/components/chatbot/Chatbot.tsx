@@ -18,10 +18,14 @@ const Chatbot = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const colorClasses = [
-    'bg-gradient-to-r from-red-500 to-pink-600',
-    'bg-gradient-to-r from-orange-500 to-yellow-500',
-    'bg-gradient-to-r from-green-500 to-emerald-600',
-    'bg-gradient-to-r from-blue-500 to-indigo-600',
+    'bg-gradient-to-r from-red-500 via-pink-500 to-purple-500',
+    'bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500',
+    'bg-gradient-to-r from-lime-500 via-green-500 to-emerald-500',
+    'bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500',
+    'bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500',
+    'bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500',
+    'bg-gradient-to-r from-rose-500 via-red-500 to-orange-500',
+    'bg-gradient-to-r from-amber-600 via-lime-600 to-green-600',
   ];
 
   useEffect(() => {
@@ -31,11 +35,11 @@ const Chatbot = () => {
   useEffect(() => {
     const colorInterval = setInterval(() => {
       setColorIndex((prev) => (prev + 1) % colorClasses.length);
-    }, 1000);
+    }, 3000);
 
     const stopColorTimer = setTimeout(() => {
       clearInterval(colorInterval);
-    }, 10000);
+    }, 60000);
 
     const timer = setTimeout(() => setFloating(false), 60000);
 
