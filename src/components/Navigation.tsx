@@ -54,8 +54,8 @@ const Navigation = () => {
   return (
     <nav className="w-full bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-3 sm:space-x-6">
+        <div className="flex justify-between items-center h-16 overflow-hidden">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
             <NavLogo />
 
             {/* Mobile Search Icon */}
@@ -68,7 +68,7 @@ const Navigation = () => {
             </button>
 
             {/* Compact Search Bar */}
-            <div className="hidden md:block">
+            <div className="hidden md:block flex-shrink-0">
               <div className="relative">
                 <input
                   type="text"
@@ -80,7 +80,7 @@ const Navigation = () => {
                   }}
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
-                  className={`pl-4 pr-9 py-2 w-64 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
+                  className={`pl-4 pr-9 py-2 w-48 lg:w-64 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
                     isSearchFocused
                       ? 'border-orange-400 bg-white shadow-md ring-2 ring-orange-200 scale-105'
                       : 'hover:bg-white hover:border-gray-400'
@@ -98,13 +98,17 @@ const Navigation = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6">
-            <DesktopNavItems />
-            <AuthSection />
+          <div className="hidden lg:flex items-center space-x-2 xl:space-x-4 flex-shrink-0 overflow-hidden">
+            <div className="flex-shrink-0 overflow-hidden">
+              <DesktopNavItems />
+            </div>
+            <div className="flex-shrink-0">
+              <AuthSection />
+            </div>
           </div>
 
           {/* Mobile menu button */}
-          <div className="lg:hidden flex items-center">
+          <div className="lg:hidden flex items-center flex-shrink-0">
             <button
               className="text-gray-700 p-2"
               aria-label="Open main menu"

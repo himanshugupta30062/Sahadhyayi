@@ -1,19 +1,15 @@
+
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
-import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/dashboard/AppSidebar";
 import { Skeleton } from '@/components/ui/skeleton';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import CurrentReads from '@/components/dashboard/CurrentReads';
-import ReadingFeed from '@/components/dashboard/ReadingFeed';
-import BookRecommendations from '@/components/dashboard/BookRecommendations';
-import QuickActionsPanel from '@/components/dashboard/QuickActionsPanel';
-import WeeklyReadingSummary from '@/components/dashboard/WeeklyReadingSummary';
-import ReadingGoalTracker from '@/components/dashboard/ReadingGoalTracker';
-import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
-import MyGroups from '@/components/dashboard/MyGroups';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BookOpen, Plus, TrendingUp, Users, Target } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SEO from '@/components/SEO';
+import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
+import CurrentReads from '@/components/dashboard/CurrentReads';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -40,59 +36,126 @@ const Dashboard = () => {
   }
 
   return (
-    <SidebarProvider>
+    <>
       <SEO
-        title="Dashboard - Overview of Your Reading | Sahadhyayi"
-        description="View your current reads, reading goals, groups, and recommendations on your personal dashboard."
+        title="My Library - Personal Reading Dashboard | Sahadhyayi"
+        description="Manage your personal reading collection, track progress, and discover new books in your customized library."
         canonical="https://sahadhyayi.com/dashboard"
         url="https://sahadhyayi.com/dashboard"
       />
-      <div className="flex min-h-screen w-full">
-        <div className="hidden lg:block w-64 flex-shrink-0">
-          <AppSidebar />
-        </div>
-        
-        <div className="flex-1 bg-gradient-to-b from-amber-50 to-white">
-          <main className="max-w-7xl mx-auto p-3 sm:p-6">
-            {/* Welcome Header */}
-            <DashboardHeader user={user} profile={profile} />
-            
-            {/* Main Dashboard Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8">
-              {/* Left Column - Main Content */}
-              <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-                {/* Current Reads Section */}
-                <CurrentReads userId={user?.id} />
-                
-                {/* Enhanced Bookshelf */}
-                <EnhancedBookshelf />
-                
-                {/* My Groups */}
-                <MyGroups />
-                
-                {/* Reading Feed */}
-                <ReadingFeed />
-                
-                {/* Book Recommendations */}
-                <BookRecommendations userId={user?.id} />
-              </div>
-              
-              {/* Right Column - Sidebar Content */}
-              <div className="space-y-4 sm:space-y-6">
-                {/* Quick Actions Panel */}
-                <QuickActionsPanel />
-
-                {/* Reading Goal Tracker */}
-                <ReadingGoalTracker />
-
-                {/* Weekly Reading Summary */}
-                <WeeklyReadingSummary userId={user?.id} />
+      
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+          {/* Welcome Header */}
+          <div className="mb-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-amber-200 shadow-lg p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                    Welcome back, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader'}! 📚
+                  </h1>
+                  <p className="text-gray-600 text-sm sm:text-base">
+                    Continue your reading journey and discover new books in your personal library.
+                  </p>
+                </div>
+                <Link to="/library">
+                  <Button className="bg-amber-600 hover:bg-amber-700 shadow-lg">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add New Books
+                  </Button>
+                </Link>
               </div>
             </div>
-          </main>
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Main Content Area */}
+            <div className="lg:col-span-3 space-y-6">
+              {/* Current Reading Section */}
+              <CurrentReads userId={user?.id} />
+              
+              {/* My Library Section */}
+              <EnhancedBookshelf />
+              
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-lg">
+                    <TrendingUp className="w-5 h-5 mr-2 text-amber-600" />
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Link to="/library">
+                      <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
+                        <BookOpen className="w-5 h-5 text-amber-600" />
+                        <span className="text-sm">Browse Library</span>
+                      </Button>
+                    </Link>
+                    <Link to="/reviews">
+                      <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
+                        <Users className="w-5 h-5 text-amber-600" />
+                        <span className="text-sm">Connect with Readers</span>
+                      </Button>
+                    </Link>
+                    <Link to="/groups">
+                      <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
+                        <Target className="w-5 h-5 text-amber-600" />
+                        <span className="text-sm">Join Reading Groups</span>
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Reading Stats */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Your Reading Stats</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg">
+                    <div className="text-2xl font-bold text-amber-600">0</div>
+                    <div className="text-sm text-gray-600">Books Completed</div>
+                  </div>
+                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">0</div>
+                    <div className="text-sm text-gray-600">Currently Reading</div>
+                  </div>
+                  <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">0</div>
+                    <div className="text-sm text-gray-600">Reading Goal</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Social Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-gray-500">
+                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p className="text-sm mb-4">No recent activity</p>
+                    <Link to="/reviews">
+                      <Button size="sm" variant="outline">
+                        Connect with Community
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
-    </SidebarProvider>
+    </>
   );
 };
 

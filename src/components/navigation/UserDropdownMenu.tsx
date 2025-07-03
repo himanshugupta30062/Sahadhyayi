@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  User, Book, BookOpen, Upload, Settings, LogOut, Bell
+  User, Settings, LogOut, Bell, BookOpen, Users, Calendar, Library, Share2
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,66 +36,94 @@ const UserDropdownMenu = () => {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full focus:ring-2 focus:ring-amber-500" aria-label="User Menu">
           <Avatar className="h-8 w-8">
             <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
-            <AvatarFallback>{avatarFallback}</AvatarFallback>
+            <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white text-sm font-semibold">
+              {avatarFallback}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64" align="end" forceMount>
-        <div className="flex items-center gap-2 p-2 border-b">
-          <Avatar className="h-10 w-10">
+      <DropdownMenuContent className="w-72 bg-white shadow-xl border border-gray-200" align="end" forceMount>
+        <div className="flex items-center gap-3 p-4 border-b border-gray-100">
+          <Avatar className="h-12 w-12">
             <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
-            <AvatarFallback>{avatarFallback}</AvatarFallback>
+            <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white text-lg font-semibold">
+              {avatarFallback}
+            </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col ml-1">
-            <p className="font-medium">{profile?.full_name || 'User'}</p>
-            <p className="w-[200px] truncate text-xs text-muted-foreground">
-              {user.email}
-            </p>
+          <div className="flex flex-col flex-1 min-w-0">
+            <p className="font-semibold text-gray-900 truncate">{profile?.full_name || 'User'}</p>
+            <p className="text-sm text-gray-500 truncate">{user.email}</p>
           </div>
-          <Button variant="ghost" className="ml-auto rounded-full p-2" aria-label="Notifications">
+          <Button variant="ghost" className="rounded-full p-2 hover:bg-gray-100" aria-label="Notifications">
             <Bell className="w-5 h-5 text-amber-700" />
           </Button>
         </div>
+        
+        <div className="py-2">
+          <DropdownMenuItem asChild>
+            <Link to="/profile" className="flex items-center px-4 py-2 hover:bg-gray-50">
+              <User className="mr-3 h-4 w-4 text-gray-500" />
+              <span>View My Profile</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/settings" className="flex items-center px-4 py-2 hover:bg-gray-50">
+              <Settings className="mr-3 h-4 w-4 text-gray-500" />
+              <span>Account Settings</span>
+            </Link>
+          </DropdownMenuItem>
+        </div>
+
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/profile" tabIndex={0}>
-            <User className="mr-2 h-4 w-4" />
-            View My Profile
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/stories" tabIndex={0}>
-            <Book className="mr-2 h-4 w-4" />
-            My Life Stories
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/stories/upload" tabIndex={0}>
-            <Upload className="mr-2 h-4 w-4" />
-            Upload New Story
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/stories/drafts" tabIndex={0}>
-            <BookOpen className="mr-2 h-4 w-4" />
-            Saved Drafts
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/settings" tabIndex={0}>
-            <Settings className="mr-2 h-4 w-4" />
-            Account Settings
-          </Link>
-        </DropdownMenuItem>
+        
+        {/* Additional Navigation Items */}
+        <div className="py-2">
+          <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            Navigation
+          </div>
+          <DropdownMenuItem asChild>
+            <Link to="/" className="flex items-center px-4 py-2 hover:bg-gray-50">
+              <BookOpen className="mr-3 h-4 w-4 text-gray-500" />
+              <span>Home</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/library" className="flex items-center px-4 py-2 hover:bg-gray-50">
+              <Library className="mr-3 h-4 w-4 text-gray-500" />
+              <span>Full Library</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/authors" className="flex items-center px-4 py-2 hover:bg-gray-50">
+              <Calendar className="mr-3 h-4 w-4 text-gray-500" />
+              <span>Authors</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/groups" className="flex items-center px-4 py-2 hover:bg-gray-50">
+              <Users className="mr-3 h-4 w-4 text-gray-500" />
+              <span>Reading Groups</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/about" className="flex items-center px-4 py-2 hover:bg-gray-50">
+              <BookOpen className="mr-3 h-4 w-4 text-gray-500" />
+              <span>About Us</span>
+            </Link>
+          </DropdownMenuItem>
+        </div>
+
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={handleSignOut}
-          tabIndex={0}
-          className="text-red-600"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </DropdownMenuItem>
+        
+        <div className="py-2">
+          <DropdownMenuItem
+            onClick={handleSignOut}
+            className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 cursor-pointer"
+          >
+            <LogOut className="mr-3 h-4 w-4" />
+            <span>Logout</span>
+          </DropdownMenuItem>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
