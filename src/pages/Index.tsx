@@ -86,7 +86,7 @@ const Index = () => {
     <>
       <SEO
         title="Sahadhyayi - Digital Reading Community & Book Library"
-        description="Join Sahadhyayi's vibrant reading community. Discover thousands of books, connect with fellow readers, track your progress, and explore our digital library platform."
+        description="Join Sahadhyayi's vibrant reading community and book reader social media platform. Discover thousands of books, connect with fellow readers, track your progress, and explore our digital library."
         canonical="https://sahadhyayi.com/"
         url="https://sahadhyayi.com/"
       />
@@ -98,10 +98,10 @@ const Index = () => {
       <section className="relative py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center mb-8">
-            <img 
-              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
-              alt="Sahadhyayi logo - A stylized book icon representing digital reading and community" 
-              className="w-24 h-24" 
+            <img
+              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
+              alt="Sahadhyayi logo representing our book reader social media community"
+              className="w-24 h-24"
             />
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
