@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React, { Suspense } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ChatbotProvider } from "@/contexts/ChatbotContext";
@@ -11,22 +12,22 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Chatbot from "@/components/chatbot/Chatbot";
 import Navigation from "./components/Navigation";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Index from "./pages/Index";
-import About from "./pages/About";
-import Bookshelf from "./pages/Bookshelf";
-import BookLibrary from "./pages/BookLibrary";
-import ReadingGroups from "./pages/ReadingGroups";
-import Reviews from "./pages/Reviews";
-import AuthorConnect from "./pages/AuthorConnect";
-import ReaderMap from "./pages/ReaderMap";
-import Investors from "./pages/Investors";
-import SignUp from "./pages/SignUp";
-import SignIn from "./pages/SignIn";
-import Quotes from "./pages/Quotes";
-import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import BookDetails from "./pages/BookDetails";
+const Index = React.lazy(() => import("./pages/Index"));
+const About = React.lazy(() => import("./pages/About"));
+const Bookshelf = React.lazy(() => import("./pages/Bookshelf"));
+const BookLibrary = React.lazy(() => import("./pages/BookLibrary"));
+const ReadingGroups = React.lazy(() => import("./pages/ReadingGroups"));
+const Reviews = React.lazy(() => import("./pages/Reviews"));
+const AuthorConnect = React.lazy(() => import("./pages/AuthorConnect"));
+const ReaderMap = React.lazy(() => import("./pages/ReaderMap"));
+const Investors = React.lazy(() => import("./pages/Investors"));
+const SignUp = React.lazy(() => import("./pages/SignUp"));
+const SignIn = React.lazy(() => import("./pages/SignIn"));
+const Quotes = React.lazy(() => import("./pages/Quotes"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+const Profile = React.lazy(() => import("./pages/Profile"));
+const BookDetails = React.lazy(() => import("./pages/BookDetails"));
 import GlobalFooter from "./components/GlobalFooter";
 
 const queryClient = new QueryClient({
@@ -50,6 +51,7 @@ const App = () => (
             <BrowserRouter>
               <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
                 <Navigation />
+                <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
@@ -92,6 +94,7 @@ const App = () => (
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </Suspense>
                 <GlobalFooter />
                 <Chatbot />
               </div>
