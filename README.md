@@ -100,3 +100,13 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 ## Adding Books to the Library
 
 To display custom books in the Library section you must populate the `books_library` table in Supabase. See [docs/AddBooksToLibrary.md](docs/AddBooksToLibrary.md) for a step-by-step guide on creating the table and uploading covers and PDFs.
+
+## Training Gemini with your chats
+
+Each chat message you send along with the assistant's reply is stored in a new Supabase table called `gemini_training_data`. These prompt/response pairs can be exported for fine‑tuning by running:
+
+```sh
+node scripts/exportGeminiTrainingData.js
+```
+
+The script creates a `gemini_training_data.json` file that can be used with Google's tuning tools or any other model training pipeline.
