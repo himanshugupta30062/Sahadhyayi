@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils';
 const Chatbot = () => {
   const { isOpen, toggleChat, closeChat, messages, sendMessage } = useChatbot();
   const [input, setInput] = useState('');
-  const [floating, setFloating] = useState(true);
   const [colorIndex, setColorIndex] = useState(0);
   const [isMinimized, setIsMinimized] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -35,20 +34,12 @@ const Chatbot = () => {
   useEffect(() => {
     const colorInterval = setInterval(() => {
       setColorIndex((prev) => (prev + 1) % colorClasses.length);
-    }, 3000);
-
-    const stopColorTimer = setTimeout(() => {
-      clearInterval(colorInterval);
-    }, 60000);
-
-    const timer = setTimeout(() => setFloating(false), 60000);
+    }, 500);
 
     return () => {
       clearInterval(colorInterval);
-      clearTimeout(stopColorTimer);
-      clearTimeout(timer);
     };
-  }, []);
+  }, [colorClasses.length]);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -76,10 +67,8 @@ const Chatbot = () => {
         id="chatbot-icon"
         onClick={toggleChat}
         className={cn(
-          'fixed z-50 flex items-center justify-center rounded-full text-white cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300',
-          floating
-            ? `animate-pulse ${colorClasses[colorIndex]}`
-            : 'bg-gradient-to-r from-gray-700 to-gray-900 hover:from-amber-500 hover:to-orange-600'
+          'fixed z-50 flex items-center justify-center rounded-full text-white cursor-pointer shadow-lg hover:shadow-xl transition-colors duration-500',
+          colorClasses[colorIndex]
         )}
         style={{ width: '56px', height: '56px', bottom: '24px', right: '24px' }}
         aria-label="Open chat with Book Expert"
