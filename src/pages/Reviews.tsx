@@ -42,100 +42,117 @@ const Reviews = () => {
         url="https://sahadhyayi.com/reviews"
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        <div className="container mx-auto px-4 py-6">
-          
-          {/* Header Section */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                Reading Community
-              </h1>
-            </div>
-            <p className="text-gray-700 max-w-2xl mx-auto mb-6 text-sm md:text-base">
-              Share your reading moments, discover book inspiration, and connect with fellow book lovers from around the world.
-            </p>
-            
-            {/* Search and Action Bar */}
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-6">
-              {/* Search Bar */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Search books, people, or reading groups..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border-2 border-amber-200 focus:border-amber-400 rounded-lg bg-white text-gray-900 placeholder-gray-500 text-sm"
-                />
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3">
-                <Button 
-                  onClick={() => setShowCreatePost(!showCreatePost)}
-                  className="bg-amber-600 hover:bg-amber-700 text-white text-sm md:text-base"
-                  size="sm"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Share Reading
-                </Button>
-                <Button variant="outline" size="sm" className="border-amber-200 text-amber-700">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Browse Library
-                </Button>
-              </div>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 relative overflow-hidden">
+        {/* Fixed Left Sidebar - Out of Frame */}
+        <div className="fixed left-0 top-0 h-full w-80 bg-white border-r border-gray-200 shadow-lg overflow-y-auto z-10 transform -translate-x-64">
+          <div className="p-4">
+            <LeftSidebar />
           </div>
+        </div>
 
-          {/* Community Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {communityStats.map((stat, index) => (
-              <Card key={index} className="bg-white/80 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center mb-2">
-                    <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                  </div>
-                  <div className="text-xl md:text-2xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-xs md:text-sm text-gray-600">{stat.label}</div>
+        {/* Fixed Right Sidebar - Out of Frame */}
+        <div className="fixed right-0 top-0 h-full w-80 bg-white border-l border-gray-200 shadow-lg overflow-y-auto z-10 transform translate-x-64">
+          <div className="p-4">
+            <div className="space-y-6">
+              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg text-gray-900">Suggestions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600">Connect with more book lovers and discover new reading communities.</p>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-
-          {/* Create Post Form */}
-          {showCreatePost && (
-            <div className="mb-6">
-              <CreatePostForm
-                onClose={() => setShowCreatePost(false)}
-                onSubmit={handleCreatePost}
-              />
             </div>
-          )}
+          </div>
+        </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Content Area - Facebook Style */}
+        <div className="relative z-0">
+          <div className="max-w-2xl mx-auto px-4 py-6">
             
-            {/* Left Sidebar */}
-            <div className="lg:col-span-1 order-2 lg:order-1">
-              <div className="sticky top-4">
-                <LeftSidebar />
+            {/* Header Section */}
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center space-x-3 mb-4">
+                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                  Reading Community
+                </h1>
+              </div>
+              <p className="text-gray-700 max-w-2xl mx-auto mb-6 text-sm md:text-base">
+                Share your reading moments, discover book inspiration, and connect with fellow book lovers from around the world.
+              </p>
+              
+              {/* Search and Action Bar */}
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-6">
+                {/* Search Bar */}
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search books, people, or reading groups..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border-2 border-amber-200 focus:border-amber-400 rounded-lg bg-white text-gray-900 placeholder-gray-500 text-sm"
+                  />
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex items-center gap-3">
+                  <Button 
+                    onClick={() => setShowCreatePost(!showCreatePost)}
+                    className="bg-amber-600 hover:bg-amber-700 text-white text-sm md:text-base"
+                    size="sm"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Share Reading
+                  </Button>
+                  <Button variant="outline" size="sm" className="border-amber-200 text-amber-700">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Browse Library
+                  </Button>
+                </div>
               </div>
             </div>
 
-            {/* Main Feed */}
-            <div className="lg:col-span-3 order-1 lg:order-2">
+            {/* Community Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {communityStats.map((stat, index) => (
+                <Card key={index} className="bg-white/80 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300">
+                  <CardContent className="p-4 text-center">
+                    <div className="flex items-center justify-center mb-2">
+                      <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                    </div>
+                    <div className="text-xl md:text-2xl font-bold text-gray-900">{stat.value}</div>
+                    <div className="text-xs md:text-sm text-gray-600">{stat.label}</div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Create Post Form */}
+            {showCreatePost && (
+              <div className="mb-6">
+                <CreatePostForm
+                  onClose={() => setShowCreatePost(false)}
+                  onSubmit={handleCreatePost}
+                />
+              </div>
+            )}
+
+            {/* Main Feed - Centered like Facebook */}
+            <div className="relative z-20">
               <ReadingFeed />
             </div>
             
           </div>
         </div>
 
-        {/* Floating Chat */}
-        <FloatingChat />
+        {/* Floating Chat - Higher z-index to avoid overlap */}
+        <div className="relative z-50">
+          <FloatingChat />
+        </div>
       </div>
     </>
   );

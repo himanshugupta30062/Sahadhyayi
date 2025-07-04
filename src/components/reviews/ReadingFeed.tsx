@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Heart, MessageCircle, Share2, Users, MapPin, BookOpen, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -154,9 +153,9 @@ export const ReadingFeed = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative z-10">
       {posts.map((post) => (
-        <Card key={post.id} className="bg-white/95 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300">
+        <Card key={post.id} className="bg-white/95 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300 relative z-10">
           <CardContent className="p-6">
             {/* User Header */}
             <div className="flex items-center justify-between mb-4">
