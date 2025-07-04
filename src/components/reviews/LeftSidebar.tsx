@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { FloatingChat } from "./FloatingChat";
 
 interface BookshelfItem {
   id: string;
@@ -355,6 +356,16 @@ export const LeftSidebar = () => {
             <MessageSquare className="w-4 h-4 mr-2" />
             Connect WhatsApp
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Messages Section */}
+      <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-gray-900">Messages</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <FloatingChat />
         </CardContent>
       </Card>
     </div>

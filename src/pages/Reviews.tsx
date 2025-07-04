@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import SEO from "@/components/SEO";
 import { ReadingFeed } from "@/components/reviews/ReadingFeed";
 import { LeftSidebar } from "@/components/reviews/LeftSidebar";
-import { FloatingChat } from "@/components/reviews/FloatingChat";
+
 import { CreatePostForm } from "@/components/reviews/CreatePostForm";
 
 const Reviews = () => {
@@ -42,16 +42,16 @@ const Reviews = () => {
         url="https://sahadhyayi.com/reviews"
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 relative overflow-hidden">
-        {/* Fixed Left Sidebar - Out of Frame */}
-        <div className="fixed left-0 top-0 h-full w-80 bg-white border-r border-gray-200 shadow-lg overflow-y-auto z-10 transform -translate-x-64">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex">
+        {/* Fixed Left Sidebar - Visible */}
+        <div className="w-80 bg-white border-r border-gray-200 shadow-lg overflow-y-auto fixed left-0 top-0 h-full z-10">
           <div className="p-4">
             <LeftSidebar />
           </div>
         </div>
 
-        {/* Fixed Right Sidebar - Out of Frame */}
-        <div className="fixed right-0 top-0 h-full w-80 bg-white border-l border-gray-200 shadow-lg overflow-y-auto z-10 transform translate-x-64">
+        {/* Fixed Right Sidebar - Visible */}
+        <div className="w-80 bg-white border-l border-gray-200 shadow-lg overflow-y-auto fixed right-0 top-0 h-full z-10">
           <div className="p-4">
             <div className="space-y-6">
               <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
@@ -66,8 +66,8 @@ const Reviews = () => {
           </div>
         </div>
 
-        {/* Main Content Area - Facebook Style */}
-        <div className="relative z-0">
+        {/* Main Content Area - Facebook Style with margins for sidebars */}
+        <div className="flex-1 mx-80 relative z-0">
           <div className="max-w-2xl mx-auto px-4 py-6">
             
             {/* Header Section */}
@@ -149,10 +149,6 @@ const Reviews = () => {
           </div>
         </div>
 
-        {/* Floating Chat - Higher z-index to avoid overlap */}
-        <div className="relative z-50">
-          <FloatingChat />
-        </div>
       </div>
     </>
   );
