@@ -19,7 +19,8 @@ BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+  SET search_path = 'public, pg_catalog';
 
 DROP TRIGGER IF EXISTS set_profile_updated_at ON public.profiles;
 

@@ -35,7 +35,8 @@ BEGIN
   NEW.last_updated = now();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+  SET search_path = 'public, pg_catalog';
 
 DROP TRIGGER IF EXISTS set_last_updated_user_profile ON public.user_profile;
 
