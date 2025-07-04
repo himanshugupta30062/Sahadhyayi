@@ -5,12 +5,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, User, BookOpen, MessageSquare, Search, Users, Star, Clock } from "lucide-react";
+import {
+  Calendar,
+  User,
+  BookOpen,
+  MessageSquare,
+  Search,
+  Users,
+  Star,
+  Clock,
+  SortAsc,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
 
 const AuthorConnect = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("rating");
 
   const authors = [
     {
@@ -56,6 +74,16 @@ const AuthorConnect = () => {
     author.genre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     author.books.some(book => book.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const sortedAuthors = [...filteredAuthors].sort((a, b) => {
+    if (sortOption === "name") {
+      return a.name.localeCompare(b.name);
+    }
+    if (sortOption === "followers") {
+      return b.followers - a.followers;
+    }
+    return b.rating - a.rating;
+  });
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -179,6 +207,21 @@ const AuthorConnect = () => {
                 className="pl-14 h-16 text-lg bg-white border-2 border-orange-200 focus:border-orange-400 rounded-2xl shadow-lg"
               />
             </div>
+            <div className="mt-6 flex justify-center">
+              <div className="flex items-center gap-2">
+                <SortAsc className="w-5 h-5 text-gray-400" />
+                <Select value={sortOption} onValueChange={setSortOption}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rating">Highest Rated</SelectItem>
+                    <SelectItem value="followers">Most Followers</SelectItem>
+                    <SelectItem value="name">Name A-Z</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </section>
 
           {/* Authors Grid Section */}
@@ -186,10 +229,11 @@ const AuthorConnect = () => {
             <div className="text-center mb-12">
               <h2 id="authors-grid-heading" className="text-4xl font-bold text-gray-900 mb-6">Featured Authors</h2>
               <p className="text-xl text-gray-600">Meet the talented writers in our community</p>
+              <p className="text-sm text-gray-500 mt-2">{sortedAuthors.length} author{sortedAuthors.length !== 1 && 's'} found</p>
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {filteredAuthors.map((author) => (
+              {sortedAuthors.map((author) => (
                 <Card key={author.id} className="group bg-white/95 backdrop-blur-sm border-orange-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:border-orange-300 rounded-2xl overflow-hidden">
                   <CardHeader className="text-center pb-6">
                     <Avatar className="w-28 h-28 mx-auto mb-6 ring-4 ring-orange-200 group-hover:ring-orange-400 transition-all">
