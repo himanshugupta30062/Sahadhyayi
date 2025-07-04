@@ -21,6 +21,8 @@ interface Friend {
   avatar?: string;
   currentBook: string;
   isOnline: boolean;
+  mutualFriends?: number;
+  location?: string;
 }
 
 interface ReadingGroup {
@@ -57,10 +59,54 @@ const myBooks: BookshelfItem[] = [
 ];
 
 const friends: Friend[] = [
-  { id: '1', name: 'Alice Reader', currentBook: 'The Great Gatsby', isOnline: true },
-  { id: '2', name: 'Bob Bookworm', currentBook: 'Sapiens', isOnline: true },
-  { id: '3', name: 'Carol Pages', currentBook: '1984', isOnline: false },
-  { id: '4', name: 'Dan Stories', currentBook: 'Pride and Prejudice', isOnline: true }
+  { 
+    id: '1', 
+    name: 'Alice Reader', 
+    currentBook: 'The Great Gatsby', 
+    isOnline: true,
+    mutualFriends: 12,
+    location: 'New York'
+  },
+  { 
+    id: '2', 
+    name: 'Bob Bookworm', 
+    currentBook: 'Sapiens', 
+    isOnline: true,
+    mutualFriends: 8,
+    location: 'San Francisco'
+  },
+  { 
+    id: '3', 
+    name: 'Carol Pages', 
+    currentBook: '1984', 
+    isOnline: false,
+    mutualFriends: 15,
+    location: 'London'
+  },
+  { 
+    id: '4', 
+    name: 'Dan Stories', 
+    currentBook: 'Pride and Prejudice', 
+    isOnline: true,
+    mutualFriends: 6,
+    location: 'Toronto'
+  },
+  { 
+    id: '5', 
+    name: 'Emma Novel', 
+    currentBook: 'Dune', 
+    isOnline: false,
+    mutualFriends: 20,
+    location: 'Sydney'
+  },
+  { 
+    id: '6', 
+    name: 'Frank Chapter', 
+    currentBook: 'The Hobbit', 
+    isOnline: true,
+    mutualFriends: 4,
+    location: 'Berlin'
+  }
 ];
 
 const readingGroups: ReadingGroup[] = [
@@ -79,14 +125,6 @@ const readingGroups: ReadingGroup[] = [
     description: 'Exploring the future through books',
     memberCount: 189,
     isJoined: false
-  },
-  {
-    id: '3',
-    name: 'Self-Help Society',
-    coverImage: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=100&h=100&fit=crop',
-    description: 'Growing together through reading',
-    memberCount: 156,
-    isJoined: true
   }
 ];
 
@@ -115,6 +153,15 @@ export const LeftSidebar = () => {
     });
   };
 
+  const handleFriendClick = (friendId: string, friendName: string) => {
+    // Navigate to friend's profile
+    toast({
+      title: "Profile",
+      description: `Opening ${friendName}'s profile...`,
+    });
+    // In a real app, this would navigate to: /profile/${friendId}
+  };
+
   const handleConnectAccount = (platform: string) => {
     toast({
       title: `Connect ${platform}`,
@@ -140,6 +187,66 @@ export const LeftSidebar = () => {
 
   return (
     <div className="space-y-6">
+      {/* Book Friends Section - Facebook Style */}
+      <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+            <Users className="w-5 h-5 text-amber-600" />
+            Book Friends
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {friends.map((friend) => (
+            <div 
+              key={friend.id} 
+              onClick={() => handleFriendClick(friend.id, friend.name)}
+              className="flex items-center space-x-3 p-3 hover:bg-amber-50 rounded-lg transition-all duration-200 cursor-pointer group border border-transparent hover:border-amber-200"
+            >
+              <div className="relative">
+                <Avatar className="w-12 h-12 border-2 border-white shadow-sm">
+                  <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white font-semibold">
+                    {friend.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                {friend.isOnline && (
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-sm text-gray-900 truncate group-hover:text-amber-700 transition-colors">
+                    {friend.name}
+                  </p>
+                  {friend.isOnline && (
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-600 truncate">
+                  Reading: {friend.currentBook}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  {friend.location && (
+                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {friend.location}
+                    </p>
+                  )}
+                  {friend.mutualFriends && (
+                    <p className="text-xs text-gray-500">
+                      {friend.mutualFriends} mutual friends
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          <Button size="sm" variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 mt-3">
+            <UserPlus className="w-4 h-4 mr-1" />
+            Find More Friends
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* My Bookshelf */}
       <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
         <CardHeader className="pb-3">
@@ -168,40 +275,6 @@ export const LeftSidebar = () => {
           <Button size="sm" variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50">
             <Plus className="w-4 h-4 mr-1" />
             Add Book
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Friends Reading */}
-      <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-600" />
-            Friends Reading
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {friends.slice(0, 4).map((friend) => (
-            <div key={friend.id} className="flex items-center space-x-3 p-2 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer">
-              <div className="relative">
-                <Avatar className="w-10 h-10">
-                  <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white text-sm">
-                    {friend.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                {friend.isOnline && (
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm text-gray-900 truncate">{friend.name}</p>
-                <p className="text-xs text-gray-600 truncate">Reading: {friend.currentBook}</p>
-              </div>
-            </div>
-          ))}
-          <Button size="sm" variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50">
-            <UserPlus className="w-4 h-4 mr-1" />
-            Find Friends
           </Button>
         </CardContent>
       </Card>
