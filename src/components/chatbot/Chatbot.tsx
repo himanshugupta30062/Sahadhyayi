@@ -35,7 +35,7 @@ const Chatbot = () => {
   useEffect(() => {
     const colorInterval = setInterval(() => {
       setColorIndex((prev) => (prev + 1) % colorClasses.length);
-    }, 2000);
+    }, 5000);
 
     const stopTimeout = setTimeout(() => {
       clearInterval(colorInterval);
@@ -74,7 +74,7 @@ const Chatbot = () => {
         id="chatbot-icon"
         onClick={toggleChat}
         className={cn(
-          'fixed z-50 flex items-center justify-center rounded-full text-white cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300',
+          'fixed z-50 flex items-center justify-center rounded-full text-white cursor-pointer shadow-lg hover:shadow-xl transition-all duration-700',
           floating
             ? `animate-pulse ${colorClasses[colorIndex]}`
             : 'bg-gradient-to-r from-gray-700 to-gray-900 hover:from-amber-500 hover:to-orange-600'
