@@ -159,7 +159,7 @@ export const LeftSidebar = () => {
               <div className="flex-1 min-w-0">
                 <h4 className="font-semibold text-sm text-gray-900 truncate">{book.title}</h4>
                 <p className="text-xs text-gray-600 truncate">{book.author}</p>
-                <Badge size="sm" className={`${getStatusColor(book.status)} text-xs mt-1`}>
+                <Badge className={`${getStatusColor(book.status)} text-xs mt-1`}>
                   {getStatusLabel(book.status)}
                 </Badge>
               </div>
