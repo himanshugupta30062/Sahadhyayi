@@ -32,6 +32,14 @@ const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Profile = React.lazy(() => import("./pages/Profile"));
 const BookDetails = React.lazy(() => import("./pages/BookDetails"));
 
+// Footer Pages
+const HelpCenter = React.lazy(() => import("./pages/HelpCenter"));
+const Feedback = React.lazy(() => import("./pages/Feedback"));
+const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = React.lazy(() => import("./pages/TermsOfService"));
+const CookiePolicy = React.lazy(() => import("./pages/CookiePolicy"));
+const DmcaPolicy = React.lazy(() => import("./pages/DmcaPolicy"));
+
 import GlobalFooter from "./components/GlobalFooter";
 
 const queryClient = new QueryClient({
@@ -123,12 +131,12 @@ const App = () => (
                   } />
 
                   {/* Footer Pages */}
-                  <Route path="/privacy" element={<ComingSoonPage title="Privacy Policy" />} />
-                  <Route path="/terms" element={<ComingSoonPage title="Terms of Service" />} />
-                  <Route path="/cookies" element={<ComingSoonPage title="Cookie Policy" />} />
-                  <Route path="/dmca" element={<ComingSoonPage title="DMCA" />} />
-                  <Route path="/help" element={<ComingSoonPage title="Help Center" />} />
-                  <Route path="/feedback" element={<ComingSoonPage title="Feedback" />} />
+                  <Route path="/help" element={<HelpCenter />} />
+                  <Route path="/feedback" element={<Feedback />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/cookies" element={<CookiePolicy />} />
+                  <Route path="/dmca" element={<DmcaPolicy />} />
                   <Route path="/contact" element={<ComingSoonPage title="Contact Us" />} />
                   
                   <Route path="*" element={<NotFound />} />
