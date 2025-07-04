@@ -203,7 +203,8 @@ BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ language 'plpgsql'
+  SET search_path = 'public, pg_catalog';
 
 -- Create triggers for updated_at columns
 CREATE TRIGGER handle_reading_summaries_updated_at
