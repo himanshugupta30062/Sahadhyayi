@@ -15,7 +15,9 @@ const Chatbot = () => {
   const [input, setInput] = useState('');
   const [colorIndex, setColorIndex] = useState(0);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  
   const colorClasses = [
     'bg-gradient-to-r from-red-500 via-pink-500 to-purple-500',
     'bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500',
@@ -28,7 +30,9 @@ const Chatbot = () => {
   ];
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (bottomRef.current && isOpen) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, isOpen]);
 
   useEffect(() => {
@@ -38,7 +42,7 @@ const Chatbot = () => {
 
     const stopTimeout = setTimeout(() => {
       clearInterval(colorInterval);
-    }, 60000); // stop after 1 minute
+    }, 60000);
 
     return () => {
       clearInterval(colorInterval);
@@ -46,10 +50,18 @@ const Chatbot = () => {
     };
   }, [colorClasses.length]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    sendMessage(input);
-    setInput('');
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+    
+    setIsLoading(true);
+    try {
+      await sendMessage(input);
+      setInput('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -102,10 +114,10 @@ const Chatbot = () => {
   return (
     <div className={cn(
       "fixed bottom-4 right-4 z-50 flex flex-col overflow-hidden rounded-2xl border bg-white shadow-2xl transition-all duration-300",
-      isMinimized ? "h-14 w-80" : "h-96 w-80 sm:w-96"
+      isMinimized ? "h-14 w-80" : "h-[32rem] w-80 sm:w-96"
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between border-b bg-gradient-to-r from-amber-600 to-orange-600 p-3 text-white">
+      <div className="flex items-center justify-between border-b bg-gradient-to-r from-amber-600 to-orange-600 p-3 text-white flex-shrink-0">
         <div className="flex items-center space-x-2">
           <div className="p-1 bg-white/20 rounded-full">
             <BookOpen className="h-4 w-4" />
@@ -136,21 +148,31 @@ const Chatbot = () => {
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="flex-1 space-y-3 overflow-y-auto bg-gray-50 p-3 text-sm">
+          <div className="flex-1 space-y-3 overflow-y-auto bg-gray-50 p-3 text-sm min-h-0">
+            {messages.length === 0 && (
+              <div className="text-center py-8">
+                <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="h-6 w-6 text-white" />
+                </div>
+                <p className="text-gray-600 mb-2">Welcome to Book Expert!</p>
+                <p className="text-xs text-gray-500">Ask me about books, authors, or reading recommendations.</p>
+              </div>
+            )}
+            
             {messages.map((m, i) => (
               <div key={i} className={cn(
                 'flex items-end gap-2 animate-in slide-in-from-bottom-2',
                 m.sender === 'user' && 'justify-end'
               )}>
                 {m.sender === 'bot' && (
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm flex-shrink-0">
                     <BookOpen className="h-3 w-3" />
                   </div>
                 )}
                 <div className="max-w-[85%] space-y-1">
                   <div
                     className={cn(
-                      'rounded-lg px-3 py-2 shadow-sm whitespace-pre-wrap',
+                      'rounded-lg px-3 py-2 shadow-sm whitespace-pre-wrap break-words',
                       m.sender === 'user'
                         ? 'ml-auto bg-gradient-to-r from-blue-500 to-blue-600 text-white'
                         : 'bg-white border border-gray-200'
@@ -169,11 +191,27 @@ const Chatbot = () => {
                 </div>
               </div>
             ))}
+            
+            {isLoading && (
+              <div className="flex items-end gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm">
+                  <BookOpen className="h-3 w-3" />
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg px-3 py-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div ref={bottomRef} />
           </div>
 
           {/* Input */}
-          <div className="border-t bg-white p-2">
+          <div className="border-t bg-white p-2 flex-shrink-0">
             <div className="flex items-center gap-2">
               <textarea
                 value={input}
@@ -182,13 +220,14 @@ const Chatbot = () => {
                 placeholder="Ask about books, authors, reading tips..."
                 className="flex-1 resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 rows={1}
+                disabled={isLoading}
                 style={{ minHeight: '36px', maxHeight: '72px' }}
               />
               <Button 
                 size="sm" 
                 onClick={handleSend}
-                disabled={!input.trim()}
-                className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-sm"
+                disabled={!input.trim() || isLoading}
+                className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-sm disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
               </Button>

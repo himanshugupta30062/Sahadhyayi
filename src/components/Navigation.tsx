@@ -52,23 +52,24 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="w-full bg-white border-b border-gray-200 sticky top-0 z-50">
+    <nav className="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 min-w-0">
+          {/* Left section with logo and search */}
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
             <NavLogo />
 
             {/* Mobile Search Icon */}
             <button
-              className="md:hidden p-2 text-gray-700"
+              className="md:hidden p-2 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors"
               aria-label="Search"
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
             >
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Compact Search Bar */}
-            <div className="hidden md:block flex-shrink-0">
+            {/* Desktop Search Bar */}
+            <div className="hidden md:block flex-1 max-w-md">
               <div className="relative">
                 <input
                   type="text"
@@ -80,7 +81,7 @@ const Navigation = () => {
                   }}
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
-                  className={`pl-4 pr-9 py-2 w-48 lg:w-64 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
+                  className={`w-full pl-4 pr-9 py-2 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
                     isSearchFocused
                       ? 'border-orange-400 bg-white shadow-md ring-2 ring-orange-200 scale-105'
                       : 'hover:bg-white hover:border-gray-400'
@@ -88,7 +89,7 @@ const Navigation = () => {
                 />
                 <button
                   onClick={handleSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-600 transition-colors"
                   aria-label="Search"
                 >
                   <Search className="w-4 h-4" />
@@ -97,18 +98,18 @@ const Navigation = () => {
             </div>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - Right section */}
           <div className="hidden lg:flex items-center space-x-2 xl:space-x-4 flex-shrink-0">
-            <div className="flex-shrink-0">
-              <DesktopNavItems />
+            <DesktopNavItems />
+            <div className="ml-4">
+              <AuthSection />
             </div>
-            <AuthSection />
           </div>
 
           {/* Mobile menu button */}
-          <div className="lg:hidden flex items-center flex-shrink-0">
+          <div className="lg:hidden flex items-center flex-shrink-0 ml-2">
             <button
-              className="text-gray-700 p-2"
+              className="text-gray-700 hover:text-orange-600 hover:bg-orange-50 p-2 rounded-full transition-colors"
               aria-label="Open main menu"
               onClick={() => setIsOpen(!isOpen)}
             >
@@ -123,8 +124,9 @@ const Navigation = () => {
           </div>
         </div>
 
+        {/* Mobile Search Bar */}
         {isMobileSearchOpen && (
-          <div className="md:hidden py-2">
+          <div className="md:hidden py-3 border-t border-gray-100">
             <div className="relative">
               <input
                 type="text"
@@ -139,18 +141,19 @@ const Navigation = () => {
                 }}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
-                className={`pl-4 pr-9 py-2 w-full border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300${
+                className={`w-full pl-4 pr-9 py-2 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
                   isSearchFocused
-                    ? ' border-orange-400 bg-white shadow-md ring-2 ring-orange-200'
-                    : ' hover:bg-white hover:border-gray-400'
+                    ? 'border-orange-400 bg-white shadow-md ring-2 ring-orange-200'
+                    : 'hover:bg-white hover:border-gray-400'
                 }`}
+                autoFocus
               />
               <button
                 onClick={() => {
                   handleSearch();
                   setIsMobileSearchOpen(false);
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-600 transition-colors"
                 aria-label="Search"
               >
                 <Search className="w-4 h-4" />

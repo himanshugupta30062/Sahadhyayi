@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 // Types for user_profile
 export interface UserProfile {
@@ -26,76 +27,180 @@ export interface UserProfile {
 
 export const useUserProfile = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  
   return useQuery<UserProfile | null>({
     queryKey: ['user_profile', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await supabase
-        .from('user_profile')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data as UserProfile;
+      
+      try {
+        const { data, error } = await supabase
+          .from('user_profile')
+          .select('*')
+          .eq('id', user.id)
+          .eq('deleted', false)
+          .maybeSingle();
+          
+        if (error) {
+          console.error('Error fetching user profile:', error);
+          throw error;
+        }
+        
+        return data as UserProfile;
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile data",
+          variant: "destructive",
+        });
+        throw error;
+      }
     },
     enabled: !!user,
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
 export const useUpsertUserProfile = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (updates: Partial<UserProfile>) => {
-      if (!user) throw new Error('No user');
-      // Upsert merges by primary key
-      const { data, error } = await supabase
-        .from('user_profile')
-        .upsert({ ...updates, id: user.id }, { onConflict: 'id' })
-        .select()
-        .single();
-      if (error) throw error;
-      return data as UserProfile;
+      if (!user) throw new Error('No authenticated user');
+      
+      try {
+        // Ensure we don't send undefined values
+        const cleanUpdates = Object.fromEntries(
+          Object.entries(updates).filter(([_, value]) => value !== undefined)
+        );
+        
+        const { data, error } = await supabase
+          .from('user_profile')
+          .upsert({ 
+            ...cleanUpdates, 
+            id: user.id,
+            last_updated: new Date().toISOString()
+          }, { onConflict: 'id' })
+          .select()
+          .single();
+          
+        if (error) {
+          console.error('Error upserting user profile:', error);
+          throw error;
+        }
+        
+        return data as UserProfile;
+      } catch (error) {
+        console.error('Failed to save profile:', error);
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(['user_profile', user?.id], data);
       queryClient.invalidateQueries({ queryKey: ['user_profile'] });
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+    },
+    onError: (error) => {
+      console.error('Profile update failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 };
 
 export const useDeleteUserProfile = () => {
-  // Soft delete by setting "deleted" to TRUE
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
+  
   return useMutation({
     mutationFn: async () => {
-      if (!user) throw new Error('No user');
-      const { error } = await supabase
-        .from('user_profile')
-        .update({ deleted: true })
-        .eq('id', user.id);
-      if (error) throw error;
-      return;
+      if (!user) throw new Error('No authenticated user');
+      
+      try {
+        const { error } = await supabase
+          .from('user_profile')
+          .update({ 
+            deleted: true,
+            last_updated: new Date().toISOString()
+          })
+          .eq('id', user.id);
+          
+        if (error) {
+          console.error('Error deleting user profile:', error);
+          throw error;
+        }
+      } catch (error) {
+        console.error('Failed to delete profile:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user_profile'] });
+      toast({
+        title: "Success",
+        description: "Profile deleted successfully",
+      });
+    },
+    onError: (error) => {
+      console.error('Profile deletion failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete profile. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 };
 
 // Profile picture upload helper (uses Supabase Storage)
-export async function uploadProfilePicture(file: File, userId: string) {
-  // Create a public bucket 'avatars' if not present
-  const bucket = 'avatars';
-  const filePath = `${userId}/${Date.now()}_${file.name}`;
-  // Ensure file type is image
-  if (!file.type.startsWith('image/')) throw new Error('Only image uploads allowed');
-  const { error } = await supabase.storage.createBucket(bucket, { public: true }).catch(() => ({ error: null }));
-  const { data, error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(filePath, file, { upsert: true });
-  if (uploadError) throw uploadError;
-  const imageUrl = supabase.storage.from(bucket).getPublicUrl(filePath).data.publicUrl;
-  return imageUrl;
+export async function uploadProfilePicture(file: File, userId: string): Promise<string> {
+  try {
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Only image files are allowed');
+    }
+    
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      throw new Error('File size must be less than 5MB');
+    }
+    
+    const bucket = 'avatars';
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${userId}/${Date.now()}.${fileExt}`;
+    
+    // Upload the file
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file, { 
+        upsert: true,
+        cacheControl: '3600'
+      });
+      
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw uploadError;
+    }
+    
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+      
+    return publicUrl;
+  } catch (error) {
+    console.error('Failed to upload profile picture:', error);
+    throw error;
+  }
 }
