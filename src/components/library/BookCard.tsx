@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Book } from '@/hooks/useLibraryBooks';
+import AuthenticatedActions from './AuthenticatedActions';
 
 interface BookCardProps {
   book: Book;
@@ -103,6 +103,9 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
             <span className="text-xs text-gray-500 font-medium">{book.publication_year}</span>
           )}
         </div>
+
+        {/* Authentication-aware actions */}
+        <AuthenticatedActions book={book} onDownloadPDF={onDownloadPDF} />
       </CardContent>
     </Card>
   );

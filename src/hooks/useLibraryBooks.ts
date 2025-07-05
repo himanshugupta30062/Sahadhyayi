@@ -35,6 +35,8 @@ export const useLibraryBooks = () => {
   return useQuery({
     queryKey: ['library-books'],
     queryFn: async () => {
+      console.log('Fetching library books...');
+      
       const { data, error } = await supabase
         .from('books_library')
         .select(`
@@ -55,11 +57,13 @@ export const useLibraryBooks = () => {
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error fetching books:', error);
+        console.error('Error fetching library books:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
         throw error;
       }
       
       console.log('Raw books data from database:', data);
+      console.log('Number of books fetched:', data?.length || 0);
       
       const transformedBooks = (data || []).map(book => ({
         id: book.id,
