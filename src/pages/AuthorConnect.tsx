@@ -14,10 +14,12 @@ import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
 import AuthorSearch from "@/components/authors/AuthorSearch";
 import AuthorGrid from "@/components/authors/AuthorGrid";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AuthorConnect = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("rating");
+  const isMobile = useIsMobile();
 
   const authors = [
     {
@@ -133,42 +135,43 @@ const AuthorConnect = () => {
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
         {/* Hero Header Section */}
         <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white">
-          <div className="max-w-6xl mx-auto px-4 py-20">
+          <div className={`max-w-6xl mx-auto px-4 ${isMobile ? 'py-12' : 'py-20'}`}>
             <div className="text-center">
-              <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
-                <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg">
-                  <User className="w-12 h-12 text-white" />
+              <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} items-center justify-center space-y-4 ${!isMobile && 'sm:space-y-0 sm:space-x-4'} mb-8`}>
+                <div className={`p-4 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg ${isMobile ? 'mb-4' : ''}`}>
+                  <User className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} text-white`} />
                 </div>
                 <div>
-                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 tracking-tight">
+                  <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl sm:text-5xl lg:text-6xl'} font-bold mb-3 tracking-tight`}>
                     Connect with Authors
                   </h1>
-                  <p className="text-xl sm:text-2xl text-orange-100 font-medium">
+                  <p className={`${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} text-orange-100 font-medium`}>
                     Meet the Minds Behind Great Books
                   </p>
                 </div>
               </div>
               
-              <p className="text-lg sm:text-xl text-orange-100 max-w-4xl mx-auto mb-10 leading-relaxed">
+              <p className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl'} text-orange-100 max-w-4xl mx-auto mb-10 leading-relaxed`}>
                 Connect with talented authors, schedule live Q&A sessions, and discover the stories behind your favorite books. 
                 Join our vibrant community of writers and readers.
               </p>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm sm:text-base text-orange-100 mb-10 max-w-4xl mx-auto">
-                <div className="flex flex-col items-center gap-2 p-4 bg-white/10 rounded-lg">
-                  <Users className="w-6 h-6" />
+              {/* Mobile: 2x2 grid, Desktop: 4 columns */}
+              <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-4 gap-4'} ${isMobile ? 'text-sm' : 'text-sm sm:text-base'} text-orange-100 mb-10 max-w-4xl mx-auto`}>
+                <div className={`flex flex-col items-center gap-2 ${isMobile ? 'p-3' : 'p-4'} bg-white/10 rounded-lg`}>
+                  <Users className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
                   <span className="font-medium">50+ Active Authors</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-4 bg-white/10 rounded-lg">
-                  <MessageSquare className="w-6 h-6" />
+                <div className={`flex flex-col items-center gap-2 ${isMobile ? 'p-3' : 'p-4'} bg-white/10 rounded-lg`}>
+                  <MessageSquare className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
                   <span className="font-medium">Live Q&A Sessions</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-4 bg-white/10 rounded-lg">
-                  <BookOpen className="w-6 h-6" />
+                <div className={`flex flex-col items-center gap-2 ${isMobile ? 'p-3' : 'p-4'} bg-white/10 rounded-lg`}>
+                  <BookOpen className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
                   <span className="font-medium">Writing Workshops</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-4 bg-white/10 rounded-lg">
-                  <Star className="w-6 h-6" />
+                <div className={`flex flex-col items-center gap-2 ${isMobile ? 'p-3' : 'p-4'} bg-white/10 rounded-lg`}>
+                  <Star className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
                   <span className="font-medium">Personalized Recommendations</span>
                 </div>
               </div>
@@ -176,7 +179,7 @@ const AuthorConnect = () => {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className={`max-w-6xl mx-auto px-4 ${isMobile ? 'py-8' : 'py-16'}`}>
           <AuthorSearch
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
@@ -187,42 +190,42 @@ const AuthorConnect = () => {
           <AuthorGrid authors={sortedAuthors} />
 
           {/* Benefits Section */}
-          <section className="mb-20">
+          <section className={`${isMobile ? 'mb-12' : 'mb-20'}`}>
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">Why Connect with Authors?</h2>
-              <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+              <h2 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-gray-900 mb-6`}>Why Connect with Authors?</h2>
+              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-gray-600 max-w-4xl mx-auto`}>
                 Discover the unique benefits of engaging directly with the creative minds behind your favorite books
               </p>
             </div>
             
-            <div className="grid md:grid-cols-3 gap-10">
+            <div className={`grid ${isMobile ? 'gap-6' : 'md:grid-cols-3 gap-10'}`}>
               <Card className="bg-gradient-to-br from-orange-100 to-amber-100 border-orange-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                <CardContent className="p-10 text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-8">
-                    <MessageSquare className="w-10 h-10 text-white" />
+                <CardContent className={`${isMobile ? 'p-6' : 'p-10'} text-center`}>
+                  <div className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center mx-auto ${isMobile ? 'mb-4' : 'mb-8'}`}>
+                    <MessageSquare className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} text-white`} />
                   </div>
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-6">Direct Interaction</h3>
-                  <p className="text-gray-700 leading-relaxed text-lg">Get personal insights from authors about their writing process, inspirations, and upcoming works through live sessions.</p>
+                  <h3 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-gray-900 ${isMobile ? 'mb-3' : 'mb-6'}`}>Direct Interaction</h3>
+                  <p className={`text-gray-700 leading-relaxed ${isMobile ? 'text-base' : 'text-lg'}`}>Get personal insights from authors about their writing process, inspirations, and upcoming works through live sessions.</p>
                 </CardContent>
               </Card>
               
               <Card className="bg-gradient-to-br from-orange-100 to-amber-100 border-orange-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                <CardContent className="p-10 text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-8">
-                    <BookOpen className="w-10 h-10 text-white" />
+                <CardContent className={`${isMobile ? 'p-6' : 'p-10'} text-center`}>
+                  <div className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center mx-auto ${isMobile ? 'mb-4' : 'mb-8'}`}>
+                    <BookOpen className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} text-white`} />
                   </div>
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-6">Exclusive Content</h3>
-                  <p className="text-gray-700 leading-relaxed text-lg">Access exclusive previews, behind-the-scenes content, and early releases from your favorite authors before anyone else.</p>
+                  <h3 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-gray-900 ${isMobile ? 'mb-3' : 'mb-6'}`}>Exclusive Content</h3>
+                  <p className={`text-gray-700 leading-relaxed ${isMobile ? 'text-base' : 'text-lg'}`}>Access exclusive previews, behind-the-scenes content, and early releases from your favorite authors before anyone else.</p>
                 </CardContent>
               </Card>
               
               <Card className="bg-gradient-to-br from-orange-100 to-amber-100 border-orange-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                <CardContent className="p-10 text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-8">
-                    <Users className="w-10 h-10 text-white" />
+                <CardContent className={`${isMobile ? 'p-6' : 'p-10'} text-center`}>
+                  <div className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center mx-auto ${isMobile ? 'mb-4' : 'mb-8'}`}>
+                    <Users className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} text-white`} />
                   </div>
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-6">Community Events</h3>
-                  <p className="text-gray-700 leading-relaxed text-lg">Join book launches, reading sessions, and literary discussions with authors and fellow readers in our community.</p>
+                  <h3 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-gray-900 ${isMobile ? 'mb-3' : 'mb-6'}`}>Community Events</h3>
+                  <p className={`text-gray-700 leading-relaxed ${isMobile ? 'text-base' : 'text-lg'}`}>Join book launches, reading sessions, and literary discussions with authors and fellow readers in our community.</p>
                 </CardContent>
               </Card>
             </div>
@@ -231,20 +234,20 @@ const AuthorConnect = () => {
           {/* CTA Section */}
           <section className="text-center">
             <Card className="bg-gradient-to-r from-orange-600 to-amber-600 text-white border-0 shadow-2xl rounded-3xl overflow-hidden">
-              <CardContent className="p-16">
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-8">Ready to Connect with Authors?</h2>
-                <p className="text-lg sm:text-xl lg:text-2xl mb-10 opacity-95 max-w-3xl mx-auto leading-relaxed">
+              <CardContent className={`${isMobile ? 'p-8' : 'p-16'}`}>
+                <h2 className={`${isMobile ? 'text-2xl' : 'text-3xl sm:text-4xl lg:text-5xl'} font-bold ${isMobile ? 'mb-4' : 'mb-8'}`}>Ready to Connect with Authors?</h2>
+                <p className={`${isMobile ? 'text-base mb-6' : 'text-lg sm:text-xl lg:text-2xl mb-10'} opacity-95 max-w-3xl mx-auto leading-relaxed`}>
                   Join thousands of readers connecting with their favorite authors on Sahadhyayi and discover new literary adventures.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} gap-6 justify-center`}>
                   <Link to="/library">
-                    <Button size="lg" variant="secondary" className="px-10 py-5 text-lg sm:text-xl font-semibold hover:shadow-lg transition-all rounded-xl w-full sm:w-auto">
+                    <Button size="lg" variant="secondary" className={`${isMobile ? 'px-6 py-4 text-base w-full' : 'px-10 py-5 text-lg sm:text-xl'} font-semibold hover:shadow-lg transition-all rounded-xl ${!isMobile && 'w-full sm:w-auto'}`}>
                       <BookOpen className="w-6 h-6 mr-3" />
                       Browse books by these authors
                     </Button>
                   </Link>
                   <Link to="/reviews">
-                    <Button size="lg" variant="outline" className="border-3 border-white text-white hover:bg-white hover:text-orange-600 px-10 py-5 text-lg sm:text-xl font-semibold transition-all rounded-xl w-full sm:w-auto">
+                    <Button size="lg" variant="outline" className={`border-3 border-white text-white hover:bg-white hover:text-orange-600 ${isMobile ? 'px-6 py-4 text-base w-full' : 'px-10 py-5 text-lg sm:text-xl'} font-semibold transition-all rounded-xl ${!isMobile && 'w-full sm:w-auto'}`}>
                       <Users className="w-6 h-6 mr-3" />
                       Join author discussions
                     </Button>
