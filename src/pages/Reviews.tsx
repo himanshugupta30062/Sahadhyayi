@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from "react";
-import { Search, Plus, BookOpen, Users, TrendingUp, Globe, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Plus, BookOpen, Users, TrendingUp, Globe, Menu, X, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { ChatWindow } from "@/components/reviews/ChatWindow";
 import type { ChatConversation } from "@/components/reviews/chatData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CreatePostForm } from "@/components/reviews/CreatePostForm";
+import { useNavigate } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -30,6 +31,7 @@ const Reviews = () => {
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const handleCreatePost = (newPost: any) => {
     toast({
@@ -62,10 +64,20 @@ const Reviews = () => {
           <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-amber-200 px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate('/')}
+                  className="p-2 hover:bg-amber-100"
+                  aria-label="Go back to home"
+                >
+                  <ArrowLeft className="w-5 h-5 text-amber-600" />
+                </Button>
+                
                 <Sheet open={isLeftOpen} onOpenChange={setIsLeftOpen}>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="sm" className="p-2">
-                      <Menu className="w-5 h-5" />
+                    <Button variant="ghost" size="sm" className="p-2 hover:bg-amber-100">
+                      <Menu className="w-5 h-5 text-amber-600" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="left" className="w-80 p-0">
@@ -80,12 +92,12 @@ const Reviews = () => {
                   </SheetContent>
                 </Sheet>
 
-                <h1 className="text-lg font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                <h1 className="text-lg font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent truncate">
                   Community
                 </h1>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <Button 
                   onClick={() => setShowCreatePost(!showCreatePost)}
                   className="bg-amber-600 hover:bg-amber-700 text-white"
@@ -96,8 +108,8 @@ const Reviews = () => {
                 
                 <Sheet open={isRightOpen} onOpenChange={setIsRightOpen}>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="sm" className="p-2">
-                      <Globe className="w-5 h-5" />
+                    <Button variant="ghost" size="sm" className="p-2 hover:bg-amber-100">
+                      <Globe className="w-5 h-5 text-amber-600" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="right" className="w-80 p-0">
@@ -141,8 +153,8 @@ const Reviews = () => {
                         <div className="flex items-center justify-center mb-1">
                           <stat.icon className={`w-4 h-4 ${stat.color}`} />
                         </div>
-                        <div className="text-lg font-bold text-gray-900">{stat.value}</div>
-                        <div className="text-xs text-gray-600">{stat.label}</div>
+                        <div className="text-lg font-bold text-gray-900 truncate">{stat.value}</div>
+                        <div className="text-xs text-gray-600 truncate">{stat.label}</div>
                       </CardContent>
                     </Card>
                   ))}

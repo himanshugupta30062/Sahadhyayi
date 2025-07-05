@@ -189,52 +189,54 @@ export const ReadingFeed = () => {
     <div className="space-y-6 relative z-10">
       {posts.map((post) => (
         <Card key={post.id} className="bg-white/95 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300 relative z-10">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             {/* User Header */}
             <div className="flex items-center justify-between mb-4">
               <div 
-                className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+                className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors min-w-0 flex-1"
                 onClick={() => handleUserClick(post)}
               >
-                <Avatar className="w-12 h-12">
-                  <AvatarFallback className="bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold">
+                <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-sm">
                     {post.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <h3 className="font-semibold text-gray-900 hover:text-amber-600 transition-colors">{post.username}</h3>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <MapPin className="w-3 h-3 mr-1" />
-                    {post.userLocation} • {post.timeAgo}
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-gray-900 hover:text-amber-600 transition-colors text-sm sm:text-base truncate">{post.username}</h3>
+                  <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                    <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+                    <span className="truncate">{post.userLocation}</span>
+                    <span className="mx-1">•</span>
+                    <span className="whitespace-nowrap">{post.timeAgo}</span>
                   </div>
                 </div>
               </div>
-              <Badge className={`${getStatusColor(post.readingStatus)} border-0`}>
+              <Badge className={`${getStatusColor(post.readingStatus)} border-0 text-xs whitespace-nowrap flex-shrink-0`}>
                 {getStatusLabel(post.readingStatus)}
               </Badge>
             </div>
 
             {/* Book Information */}
-            <div className="flex gap-4 mb-4">
+            <div className="flex gap-3 sm:gap-4 mb-4">
               <div className="flex-shrink-0">
                 <img
                   src={post.bookCover}
                   alt={post.bookTitle}
-                  className="w-24 h-32 object-cover rounded-lg shadow-md"
+                  className="w-20 h-28 sm:w-24 sm:h-32 object-cover rounded-lg shadow-md"
                 />
               </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-lg text-gray-900 mb-1">{post.bookTitle}</h4>
-                <p className="text-gray-600 mb-2">by {post.bookAuthor}</p>
-                <div className="flex gap-2 mb-3">
-                  <Badge variant="outline" className="border-amber-300 text-amber-700">
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-base sm:text-lg text-gray-900 mb-1 line-clamp-2">{post.bookTitle}</h4>
+                <p className="text-gray-600 mb-2 text-sm truncate">by {post.bookAuthor}</p>
+                <div className="flex flex-wrap gap-1 sm:gap-2 mb-3">
+                  <Badge variant="outline" className="border-amber-300 text-amber-700 text-xs">
                     {post.genre}
                   </Badge>
-                  <Badge variant="outline" className="border-blue-300 text-blue-700">
+                  <Badge variant="outline" className="border-blue-300 text-blue-700 text-xs">
                     {post.mood}
                   </Badge>
                 </div>
-                <p className="text-gray-700 text-sm leading-relaxed">{post.review}</p>
+                <p className="text-gray-700 text-xs sm:text-sm leading-relaxed line-clamp-3 break-words">{post.review}</p>
               </div>
             </div>
 
@@ -244,72 +246,75 @@ export const ReadingFeed = () => {
                 size="sm"
                 variant="outline"
                 onClick={() => handleJoinReadingGroup(post.bookTitle)}
-                className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                className="border-amber-300 text-amber-700 hover:bg-amber-50 text-xs flex-1 min-w-0"
               >
-                <Users className="w-4 h-4 mr-1" />
-                Join Reading Group
+                <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                <span className="truncate">Join Reading Group</span>
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => handleFindNearbyReaders(post)}
-                className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                className="border-blue-300 text-blue-700 hover:bg-blue-50 text-xs flex-1 min-w-0"
               >
-                <MapPin className="w-4 h-4 mr-1" />
-                {post.nearbyReaders} nearby readers
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                <span className="truncate">{post.nearbyReaders} nearby</span>
               </Button>
             </div>
 
             {/* Social Sharing Options */}
             <div className="flex flex-wrap gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
-              <span className="text-sm text-gray-600 mr-2">Share to:</span>
-              <Button size="sm" variant="ghost" onClick={() => handleShare(post, 'Facebook')} className="text-blue-600 hover:bg-blue-50">
-                Facebook
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => handleShare(post, 'Instagram')} className="text-pink-600 hover:bg-pink-50">
-                Instagram
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => handleShare(post, 'WhatsApp')} className="text-green-600 hover:bg-green-50">
-                WhatsApp
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => handleShare(post, 'Snapchat')} className="text-yellow-600 hover:bg-yellow-50">
-                Snapchat
-              </Button>
+              <span className="text-xs sm:text-sm text-gray-600 mr-2 whitespace-nowrap">Share to:</span>
+              <div className="flex flex-wrap gap-1">
+                <Button size="sm" variant="ghost" onClick={() => handleShare(post, 'Facebook')} className="text-blue-600 hover:bg-blue-50 text-xs px-2">
+                  Facebook
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => handleShare(post, 'Instagram')} className="text-pink-600 hover:bg-pink-50 text-xs px-2">
+                  Instagram
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => handleShare(post, 'WhatsApp')} className="text-green-600 hover:bg-green-50 text-xs px-2">
+                  WhatsApp
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => handleShare(post, 'Snapchat')} className="text-yellow-600 hover:bg-yellow-50 text-xs px-2">
+                  Snapchat
+                </Button>
+              </div>
             </div>
 
             {/* Engagement Stats and Actions */}
             <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4 sm:space-x-6">
                 <button
                   onClick={() => handleLike(post.id)}
-                  className={`flex items-center space-x-2 transition-colors ${
+                  className={`flex items-center space-x-1 sm:space-x-2 transition-colors ${
                     post.liked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
                   }`}
                 >
-                  <Heart className={`w-5 h-5 ${post.liked ? 'fill-current' : ''}`} />
-                  <span className="font-medium">{post.likes}</span>
+                  <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${post.liked ? 'fill-current' : ''}`} />
+                  <span className="font-medium text-sm">{post.likes}</span>
                 </button>
                 
                 <button
                   onClick={() => handleComment(post.id)}
-                  className="flex items-center space-x-2 text-gray-500 hover:text-amber-600 transition-colors"
+                  className="flex items-center space-x-1 sm:space-x-2 text-gray-500 hover:text-amber-600 transition-colors"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  <span className="font-medium">{post.comments}</span>
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="font-medium text-sm">{post.comments}</span>
                 </button>
 
                 <button
                   onClick={() => handleShare(post)}
-                  className="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors"
+                  className="flex items-center space-x-1 sm:space-x-2 text-gray-500 hover:text-blue-600 transition-colors"
                 >
-                  <Share2 className="w-5 h-5" />
-                  <span className="font-medium">{post.shares}</span>
+                  <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="font-medium text-sm">{post.shares}</span>
                 </button>
               </div>
               
-              <Button size="sm" variant="ghost" className="text-amber-600 hover:bg-amber-50">
-                <BookOpen className="w-4 h-4 mr-1" />
-                View Book Details
+              <Button size="sm" variant="ghost" className="text-amber-600 hover:bg-amber-50 text-xs whitespace-nowrap">
+                <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">View Book Details</span>
+                <span className="sm:hidden">Details</span>
               </Button>
             </div>
           </CardContent>
