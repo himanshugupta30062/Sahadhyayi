@@ -1,14 +1,14 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Clock, CheckCircle, Plus } from 'lucide-react';
-import { useUserBooks } from '@/hooks/useBooks';
-import type { UserBook } from '@/hooks/useBooks';
+import { useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { Link } from 'react-router-dom';
 
 const EnhancedBookshelf = () => {
-  const { data: userBooks = [], isLoading } = useUserBooks();
+  const { data: bookshelf = [], isLoading } = useUserBookshelf();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -48,7 +48,7 @@ const EnhancedBookshelf = () => {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center">
           <BookOpen className="w-5 h-5 mr-2 text-amber-600" />
-          My Bookshelf ({userBooks.length})
+          My Bookshelf ({bookshelf.length})
         </CardTitle>
         <Link to="/bookshelf">
           <Button size="sm" variant="outline">
@@ -57,7 +57,7 @@ const EnhancedBookshelf = () => {
         </Link>
       </CardHeader>
       <CardContent>
-        {userBooks.length === 0 ? (
+        {bookshelf.length === 0 ? (
           <div className="text-center py-8">
             <BookOpen className="w-12 h-12 mx-auto text-gray-300 mb-3" />
             <p className="text-gray-500 mb-4">Your bookshelf is empty</p>
@@ -70,12 +70,12 @@ const EnhancedBookshelf = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {userBooks.slice(0, 5).map((userBook: UserBook) => (
-              <div key={userBook.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                {userBook.books?.cover_url ? (
+            {bookshelf.slice(0, 5).map((item) => (
+              <div key={item.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                {item.books_library?.cover_image_url ? (
                   <img
-                    src={userBook.books.cover_url}
-                    alt={userBook.books?.title}
+                    src={item.books_library.cover_image_url}
+                    alt={item.books_library?.title}
                     className="w-10 h-14 object-cover rounded shadow-sm"
                   />
                 ) : (
@@ -85,22 +85,22 @@ const EnhancedBookshelf = () => {
                 )}
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-gray-900 truncate">
-                    {userBook.books?.title || 'Unknown Title'}
+                    {item.books_library?.title || 'Unknown Title'}
                   </h4>
                   <p className="text-sm text-gray-500 truncate">
-                    {userBook.books?.author || 'Unknown Author'}
+                    {item.books_library?.author || 'Unknown Author'}
                   </p>
-                  <Badge className={`${getStatusColor(userBook.status)} mt-1`}>
-                    {getStatusIcon(userBook.status)}
-                    <span className="ml-1 capitalize">{userBook.status?.replace('_', ' ')}</span>
+                  <Badge className={`${getStatusColor(item.status)} mt-1`}>
+                    {getStatusIcon(item.status)}
+                    <span className="ml-1 capitalize">{item.status?.replace('_', ' ')}</span>
                   </Badge>
                 </div>
               </div>
             ))}
-            {userBooks.length > 5 && (
+            {bookshelf.length > 5 && (
               <Link to="/bookshelf">
                 <Button variant="ghost" className="w-full">
-                  View {userBooks.length - 5} more books
+                  View {bookshelf.length - 5} more books
                 </Button>
               </Link>
             )}

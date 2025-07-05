@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import UserProfileModal from "@/components/profile/UserProfileModal";
 
 interface ReadingPost {
   id: number;
@@ -24,6 +25,19 @@ interface ReadingPost {
   timeAgo: string;
   readingStatus: 'reading' | 'finished' | 'want-to-read';
   nearbyReaders: number;
+  user?: {
+    id: string;
+    name?: string;
+    username?: string;
+    email?: string;
+    bio?: string;
+    profile_picture_url?: string;
+    location?: string;
+    joined_at?: string;
+    stories_written_count?: number;
+    stories_read_count?: number;
+    life_tags?: string[];
+  };
 }
 
 const socialPosts: ReadingPost[] = [
@@ -85,6 +99,7 @@ const socialPosts: ReadingPost[] = [
 
 export const ReadingFeed = () => {
   const [posts, setPosts] = useState(socialPosts);
+  const [selectedUser, setSelectedUser] = useState<ReadingPost['user'] | null>(null);
   const { toast } = useToast();
 
   const handleLike = (postId: number) => {
@@ -134,6 +149,24 @@ export const ReadingFeed = () => {
     });
   };
 
+  const handleUserClick = (post: ReadingPost) => {
+    // Mock user data for demonstration
+    const mockUser = {
+      id: `user_${post.id}`,
+      name: post.username,
+      username: post.username,
+      email: `${post.username}@example.com`,
+      bio: `Passionate reader from ${post.userLocation}. Love exploring new genres and sharing book recommendations!`,
+      profile_picture_url: post.userAvatar,
+      location: post.userLocation,
+      joined_at: '2023-01-15T00:00:00.000Z',
+      stories_written_count: Math.floor(Math.random() * 50),
+      stories_read_count: Math.floor(Math.random() * 200) + 50,
+      life_tags: ['Reading', 'Travel', 'Coffee Lover'],
+    };
+    setSelectedUser(mockUser);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'reading': return 'bg-blue-100 text-blue-800';
@@ -159,14 +192,17 @@ export const ReadingFeed = () => {
           <CardContent className="p-6">
             {/* User Header */}
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
+              <div 
+                className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+                onClick={() => handleUserClick(post)}
+              >
                 <Avatar className="w-12 h-12">
                   <AvatarFallback className="bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold">
                     {post.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{post.username}</h3>
+                  <h3 className="font-semibold text-gray-900 hover:text-amber-600 transition-colors">{post.username}</h3>
                   <div className="flex items-center text-sm text-gray-500">
                     <MapPin className="w-3 h-3 mr-1" />
                     {post.userLocation} • {post.timeAgo}
@@ -279,6 +315,18 @@ export const ReadingFeed = () => {
           </CardContent>
         </Card>
       ))}
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={!!selectedUser}
+        onClose={() => setSelectedUser(null)}
+        user={selectedUser || {
+          id: '',
+          name: '',
+          username: '',
+          email: '',
+        }}
+      />
     </div>
   );
 };

@@ -604,6 +604,44 @@ export type Database = {
           },
         ]
       }
+      user_bookshelf: {
+        Row: {
+          added_at: string | null
+          book_id: string
+          id: string
+          notes: string | null
+          rating: number | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          book_id: string
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          book_id?: string
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_bookshelf_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_generated_content: {
         Row: {
           book_id: string | null
@@ -719,7 +757,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_bookshelf_stats: {
+        Args: { user_uuid: string }
+        Returns: {
+          total_books: number
+          reading_books: number
+          completed_books: number
+          want_to_read_books: number
+        }[]
+      }
     }
     Enums: {
       gender_type: "male" | "female" | "other"

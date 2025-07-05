@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, User, LogOut, Settings, BookOpen } from "lucide-react";
@@ -259,13 +258,13 @@ const Navigation = () => {
                   </button>
                 </div>
               ) : (
-                <div className="pt-4 space-y-2 border-t border-gray-200">
-                  <Link to="/signin" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" size="sm" className="w-full justify-start border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
+                <div className="pt-4 space-y-3 border-t border-gray-200">
+                  <Link to="/signin" onClick={() => setIsOpen(false)} className="block">
+                    <Button variant="ghost" size="sm" className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                       Sign In
                     </Button>
                   </Link>
-                  <Link to="/signup" onClick={() => setIsOpen(false)}>
+                  <Link to="/signup" onClick={() => setIsOpen(false)} className="block">
                     <Button size="sm" className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
                       Sign Up
                     </Button>

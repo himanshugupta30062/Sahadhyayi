@@ -1,35 +1,43 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Plus, Check } from 'lucide-react';
-import { Book } from '@/hooks/useBooks';
-import { useAddBookToShelf } from '@/hooks/useBooks';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
+
+interface Book {
+  id: string;
+  title: string;
+  author?: string;
+  cover_image_url?: string;
+  description?: string;
+}
 
 interface BookCardProps {
   book: Book;
-  isInShelf?: boolean;
-  onAddToShelf?: (bookId: string) => void;
 }
 
-const BookCard: React.FC<BookCardProps> = ({ book, isInShelf = false, onAddToShelf }) => {
-  const addToShelf = useAddBookToShelf();
+const BookCard: React.FC<BookCardProps> = ({ book }) => {
+  const { user } = useAuth();
+  const { data: bookshelf = [] } = useUserBookshelf();
+  const addToBookshelf = useAddToBookshelf();
+
+  const isInShelf = bookshelf.some(item => item.book_id === book.id);
 
   const handleAddToShelf = () => {
-    if (onAddToShelf) {
-      onAddToShelf(book.id);
-    } else {
-      addToShelf.mutate({ bookId: book.id });
-    }
+    if (!user) return;
+    addToBookshelf.mutate({ bookId: book.id });
   };
 
   return (
     <Card className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardHeader className="pb-3">
         <div className="flex space-x-4">
-          {book.cover_url ? (
+          {book.cover_image_url ? (
             <img
-              src={book.cover_url}
+              src={book.cover_image_url}
               alt={`Cover of ${book.title}`}
               className="w-16 h-24 object-cover rounded-md shadow-sm"
             />
@@ -59,24 +67,26 @@ const BookCard: React.FC<BookCardProps> = ({ book, isInShelf = false, onAddToShe
         )}
         
         <div className="flex gap-2">
-          <Button
-            onClick={handleAddToShelf}
-            disabled={isInShelf || addToShelf.isPending}
-            className="flex-1 bg-amber-600 hover:bg-amber-700"
-            size="sm"
-          >
-            {isInShelf ? (
-              <>
-                <Check className="w-4 h-4 mr-1" />
-                Added
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4 mr-1" />
-                Add to Shelf
-              </>
-            )}
-          </Button>
+          {user && (
+            <Button
+              onClick={handleAddToShelf}
+              disabled={isInShelf || addToBookshelf.isPending}
+              className="flex-1 bg-amber-600 hover:bg-amber-700"
+              size="sm"
+            >
+              {isInShelf ? (
+                <>
+                  <Check className="w-4 h-4 mr-1" />
+                  Added
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add to Shelf
+                </>
+              )}
+            </Button>
+          )}
           <Button variant="outline" size="sm">
             Preview
           </Button>
