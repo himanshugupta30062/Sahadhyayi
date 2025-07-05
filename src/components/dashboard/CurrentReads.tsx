@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,11 @@ interface CurrentReadsProps {
 }
 
 const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
-  const { data: readingProgress = [], isLoading } = useReadingProgress();
+  const { data: readingProgress = [], isLoading, error } = useReadingProgress();
+
+  console.log('Current Reads - Reading Progress Data:', readingProgress);
+  console.log('Current Reads - Is Loading:', isLoading);
+  console.log('Current Reads - Error:', error);
 
   if (isLoading) {
     return (
@@ -30,7 +35,29 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
     );
   }
 
-  if (readingProgress.length === 0) {
+  if (error) {
+    console.error('Error loading reading progress:', error);
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center text-base sm:text-lg">
+            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-amber-600" />
+            Your Current Reads
+          </CardTitle>
+          <AddBookToCurrentReadsDialog />
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 sm:py-12">
+            <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-300 mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Error loading books</h3>
+            <p className="text-gray-500 mb-4 text-sm sm:text-base px-4">Please try refreshing the page</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!readingProgress || readingProgress.length === 0) {
     return (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
