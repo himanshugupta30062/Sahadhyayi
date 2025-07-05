@@ -1,13 +1,14 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Plus, TrendingUp, Users, Target, Clock, Star, BookMarked } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Plus, TrendingUp, Users, Target, BookOpen } from 'lucide-react';
 import SEO from '@/components/SEO';
+import DashboardStats from '@/components/dashboard/DashboardStats';
 import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
 import CurrentReads from '@/components/dashboard/CurrentReads';
 import ReadingTracker from '@/components/dashboard/ReadingTracker';
@@ -80,63 +81,7 @@ const Dashboard = () => {
           </div>
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-600 rounded-lg">
-                    <BookOpen className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-lg text-blue-800">0</div>
-                    <div className="text-sm text-blue-600">Books Read</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-600 rounded-lg">
-                    <Clock className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-lg text-green-800">0</div>
-                    <div className="text-sm text-green-600">Reading Now</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-600 rounded-lg">
-                    <BookMarked className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-lg text-purple-800">0</div>
-                    <div className="text-sm text-purple-600">Want to Read</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-600 rounded-lg">
-                    <Star className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-lg text-amber-800">0</div>
-                    <div className="text-sm text-amber-600">Reviews</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <DashboardStats />
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

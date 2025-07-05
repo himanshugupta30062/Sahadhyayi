@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus, User, LogOut } from "lucide-react";
@@ -11,10 +12,26 @@ const Index = () => {
   const { data: profile } = useProfile();
   const navigate = useNavigate();
 
-  // If user is logged in, redirect to dashboard
+  // If user is logged in, redirect to dashboard only after a delay to prevent flash
+  useEffect(() => {
+    if (user) {
+      const timer = setTimeout(() => {
+        navigate('/dashboard');
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [user, navigate]);
+
+  // Show loading state during redirect
   if (user) {
-    navigate('/dashboard');
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Redirecting to your dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   const handleSignOut = async () => {
