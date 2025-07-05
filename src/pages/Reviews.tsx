@@ -13,12 +13,20 @@ import { ChatWindow } from "@/components/reviews/ChatWindow";
 import type { ChatConversation } from "@/components/reviews/chatData";
 
 import { CreatePostForm } from "@/components/reviews/CreatePostForm";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+  DrawerClose,
+} from "@/components/ui/drawer";
 
 const Reviews = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
+  const [isLeftOpen, setIsLeftOpen] = useState(false);
+  const [isRightOpen, setIsRightOpen] = useState(false);
   const { toast } = useToast();
 
   const handleCreatePost = (newPost: any) => {
@@ -149,6 +157,58 @@ const Reviews = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* Mobile Sidebar Triggers */}
+      <div className="lg:hidden">
+        {/* Left Sidebar Drawer */}
+        <Drawer open={isLeftOpen} onOpenChange={setIsLeftOpen}>
+          <DrawerTrigger asChild>
+            <Button
+              variant="outline"
+              className="fixed bottom-4 left-4 z-40 rounded-full p-2 bg-white shadow"
+            >
+              <Users className="w-5 h-5" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="h-[80vh]">
+            <div className="p-4 overflow-y-auto h-full">
+              <DrawerClose asChild>
+                <button className="absolute top-2 right-2 text-gray-500">
+                  ✕
+                </button>
+              </DrawerClose>
+              <LeftSidebar
+                onSelectConversation={(c) => {
+                  setIsLeftOpen(false);
+                  setSelectedConversation(c);
+                }}
+              />
+            </div>
+          </DrawerContent>
+        </Drawer>
+
+        {/* Right Sidebar Drawer */}
+        <Drawer open={isRightOpen} onOpenChange={setIsRightOpen}>
+          <DrawerTrigger asChild>
+            <Button
+              variant="outline"
+              className="fixed bottom-4 right-4 z-40 rounded-full p-2 bg-white shadow"
+            >
+              <Globe className="w-5 h-5" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="h-[80vh]">
+            <div className="p-4 overflow-y-auto h-full">
+              <DrawerClose asChild>
+                <button className="absolute top-2 right-2 text-gray-500">
+                  ✕
+                </button>
+              </DrawerClose>
+              <RightSidebar />
+            </div>
+          </DrawerContent>
+        </Drawer>
       </div>
     </>
   );
