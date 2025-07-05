@@ -7,7 +7,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuHeader,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotifications, type Notification } from "@/hooks/useNotifications";

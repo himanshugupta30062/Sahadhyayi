@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, User, LogOut, Settings, BookOpen } from "lucide-react";
@@ -39,9 +40,7 @@ const Navigation = () => {
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
     { name: "Authors", href: "/authors" },
-    { name: "Community", href: "/reviews" },
-    { name: "Groups", href: "/groups" },
-    { name: "Map", href: "/map" },
+    { name: "Social Media", href: "/reviews" },
   ];
 
   const userNavItems = user ? [
@@ -68,13 +67,13 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-              <BookOpen className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-              Sahadhyayi
-            </span>
+          <Link to="/" className="flex items-center space-x-3 font-bold text-2xl text-gray-800">
+            <img
+              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
+              alt="Sahadhyayi logo - Digital library platform for deep reading culture"
+              className="w-8 h-8 flex-shrink-0"
+            />
+            <span className="whitespace-nowrap">Sahadhyayi</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -153,7 +152,7 @@ const Navigation = () => {
                 ) : (
                   <div className="flex items-center space-x-4">
                     <Link to="/signin">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                         Sign In
                       </Button>
                     </Link>
@@ -262,7 +261,7 @@ const Navigation = () => {
               ) : (
                 <div className="pt-4 space-y-2 border-t border-gray-200">
                   <Link to="/signin" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <Button variant="ghost" size="sm" className="w-full justify-start border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                       Sign In
                     </Button>
                   </Link>

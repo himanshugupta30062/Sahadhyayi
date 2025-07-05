@@ -233,42 +233,46 @@ const Chatbot = () => {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
-          <div className="border-t bg-white p-2 flex-shrink-0">
-            <div className="flex items-center gap-2">
+          {/* Enhanced Input Area */}
+          <div className="border-t bg-white p-3 flex-shrink-0">
+            <div className="relative">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about books, authors, reading tips..."
-                className="flex-1 resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="w-full resize-none rounded-lg border border-gray-300 pl-4 pr-20 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 rows={1}
                 disabled={isLoading || isRecording || isProcessing}
-                style={{ minHeight: '36px', maxHeight: '72px' }}
+                style={{ minHeight: '48px', maxHeight: '96px' }}
               />
-              <Button
-                size="sm"
-                onClick={toggleRecording}
-                disabled={isLoading || isProcessing}
-                className={cn(
-                  "transition-colors",
-                  isRecording 
-                    ? "bg-red-500 hover:bg-red-600 text-white animate-pulse" 
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-600"
-                )}
-              >
-                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-              </Button>
-              <Button 
-                size="sm" 
-                onClick={handleSend}
-                disabled={!input.trim() || isLoading || isRecording || isProcessing}
-                className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-sm disabled:opacity-50"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+              
+              {/* Icons inside input */}
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                <Button
+                  size="sm"
+                  onClick={toggleRecording}
+                  disabled={isLoading || isProcessing}
+                  className={cn(
+                    "h-8 w-8 p-0 transition-colors",
+                    isRecording 
+                      ? "bg-red-500 hover:bg-red-600 text-white animate-pulse" 
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  )}
+                >
+                  {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+                <Button 
+                  size="sm" 
+                  onClick={handleSend}
+                  disabled={!input.trim() || isLoading || isRecording || isProcessing}
+                  className="h-8 w-8 p-0 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-sm disabled:opacity-50"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <div className="text-xs text-gray-400 mt-1 px-1">
+            <div className="text-xs text-gray-400 mt-2 px-1">
               Press Enter to send, Shift + Enter for new line, or click mic to speak
             </div>
           </div>
