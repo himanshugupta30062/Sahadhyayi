@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from "react";
-import { Search, Plus, BookOpen, Users, TrendingUp, Globe, Menu, X } from "lucide-react";
+import { Search, Plus, BookOpen, Users, TrendingUp, Globe, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +26,8 @@ const Reviews = () => {
   const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
   const [isLeftOpen, setIsLeftOpen] = useState(false);
   const [isRightOpen, setIsRightOpen] = useState(false);
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -176,17 +178,32 @@ const Reviews = () => {
         url="https://sahadhyayi.com/reviews"
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 grid grid-cols-[300px_1fr_300px]">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex">
         {/* Left Sidebar */}
-        <div className="border-r border-gray-200 bg-white overflow-y-auto">
-          <div className="p-4">
-            <LeftSidebar onSelectConversation={setSelectedConversation} />
+        <div className={`${leftCollapsed ? 'w-16' : 'w-80'} transition-all duration-300 border-r border-gray-200 bg-white overflow-hidden flex flex-col`}>
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            {!leftCollapsed && (
+              <h2 className="font-semibold text-gray-900">Navigation</h2>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLeftCollapsed(!leftCollapsed)}
+              className="p-2"
+            >
+              {leftCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </Button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            {!leftCollapsed && (
+              <LeftSidebar onSelectConversation={setSelectedConversation} />
+            )}
           </div>
         </div>
 
         {/* Center Feed / Chat */}
-        <div className="overflow-y-auto">
-          <div className="max-w-2xl mx-auto px-4 py-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto px-6 py-6">
             {selectedConversation ? (
               <ChatWindow conversation={selectedConversation} onClose={() => setSelectedConversation(null)} />
             ) : (
@@ -270,9 +287,22 @@ const Reviews = () => {
         </div>
 
         {/* Right Sidebar */}
-        <div className="border-l border-gray-200 bg-white overflow-y-auto">
-          <div className="p-4">
-            <RightSidebar />
+        <div className={`${rightCollapsed ? 'w-16' : 'w-80'} transition-all duration-300 border-l border-gray-200 bg-white overflow-hidden flex flex-col`}>
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRightCollapsed(!rightCollapsed)}
+              className="p-2"
+            >
+              {rightCollapsed ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            </Button>
+            {!rightCollapsed && (
+              <h2 className="font-semibold text-gray-900">Discover</h2>
+            )}
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            {!rightCollapsed && <RightSidebar />}
           </div>
         </div>
       </div>

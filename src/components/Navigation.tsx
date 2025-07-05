@@ -1,174 +1,281 @@
-
-import { useState } from "react";
-import { Search, Bell } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X, ChevronDown, User, LogOut, Settings, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import NavLogo from "./navigation/NavLogo";
-import DesktopNavItems from "./navigation/DesktopNavItems";
-import AuthSection from "./navigation/AuthSection";
-import MobileNavMenu from "./navigation/MobileNavMenu";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { user, signOut } = useAuth();
+  const location = useLocation();
+  const isMobile = useIsMobile();
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  const clearHighlights = () => {
-    document.querySelectorAll("mark.search-highlight").forEach((mark) => {
-      const text = document.createTextNode(mark.textContent || "");
-      mark.replaceWith(text);
-    });
-    document.body.normalize();
-  };
-
-  const highlightElement = (el: HTMLElement, term: string) => {
-    const regex = new RegExp(`(${escapeRegExp(term)})`, "gi");
-    if (!regex.test(el.textContent || "")) return;
-    el.innerHTML = (el.textContent || "").replace(regex, '<mark class="search-highlight">$1</mark>');
-  };
-
-  const handleSearch = () => {
-    const term = searchQuery.trim();
-    if (!term) return;
-    clearHighlights();
-    const elements = document.querySelectorAll(
-      "#root h1, #root h2, #root h3, #root p, #root li"
-    );
-    let firstMatch: HTMLElement | null = null;
-    elements.forEach((el) => {
-      if (el.textContent?.toLowerCase().includes(term.toLowerCase())) {
-        if (!firstMatch) firstMatch = el as HTMLElement;
-        highlightElement(el as HTMLElement, term);
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 20;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
       }
-    });
-    if (firstMatch) {
-      firstMatch.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [scrolled]);
+
+  const navItems = [
+    { name: "Home", href: "/" },
+    { name: "Library", href: "/library" },
+    { name: "Authors", href: "/authors" },
+    { name: "Community", href: "/reviews" },
+    { name: "Groups", href: "/groups" },
+    { name: "Map", href: "/map" },
+  ];
+
+  const userNavItems = user ? [
+    { name: "Dashboard", href: "/dashboard" },
+    { name: "My Books", href: "/bookshelf" },
+    { name: "Quotes", href: "/quotes" },
+  ] : [];
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsOpen(false);
+  };
+
+  const getUserInitials = (email: string) => {
+    return email.charAt(0).toUpperCase();
   };
 
   return (
-    <nav className="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled 
+        ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200' 
+        : 'bg-white/90 backdrop-blur-sm'
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Left section with logo and search */}
-          <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
-            <NavLogo />
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2 group">
+            <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <BookOpen className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+              Sahadhyayi
+            </span>
+          </Link>
 
-            {/* Mobile Search Icon */}
-            <button
-              className="md:hidden p-2 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-colors"
-              aria-label="Search"
-              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            >
-              <Search className="w-5 h-5" />
-            </button>
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <div className="hidden md:flex items-center space-x-8">
+              {/* Navigation Links */}
+              <div className="flex items-center space-x-6">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
+                      (location.pathname === item.href || 
+                       (item.href === "/" && location.pathname === "/dashboard" && user)) 
+                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1' 
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                
+                {userNavItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
+                      location.pathname === item.href 
+                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1' 
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
 
-            {/* Desktop Search Bar */}
-            <div className="hidden md:block flex-1 max-w-md">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSearch();
-                  }}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setIsSearchFocused(false)}
-                  className={`w-full pl-4 pr-9 py-2 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
-                    isSearchFocused
-                      ? 'border-orange-400 bg-white shadow-md ring-2 ring-orange-200 scale-105'
-                      : 'hover:bg-white hover:border-gray-400'
-                  }`}
-                />
-                <button
-                  onClick={handleSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-600 transition-colors"
-                  aria-label="Search"
-                >
-                  <Search className="w-4 h-4" />
-                </button>
+              {/* User Actions */}
+              <div className="flex items-center space-x-4">
+                {user ? (
+                  <>
+                    <NotificationDropdown />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="flex items-center space-x-2 p-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.user_metadata?.avatar_url} />
+                            <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
+                              {getUserInitials(user.email || 'U')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <ChevronDown className="h-4 w-4 text-gray-500" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuItem asChild>
+                          <Link to="/profile" className="flex items-center">
+                            <User className="mr-2 h-4 w-4" />
+                            Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/settings" className="flex items-center">
+                            <Settings className="mr-2 h-4 w-4" />
+                            Settings
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleSignOut}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Sign Out
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
+                ) : (
+                  <div className="flex items-center space-x-4">
+                    <Link to="/signin">
+                      <Button variant="ghost" size="sm">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/signup">
+                      <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
+                        Sign Up
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Desktop Navigation - Right section */}
-          <div className="hidden lg:flex items-center space-x-2 xl:space-x-4 flex-shrink-0">
-            <DesktopNavItems />
-            <Button variant="ghost" className="relative rounded-full p-2" aria-label="Notifications">
-              <Bell className="w-5 h-5 text-amber-700" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] px-1">3</span>
-            </Button>
-            <div className="ml-4">
-              <AuthSection />
-            </div>
-          </div>
+          )}
 
           {/* Mobile menu button */}
-          <div className="lg:hidden flex items-center flex-shrink-0 ml-2">
-            <button
-              className="text-gray-700 hover:text-orange-600 hover:bg-orange-50 p-2 rounded-full transition-colors"
-              aria-label="Open main menu"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
+          {isMobile && (
+            <div className="flex items-center space-x-2">
+              {user && <NotificationDropdown />}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(!isOpen)}
+                className="p-2"
+              >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Mobile Search Bar */}
-        {isMobileSearchOpen && (
-          <div className="md:hidden py-3 border-t border-gray-100">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch();
-                    setIsMobileSearchOpen(false);
-                  }
-                }}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
-                className={`w-full pl-4 pr-9 py-2 border border-gray-300 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 transition-all duration-300 ${
-                  isSearchFocused
-                    ? 'border-orange-400 bg-white shadow-md ring-2 ring-orange-200'
-                    : 'hover:bg-white hover:border-gray-400'
-                }`}
-                autoFocus
-              />
-              <button
-                onClick={() => {
-                  handleSearch();
-                  setIsMobileSearchOpen(false);
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-600 transition-colors"
-                aria-label="Search"
-              >
-                <Search className="w-4 h-4" />
-              </button>
+        {/* Mobile Navigation Menu */}
+        {isMobile && isOpen && (
+          <div className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                    (location.pathname === item.href || 
+                     (item.href === "/" && location.pathname === "/dashboard" && user)) 
+                      ? 'text-amber-600 bg-amber-50' 
+                      : 'text-gray-700 hover:text-amber-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              
+              {userNavItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                    location.pathname === item.href 
+                      ? 'text-amber-600 bg-amber-50' 
+                      : 'text-gray-700 hover:text-amber-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+
+              {user ? (
+                <div className="pt-4 border-t border-gray-200">
+                  <div className="flex items-center px-3 py-2">
+                    <Avatar className="h-10 w-10 mr-3">
+                      <AvatarImage src={user.user_metadata?.avatar_url} />
+                      <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
+                        {getUserInitials(user.email || 'U')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {user.user_metadata?.full_name || user.email}
+                      </div>
+                      <div className="text-xs text-gray-500">{user.email}</div>
+                    </div>
+                  </div>
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                  >
+                    <User className="inline mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                  <Link
+                    to="/settings"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                  >
+                    <Settings className="inline mr-2 h-4 w-4" />
+                    Settings
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="block w-full text-left px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                  >
+                    <LogOut className="inline mr-2 h-4 w-4" />
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-4 space-y-2 border-t border-gray-200">
+                  <Link to="/signin" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsOpen(false)}>
+                    <Button size="sm" className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
-
-        {/* Mobile Navigation */}
-        <MobileNavMenu isOpen={isOpen} setIsOpen={setIsOpen} />
       </div>
     </nav>
   );

@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar, MessageSquare, Star, Users, BookOpen, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ScheduleSessionDialog } from "./ScheduleSessionDialog";
 
 interface AuthorProfileProps {
   author: {
@@ -75,13 +76,18 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
         </div>
 
         <div className={`flex ${isMobile ? 'flex-col' : ''} gap-3 pt-4`}>
-          <Button 
-            size={isMobile ? "default" : "lg"}
-            className={`${isMobile ? 'flex-1' : 'flex-1'} bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all`}
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Schedule Session
-          </Button>
+          <ScheduleSessionDialog
+            author={author}
+            trigger={
+              <Button 
+                size={isMobile ? "default" : "lg"}
+                className={`${isMobile ? 'flex-1' : 'flex-1'} bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all`}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Schedule Session
+              </Button>
+            }
+          />
           <Button 
             size={isMobile ? "default" : "lg"}
             variant="outline" 
