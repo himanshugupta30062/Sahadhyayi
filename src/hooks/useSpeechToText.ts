@@ -35,14 +35,29 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
           const formData = new FormData();
           formData.append('audio', audioBlob, 'recording.webm');
 
-          const { data, error } = await supabase.functions.invoke('speech-to-text', {
+          // Use direct fetch for FormData to Supabase edge function
+          const response = await fetch(`https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/speech-to-text`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U`,
+            },
             body: formData,
           });
 
-          if (error) throw error;
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          
+          if (data.error) {
+            throw new Error(data.error);
+          }
 
           if (data.transcription) {
             onTranscript(data.transcription);
+          } else {
+            onError('No transcription received');
           }
         } catch (error) {
           console.error('Transcription error:', error);
