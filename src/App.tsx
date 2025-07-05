@@ -50,7 +50,7 @@ const queryClient = new QueryClient({
       // Cache query results for 5 minutes to avoid repeated
       // metadata requests that hit PostgREST on every render
       staleTime: 5 * 60 * 1000,
-      cacheTime: 10 * 60 * 1000,
+      gcTime: 10 * 60 * 1000, // Updated from cacheTime to gcTime
     },
   },
 });
