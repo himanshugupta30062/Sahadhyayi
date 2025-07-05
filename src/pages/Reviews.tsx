@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import SEO from "@/components/SEO";
 import { ReadingFeed } from "@/components/reviews/ReadingFeed";
 import { LeftSidebar } from "@/components/reviews/LeftSidebar";
+import { RightSidebar } from "@/components/reviews/RightSidebar";
+import { ChatWindow } from "@/components/reviews/ChatWindow";
+import type { ChatConversation } from "@/components/reviews/chatData";
 
 import { CreatePostForm } from "@/components/reviews/CreatePostForm";
 
@@ -15,6 +18,7 @@ const Reviews = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
   const { toast } = useToast();
 
   const handleCreatePost = (newPost: any) => {
@@ -42,33 +46,21 @@ const Reviews = () => {
         url="https://sahadhyayi.com/reviews"
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex">
-        {/* Fixed Left Sidebar - Visible */}
-        <div className="w-80 bg-white border-r border-gray-200 shadow-lg overflow-y-auto fixed left-0 top-0 h-full z-10">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 grid grid-cols-1 lg:grid-cols-[20%_60%_20%]">
+        {/* Left Sidebar */}
+        <div className="hidden lg:block border-r border-gray-200 bg-white overflow-y-auto">
           <div className="p-4">
-            <LeftSidebar />
+            <LeftSidebar onSelectConversation={setSelectedConversation} />
           </div>
         </div>
 
-        {/* Fixed Right Sidebar - Visible */}
-        <div className="w-80 bg-white border-l border-gray-200 shadow-lg overflow-y-auto fixed right-0 top-0 h-full z-10">
-          <div className="p-4">
-            <div className="space-y-6">
-              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg text-gray-900">Suggestions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600">Connect with more book lovers and discover new reading communities.</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Area - Facebook Style with margins for sidebars */}
-        <div className="flex-1 mx-80 relative z-0">
+        {/* Center Feed / Chat */}
+        <div className="overflow-y-auto">
           <div className="max-w-2xl mx-auto px-4 py-6">
+            {selectedConversation ? (
+              <ChatWindow conversation={selectedConversation} onClose={() => setSelectedConversation(null)} />
+            ) : (
+              <>
             
             {/* Header Section */}
             <div className="text-center mb-8">
@@ -145,7 +137,15 @@ const Reviews = () => {
             <div className="relative z-20">
               <ReadingFeed />
             </div>
-            
+
+            </>
+          </div>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="hidden lg:block border-l border-gray-200 bg-white overflow-y-auto">
+          <div className="p-4">
+            <RightSidebar />
           </div>
         </div>
 

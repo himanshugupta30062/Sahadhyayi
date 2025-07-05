@@ -4,9 +4,10 @@ import { Book, Users, UserPlus, MessageSquare, Facebook, Instagram, MapPin, Plus
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { FloatingChat } from "./FloatingChat";
+import type { ChatConversation } from "./chatData";
+import { sampleConversations } from "./chatData";
 
 interface BookshelfItem {
   id: string;
@@ -129,9 +130,14 @@ const readingGroups: ReadingGroup[] = [
   }
 ];
 
-export const LeftSidebar = () => {
+interface LeftSidebarProps {
+  onSelectConversation: (conversation: ChatConversation) => void;
+}
+
+export const LeftSidebar = ({ onSelectConversation }: LeftSidebarProps) => {
   const [bookshelf, setBookshelf] = useState(myBooks);
   const [groups, setGroups] = useState(readingGroups);
+  const [conversations] = useState<ChatConversation[]>(sampleConversations);
   const { toast } = useToast();
 
   const handleStatusChange = (bookId: string, newStatus: BookshelfItem['status']) => {
@@ -364,8 +370,29 @@ export const LeftSidebar = () => {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-gray-900">Messages</CardTitle>
         </CardHeader>
-        <CardContent>
-          <FloatingChat />
+        <CardContent className="space-y-2">
+          {conversations.map((conv) => (
+            <div
+              key={conv.id}
+              onClick={() => onSelectConversation(conv)}
+              className="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <Avatar className="w-8 h-8">
+                  <AvatarFallback className="bg-amber-500 text-white text-xs">
+                    {conv.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-sm">
+                  <p className="font-medium text-gray-900 leading-none truncate">{conv.name}</p>
+                  <p className="text-gray-500 text-xs truncate">{conv.lastMessage}</p>
+                </div>
+              </div>
+              {conv.unreadCount > 0 && (
+                <Badge className="bg-red-500 text-white text-xs">{conv.unreadCount}</Badge>
+              )}
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>

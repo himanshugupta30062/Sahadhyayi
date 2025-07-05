@@ -1,6 +1,7 @@
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import NavLogo from "./navigation/NavLogo";
 import DesktopNavItems from "./navigation/DesktopNavItems";
 import AuthSection from "./navigation/AuthSection";
@@ -101,6 +102,10 @@ const Navigation = () => {
           {/* Desktop Navigation - Right section */}
           <div className="hidden lg:flex items-center space-x-2 xl:space-x-4 flex-shrink-0">
             <DesktopNavItems />
+            <Button variant="ghost" className="relative rounded-full p-2" aria-label="Notifications">
+              <Bell className="w-5 h-5 text-amber-700" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] px-1">3</span>
+            </Button>
             <div className="ml-4">
               <AuthSection />
             </div>
