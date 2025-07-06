@@ -1,10 +1,16 @@
 
-import React, { useMemo } from 'react';
-import { Library } from 'lucide-react';
+import React, { useMemo, useEffect } from 'react';
+import { Library, Search, Plus } from 'lucide-react';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useBookSearch } from '@/hooks/useBookSearch';
 import type { Book } from '@/hooks/useLibraryBooks';
 import BooksGrid from './BooksGrid';
 import LoadingGrid from './LoadingGrid';
+import BookSearchBar from '@/components/books/BookSearchBar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
 interface BooksCollectionProps {
   searchQuery: string;
@@ -23,7 +29,22 @@ const BooksCollection = ({
   selectedLanguage,
   priceRange
 }: BooksCollectionProps) => {
-  const { data: books = [], isLoading } = useLibraryBooks();
+  const { data: books = [], isLoading, refetch } = useLibraryBooks();
+  
+  // Book search functionality
+  const {
+    loading: searchLoading,
+    error: searchError,
+    searchBooks,
+    getAllLibraryBooks,
+  } = useBookSearch();
+
+  // Refresh books when search completes
+  useEffect(() => {
+    if (!searchLoading) {
+      refetch();
+    }
+  }, [searchLoading, refetch]);
 
   const filteredBooks = useMemo(() => {
     console.log('Filtering books with criteria:', {
@@ -126,14 +147,65 @@ const BooksCollection = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* API Search Section */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Search className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Add New Books</h3>
+              <p className="text-sm text-gray-600 font-normal">
+                Search millions of books from Open Library & Google Books
+              </p>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex-1 w-full">
+              <BookSearchBar onSearch={searchBooks} loading={searchLoading} />
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => refetch()}
+              disabled={searchLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </div>
+
+          {searchError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{searchError}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="bg-white/60 backdrop-blur-sm p-3 rounded-lg border border-blue-100">
+            <div className="grid sm:grid-cols-2 gap-3 text-xs text-gray-600">
+              <div>
+                <span className="font-medium text-gray-900">How it works:</span> Search → Find books → Auto-save to library
+              </div>
+              <div>
+                <span className="font-medium text-gray-900">Tips:</span> Try specific titles, authors, or topics for best results
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Section Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
           <Library className="w-5 h-5 text-white" />
         </div>
         <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-          Books Collection
+          Library Collection
         </h2>
         {filteredBooks.length > 0 && (
           <span className="text-sm text-gray-500 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">

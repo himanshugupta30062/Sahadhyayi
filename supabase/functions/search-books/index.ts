@@ -57,20 +57,47 @@ serve(async (req) => {
     const savedBooks = []
     for (const book of books) {
       try {
-        // Check for duplicates
-        const { data: existing } = await supabaseClient
-          .from('books_test')
-          .select('id')
-          .or(`isbn.eq.${book.isbn || 'null'},and(title.eq.${book.title},author.eq.${book.author || 'null'})`)
-          .limit(1)
+        // Check for duplicates in books_library
+        let duplicateQuery = supabaseClient
+          .from('books_library')
+          .select('id, description, cover_image_url')
+        
+        if (book.isbn) {
+          duplicateQuery = duplicateQuery.eq('isbn', book.isbn)
+        } else {
+          duplicateQuery = duplicateQuery
+            .eq('title', book.title)
+            .eq('author', book.author || '')
+        }
+        
+        const { data: existing } = await duplicateQuery.limit(1)
 
         if (existing && existing.length > 0) {
           console.log(`Book already exists: ${book.title}`)
+          
+          // Update missing fields if book exists but has missing data
+          const existingBook = existing[0]
+          const updateData: any = {}
+          
+          if (!existingBook.description && book.description) {
+            updateData.description = book.description
+          }
+          if (!existingBook.cover_image_url && book.cover_image_url) {
+            updateData.cover_image_url = book.cover_image_url
+          }
+          
+          if (Object.keys(updateData).length > 0) {
+            await supabaseClient
+              .from('books_library')
+              .update(updateData)
+              .eq('id', existingBook.id)
+            console.log(`Updated book: ${book.title}`)
+          }
           continue
         }
 
         const { data, error } = await supabaseClient
-          .from('books_test')
+          .from('books_library')
           .insert(book)
           .select()
           .single()

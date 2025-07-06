@@ -15,13 +15,13 @@ const BookSearchTest = () => {
     error,
     searchResults,
     searchBooks,
-    getAllTestBooks,
+    getAllLibraryBooks,
     clearResults
   } = useBookSearch();
 
   useEffect(() => {
     // Load existing books on component mount
-    getAllTestBooks();
+    getAllLibraryBooks();
   }, []);
 
   return (
@@ -64,7 +64,7 @@ const BookSearchTest = () => {
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    onClick={getAllTestBooks}
+                    onClick={getAllLibraryBooks}
                     disabled={loading}
                     className="flex items-center gap-2"
                   >

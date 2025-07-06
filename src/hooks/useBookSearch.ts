@@ -15,7 +15,6 @@ interface BookSearchResult {
   language?: string;
   pdf_url?: string;
   created_at: string;
-  updated_at: string;
 }
 
 interface SearchResponse {
@@ -68,13 +67,13 @@ export const useBookSearch = () => {
     }
   };
 
-  const getAllTestBooks = async (): Promise<void> => {
+  const getAllLibraryBooks = async (): Promise<void> => {
     setLoading(true);
     setError(null);
 
     try {
       const { data, error: dbError } = await supabase
-        .from('books_test')
+        .from('books_library')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -102,7 +101,7 @@ export const useBookSearch = () => {
     error,
     searchResults,
     searchBooks,
-    getAllTestBooks,
+    getAllLibraryBooks,
     clearResults
   };
 };
