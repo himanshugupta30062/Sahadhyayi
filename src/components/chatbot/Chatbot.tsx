@@ -240,7 +240,7 @@ const Chatbot = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask about books, authors, reading tips..."
+                placeholder="Ask me about books!"
                 className="w-full resize-none rounded-lg border border-gray-300 pl-4 pr-20 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 rows={1}
                 disabled={isLoading || isRecording || isProcessing}
