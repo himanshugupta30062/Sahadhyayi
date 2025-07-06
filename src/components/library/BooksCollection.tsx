@@ -3,6 +3,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { Library, Search, Plus, Trash2 } from 'lucide-react';
 import { usePersonalLibrary, useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
+import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import type { Book } from '@/hooks/useLibraryBooks';
 import BooksGrid from './BooksGrid';
 import LoadingGrid from './LoadingGrid';
@@ -13,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface BooksCollectionProps {
   searchQuery: string;
@@ -32,7 +34,12 @@ const BooksCollection = ({
   priceRange
 }: BooksCollectionProps) => {
   const { user } = useAuth();
-  const { data: personalLibrary = [], isLoading, refetch } = usePersonalLibrary();
+  
+  // All library books (global)
+  const { data: allLibraryBooks = [], isLoading: isLoadingAll, refetch: refetchAll } = useAllLibraryBooks();
+  
+  // Personal library (user-specific)
+  const { data: personalLibrary = [], isLoading: isLoadingPersonal, refetch: refetchPersonal } = usePersonalLibrary();
   const cleanupMutation = useCleanupUnusedBooks();
   
   // Book search functionality
@@ -48,7 +55,7 @@ const BooksCollection = ({
   const [lastSearchTerm, setLastSearchTerm] = useState('');
 
   // Convert personal library to Book format for compatibility
-  const books: Book[] = useMemo(() => {
+  const personalBooks: Book[] = useMemo(() => {
     return personalLibrary.map(item => ({
       id: item.books_library.id,
       title: item.books_library.title,
@@ -60,8 +67,8 @@ const BooksCollection = ({
       language: item.books_library.language || 'English',
       pdf_url: item.books_library.pdf_url,
       created_at: item.added_at,
-      price: 0, // Not applicable for personal library
-      rating: 0, // Could be added later
+      price: 0,
+      rating: 0,
       isbn: null,
       pages: null,
       author_bio: null
@@ -83,11 +90,11 @@ const BooksCollection = ({
   const handleCleanup = async () => {
     if (user) {
       await cleanupMutation.mutateAsync();
-      refetch(); // Refresh the library after cleanup
+      refetchAll(); // Refresh all books after cleanup
     }
   };
 
-  const filteredBooks = useMemo(() => {
+  const getFilteredBooks = (books: Book[]) => {
     console.log('Filtering books with criteria:', {
       searchQuery,
       selectedGenre,
@@ -145,13 +152,6 @@ const BooksCollection = ({
         return false;
       }
 
-      // Price filter (skip for personal library as prices are always 0)
-      // const bookPrice = book.price || 0;
-      // if (bookPrice < priceRange[0] || bookPrice > priceRange[1]) {
-      //   console.log('Book filtered out by price filter:', book.title);
-      //   return false;
-      // }
-
       console.log('Book passed all filters:', book.title);
       return true;
     });
@@ -160,7 +160,7 @@ const BooksCollection = ({
     console.log('Hindi books in result:', filtered.filter(book => book.language === 'Hindi').map(book => book.title));
     
     return filtered;
-  }, [books, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
+  };
 
   const handleDownloadPDF = async (book: Book) => {
     if (!book.pdf_url) {
@@ -183,7 +183,10 @@ const BooksCollection = ({
     }
   };
 
-  if (isLoading) {
+  const filteredAllBooks = useMemo(() => getFilteredBooks(allLibraryBooks), [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
+  const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
+
+  if (isLoadingAll) {
     return <LoadingGrid />;
   }
 
@@ -212,7 +215,7 @@ const BooksCollection = ({
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => refetch()}
+                onClick={() => { refetchAll(); refetchPersonal(); }}
                 disabled={searchLoading}
                 className="flex items-center gap-2"
               >
@@ -261,23 +264,64 @@ const BooksCollection = ({
         </CardContent>
       </Card>
 
-      {/* Personal Library Section */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
-          <Library className="w-5 h-5 text-white" />
-        </div>
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-          My Personal Library
-        </h2>
-        {filteredBooks.length > 0 && (
-          <span className="text-sm text-gray-500 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
-            {filteredBooks.length} books
-          </span>
-        )}
-      </div>
+      {/* Books Collection with Tabs */}
+      <Tabs defaultValue="all-books" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="all-books" className="flex items-center gap-2">
+            <Library className="w-4 h-4" />
+            All Books ({filteredAllBooks.length})
+          </TabsTrigger>
+          {user && (
+            <TabsTrigger value="my-library" className="flex items-center gap-2">
+              <div className="p-1 bg-gradient-to-br from-amber-500 to-orange-600 rounded">
+                <Library className="w-3 h-3 text-white" />
+              </div>
+              My Personal Library ({filteredPersonalBooks.length})
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-      {/* Books Grid */}
-      <BooksGrid books={filteredBooks} onDownloadPDF={handleDownloadPDF} />
+        <TabsContent value="all-books" className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+              <Library className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Digital Library Collection
+            </h2>
+            {filteredAllBooks.length > 0 && (
+              <span className="text-sm text-gray-500 bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+                {filteredAllBooks.length} books
+              </span>
+            )}
+          </div>
+          <BooksGrid books={filteredAllBooks} onDownloadPDF={handleDownloadPDF} />
+        </TabsContent>
+
+        {user && (
+          <TabsContent value="my-library" className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
+                <Library className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                My Personal Library
+              </h2>
+              {filteredPersonalBooks.length > 0 && (
+                <span className="text-sm text-gray-500 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
+                  {filteredPersonalBooks.length} books
+                </span>
+              )}
+            </div>
+            
+            {isLoadingPersonal ? (
+              <LoadingGrid />
+            ) : (
+              <BooksGrid books={filteredPersonalBooks} onDownloadPDF={handleDownloadPDF} />
+            )}
+          </TabsContent>
+        )}
+      </Tabs>
 
       {/* Book Selection Modal */}
       <BookSelectionModal
