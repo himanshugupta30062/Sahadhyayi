@@ -131,10 +131,10 @@ export const FloatingChat = () => {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-[9999]">
         <Button
           onClick={() => setIsOpen(true)}
-          className="bg-amber-600 hover:bg-amber-700 text-white rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-300"
+          className="bg-amber-600 hover:bg-amber-700 text-white rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-300 relative"
         >
           <MessageCircle className="w-6 h-6" />
           {totalUnread > 0 && (
@@ -143,12 +143,17 @@ export const FloatingChat = () => {
             </Badge>
           )}
         </Button>
+        <div className="mt-2 text-center">
+          <span className="text-xs text-gray-600 bg-white px-2 py-1 rounded shadow-sm">
+            Open Messages
+          </span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 right-6 z-[9999]">
       <div className={`bg-white rounded-lg shadow-2xl border border-gray-200 transition-all duration-300 ${
         isMinimized ? 'w-80 h-14' : 'w-80 h-96'
       }`}>

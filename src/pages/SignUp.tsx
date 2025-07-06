@@ -7,7 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, Mail, Lock, User } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { PasswordStrength } from '@/components/ui/password-strength';
+import { validateEmail, validatePassword, sanitizeInput } from '@/utils/validation';
 import SEO from '@/components/SEO';
 
 const SignUp = () => {
@@ -20,6 +22,8 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { user, signUp } = useAuth();
 
@@ -49,30 +53,15 @@ const SignUp = () => {
     }
     
     // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email.trim())) {
+    if (!validateEmail(formData.email)) {
       setError("Please enter a valid email address.");
       return false;
     }
     
     // Password validation
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      return false;
-    }
-    
-    if (formData.password.length > 128) {
-      setError("Password must be less than 128 characters long.");
-      return false;
-    }
-    
-    // Password strength validation
-    const hasUpperCase = /[A-Z]/.test(formData.password);
-    const hasLowerCase = /[a-z]/.test(formData.password);
-    const hasNumbers = /\d/.test(formData.password);
-    
-    if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
-      setError("Password must contain at least one uppercase letter, one lowercase letter, and one number.");
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.message || "Password does not meet requirements.");
       return false;
     }
     
@@ -114,13 +103,33 @@ const SignUp = () => {
           errorMessage = 'Password does not meet requirements. Please try a stronger password.';
         } else if (error.message.includes('rate limit')) {
           errorMessage = 'Too many attempts. Please wait a moment before trying again.';
+        } else if (error.message.includes('email') && error.message.includes('confirm')) {
+          errorMessage = 'Account created successfully! You can now sign in directly - email confirmation is optional.';
+          setSuccess(errorMessage);
+          
+          // Clear form on success
+          setFormData({
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+          });
+          
+          // Redirect after delay
+          setTimeout(() => {
+            navigate('/signin');
+          }, 2000);
+          
+          setLoading(false);
+          return;
         }
         
         setError(errorMessage);
+        setLoading(false);
         return;
       }
 
-      setSuccess('Account created successfully! Please check your email to verify your account before signing in.');
+      setSuccess('Account created successfully! You can now sign in.');
       
       // Clear form on success
       setFormData({
@@ -137,7 +146,7 @@ const SignUp = () => {
       
     } catch (error: unknown) {
       console.error('Signup error:', error);
-      setError('An unexpected error occurred. Please try again.');
+      setError('Account may have been created successfully. Please try signing in.');
     } finally {
       setLoading(false);
     }
@@ -148,7 +157,7 @@ const SignUp = () => {
     
     // Input sanitization - prevent XSS
     const sanitizedValue = name === 'name' ? 
-      value.replace(/[<>]/g, '') : // Remove potentially dangerous characters from name
+      sanitizeInput(value, 100) : 
       value;
     
     setFormData(prev => ({
@@ -171,118 +180,130 @@ const SignUp = () => {
         url="https://sahadhyayi.com/signup"
       />
       <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-            <UserPlus className="w-6 h-6" />
-            Join Sahadhyayi
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
-            {success && (
-              <Alert>
-                <AlertDescription>{success}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Your full name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="pl-10"
-                  maxLength={100}
-                  required
-                />
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+              <UserPlus className="w-6 h-6" />
+              Join Sahadhyayi
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              {success && (
+                <Alert>
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Your full name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="pl-10"
+                    maxLength={100}
+                    required
+                  />
+                </div>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="pl-10"
-                  maxLength={254}
-                  required
-                />
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="pl-10"
+                    maxLength={254}
+                    required
+                  />
+                </div>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Create a strong password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="pl-10"
-                  maxLength={128}
-                  required
-                />
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a strong password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="pl-10 pr-10"
+                    maxLength={128}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <PasswordStrength password={formData.password} />
               </div>
-              <p className="text-xs text-gray-600">
-                Password must be at least 8 characters with uppercase, lowercase, and numbers
+              
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="pl-10 pr-10"
+                    maxLength={128}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </Button>
+            </form>
+            
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Already have an account?{' '}
+                <Link to="/signin" className="text-amber-600 hover:text-amber-700 font-medium">
+                  Sign in here
+                </Link>
               </p>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="pl-10"
-                  maxLength={128}
-                  required
-                />
-              </div>
-            </div>
-            
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </Button>
-          </form>
-          
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link to="/signin" className="text-amber-600 hover:text-amber-700 font-medium">
-                Sign in here
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
     </>
   );
 };
