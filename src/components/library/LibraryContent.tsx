@@ -107,7 +107,13 @@ const LibraryContent = ({
 
       {/* Pagination */}
       {filteredBooks.length > 0 && (
-        <LibraryPagination currentPage={1} totalPages={1} />
+        <LibraryPagination
+          totalCount={filteredBooks.length}
+          currentPage={1}
+          pageSize={filteredBooks.length}
+          onPageChange={() => {}}
+          onPageSizeChange={() => {}}
+        />
       )}
     </div>
   );

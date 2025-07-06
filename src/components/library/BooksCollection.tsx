@@ -1,5 +1,5 @@
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { Library, Search, Plus, Trash2 } from 'lucide-react';
 import { usePersonalLibrary, useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
@@ -59,6 +59,8 @@ const BooksCollection = ({
   const [pageSize, setPageSize] = useState(10);
   const [currentPageAll, setCurrentPageAll] = useState(1);
   const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
+  const allGridRef = useRef<HTMLDivElement>(null);
+  const personalGridRef = useRef<HTMLDivElement>(null);
 
   // Convert personal library to Book format for compatibility
   const personalBooks: Book[] = useMemo(() => {
@@ -325,14 +327,17 @@ const BooksCollection = ({
               </span>
             )}
           </div>
-          <BooksGrid books={paginatedAllBooks} onDownloadPDF={handleDownloadPDF} />
-          <LibraryPagination
-            totalCount={filteredAllBooks.length}
-            currentPage={currentPageAll}
-            pageSize={pageSize}
-            onPageChange={setCurrentPageAll}
-            onPageSizeChange={setPageSize}
-          />
+          <div ref={allGridRef} className="space-y-6">
+            <BooksGrid books={paginatedAllBooks} onDownloadPDF={handleDownloadPDF} />
+            <LibraryPagination
+              totalCount={filteredAllBooks.length}
+              currentPage={currentPageAll}
+              pageSize={pageSize}
+              onPageChange={setCurrentPageAll}
+              onPageSizeChange={setPageSize}
+              scrollTargetRef={allGridRef}
+            />
+          </div>
         </TabsContent>
 
         {user && (
@@ -354,7 +359,7 @@ const BooksCollection = ({
             {isLoadingPersonal ? (
               <LoadingGrid />
             ) : (
-              <div className="space-y-6">
+              <div ref={personalGridRef} className="space-y-6">
                 <BooksGrid
                   books={paginatedPersonalBooks}
                   onDownloadPDF={handleDownloadPDF}
@@ -365,6 +370,7 @@ const BooksCollection = ({
                   pageSize={pageSize}
                   onPageChange={setCurrentPagePersonal}
                   onPageSizeChange={setPageSize}
+                  scrollTargetRef={personalGridRef}
                 />
               </div>
             )}
