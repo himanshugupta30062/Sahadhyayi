@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Users, Calendar, Search } from 'lucide-react';
 import AuthorGrid from '@/components/authors/AuthorGrid';
@@ -6,7 +7,7 @@ import SEO from '@/components/SEO';
 
 const AuthorConnect = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [sortOption, setSortOption] = useState('rating');
 
   const authors = [
     {
@@ -98,9 +99,9 @@ const AuthorConnect = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <AuthorSearch
             searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            selectedGenres={selectedGenres}
-            onGenresChange={setSelectedGenres}
+            setSearchTerm={setSearchTerm}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
           />
         </div>
 
