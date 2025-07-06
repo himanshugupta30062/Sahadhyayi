@@ -31,6 +31,7 @@ const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Profile = React.lazy(() => import("./pages/Profile"));
 const BookDetails = React.lazy(() => import("./pages/BookDetails"));
+const BookSearchTest = React.lazy(() => import("./pages/BookSearchTest"));
 
 // Footer Pages
 const HelpCenter = React.lazy(() => import("./pages/HelpCenter"));
@@ -122,6 +123,7 @@ const App = () => (
                   } />
                   <Route path="/authors" element={<AuthorConnect />} />
                   <Route path="/map" element={<ReaderMap />} />
+                  <Route path="/book-search-test" element={<BookSearchTest />} />
                   
                   <Route path="/profile" element={
                     <ProtectedRoute>

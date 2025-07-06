@@ -169,6 +169,57 @@ export type Database = {
         }
         Relationships: []
       }
+      books_test: {
+        Row: {
+          author: string | null
+          author_bio: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          description: string | null
+          genre: string | null
+          id: string
+          isbn: string | null
+          language: string | null
+          pages: number | null
+          pdf_url: string | null
+          publication_year: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author?: string | null
+          author_bio?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          genre?: string | null
+          id?: string
+          isbn?: string | null
+          language?: string | null
+          pages?: number | null
+          pdf_url?: string | null
+          publication_year?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author?: string | null
+          author_bio?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          genre?: string | null
+          id?: string
+          isbn?: string | null
+          language?: string | null
+          pages?: number | null
+          pdf_url?: string | null
+          publication_year?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string

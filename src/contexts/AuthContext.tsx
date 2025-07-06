@@ -115,14 +115,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const emailLower = email.trim().toLowerCase();
 
-      // Check if a user already exists with this email using the admin API
-      const { data: existingUser, error: checkError } = await supabase.auth.admin.getUserByEmail(emailLower);
-      if (checkError) {
-        return { error: checkError };
-      }
-      if (existingUser) {
-        return { error: { message: 'An account with this email already exists. Please sign in.' } as AuthError };
-      }
+      // Try to create the user account directly
+      // Note: Supabase will handle duplicate email checking automatically
 
       const redirectUrl = 'https://www.sahadhyayi.com/signin';
 
