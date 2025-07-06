@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { BookOpen, Users, MessageSquare, Heart, Share2, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '@/components/SEO';
-import LeftSidebar from '@/components/reviews/LeftSidebar';
-import ReadingFeed from '@/components/reviews/ReadingFeed';
-import RightSidebar from '@/components/reviews/RightSidebar';
-import FloatingChat from '@/components/reviews/FloatingChat';
+import { LeftSidebar } from '@/components/reviews/LeftSidebar';
+import { ReadingFeed } from '@/components/reviews/ReadingFeed';
+import { RightSidebar } from '@/components/reviews/RightSidebar';
+import { FloatingChat } from '@/components/reviews/FloatingChat';
 
 const Reviews = () => {
   return (
@@ -63,7 +63,7 @@ const Reviews = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Left Sidebar */}
             <div className="lg:col-span-1">
-              <LeftSidebar />
+              <LeftSidebar onSelectConversation={() => {}} />
             </div>
 
             {/* Main Feed */}

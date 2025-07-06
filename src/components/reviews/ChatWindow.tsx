@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Send, X } from 'lucide-react';
-import { chatData } from './chatData';
+import { sampleConversations } from './chatData';
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface ChatWindowProps {
 }
 
 const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
-  const [messages, setMessages] = useState(chatData);
+  const [messages, setMessages] = useState(sampleConversations[0]?.messages || []);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -27,12 +27,11 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const handleSendMessage = () => {
     if (newMessage.trim()) {
       const message = {
-        id: messages.length + 1,
-        user: 'You',
-        avatar: '',
+        id: (messages.length + 1).toString(),
+        sender: 'You',
         message: newMessage.trim(),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isCurrentUser: true
+        isMe: true
       };
       setMessages([...messages, message]);
       setNewMessage('');
@@ -61,17 +60,16 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-            <div className={`flex ${msg.isCurrentUser ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 max-w-[85%]`}>
+          <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
+            <div className={`flex ${msg.isMe ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 max-w-[85%]`}>
               <Avatar className="w-8 h-8 flex-shrink-0">
-                <AvatarImage src={msg.avatar} alt={msg.user} />
                 <AvatarFallback className="text-xs bg-gradient-to-br from-orange-500 to-amber-500 text-white">
-                  {msg.user.charAt(0)}
+                  {msg.sender.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div className={`flex flex-col ${msg.isCurrentUser ? 'items-end' : 'items-start'} space-y-1`}>
+              <div className={`flex flex-col ${msg.isMe ? 'items-end' : 'items-start'} space-y-1`}>
                 <div className={`px-3 py-2 rounded-lg shadow-sm break-words ${
-                  msg.isCurrentUser 
+                  msg.isMe 
                     ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white' 
                     : 'bg-gray-100 text-gray-900'
                 }`}>
@@ -79,8 +77,8 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
                     {msg.message}
                   </p>
                 </div>
-                <div className={`flex items-center space-x-2 text-xs text-gray-500 ${msg.isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                  <span className="font-medium">{msg.user}</span>
+                <div className={`flex items-center space-x-2 text-xs text-gray-500 ${msg.isMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <span className="font-medium">{msg.sender}</span>
                   <span>•</span>
                   <span>{msg.timestamp}</span>
                 </div>
