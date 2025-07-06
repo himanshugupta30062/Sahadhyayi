@@ -3,9 +3,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Calendar, MessageSquare, Star, Users, BookOpen, Clock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar, MessageSquare, Star, Users, BookOpen, Clock, Send } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScheduleSessionDialog } from "./ScheduleSessionDialog";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthorProfileProps {
   author: {
@@ -24,6 +29,19 @@ interface AuthorProfileProps {
 
 const AuthorProfile = ({ author }: AuthorProfileProps) => {
   const isMobile = useIsMobile();
+  const [message, setMessage] = useState("");
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleSendMessage = () => {
+    // For now, just show a coming soon message
+    toast({
+      title: "Messaging Coming Soon",
+      description: "Direct messaging with authors will be available soon. Stay tuned!",
+    });
+    setMessage("");
+    setIsMessageDialogOpen(false);
+  };
 
   return (
     <Card className="group bg-white/95 backdrop-blur-sm border-orange-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:border-orange-300 rounded-2xl overflow-hidden">
@@ -50,7 +68,7 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
         </div>
       </CardHeader>
       
-      <CardContent className={`space-y-6 ${isMobile ? 'px-4 pb-4' : 'px-6 pb-6'}`}>
+      <CardContent className={`space-y-6 ${isMobile ? 'px-4 pb-6' : 'px-6 pb-8'}`}>
         <p className={`text-gray-700 leading-relaxed line-clamp-4 ${isMobile ? 'text-sm' : ''}`}>{author.bio}</p>
         
         <div>
@@ -75,27 +93,71 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
           <p className={`text-orange-800 font-medium ${isMobile ? 'text-sm' : ''}`}>{author.nextSession}</p>
         </div>
 
-        <div className={`flex ${isMobile ? 'flex-col' : ''} gap-3 pt-4`}>
+        {/* Fixed button layout to fit properly in card */}
+        <div className={`flex ${isMobile ? 'flex-col gap-3' : 'gap-3'} pt-2`}>
           <ScheduleSessionDialog
             author={author}
             trigger={
               <Button 
                 size={isMobile ? "default" : "lg"}
-                className={`${isMobile ? 'flex-1' : 'flex-1'} bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all`}
+                className={`flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all ${isMobile ? 'h-11' : 'h-12'}`}
               >
                 <Calendar className="w-4 h-4 mr-2" />
                 Schedule Session
               </Button>
             }
           />
-          <Button 
-            size={isMobile ? "default" : "lg"}
-            variant="outline" 
-            className={`${isMobile ? 'flex-1' : 'flex-1'} border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 transition-all`}
-          >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Message
-          </Button>
+          
+          {/* Message Dialog */}
+          <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                size={isMobile ? "default" : "lg"}
+                variant="outline" 
+                className={`flex-1 border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 transition-all ${isMobile ? 'h-11' : 'h-12'}`}
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Message
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Send Message to {author.name}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="message">Your Message</Label>
+                  <Textarea
+                    id="message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Write your message to the author..."
+                    rows={5}
+                    className="resize-none"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleSendMessage}
+                    disabled={!message.trim()}
+                    className="bg-orange-600 hover:bg-orange-700 flex-1"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Message
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsMessageDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 text-center">
+                  Direct messaging feature is coming soon! This is a preview.
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </CardContent>
     </Card>

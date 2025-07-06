@@ -189,7 +189,38 @@ const Index = () => {
             Discover powerful tools designed to enhance your reading experience and connect you with a global community of book lovers.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => {
+            {[
+              {
+                icon: BookOpen,
+                title: "Personal Digital Bookshelf",
+                description: "Track your reading progress, manage your book collection, and read directly on our platform with advanced reading tools."
+              },
+              {
+                icon: Users,
+                title: "Global Reading Communities",
+                description: "Join book-specific discussion groups and connect with passionate readers from around the world."
+              },
+              {
+                icon: Map,
+                title: "Local Reader Discovery",
+                description: "Discover readers near you and find local book communities through our interactive reader map."
+              },
+              {
+                icon: Calendar,
+                title: "Author Connect Sessions",
+                description: "Schedule live Q&A sessions and conferences with your favorite authors and literary experts."
+              },
+              {
+                icon: Star,
+                title: "Community Reviews & Ratings",
+                description: "Share your thoughts and discover great books through our comprehensive community review system."
+              },
+              {
+                icon: Headphones,
+                title: "AI-Powered Reading Assistant",
+                description: "Get instant explanations for any word, paragraph, or chapter while reading with our intelligent AI companion."
+              }
+            ].map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <Card key={index} className="bg-white/80 backdrop-blur-sm border-orange-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
@@ -209,44 +240,52 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Internal Links Section */}
+      {/* Updated Internal Links Section with Equal Sized Cards */}
       <section className="py-16 px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-gray-900 mb-8">Explore Our Platform</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Link to="/library" className="block">
-              <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <CardContent className="p-6 text-center">
-                  <BookOpen className="w-12 h-12 text-orange-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Digital Library</h3>
-                  <p className="text-gray-600 text-sm">Browse thousands of books across all genres</p>
+              <Card className="bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
+                <CardContent className="p-8 text-center flex flex-col justify-between h-full">
+                  <div>
+                    <BookOpen className="w-16 h-16 text-orange-600 mx-auto mb-6" />
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Digital Library</h3>
+                    <p className="text-gray-600 text-base leading-relaxed">Browse thousands of books across all genres with our comprehensive digital collection</p>
+                  </div>
                 </CardContent>
               </Card>
             </Link>
             <Link to="/groups" className="block">
-              <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <CardContent className="p-6 text-center">
-                  <Users className="w-12 h-12 text-orange-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Reading Groups</h3>
-                  <p className="text-gray-600 text-sm">Join discussions with fellow readers</p>
+              <Card className="bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
+                <CardContent className="p-8 text-center flex flex-col justify-between h-full">
+                  <div>
+                    <Users className="w-16 h-16 text-orange-600 mx-auto mb-6" />
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Reading Groups</h3>
+                    <p className="text-gray-600 text-base leading-relaxed">Join meaningful discussions with fellow readers who share your literary interests</p>
+                  </div>
                 </CardContent>
               </Card>
             </Link>
             <Link to="/map" className="block">
-              <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <CardContent className="p-6 text-center">
-                  <Map className="w-12 h-12 text-orange-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Reader Map</h3>
-                  <p className="text-gray-600 text-sm">Find readers in your local area</p>
+              <Card className="bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
+                <CardContent className="p-8 text-center flex flex-col justify-between h-full">
+                  <div>
+                    <Map className="w-16 h-16 text-orange-600 mx-auto mb-6" />
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Reader Map</h3>
+                    <p className="text-gray-600 text-base leading-relaxed">Find and connect with local readers and book communities in your area</p>
+                  </div>
                 </CardContent>
               </Card>
             </Link>
             <Link to="/authors" className="block">
-              <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <CardContent className="p-6 text-center">
-                  <Calendar className="w-12 h-12 text-orange-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Meet Authors</h3>
-                  <p className="text-gray-600 text-sm">Connect with inspiring authors</p>
+              <Card className="bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
+                <CardContent className="p-8 text-center flex flex-col justify-between h-full">
+                  <div>
+                    <Calendar className="w-16 h-16 text-orange-600 mx-auto mb-6" />
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Meet Authors</h3>
+                    <p className="text-gray-600 text-base leading-relaxed">Connect directly with inspiring authors through live sessions and Q&As</p>
+                  </div>
                 </CardContent>
               </Card>
             </Link>

@@ -66,19 +66,22 @@ const BookLibrary = () => {
         {JSON.stringify(structuredData)}
       </script>
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-      {/* SEO-optimized header */}
+      {/* Fixed SEO-optimized header with proper spacing */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-amber-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-16">
           <div className="text-center">
-            <div className="flex items-center justify-center space-x-3 mb-6">
+            <div className="flex items-center justify-center space-x-3 mb-8">
               <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
                 <BookOpen className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                Digital Library - Discover Your Next Great Read
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent leading-tight">
+                Digital Library
               </h1>
             </div>
-            <p className="text-gray-600 text-lg max-w-3xl mx-auto mb-6">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
+              Discover Your Next Great Read
+            </h2>
+            <p className="text-gray-600 text-lg max-w-3xl mx-auto mb-8 leading-relaxed">
               Browse our extensive digital library with 10,000+ books across all genres. Find your next great read with free PDFs, community reviews, and personalized recommendations from fellow readers.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">

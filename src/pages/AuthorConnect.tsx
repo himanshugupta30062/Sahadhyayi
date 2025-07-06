@@ -133,59 +133,61 @@ const AuthorConnect = () => {
       </script>
       
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-        {/* Hero Header Section */}
+        {/* Improved Hero Header Section */}
         <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white">
-          <div className={`max-w-6xl mx-auto px-4 ${isMobile ? 'py-12' : 'py-20'}`}>
+          <div className={`max-w-6xl mx-auto px-4 ${isMobile ? 'py-12' : 'py-16'}`}>
             <div className="text-center">
-              <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} items-center justify-center space-y-4 ${!isMobile && 'sm:space-y-0 sm:space-x-4'} mb-8`}>
+              <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} items-center justify-center space-y-4 ${!isMobile && 'sm:space-y-0 sm:space-x-4'} mb-6`}>
                 <div className={`p-4 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg ${isMobile ? 'mb-4' : ''}`}>
                   <User className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} text-white`} />
                 </div>
                 <div>
-                  <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl sm:text-5xl lg:text-6xl'} font-bold mb-3 tracking-tight`}>
-                    Connect with Authors
+                  <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl sm:text-4xl lg:text-5xl'} font-bold mb-2 tracking-tight`}>
+                    Meet Our Authors
                   </h1>
-                  <p className={`${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} text-orange-100 font-medium`}>
-                    Meet the Minds Behind Great Books
+                  <p className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl'} text-orange-100 font-medium`}>
+                    Connect with the Minds Behind Great Books
                   </p>
                 </div>
               </div>
               
-              <p className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl'} text-orange-100 max-w-4xl mx-auto mb-10 leading-relaxed`}>
-                Connect with talented authors, schedule live Q&A sessions, and discover the stories behind your favorite books. 
-                Join our vibrant community of writers and readers.
+              <p className={`${isMobile ? 'text-sm' : 'text-base sm:text-lg'} text-orange-100 max-w-3xl mx-auto mb-8 leading-relaxed`}>
+                Schedule live Q&A sessions and discover the stories behind your favorite books.
               </p>
               
               {/* Mobile: 2x2 grid, Desktop: 4 columns */}
-              <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-4 gap-4'} ${isMobile ? 'text-sm' : 'text-sm sm:text-base'} text-orange-100 mb-10 max-w-4xl mx-auto`}>
+              <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-4 gap-4'} ${isMobile ? 'text-sm' : 'text-sm sm:text-base'} text-orange-100 mb-8 max-w-4xl mx-auto`}>
                 <div className={`flex flex-col items-center gap-2 ${isMobile ? 'p-3' : 'p-4'} bg-white/10 rounded-lg`}>
                   <Users className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
-                  <span className="font-medium">50+ Active Authors</span>
+                  <span className="font-medium">50+ Authors</span>
                 </div>
                 <div className={`flex flex-col items-center gap-2 ${isMobile ? 'p-3' : 'p-4'} bg-white/10 rounded-lg`}>
                   <MessageSquare className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
-                  <span className="font-medium">Live Q&A Sessions</span>
+                  <span className="font-medium">Live Q&As</span>
                 </div>
                 <div className={`flex flex-col items-center gap-2 ${isMobile ? 'p-3' : 'p-4'} bg-white/10 rounded-lg`}>
                   <BookOpen className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
-                  <span className="font-medium">Writing Workshops</span>
+                  <span className="font-medium">Workshops</span>
                 </div>
                 <div className={`flex flex-col items-center gap-2 ${isMobile ? 'p-3' : 'p-4'} bg-white/10 rounded-lg`}>
                   <Star className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
-                  <span className="font-medium">Personalized Recommendations</span>
+                  <span className="font-medium">Recommendations</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className={`max-w-6xl mx-auto px-4 ${isMobile ? 'py-8' : 'py-16'}`}>
-          <AuthorSearch
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            sortOption={sortOption}
-            setSortOption={setSortOption}
-          />
+        <div className={`max-w-6xl mx-auto px-4 ${isMobile ? 'py-8' : 'py-12'}`}>
+          {/* Fixed Search and Filter positioning */}
+          <div className="mb-8 bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-orange-200">
+            <AuthorSearch
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              sortOption={sortOption}
+              setSortOption={setSortOption}
+            />
+          </div>
 
           <AuthorGrid authors={sortedAuthors} />
 
