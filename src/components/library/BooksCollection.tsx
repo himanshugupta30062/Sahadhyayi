@@ -156,9 +156,9 @@ const BooksCollection = ({
               <Search className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Add New Books</h3>
+              <h3 className="text-lg font-bold text-gray-900">Ultimate Book Finder</h3>
               <p className="text-sm text-gray-600 font-normal">
-                Search millions of books from Open Library & Google Books
+                Search millions of books from 4 major sources: Open Library, Google Books, Project Gutenberg & Internet Archive
               </p>
             </div>
           </CardTitle>
@@ -186,13 +186,20 @@ const BooksCollection = ({
             </Alert>
           )}
 
-          <div className="bg-white/60 backdrop-blur-sm p-3 rounded-lg border border-blue-100">
-            <div className="grid sm:grid-cols-2 gap-3 text-xs text-gray-600">
+          <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-blue-100">
+            <div className="grid sm:grid-cols-2 gap-4 text-xs text-gray-600">
               <div>
-                <span className="font-medium text-gray-900">How it works:</span> Search → Find books → Auto-save to library
+                <span className="font-medium text-gray-900">🔍 How it works:</span>
+                <br />• Searches 4 APIs simultaneously
+                <br />• Merges data for complete book info
+                <br />• Finds legal PDF sources when available
               </div>
               <div>
-                <span className="font-medium text-gray-900">Tips:</span> Try specific titles, authors, or topics for best results
+                <span className="font-medium text-gray-900">📚 Sources:</span>
+                <br />• Open Library (metadata & covers)
+                <br />• Google Books (descriptions & previews)
+                <br />• Project Gutenberg (free PDFs)
+                <br />• Internet Archive (historical texts)
               </div>
             </div>
           </div>

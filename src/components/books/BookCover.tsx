@@ -16,16 +16,34 @@ interface BookCoverProps {
 const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl }: BookCoverProps) => {
   const handleDownloadPDF = () => {
     if (pdfUrl) {
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = `${title}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Check if it's a direct PDF download or a preview link
+      if (pdfUrl.includes('gutenberg') || pdfUrl.includes('archive.org') || pdfUrl.endsWith('.pdf')) {
+        // Direct PDF download
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Preview link (Google Books, etc.)
+        window.open(pdfUrl, '_blank');
+      }
     } else {
       alert('PDF not available for this book');
     }
   };
+
+  const getButtonText = () => {
+    if (!pdfUrl) return 'PDF Not Available';
+    if (pdfUrl.includes('gutenberg') || pdfUrl.includes('archive.org') || pdfUrl.endsWith('.pdf')) {
+      return 'Download PDF';
+    }
+    return 'View Preview';
+  };
+
+  const isButtonDisabled = !pdfUrl;
 
   return (
     <div className="lg:col-span-2">
@@ -48,14 +66,16 @@ const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl }:
         )}
         
         <div className="space-y-3">
-          {/* Download PDF Button */}
+          {/* PDF Button */}
           <Button 
             onClick={handleDownloadPDF}
-            className="w-full h-12 text-base bg-gray-700 hover:bg-gray-800 text-white" 
+            disabled={isButtonDisabled}
+            className="w-full h-12 text-base" 
+            variant={isButtonDisabled ? "outline" : "default"}
             size="lg"
           >
             <Download className="w-5 h-5 mr-2" />
-            Download PDF
+            {getButtonText()}
           </Button>
 
           {/* Audio Summary Button - Full Width */}

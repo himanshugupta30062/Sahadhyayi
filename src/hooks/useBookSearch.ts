@@ -22,6 +22,12 @@ interface SearchResponse {
   booksFound: number;
   booksSaved: number;
   books: BookSearchResult[];
+  sources?: {
+    openLibrary: number;
+    googleBooks: number;
+    gutenberg: number;
+    archive: number;
+  };
   error?: string;
 }
 
