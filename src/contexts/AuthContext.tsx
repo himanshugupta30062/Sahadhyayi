@@ -103,20 +103,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!email || !password) {
         return { error: { message: 'Email and password are required' } as AuthError };
       }
-      
+
       if (password.length < 8) {
         return { error: { message: 'Password must be at least 8 characters long' } as AuthError };
       }
-      
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return { error: { message: 'Please enter a valid email address' } as AuthError };
       }
 
-      const redirectUrl = `${window.location.origin}/dashboard`;
-      
+      const emailLower = email.trim().toLowerCase();
+
+      // Check if a user already exists with this email using the admin API
+      const { data: existingUser, error: checkError } = await supabase.auth.admin.getUserByEmail(emailLower);
+      if (checkError) {
+        return { error: checkError };
+      }
+      if (existingUser) {
+        return { error: { message: 'An account with this email already exists. Please sign in.' } as AuthError };
+      }
+
+      const redirectUrl = 'https://www.sahadhyayi.com/signin';
+
       const { error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
+        email: emailLower,
         password,
         options: {
           emailRedirectTo: redirectUrl,

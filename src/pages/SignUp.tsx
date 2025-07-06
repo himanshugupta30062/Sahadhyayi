@@ -95,8 +95,8 @@ const SignUp = () => {
         // Enhanced error handling with user-friendly messages
         let errorMessage = error.message;
         
-        if (error.message.includes('User already registered')) {
-          errorMessage = 'An account with this email already exists. Please try signing in instead.';
+        if (error.message.includes('User already registered') || error.message.includes('already exists')) {
+          errorMessage = 'An account with this email already exists. Please sign in.';
         } else if (error.message.includes('Invalid email')) {
           errorMessage = 'Please enter a valid email address.';
         } else if (error.message.includes('Password')) {
@@ -104,7 +104,7 @@ const SignUp = () => {
         } else if (error.message.includes('rate limit')) {
           errorMessage = 'Too many attempts. Please wait a moment before trying again.';
         } else if (error.message.includes('email') && error.message.includes('confirm')) {
-          errorMessage = 'Account created successfully! You can now sign in directly - email confirmation is optional.';
+          errorMessage = 'A verification email has been sent to your email.';
           setSuccess(errorMessage);
           
           // Clear form on success
@@ -129,7 +129,7 @@ const SignUp = () => {
         return;
       }
 
-      setSuccess('Account created successfully! You can now sign in.');
+      setSuccess('A verification email has been sent to your email.');
       
       // Clear form on success
       setFormData({
