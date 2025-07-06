@@ -22,6 +22,7 @@ interface LibraryPaginationProps {
   pageSize: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  scrollTargetRef?: React.RefObject<HTMLElement>;
 }
 
 const LibraryPagination: React.FC<LibraryPaginationProps> = ({
@@ -30,6 +31,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
   pageSize,
   onPageChange,
   onPageSizeChange,
+  scrollTargetRef,
 }) => {
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const [goInput, setGoInput] = useState('');
@@ -39,8 +41,12 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
   const end = Math.min(currentPage * pageSize, totalCount);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage, pageSize]);
+    if (scrollTargetRef?.current) {
+      scrollTargetRef.current.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage, pageSize, scrollTargetRef]);
 
   const handlePageSizeChange = (value: string) => {
     const size = parseInt(value, 10);
@@ -124,6 +130,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                   <PaginationLink
                     href="#"
                     isActive={page === currentPage}
+                    className={page === currentPage ? 'font-bold' : undefined}
                     onClick={(e) => {
                       e.preventDefault();
                       onPageChange(page);
