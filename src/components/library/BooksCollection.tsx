@@ -16,6 +16,13 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LibraryPagination from './LibraryPagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface BooksCollectionProps {
   searchQuery: string;
@@ -218,6 +225,28 @@ const BooksCollection = ({
     setCurrentPagePersonal(1);
   }, [filteredPersonalBooks, pageSize]);
 
+  const startAll =
+    filteredAllBooks.length === 0
+      ? 0
+      : (currentPageAll - 1) * pageSize + 1;
+  const endAll = Math.min(currentPageAll * pageSize, filteredAllBooks.length);
+
+  const startPersonal =
+    filteredPersonalBooks.length === 0
+      ? 0
+      : (currentPagePersonal - 1) * pageSize + 1;
+  const endPersonal = Math.min(
+    currentPagePersonal * pageSize,
+    filteredPersonalBooks.length
+  );
+
+  const handlePageSizeChangeTop = (value: string) => {
+    const size = parseInt(value, 10);
+    setPageSize(size);
+    setCurrentPageAll(1);
+    setCurrentPagePersonal(1);
+  };
+
   if (isLoadingAll) {
     return <LoadingGrid />;
   }
@@ -326,6 +355,22 @@ const BooksCollection = ({
                 {filteredAllBooks.length} books
               </span>
             )}
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-sm text-gray-600">
+                Showing {startAll}-{endAll} of {filteredAllBooks.length}
+              </span>
+              <span className="text-sm text-gray-600">Books per page</span>
+              <Select value={String(pageSize)} onValueChange={handlePageSizeChangeTop}>
+                <SelectTrigger className="w-20 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[10, 20, 50, 100].map((size) => (
+                    <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div ref={allGridRef} className="space-y-6">
             <BooksGrid books={paginatedAllBooks} onDownloadPDF={handleDownloadPDF} />
@@ -354,6 +399,22 @@ const BooksCollection = ({
                   {filteredPersonalBooks.length} books
                 </span>
               )}
+              <div className="ml-auto flex items-center gap-2">
+                <span className="text-sm text-gray-600">
+                  Showing {startPersonal}-{endPersonal} of {filteredPersonalBooks.length}
+                </span>
+                <span className="text-sm text-gray-600">Books per page</span>
+                <Select value={String(pageSize)} onValueChange={handlePageSizeChangeTop}>
+                  <SelectTrigger className="w-20 h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[10, 20, 50, 100].map((size) => (
+                      <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             {isLoadingPersonal ? (
