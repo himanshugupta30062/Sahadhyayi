@@ -15,6 +15,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import LibraryPagination from './LibraryPagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface BooksCollectionProps {
   searchQuery: string;
@@ -53,6 +55,11 @@ const BooksCollection = ({
   const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [foundBooks, setFoundBooks] = useState<any[]>([]);
   const [lastSearchTerm, setLastSearchTerm] = useState('');
+
+  // Pagination state
+  const [pageSize, setPageSize] = useState(12);
+  const [currentPageAll, setCurrentPageAll] = useState(1);
+  const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
 
   // Convert personal library to Book format for compatibility
   const personalBooks: Book[] = useMemo(() => {
@@ -186,6 +193,32 @@ const BooksCollection = ({
   const filteredAllBooks = useMemo(() => getFilteredBooks(allLibraryBooks), [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
   const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
+  const totalPagesAll = Math.ceil(filteredAllBooks.length / pageSize) || 1;
+  const totalPagesPersonal = Math.ceil(filteredPersonalBooks.length / pageSize) || 1;
+
+  const paginatedAllBooks = useMemo(
+    () =>
+      filteredAllBooks.slice((currentPageAll - 1) * pageSize, currentPageAll * pageSize),
+    [filteredAllBooks, currentPageAll, pageSize]
+  );
+
+  const paginatedPersonalBooks = useMemo(
+    () =>
+      filteredPersonalBooks.slice(
+        (currentPagePersonal - 1) * pageSize,
+        currentPagePersonal * pageSize
+      ),
+    [filteredPersonalBooks, currentPagePersonal, pageSize]
+  );
+
+  useEffect(() => {
+    setCurrentPageAll(1);
+  }, [filteredAllBooks, pageSize]);
+
+  useEffect(() => {
+    setCurrentPagePersonal(1);
+  }, [filteredPersonalBooks, pageSize]);
+
   if (isLoadingAll) {
     return <LoadingGrid />;
   }
@@ -265,6 +298,21 @@ const BooksCollection = ({
       </Card>
 
       {/* Books Collection with Tabs */}
+      <div className="flex justify-end mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Page size</span>
+          <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(parseInt(v))}>
+            <SelectTrigger className="w-20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[8, 12, 16, 20].map((size) => (
+                <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       <Tabs defaultValue="all-books" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all-books" className="flex items-center gap-2">
@@ -295,7 +343,12 @@ const BooksCollection = ({
               </span>
             )}
           </div>
-          <BooksGrid books={filteredAllBooks} onDownloadPDF={handleDownloadPDF} />
+          <BooksGrid books={paginatedAllBooks} onDownloadPDF={handleDownloadPDF} />
+          <LibraryPagination
+            currentPage={currentPageAll}
+            totalPages={totalPagesAll}
+            onPageChange={setCurrentPageAll}
+          />
         </TabsContent>
 
         {user && (
@@ -317,7 +370,17 @@ const BooksCollection = ({
             {isLoadingPersonal ? (
               <LoadingGrid />
             ) : (
-              <BooksGrid books={filteredPersonalBooks} onDownloadPDF={handleDownloadPDF} />
+              <div className="space-y-6">
+                <BooksGrid
+                  books={paginatedPersonalBooks}
+                  onDownloadPDF={handleDownloadPDF}
+                />
+                <LibraryPagination
+                  currentPage={currentPagePersonal}
+                  totalPages={totalPagesPersonal}
+                  onPageChange={setCurrentPagePersonal}
+                />
+              </div>
             )}
           </TabsContent>
         )}
