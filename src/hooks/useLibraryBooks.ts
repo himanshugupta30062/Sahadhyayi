@@ -32,7 +32,7 @@ export const useAllLibraryBooks = () => {
       const { data, error } = await supabase
         .from('books_library')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Error fetching library books:', error);
@@ -67,7 +67,7 @@ export const useBooksByGenre = (genre: string) => {
       let query = supabase
         .from('books_library')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (genre !== 'All') {
         if (genre === 'Hindi') {
