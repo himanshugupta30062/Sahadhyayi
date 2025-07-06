@@ -21,19 +21,19 @@ const Reviews = () => {
       />
       
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        {/* Fixed Social Media Section Header */}
-        <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Fixed Social Media Section Header with proper top spacing */}
+        <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg mt-16 md:mt-20" style={{scrollMarginTop: '80px'}}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="text-center">
-              <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="flex items-center justify-center space-x-3 mb-6">
                 <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
                   <Users className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
                   Social Reading Community
                 </h1>
               </div>
-              <p className="text-lg sm:text-xl text-orange-100 max-w-3xl mx-auto mb-6 leading-relaxed">
+              <p className="text-lg sm:text-xl text-orange-100 max-w-3xl mx-auto mb-8 leading-relaxed">
                 Connect with fellow readers, share your thoughts, and discover amazing books through our vibrant community.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-orange-100">

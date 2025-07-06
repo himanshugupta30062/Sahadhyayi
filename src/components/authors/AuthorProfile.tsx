@@ -44,7 +44,7 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
   };
 
   return (
-    <Card className="group bg-white/95 backdrop-blur-sm border-orange-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:border-orange-300 rounded-2xl overflow-hidden">
+    <Card className="group bg-white/95 backdrop-blur-sm border-orange-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:border-orange-300 rounded-2xl overflow-hidden h-full flex flex-col">
       <CardHeader className={`text-center ${isMobile ? 'pb-4' : 'pb-6'}`}>
         <Avatar className={`${isMobile ? 'w-20 h-20' : 'w-28 h-28'} mx-auto ${isMobile ? 'mb-4' : 'mb-6'} ring-4 ring-orange-200 group-hover:ring-orange-400 transition-all`}>
           <AvatarImage src={author.image} alt={`${author.name} profile`} />
@@ -68,7 +68,7 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
         </div>
       </CardHeader>
       
-      <CardContent className={`space-y-6 ${isMobile ? 'px-4 pb-6' : 'px-6 pb-8'}`}>
+      <CardContent className={`flex-1 flex flex-col space-y-6 ${isMobile ? 'px-4 pb-6' : 'px-6 pb-8'}`}>
         <p className={`text-gray-700 leading-relaxed line-clamp-4 ${isMobile ? 'text-sm' : ''}`}>{author.bio}</p>
         
         <div>
@@ -93,71 +93,73 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
           <p className={`text-orange-800 font-medium ${isMobile ? 'text-sm' : ''}`}>{author.nextSession}</p>
         </div>
 
-        {/* Fixed button layout to fit properly in card */}
-        <div className={`flex ${isMobile ? 'flex-col gap-3' : 'gap-3'} pt-2`}>
-          <ScheduleSessionDialog
-            author={author}
-            trigger={
-              <Button 
-                size={isMobile ? "default" : "lg"}
-                className={`flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all ${isMobile ? 'h-11' : 'h-12'}`}
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Schedule Session
-              </Button>
-            }
-          />
-          
-          {/* Message Dialog */}
-          <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                size={isMobile ? "default" : "lg"}
-                variant="outline" 
-                className={`flex-1 border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 transition-all ${isMobile ? 'h-11' : 'h-12'}`}
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Message
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Send Message to {author.name}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="message">Your Message</Label>
-                  <Textarea
-                    id="message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Write your message to the author..."
-                    rows={5}
-                    className="resize-none"
-                  />
+        {/* Fixed button layout with proper spacing and sizing */}
+        <div className="mt-auto pt-4">
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-2 gap-3'}`}>
+            <ScheduleSessionDialog
+              author={author}
+              trigger={
+                <Button 
+                  size={isMobile ? "default" : "lg"}
+                  className={`w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all ${isMobile ? 'h-11 text-sm' : 'h-12'}`}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Schedule Session
+                </Button>
+              }
+            />
+            
+            {/* Message Dialog with proper button sizing */}
+            <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  size={isMobile ? "default" : "lg"}
+                  variant="outline" 
+                  className={`w-full border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 transition-all ${isMobile ? 'h-11 text-sm' : 'h-12'}`}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Message
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Send Message to {author.name}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="message">Your Message</Label>
+                    <Textarea
+                      id="message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Write your message to the author..."
+                      rows={5}
+                      className="resize-none"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleSendMessage}
+                      disabled={!message.trim()}
+                      className="bg-orange-600 hover:bg-orange-700 flex-1"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Send Message
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsMessageDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 text-center">
+                    Direct messaging feature is coming soon! This is a preview.
+                  </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleSendMessage}
-                    disabled={!message.trim()}
-                    className="bg-orange-600 hover:bg-orange-700 flex-1"
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Message
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsMessageDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-500 text-center">
-                  Direct messaging feature is coming soon! This is a preview.
-                </p>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </CardContent>
     </Card>
