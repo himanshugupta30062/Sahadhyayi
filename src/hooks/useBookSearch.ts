@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -36,10 +37,10 @@ export const useBookSearch = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<BookSearchResult[]>([]);
 
-  const searchBooks = async (searchTerm: string): Promise<void> => {
+  const searchBooks = async (searchTerm: string): Promise<BookSearchResult[]> => {
     if (!searchTerm.trim()) {
       setError('Please enter a search term');
-      return;
+      return [];
     }
 
     setLoading(true);
@@ -61,6 +62,7 @@ export const useBookSearch = () => {
         if (response.books.length === 0) {
           setError('No books found for your search term. Try different keywords.');
         }
+        return response.books;
       } else {
         throw new Error(response.error || 'Search failed');
       }
@@ -68,6 +70,7 @@ export const useBookSearch = () => {
       console.error('Book search error:', err);
       setError(err instanceof Error ? err.message : 'Failed to search books');
       setSearchResults([]);
+      return [];
     } finally {
       setLoading(false);
     }

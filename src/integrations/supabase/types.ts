@@ -743,6 +743,35 @@ export type Database = {
           },
         ]
       }
+      user_personal_library: {
+        Row: {
+          added_at: string | null
+          book_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          book_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          book_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_personal_library_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profile: {
         Row: {
           bio: string | null
@@ -808,6 +837,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_unused_books: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_user_bookshelf_stats: {
         Args: { user_uuid: string }
         Returns: {
