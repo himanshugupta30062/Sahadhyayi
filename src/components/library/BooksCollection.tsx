@@ -16,7 +16,6 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LibraryPagination from './LibraryPagination';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface BooksCollectionProps {
   searchQuery: string;
@@ -57,7 +56,7 @@ const BooksCollection = ({
   const [lastSearchTerm, setLastSearchTerm] = useState('');
 
   // Pagination state
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(10);
   const [currentPageAll, setCurrentPageAll] = useState(1);
   const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
 
@@ -193,8 +192,6 @@ const BooksCollection = ({
   const filteredAllBooks = useMemo(() => getFilteredBooks(allLibraryBooks), [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
   const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
-  const totalPagesAll = Math.ceil(filteredAllBooks.length / pageSize) || 1;
-  const totalPagesPersonal = Math.ceil(filteredPersonalBooks.length / pageSize) || 1;
 
   const paginatedAllBooks = useMemo(
     () =>
@@ -298,21 +295,6 @@ const BooksCollection = ({
       </Card>
 
       {/* Books Collection with Tabs */}
-      <div className="flex justify-end mb-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Page size</span>
-          <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(parseInt(v))}>
-            <SelectTrigger className="w-20">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {[8, 12, 16, 20].map((size) => (
-                <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
       <Tabs defaultValue="all-books" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all-books" className="flex items-center gap-2">
@@ -345,9 +327,11 @@ const BooksCollection = ({
           </div>
           <BooksGrid books={paginatedAllBooks} onDownloadPDF={handleDownloadPDF} />
           <LibraryPagination
+            totalCount={filteredAllBooks.length}
             currentPage={currentPageAll}
-            totalPages={totalPagesAll}
+            pageSize={pageSize}
             onPageChange={setCurrentPageAll}
+            onPageSizeChange={setPageSize}
           />
         </TabsContent>
 
@@ -376,9 +360,11 @@ const BooksCollection = ({
                   onDownloadPDF={handleDownloadPDF}
                 />
                 <LibraryPagination
+                  totalCount={filteredPersonalBooks.length}
                   currentPage={currentPagePersonal}
-                  totalPages={totalPagesPersonal}
+                  pageSize={pageSize}
                   onPageChange={setCurrentPagePersonal}
+                  onPageSizeChange={setPageSize}
                 />
               </div>
             )}
