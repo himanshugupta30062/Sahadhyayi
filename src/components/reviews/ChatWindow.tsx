@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, X } from 'lucide-react';
+import { Send, X, MessageSquare } from 'lucide-react';
 import { sampleConversations } from './chatData';
 
 interface ChatWindowProps {
@@ -45,13 +45,21 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   };
 
+  const truncateMessage = (text: string, maxLength: number = 100) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed bottom-4 right-4 w-80 h-96 bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col z-50">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
-        <h3 className="font-semibold">Reading Community Chat</h3>
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-5 h-5" />
+          <h3 className="font-semibold">Reading Community Chat</h3>
+        </div>
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
           <X className="w-4 h-4" />
         </Button>
@@ -68,17 +76,26 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
                 </AvatarFallback>
               </Avatar>
               <div className={`flex flex-col ${msg.isMe ? 'items-end' : 'items-start'} space-y-1`}>
-                <div className={`px-3 py-2 rounded-lg shadow-sm break-words ${
+                <div className={`px-3 py-2 rounded-lg shadow-sm ${
                   msg.isMe 
                     ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white' 
                     : 'bg-gray-100 text-gray-900'
                 }`}>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap word-wrap break-word">
-                    {msg.message}
+                  <p 
+                    className="text-sm leading-relaxed break-words overflow-hidden"
+                    style={{
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                      maxWidth: '100%'
+                    }}
+                    title={msg.message.length > 100 ? msg.message : undefined}
+                  >
+                    {truncateMessage(msg.message)}
                   </p>
                 </div>
                 <div className={`flex items-center space-x-2 text-xs text-gray-500 ${msg.isMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                  <span className="font-medium">{msg.sender}</span>
+                  <span className="font-medium truncate max-w-20">{msg.sender}</span>
                   <span>•</span>
                   <span>{msg.timestamp}</span>
                 </div>

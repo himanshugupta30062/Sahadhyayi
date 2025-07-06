@@ -1,54 +1,14 @@
-import { useState, useEffect } from "react";
-import { Users, Mail, Heart, ExternalLink, TrendingUp } from "lucide-react";
+import { useState } from "react";
+import { Users, Mail, Heart, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-
-interface CommunityStats {
-  totalSignups: number;
-  totalVisits: number;
-  lastUpdated: string;
-}
+import { useCommunityStats } from "@/hooks/useCommunityStats";
 
 const GlobalFooter = () => {
-  const [memberCount, setMemberCount] = useState(15847);
-  const [visitCount, setVisitCount] = useState(125000);
   const [showCount, setShowCount] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [hasJoined, setHasJoined] = useState(false);
   const { toast } = useToast();
-
-  // Fetch community stats from API
-  const fetchCommunityStats = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('https://c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0.supabase.co/functions/v1/community-stats', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        const stats: CommunityStats = await response.json();
-        setMemberCount(stats.totalSignups);
-        setVisitCount(stats.totalVisits);
-      }
-    } catch (error) {
-      console.error('Failed to fetch community stats:', error);
-      // Keep existing fallback values
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Simulate real-time member count updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMemberCount(prev => prev + Math.floor(Math.random() * 3));
-      setVisitCount(prev => prev + Math.floor(Math.random() * 12));
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+  const { stats, isLoading, joinCommunity } = useCommunityStats();
 
   const handleEmailClick = () => {
     window.location.href = 'mailto:gyan@sahadhyayi.com';
@@ -62,10 +22,26 @@ const GlobalFooter = () => {
   };
 
   const handleShowStats = () => {
-    if (!showCount) {
-      fetchCommunityStats();
-    }
     setShowCount(!showCount);
+  };
+
+  const handleJoinCommunity = async () => {
+    if (hasJoined) return;
+    
+    const success = await joinCommunity();
+    if (success) {
+      setHasJoined(true);
+      toast({
+        title: "Thanks for joining!",
+        description: "Welcome to the Sahadhyayi reading community!",
+      });
+    } else {
+      toast({
+        title: "Welcome!",
+        description: "Thanks for your interest in joining our community!",
+      });
+      setHasJoined(true);
+    }
   };
 
   return (
@@ -95,24 +71,34 @@ const GlobalFooter = () => {
               className="border-orange-200 text-orange-100 hover:bg-orange-500 hover:text-white transition-all mb-4"
             >
               <Users className="w-4 h-4 mr-2" />
-              {isLoading ? 'Loading...' : showCount ? `${memberCount.toLocaleString()} Members` : 'Show Community Size'}
+              {isLoading ? 'Loading...' : showCount ? `${stats.totalSignups.toLocaleString()} Members` : 'Show Community Size'}
             </Button>
             
             {showCount && (
-              <div className="bg-orange-500/30 p-4 rounded-lg backdrop-blur-sm space-y-3">
+              <div className="bg-orange-500/30 p-4 rounded-lg backdrop-blur-sm space-y-3 mb-4">
                 <div className="flex items-center text-sm text-orange-100">
                   <Heart className="w-4 h-4 mr-2 text-red-300" />
                   <span>
-                    <span className="font-bold text-white">{memberCount.toLocaleString()}</span> registered readers
+                    <span className="font-bold text-white">{stats.totalSignups.toLocaleString()}</span> registered readers
                   </span>
                 </div>
                 <div className="flex items-center text-sm text-orange-100">
                   <TrendingUp className="w-4 h-4 mr-2 text-green-300" />
                   <span>
-                    <span className="font-bold text-white">{visitCount.toLocaleString()}</span> total website visits
+                    <span className="font-bold text-white">{stats.totalVisits.toLocaleString()}</span> total website visits
                   </span>
                 </div>
                 <p className="text-xs text-orange-200">Growing every day worldwide!</p>
+                
+                {/* Join Community Button */}
+                <Button
+                  onClick={handleJoinCommunity}
+                  disabled={hasJoined}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white transition-all"
+                  size="sm"
+                >
+                  {hasJoined ? "Thanks for joining!" : "Join Community"}
+                </Button>
               </div>
             )}
           </div>
