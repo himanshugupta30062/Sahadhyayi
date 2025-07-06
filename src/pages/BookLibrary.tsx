@@ -1,12 +1,20 @@
 
 import React, { useState } from 'react';
-import { BookOpen, Users } from 'lucide-react';
+import { BookOpen, Users, Database, Plus } from 'lucide-react';
 import { SearchBar } from '@/components/ui/search-bar';
 import FilterPopup from '@/components/library/FilterPopup';
 import BooksCollection from '@/components/library/BooksCollection';
 import GenreSelector from '@/components/library/GenreSelector';
+import BookSearchBar from '@/components/books/BookSearchBar';
+import BookTestGrid from '@/components/books/BookTestGrid';
 import SEO from '@/components/SEO';
 import { Link } from 'react-router-dom';
+import { useBookSearch } from '@/hooks/useBookSearch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
 const BookLibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,6 +23,21 @@ const BookLibrary = () => {
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+
+  // Book search functionality
+  const {
+    loading: searchLoading,
+    error: searchError,
+    searchResults,
+    searchBooks,
+    getAllTestBooks,
+    clearResults
+  } = useBookSearch();
+
+  // Load existing books from test table on mount
+  React.useEffect(() => {
+    getAllTestBooks();
+  }, []);
 
   const handleClearFilters = () => {
     setSelectedGenre('All');
@@ -170,6 +193,119 @@ const BookLibrary = () => {
             selectedLanguage={selectedLanguage}
             priceRange={priceRange}
           />
+        </section>
+
+        {/* Book Search & Discovery Section */}
+        <section aria-labelledby="book-search-heading" className="mt-16">
+          <div className="space-y-8">
+            <div className="text-center">
+              <h2 id="book-search-heading" className="text-3xl font-bold text-gray-900 mb-4">
+                Discover New Books
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+                Search for books from our extensive database using Open Library and Google Books. 
+                Found books are automatically added to our collection for everyone to discover.
+              </p>
+            </div>
+
+            {/* API Book Search Card */}
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Database className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Search & Add Books</h3>
+                    <p className="text-sm text-gray-600 font-normal">
+                      Search millions of books and add them to our library
+                    </p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="flex-1 w-full">
+                    <BookSearchBar onSearch={searchBooks} loading={searchLoading} />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={getAllTestBooks}
+                      disabled={searchLoading}
+                      className="flex items-center gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Refresh Library
+                    </Button>
+                    {searchResults.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        onClick={clearResults}
+                        disabled={searchLoading}
+                      >
+                        Clear Results
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-blue-100">
+                  <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">How it works:</h4>
+                      <ul className="space-y-1 text-gray-600 text-xs">
+                        <li>• Search Open Library & Google Books APIs</li>
+                        <li>• Automatically prevents duplicate entries</li>
+                        <li>• Saves books with covers, descriptions & metadata</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Search Tips:</h4>
+                      <ul className="space-y-1 text-gray-600 text-xs">
+                        <li>• Try book titles, author names, or topics</li>
+                        <li>• Use specific terms for better results</li>
+                        <li>• Books are added to the community library</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Error Display */}
+            {searchError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{searchError}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Search Results */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <BookOpen className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Community Book Collection
+                    </h3>
+                    {searchResults.length > 0 && (
+                      <p className="text-sm text-gray-600">
+                        {searchResults.length} books available
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <BookTestGrid books={searchResults} loading={searchLoading} />
+            </div>
+          </div>
         </section>
 
         {/* Popular Categories Section */}
