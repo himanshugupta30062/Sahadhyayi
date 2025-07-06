@@ -23,8 +23,7 @@ const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl }:
       link.click();
       document.body.removeChild(link);
     } else {
-      console.log('PDF download requested for:', title);
-      // Here you could implement a fallback or show a message
+      alert('PDF not available for this book');
     }
   };
 
