@@ -20,6 +20,11 @@ export interface Book {
   author_bio?: string;
 }
 
+export interface Genre {
+  id: string;
+  name: string;
+}
+
 export const useAllLibraryBooks = () => {
   return useQuery({
     queryKey: ['all-library-books'],
@@ -95,6 +100,30 @@ export const useBooksByGenre = (genre: string) => {
         isbn: book.isbn,
         pages: book.pages,
         author_bio: book.author_bio
+      }));
+    },
+  });
+};
+
+export const useGenres = () => {
+  return useQuery({
+    queryKey: ['genres'],
+    queryFn: async (): Promise<Genre[]> => {
+      const { data, error } = await supabase
+        .from('books_library')
+        .select('genre')
+        .not('genre', 'is', null);
+
+      if (error) {
+        console.error('Error fetching genres:', error);
+        throw error;
+      }
+
+      // Get unique genres and map to Genre interface
+      const uniqueGenres = [...new Set(data.map(item => item.genre))];
+      return uniqueGenres.map((genre, index) => ({
+        id: index.toString(),
+        name: genre
       }));
     },
   });
