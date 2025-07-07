@@ -1,11 +1,10 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, MessageCircle, MapPin, UsersIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import { SocialFeed } from '@/components/social/SocialFeed';
 import { SocialFriends } from '@/components/social/SocialFriends';
@@ -14,7 +13,18 @@ import { ReadingGroups } from '@/components/social/ReadingGroups';
 
 const SocialMedia = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(!user);
+
+  useEffect(() => {
+    setShowAuthModal(!user);
+  }, [user]);
+
+  const handleModalClose = () => {
+    setShowAuthModal(false);
+    // Redirect to home page when user closes the modal
+    navigate('/', { replace: true });
+  };
 
   // If user is not authenticated, show modal
   if (!user) {
@@ -27,7 +37,7 @@ const SocialMedia = () => {
           url="https://sahadhyayi.com/social"
         />
         
-        <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+        <Dialog open={showAuthModal} onOpenChange={handleModalClose}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-center text-xl font-bold text-gray-900">
