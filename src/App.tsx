@@ -20,7 +20,6 @@ const About = React.lazy(() => import("./pages/About"));
 const Bookshelf = React.lazy(() => import("./pages/Bookshelf"));
 const BookLibrary = React.lazy(() => import("./pages/BookLibrary"));
 const ReadingGroups = React.lazy(() => import("./pages/ReadingGroups"));
-const Reviews = React.lazy(() => import("./pages/Reviews"));
 const SocialMedia = React.lazy(() => import("./pages/SocialMedia"));
 const AuthorConnect = React.lazy(() => import("./pages/AuthorConnect"));
 const ReaderMap = React.lazy(() => import("./pages/ReaderMap"));
@@ -116,7 +115,8 @@ const App = () => (
                       <ReadingGroups />
                     </ProtectedRoute>
                   } />
-                  <Route path="/reviews" element={<Reviews />} />
+                  {/* Redirect /reviews to /social */}
+                  <Route path="/reviews" element={<Navigate to="/social" replace />} />
                   <Route path="/social" element={<SocialMedia />} />
                   <Route path="/quotes" element={
                     <ProtectedRoute>
@@ -188,7 +188,7 @@ const ComingSoonPage = ({ title }: { title: string }) => {
             ← Return to Dashboard
           </a>
           <div className="flex justify-center space-x-4 text-sm">
-            <a href="/reviews" className="text-amber-600 hover:text-amber-700">Community</a>
+            <a href="/social" className="text-amber-600 hover:text-amber-700">Community</a>
             <a href="/library" className="text-amber-600 hover:text-amber-700">Library</a>
           </div>
         </div>
