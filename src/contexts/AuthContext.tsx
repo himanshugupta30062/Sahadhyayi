@@ -115,9 +115,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const emailLower = email.trim().toLowerCase();
 
-      // Try to create the user account directly
-      // Note: Supabase will handle duplicate email checking automatically
-
       const redirectUrl = 'https://www.sahadhyayi.com/signin';
 
       const { error } = await supabase.auth.signUp({
@@ -165,33 +162,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('[AUTH] Starting sign out process...');
       
-      // First, sign out from Supabase
+      // Clear local state first
+      setUser(null);
+      setSession(null);
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Error signing out from Supabase:', error);
-        throw error;
       }
-
-      // Clear local state immediately
-      setUser(null);
-      setSession(null);
-      
-      // Clear any stored auth tokens
-      localStorage.removeItem('sb-rknxtatvlzunatpyqxro-auth-token');
-      sessionStorage.clear();
       
       console.log('[AUTH] Sign out completed successfully');
       
-      // Force redirect to home page
-      window.location.href = '/';
     } catch (error) {
       console.error('Signout error:', error);
-      // Even if there's an error, clear local state and redirect
+      // Ensure local state is cleared even if there's an error
       setUser(null);
       setSession(null);
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.href = '/';
     }
   };
 

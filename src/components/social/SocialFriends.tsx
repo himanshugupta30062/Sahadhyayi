@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,7 @@ const mockFriends: Friend[] = [
     id: '1',
     name: 'Sarah Johnson',
     username: 'sarah_reads',
+    avatar: '',
     mutualFriends: 5,
     isOnline: true
   },
@@ -30,6 +30,7 @@ const mockFriends: Friend[] = [
     id: '2',
     name: 'Mike Chen',
     username: 'bookworm_mike',
+    avatar: '',
     mutualFriends: 3,
     isOnline: false
   }
@@ -42,6 +43,7 @@ const mockRequests = [
       id: '3',
       name: 'Emma Wilson',
       username: 'emma_bookclub',
+      avatar: '',
       mutualFriends: 2,
       isOnline: true
     },
@@ -59,7 +61,7 @@ export const SocialFriends = () => {
   const handleAcceptRequest = (requestId: string) => {
     const request = requests.find(r => r.id === requestId);
     if (request) {
-      setFriends([...friends, request.user]);
+      setFriends([...friends, { ...request.user, avatar: request.user.avatar || '' }]);
       setRequests(requests.filter(r => r.id !== requestId));
       toast({ title: 'Friend request accepted!' });
     }
