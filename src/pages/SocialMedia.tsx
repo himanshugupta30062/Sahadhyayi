@@ -4,21 +4,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, MessageCircle, MapPin, UsersIcon, Bell, Search } from 'lucide-react';
+import { Users, MessageCircle, MapPin, UsersIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import { SocialFeed } from '@/components/social/SocialFeed';
 import { SocialFriends } from '@/components/social/SocialFriends';
 import { ReadingMap } from '@/components/social/ReadingMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
-import { NotificationPanel } from '@/components/social/NotificationPanel';
-import { GlobalSearch } from '@/components/social/GlobalSearch';
 
 const SocialMedia = () => {
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(!user);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
 
   // If user is not authenticated, show modal
   if (!user) {
@@ -70,84 +66,54 @@ const SocialMedia = () => {
         url="https://sahadhyayi.com/social"
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        {/* Header with Search and Notifications */}
-        <div className="bg-white shadow-sm border-b border-gray-200 mt-16 md:mt-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">Social Community</h1>
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowSearch(true)}
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  <Search className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowNotifications(true)}
-                  className="text-gray-600 hover:text-gray-900 relative"
-                >
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-                </Button>
-              </div>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 pt-20">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h1 className="text-3xl font-bold text-gray-900">Social Community</h1>
+            <p className="text-gray-600 mt-2">Connect with fellow readers and share your reading journey</p>
           </div>
         </div>
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Tabs defaultValue="feed" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-8">
-              <TabsTrigger value="feed" className="flex items-center gap-2">
+            <TabsList className="grid w-full grid-cols-4 mb-8 bg-white shadow-sm">
+              <TabsTrigger value="feed" className="flex items-center gap-2 py-3">
                 <MessageCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Feed</span>
+                <span>Feed</span>
               </TabsTrigger>
-              <TabsTrigger value="friends" className="flex items-center gap-2">
+              <TabsTrigger value="friends" className="flex items-center gap-2 py-3">
                 <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">Friends</span>
+                <span>Friends</span>
               </TabsTrigger>
-              <TabsTrigger value="map" className="flex items-center gap-2">
+              <TabsTrigger value="map" className="flex items-center gap-2 py-3">
                 <MapPin className="w-4 h-4" />
-                <span className="hidden sm:inline">Reading Map</span>
+                <span>Reading Map</span>
               </TabsTrigger>
-              <TabsTrigger value="groups" className="flex items-center gap-2">
+              <TabsTrigger value="groups" className="flex items-center gap-2 py-3">
                 <UsersIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">Groups</span>
+                <span>Groups</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="feed">
+            <TabsContent value="feed" className="mt-0">
               <SocialFeed />
             </TabsContent>
 
-            <TabsContent value="friends">
+            <TabsContent value="friends" className="mt-0">
               <SocialFriends />
             </TabsContent>
 
-            <TabsContent value="map">
+            <TabsContent value="map" className="mt-0">
               <ReadingMap />
             </TabsContent>
 
-            <TabsContent value="groups">
+            <TabsContent value="groups" className="mt-0">
               <ReadingGroups />
             </TabsContent>
           </Tabs>
         </div>
-
-        {/* Modals */}
-        <NotificationPanel 
-          isOpen={showNotifications} 
-          onClose={() => setShowNotifications(false)} 
-        />
-        <GlobalSearch 
-          isOpen={showSearch} 
-          onClose={() => setShowSearch(false)} 
-        />
       </div>
     </>
   );

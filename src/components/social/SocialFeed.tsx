@@ -3,28 +3,17 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, MessageCircle, Share2, BookOpen, Image, Filter, Send } from 'lucide-react';
+import { Heart, MessageCircle, Share2, BookOpen, Send, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { FloatingChat } from '@/components/social/FloatingChat';
 
 interface Post {
   id: string;
-  user: {
-    name: string;
-    avatar?: string;
-    username: string;
-  };
+  user: { name: string; avatar?: string; username: string };
   content: string;
-  book?: {
-    title: string;
-    author: string;
-    id: string;
-  };
-  image?: string;
+  book?: { title: string; author: string };
   likes: number;
   comments: number;
   shares: number;
@@ -37,7 +26,7 @@ const mockPosts: Post[] = [
     id: '1',
     user: { name: 'Sarah Johnson', username: 'sarah_reads', avatar: '' },
     content: 'Just finished "The Seven Husbands of Evelyn Hugo" and I\'m absolutely mesmerized! The storytelling is incredible. Has anyone else read this masterpiece?',
-    book: { title: 'The Seven Husbands of Evelyn Hugo', author: 'Taylor Jenkins Reid', id: '1' },
+    book: { title: 'The Seven Husbands of Evelyn Hugo', author: 'Taylor Jenkins Reid' },
     likes: 24,
     comments: 8,
     shares: 3,
@@ -48,7 +37,7 @@ const mockPosts: Post[] = [
     id: '2',
     user: { name: 'Mike Chen', username: 'bookworm_mike', avatar: '' },
     content: 'Starting my reading challenge for this month! Goal is to read 3 books. First up is "Atomic Habits" - excited to dive in!',
-    book: { title: 'Atomic Habits', author: 'James Clear', id: '2' },
+    book: { title: 'Atomic Habits', author: 'James Clear' },
     likes: 18,
     comments: 5,
     shares: 2,
@@ -71,7 +60,7 @@ export const SocialFeed = () => {
       id: Date.now().toString(),
       user: { name: 'You', username: 'your_username', avatar: '' },
       content: newPost,
-      book: selectedBook ? { title: selectedBook, author: 'Unknown Author', id: selectedBook } : undefined,
+      book: selectedBook ? { title: selectedBook, author: 'Unknown Author' } : undefined,
       likes: 0,
       comments: 0,
       shares: 0,
@@ -95,17 +84,17 @@ export const SocialFeed = () => {
 
   const filteredPosts = posts.filter(post => {
     switch (filter) {
-      case 'friends': return true; // Mock: all posts are from friends
-      case 'groups': return false; // Mock: no group posts
+      case 'friends': return true;
+      case 'groups': return false;
       case 'books': return post.book !== undefined;
       default: return true;
     }
   });
 
   return (
-    <div className="space-y-6">
-      {/* Create Post Section */}
-      <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Create Post */}
+      <Card className="bg-white shadow-sm">
         <CardHeader>
           <h3 className="text-lg font-semibold text-gray-900">Share Your Reading Journey</h3>
         </CardHeader>
@@ -117,7 +106,7 @@ export const SocialFeed = () => {
             className="min-h-[100px]"
           />
           
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3">
             <Select value={selectedBook} onValueChange={setSelectedBook}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Tag a book" />
@@ -129,11 +118,6 @@ export const SocialFeed = () => {
               </SelectContent>
             </Select>
             
-            <Button variant="outline" size="sm">
-              <Image className="w-4 h-4 mr-2" />
-              Add Image
-            </Button>
-            
             <Button onClick={handleCreatePost} className="bg-orange-600 hover:bg-orange-700 ml-auto">
               <Send className="w-4 h-4 mr-2" />
               Post
@@ -143,9 +127,9 @@ export const SocialFeed = () => {
       </Card>
 
       {/* Filter Options */}
-      <div className="flex items-center gap-4 bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-amber-200">
+      <div className="flex items-center gap-4 bg-white rounded-lg p-4 shadow-sm">
         <Filter className="w-5 h-5 text-gray-600" />
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2">
           <Button
             variant={filter === 'all' ? 'default' : 'outline'}
             size="sm"
@@ -158,21 +142,21 @@ export const SocialFeed = () => {
             size="sm"
             onClick={() => setFilter('friends')}
           >
-            Friends Only
+            Friends
           </Button>
           <Button
             variant={filter === 'groups' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter('groups')}
           >
-            Groups Only
+            Groups
           </Button>
           <Button
             variant={filter === 'books' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter('books')}
           >
-            Books I've Read
+            My Books
           </Button>
         </div>
       </div>
@@ -180,7 +164,7 @@ export const SocialFeed = () => {
       {/* Posts Feed */}
       <div className="space-y-6">
         {filteredPosts.map((post) => (
-          <Card key={post.id} className="bg-white/95 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-shadow">
+          <Card key={post.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               {/* User Header */}
               <div className="flex items-center space-x-3 mb-4">
@@ -233,18 +217,11 @@ export const SocialFeed = () => {
                     <span className="font-medium">{post.shares}</span>
                   </button>
                 </div>
-                
-                <Button size="sm" variant="ghost" className="text-amber-600 hover:bg-amber-50">
-                  View Details
-                </Button>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Floating Chat */}
-      <FloatingChat />
     </div>
   );
 };

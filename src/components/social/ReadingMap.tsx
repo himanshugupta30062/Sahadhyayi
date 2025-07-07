@@ -11,15 +11,14 @@ interface ReadingData {
   country: string;
   readers: number;
   percentage: number;
-  coordinates: [number, number];
 }
 
 const mockReadingData: ReadingData[] = [
-  { country: 'United States', readers: 1250, percentage: 35.2, coordinates: [-95.7129, 37.0902] },
-  { country: 'United Kingdom', readers: 890, percentage: 25.1, coordinates: [-3.4360, 55.3781] },
-  { country: 'Canada', readers: 567, percentage: 16.0, coordinates: [-106.3468, 56.1304] },
-  { country: 'Australia', readers: 423, percentage: 11.9, coordinates: [133.7751, -25.2744] },
-  { country: 'India', readers: 312, percentage: 8.8, coordinates: [78.9629, 20.5937] }
+  { country: 'United States', readers: 1250, percentage: 35.2 },
+  { country: 'United Kingdom', readers: 890, percentage: 25.1 },
+  { country: 'Canada', readers: 567, percentage: 16.0 },
+  { country: 'Australia', readers: 423, percentage: 11.9 },
+  { country: 'India', readers: 312, percentage: 8.8 }
 ];
 
 const mockFriendsReading = [
@@ -31,15 +30,14 @@ export const ReadingMap = () => {
   const [selectedBook, setSelectedBook] = useState('atomic-habits');
   const [mapView, setMapView] = useState('world');
   const [showMyLocation, setShowMyLocation] = useState(true);
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
   const totalReaders = mockReadingData.reduce((sum, data) => sum + data.readers, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Controls */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+        <Card className="bg-white shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">Select Book</CardTitle>
           </CardHeader>
@@ -57,7 +55,7 @@ export const ReadingMap = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+        <Card className="bg-white shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">Map View</CardTitle>
           </CardHeader>
@@ -75,7 +73,7 @@ export const ReadingMap = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+        <Card className="bg-white shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">Privacy</CardTitle>
           </CardHeader>
@@ -95,7 +93,7 @@ export const ReadingMap = () => {
       </div>
 
       {/* Map Visualization */}
-      <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+      <Card className="bg-white shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="w-5 h-5" />
@@ -103,7 +101,6 @@ export const ReadingMap = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Mock Map Area */}
           <div className="h-96 bg-gradient-to-br from-blue-50 to-green-50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden">
             <div className="text-center">
               <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -116,14 +113,11 @@ export const ReadingMap = () => {
               {mockReadingData.map((data, index) => (
                 <div
                   key={data.country}
-                  className={`absolute w-4 h-4 rounded-full cursor-pointer transition-all hover:scale-150 ${
-                    selectedCountry === data.country ? 'bg-orange-500' : 'bg-red-500'
-                  }`}
+                  className="absolute w-4 h-4 bg-red-500 rounded-full cursor-pointer transition-all hover:scale-150"
                   style={{
                     left: `${20 + index * 15}%`,
                     top: `${30 + index * 10}%`,
                   }}
-                  onClick={() => setSelectedCountry(data.country)}
                   title={`${data.country}: ${data.readers} readers`}
                 />
               ))}
@@ -134,7 +128,7 @@ export const ReadingMap = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Reading Statistics */}
-        <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+        <Card className="bg-white shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5" />
@@ -168,7 +162,7 @@ export const ReadingMap = () => {
         </Card>
 
         {/* Friends Reading */}
-        <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+        <Card className="bg-white shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5" />
@@ -176,27 +170,23 @@ export const ReadingMap = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {mockFriendsReading.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No friends are currently reading this book</p>
-            ) : (
-              <div className="space-y-4">
-                {mockFriendsReading.map((friend, index) => (
-                  <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-gray-900">{friend.name}</h4>
-                      <span className="text-sm text-gray-500">{friend.location}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {friend.books.map((book) => (
-                        <Badge key={book} variant="outline" className="text-xs">
-                          {book}
-                        </Badge>
-                      ))}
-                    </div>
+            <div className="space-y-4">
+              {mockFriendsReading.map((friend, index) => (
+                <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-gray-900">{friend.name}</h4>
+                    <span className="text-sm text-gray-500">{friend.location}</span>
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="flex flex-wrap gap-1">
+                    {friend.books.map((book) => (
+                      <Badge key={book} variant="outline" className="text-xs">
+                        {book}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>

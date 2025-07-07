@@ -5,34 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Calendar, 
-  MessageCircle, 
-  Settings,
-  Lock,
-  Globe,
-  UserPlus
-} from 'lucide-react';
+import { Users, Plus, Search, Globe, Lock, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ReadingGroup {
   id: string;
   name: string;
   description: string;
-  coverImage?: string;
   privacy: 'public' | 'private' | 'invite-only';
   memberCount: number;
   isJoined: boolean;
-  isAdmin: boolean;
   categories: string[];
-  language: string;
   recentActivity: string;
 }
 
@@ -44,9 +29,7 @@ const mockGroups: ReadingGroup[] = [
     privacy: 'public',
     memberCount: 324,
     isJoined: true,
-    isAdmin: false,
     categories: ['Mystery', 'Thriller'],
-    language: 'English',
     recentActivity: '2 hours ago'
   },
   {
@@ -56,9 +39,7 @@ const mockGroups: ReadingGroup[] = [
     privacy: 'public',
     memberCount: 201,
     isJoined: false,
-    isAdmin: false,
     categories: ['Historical Fiction'],
-    language: 'English',
     recentActivity: '5 hours ago'
   }
 ];
@@ -70,8 +51,7 @@ export const ReadingGroups = () => {
   const [newGroup, setNewGroup] = useState({
     name: '',
     description: '',
-    privacy: 'public' as const,
-    categories: [] as string[]
+    privacy: 'public' as const
   });
   const { toast } = useToast();
 
@@ -88,14 +68,12 @@ export const ReadingGroups = () => {
       privacy: newGroup.privacy,
       memberCount: 1,
       isJoined: true,
-      isAdmin: true,
-      categories: newGroup.categories,
-      language: 'English',
+      categories: [],
       recentActivity: 'now'
     };
 
     setGroups([group, ...groups]);
-    setNewGroup({ name: '', description: '', privacy: 'public', categories: [] });
+    setNewGroup({ name: '', description: '', privacy: 'public' });
     setShowCreateDialog(false);
     toast({ title: 'Group created successfully!' });
   };
@@ -109,27 +87,13 @@ export const ReadingGroups = () => {
     toast({ title: 'Joined group successfully!' });
   };
 
-  const handleLeaveGroup = (groupId: string) => {
-    setGroups(groups.map(group => 
-      group.id === groupId 
-        ? { ...group, isJoined: false, memberCount: group.memberCount - 1 }
-        : group
-    ));
-    toast({ title: 'Left group successfully!' });
-  };
-
-  const filteredGroups = groups.filter(group =>
-    group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    group.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const myGroups = groups.filter(group => group.isJoined);
   const publicGroups = groups.filter(group => !group.isJoined);
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <Tabs defaultValue="my-groups" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 bg-white shadow-sm">
           <TabsTrigger value="my-groups">My Groups ({myGroups.length})</TabsTrigger>
           <TabsTrigger value="discover">Discover Groups</TabsTrigger>
         </TabsList>
@@ -150,35 +114,16 @@ export const ReadingGroups = () => {
                   <DialogTitle>Create New Reading Group</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Group Name</label>
-                    <Input
-                      value={newGroup.name}
-                      onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
-                      placeholder="Enter group name"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Description</label>
-                    <Textarea
-                      value={newGroup.description}
-                      onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-                      placeholder="Describe your group"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Privacy</label>
-                    <Select value={newGroup.privacy} onValueChange={(value: any) => setNewGroup({ ...newGroup, privacy: value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="public">Public</SelectItem>
-                        <SelectItem value="private">Private</SelectItem>
-                        <SelectItem value="invite-only">Invite Only</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Input
+                    placeholder="Group name"
+                    value={newGroup.name}
+                    onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
+                  />
+                  <Textarea
+                    placeholder="Group description"
+                    value={newGroup.description}
+                    onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+                  />
                   <Button onClick={handleCreateGroup} className="w-full bg-orange-600 hover:bg-orange-700">
                     Create Group
                   </Button>
@@ -190,11 +135,11 @@ export const ReadingGroups = () => {
           {/* My Groups List */}
           <div className="grid gap-6">
             {myGroups.length === 0 ? (
-              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+              <Card className="bg-white shadow-sm">
                 <CardContent className="p-8 text-center">
                   <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No Groups Yet</h3>
-                  <p className="text-gray-600 mb-4">Create your first reading group or join existing ones to get started.</p>
+                  <p className="text-gray-600 mb-4">Create your first reading group or join existing ones.</p>
                   <Button onClick={() => setShowCreateDialog(true)} className="bg-orange-600 hover:bg-orange-700">
                     Create Your First Group
                   </Button>
@@ -202,7 +147,7 @@ export const ReadingGroups = () => {
               </Card>
             ) : (
               myGroups.map((group) => (
-                <Card key={group.id} className="bg-white/95 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-shadow">
+                <Card key={group.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
@@ -214,9 +159,6 @@ export const ReadingGroups = () => {
                               {group.privacy}
                             </Badge>
                           </div>
-                          {group.isAdmin && (
-                            <Badge className="bg-orange-100 text-orange-800 text-xs">Admin</Badge>
-                          )}
                         </div>
                         <p className="text-gray-600 mb-3">{group.description}</p>
                         <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -226,17 +168,6 @@ export const ReadingGroups = () => {
                           </span>
                           <span>Active {group.recentActivity}</span>
                         </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          <MessageCircle className="w-4 h-4 mr-2" />
-                          Chat
-                        </Button>
-                        {group.isAdmin && (
-                          <Button size="sm" variant="outline">
-                            <Settings className="w-4 h-4" />
-                          </Button>
-                        )}
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -254,8 +185,8 @@ export const ReadingGroups = () => {
         </TabsContent>
 
         <TabsContent value="discover" className="space-y-6">
-          {/* Search and Filters */}
-          <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+          {/* Search */}
+          <Card className="bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Search className="w-5 h-5" />
@@ -265,7 +196,7 @@ export const ReadingGroups = () => {
             <CardContent>
               <div className="flex gap-3">
                 <Input
-                  placeholder="Search groups by name or description..."
+                  placeholder="Search groups..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1"
@@ -279,15 +210,15 @@ export const ReadingGroups = () => {
 
           {/* Public Groups */}
           <div className="grid gap-6">
-            {filteredGroups.filter(group => !group.isJoined).map((group) => (
-              <Card key={group.id} className="bg-white/95 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-shadow">
+            {publicGroups.map((group) => (
+              <Card key={group.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-xl font-semibold text-gray-900">{group.name}</h3>
                         <div className="flex items-center gap-1">
-                          {group.privacy === 'public' ? <Globe className="w-4 h-4 text-green-600" /> : <Lock className="w-4 h-4 text-gray-600" />}
+                          <Globe className="w-4 h-4 text-green-600" />
                           <Badge variant="outline" className="text-xs">
                             {group.privacy}
                           </Badge>

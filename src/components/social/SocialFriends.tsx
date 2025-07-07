@@ -6,19 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Search, 
-  UserPlus, 
-  Users, 
-  Share, 
-  Facebook, 
-  Instagram, 
-  MessageCircle,
-  Check,
-  X,
-  Info
-} from 'lucide-react';
+import { Search, UserPlus, Share, Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Friend {
@@ -28,14 +16,6 @@ interface Friend {
   avatar?: string;
   mutualFriends: number;
   isOnline: boolean;
-  location?: string;
-}
-
-interface FriendRequest {
-  id: string;
-  user: Friend;
-  type: 'incoming' | 'outgoing';
-  timestamp: string;
 }
 
 const mockFriends: Friend[] = [
@@ -44,20 +24,18 @@ const mockFriends: Friend[] = [
     name: 'Sarah Johnson',
     username: 'sarah_reads',
     mutualFriends: 5,
-    isOnline: true,
-    location: 'New York, USA'
+    isOnline: true
   },
   {
     id: '2',
     name: 'Mike Chen',
     username: 'bookworm_mike',
     mutualFriends: 3,
-    isOnline: false,
-    location: 'Toronto, Canada'
+    isOnline: false
   }
 ];
 
-const mockRequests: FriendRequest[] = [
+const mockRequests = [
   {
     id: '1',
     user: {
@@ -67,14 +45,13 @@ const mockRequests: FriendRequest[] = [
       mutualFriends: 2,
       isOnline: true
     },
-    type: 'incoming',
     timestamp: '2 hours ago'
   }
 ];
 
 export const SocialFriends = () => {
   const [friends, setFriends] = useState<Friend[]>(mockFriends);
-  const [requests, setRequests] = useState<FriendRequest[]>(mockRequests);
+  const [requests, setRequests] = useState(mockRequests);
   const [searchQuery, setSearchQuery] = useState('');
   const [profileLink] = useState('https://sahadhyayi.com/profile/your-username');
   const { toast } = useToast();
@@ -93,76 +70,25 @@ export const SocialFriends = () => {
     toast({ title: 'Friend request declined' });
   };
 
-  const handleConnectSocial = (platform: string) => {
-    toast({ 
-      title: `Connect ${platform}`, 
-      description: `${platform} integration will be available soon!` 
-    });
-  };
-
   const copyProfileLink = () => {
     navigator.clipboard.writeText(profileLink);
     toast({ title: 'Profile link copied to clipboard!' });
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <Tabs defaultValue="friends" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="friends">My Friends</TabsTrigger>
-          <TabsTrigger value="requests">Friend Requests</TabsTrigger>
-          <TabsTrigger value="connect">Connect Accounts</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-white shadow-sm">
+          <TabsTrigger value="friends">My Friends ({friends.length})</TabsTrigger>
+          <TabsTrigger value="requests">Requests ({requests.length})</TabsTrigger>
+          <TabsTrigger value="find">Find Friends</TabsTrigger>
         </TabsList>
 
         <TabsContent value="friends" className="space-y-6">
-          {/* Search Friends */}
-          <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="w-5 h-5" />
-                Find Friends
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-3">
-                <Input
-                  placeholder="Search by name or username..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1"
-                />
-                <Button className="bg-orange-600 hover:bg-orange-700">
-                  <Search className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Share Profile Link */}
-          <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Share className="w-5 h-5" />
-                Share Your Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-3">
-                <Input value={profileLink} readOnly className="flex-1" />
-                <Button onClick={copyProfileLink} variant="outline">
-                  Copy Link
-                </Button>
-              </div>
-              <p className="text-sm text-gray-600 mt-2">
-                Share this link with others to let them add you as a friend.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Friends List */}
+          {/* My Friends */}
           <div className="grid gap-4">
             {friends.map((friend) => (
-              <Card key={friend.id} className="bg-white/95 backdrop-blur-sm border-amber-200">
+              <Card key={friend.id} className="bg-white shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -180,17 +106,13 @@ export const SocialFriends = () => {
                       <div>
                         <h4 className="font-semibold text-gray-900">{friend.name}</h4>
                         <p className="text-sm text-gray-500">@{friend.username}</p>
-                        {friend.location && (
-                          <p className="text-xs text-gray-400">{friend.location}</p>
-                        )}
                         <Badge variant="outline" className="mt-1 text-xs">
                           {friend.mutualFriends} mutual friends
                         </Badge>
                       </div>
                     </div>
                     <Button size="sm" variant="outline" className="border-amber-300 text-amber-700">
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Chat
+                      Message
                     </Button>
                   </div>
                 </CardContent>
@@ -200,7 +122,7 @@ export const SocialFriends = () => {
         </TabsContent>
 
         <TabsContent value="requests" className="space-y-6">
-          <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+          <Card className="bg-white shadow-sm">
             <CardHeader>
               <CardTitle>Friend Requests</CardTitle>
             </CardHeader>
@@ -253,61 +175,50 @@ export const SocialFriends = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="connect" className="space-y-6">
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Privacy Notice:</strong> We use imported contacts only to help you find friends who are already on Sahadhyayi. 
-              Your contacts are not stored permanently and are not shared with third parties.
-            </AlertDescription>
-          </Alert>
-
-          <div className="grid gap-4">
-            <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Facebook className="w-5 h-5 text-blue-600" />
-                  Facebook
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">Connect your Facebook account to find friends who are also on Sahadhyayi.</p>
-                <Button onClick={() => handleConnectSocial('Facebook')} className="bg-blue-600 hover:bg-blue-700">
-                  Connect Facebook
+        <TabsContent value="find" className="space-y-6">
+          {/* Search Friends */}
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                Find Friends
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-3">
+                <Input
+                  placeholder="Search by name or username..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1"
+                />
+                <Button className="bg-orange-600 hover:bg-orange-700">
+                  <Search className="w-4 h-4" />
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Instagram className="w-5 h-5 text-pink-600" />
-                  Instagram
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">Connect your Instagram account to discover reading friends.</p>
-                <Button onClick={() => handleConnectSocial('Instagram')} className="bg-pink-600 hover:bg-pink-700">
-                  Connect Instagram
+          {/* Share Profile Link */}
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Share className="w-5 h-5" />
+                Share Your Profile
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-3">
+                <Input value={profileLink} readOnly className="flex-1" />
+                <Button onClick={copyProfileLink} variant="outline">
+                  Copy Link
                 </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5 text-blue-500" />
-                  Telegram
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">Connect your Telegram to find book discussion groups.</p>
-                <Button onClick={() => handleConnectSocial('Telegram')} className="bg-blue-500 hover:bg-blue-600">
-                  Connect Telegram
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Share this link with others to let them add you as a friend.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
