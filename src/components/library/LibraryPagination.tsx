@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import {
   Pagination,
@@ -15,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 interface LibraryPaginationProps {
   totalCount: number;
@@ -42,9 +44,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
 
   useEffect(() => {
     if (scrollTargetRef?.current) {
-      scrollTargetRef.current.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollTargetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [currentPage, pageSize, scrollTargetRef]);
 
@@ -57,7 +57,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
   const handleGo = () => {
     const pageNum = parseInt(goInput, 10);
     if (!pageNum || pageNum < 1 || pageNum > totalPages) {
-      setError('Invalid page number.');
+      setError(`Please enter a valid page number (1-${totalPages})`);
       return;
     }
     setError('');
@@ -65,30 +65,78 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
     setGoInput('');
   };
 
-  const pageNumbers: number[] = [];
-  const startPage = Math.max(1, currentPage - 2);
-  const endPage = Math.min(totalPages, currentPage + 2);
-  for (let i = startPage; i <= endPage; i++) {
-    pageNumbers.push(i);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleGo();
+    }
+  };
+
+  // Generate page numbers for display
+  const getVisiblePages = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    
+    if (totalPages <= 7) {
+      // Show all pages if 7 or fewer
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+      
+      if (currentPage <= 4) {
+        // Near beginning
+        for (let i = 2; i <= 5; i++) {
+          pages.push(i);
+        }
+        pages.push('ellipsis');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        // Near end
+        pages.push('ellipsis');
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        // Middle
+        pages.push('ellipsis');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('ellipsis');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
+
+  const visiblePages = getVisiblePages();
+
+  if (totalCount === 0) {
+    return null;
   }
 
-  const disabledStyle = 'pointer-events-none opacity-50';
-
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span className="text-sm">
-          Showing {start}-{end} of {totalCount} books
-        </span>
-        <div className="flex items-center gap-2">
-          <span className="text-sm">Books per page</span>
+    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6 shadow-sm space-y-6">
+      {/* Summary and Page Size Selector */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="text-sm font-medium text-gray-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
+          Showing <span className="font-bold text-blue-600">{start}-{end}</span> of{' '}
+          <span className="font-bold text-blue-600">{totalCount}</span> books
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-700">Items per page:</span>
           <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-            <SelectTrigger className="w-24 h-8">
+            <SelectTrigger className="w-24 h-9 border-2 border-gray-200 hover:border-blue-300 transition-colors font-medium">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[10, 20, 50, 100].map((size) => (
-                <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+              {[10, 20, 30, 50].map((size) => (
+                <SelectItem key={size} value={size.toString()} className="font-medium">
+                  {size}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -96,100 +144,126 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex flex-col items-center gap-2">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationLink
-                  href="#"
-                  aria-label="First page"
-                  className={currentPage === 1 ? disabledStyle : ''}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage !== 1) onPageChange(1);
-                  }}
-                >
-                  ⏮️
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink
-                  href="#"
-                  aria-label="Previous page"
-                  className={currentPage === 1 ? disabledStyle : ''}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) onPageChange(currentPage - 1);
-                  }}
-                >
-                  ◀️
-                </PaginationLink>
-              </PaginationItem>
-              {pageNumbers.map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    href="#"
-                    isActive={page === currentPage}
-                    className={page === currentPage ? 'font-bold' : undefined}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onPageChange(page);
-                    }}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              {totalPages > endPage && (
+        <>
+          {/* Main Pagination */}
+          <div className="flex flex-col items-center gap-4">
+            <Pagination>
+              <PaginationContent className="gap-2">
+                {/* First Page */}
                 <PaginationItem>
-                  <PaginationEllipsis />
+                  <Button
+                    variant={currentPage === 1 ? "ghost" : "outline"}
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => onPageChange(1)}
+                    className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline ml-1">First</span>
+                  </Button>
                 </PaginationItem>
-              )}
-              <PaginationItem>
-                <PaginationLink
-                  href="#"
-                  aria-label="Next page"
-                  className={currentPage === totalPages ? disabledStyle : ''}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages) onPageChange(currentPage + 1);
-                  }}
-                >
-                  ▶️
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink
-                  href="#"
-                  aria-label="Last page"
-                  className={currentPage === totalPages ? disabledStyle : ''}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage !== totalPages) onPageChange(totalPages);
-                  }}
-                >
-                  ⏭️
-                </PaginationLink>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
 
-          {totalPages > 10 && (
-            <div className="flex flex-col sm:flex-row items-center gap-2">
-              <span className="text-sm">Go to page</span>
-              <Input
-                type="text"
-                value={goInput}
-                onChange={(e) => setGoInput(e.target.value)}
-                className="w-20 h-8"
-              />
-              <Button size="sm" variant="outline" onClick={handleGo}>
-                Go
-              </Button>
-              {error && <span className="text-red-500 text-xs">{error}</span>}
-            </div>
-          )}
-        </div>
+                {/* Previous Page */}
+                <PaginationItem>
+                  <Button
+                    variant={currentPage === 1 ? "ghost" : "outline"}
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => onPageChange(currentPage - 1)}
+                    className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline ml-1">Prev</span>
+                  </Button>
+                </PaginationItem>
+
+                {/* Page Numbers */}
+                {visiblePages.map((page, index) => (
+                  <PaginationItem key={index}>
+                    {page === 'ellipsis' ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        href="#"
+                        isActive={page === currentPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onPageChange(page);
+                        }}
+                        className={`h-10 w-10 border-2 font-medium transition-all ${
+                          page === currentPage
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
+                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                        }`}
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+
+                {/* Next Page */}
+                <PaginationItem>
+                  <Button
+                    variant={currentPage === totalPages ? "ghost" : "outline"}
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => onPageChange(currentPage + 1)}
+                    className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="hidden sm:inline mr-1">Next</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+
+                {/* Last Page */}
+                <PaginationItem>
+                  <Button
+                    variant={currentPage === totalPages ? "ghost" : "outline"}
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => onPageChange(totalPages)}
+                    className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="hidden sm:inline mr-1">Last</span>
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+
+            {/* Jump to Page (only show if more than 10 pages) */}
+            {totalPages > 10 && (
+              <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Jump to page:</span>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    value={goInput}
+                    onChange={(e) => setGoInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={`1-${totalPages}`}
+                    className="w-20 h-9 text-center border-2 border-gray-200 focus:border-blue-400"
+                    min={1}
+                    max={totalPages}
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={handleGo}
+                    className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  >
+                    Go
+                  </Button>
+                </div>
+                {error && (
+                  <span className="text-red-500 text-sm font-medium bg-red-50 px-3 py-1 rounded border border-red-200">
+                    {error}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

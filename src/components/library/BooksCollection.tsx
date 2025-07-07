@@ -63,7 +63,7 @@ const BooksCollection = ({
   const [lastSearchTerm, setLastSearchTerm] = useState('');
 
   // Pagination state
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
   const [currentPageAll, setCurrentPageAll] = useState(1);
   const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
   const allGridRef = useRef<HTMLDivElement>(null);
@@ -201,7 +201,6 @@ const BooksCollection = ({
   const filteredAllBooks = useMemo(() => getFilteredBooks(allLibraryBooks), [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
   const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
-
   const paginatedAllBooks = useMemo(
     () =>
       filteredAllBooks.slice((currentPageAll - 1) * pageSize, currentPageAll * pageSize),
@@ -239,13 +238,6 @@ const BooksCollection = ({
     currentPagePersonal * pageSize,
     filteredPersonalBooks.length
   );
-
-  const handlePageSizeChangeTop = (value: string) => {
-    const size = parseInt(value, 10);
-    setPageSize(size);
-    setCurrentPageAll(1);
-    setCurrentPagePersonal(1);
-  };
 
   if (isLoadingAll) {
     return <LoadingGrid />;
@@ -343,35 +335,42 @@ const BooksCollection = ({
         </TabsList>
 
         <TabsContent value="all-books" className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-              <Library className="w-5 h-5 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Digital Library Collection
-            </h2>
-            {filteredAllBooks.length > 0 && (
-              <span className="text-sm text-gray-500 bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
-                {filteredAllBooks.length} books
-              </span>
-            )}
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-sm text-gray-600">
-                Showing {startAll}-{endAll} of {filteredAllBooks.length}
-              </span>
-              <span className="text-sm text-gray-600">Books per page</span>
-              <Select value={String(pageSize)} onValueChange={handlePageSizeChangeTop}>
-                <SelectTrigger className="w-20 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[10, 20, 50, 100].map((size) => (
-                    <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Enhanced All Books Header */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
+                  <Library className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                    All Books
+                  </h2>
+                  <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="text-sm text-gray-600 font-medium">
+                  Showing {startAll}-{endAll} of {filteredAllBooks.length} books
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-gray-700">Books per page:</span>
+                  <Select value={String(pageSize)} onValueChange={(value) => setPageSize(parseInt(value, 10))}>
+                    <SelectTrigger className="w-20 h-9 border-2 border-gray-200 hover:border-blue-300 transition-colors">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[10, 20, 30, 50].map((size) => (
+                        <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
           </div>
+
           <div ref={allGridRef} className="space-y-6">
             <BooksGrid books={paginatedAllBooks} onDownloadPDF={handleDownloadPDF} />
             <LibraryPagination
@@ -387,33 +386,39 @@ const BooksCollection = ({
 
         {user && (
           <TabsContent value="my-library" className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
-                <Library className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                My Personal Library
-              </h2>
-              {filteredPersonalBooks.length > 0 && (
-                <span className="text-sm text-gray-500 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
-                  {filteredPersonalBooks.length} books
-                </span>
-              )}
-              <div className="ml-auto flex items-center gap-2">
-                <span className="text-sm text-gray-600">
-                  Showing {startPersonal}-{endPersonal} of {filteredPersonalBooks.length}
-                </span>
-                <span className="text-sm text-gray-600">Books per page</span>
-                <Select value={String(pageSize)} onValueChange={handlePageSizeChangeTop}>
-                  <SelectTrigger className="w-20 h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[10, 20, 50, 100].map((size) => (
-                      <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* Enhanced Personal Library Header */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
+                    <Library className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-2">
+                      My Personal Library
+                    </h2>
+                    <div className="h-1 w-16 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full"></div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="text-sm text-gray-600 font-medium">
+                    Showing {startPersonal}-{endPersonal} of {filteredPersonalBooks.length} books
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-gray-700">Books per page:</span>
+                    <Select value={String(pageSize)} onValueChange={(value) => setPageSize(parseInt(value, 10))}>
+                      <SelectTrigger className="w-20 h-9 border-2 border-gray-200 hover:border-amber-300 transition-colors">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[10, 20, 30, 50].map((size) => (
+                          <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             </div>
             
