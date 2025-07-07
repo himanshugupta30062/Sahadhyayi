@@ -21,6 +21,7 @@ const Bookshelf = React.lazy(() => import("./pages/Bookshelf"));
 const BookLibrary = React.lazy(() => import("./pages/BookLibrary"));
 const ReadingGroups = React.lazy(() => import("./pages/ReadingGroups"));
 const Reviews = React.lazy(() => import("./pages/Reviews"));
+const SocialMedia = React.lazy(() => import("./pages/SocialMedia"));
 const AuthorConnect = React.lazy(() => import("./pages/AuthorConnect"));
 const ReaderMap = React.lazy(() => import("./pages/ReaderMap"));
 const Investors = React.lazy(() => import("./pages/Investors"));
@@ -116,6 +117,7 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="/reviews" element={<Reviews />} />
+                  <Route path="/social" element={<SocialMedia />} />
                   <Route path="/quotes" element={
                     <ProtectedRoute>
                       <Quotes />
