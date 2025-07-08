@@ -44,9 +44,8 @@ const Navigation = () => {
     { name: "My Books", href: "/bookshelf" },
   ] : [
     { name: "Home", href: "/" },
-    { name: "Explore", href: "/library" },
-    { name: "Community", href: "/social" },
-    { name: "About Us", href: "/about" },
+    { name: "Library", href: "/library" },
+    { name: "Social Media", href: "/social" },
   ];
 
   const handleSignOut = async () => {

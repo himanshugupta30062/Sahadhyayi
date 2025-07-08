@@ -15,9 +15,8 @@ const DesktopNavItems = () => {
     { name: "My Books", path: "/bookshelf", icon: BookOpen },
   ] : [
     { name: "Home", path: "/", icon: Home },
-    { name: "Explore", path: "/library", icon: Compass },
-    { name: "Community", path: "/social", icon: Users },
-    { name: "About Us", path: "/about", icon: BookOpen },
+    { name: "Library", path: "/library", icon: Compass },
+    { name: "Social Media", path: "/social", icon: Users },
   ];
 
   return (
