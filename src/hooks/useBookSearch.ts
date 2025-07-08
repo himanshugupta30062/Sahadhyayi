@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface BookSearchResult {
@@ -37,7 +37,9 @@ export const useBookSearch = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<BookSearchResult[]>([]);
 
-  const searchBooks = async (searchTerm: string): Promise<BookSearchResult[]> => {
+  const searchBooks = useCallback(async (
+    searchTerm: string
+  ): Promise<BookSearchResult[]> => {
     if (!searchTerm.trim()) {
       setError('Please enter a search term');
       return [];
@@ -74,9 +76,9 @@ export const useBookSearch = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getAllLibraryBooks = async (): Promise<void> => {
+  const getAllLibraryBooks = useCallback(async (): Promise<void> => {
     setLoading(true);
     setError(null);
 
@@ -98,12 +100,12 @@ export const useBookSearch = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const clearResults = () => {
+  const clearResults = useCallback(() => {
     setSearchResults([]);
     setError(null);
-  };
+  }, []);
 
   return {
     loading,
