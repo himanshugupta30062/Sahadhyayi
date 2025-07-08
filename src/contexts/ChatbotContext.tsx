@@ -48,7 +48,8 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      // Get API key from environment
+      const apiKey = 'AIzaSyBwEOGoiOqVdqjEaraIeT48QIMKN8GeFnM';
       
       if (!apiKey) {
         const errorMessage: ChatMessage = {

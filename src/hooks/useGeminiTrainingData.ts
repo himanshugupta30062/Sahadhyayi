@@ -10,17 +10,24 @@ export const useGeminiTraining = () => {
 
   const saveSample = async (prompt: string, completion: string) => {
     try {
-      // Use a more flexible approach that doesn't depend on the exact type definitions
+      // Only save if user is authenticated
+      if (!user?.id) {
+        console.log('User not authenticated, skipping training data save');
+        return;
+      }
+
       const { error } = await supabase
-        .from('gemini_training_data' as any)
+        .from('gemini_training_data')
         .insert({
-          user_id: user?.id ?? null,
+          user_id: user.id,
           prompt,
           completion,
         });
 
       if (error) {
         console.error('Error saving Gemini training data:', error);
+      } else {
+        console.log('Training data saved successfully');
       }
     } catch (error) {
       console.error('Error saving Gemini training data:', error);
