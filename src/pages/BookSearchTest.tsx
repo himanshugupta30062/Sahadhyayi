@@ -22,7 +22,7 @@ const BookSearchTest = () => {
   useEffect(() => {
     // Load existing books on component mount
     getAllLibraryBooks();
-  }, []);
+  }, [getAllLibraryBooks]);
 
   return (
     <>
