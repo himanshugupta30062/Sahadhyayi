@@ -286,18 +286,18 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
                         <h5 className="font-semibold text-lg text-gray-900">{feedback.title}</h5>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <Badge className={getTypeColor(feedback.type)} size="sm">
+                        <Badge className={getTypeColor(feedback.type)}>
                           {getTypeIcon(feedback.type)}
                           <span className="ml-1 capitalize">{feedback.type}</span>
                         </Badge>
-                        <Badge className={getStatusColor(feedback.status)} size="sm">
+                        <Badge className={getStatusColor(feedback.status)}>
                           {feedback.status.replace('_', ' ')}
                         </Badge>
                       </div>
                     </div>
 
                     {/* Priority Badge */}
-                    <Badge variant="outline" className={`${getPriorityColor(feedback.priority)} w-fit`} size="sm">
+                    <Badge variant="outline" className={`${getPriorityColor(feedback.priority)} w-fit`}>
                       {feedback.priority.toUpperCase()} Priority
                     </Badge>
 
