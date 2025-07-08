@@ -48,10 +48,8 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      // Cache query results for 5 minutes to avoid repeated
-      // metadata requests that hit PostgREST on every render
       staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000, // Updated from cacheTime to gcTime
+      gcTime: 10 * 60 * 1000,
     },
   },
 });
@@ -115,16 +113,15 @@ const App = () => (
                       <ReadingGroups />
                     </ProtectedRoute>
                   } />
-                  {/* Redirect /reviews to /social */}
+                  {/* Updated routing: /reviews redirects to /social for Community */}
                   <Route path="/reviews" element={<Navigate to="/social" replace />} />
                   <Route path="/social" element={<SocialMedia />} />
-                  <Route path="/quotes" element={
-                    <ProtectedRoute>
-                      <Quotes />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/authors" element={<AuthorConnect />} />
-                  <Route path="/map" element={<ReaderMap />} />
+                  
+                  {/* Legacy routes redirects */}
+                  <Route path="/authors" element={<Navigate to="/library" replace />} />
+                  <Route path="/quotes" element={<Navigate to="/profile" replace />} />
+                  <Route path="/map" element={<Navigate to="/social" replace />} />
+                  
                   <Route path="/book-search-test" element={<BookSearchTest />} />
                   
                   <Route path="/profile" element={

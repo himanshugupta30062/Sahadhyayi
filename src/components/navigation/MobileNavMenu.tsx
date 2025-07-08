@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, User, Book, Upload, BookOpen, Settings, LogOut, LogIn, Share2, Library, UserPlus } from "lucide-react";
+import { Bell, User, Home, Compass, Users, BookOpen, Settings, LogOut, LogIn, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -22,20 +23,17 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
     user?.email?.charAt(0) ||
     "U";
 
-  const navItems = [
-    { name: "Home", path: "/", icon: BookOpen },
-    { name: "Library", path: "/library", icon: Library },
-    { name: "Authors", path: "/authors", icon: BookOpen },
-    { name: "Social Media", path: "/reviews", icon: Share2 },
+  // New simplified navigation structure
+  const navItems = user ? [
+    { name: "Home", path: "/dashboard", icon: Home },
+    { name: "Explore", path: "/library", icon: Compass },
+    { name: "Community", path: "/social", icon: Users },
+    { name: "My Books", path: "/bookshelf", icon: BookOpen },
+  ] : [
+    { name: "Home", path: "/", icon: Home },
+    { name: "Explore", path: "/library", icon: Compass },
+    { name: "Community", path: "/social", icon: Users },
     { name: "About Us", path: "/about", icon: BookOpen },
-    ...(user
-      ? [
-          { name: "Dashboard", path: "/dashboard", icon: User },
-          { name: "My Bookshelf", path: "/bookshelf", icon: User },
-          { name: "Groups", path: "/groups", icon: User },
-          { name: "My Quotes", path: "/quotes", icon: BookOpen }
-        ]
-      : [])
   ];
 
   const handleSignOut = async () => {
@@ -100,24 +98,6 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
                 <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1 text-sm py-3">
                   <User className="w-4 h-4 mr-2" />
                   View My Profile
-                </Button>
-              </Link>
-              <Link to="/stories" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1 text-sm py-3">
-                  <Book className="w-4 h-4 mr-2" />
-                  My Life Stories
-                </Button>
-              </Link>
-              <Link to="/stories/upload" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1 text-sm py-3">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload New Story
-                </Button>
-              </Link>
-              <Link to="/stories/drafts" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start text-gray-700 mb-1 text-sm py-3">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Saved Drafts
                 </Button>
               </Link>
               <Link to="/settings" onClick={() => setIsOpen(false)}>

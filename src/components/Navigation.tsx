@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, User, LogOut, Settings, BookOpen } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -35,18 +36,18 @@ const Navigation = () => {
     };
   }, [scrolled]);
 
-  const navItems = [
-    { name: "Home", href: "/" },
-    { name: "Library", href: "/library" },
-    { name: "Authors", href: "/authors" },
-    { name: "Social Media", href: "/reviews" },
-  ];
-
-  const userNavItems = user ? [
-    { name: "Dashboard", href: "/dashboard" },
+  // New simplified navigation items
+  const navItems = user ? [
+    { name: "Home", href: "/dashboard" },
+    { name: "Explore", href: "/library" },
+    { name: "Community", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
-    { name: "Quotes", href: "/quotes" },
-  ] : [];
+  ] : [
+    { name: "Home", href: "/" },
+    { name: "Explore", href: "/library" },
+    { name: "Community", href: "/social" },
+    { name: "About Us", href: "/about" },
+  ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -87,20 +88,6 @@ const Navigation = () => {
                     className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
                       (location.pathname === item.href || 
                        (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1' 
-                        : 'text-gray-700'
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-                
-                {userNavItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
-                      location.pathname === item.href 
                         ? 'text-amber-600 border-b-2 border-amber-600 pb-1' 
                         : 'text-gray-700'
                     }`}
@@ -194,21 +181,6 @@ const Navigation = () => {
                   className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                     (location.pathname === item.href || 
                      (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                      ? 'text-amber-600 bg-amber-50' 
-                      : 'text-gray-700 hover:text-amber-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              
-              {userNavItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                    location.pathname === item.href 
                       ? 'text-amber-600 bg-amber-50' 
                       : 'text-gray-700 hover:text-amber-600 hover:bg-gray-50'
                   }`}

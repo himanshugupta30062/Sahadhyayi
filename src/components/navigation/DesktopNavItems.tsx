@@ -1,21 +1,22 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Users, Calendar, User, Share2, Library } from "lucide-react";
+import { Home, Compass, Users, BookOpen, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const DesktopNavItems = () => {
   const location = useLocation();
   const { user } = useAuth();
   
-  // For authenticated users, show only essential navigation
+  // New simplified navigation structure for authenticated users
   const navItems = user ? [
-    { name: "My Library", path: "/dashboard", icon: Library },
-    { name: "Social", path: "/reviews", icon: Share2 },
+    { name: "Home", path: "/dashboard", icon: Home },
+    { name: "Explore", path: "/library", icon: Compass },
+    { name: "Community", path: "/social", icon: Users },
+    { name: "My Books", path: "/bookshelf", icon: BookOpen },
   ] : [
-    { name: "Home", path: "/", icon: BookOpen },
-    { name: "Library", path: "/library", icon: Library },
-    { name: "Authors", path: "/authors", icon: Calendar },
-    { name: "Social Media", path: "/reviews", icon: Share2 },
+    { name: "Home", path: "/", icon: Home },
+    { name: "Explore", path: "/library", icon: Compass },
+    { name: "Community", path: "/social", icon: Users },
     { name: "About Us", path: "/about", icon: BookOpen },
   ];
 

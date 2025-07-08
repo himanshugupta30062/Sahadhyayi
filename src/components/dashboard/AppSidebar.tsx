@@ -1,15 +1,16 @@
 
 import React from "react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { LayoutDashboard, BookOpen, Upload, Mic, Tag, Settings } from "lucide-react";
+import { Home, Compass, Users, BookOpen, User, Settings } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
+// Updated sidebar items to match new navigation structure
 const items = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "My Stories", url: "/stories", icon: BookOpen },
-  { title: "Upload Story", url: "/stories/upload", icon: Upload },
-  { title: "Audio Journal", url: "/audio-journal", icon: Mic },
-  { title: "Tags & Life Events", url: "/tags", icon: Tag },
+  { title: "Home", url: "/dashboard", icon: Home },
+  { title: "Explore", url: "/library", icon: Compass },
+  { title: "Community", url: "/social", icon: Users },
+  { title: "My Books", url: "/bookshelf", icon: BookOpen },
+  { title: "Profile", url: "/profile", icon: User },
   { title: "Account Settings", url: "/settings", icon: Settings },
 ];
 
@@ -60,4 +61,3 @@ const AppSidebar = () => {
 };
 
 export default AppSidebar;
-
