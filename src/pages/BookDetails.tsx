@@ -14,6 +14,7 @@ import AuthorBio from '@/components/books/AuthorBio';
 import BookReadersConnection from '@/components/books/BookReadersConnection';
 import CreateYourVersionSection from '@/components/books/CreateYourVersionSection';
 import BookIdeasSection from '@/components/books/BookIdeasSection';
+import BookReader from '@/components/books/BookReader';
 import { useBookById } from '@/hooks/useBookById';
 
 const BookDetails = () => {
@@ -205,7 +206,7 @@ const BookDetails = () => {
           {/* Interactive Tabs Section */}
           <div className="w-full">
             <Tabs defaultValue="connect" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl h-14">
+              <TabsList className="grid w-full grid-cols-4 mb-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl h-14">
                 <TabsTrigger 
                   value="connect" 
                   className="text-sm font-medium px-4 py-3 rounded-lg data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 data-[state=active]:shadow-sm"
@@ -223,6 +224,12 @@ const BookDetails = () => {
                   className="text-sm font-medium px-4 py-3 rounded-lg data-[state=active]:bg-green-100 data-[state=active]:text-green-800 data-[state=active]:shadow-sm"
                 >
                   Ideas and Feedback
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="read" 
+                  className="text-sm font-medium px-4 py-3 rounded-lg data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800 data-[state=active]:shadow-sm"
+                >
+                  Read Book
                 </TabsTrigger>
               </TabsList>
 
@@ -254,6 +261,19 @@ const BookDetails = () => {
                     <BookIdeasSection 
                       bookId={book.id} 
                       bookTitle={book.title}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="read" className="mt-0">
+                <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-lg">
+                  <CardContent className="p-6">
+                    <BookReader 
+                      bookId={book.id}
+                      bookTitle={book.title}
+                      pdfUrl={book.pdf_url}
+                      epubUrl={book.ebook_url}
                     />
                   </CardContent>
                 </Card>
