@@ -273,7 +273,7 @@ const BookDetails = () => {
                       bookId={book.id}
                       bookTitle={book.title}
                       pdfUrl={book.pdf_url}
-                      epubUrl={book.ebook_url}
+                      epubUrl={undefined}
                     />
                   </CardContent>
                 </Card>
