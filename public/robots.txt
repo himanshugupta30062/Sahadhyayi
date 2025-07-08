@@ -1,6 +1,34 @@
+
 User-agent: *
-Disallow: /dashboard
-Disallow: /profile
-Disallow: /signin
 Allow: /
-Sitemap: https://www.sahadhyayi.com/sitemap.xml
+
+# Disallow private user areas
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /bookshelf/
+
+# Disallow authentication pages (to prevent indexing of login/signup forms)
+Disallow: /signin
+Disallow: /signup
+
+# Allow public pages
+Allow: /
+Allow: /about
+Allow: /library
+Allow: /books/
+Allow: /social
+Allow: /groups
+Allow: /help
+Allow: /feedback
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+Allow: /dmca
+Allow: /investors
+
+# Sitemap location
+Sitemap: https://sahadhyayi.com/sitemap.xml
+
+# Crawl delay (optional - adjust based on server capacity)
+Crawl-delay: 1

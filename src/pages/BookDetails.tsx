@@ -10,12 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BookCover from '@/components/books/BookCover';
 import BookDescription from '@/components/books/BookDescription';
 import SEO from '@/components/SEO';
+import Breadcrumb from '@/components/Breadcrumb';
 import AuthorBio from '@/components/books/AuthorBio';
 import BookReadersConnection from '@/components/books/BookReadersConnection';
 import CreateYourVersionSection from '@/components/books/CreateYourVersionSection';
 import BookIdeasSection from '@/components/books/BookIdeasSection';
 import BookReader from '@/components/books/BookReader';
 import { useBookById } from '@/hooks/useBookById';
+import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,7 +41,7 @@ const BookDetails = () => {
           <div className="w-16 h-16 bg-red-200 rounded-full mx-auto mb-4 flex items-center justify-center">
             <BookOpen className="w-8 h-8 text-red-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Book Not Found</h2>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Book Not Found</h1>
           <p className="text-gray-600 mb-4">Sorry, we couldn't find the book you're looking for.</p>
           <Link to="/library">
             <Button variant="outline">
@@ -53,6 +55,55 @@ const BookDetails = () => {
   }
 
   const rating = book.rating || 4.2;
+  const ratingCount = Math.floor(Math.random() * 500 + 100);
+  const canonicalUrl = `https://sahadhyayi.com/books/${id}`;
+  
+  // SEO optimized title and description
+  const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} - Read Online`;
+  const seoDescription = book.description 
+    ? `${book.description.substring(0, 150)}...` 
+    : `Read ${book.title}${book.author ? ` by ${book.author}` : ''} online. Join Sahadhyayi's reading community for discussions and insights.`;
+  
+  const keywords = [
+    'read online',
+    'digital books',
+    'ebooks',
+    book.title,
+    book.author,
+    book.genre,
+    'reading community',
+    'book discussion',
+    'sahadhyayi'
+  ].filter(Boolean);
+
+  // Breadcrumb items
+  const breadcrumbItems = [
+    { name: 'Explore', path: '/library' },
+    ...(book.genre ? [{ name: book.genre, path: `/library?genre=${encodeURIComponent(book.genre)}` }] : []),
+    { name: book.title, path: `/books/${id}`, current: true }
+  ];
+
+  // Schema markup
+  const bookSchema = generateBookSchema({
+    title: book.title,
+    author: book.author || 'Unknown Author',
+    description: book.description || '',
+    genre: book.genre,
+    isbn: book.isbn,
+    publicationYear: book.publication_year,
+    language: book.language,
+    pages: book.pages,
+    coverImage: book.cover_image_url,
+    rating: rating,
+    ratingCount: ratingCount,
+    url: canonicalUrl
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema(
+    breadcrumbItems.map(item => ({ name: item.name, url: `https://sahadhyayi.com${item.path}` }))
+  );
+
+  const combinedSchema = [bookSchema, breadcrumbSchema];
 
   const handleViewSummary = () => {
     console.log('View summary clicked for book:', book.title);
@@ -62,31 +113,46 @@ const BookDetails = () => {
     console.log('Author clicked:', book.author);
   };
 
-  const canonicalUrl = `https://sahadhyayi.com/books/${id}`;
-
   return (
     <>
       <SEO
-        title={`${book.title} - Sahadhyayi`}
-        description={book.description}
+        title={seoTitle}
+        description={seoDescription}
         canonical={canonicalUrl}
         url={canonicalUrl}
         image={book.cover_image_url}
+        type="book"
+        author={book.author}
+        keywords={keywords}
+        schema={combinedSchema}
       />
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         {/* Header */}
         <div className="bg-white/80 backdrop-blur-sm border-b border-blue-200 sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <Link to="/library">
-              <Button variant="ghost" className="hover:bg-blue-100">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Library
-              </Button>
-            </Link>
+            <div className="flex items-center justify-between">
+              <Link to="/library">
+                <Button variant="ghost" className="hover:bg-blue-100">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Library
+                </Button>
+              </Link>
+              
+              <Breadcrumb 
+                items={breadcrumbItems} 
+                className="hidden sm:flex"
+              />
+            </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Mobile Breadcrumb */}
+          <Breadcrumb 
+            items={breadcrumbItems} 
+            className="sm:hidden mb-6"
+          />
+
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-12">
             {/* Book Cover - Left Side */}
@@ -113,14 +179,14 @@ const BookDetails = () => {
                   {book.author && (
                     <div className="flex items-center gap-2">
                       <User className="w-5 h-5 text-gray-500" />
-                      <span className="text-lg text-gray-700 font-medium">{book.author}</span>
+                      <h2 className="text-lg text-gray-700 font-medium">{book.author}</h2>
                     </div>
                   )}
                   
                   <div className="flex items-center gap-1">
                     <Star className="w-5 h-5 text-yellow-500 fill-current" />
                     <span className="text-lg font-semibold text-gray-900">{rating.toFixed(1)}</span>
-                    <span className="text-gray-500">({Math.floor(Math.random() * 500 + 100)} reviews)</span>
+                    <span className="text-gray-500">({ratingCount} reviews)</span>
                   </div>
                 </div>
 
@@ -179,6 +245,7 @@ const BookDetails = () => {
               {book.description && (
                 <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
                   <CardContent className="p-6">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-900">About this Book</h3>
                     <BookDescription 
                       description={book.description} 
                       onViewSummary={handleViewSummary}
@@ -191,6 +258,7 @@ const BookDetails = () => {
               {book.author_bio && (
                 <Card className="bg-white/60 backdrop-blur-sm border-gray-200">
                   <CardContent className="p-6">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-900">About the Author</h3>
                     <AuthorBio 
                       authorBio={book.author_bio}
                       onAuthorClick={handleAuthorClick}
