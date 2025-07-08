@@ -1,224 +1,338 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, ThumbsUp, ThumbsDown, Send, LogIn } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Lightbulb, Bug, ThumbsUp, MessageCircle, AlertTriangle, User, Send } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 
 interface BookIdeasSectionProps {
   bookId: string;
   bookTitle: string;
 }
 
+interface Feedback {
+  id: string;
+  user: string;
+  title: string;
+  content: string;
+  type: 'idea' | 'issue' | 'improvement';
+  priority: 'low' | 'medium' | 'high';
+  upvotes: number;
+  comments: number;
+  timestamp: string;
+  isUpvoted: boolean;
+  status: 'open' | 'under_review' | 'resolved';
+}
+
 const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [sectionReference, setSectionReference] = useState('');
-  const [comment, setComment] = useState('');
-  const [feedbackType, setFeedbackType] = useState<'like' | 'dislike' | 'neutral'>('neutral');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [feedbackType, setFeedbackType] = useState<'idea' | 'issue' | 'improvement'>('idea');
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
 
-  const handleSignInPrompt = () => {
-    navigate('/signin');
+  // Mock data - replace with real data from your backend
+  const [feedbackList, setFeedbackList] = useState<Feedback[]>([
+    {
+      id: '1',
+      user: 'Jennifer Kim',
+      title: 'Add audio narration',
+      content: 'It would be great to have an audio version of this book for people who prefer listening while commuting.',
+      type: 'idea',
+      priority: 'medium',
+      upvotes: 34,
+      comments: 8,
+      timestamp: '2 days ago',
+      isUpvoted: true,
+      status: 'under_review'
+    },
+    {
+      id: '2',
+      user: 'Robert Wilson',
+      title: 'Typo in Chapter 3',
+      content: 'Found a typo on page 45, third paragraph: "recieve" should be "receive".',
+      type: 'issue',
+      priority: 'low',
+      upvotes: 5,
+      comments: 2,
+      timestamp: '5 days ago',
+      isUpvoted: false,
+      status: 'resolved'
+    },
+    {
+      id: '3',
+      user: 'Lisa Chen',
+      title: 'Character development suggestions',
+      content: 'The supporting characters could use more backstory. Maybe add a few more scenes showing their motivations?',
+      type: 'improvement',
+      priority: 'medium',
+      upvotes: 18,
+      comments: 12,
+      timestamp: '1 week ago',
+      isUpvoted: false,
+      status: 'open'
+    }
+  ]);
+
+  const handleSubmitFeedback = () => {
+    if (!title.trim() || !content.trim() || !user) return;
+
+    const newFeedback: Feedback = {
+      id: Date.now().toString(),
+      user: user.email?.split('@')[0] || 'Anonymous',
+      title: title.trim(),
+      content: content.trim(),
+      type: feedbackType,
+      priority: priority,
+      upvotes: 0,
+      comments: 0,
+      timestamp: 'Just now',
+      isUpvoted: false,
+      status: 'open'
+    };
+
+    setFeedbackList([newFeedback, ...feedbackList]);
+    setTitle('');
+    setContent('');
   };
 
-  const handleSubmitIdea = async () => {
-    if (!user) {
-      handleSignInPrompt();
-      return;
+  const handleUpvote = (feedbackId: string) => {
+    setFeedbackList(feedbackList.map(feedback => 
+      feedback.id === feedbackId 
+        ? { 
+            ...feedback, 
+            upvotes: feedback.isUpvoted ? feedback.upvotes - 1 : feedback.upvotes + 1, 
+            isUpvoted: !feedback.isUpvoted 
+          }
+        : feedback
+    ));
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'idea': return <Lightbulb className="w-4 h-4" />;
+      case 'issue': return <Bug className="w-4 h-4" />;
+      case 'improvement': return <AlertTriangle className="w-4 h-4" />;
+      default: return <Lightbulb className="w-4 h-4" />;
     }
+  };
 
-    if (!comment.trim() || !sectionReference.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide both section reference and your comment.",
-        variant: "destructive",
-      });
-      return;
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'idea': return 'bg-green-100 text-green-800';
+      case 'issue': return 'bg-red-100 text-red-800';
+      case 'improvement': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
+  };
 
-    setIsSubmitting(true);
-    try {
-      console.log('Submitting idea:', {
-        bookId,
-        sectionReference,
-        comment,
-        feedbackType,
-        userId: user?.id
-      });
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
 
-      toast({
-        title: "Idea Submitted!",
-        description: "Your feedback has been shared with the community.",
-      });
-
-      setSectionReference('');
-      setComment('');
-      setFeedbackType('neutral');
-    } catch (error) {
-      console.error('Error submitting idea:', error);
-      toast({
-        title: "Error",
-        description: "Failed to submit your idea. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open': return 'bg-blue-100 text-blue-800';
+      case 'under_review': return 'bg-orange-100 text-orange-800';
+      case 'resolved': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <Card className="w-full border-0 shadow-none">
-      <CardHeader className="pb-3 px-4 sm:px-6">
-        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-orange-900">
-          <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 flex-shrink-0" />
-          <span>Ideas & Feedback</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-4 sm:px-6 space-y-4 sm:space-y-6">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-lg border border-blue-200">
-          <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <MessageSquare className="w-4 h-4 text-blue-600 flex-shrink-0" />
-            <span className="text-sm font-medium text-blue-800">Share Your Thoughts</span>
-          </div>
-          
-          {!user && (
-            <div className="mb-4 p-3 sm:p-4 bg-white rounded-lg border border-blue-200">
-              <div className="text-center">
-                <p className="text-sm sm:text-base text-gray-600 mb-3">Sign in to share your thoughts and feedback about this book</p>
-                <Button 
-                  onClick={handleSignInPrompt}
-                  className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
-                  size="sm"
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In to Share Ideas
-                </Button>
-              </div>
-            </div>
-          )}
-          
-          <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Lightbulb className="w-6 h-6 text-green-600" />
+          <h3 className="text-2xl font-bold text-green-900">Ideas and Feedback</h3>
+        </div>
+        <p className="text-green-700">Share your ideas or report issues about "{bookTitle}"</p>
+      </div>
+
+      {/* Submit Feedback Form */}
+      {user ? (
+        <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg text-green-900">Share Your Feedback</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Title Input */}
             <div>
-              <label htmlFor="sectionRef" className="block text-sm font-medium mb-2 text-gray-700">
-                Section Reference
-              </label>
+              <Label htmlFor="feedback-title">Title</Label>
               <Input
-                id="sectionRef"
-                value={sectionReference}
-                onChange={(e) => setSectionReference(e.target.value)}
-                placeholder="e.g., Chapter 5, Page 45-50"
-                className="h-9 sm:h-10"
-                disabled={!user}
+                id="feedback-title"
+                placeholder="Brief description of your feedback..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">
-                Feedback Type
-              </label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Button
-                  variant={feedbackType === 'like' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => user ? setFeedbackType('like') : handleSignInPrompt()}
-                  className={`${feedbackType === 'like' ? 'bg-green-600 hover:bg-green-700' : ''} text-xs sm:text-sm`}
-                  disabled={!user}
-                >
-                  <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  Like
-                </Button>
-                <Button
-                  variant={feedbackType === 'dislike' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => user ? setFeedbackType('dislike') : handleSignInPrompt()}
-                  className={`${feedbackType === 'dislike' ? 'bg-red-600 hover:bg-red-700' : ''} text-xs sm:text-sm`}
-                  disabled={!user}
-                >
-                  <ThumbsDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  Dislike
-                </Button>
-                <Button
-                  variant={feedbackType === 'neutral' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => user ? setFeedbackType('neutral') : handleSignInPrompt()}
-                  className={`${feedbackType === 'neutral' ? 'bg-blue-600 hover:bg-blue-700' : ''} text-xs sm:text-sm`}
-                  disabled={!user}
-                >
-                  <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  General
-                </Button>
+            {/* Type and Priority Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="feedback-type">Type</Label>
+                <Select value={feedbackType} onValueChange={(value: any) => setFeedbackType(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="idea">💡 Idea</SelectItem>
+                    <SelectItem value="issue">🐛 Issue</SelectItem>
+                    <SelectItem value="improvement">⚠️ Improvement</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="feedback-priority">Priority</Label>
+                <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">🟢 Low</SelectItem>
+                    <SelectItem value="medium">🟡 Medium</SelectItem>
+                    <SelectItem value="high">🔴 High</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
+            {/* Content Textarea */}
             <div>
-              <label htmlFor="comment" className="block text-sm font-medium mb-2 text-gray-700">
-                Your Comment
-              </label>
+              <Label htmlFor="feedback-content">Details</Label>
               <Textarea
-                id="comment"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder={user ? "Share your thoughts, suggestions, or feedback..." : "Sign in to share your thoughts..."}
-                className="min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
-                disabled={!user}
+                id="feedback-content"
+                placeholder="Provide more details about your feedback..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="min-h-[120px] resize-none"
               />
             </div>
 
-            <Button
-              onClick={handleSubmitIdea}
-              disabled={isSubmitting || !user}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
-              size="sm"
-            >
-              {!user ? (
-                <>
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In to Share
-                </>
-              ) : isSubmitting ? (
-                'Submitting...'
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  Share Your Idea
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Community Ideas */}
-        <div className="space-y-3">
-          <h4 className="font-semibold text-sm sm:text-base text-gray-800 flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-orange-600 flex-shrink-0" />
-            Community Ideas
-          </h4>
-          <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-gray-800">BookLover23</span>
-                <Badge variant="secondary" className="text-xs">Chapter 3</Badge>
-                <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-                  <ThumbsUp className="w-3 h-3 mr-1" />
-                  Like
-                </Badge>
-              </div>
-              <span className="text-xs text-gray-500 self-start sm:self-auto">2 days ago</span>
+            {/* Submit Button */}
+            <div className="flex justify-end">
+              <Button onClick={handleSubmitFeedback} disabled={!title.trim() || !content.trim()}>
+                <Send className="w-4 h-4 mr-2" />
+                Submit Feedback
+              </Button>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              "The character development in this chapter was amazing! I loved how the author revealed the protagonist's backstory."
-            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-sm">
+          <CardContent className="p-6 text-center">
+            <p className="text-gray-600 mb-4">Sign in to share your ideas and feedback</p>
+            <Button variant="outline">Sign In</Button>
+          </CardContent>
+        </Card>
+      )}
+
+      <Separator />
+
+      {/* Feedback List */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h4 className="text-lg font-semibold text-gray-900">Community Feedback</h4>
+          <div className="flex gap-2">
+            <Badge variant="outline" className="text-xs">
+              {feedbackList.filter(f => f.status === 'open').length} Open
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {feedbackList.filter(f => f.status === 'under_review').length} Under Review
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {feedbackList.filter(f => f.status === 'resolved').length} Resolved
+            </Badge>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        
+        {feedbackList.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>No feedback yet. Be the first to share your ideas!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {feedbackList.map((feedback) => (
+              <Card key={feedback.id} className="bg-white/60 backdrop-blur-sm border-gray-200 hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {/* Header */}
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="w-6 h-6">
+                            <AvatarFallback>
+                              <User className="w-3 h-3" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium text-gray-900">{feedback.user}</span>
+                          <span className="text-xs text-gray-500">{feedback.timestamp}</span>
+                        </div>
+                        <h5 className="font-semibold text-lg text-gray-900">{feedback.title}</h5>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <Badge className={getTypeColor(feedback.type)} size="sm">
+                          {getTypeIcon(feedback.type)}
+                          <span className="ml-1 capitalize">{feedback.type}</span>
+                        </Badge>
+                        <Badge className={getStatusColor(feedback.status)} size="sm">
+                          {feedback.status.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Priority Badge */}
+                    <Badge variant="outline" className={`${getPriorityColor(feedback.priority)} w-fit`} size="sm">
+                      {feedback.priority.toUpperCase()} Priority
+                    </Badge>
+
+                    {/* Content */}
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {feedback.content}
+                    </p>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <MessageCircle className="w-4 h-4" />
+                          {feedback.comments}
+                        </span>
+                      </div>
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleUpvote(feedback.id)}
+                        className={`${feedback.isUpvoted ? 'text-green-600' : 'text-gray-500'}`}
+                      >
+                        <ThumbsUp className={`w-4 h-4 mr-1 ${feedback.isUpvoted ? 'fill-current' : ''}`} />
+                        {feedback.upvotes}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
