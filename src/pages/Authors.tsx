@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, RefreshCw } from 'lucide-react';
+import { Search, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, RefreshCw, Star, Users, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,23 +10,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import SEO from '@/components/SEO';
-import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useAuthors, type Author } from '@/hooks/useAuthors';
 import { toast } from '@/hooks/use-toast';
 
 const Authors = () => {
   console.log('Authors component rendering');
   
-  const { data: books, isLoading: loading, error, refetch } = useAllLibraryBooks();
+  const { data: authors = [], isLoading, error, refetch } = useAuthors();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [bookCountFilter, setBookCountFilter] = useState('');
 
-  // Enhanced debug logging
-  console.log('Authors page render state:', { 
-    books: books?.length || 0, 
-    loading, 
-    error: error?.message,
-    hasBooks: !!books && books.length > 0
+  console.log('Authors page state:', { 
+    authorsCount: authors.length, 
+    isLoading, 
+    error: error?.message 
   });
 
   // Show error toast if there's an error
@@ -41,59 +39,11 @@ const Authors = () => {
     }
   }, [error]);
 
-  // Extract unique authors from books with better error handling
-  const authors = useMemo(() => {
-    console.log('Processing authors from books:', books?.length || 0);
-    
-    if (!books || !Array.isArray(books) || books.length === 0) {
-      console.log('No books available for author extraction');
-      return [];
-    }
-    
-    const authorMap = new Map();
-    
-    books.forEach((book, index) => {
-      console.log(`Processing book ${index + 1}:`, book.title, 'by', book.author);
-      
-      if (book.author && book.author.trim()) {
-        const authorKey = book.author.toLowerCase().trim();
-        if (!authorMap.has(authorKey)) {
-          authorMap.set(authorKey, {
-            name: book.author.trim(),
-            bio: book.author_bio || `${book.author} is a renowned author whose works have captivated readers worldwide.`,
-            books: [],
-            genres: new Set<string>(),
-            slug: book.author.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-            location: 'New York, USA', // Mock data
-            upcomingEvents: Math.floor(Math.random() * 3),
-            rating: (4 + Math.random()).toFixed(1),
-            followers: Math.floor(Math.random() * 10000 + 1000)
-          });
-        }
-        
-        const author = authorMap.get(authorKey);
-        author.books.push(book);
-        if (book.genre && book.genre.trim()) {
-          author.genres.add(book.genre.trim());
-        }
-      }
-    });
-    
-    const processedAuthors = Array.from(authorMap.values()).map(author => ({
-      ...author,
-      genres: Array.from(author.genres),
-      bookCount: author.books.length
-    }));
-    
-    console.log('Processed authors:', processedAuthors.length);
-    return processedAuthors;
-  }, [books]);
-
-  // Get unique genres
+  // Get unique genres from authors
   const genres = useMemo(() => {
     const genreSet = new Set<string>();
     authors.forEach(author => {
-      author.genres.forEach((genre: string) => genreSet.add(genre));
+      author.genres.forEach(genre => genreSet.add(genre));
     });
     return Array.from(genreSet).sort();
   }, [authors]);
@@ -102,38 +52,39 @@ const Authors = () => {
   const filteredAuthors = useMemo(() => {
     return authors.filter(author => {
       const matchesSearch = !searchTerm || 
-        author.name.toLowerCase().includes(searchTerm.toLowerCase());
+        author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        author.bio?.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesGenre = !selectedGenre || 
         author.genres.includes(selectedGenre);
       
       const matchesBookCount = !bookCountFilter || 
-        (bookCountFilter === '1-3' && author.bookCount >= 1 && author.bookCount <= 3) ||
-        (bookCountFilter === '4-10' && author.bookCount >= 4 && author.bookCount <= 10) ||
-        (bookCountFilter === '10+' && author.bookCount > 10);
+        (bookCountFilter === '1-3' && author.books_count >= 1 && author.books_count <= 3) ||
+        (bookCountFilter === '4-10' && author.books_count >= 4 && author.books_count <= 10) ||
+        (bookCountFilter === '10+' && author.books_count > 10);
       
       return matchesSearch && matchesGenre && matchesBookCount;
-    }).sort((a, b) => b.bookCount - a.bookCount);
+    });
   }, [authors, searchTerm, selectedGenre, bookCountFilter]);
 
-  // Featured authors (top 6 by book count)
+  // Featured authors (top 6 by rating and followers)
   const featuredAuthors = useMemo(() => {
     return [...authors]
-      .sort((a, b) => b.bookCount - a.bookCount)
+      .sort((a, b) => (b.rating * b.followers_count) - (a.rating * a.followers_count))
       .slice(0, 6);
   }, [authors]);
 
   const getAuthorInitials = (name: string) => {
-    return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase();
+    return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
   };
 
   const handleRetry = () => {
-    console.log('Retrying to fetch books...');
+    console.log('Retrying to fetch authors...');
     refetch();
   };
 
   // Loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-20">
         <div className="container mx-auto px-4 py-8">
@@ -196,7 +147,7 @@ const Authors = () => {
             </p>
             <div className="mt-4 text-sm text-gray-500">
               {authors.length > 0 ? (
-                `Found ${authors.length} author${authors.length !== 1 ? 's' : ''} from our library`
+                `Found ${authors.length} author${authors.length !== 1 ? 's' : ''}`
               ) : (
                 'Building our authors directory...'
               )}
@@ -212,7 +163,7 @@ const Authors = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
                     type="text"
-                    placeholder="Search authors by name..."
+                    placeholder="Search authors by name or bio..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400 rounded-xl"
@@ -258,7 +209,7 @@ const Authors = () => {
               <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-500 mb-2">No Authors Found</h3>
               <p className="text-gray-400 mb-6">
-                We're building our authors directory. Authors will appear here as more books are added to our library.
+                We're building our authors directory. Check back soon for more authors!
               </p>
               <Link to="/library">
                 <Button className="bg-orange-600 hover:bg-orange-700">
@@ -274,69 +225,7 @@ const Authors = () => {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Authors</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {featuredAuthors.map(author => (
-                      <Card key={author.name} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-orange-200">
-                        <CardContent className="p-6">
-                          <div className="text-center mb-6">
-                            <Avatar className="w-20 h-20 mx-auto mb-4 ring-4 ring-orange-200 group-hover:ring-orange-400 transition-all">
-                              <AvatarImage src="" alt={author.name} />
-                              <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white">
-                                {getAuthorInitials(author.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">{author.name}</h3>
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <MapPin className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm text-gray-600">{author.location}</span>
-                            </div>
-                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                              {author.bio}
-                            </p>
-                          </div>
-                          
-                          <div className="space-y-3 mb-6">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-gray-600">Books Published</span>
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                                {author.bookCount}
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-gray-600">Rating</span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-sm font-medium">{author.rating}</span>
-                                <div className="text-yellow-400">★</div>
-                              </div>
-                            </div>
-                            {author.upcomingEvents > 0 && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">Upcoming Events</span>
-                                <Badge variant="outline" className="border-green-200 text-green-700">
-                                  <Calendar className="w-3 h-3 mr-1" />
-                                  {author.upcomingEvents}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-1 gap-2">
-                            <Link to={`/author/${author.slug}`}>
-                              <Button className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700">
-                                View Profile
-                              </Button>
-                            </Link>
-                            <div className="grid grid-cols-2 gap-2">
-                              <Button variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-50">
-                                <Clock className="w-4 h-4 mr-1" />
-                                Schedule
-                              </Button>
-                              <Button variant="outline" size="sm" className="border-green-300 text-green-700 hover:bg-green-50">
-                                <MessageSquare className="w-4 h-4 mr-1" />
-                                Message
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <AuthorCard key={author.id} author={author} featured={true} />
                     ))}
                   </div>
                 </div>
@@ -366,55 +255,7 @@ const Authors = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredAuthors.map(author => (
-                      <Card key={author.name} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm">
-                        <CardContent className="p-4">
-                          <div className="text-center mb-4">
-                            <Avatar className="w-16 h-16 mx-auto mb-3 ring-2 ring-orange-200 group-hover:ring-orange-400 transition-all">
-                              <AvatarImage src="" alt={author.name} />
-                              <AvatarFallback className="text-sm font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white">
-                                {getAuthorInitials(author.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <h3 className="font-semibold text-gray-900 text-sm mb-1 truncate">
-                              {author.name}
-                            </h3>
-                            <div className="flex items-center justify-center gap-1 mb-2">
-                              <MapPin className="w-3 h-3 text-gray-400" />
-                              <span className="text-xs text-gray-500">{author.location}</span>
-                            </div>
-                            <p className="text-xs text-gray-600 line-clamp-2 mb-3">
-                              {author.bio}
-                            </p>
-                          </div>
-                          
-                          <div className="space-y-2 mb-4">
-                            <div className="flex justify-between text-xs">
-                              <span className="text-gray-500">Books</span>
-                              <span className="font-medium">{author.bookCount}</span>
-                            </div>
-                            <div className="flex justify-between text-xs">
-                              <span className="text-gray-500">Rating</span>
-                              <span className="font-medium">{author.rating} ★</span>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 gap-1">
-                            <Link to={`/author/${author.slug}`}>
-                              <Button size="sm" className="w-full h-8 text-xs bg-orange-600 hover:bg-orange-700">
-                                View Profile
-                              </Button>
-                            </Link>
-                            <div className="grid grid-cols-2 gap-1">
-                              <Button variant="outline" size="sm" className="h-7 text-xs border-blue-300 text-blue-700">
-                                Schedule
-                              </Button>
-                              <Button variant="outline" size="sm" className="h-7 text-xs border-green-300 text-green-700">
-                                Message
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <AuthorCard key={author.id} author={author} featured={false} />
                     ))}
                   </div>
                 )}
@@ -424,6 +265,120 @@ const Authors = () => {
         </div>
       </div>
     </>
+  );
+};
+
+// Author Card Component
+interface AuthorCardProps {
+  author: Author;
+  featured: boolean;
+}
+
+const AuthorCard: React.FC<AuthorCardProps> = ({ author, featured }) => {
+  const getAuthorInitials = (name: string) => {
+    return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
+  };
+
+  const createAuthorSlug = (name: string) => {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  };
+
+  return (
+    <Card className={`group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-orange-200 ${featured ? 'ring-2 ring-orange-300' : ''}`}>
+      <CardContent className={featured ? "p-6" : "p-4"}>
+        <div className="text-center mb-4">
+          <Avatar className={`${featured ? 'w-20 h-20' : 'w-16 h-16'} mx-auto mb-3 ring-2 ring-orange-200 group-hover:ring-orange-400 transition-all`}>
+            <AvatarImage src={author.profile_image_url || ""} alt={author.name} />
+            <AvatarFallback className={`${featured ? 'text-lg' : 'text-sm'} font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white`}>
+              {getAuthorInitials(author.name)}
+            </AvatarFallback>
+          </Avatar>
+          <h3 className={`${featured ? 'text-xl' : 'text-lg'} font-semibold text-gray-900 mb-2`}>
+            {author.name}
+          </h3>
+          <div className="flex items-center justify-center gap-1 mb-2">
+            <MapPin className="w-3 h-3 text-gray-400" />
+            <span className="text-xs text-gray-500">{author.location}</span>
+          </div>
+          {author.bio && (
+            <p className={`text-gray-600 ${featured ? 'text-sm' : 'text-xs'} line-clamp-2 mb-3`}>
+              {author.bio}
+            </p>
+          )}
+        </div>
+
+        {/* Author Stats */}
+        <div className={`grid grid-cols-2 gap-2 mb-4 ${featured ? 'text-sm' : 'text-xs'}`}>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500 flex items-center gap-1">
+              <BookOpen className="w-3 h-3" />
+              Books
+            </span>
+            <span className="font-medium">{author.books_count}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500 flex items-center gap-1">
+              <Star className="w-3 h-3" />
+              Rating
+            </span>
+            <span className="font-medium">{author.rating}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500 flex items-center gap-1">
+              <Users className="w-3 h-3" />
+              Followers
+            </span>
+            <span className="font-medium">{author.followers_count.toLocaleString()}</span>
+          </div>
+          {author.upcoming_events > 0 && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500 flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                Events
+              </span>
+              <span className="font-medium">{author.upcoming_events}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Genres */}
+        {author.genres.length > 0 && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-1">
+              {author.genres.slice(0, featured ? 3 : 2).map((genre, index) => (
+                <Badge key={index} variant="outline" className="text-xs border-orange-200 text-orange-700">
+                  {genre}
+                </Badge>
+              ))}
+              {author.genres.length > (featured ? 3 : 2) && (
+                <Badge variant="outline" className="text-xs border-gray-200 text-gray-500">
+                  +{author.genres.length - (featured ? 3 : 2)}
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="grid grid-cols-1 gap-2">
+          <Link to={`/author/${createAuthorSlug(author.name)}`}>
+            <Button size="sm" className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+              View Profile
+            </Button>
+          </Link>
+          <div className="grid grid-cols-2 gap-1">
+            <Button variant="outline" size="sm" className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50">
+              <Clock className="w-3 h-3 mr-1" />
+              Schedule
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs border-green-300 text-green-700 hover:bg-green-50">
+              <MessageSquare className="w-3 h-3 mr-1" />
+              Message
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
