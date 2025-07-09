@@ -14,6 +14,7 @@ import Navigation from "./components/Navigation";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ScrollToTop from "./components/ScrollToTop";
+import Authors from "./pages/Authors";
 
 const Index = React.lazy(() => import("./pages/Index"));
 const About = React.lazy(() => import("./pages/About"));
@@ -21,7 +22,6 @@ const Bookshelf = React.lazy(() => import("./pages/Bookshelf"));
 const BookLibrary = React.lazy(() => import("./pages/BookLibrary"));
 const ReadingGroups = React.lazy(() => import("./pages/ReadingGroups"));
 const SocialMedia = React.lazy(() => import("./pages/SocialMedia"));
-const Authors = React.lazy(() => import("./pages/Authors"));
 const AuthorProfile = React.lazy(() => import("./pages/AuthorProfile"));
 const AuthorConnect = React.lazy(() => import("./pages/AuthorConnect"));
 const ReaderMap = React.lazy(() => import("./pages/ReaderMap"));
