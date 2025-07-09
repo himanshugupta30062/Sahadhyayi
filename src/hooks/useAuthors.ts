@@ -9,7 +9,7 @@ export interface Author {
   profile_image_url: string | null;
   location: string;
   website_url: string | null;
-  social_links: Record<string, any>;
+  social_links: any; // Changed from Record<string, any> to any to match Json type
   genres: string[];
   books_count: number;
   followers_count: number;
@@ -25,28 +25,15 @@ export const useAuthors = () => {
     queryFn: async (): Promise<Author[]> => {
       console.log('Fetching authors from database...');
       
-      // Use raw SQL query to bypass TypeScript type checking temporarily
       const { data, error } = await supabase.rpc('get_authors_data');
 
       if (error) {
         console.error('Error fetching authors:', error);
-        // If the function doesn't exist, fall back to direct table access
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('authors' as any)
-          .select('*')
-          .order('books_count', { ascending: false });
-
-        if (fallbackError) {
-          console.error('Fallback error:', fallbackError);
-          throw fallbackError;
-        }
-
-        console.log('Authors fetched successfully (fallback):', fallbackData?.length || 0);
-        return fallbackData || [];
+        throw error;
       }
 
       console.log('Authors fetched successfully:', data?.length || 0);
-      return data || [];
+      return (data || []) as Author[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
