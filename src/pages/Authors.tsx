@@ -8,10 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import SEO from '@/components/SEO';
-import { useLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 
 const Authors = () => {
-  const { books, loading } = useLibraryBooks();
+  const { data: books, isLoading: loading } = useAllLibraryBooks();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLetter, setSelectedLetter] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
@@ -30,7 +30,7 @@ const Authors = () => {
             name: book.author,
             bio: book.author_bio || `${book.author} is a renowned author whose works have captivated readers worldwide.`,
             books: [],
-            genres: new Set(),
+            genres: new Set<string>(),
             slug: book.author.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
           });
         }
@@ -52,9 +52,9 @@ const Authors = () => {
 
   // Get unique genres
   const genres = useMemo(() => {
-    const genreSet = new Set();
+    const genreSet = new Set<string>();
     authors.forEach(author => {
-      author.genres.forEach(genre => genreSet.add(genre));
+      author.genres.forEach((genre: string) => genreSet.add(genre));
     });
     return Array.from(genreSet).sort();
   }, [authors]);
