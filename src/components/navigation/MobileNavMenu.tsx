@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, User, Home, Compass, Users, BookOpen, Settings, LogOut, LogIn, UserPlus } from "lucide-react";
+import { Bell, User, Home, Compass, Users, BookOpen, Settings, LogOut, LogIn, UserPlus, PenTool } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -23,15 +23,17 @@ const MobileNavMenu = ({ isOpen, setIsOpen }: Props) => {
     user?.email?.charAt(0) ||
     "U";
 
-  // New simplified navigation structure
+  // Updated navigation structure with Authors tab
   const navItems = user ? [
     { name: "Home", path: "/dashboard", icon: Home },
-    { name: "Explore", path: "/library", icon: Compass },
-    { name: "Community", path: "/social", icon: Users },
+    { name: "Library", path: "/library", icon: Compass },
+    { name: "Authors", path: "/authors", icon: PenTool },
+    { name: "Social Media", path: "/social", icon: Users },
     { name: "My Books", path: "/bookshelf", icon: BookOpen },
   ] : [
     { name: "Home", path: "/", icon: Home },
     { name: "Library", path: "/library", icon: Compass },
+    { name: "Authors", path: "/authors", icon: PenTool },
     { name: "Social Media", path: "/social", icon: Users },
   ];
 

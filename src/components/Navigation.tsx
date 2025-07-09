@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Settings, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -36,15 +36,17 @@ const Navigation = () => {
     };
   }, [scrolled]);
 
-  // New simplified navigation items
+  // Updated navigation items with Authors tab
   const navItems = user ? [
     { name: "Home", href: "/dashboard" },
-    { name: "Explore", href: "/library" },
-    { name: "Community", href: "/social" },
+    { name: "Library", href: "/library" },
+    { name: "Authors", href: "/authors" },
+    { name: "Social Media", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
+    { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
   ];
 
