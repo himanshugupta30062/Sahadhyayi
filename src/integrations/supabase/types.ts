@@ -846,6 +846,25 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      get_authors_data: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          name: string
+          bio: string
+          profile_image_url: string
+          location: string
+          website_url: string
+          social_links: Json
+          genres: string[]
+          books_count: number
+          followers_count: number
+          rating: number
+          upcoming_events: number
+          created_at: string
+          updated_at: string
+        }[]
+      }
       get_user_bookshelf_stats: {
         Args: { user_uuid: string }
         Returns: {
