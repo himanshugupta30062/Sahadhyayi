@@ -1,60 +1,65 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, User, MapPin, Calendar, MessageSquare, Clock } from 'lucide-react';
+import { Search, Filter, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import SEO from '@/components/SEO';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
+import { toast } from '@/hooks/use-toast';
 
 const Authors = () => {
-  console.log('Authors component starting to render');
+  console.log('Authors component rendering');
   
-  const { data: books, isLoading: loading, error } = useAllLibraryBooks();
+  const { data: books, isLoading: loading, error, refetch } = useAllLibraryBooks();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [bookCountFilter, setBookCountFilter] = useState('');
 
   // Enhanced debug logging
   console.log('Authors page render state:', { 
-    books: books?.length, 
+    books: books?.length || 0, 
     loading, 
     error: error?.message,
-    booksData: books?.slice(0, 2) // Show first 2 books for debugging
+    hasBooks: !!books && books.length > 0
   });
 
-  // Add explicit error handling and early returns for debugging
-  if (loading) {
-    console.log('Authors page: Loading state');
-  }
-  
-  if (error) {
-    console.error('Authors page: Error state:', error);
-  }
-  
-  if (books) {
-    console.log('Authors page: Successfully loaded books:', books.length);
-  }
+  // Show error toast if there's an error
+  React.useEffect(() => {
+    if (error) {
+      console.error('Authors page error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error loading authors",
+        description: "Unable to load author data. Please try refreshing the page."
+      });
+    }
+  }, [error]);
 
-  // Extract unique authors from books
+  // Extract unique authors from books with better error handling
   const authors = useMemo(() => {
-    if (!books || !Array.isArray(books)) {
-      console.log('Authors: No books data or invalid format:', books);
+    console.log('Processing authors from books:', books?.length || 0);
+    
+    if (!books || !Array.isArray(books) || books.length === 0) {
+      console.log('No books available for author extraction');
       return [];
     }
     
     const authorMap = new Map();
     
-    books.forEach(book => {
-      if (book.author) {
-        const authorKey = book.author.toLowerCase();
+    books.forEach((book, index) => {
+      console.log(`Processing book ${index + 1}:`, book.title, 'by', book.author);
+      
+      if (book.author && book.author.trim()) {
+        const authorKey = book.author.toLowerCase().trim();
         if (!authorMap.has(authorKey)) {
           authorMap.set(authorKey, {
-            name: book.author,
+            name: book.author.trim(),
             bio: book.author_bio || `${book.author} is a renowned author whose works have captivated readers worldwide.`,
             books: [],
             genres: new Set<string>(),
@@ -68,17 +73,20 @@ const Authors = () => {
         
         const author = authorMap.get(authorKey);
         author.books.push(book);
-        if (book.genre) {
-          author.genres.add(book.genre);
+        if (book.genre && book.genre.trim()) {
+          author.genres.add(book.genre.trim());
         }
       }
     });
     
-    return Array.from(authorMap.values()).map(author => ({
+    const processedAuthors = Array.from(authorMap.values()).map(author => ({
       ...author,
       genres: Array.from(author.genres),
       bookCount: author.books.length
     }));
+    
+    console.log('Processed authors:', processedAuthors.length);
+    return processedAuthors;
   }, [books]);
 
   // Get unique genres
@@ -119,29 +127,49 @@ const Authors = () => {
     return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase();
   };
 
+  const handleRetry = () => {
+    console.log('Retrying to fetch books...');
+    refetch();
+  };
+
+  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center pt-20">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading authors...</p>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-20">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading authors...</p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Error state with retry option
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center pt-20">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Authors</h1>
-          <p className="text-gray-600 mb-4">Unable to load authors data: {error.message}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-md"
-          >
-            Try Again
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-20">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center max-w-md mx-auto">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Unable to Load Authors</h1>
+            <Alert className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {error.message || 'There was an error loading the authors data. Please try again.'}
+              </AlertDescription>
+            </Alert>
+            <div className="space-y-4">
+              <Button onClick={handleRetry} className="bg-orange-600 hover:bg-orange-700">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
+              <p className="text-sm text-gray-500">
+                If the problem persists, please refresh the page or contact support.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -166,6 +194,13 @@ const Authors = () => {
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Discover talented authors, explore their works, and connect with writers who inspire you.
             </p>
+            <div className="mt-4 text-sm text-gray-500">
+              {authors.length > 0 ? (
+                `Found ${authors.length} author${authors.length !== 1 ? 's' : ''} from our library`
+              ) : (
+                'Building our authors directory...'
+              )}
+            </div>
           </div>
 
           {/* Search and Filters */}
@@ -217,157 +252,175 @@ const Authors = () => {
             </div>
           </div>
 
-          {/* Featured Authors */}
-          {featuredAuthors.length > 0 && (
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Authors</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {featuredAuthors.map(author => (
-                  <Card key={author.name} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-orange-200">
-                    <CardContent className="p-6">
-                      <div className="text-center mb-6">
-                        <Avatar className="w-20 h-20 mx-auto mb-4 ring-4 ring-orange-200 group-hover:ring-orange-400 transition-all">
-                          <AvatarImage src="" alt={author.name} />
-                          <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white">
-                            {getAuthorInitials(author.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{author.name}</h3>
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <MapPin className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm text-gray-600">{author.location}</span>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                          {author.bio}
-                        </p>
-                      </div>
-                      
-                      <div className="space-y-3 mb-6">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Books Published</span>
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                            {author.bookCount}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Rating</span>
-                          <div className="flex items-center gap-1">
-                            <span className="text-sm font-medium">{author.rating}</span>
-                            <div className="text-yellow-400">★</div>
-                          </div>
-                        </div>
-                        {author.upcomingEvents > 0 && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Upcoming Events</span>
-                            <Badge variant="outline" className="border-green-200 text-green-700">
-                              <Calendar className="w-3 h-3 mr-1" />
-                              {author.upcomingEvents}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-2">
-                        <Link to={`/author/${author.slug}`}>
-                          <Button className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700">
-                            View Profile
-                          </Button>
-                        </Link>
-                        <div className="grid grid-cols-2 gap-2">
-                          <Button variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-50">
-                            <Clock className="w-4 h-4 mr-1" />
-                            Schedule
-                          </Button>
-                          <Button variant="outline" size="sm" className="border-green-300 text-green-700 hover:bg-green-50">
-                            <MessageSquare className="w-4 h-4 mr-1" />
-                            Message
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+          {/* Show message if no authors found */}
+          {authors.length === 0 ? (
+            <div className="text-center py-12">
+              <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-500 mb-2">No Authors Found</h3>
+              <p className="text-gray-400 mb-6">
+                We're building our authors directory. Authors will appear here as more books are added to our library.
+              </p>
+              <Link to="/library">
+                <Button className="bg-orange-600 hover:bg-orange-700">
+                  Explore Library
+                </Button>
+              </Link>
             </div>
-          )}
+          ) : (
+            <>
+              {/* Featured Authors */}
+              {featuredAuthors.length > 0 && (
+                <div className="mb-12">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Authors</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {featuredAuthors.map(author => (
+                      <Card key={author.name} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-orange-200">
+                        <CardContent className="p-6">
+                          <div className="text-center mb-6">
+                            <Avatar className="w-20 h-20 mx-auto mb-4 ring-4 ring-orange-200 group-hover:ring-orange-400 transition-all">
+                              <AvatarImage src="" alt={author.name} />
+                              <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white">
+                                {getAuthorInitials(author.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">{author.name}</h3>
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <MapPin className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm text-gray-600">{author.location}</span>
+                            </div>
+                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                              {author.bio}
+                            </p>
+                          </div>
+                          
+                          <div className="space-y-3 mb-6">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-600">Books Published</span>
+                              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                {author.bookCount}
+                              </Badge>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-600">Rating</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-sm font-medium">{author.rating}</span>
+                                <div className="text-yellow-400">★</div>
+                              </div>
+                            </div>
+                            {author.upcomingEvents > 0 && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">Upcoming Events</span>
+                                <Badge variant="outline" className="border-green-200 text-green-700">
+                                  <Calendar className="w-3 h-3 mr-1" />
+                                  {author.upcomingEvents}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
 
-          {/* All Authors Grid */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                All Authors
-                {filteredAuthors.length > 0 && (
-                  <span className="text-sm font-normal text-gray-500 ml-2">
-                    ({filteredAuthors.length} author{filteredAuthors.length !== 1 ? 's' : ''})
-                  </span>
+                          <div className="grid grid-cols-1 gap-2">
+                            <Link to={`/author/${author.slug}`}>
+                              <Button className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700">
+                                View Profile
+                              </Button>
+                            </Link>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+                                <Clock className="w-4 h-4 mr-1" />
+                                Schedule
+                              </Button>
+                              <Button variant="outline" size="sm" className="border-green-300 text-green-700 hover:bg-green-50">
+                                <MessageSquare className="w-4 h-4 mr-1" />
+                                Message
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* All Authors Grid */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    All Authors
+                    {filteredAuthors.length > 0 && (
+                      <span className="text-sm font-normal text-gray-500 ml-2">
+                        ({filteredAuthors.length} author{filteredAuthors.length !== 1 ? 's' : ''})
+                      </span>
+                    )}
+                  </h2>
+                </div>
+
+                {filteredAuthors.length === 0 ? (
+                  <div className="text-center py-12">
+                    <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-500 mb-2">No authors found</h3>
+                    <p className="text-gray-400">
+                      Try adjusting your search or filter criteria
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {filteredAuthors.map(author => (
+                      <Card key={author.name} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm">
+                        <CardContent className="p-4">
+                          <div className="text-center mb-4">
+                            <Avatar className="w-16 h-16 mx-auto mb-3 ring-2 ring-orange-200 group-hover:ring-orange-400 transition-all">
+                              <AvatarImage src="" alt={author.name} />
+                              <AvatarFallback className="text-sm font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white">
+                                {getAuthorInitials(author.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <h3 className="font-semibold text-gray-900 text-sm mb-1 truncate">
+                              {author.name}
+                            </h3>
+                            <div className="flex items-center justify-center gap-1 mb-2">
+                              <MapPin className="w-3 h-3 text-gray-400" />
+                              <span className="text-xs text-gray-500">{author.location}</span>
+                            </div>
+                            <p className="text-xs text-gray-600 line-clamp-2 mb-3">
+                              {author.bio}
+                            </p>
+                          </div>
+                          
+                          <div className="space-y-2 mb-4">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-gray-500">Books</span>
+                              <span className="font-medium">{author.bookCount}</span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-gray-500">Rating</span>
+                              <span className="font-medium">{author.rating} ★</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-1">
+                            <Link to={`/author/${author.slug}`}>
+                              <Button size="sm" className="w-full h-8 text-xs bg-orange-600 hover:bg-orange-700">
+                                View Profile
+                              </Button>
+                            </Link>
+                            <div className="grid grid-cols-2 gap-1">
+                              <Button variant="outline" size="sm" className="h-7 text-xs border-blue-300 text-blue-700">
+                                Schedule
+                              </Button>
+                              <Button variant="outline" size="sm" className="h-7 text-xs border-green-300 text-green-700">
+                                Message
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 )}
-              </h2>
-            </div>
-
-            {filteredAuthors.length === 0 ? (
-              <div className="text-center py-12">
-                <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-500 mb-2">No authors found</h3>
-                <p className="text-gray-400">
-                  Try adjusting your search or filter criteria
-                </p>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredAuthors.map(author => (
-                  <Card key={author.name} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm">
-                    <CardContent className="p-4">
-                      <div className="text-center mb-4">
-                        <Avatar className="w-16 h-16 mx-auto mb-3 ring-2 ring-orange-200 group-hover:ring-orange-400 transition-all">
-                          <AvatarImage src="" alt={author.name} />
-                          <AvatarFallback className="text-sm font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white">
-                            {getAuthorInitials(author.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <h3 className="font-semibold text-gray-900 text-sm mb-1 truncate">
-                          {author.name}
-                        </h3>
-                        <div className="flex items-center justify-center gap-1 mb-2">
-                          <MapPin className="w-3 h-3 text-gray-400" />
-                          <span className="text-xs text-gray-500">{author.location}</span>
-                        </div>
-                        <p className="text-xs text-gray-600 line-clamp-2 mb-3">
-                          {author.bio}
-                        </p>
-                      </div>
-                      
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">Books</span>
-                          <span className="font-medium">{author.bookCount}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">Rating</span>
-                          <span className="font-medium">{author.rating} ★</span>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-1">
-                        <Link to={`/author/${author.slug}`}>
-                          <Button size="sm" className="w-full h-8 text-xs bg-orange-600 hover:bg-orange-700">
-                            View Profile
-                          </Button>
-                        </Link>
-                        <div className="grid grid-cols-2 gap-1">
-                          <Button variant="outline" size="sm" className="h-7 text-xs border-blue-300 text-blue-700">
-                            Schedule
-                          </Button>
-                          <Button variant="outline" size="sm" className="h-7 text-xs border-green-300 text-green-700">
-                            Message
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
     </>
