@@ -17,9 +17,15 @@ const Authors = () => {
   const [selectedGenre, setSelectedGenre] = useState('');
   const [bookCountFilter, setBookCountFilter] = useState('');
 
+  // Debug logging
+  console.log('Authors page render:', { books: books?.length, loading, error });
+
   // Extract unique authors from books
   const authors = useMemo(() => {
-    if (!books) return [];
+    if (!books || !Array.isArray(books)) {
+      console.log('Authors: No books data or invalid format:', books);
+      return [];
+    }
     
     const authorMap = new Map();
     
