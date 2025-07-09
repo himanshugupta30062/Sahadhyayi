@@ -12,13 +12,33 @@ import SEO from '@/components/SEO';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 
 const Authors = () => {
+  console.log('Authors component starting to render');
+  
   const { data: books, isLoading: loading, error } = useAllLibraryBooks();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [bookCountFilter, setBookCountFilter] = useState('');
 
-  // Debug logging
-  console.log('Authors page render:', { books: books?.length, loading, error });
+  // Enhanced debug logging
+  console.log('Authors page render state:', { 
+    books: books?.length, 
+    loading, 
+    error: error?.message,
+    booksData: books?.slice(0, 2) // Show first 2 books for debugging
+  });
+
+  // Add explicit error handling and early returns for debugging
+  if (loading) {
+    console.log('Authors page: Loading state');
+  }
+  
+  if (error) {
+    console.error('Authors page: Error state:', error);
+  }
+  
+  if (books) {
+    console.log('Authors page: Successfully loaded books:', books.length);
+  }
 
   // Extract unique authors from books
   const authors = useMemo(() => {
