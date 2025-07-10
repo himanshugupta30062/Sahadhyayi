@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Sheet,
@@ -54,14 +55,14 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
             <>
               <div className="flex items-center space-x-2">
                 <Avatar>
-                  <AvatarImage src={user.photoURL || ""} />
+                  <AvatarImage src={user.user_metadata?.avatar_url || ""} />
                   <AvatarFallback>
-                    {user.displayName?.charAt(0).toUpperCase() || "U"}
+                    {user.user_metadata?.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {user.displayName || "User"}
+                    {user.user_metadata?.full_name || user.email || "User"}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {user.email || "No Email"}
