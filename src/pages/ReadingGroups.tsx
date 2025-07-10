@@ -59,10 +59,10 @@ const ReadingGroups = () => {
   return (
     <>
       <SEO
-        title="Reading Groups - Connect with Fellow Readers | Sahadhyayi"
-        description="Join or create book discussion groups and participate in engaging events with readers who share your interests."
+        title="Reading Groups - Join Book Discussion Communities | Sahadhyayi"
+        description="Join vibrant reading groups and book clubs. Engage in meaningful discussions, share insights, and connect with passionate readers who share your literary interests."
         canonical="https://sahadhyayi.com/groups"
-        url="https://sahadhyayi.com/groups"
+        keywords={['reading groups', 'book clubs', 'book discussions', 'reading community', 'literary discussions', 'book lovers']}
       />
       <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">

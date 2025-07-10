@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BookOpen, Users } from 'lucide-react';
 import { SearchBar } from '@/components/ui/search-bar';
@@ -57,10 +56,10 @@ const BookLibrary = () => {
   return (
     <>
       <SEO
-        title="Digital Book Library - Browse 10,000+ Books | Sahadhyayi"
-        description="Browse our extensive digital library with 10,000+ books across all genres. Find your next great read with free PDFs, community reviews, and personalized recommendations."
+        title="Digital Book Library - Discover & Read Books Online | Sahadhyayi"
+        description="Explore our comprehensive digital library with thousands of books across all genres. Read online, track progress, and join discussions with fellow readers worldwide."
         canonical="https://sahadhyayi.com/library"
-        url="https://sahadhyayi.com/library"
+        keywords={['digital library', 'online books', 'read books online', 'ebooks', 'book collection', 'reading platform']}
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
