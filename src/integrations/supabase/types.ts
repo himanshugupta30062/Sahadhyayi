@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      authors: {
+        Row: {
+          bio: string | null
+          books_count: number | null
+          created_at: string | null
+          followers_count: number | null
+          genres: string[] | null
+          id: string
+          location: string | null
+          name: string
+          profile_image_url: string | null
+          rating: number | null
+          social_links: Json | null
+          upcoming_events: number | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          bio?: string | null
+          books_count?: number | null
+          created_at?: string | null
+          followers_count?: number | null
+          genres?: string[] | null
+          id?: string
+          location?: string | null
+          name: string
+          profile_image_url?: string | null
+          rating?: number | null
+          social_links?: Json | null
+          upcoming_events?: number | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          bio?: string | null
+          books_count?: number | null
+          created_at?: string | null
+          followers_count?: number | null
+          genres?: string[] | null
+          id?: string
+          location?: string | null
+          name?: string
+          profile_image_url?: string | null
+          rating?: number | null
+          social_links?: Json | null
+          upcoming_events?: number | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       book_audio_summaries: {
         Row: {
           audio_url: string
@@ -873,6 +924,10 @@ export type Database = {
           completed_books: number
           want_to_read_books: number
         }[]
+      }
+      update_author_book_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

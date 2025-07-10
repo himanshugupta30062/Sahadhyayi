@@ -9,7 +9,7 @@ export interface Author {
   profile_image_url: string | null;
   location: string;
   website_url: string | null;
-  social_links: any; // Changed from Record<string, any> to any to match Json type
+  social_links: any;
   genres: string[];
   books_count: number;
   followers_count: number;
