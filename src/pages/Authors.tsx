@@ -18,8 +18,8 @@ const Authors = () => {
   
   const { data: authors = [], isLoading, error, refetch } = useAuthors();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('');
-  const [bookCountFilter, setBookCountFilter] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState('all');
+  const [bookCountFilter, setBookCountFilter] = useState('all');
 
   console.log('Authors page state:', { 
     authorsCount: authors.length, 
@@ -55,10 +55,10 @@ const Authors = () => {
         author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         author.bio?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesGenre = !selectedGenre || 
+      const matchesGenre = selectedGenre === 'all' || 
         author.genres.includes(selectedGenre);
       
-      const matchesBookCount = !bookCountFilter || 
+      const matchesBookCount = bookCountFilter === 'all' || 
         (bookCountFilter === '1-3' && author.books_count >= 1 && author.books_count <= 3) ||
         (bookCountFilter === '4-10' && author.books_count >= 4 && author.books_count <= 10) ||
         (bookCountFilter === '10+' && author.books_count > 10);
@@ -178,7 +178,7 @@ const Authors = () => {
                     <SelectValue placeholder="Filter by Genre" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Genres</SelectItem>
+                    <SelectItem value="all">All Genres</SelectItem>
                     {genres.map(genre => (
                       <SelectItem key={genre} value={genre}>{genre}</SelectItem>
                     ))}
@@ -193,7 +193,7 @@ const Authors = () => {
                     <SelectValue placeholder="Books Published" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any Amount</SelectItem>
+                    <SelectItem value="all">Any Amount</SelectItem>
                     <SelectItem value="1-3">1-3 Books</SelectItem>
                     <SelectItem value="4-10">4-10 Books</SelectItem>
                     <SelectItem value="10+">10+ Books</SelectItem>
