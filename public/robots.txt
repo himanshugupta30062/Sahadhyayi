@@ -2,6 +2,17 @@
 User-agent: *
 Allow: /
 
+# Allow important discovery paths
+Allow: /library
+Allow: /authors
+Allow: /books/
+Allow: /author/
+Allow: /about
+Allow: /social
+Allow: /groups
+Allow: /help
+Allow: /feedback
+
 # Disallow private user areas
 Disallow: /dashboard/
 Disallow: /profile/
@@ -12,15 +23,7 @@ Disallow: /bookshelf/
 Disallow: /signin
 Disallow: /signup
 
-# Allow public pages
-Allow: /
-Allow: /about
-Allow: /library
-Allow: /books/
-Allow: /social
-Allow: /groups
-Allow: /help
-Allow: /feedback
+# Allow public legal pages
 Allow: /privacy
 Allow: /terms
 Allow: /cookies
@@ -32,3 +35,12 @@ Sitemap: https://sahadhyayi.com/sitemap.xml
 
 # Crawl delay (optional - adjust based on server capacity)
 Crawl-delay: 1
+
+# Additional instructions for specific bots
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
