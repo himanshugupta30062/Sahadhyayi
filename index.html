@@ -149,6 +149,13 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      const redirectPath = sessionStorage.redirectPath;
+      if (redirectPath) {
+        sessionStorage.removeItem('redirectPath');
+        history.replaceState(null, '', redirectPath);
+      }
+    </script>
     <!-- Google Search Console verification (replace with your actual verification code) -->
     <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" /> -->
     <script type="module" src="/src/main.tsx"></script>
