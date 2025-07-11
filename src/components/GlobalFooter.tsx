@@ -51,10 +51,10 @@ const GlobalFooter = () => {
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <img 
-                src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
-                alt="Sahadhyayi Logo" 
-                className="w-8 h-8 invert" 
+              <img
+                src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
+                alt="Sahadhyayi footer logo"
+                className="w-8 h-8 invert"
               />
               <h3 className="text-xl font-bold">Sahadhyayi</h3>
             </div>
