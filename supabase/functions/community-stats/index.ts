@@ -1,17 +1,16 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    })
+    return new Response(null, { status: 200, headers: corsHeaders })
   }
 
   try {
@@ -34,24 +33,18 @@ serve(async (req) => {
 
     return new Response(JSON.stringify(stats), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
     console.error('Error fetching community stats:', error);
     
-    return new Response(JSON.stringify({ 
-      error: 'Failed to fetch community statistics',
-      totalSignups: 15847,  // fallback values
-      totalVisits: 125000
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    })
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to fetch community statistics',
+        totalSignups: 15847, // fallback values
+        totalVisits: 125000
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
 })
