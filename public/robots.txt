@@ -18,6 +18,7 @@ Disallow: /dashboard/
 Disallow: /profile/
 Disallow: /settings/
 Disallow: /bookshelf/
+Disallow: /functions/v1/”*
 
 # Disallow authentication pages (to prevent indexing of login/signup forms)
 Disallow: /signin
