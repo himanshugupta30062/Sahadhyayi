@@ -343,9 +343,6 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author, featured }) => {
     return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
   };
 
-  const createAuthorSlug = (name: string) => {
-    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  };
 
   return (
     <Card className={`group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-orange-200 ${featured ? 'ring-2 ring-orange-300' : ''}`}>
@@ -425,7 +422,7 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author, featured }) => {
 
         {/* Actions */}
         <div className="grid grid-cols-1 gap-2">
-          <Link to={`/author/${createAuthorSlug(author.name)}`}>
+          <Link to={`/author-details/${author.id}`}>
             <Button size="sm" className="w-full bg-orange-600 hover:bg-orange-700 text-white">
               View Profile
             </Button>
