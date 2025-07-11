@@ -104,7 +104,6 @@ const Index = () => {
       <SEO
         title="Sahadhyayi - Digital Reading Community & Book Library"
         description="Join Sahadhyayi's vibrant reading community and book reader social media platform. Discover thousands of books, connect with fellow readers, track your progress, and explore our digital library."
-        canonical="https://sahadhyayi.com/"
         url="https://sahadhyayi.com/"
       />
       <script type="application/ld+json">
