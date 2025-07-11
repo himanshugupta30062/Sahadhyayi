@@ -33,7 +33,7 @@ const NotFound = () => {
         url="https://sahadhyayi.com/404"
         noIndex={true}
       />
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-20">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-16">
         <div className="text-center max-w-md mx-auto p-8">
           <div className="mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">

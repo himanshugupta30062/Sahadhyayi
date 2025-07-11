@@ -76,7 +76,7 @@ const AuthorDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center pt-20">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center pt-16">
         <div className="animate-pulse text-center">
           <div className="w-16 h-16 bg-orange-200 rounded-full mx-auto mb-4"></div>
           <p className="text-gray-600">Loading author profile...</p>
@@ -87,7 +87,7 @@ const AuthorDetails = () => {
 
   if (!author) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center pt-20">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center pt-16">
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-red-200 rounded-full mx-auto mb-4 flex items-center justify-center">
             <User className="w-8 h-8 text-red-600" />
@@ -122,7 +122,7 @@ const AuthorDetails = () => {
         author={author.name}
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-20">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-16">
         {/* Header */}
         <div className="bg-white/80 backdrop-blur-sm border-b border-orange-200 sticky top-16 z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

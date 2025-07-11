@@ -113,7 +113,7 @@ const SignIn = () => {
         canonical="https://sahadhyayi.com/signin"
         url="https://sahadhyayi.com/signin"
       />
-      <div className="min-h-screen flex items-center justify-center p-4 pt-20">
+      <div className="min-h-screen flex items-center justify-center p-4 pt-16">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-2xl">
