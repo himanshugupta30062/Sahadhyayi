@@ -35,6 +35,7 @@ import NotFound from "./pages/NotFound";
 import Navigation from "./components/Navigation";
 import GlobalFooter from "./components/GlobalFooter";
 import ScrollToTop from "./components/ScrollToTop";
+import BackToTopButton from "./components/BackToTopButton";
 
 import Blog from "./pages/Blog";
 import CommunityStories from "./pages/CommunityStories";
@@ -94,6 +95,7 @@ function App() {
                   </Routes>
                 </main>
                 <GlobalFooter />
+                <BackToTopButton />
                 <Toaster />
               </div>
             </BrowserRouter>
