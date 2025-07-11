@@ -63,7 +63,8 @@ const BooksCollection = ({
   const [lastSearchTerm, setLastSearchTerm] = useState('');
 
   // Pagination state
-  const [pageSize, setPageSize] = useState(20);
+  // Default to showing 10 items per page
+  const [pageSize, setPageSize] = useState(10);
   const [currentPageAll, setCurrentPageAll] = useState(1);
   const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
   const allGridRef = useRef<HTMLDivElement>(null);
@@ -173,7 +174,24 @@ const BooksCollection = ({
 
     console.log('Filtered books result:', filtered.length, 'books');
     console.log('Hindi books in result:', filtered.filter(book => book.language === 'Hindi').map(book => book.title));
-    
+
+    // Sort to prioritize books that have both a cover image and PDF first,
+    // followed by those that only have a PDF, then the rest
+    filtered.sort((a, b) => {
+      const score = (book: Book) => {
+        const hasCover = Boolean(book.cover_image_url);
+        const hasPdf = Boolean(book.pdf_url);
+        if (hasCover && hasPdf) return 3;
+        if (hasPdf) return 2;
+        if (hasCover) return 1;
+        return 0;
+      };
+
+      const diff = score(b) - score(a);
+      if (diff !== 0) return diff;
+      return 0;
+    });
+
     return filtered;
   };
 
