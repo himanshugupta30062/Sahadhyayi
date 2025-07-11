@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SEO from '@/components/SEO';
+import Breadcrumb from '@/components/Breadcrumb';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useAuthors } from '@/hooks/useAuthors';
 
@@ -137,6 +138,16 @@ const AuthorDetails = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Breadcrumb Navigation */}
+          <div className="mb-6">
+            <Breadcrumb 
+              items={[
+                { name: 'Authors', path: '/authors' },
+                { name: author.name, path: '', current: true }
+              ]}
+            />
+          </div>
+
           {/* Author Header */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             {/* Author Info */}
