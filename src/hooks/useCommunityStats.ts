@@ -23,16 +23,33 @@ export const useCommunityStats = () => {
   const fetchStats = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/community-stats`);
-      
-      if (!response.ok) {
+      const signupsResponse = await fetch(
+        `${SUPABASE_URL}/functions/v1/community-stats`
+      );
+
+      if (!signupsResponse.ok) {
         throw new Error('Failed to fetch community stats');
       }
-      
-      const data: CommunityStats = await response.json();
-      setStats(data);
+
+      const signupsData: CommunityStats = await signupsResponse.json();
+
+      const visitsResponse = await fetch(
+        `${SUPABASE_URL}/functions/v1/website-clicks`
+      );
+
+      if (!visitsResponse.ok) {
+        throw new Error('Failed to record website visit');
+      }
+
+      const visitData = (await visitsResponse.json()) as { totalVisits: number };
+
+      setStats({
+        totalSignups: signupsData.totalSignups,
+        totalVisits: visitData.totalVisits,
+        lastUpdated: new Date().toISOString()
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       console.error('Failed to fetch community stats:', err);
