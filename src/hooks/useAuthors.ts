@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { mockAuthors } from "@/mockAuthors";
 
 export interface Author {
   id: string;
@@ -24,16 +25,22 @@ export const useAuthors = () => {
     queryKey: ['authors'],
     queryFn: async (): Promise<Author[]> => {
       console.log('Fetching authors from database...');
-      
+
       const { data, error } = await supabase.rpc('get_authors_data');
 
       if (error) {
         console.error('Error fetching authors:', error);
-        throw error;
+        console.info('Falling back to mock author data');
+        return mockAuthors as Author[];
       }
 
-      console.log('Authors fetched successfully:', data?.length || 0);
-      return (data || []) as Author[];
+      if (!data || data.length === 0) {
+        console.warn('No authors returned from database, using mock data');
+        return mockAuthors as Author[];
+      }
+
+      console.log('Authors fetched successfully:', data.length);
+      return data as Author[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
