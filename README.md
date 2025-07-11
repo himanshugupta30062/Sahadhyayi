@@ -83,6 +83,7 @@ VITE_GEMINI_API_KEY=your_key_here
 ```
 These values are required for the application to connect to Supabase and for the
 chatbot to fetch responses from the Gemini API. The application will throw an error if any of them are missing.
+Ensure `VITE_SUPABASE_URL` points to the Supabase project hosting the community stats function (e.g. `https://rknxtatvlzunatpyqxro.supabase.co`).
 
 ## How can I deploy this project?
 

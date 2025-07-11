@@ -1,6 +1,10 @@
 
 import { useState, useEffect } from 'react';
 
+const SUPABASE_URL =
+  (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
+  'https://rknxtatvlzunatpyqxro.supabase.co';
+
 interface CommunityStats {
   totalSignups: number;
   totalVisits: number;
@@ -21,7 +25,7 @@ export const useCommunityStats = () => {
     setError(null);
     
     try {
-      const response = await fetch('https://c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0.supabase.co/functions/v1/community-stats');
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/community-stats`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch community stats');
@@ -40,7 +44,7 @@ export const useCommunityStats = () => {
   const joinCommunity = async () => {
     try {
       // Simulate joining the community
-      const response = await fetch('https://c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0.supabase.co/functions/v1/community-stats', {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/community-stats`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
