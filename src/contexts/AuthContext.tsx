@@ -41,6 +41,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
+        // Handle sign out event
+        if (event === 'SIGNED_OUT') {
+          console.log('[AUTH] User signed out, redirecting...');
+          // Clear local state
+          setUser(null);
+          setSession(null);
+          // Redirect to home page after sign out
+          window.location.href = '/';
+        }
+
         // Handle new user profile creation
         if (event === 'SIGNED_IN' && session?.user) {
           try {
@@ -162,11 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('[AUTH] Starting sign out process...');
       
-      // Clear local state first
-      setUser(null);
-      setSession(null);
-      
-      // Sign out from Supabase
+      // Sign out from Supabase (this will trigger the auth state change)
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Error signing out from Supabase:', error);
@@ -179,6 +185,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Ensure local state is cleared even if there's an error
       setUser(null);
       setSession(null);
+      // Force redirect on error
+      window.location.href = '/';
     }
   };
 

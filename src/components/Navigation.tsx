@@ -68,7 +68,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 font-bold text-2xl text-gray-800">
+          <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-3 font-bold text-2xl text-gray-800">
             <img
               src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
               alt="Sahadhyayi logo - Digital library platform for deep reading culture"

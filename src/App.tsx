@@ -13,6 +13,7 @@ import BookLibrary from "./pages/BookLibrary";
 import BookDetails from "./pages/BookDetails";
 import Authors from "./pages/Authors";
 import AuthorProfile from "./pages/AuthorProfile";
+import AuthorDetails from "./pages/AuthorDetails";
 import ReadingGroups from "./pages/ReadingGroups";
 import ReaderMap from "./pages/ReaderMap";
 import SocialMedia from "./pages/SocialMedia";
@@ -20,6 +21,7 @@ import HelpCenter from "./pages/HelpCenter";
 import Feedback from "./pages/Feedback";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import About from "./pages/About";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
@@ -60,7 +62,7 @@ function App() {
               <div className="min-h-screen bg-background flex flex-col">
                 <Navigation />
                 <ScrollToTop />
-                <main className="flex-1">
+                <main className="flex-1 pt-16">
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/library" element={<BookLibrary />} />
@@ -68,6 +70,7 @@ function App() {
                     <Route path="/books/:bookId" element={<BookDetails />} />
                     <Route path="/authors" element={<Authors />} />
                     <Route path="/author/:authorName" element={<AuthorProfile />} />
+                    <Route path="/author-details/:id" element={<AuthorDetails />} />
                     <Route path="/groups" element={<ReadingGroups />} />
                     <Route path="/map" element={<ReaderMap />} />
                     <Route path="/social" element={<SocialMedia />} />
@@ -75,6 +78,7 @@ function App() {
                     <Route path="/feedback" element={<Feedback />} />
                     <Route path="/signin" element={<SignIn />} />
                     <Route path="/signup" element={<SignUp />} />
+                    <Route path="/about" element={<About />} />
                     <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/cookies" element={<CookiePolicy />} />
