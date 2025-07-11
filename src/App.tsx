@@ -63,7 +63,7 @@ function App() {
               <div className="min-h-screen bg-background flex flex-col">
                 <Navigation />
                 <ScrollToTop />
-                <main className="flex-1 pt-16">
+                <main id="main-content" className="flex-1 pt-16">
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/library" element={<BookLibrary />} />
