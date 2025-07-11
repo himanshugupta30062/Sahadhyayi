@@ -111,3 +111,13 @@ node scripts/exportGeminiTrainingData.js
 ```
 
 The script creates a `gemini_training_data.json` file that can be used with Google's tuning tools or any other model training pipeline.
+
+## SonarQube Analysis
+
+This project includes a `sonar-project.properties` configuration file so the code can be analyzed with SonarQube or SonarCloud. Run the scanner locally with:
+
+```sh
+npx sonar-scanner
+```
+
+Ensure you set the appropriate `SONAR_TOKEN` and `SONAR_HOST_URL` environment variables before running the command.
