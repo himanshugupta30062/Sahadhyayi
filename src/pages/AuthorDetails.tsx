@@ -13,7 +13,7 @@ import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useAuthors } from '@/hooks/useAuthors';
 
 const AuthorDetails = () => {
-  const { authorName } = useParams<{ authorName: string }>();
+  const { id } = useParams<{ id: string }>();
   const { data: books, isLoading: booksLoading } = useAllLibraryBooks();
   const { data: authors = [], isLoading: authorsLoading } = useAuthors();
   const [showFullBio, setShowFullBio] = useState(false);
@@ -22,12 +22,10 @@ const AuthorDetails = () => {
 
   // Find author from database first, then fallback to books
   const { author, authorBooks } = useMemo(() => {
-    if (!authorName) return { author: null, authorBooks: [] };
+    if (!id) return { author: null, authorBooks: [] };
     
     // First try to find author in authors table
-    const dbAuthor = authors.find(a => 
-      a.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') === authorName
-    );
+    const dbAuthor = authors.find(a => a.id === id);
     
     if (dbAuthor) {
       // Find books by this author
@@ -48,15 +46,15 @@ const AuthorDetails = () => {
     // Fallback to finding author from books
     if (!books) return { author: null, authorBooks: [] };
     
-    const authorBooks = books.filter(book => 
-      book.author && book.author.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') === authorName
+    const authorBooks = books.filter(book =>
+      book.author && book.author.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') === id
     );
     
     if (authorBooks.length === 0) return { author: null, authorBooks: [] };
     
     const firstBook = authorBooks[0];
     const author = {
-      id: `book-author-${authorName}`,
+      id: `book-author-${id}`,
       name: firstBook.author!,
       bio: firstBook.author_bio || `${firstBook.author} is a distinguished author whose literary works have captivated readers around the world. With a unique voice and compelling storytelling, they continue to contribute meaningfully to contemporary literature.`,
       location: 'Unknown',
@@ -74,7 +72,7 @@ const AuthorDetails = () => {
     };
     
     return { author, authorBooks };
-  }, [books, authors, authorName]);
+  }, [books, authors, id]);
 
   if (isLoading) {
     return (
@@ -118,8 +116,8 @@ const AuthorDetails = () => {
       <SEO
         title={`${author.name} - Author Profile | Sahadhyayi`}
         description={`Discover ${author.name}'s biography, books, and connect with this talented author on Sahadhyayi reading community.`}
-        canonical={`https://sahadhyayi.com/author/${authorName}`}
-        url={`https://sahadhyayi.com/author/${authorName}`}
+        canonical={`https://sahadhyayi.com/author-details/${id}`}
+        url={`https://sahadhyayi.com/author-details/${id}`}
         type="profile"
         author={author.name}
       />
