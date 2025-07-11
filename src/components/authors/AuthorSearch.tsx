@@ -24,14 +24,14 @@ const AuthorSearch = ({ searchTerm, setSearchTerm, sortOption, setSortOption }: 
       {/* Search and Filter Row */}
       <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'flex-row items-center space-x-4'}`}>
         {/* Search Input */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <div className="relative flex-1 max-w-md mx-auto md:mx-0">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             type="text"
-            placeholder="Search authors by name, genre, or book..."
+            placeholder="Search Authors by name…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-12 bg-white/90 backdrop-blur-sm border-2 border-orange-200 focus:border-orange-400 rounded-xl"
+            className="pl-12 pr-4 h-12 text-base font-medium bg-white border-2 border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md"
           />
         </div>
 
