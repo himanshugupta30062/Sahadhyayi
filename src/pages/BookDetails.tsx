@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Star, Calendar, BookOpen, Globe, User } from 'lucide-react';
@@ -20,8 +19,14 @@ import { useBookById } from '@/hooks/useBookById';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 
 const BookDetails = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: book, isLoading, error } = useBookById(id);
+  const { id, bookId } = useParams<{ id?: string; bookId?: string }>();
+  const actualId = id || bookId; // Handle both /book/:id and /books/:bookId routes
+  const { data: book, isLoading, error } = useBookById(actualId);
+
+  console.log('BookDetails - Route params:', { id, bookId, actualId });
+  console.log('BookDetails - Book data:', book);
+  console.log('BookDetails - Loading state:', isLoading);
+  console.log('BookDetails - Error state:', error);
 
   if (isLoading) {
     return (
@@ -34,7 +39,29 @@ const BookDetails = () => {
     );
   }
 
-  if (error || !book) {
+  if (error) {
+    console.error('Error loading book:', error);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <BookOpen className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Book</h1>
+          <p className="text-gray-600 mb-4">We encountered an error while loading the book details.</p>
+          <p className="text-sm text-gray-500 mb-4">Error: {error.message}</p>
+          <Link to="/library">
+            <Button variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Library
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!book) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -43,6 +70,7 @@ const BookDetails = () => {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Book Not Found</h1>
           <p className="text-gray-600 mb-4">Sorry, we couldn't find the book you're looking for.</p>
+          <p className="text-sm text-gray-500 mb-4">Book ID: {actualId}</p>
           <Link to="/library">
             <Button variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -56,9 +84,8 @@ const BookDetails = () => {
 
   const rating = book.rating || 4.2;
   const ratingCount = Math.floor(Math.random() * 500 + 100);
-  const canonicalUrl = `https://sahadhyayi.com/books/${id}`;
+  const canonicalUrl = `https://sahadhyayi.com/books/${actualId}`;
   
-  // SEO optimized title and description
   const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} - Read Online`;
   const seoDescription = book.description 
     ? `${book.description.substring(0, 150)}...` 
@@ -76,14 +103,12 @@ const BookDetails = () => {
     'sahadhyayi'
   ].filter(Boolean);
 
-  // Breadcrumb items
   const breadcrumbItems = [
     { name: 'Explore', path: '/library' },
     ...(book.genre ? [{ name: book.genre, path: `/library?genre=${encodeURIComponent(book.genre)}` }] : []),
-    { name: book.title, path: `/books/${id}`, current: true }
+    { name: book.title, path: `/books/${actualId}`, current: true }
   ];
 
-  // Schema markup
   const bookSchema = generateBookSchema({
     title: book.title,
     author: book.author || 'Unknown Author',

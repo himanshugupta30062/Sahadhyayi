@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import BookLibrary from "./pages/BookLibrary";
 import BookDetails from "./pages/BookDetails";
 import Authors from "./pages/Authors";
+import AuthorProfile from "./pages/AuthorProfile";
 import ReadingGroups from "./pages/ReadingGroups";
 import ReaderMap from "./pages/ReaderMap";
 import SocialMedia from "./pages/SocialMedia";
@@ -30,6 +31,7 @@ import Bookshelf from "./pages/Bookshelf";
 import NotFound from "./pages/NotFound";
 
 import Navigation from "./components/Navigation";
+import GlobalFooter from "./components/GlobalFooter";
 import ScrollToTop from "./components/ScrollToTop";
 
 import Blog from "./pages/Blog";
@@ -55,15 +57,17 @@ function App() {
         <AuthProvider>
           <ChatbotProvider>
             <BrowserRouter>
-              <div className="min-h-screen bg-background">
+              <div className="min-h-screen bg-background flex flex-col">
                 <Navigation />
                 <ScrollToTop />
                 <main className="flex-1">
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/library" element={<BookLibrary />} />
-                    <Route path="/book/:bookId" element={<BookDetails />} />
+                    <Route path="/book/:id" element={<BookDetails />} />
+                    <Route path="/books/:bookId" element={<BookDetails />} />
                     <Route path="/authors" element={<Authors />} />
+                    <Route path="/author/:authorName" element={<AuthorProfile />} />
                     <Route path="/groups" element={<ReadingGroups />} />
                     <Route path="/map" element={<ReaderMap />} />
                     <Route path="/social" element={<SocialMedia />} />
@@ -85,6 +89,7 @@ function App() {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
+                <GlobalFooter />
                 <Toaster />
               </div>
             </BrowserRouter>
