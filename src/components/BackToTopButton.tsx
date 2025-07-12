@@ -21,7 +21,7 @@ const BackToTopButton = () => {
   return (
     <Button
       onClick={scrollToTop}
-      className="fixed top-5 left-1/2 -translate-x-1/2 rounded-full shadow-lg z-50"
+      className="fixed top-20 left-1/2 -translate-x-1/2 rounded-full shadow-lg z-50"
       size="icon"
     >
       <ArrowUp className="w-4 h-4" />
