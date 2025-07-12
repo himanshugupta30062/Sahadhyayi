@@ -158,7 +158,7 @@ const About = () => {
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
             <img 
-              src="/lovable-uploads/sahadhyayi-icon.png" 
+              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
               alt="Sahadhyayi Logo - Digital reading platform for community connection" 
               className="w-20 h-20" 
             />

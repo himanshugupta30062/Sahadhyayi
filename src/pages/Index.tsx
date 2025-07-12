@@ -62,7 +62,7 @@ const Index = () => {
       "@type": "Organization",
       "name": "Sahadhyayi",
       "url": "https://sahadhyayi.com",
-      "logo": "https://sahadhyayi.com/lovable-uploads/sahadhyayi-icon.png",
+      "logo": "https://sahadhyayi.com/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png",
       "foundingDate": "2024",
       "mission": "To revive deep reading culture and connect readers worldwide",
       "sameAs": [
@@ -89,7 +89,7 @@ const Index = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center mb-8">
             <img
-              src="/lovable-uploads/sahadhyayi-icon.png"
+              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
               alt="Sahadhyayi logo representing our book reader social media community"
               className="w-24 h-24"
             />

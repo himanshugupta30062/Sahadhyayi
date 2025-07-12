@@ -79,7 +79,7 @@ const Navigation = () => {
           {/* Logo */}
           <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-3 font-bold text-2xl text-gray-800">
             <img
-              src="/lovable-uploads/sahadhyayi-icon.png"
+              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
               alt="Sahadhyayi navigation logo"
               className="w-8 h-8 flex-shrink-0"
             />
