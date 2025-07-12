@@ -134,7 +134,7 @@ const Authors = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-16">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
@@ -148,7 +148,7 @@ const Authors = () => {
   // Error state with retry option
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-16">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center max-w-md mx-auto">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
@@ -192,7 +192,7 @@ const Authors = () => {
         type="website"
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-16">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <div className="container mx-auto px-4 py-8">
           {/* Breadcrumb Navigation */}
           <Breadcrumb items={breadcrumbItems} className="mb-6" />
