@@ -57,9 +57,9 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
+    <TooltipProvider>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <ChatbotProvider>
               <BrowserRouter>
@@ -105,9 +105,9 @@ function App() {
             </BrowserRouter>
           </ChatbotProvider>
         </AuthProvider>
-        </TooltipProvider>
       </QueryClientProvider>
-    </HelmetProvider>
+      </HelmetProvider>
+    </TooltipProvider>
   );
 }
 
