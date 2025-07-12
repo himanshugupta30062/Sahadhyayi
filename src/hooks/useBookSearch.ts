@@ -34,7 +34,9 @@ interface SearchResponse {
 interface SaveBooksResponse {
   success: boolean;
   booksSaved: number;
+  duplicatesFound: number;
   books: BookSearchResult[];
+  duplicates: BookSearchResult[];
   error?: string;
 }
 
@@ -93,9 +95,9 @@ export const useBookSearch = () => {
 
   const saveSelectedBooks = useCallback(async (
     selectedBooks: BookSearchResult[]
-  ): Promise<BookSearchResult[]> => {
+  ): Promise<{ savedBooks: BookSearchResult[], duplicates: BookSearchResult[], duplicatesFound: number }> => {
     if (!selectedBooks || selectedBooks.length === 0) {
-      return [];
+      return { savedBooks: [], duplicates: [], duplicatesFound: 0 };
     }
 
     setLoading(true);
@@ -117,14 +119,18 @@ export const useBookSearch = () => {
       const response = data as SaveBooksResponse;
 
       if (response.success) {
-        return response.books;
+        return { 
+          savedBooks: response.books,
+          duplicates: response.duplicates || [],
+          duplicatesFound: response.duplicatesFound || 0
+        };
       } else {
         throw new Error(response.error || 'Failed to save books');
       }
     } catch (err) {
       console.error('Book save error:', err);
       setError(err instanceof Error ? err.message : 'Failed to save books');
-      return [];
+      return { savedBooks: [], duplicates: [], duplicatesFound: 0 };
     } finally {
       setLoading(false);
     }

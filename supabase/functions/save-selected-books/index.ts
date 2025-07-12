@@ -44,24 +44,32 @@ serve(async (req) => {
 
     // Save selected books to database
     const savedBooks = []
+    const duplicateBooks = []
+    
     for (const book of selectedBooks) {
       try {
-        const savedBook = await saveOrUpdateBook(supabaseClient, book)
-        if (savedBook) {
-          savedBooks.push(savedBook)
+        const result = await saveOrUpdateBook(supabaseClient, book)
+        if (result) {
+          if (result.isDuplicate) {
+            duplicateBooks.push(result)
+          } else {
+            savedBooks.push(result)
+          }
         }
       } catch (error) {
         console.error('❌ Error processing book:', book.title, error)
       }
     }
 
-    console.log(`✅ Successfully saved ${savedBooks.length} books`)
+    console.log(`✅ Successfully saved ${savedBooks.length} books, found ${duplicateBooks.length} duplicates`)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         booksSaved: savedBooks.length,
-        books: savedBooks
+        duplicatesFound: duplicateBooks.length,
+        books: savedBooks,
+        duplicates: duplicateBooks
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
@@ -94,32 +102,10 @@ async function saveOrUpdateBook(supabaseClient: any, book: BookData): Promise<an
 
     if (existing && existing.length > 0) {
       const existingBook = existing[0]
-      console.log(`📖 Found existing book: ${book.title}`)
+      console.log(`📖 Found existing book: ${book.title} - marking as duplicate`)
       
-      // Update missing fields
-      const updateData: any = {}
-      
-      if (!existingBook.description && book.description) updateData.description = book.description
-      if (!existingBook.cover_image_url && book.cover_image_url) updateData.cover_image_url = book.cover_image_url
-      if (!existingBook.genre && book.genre) updateData.genre = book.genre
-      if (!existingBook.author_bio && book.author_bio) updateData.author_bio = book.author_bio
-      if (!existingBook.pages && book.pages) updateData.pages = book.pages
-      if (!existingBook.publication_year && book.publication_year) updateData.publication_year = book.publication_year
-      if (!existingBook.pdf_url && book.pdf_url) updateData.pdf_url = book.pdf_url
-      
-      if (Object.keys(updateData).length > 0) {
-        const { data: updated } = await supabaseClient
-          .from('books_library')
-          .update(updateData)
-          .eq('id', existingBook.id)
-          .select()
-          .single()
-        
-        console.log(`🔄 Updated book with ${Object.keys(updateData).length} new fields`)
-        return updated
-      }
-      
-      return existingBook
+      // Return existing book with duplicate flag
+      return { ...existingBook, isDuplicate: true }
     }
 
     // Insert new book

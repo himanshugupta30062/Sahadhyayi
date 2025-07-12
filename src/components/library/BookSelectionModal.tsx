@@ -71,23 +71,37 @@ const BookSelectionModal = ({ isOpen, onClose, books, searchTerm, onBooksAdded }
     const booksToSave = books.filter(book => selectedBooks.has(book.id));
     
     try {
-      const savedBooks = await saveSelectedBooks(booksToSave);
+      const result = await saveSelectedBooks(booksToSave);
       
-      if (savedBooks && savedBooks.length > 0) {
+      if (result) {
+        const { savedBooks, duplicates, duplicatesFound } = result;
+        
         // Update saved book IDs
         const newSavedIds = new Set([...savedBookIds, ...savedBooks.map(book => book.id)]);
         setSavedBookIds(newSavedIds);
         
+        // Show success message with duplicate info
+        let description = `Added ${savedBooks.length} new book(s) to the library.`;
+        if (duplicatesFound > 0) {
+          description += ` ${duplicatesFound} book(s) were already in the library.`;
+        }
+        
         toast({
-          title: "Books saved successfully!",
-          description: `Added ${savedBooks.length} book(s) to the library.`
+          title: savedBooks.length > 0 ? "Books saved successfully!" : "Duplicates found",
+          description,
+          variant: duplicatesFound > 0 && savedBooks.length === 0 ? "destructive" : "default"
         });
         
         // Clear selection after saving
         setSelectedBooks(new Set());
         
-        // Notify parent component
+        // Notify parent component and close modal
         onBooksAdded?.();
+        
+        // Auto-close modal after successful save
+        setTimeout(() => {
+          onClose();
+        }, 1500);
       }
     } catch (error) {
       toast({

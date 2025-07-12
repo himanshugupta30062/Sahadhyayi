@@ -103,6 +103,14 @@ const BooksCollection = ({
     }
   };
 
+  const handleBooksAdded = () => {
+    // Refresh all library data when books are added
+    refetchAll();
+    if (user) {
+      refetchPersonal();
+    }
+  };
+
   const handleCleanup = async () => {
     if (user) {
       await cleanupMutation.mutateAsync();
@@ -468,12 +476,7 @@ const BooksCollection = ({
         onClose={() => setShowSelectionModal(false)}
         books={foundBooks}
         searchTerm={lastSearchTerm}
-        onBooksAdded={() => {
-          refetchAll(); // Refresh the library after books are added
-          if (user) {
-            refetchPersonal(); // Refresh personal library if user is signed in
-          }
-        }}
+        onBooksAdded={handleBooksAdded}
       />
     </div>
   );
