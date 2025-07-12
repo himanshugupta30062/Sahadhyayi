@@ -21,7 +21,6 @@ interface BookSearchResult {
 interface SearchResponse {
   success: boolean;
   booksFound: number;
-  booksSaved: number;
   books: BookSearchResult[];
   sources?: {
     openLibrary: number;
@@ -29,6 +28,13 @@ interface SearchResponse {
     gutenberg: number;
     archive: number;
   };
+  error?: string;
+}
+
+interface SaveBooksResponse {
+  success: boolean;
+  booksSaved: number;
+  books: BookSearchResult[];
   error?: string;
 }
 
@@ -49,7 +55,7 @@ export const useBookSearch = () => {
     setError(null);
 
     try {
-      const { data, error: functionError } = await supabase.functions.invoke('search-books', {
+      const { data, error: functionError } = await supabase.functions.invoke('search-books-preview', {
         body: { searchTerm: searchTerm.trim() }
       });
 
@@ -60,11 +66,18 @@ export const useBookSearch = () => {
       const response = data as SearchResponse;
 
       if (response.success) {
-        setSearchResults(response.books);
-        if (response.books.length === 0) {
+        // Convert preview books to include temporary ID for UI
+        const booksWithTempId = response.books.map((book, index) => ({
+          ...book,
+          id: `temp-${Date.now()}-${index}`,
+          created_at: new Date().toISOString()
+        }));
+        
+        setSearchResults(booksWithTempId);
+        if (booksWithTempId.length === 0) {
           setError('No books found for your search term. Try different keywords.');
         }
-        return response.books;
+        return booksWithTempId;
       } else {
         throw new Error(response.error || 'Search failed');
       }
@@ -72,6 +85,45 @@ export const useBookSearch = () => {
       console.error('Book search error:', err);
       setError(err instanceof Error ? err.message : 'Failed to search books');
       setSearchResults([]);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const saveSelectedBooks = useCallback(async (
+    selectedBooks: BookSearchResult[]
+  ): Promise<BookSearchResult[]> => {
+    if (!selectedBooks || selectedBooks.length === 0) {
+      return [];
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: functionError } = await supabase.functions.invoke('save-selected-books', {
+        body: { selectedBooks: selectedBooks.map(book => {
+          // Remove temporary ID and created_at for saving
+          const { id, created_at, ...bookData } = book;
+          return bookData;
+        }) }
+      });
+
+      if (functionError) {
+        throw new Error(functionError.message);
+      }
+
+      const response = data as SaveBooksResponse;
+
+      if (response.success) {
+        return response.books;
+      } else {
+        throw new Error(response.error || 'Failed to save books');
+      }
+    } catch (err) {
+      console.error('Book save error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save books');
       return [];
     } finally {
       setLoading(false);
@@ -112,6 +164,7 @@ export const useBookSearch = () => {
     error,
     searchResults,
     searchBooks,
+    saveSelectedBooks,
     getAllLibraryBooks,
     clearResults
   };

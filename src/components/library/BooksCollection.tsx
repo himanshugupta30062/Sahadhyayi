@@ -468,6 +468,12 @@ const BooksCollection = ({
         onClose={() => setShowSelectionModal(false)}
         books={foundBooks}
         searchTerm={lastSearchTerm}
+        onBooksAdded={() => {
+          refetchAll(); // Refresh the library after books are added
+          if (user) {
+            refetchPersonal(); // Refresh personal library if user is signed in
+          }
+        }}
       />
     </div>
   );
