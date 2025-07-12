@@ -71,47 +71,69 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
     }
   };
 
-  // Generate page numbers for display
-  const getVisiblePages = () => {
+  // Generate page numbers for display with mobile responsiveness
+  const getVisiblePages = (isMobile = false) => {
     const pages: (number | 'ellipsis')[] = [];
+    const maxPages = isMobile ? 3 : 7; // Show fewer pages on mobile
     
-    if (totalPages <= 7) {
-      // Show all pages if 7 or fewer
+    if (totalPages <= maxPages) {
+      // Show all pages if within limit
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Always show first page
-      pages.push(1);
-      
-      if (currentPage <= 4) {
-        // Near beginning
-        for (let i = 2; i <= 5; i++) {
-          pages.push(i);
-        }
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 3) {
-        // Near end
-        pages.push('ellipsis');
-        for (let i = totalPages - 4; i <= totalPages; i++) {
-          pages.push(i);
+      if (isMobile) {
+        // Mobile: show current page and maybe one on each side
+        if (currentPage <= 2) {
+          pages.push(1, 2, 3, 'ellipsis', totalPages);
+        } else if (currentPage >= totalPages - 1) {
+          pages.push(1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages);
+        } else {
+          pages.push(1, 'ellipsis', currentPage, 'ellipsis', totalPages);
         }
       } else {
-        // Middle
-        pages.push('ellipsis');
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i);
+        // Desktop: original logic
+        pages.push(1);
+        
+        if (currentPage <= 4) {
+          for (let i = 2; i <= 5; i++) {
+            pages.push(i);
+          }
+          pages.push('ellipsis');
+          pages.push(totalPages);
+        } else if (currentPage >= totalPages - 3) {
+          pages.push('ellipsis');
+          for (let i = totalPages - 4; i <= totalPages; i++) {
+            pages.push(i);
+          }
+        } else {
+          pages.push('ellipsis');
+          for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+            pages.push(i);
+          }
+          pages.push('ellipsis');
+          pages.push(totalPages);
         }
-        pages.push('ellipsis');
-        pages.push(totalPages);
       }
     }
     
     return pages;
   };
 
-  const visiblePages = getVisiblePages();
+  // Detect mobile screen size
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640); // sm breakpoint
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const visiblePages = getVisiblePages(isMobile);
 
   if (totalCount === 0) {
     return null;
@@ -148,20 +170,22 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
           {/* Main Pagination */}
           <div className="flex flex-col items-center gap-4">
             <Pagination>
-              <PaginationContent className="gap-2">
-                {/* First Page */}
-                <PaginationItem>
-                  <Button
-                    variant={currentPage === 1 ? "ghost" : "outline"}
-                    size="sm"
-                    disabled={currentPage === 1}
-                    onClick={() => onPageChange(1)}
-                    className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronsLeft className="h-4 w-4" />
-                    <span className="hidden sm:inline ml-1">First</span>
-                  </Button>
-                </PaginationItem>
+              <PaginationContent className={`gap-1 ${isMobile ? 'flex-wrap justify-center' : 'gap-2'}`}>
+                {/* First/Previous - Show only if not mobile or show compact version */}
+                {!isMobile && (
+                  <PaginationItem>
+                    <Button
+                      variant={currentPage === 1 ? "ghost" : "outline"}
+                      size="sm"
+                      disabled={currentPage === 1}
+                      onClick={() => onPageChange(1)}
+                      className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-1">First</span>
+                    </Button>
+                  </PaginationItem>
+                )}
 
                 {/* Previous Page */}
                 <PaginationItem>
@@ -170,10 +194,12 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                     size="sm"
                     disabled={currentPage === 1}
                     onClick={() => onPageChange(currentPage - 1)}
-                    className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`border-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isMobile ? 'h-9 w-9 px-0' : 'h-10 px-3'
+                    }`}
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    <span className="hidden sm:inline ml-1">Prev</span>
+                    {!isMobile && <span className="hidden sm:inline ml-1">Prev</span>}
                   </Button>
                 </PaginationItem>
 
@@ -181,7 +207,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                 {visiblePages.map((page, index) => (
                   <PaginationItem key={index}>
                     {page === 'ellipsis' ? (
-                      <PaginationEllipsis />
+                      <PaginationEllipsis className={isMobile ? 'h-9 w-6' : ''} />
                     ) : (
                       <PaginationLink
                         href="#"
@@ -190,7 +216,9 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                           e.preventDefault();
                           onPageChange(page);
                         }}
-                        className={`h-10 w-10 border-2 font-medium transition-all ${
+                        className={`border-2 font-medium transition-all ${
+                          isMobile ? 'h-9 w-9 text-sm' : 'h-10 w-10'
+                        } ${
                           page === currentPage
                             ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
                             : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
@@ -209,26 +237,30 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                     size="sm"
                     disabled={currentPage === totalPages}
                     onClick={() => onPageChange(currentPage + 1)}
-                    className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`border-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isMobile ? 'h-9 w-9 px-0' : 'h-10 px-3'
+                    }`}
                   >
-                    <span className="hidden sm:inline mr-1">Next</span>
+                    {!isMobile && <span className="hidden sm:inline mr-1">Next</span>}
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </PaginationItem>
 
-                {/* Last Page */}
-                <PaginationItem>
-                  <Button
-                    variant={currentPage === totalPages ? "ghost" : "outline"}
-                    size="sm"
-                    disabled={currentPage === totalPages}
-                    onClick={() => onPageChange(totalPages)}
-                    className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span className="hidden sm:inline mr-1">Last</span>
-                    <ChevronsRight className="h-4 w-4" />
-                  </Button>
-                </PaginationItem>
+                {/* Last Page - Hide on mobile */}
+                {!isMobile && (
+                  <PaginationItem>
+                    <Button
+                      variant={currentPage === totalPages ? "ghost" : "outline"}
+                      size="sm"
+                      disabled={currentPage === totalPages}
+                      onClick={() => onPageChange(totalPages)}
+                      className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="hidden sm:inline mr-1">Last</span>
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                )}
               </PaginationContent>
             </Pagination>
 
