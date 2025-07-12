@@ -78,6 +78,7 @@ export const useAddToPersonalLibrary = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['personal-library'] });
+      queryClient.invalidateQueries({ queryKey: ['all-library-books'] });
       toast({ title: 'Success', description: 'Book added to your personal library!' });
     },
     onError: (error: any) => {

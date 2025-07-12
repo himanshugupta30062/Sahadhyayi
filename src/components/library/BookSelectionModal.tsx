@@ -124,6 +124,8 @@ const BookSelectionModal = ({ isOpen, onClose, books, searchTerm, onBooksAdded }
     
     try {
       await addToLibraryMutation.mutateAsync(bookId);
+      // Trigger refresh of all library data
+      onBooksAdded?.();
     } catch (error) {
       // Error handling is done in the mutation
     }
