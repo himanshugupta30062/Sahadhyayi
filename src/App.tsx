@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { ChatbotProvider } from "./contexts/ChatbotContext";
@@ -58,9 +59,10 @@ function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ChatbotProvider>
-            <BrowserRouter>
+        <TooltipProvider>
+          <AuthProvider>
+            <ChatbotProvider>
+              <BrowserRouter>
               <div className="min-h-screen bg-background flex flex-col">
                 <Navigation />
                 <ScrollToTop />
@@ -103,6 +105,7 @@ function App() {
             </BrowserRouter>
           </ChatbotProvider>
         </AuthProvider>
+        </TooltipProvider>
       </QueryClientProvider>
     </HelmetProvider>
   );
