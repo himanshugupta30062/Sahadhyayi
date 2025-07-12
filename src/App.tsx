@@ -36,6 +36,7 @@ import Navigation from "./components/Navigation";
 import GlobalFooter from "./components/GlobalFooter";
 import ScrollToTop from "./components/ScrollToTop";
 import BackToTopButton from "./components/BackToTopButton";
+import Chatbot from "./components/chatbot/Chatbot";
 
 import Blog from "./pages/Blog";
 import CommunityStories from "./pages/CommunityStories";
@@ -97,6 +98,7 @@ function App() {
                 <GlobalFooter />
                 <BackToTopButton />
                 <Toaster />
+                <Chatbot />
               </div>
             </BrowserRouter>
           </ChatbotProvider>
