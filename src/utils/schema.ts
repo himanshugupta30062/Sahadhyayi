@@ -148,7 +148,7 @@ export const generateWebsiteSchema = () => {
       "@type": "Organization",
       "name": "Sahadhyayi",
       "url": "https://sahadhyayi.com",
-      "logo": "https://sahadhyayi.com/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
+      "logo": "https://sahadhyayi.com/lovable-uploads/sahadhyayi-icon.png"
     }
   };
 };
@@ -159,7 +159,7 @@ export const generateOrganizationSchema = () => {
     "@type": "Organization",
     "name": "Sahadhyayi",
     "url": "https://sahadhyayi.com",
-    "logo": "https://sahadhyayi.com/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png",
+    "logo": "https://sahadhyayi.com/lovable-uploads/sahadhyayi-icon.png",
     "description": "Digital reading community platform connecting readers and authors worldwide",
     "foundingDate": "2024",
     "sameAs": [
