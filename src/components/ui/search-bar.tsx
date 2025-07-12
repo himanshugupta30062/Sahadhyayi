@@ -1,6 +1,6 @@
 
 import * as React from "react"
-import { Search, Send, Mic, MicOff } from "lucide-react"
+import { Search, Mic, MicOff } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
@@ -34,7 +34,7 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="pl-4 pr-24 h-12 text-base rounded-xl shadow-sm"
+          className="pl-4 pr-16 h-12 text-base rounded-xl shadow-sm"
           {...props}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -53,14 +53,6 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
             className="p-1 text-gray-500 hover:text-gray-700"
           >
             {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-          </button>
-          <button
-            type="button"
-            onClick={onSearch}
-            aria-label="Submit"
-            className="p-1 text-gray-500 hover:text-gray-700"
-          >
-            <Send className="h-5 w-5" />
           </button>
         </div>
       </div>
