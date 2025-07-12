@@ -66,8 +66,8 @@ const BookLibrary = () => {
       </script>
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       {/* Fixed SEO-optimized header with proper spacing */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-amber-200 mt-20 md:mt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pb-20" style={{paddingTop: '40px', paddingBottom: '40px'}}>
+      <div className="bg-white/80 backdrop-blur-sm border-b border-amber-200 mt-16 md:mt-20" style={{scrollMarginTop: '80px'}}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-3 mb-8" style={{marginBottom: '30px', marginTop: '20px'}}>
               <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
