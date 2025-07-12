@@ -171,15 +171,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       console.log('[AUTH] Starting sign out process...');
-      
+
       // Sign out from Supabase (this will trigger the auth state change)
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Error signing out from Supabase:', error);
       }
-      
+
+      // Remove any remaining auth tokens from localStorage
+      if (typeof window !== 'undefined') {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('sb-')) {
+            localStorage.removeItem(key);
+          }
+        });
+
+        // Clear cookies
+        document.cookie.split(';').forEach((cookie) => {
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie = `${name.trim()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        });
+      }
+
+      // Clear local auth state
+      setUser(null);
+      setSession(null);
+
       console.log('[AUTH] Sign out completed successfully');
-      
+
+      // Redirect to home page after sign out
+      window.location.href = '/';
     } catch (error) {
       console.error('Signout error:', error);
       // Ensure local state is cleared even if there's an error
