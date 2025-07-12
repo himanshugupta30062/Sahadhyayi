@@ -23,6 +23,10 @@ const BookLibrary = () => {
     setPriceRange([0, 100]);
   };
 
+  const handleSearch = () => {
+    setSearchQuery((q) => q.trim());
+  };
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -107,8 +111,9 @@ const BookLibrary = () => {
                   <SearchBar
                     value={searchQuery}
                     onValueChange={setSearchQuery}
-                    placeholder="Search books by title, author, or genre..."
-                    className="h-12 text-base bg-white/90 backdrop-blur-sm border-2 border-amber-200 focus-within:border-amber-400 rounded-xl shadow-sm"
+                    onSearch={handleSearch}
+                    placeholder="Search books, authors, genres..."
+                    className="bg-white/90 backdrop-blur-sm border-2 border-amber-200 focus-within:border-amber-400 rounded-xl shadow-sm"
                   />
                 </div>
                 <FilterPopup
