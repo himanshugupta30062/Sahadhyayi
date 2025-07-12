@@ -15,6 +15,10 @@ const BookLibrary = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
 
+  const handleSearchSubmit = () => {
+    setSearchQuery(searchQuery.trim());
+  };
+
   const handleClearFilters = () => {
     setSelectedGenre('All');
     setSelectedAuthor('All');
@@ -107,6 +111,7 @@ const BookLibrary = () => {
                   <SearchBar
                     value={searchQuery}
                     onValueChange={setSearchQuery}
+                    onSearch={handleSearchSubmit}
                     placeholder="Search books by title, author, or genre..."
                     className="h-12 text-base bg-white/90 backdrop-blur-sm border-2 border-amber-200 focus-within:border-amber-400 rounded-xl shadow-sm"
                   />
