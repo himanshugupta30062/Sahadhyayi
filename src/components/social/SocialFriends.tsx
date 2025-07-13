@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, UserPlus, Share, Check, X, MessageCircle, Users, MoreHorizontal } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Search, UserPlus, Share, Check, X, MessageCircle, Users, MoreHorizontal, UserMinus, Ban, Facebook, Instagram, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Friend {
@@ -15,6 +17,7 @@ interface Friend {
   avatar?: string;
   mutualFriends: number;
   isOnline: boolean;
+  lastMessage?: string;
 }
 
 const mockFriends: Friend[] = [
@@ -24,7 +27,8 @@ const mockFriends: Friend[] = [
     username: 'sarah_reads',
     avatar: '/api/placeholder/40/40',
     mutualFriends: 5,
-    isOnline: true
+    isOnline: true,
+    lastMessage: 'Hey, how are you?'
   },
   {
     id: '2',
@@ -32,7 +36,8 @@ const mockFriends: Friend[] = [
     username: 'bookworm_mike',
     avatar: '/api/placeholder/40/40',
     mutualFriends: 3,
-    isOnline: false
+    isOnline: false,
+    lastMessage: 'Thanks for the book rec!'
   },
   {
     id: '3',
@@ -40,7 +45,8 @@ const mockFriends: Friend[] = [
     username: 'emma_bookclub',
     avatar: '/api/placeholder/40/40',
     mutualFriends: 8,
-    isOnline: true
+    isOnline: true,
+    lastMessage: 'See you at book club!'
   },
   {
     id: '4',
@@ -94,11 +100,32 @@ const mockSuggestions = [
   }
 ];
 
+const mockSocialFriends = [
+  {
+    id: '9',
+    name: 'Jessica Brown',
+    platform: 'facebook' as const,
+    avatar: '/api/placeholder/40/40',
+    isOnPlatform: true,
+    mutualFriends: 5
+  },
+  {
+    id: '10',
+    name: 'Carlos Rodriguez',
+    platform: 'instagram' as const,
+    avatar: '/api/placeholder/40/40',
+    isOnPlatform: true,
+    mutualFriends: 2
+  }
+];
+
 export const SocialFriends = () => {
   const [friends, setFriends] = useState<Friend[]>(mockFriends);
   const [requests, setRequests] = useState(mockRequests);
   const [searchQuery, setSearchQuery] = useState('');
   const [profileLink] = useState('https://sahadhyayi.com/profile/your-username');
+  const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
+  const [showChatModal, setShowChatModal] = useState(false);
   const { toast } = useToast();
 
   const handleAcceptRequest = (requestId: string) => {
@@ -115,9 +142,28 @@ export const SocialFriends = () => {
     toast({ title: 'Friend request declined' });
   };
 
+  const handleUnfriend = (friendId: string) => {
+    setFriends(friends.filter(f => f.id !== friendId));
+    toast({ title: 'Friend removed' });
+  };
+
+  const handleBlock = (friendId: string) => {
+    setFriends(friends.filter(f => f.id !== friendId));
+    toast({ title: 'User blocked' });
+  };
+
+  const handleStartChat = (friend: Friend) => {
+    setSelectedFriend(friend.id);
+    setShowChatModal(true);
+  };
+
   const copyProfileLink = () => {
     navigator.clipboard.writeText(profileLink);
     toast({ title: 'Profile link copied to clipboard!' });
+  };
+
+  const connectSocialMedia = (platform: string) => {
+    toast({ title: `${platform} integration coming soon!` });
   };
 
   // Check if we're in the sidebar (lg screen and up)
@@ -169,7 +215,12 @@ export const SocialFriends = () => {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 truncate">{friend.name}</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleStartChat(friend)}
+                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                  >
                     <MessageCircle className="w-4 h-4 text-gray-500" />
                   </Button>
                 </div>
@@ -190,7 +241,12 @@ export const SocialFriends = () => {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-700 truncate">{friend.name}</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleStartChat(friend)}
+                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                  >
                     <MessageCircle className="w-4 h-4 text-gray-400" />
                   </Button>
                 </div>
@@ -272,6 +328,20 @@ export const SocialFriends = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Chat Modal */}
+        <Dialog open={showChatModal} onOpenChange={setShowChatModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedFriend && friends.find(f => f.id === selectedFriend)?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-gray-500 text-center">Chat functionality coming soon!</p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -280,16 +350,37 @@ export const SocialFriends = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Tabs defaultValue="friends" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white shadow-sm">
+        <TabsList className="grid w-full grid-cols-4 bg-white shadow-sm">
           <TabsTrigger value="friends">My Friends ({friends.length})</TabsTrigger>
           <TabsTrigger value="requests">Requests ({requests.length})</TabsTrigger>
           <TabsTrigger value="find">Find Friends</TabsTrigger>
+          <TabsTrigger value="social">Social Connect</TabsTrigger>
         </TabsList>
 
         <TabsContent value="friends" className="space-y-6">
+          {/* Search Friends */}
+          <Card className="bg-white shadow-sm border-0 rounded-xl">
+            <CardContent className="p-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search friends..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-gray-50 border-0 rounded-xl"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* My Friends */}
           <div className="grid gap-4">
-            {friends.map((friend) => (
+            {friends
+              .filter(friend => 
+                friend.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                friend.username.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .map((friend) => (
               <Card key={friend.id} className="bg-white shadow-sm border-0 rounded-xl">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -311,11 +402,48 @@ export const SocialFriends = () => {
                         <Badge variant="outline" className="mt-1 text-xs">
                           {friend.mutualFriends} mutual friends
                         </Badge>
+                        {friend.lastMessage && (
+                          <p className="text-xs text-gray-400 mt-1">"{friend.lastMessage}"</p>
+                        )}
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" className="border-orange-300 text-orange-700 rounded-xl">
-                      Message
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleStartChat(friend)}
+                        className="bg-orange-600 hover:bg-orange-700 rounded-xl"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        Message
+                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-xs">
+                          <div className="space-y-2">
+                            <Button
+                              variant="ghost"
+                              onClick={() => handleUnfriend(friend.id)}
+                              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <UserMinus className="w-4 h-4 mr-2" />
+                              Unfriend
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              onClick={() => handleBlock(friend.id)}
+                              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Ban className="w-4 h-4 mr-2" />
+                              Block
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -452,7 +580,102 @@ export const SocialFriends = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="social" className="space-y-6">
+          {/* Social Media Connections */}
+          <Card className="bg-white shadow-sm border-0 rounded-xl">
+            <CardHeader>
+              <CardTitle>Connect Social Media</CardTitle>
+              <p className="text-sm text-gray-600">
+                Connect your social media accounts to find friends who are already on Sahadhyayi
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => connectSocialMedia('Facebook')}
+                  className="w-full justify-start bg-blue-600 hover:bg-blue-700 rounded-xl"
+                >
+                  <Facebook className="w-5 h-5 mr-3" />
+                  Connect Facebook
+                </Button>
+                <Button
+                  onClick={() => connectSocialMedia('Instagram')}
+                  className="w-full justify-start bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl"
+                >
+                  <Instagram className="w-5 h-5 mr-3" />
+                  Connect Instagram
+                </Button>
+                <Button
+                  onClick={() => connectSocialMedia('Snapchat')}
+                  className="w-full justify-start bg-yellow-500 hover:bg-yellow-600 rounded-xl"
+                >
+                  <MessageSquare className="w-5 h-5 mr-3" />
+                  Connect Snapchat
+                </Button>
+                <Button
+                  onClick={() => connectSocialMedia('Telegram')}
+                  className="w-full justify-start bg-blue-500 hover:bg-blue-600 rounded-xl"
+                >
+                  <MessageSquare className="w-5 h-5 mr-3" />
+                  Connect Telegram
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Social Friends Preview */}
+          <Card className="bg-white shadow-sm border-0 rounded-xl">
+            <CardHeader>
+              <CardTitle>Friends from Social Media</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {mockSocialFriends.map((friend) => (
+                  <div key={friend.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={friend.avatar} />
+                        <AvatarFallback className="bg-gradient-to-r from-green-400 to-blue-500 text-white">
+                          {friend.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h4 className="font-medium text-gray-900">{friend.name}</h4>
+                        <p className="text-sm text-gray-500 flex items-center gap-1">
+                          {friend.platform === 'facebook' && <Facebook className="w-4 h-4" />}
+                          {friend.platform === 'instagram' && <Instagram className="w-4 h-4" />}
+                          From {friend.platform}
+                        </p>
+                        <Badge variant="outline" className="mt-1 text-xs">
+                          {friend.mutualFriends} mutual connections
+                        </Badge>
+                      </div>
+                    </div>
+                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 rounded-xl">
+                      Invite
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* Chat Modal */}
+      <Dialog open={showChatModal} onOpenChange={setShowChatModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedFriend && friends.find(f => f.id === selectedFriend)?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-500 text-center">Chat functionality coming soon!</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

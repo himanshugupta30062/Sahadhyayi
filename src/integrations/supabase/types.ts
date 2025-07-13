@@ -65,6 +65,27 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       book_audio_summaries: {
         Row: {
           audio_url: string
@@ -276,6 +297,77 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_participants: {
+        Row: {
+          chat_room_id: string
+          id: string
+          is_admin: boolean | null
+          joined_at: string | null
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_room_id: string
+          id?: string
+          is_admin?: boolean | null
+          joined_at?: string | null
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_room_id?: string
+          id?: string
+          is_admin?: boolean | null
+          joined_at?: string | null
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_participants_chat_room_id_fkey"
+            columns: ["chat_room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_rooms: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_encrypted: boolean | null
+          name: string | null
+          photo_url: string | null
+          type: Database["public"]["Enums"]["chat_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_encrypted?: boolean | null
+          name?: string | null
+          photo_url?: string | null
+          type?: Database["public"]["Enums"]["chat_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_encrypted?: boolean | null
+          name?: string | null
+          photo_url?: string | null
+          type?: Database["public"]["Enums"]["chat_type"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -462,6 +554,72 @@ export type Database = {
           },
         ]
       }
+      discovered_friends: {
+        Row: {
+          common_interests: string[] | null
+          discovered_at: string | null
+          id: string
+          is_invited: boolean | null
+          mutual_connections: number | null
+          platform: Database["public"]["Enums"]["social_platform"]
+          platform_friend_avatar: string | null
+          platform_friend_id: string
+          platform_friend_name: string | null
+          user_id: string
+        }
+        Insert: {
+          common_interests?: string[] | null
+          discovered_at?: string | null
+          id?: string
+          is_invited?: boolean | null
+          mutual_connections?: number | null
+          platform: Database["public"]["Enums"]["social_platform"]
+          platform_friend_avatar?: string | null
+          platform_friend_id: string
+          platform_friend_name?: string | null
+          user_id: string
+        }
+        Update: {
+          common_interests?: string[] | null
+          discovered_at?: string | null
+          id?: string
+          is_invited?: boolean | null
+          mutual_connections?: number | null
+          platform?: Database["public"]["Enums"]["social_platform"]
+          platform_friend_avatar?: string | null
+          platform_friend_id?: string
+          platform_friend_name?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string | null
+          id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["friendship_status"]
+          updated_at: string | null
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string | null
+          id?: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string | null
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string | null
+          id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       gemini_training_data: {
         Row: {
           completion: string
@@ -538,6 +696,95 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      message_reactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_id: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          chat_room_id: string
+          content: string | null
+          created_at: string | null
+          file_name: string | null
+          file_url: string | null
+          id: string
+          is_encrypted: boolean | null
+          message_type: Database["public"]["Enums"]["message_type"] | null
+          reply_to_id: string | null
+          sender_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          chat_room_id: string
+          content?: string | null
+          created_at?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          is_encrypted?: boolean | null
+          message_type?: Database["public"]["Enums"]["message_type"] | null
+          reply_to_id?: string | null
+          sender_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          chat_room_id?: string
+          content?: string | null
+          created_at?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          is_encrypted?: boolean | null
+          message_type?: Database["public"]["Enums"]["message_type"] | null
+          reply_to_id?: string | null
+          sender_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_room_id_fkey"
+            columns: ["chat_room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -645,6 +892,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      social_connections: {
+        Row: {
+          access_token: string | null
+          connected_at: string | null
+          id: string
+          last_synced_at: string | null
+          platform: Database["public"]["Enums"]["social_platform"]
+          platform_user_id: string
+          platform_username: string | null
+          refresh_token: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          connected_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          platform: Database["public"]["Enums"]["social_platform"]
+          platform_user_id: string
+          platform_username?: string | null
+          refresh_token?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          connected_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          platform?: Database["public"]["Enums"]["social_platform"]
+          platform_user_id?: string
+          platform_username?: string | null
+          refresh_token?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       stories: {
         Row: {
@@ -888,6 +1171,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_status: {
+        Row: {
+          is_online: boolean | null
+          last_seen: string | null
+          status_message: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          is_online?: boolean | null
+          last_seen?: string | null
+          status_message?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          is_online?: boolean | null
+          last_seen?: string | null
+          status_message?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -931,7 +1238,11 @@ export type Database = {
       }
     }
     Enums: {
+      chat_type: "individual" | "group"
+      friendship_status: "pending" | "accepted" | "blocked"
       gender_type: "male" | "female" | "other"
+      message_type: "text" | "image" | "file" | "emoji"
+      social_platform: "facebook" | "instagram" | "snapchat" | "telegram"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1059,7 +1370,11 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      chat_type: ["individual", "group"],
+      friendship_status: ["pending", "accepted", "blocked"],
       gender_type: ["male", "female", "other"],
+      message_type: ["text", "image", "file", "emoji"],
+      social_platform: ["facebook", "instagram", "snapchat", "telegram"],
     },
   },
 } as const

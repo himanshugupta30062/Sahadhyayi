@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { SocialFeed } from '@/components/social/SocialFeed';
 import { SocialFriends } from '@/components/social/SocialFriends';
 import { ReadingMap } from '@/components/social/ReadingMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
+import { FloatingChat } from '@/components/social/FloatingChat';
 
 const SocialMedia = () => {
   const { user } = useAuth();
@@ -159,6 +161,9 @@ const SocialMedia = () => {
             </div>
           </div>
         </div>
+
+        {/* Floating Chat Component */}
+        <FloatingChat />
       </div>
     </>
   );

@@ -2,194 +2,184 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Globe, Eye, EyeOff, Users } from 'lucide-react';
+import { MapPin, Users, BookOpen, MessageCircle } from 'lucide-react';
 
-interface ReadingData {
-  country: string;
-  readers: number;
-  percentage: number;
+interface Reader {
+  id: string;
+  name: string;
+  location: string;
+  avatar: string;
+  currentBook: string;
+  genre: string;
+  distance: string;
+  isOnline: boolean;
+  mutualFriends: number;
 }
 
-const mockReadingData: ReadingData[] = [
-  { country: 'United States', readers: 1250, percentage: 35.2 },
-  { country: 'United Kingdom', readers: 890, percentage: 25.1 },
-  { country: 'Canada', readers: 567, percentage: 16.0 },
-  { country: 'Australia', readers: 423, percentage: 11.9 },
-  { country: 'India', readers: 312, percentage: 8.8 }
-];
-
-const mockFriendsReading = [
-  { name: 'Sarah Johnson', location: 'New York, USA', books: ['Atomic Habits', 'The Seven Husbands'] },
-  { name: 'Mike Chen', location: 'Toronto, Canada', books: ['The Midnight Library'] }
+const mockReaders: Reader[] = [
+  {
+    id: '1',
+    name: 'Alex Kumar',
+    location: 'New York, NY',
+    avatar: '/api/placeholder/40/40',
+    currentBook: 'The Seven Husbands of Evelyn Hugo',
+    genre: 'Fiction',
+    distance: '2.3 km away',
+    isOnline: true,
+    mutualFriends: 3
+  },
+  {
+    id: '2',
+    name: 'Emma Wilson',
+    location: 'Brooklyn, NY',
+    avatar: '/api/placeholder/40/40',
+    currentBook: 'Atomic Habits',
+    genre: 'Self-Help',
+    distance: '5.1 km away',
+    isOnline: false,
+    mutualFriends: 1
+  },
+  {
+    id: '3',
+    name: 'David Chen',
+    location: 'Manhattan, NY',
+    avatar: '/api/placeholder/40/40',
+    currentBook: 'Dune',
+    genre: 'Sci-Fi',
+    distance: '8.7 km away',
+    isOnline: true,
+    mutualFriends: 0
+  }
 ];
 
 export const ReadingMap = () => {
-  const [selectedBook, setSelectedBook] = useState('atomic-habits');
-  const [mapView, setMapView] = useState('world');
-  const [showMyLocation, setShowMyLocation] = useState(true);
+  const [readers, setReaders] = useState<Reader[]>(mockReaders);
+  const [selectedGenre, setSelectedGenre] = useState<string>('all');
 
-  const totalReaders = mockReadingData.reduce((sum, data) => sum + data.readers, 0);
+  const genres = ['all', 'Fiction', 'Self-Help', 'Sci-Fi', 'Mystery', 'Romance', 'History'];
+
+  const filteredReaders = selectedGenre === 'all' 
+    ? readers 
+    : readers.filter(reader => reader.genre === selectedGenre);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-white shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Select Book</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Select value={selectedBook} onValueChange={setSelectedBook}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="atomic-habits">Atomic Habits</SelectItem>
-                <SelectItem value="seven-husbands">The Seven Husbands of Evelyn Hugo</SelectItem>
-                <SelectItem value="midnight-library">The Midnight Library</SelectItem>
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Map View</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Select value={mapView} onValueChange={setMapView}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="world">World</SelectItem>
-                <SelectItem value="country">Country</SelectItem>
-                <SelectItem value="city">City</SelectItem>
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Privacy</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={showMyLocation}
-                onCheckedChange={setShowMyLocation}
-              />
-              <div className="flex items-center gap-1">
-                {showMyLocation ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                <span className="text-sm">Show my location</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Map Visualization */}
-      <Card className="bg-white shadow-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5" />
-            Global Reading Map
+    <div className="space-y-6">
+      {/* Header */}
+      <Card className="bg-white shadow-sm border-0 rounded-xl">
+        <CardHeader className="p-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <MapPin className="w-5 h-5 text-orange-600" />
+            Readers Near You
           </CardTitle>
+          <p className="text-sm text-gray-600">
+            Connect with fellow readers in your area and discover local book clubs
+          </p>
         </CardHeader>
-        <CardContent>
-          <div className="h-96 bg-gradient-to-br from-blue-50 to-green-50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden">
+      </Card>
+
+      {/* Genre Filter */}
+      <Card className="bg-white shadow-sm border-0 rounded-xl">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-2">
+            {genres.map((genre) => (
+              <Button
+                key={genre}
+                variant={selectedGenre === genre ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedGenre(genre)}
+                className={selectedGenre === genre 
+                  ? "bg-orange-600 hover:bg-orange-700 rounded-xl" 
+                  : "border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl"
+                }
+              >
+                {genre === 'all' ? 'All Genres' : genre}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Map Placeholder */}
+      <Card className="bg-white shadow-sm border-0 rounded-xl">
+        <CardContent className="p-4">
+          <div className="h-64 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl flex items-center justify-center">
             <div className="text-center">
-              <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 font-medium">Interactive World Map</p>
-              <p className="text-sm text-gray-500">Showing readers of "Atomic Habits"</p>
-            </div>
-            
-            {/* Mock Map Points */}
-            <div className="absolute inset-0">
-              {mockReadingData.map((data, index) => (
-                <div
-                  key={data.country}
-                  className="absolute w-4 h-4 bg-red-500 rounded-full cursor-pointer transition-all hover:scale-150"
-                  style={{
-                    left: `${20 + index * 15}%`,
-                    top: `${30 + index * 10}%`,
-                  }}
-                  title={`${data.country}: ${data.readers} readers`}
-                />
-              ))}
+              <MapPin className="w-12 h-12 text-orange-600 mx-auto mb-2" />
+              <p className="text-gray-600 font-medium">Interactive Map</p>
+              <p className="text-sm text-gray-500">Readers locations will be displayed here</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Reading Statistics */}
-        <Card className="bg-white shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Reading Statistics
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-center p-4 bg-amber-50 rounded-lg">
-              <div className="text-3xl font-bold text-amber-800">{totalReaders.toLocaleString()}</div>
-              <div className="text-sm text-amber-600">Total Readers Globally</div>
-            </div>
-            
-            <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Top 5 Countries</h4>
-              {mockReadingData.map((data, index) => (
-                <div key={data.country} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="w-6 h-6 p-0 justify-center">
-                      {index + 1}
-                    </Badge>
-                    <span className="font-medium">{data.country}</span>
+      {/* Readers List */}
+      <div className="space-y-3">
+        {filteredReaders.map((reader) => (
+          <Card key={reader.id} className="bg-white shadow-sm border-0 rounded-xl">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="relative">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={reader.avatar} />
+                      <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white">
+                        {reader.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    {reader.isOnline && (
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                    )}
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium">{data.readers.toLocaleString()}</div>
-                    <div className="text-sm text-gray-500">{data.percentage}%</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Friends Reading */}
-        <Card className="bg-white shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              Friends Reading This Book
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {mockFriendsReading.map((friend, index) => (
-                <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900">{friend.name}</h4>
-                    <span className="text-sm text-gray-500">{friend.location}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {friend.books.map((book) => (
-                      <Badge key={book} variant="outline" className="text-xs">
-                        {book}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-gray-900">{reader.name}</h4>
+                      {reader.mutualFriends > 0 && (
+                        <Badge variant="outline" className="text-xs">
+                          <Users className="w-3 h-3 mr-1" />
+                          {reader.mutualFriends} mutual
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {reader.location} • {reader.distance}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <BookOpen className="w-3 h-3 text-orange-600" />
+                      <span className="text-sm text-gray-700">{reader.currentBook}</span>
+                      <Badge variant="secondary" className="text-xs">
+                        {reader.genre}
                       </Badge>
-                    ))}
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="flex flex-col gap-2">
+                  <Button size="sm" className="bg-orange-600 hover:bg-orange-700 rounded-xl">
+                    Connect
+                  </Button>
+                  <Button size="sm" variant="outline" className="border-orange-300 text-orange-700 rounded-xl">
+                    <MessageCircle className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredReaders.length === 0 && (
+        <Card className="bg-white shadow-sm border-0 rounded-xl">
+          <CardContent className="p-8 text-center">
+            <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="font-medium text-gray-900 mb-2">No readers found</h3>
+            <p className="text-gray-500">
+              Try adjusting your genre filter or check back later for new readers in your area.
+            </p>
           </CardContent>
         </Card>
-      </div>
+      )}
     </div>
   );
 };

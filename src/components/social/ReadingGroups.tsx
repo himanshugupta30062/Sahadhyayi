@@ -3,44 +3,70 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Plus, Search, Globe, Lock, UserPlus } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Users, Plus, Search, Calendar, MapPin, Book, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ReadingGroup {
   id: string;
   name: string;
   description: string;
-  privacy: 'public' | 'private' | 'invite-only';
-  memberCount: number;
+  coverImage: string;
+  members: number;
+  maxMembers: number;
+  currentBook: string;
+  nextMeeting: string;
+  location: string;
   isJoined: boolean;
-  categories: string[];
-  recentActivity: string;
+  isPrivate: boolean;
+  genre: string[];
 }
 
 const mockGroups: ReadingGroup[] = [
   {
     id: '1',
-    name: 'Mystery Book Club',
-    description: 'For lovers of mystery, thriller, and detective novels. We meet monthly to discuss our latest reads.',
-    privacy: 'public',
-    memberCount: 324,
+    name: 'NYC Fiction Lovers',
+    description: 'A community for fiction enthusiasts in New York City. We meet monthly to discuss contemporary fiction and classics.',
+    coverImage: '/api/placeholder/100/60',
+    members: 45,
+    maxMembers: 50,
+    currentBook: 'The Seven Husbands of Evelyn Hugo',
+    nextMeeting: 'Dec 15, 2024',
+    location: 'Central Park Library',
     isJoined: true,
-    categories: ['Mystery', 'Thriller'],
-    recentActivity: '2 hours ago'
+    isPrivate: false,
+    genre: ['Fiction', 'Contemporary']
   },
   {
     id: '2',
-    name: 'Historical Fiction Fans',
-    description: 'Exploring the past through fiction. Join us for discussions about historical novels and their contexts.',
-    privacy: 'public',
-    memberCount: 201,
+    name: 'Self-Improvement Circle',
+    description: 'Transform your life one book at a time. We focus on personal development, productivity, and mindfulness.',
+    coverImage: '/api/placeholder/100/60',
+    members: 32,
+    maxMembers: 40,
+    currentBook: 'Atomic Habits',
+    nextMeeting: 'Dec 20, 2024',
+    location: 'Online',
     isJoined: false,
-    categories: ['Historical Fiction'],
-    recentActivity: '5 hours ago'
+    isPrivate: false,
+    genre: ['Self-Help', 'Productivity']
+  },
+  {
+    id: '3',
+    name: 'Sci-Fi Adventures',
+    description: 'Explore new worlds and future possibilities. From classic Asimov to modern space operas.',
+    coverImage: '/api/placeholder/100/60',
+    members: 28,
+    maxMembers: 35,
+    currentBook: 'Dune',
+    nextMeeting: 'Jan 5, 2025',
+    location: 'Brooklyn Public Library',
+    isJoined: false,
+    isPrivate: true,
+    genre: ['Sci-Fi', 'Fantasy']
   }
 ];
 
@@ -51,13 +77,29 @@ export const ReadingGroups = () => {
   const [newGroup, setNewGroup] = useState({
     name: '',
     description: '',
-    privacy: 'public' as const
+    maxMembers: 25,
+    isPrivate: false
   });
   const { toast } = useToast();
 
+  const filteredGroups = groups.filter(group =>
+    group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    group.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    group.genre.some(g => g.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const handleJoinGroup = (groupId: string) => {
+    setGroups(groups.map(group =>
+      group.id === groupId
+        ? { ...group, isJoined: !group.isJoined, members: group.isJoined ? group.members - 1 : group.members + 1 }
+        : group
+    ));
+    toast({ title: 'Group membership updated!' });
+  };
+
   const handleCreateGroup = () => {
-    if (!newGroup.name.trim()) {
-      toast({ title: 'Error', description: 'Group name is required', variant: 'destructive' });
+    if (!newGroup.name.trim() || !newGroup.description.trim()) {
+      toast({ title: 'Please fill in all required fields', variant: 'destructive' });
       return;
     }
 
@@ -65,195 +107,221 @@ export const ReadingGroups = () => {
       id: Date.now().toString(),
       name: newGroup.name,
       description: newGroup.description,
-      privacy: newGroup.privacy,
-      memberCount: 1,
+      coverImage: '/api/placeholder/100/60',
+      members: 1,
+      maxMembers: newGroup.maxMembers,
+      currentBook: 'No book selected',
+      nextMeeting: 'TBD',
+      location: 'TBD',
       isJoined: true,
-      categories: [],
-      recentActivity: 'now'
+      isPrivate: newGroup.isPrivate,
+      genre: ['General']
     };
 
     setGroups([group, ...groups]);
-    setNewGroup({ name: '', description: '', privacy: 'public' });
+    setNewGroup({ name: '', description: '', maxMembers: 25, isPrivate: false });
     setShowCreateDialog(false);
-    toast({ title: 'Group created successfully!' });
+    toast({ title: 'Reading group created successfully!' });
   };
-
-  const handleJoinGroup = (groupId: string) => {
-    setGroups(groups.map(group => 
-      group.id === groupId 
-        ? { ...group, isJoined: true, memberCount: group.memberCount + 1 }
-        : group
-    ));
-    toast({ title: 'Joined group successfully!' });
-  };
-
-  const myGroups = groups.filter(group => group.isJoined);
-  const publicGroups = groups.filter(group => !group.isJoined);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <Tabs defaultValue="my-groups" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-white shadow-sm">
-          <TabsTrigger value="my-groups">My Groups ({myGroups.length})</TabsTrigger>
-          <TabsTrigger value="discover">Discover Groups</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="my-groups" className="space-y-6">
-          {/* Create Group Button */}
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">My Reading Groups</h2>
+    <div className="space-y-6">
+      {/* Header */}
+      <Card className="bg-white shadow-sm border-0 rounded-xl">
+        <CardHeader className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Users className="w-5 h-5 text-orange-600" />
+                Reading Groups
+              </CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Join or create reading groups to discuss books with fellow enthusiasts
+              </p>
+            </div>
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>
-                <Button className="bg-orange-600 hover:bg-orange-700">
-                  <Plus className="w-4 h-4 mr-2" />
+                <Button className="bg-orange-600 hover:bg-orange-700 rounded-xl">
+                  <Plus className="w-4 h-4 mr-1" />
                   Create Group
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Create New Reading Group</DialogTitle>
+                  <DialogTitle>Create Reading Group</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <Input
-                    placeholder="Group name"
-                    value={newGroup.name}
-                    onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
-                  />
-                  <Textarea
-                    placeholder="Group description"
-                    value={newGroup.description}
-                    onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-                  />
-                  <Button onClick={handleCreateGroup} className="w-full bg-orange-600 hover:bg-orange-700">
-                    Create Group
-                  </Button>
+                <div className="space-y-4 py-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Group Name</label>
+                    <Input
+                      placeholder="Enter group name"
+                      value={newGroup.name}
+                      onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <Textarea
+                      placeholder="Describe your reading group"
+                      value={newGroup.description}
+                      onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Members</label>
+                    <Input
+                      type="number"
+                      min="5"
+                      max="100"
+                      value={newGroup.maxMembers}
+                      onChange={(e) => setNewGroup({ ...newGroup, maxMembers: parseInt(e.target.value) })}
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="private"
+                      checked={newGroup.isPrivate}
+                      onChange={(e) => setNewGroup({ ...newGroup, isPrivate: e.target.checked })}
+                      className="rounded"
+                    />
+                    <label htmlFor="private" className="text-sm text-gray-700">
+                      Private group (invitation only)
+                    </label>
+                  </div>
+                  <div className="flex gap-2 pt-4">
+                    <Button
+                      onClick={handleCreateGroup}
+                      className="flex-1 bg-orange-600 hover:bg-orange-700 rounded-xl"
+                    >
+                      Create Group
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCreateDialog(false)}
+                      className="flex-1 rounded-xl"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
+        </CardHeader>
+      </Card>
 
-          {/* My Groups List */}
-          <div className="grid gap-6">
-            {myGroups.length === 0 ? (
-              <Card className="bg-white shadow-sm">
-                <CardContent className="p-8 text-center">
-                  <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Groups Yet</h3>
-                  <p className="text-gray-600 mb-4">Create your first reading group or join existing ones.</p>
-                  <Button onClick={() => setShowCreateDialog(true)} className="bg-orange-600 hover:bg-orange-700">
-                    Create Your First Group
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              myGroups.map((group) => (
-                <Card key={group.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-semibold text-gray-900">{group.name}</h3>
-                          <div className="flex items-center gap-1">
-                            {group.privacy === 'public' ? <Globe className="w-4 h-4 text-green-600" /> : <Lock className="w-4 h-4 text-gray-600" />}
-                            <Badge variant="outline" className="text-xs">
-                              {group.privacy}
-                            </Badge>
-                          </div>
-                        </div>
-                        <p className="text-gray-600 mb-3">{group.description}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            {group.memberCount} members
-                          </span>
-                          <span>Active {group.recentActivity}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {group.categories.map((category) => (
-                        <Badge key={category} variant="secondary" className="text-xs">
-                          {category}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+      {/* Search */}
+      <Card className="bg-white shadow-sm border-0 rounded-xl">
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search groups by name, description, or genre..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-gray-50 border-0 rounded-xl"
+            />
           </div>
-        </TabsContent>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="discover" className="space-y-6">
-          {/* Search */}
-          <Card className="bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="w-5 h-5" />
-                Discover Reading Groups
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-3">
-                <Input
-                  placeholder="Search groups..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1"
-                />
-                <Button className="bg-orange-600 hover:bg-orange-700">
-                  <Search className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Public Groups */}
-          <div className="grid gap-6">
-            {publicGroups.map((group) => (
-              <Card key={group.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">{group.name}</h3>
-                        <div className="flex items-center gap-1">
-                          <Globe className="w-4 h-4 text-green-600" />
+      {/* Groups List */}
+      <div className="grid gap-4">
+        {filteredGroups.map((group) => (
+          <Card key={group.id} className="bg-white shadow-sm border-0 rounded-xl">
+            <CardContent className="p-4">
+              <div className="flex gap-4">
+                {/* Group Image */}
+                <div className="w-20 h-12 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex-shrink-0"></div>
+                
+                {/* Group Info */}
+                <div className="flex-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                        {group.isPrivate && (
                           <Badge variant="outline" className="text-xs">
-                            {group.privacy}
+                            Private
                           </Badge>
-                        </div>
+                        )}
                       </div>
-                      <p className="text-gray-600 mb-3">{group.description}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
-                          {group.memberCount} members
-                        </span>
-                        <span>Active {group.recentActivity}</span>
+                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        {group.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {group.genre.map((g, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {g}
+                          </Badge>
+                        ))}
                       </div>
                     </div>
                     <Button
                       onClick={() => handleJoinGroup(group.id)}
-                      className="bg-orange-600 hover:bg-orange-700"
+                      variant={group.isJoined ? "outline" : "default"}
+                      className={group.isJoined 
+                        ? "border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl" 
+                        : "bg-orange-600 hover:bg-orange-700 rounded-xl"
+                      }
                     >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Join Group
+                      {group.isJoined ? 'Leave' : 'Join'}
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {group.categories.map((category) => (
-                      <Badge key={category} variant="secondary" className="text-xs">
-                        {category}
-                      </Badge>
-                    ))}
+                  
+                  {/* Group Stats */}
+                  <div className="flex items-center gap-4 text-sm text-gray-500 mt-3">
+                    <span className="flex items-center gap-1">
+                      <Users className="w-4 h-4" />
+                      {group.members}/{group.maxMembers} members
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Book className="w-4 h-4" />
+                      {group.currentBook}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      {group.nextMeeting}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {group.location}
+                    </span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+                  
+                  {group.isJoined && (
+                    <div className="flex gap-2 mt-3">
+                      <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        Group Chat
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                        View Details
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredGroups.length === 0 && (
+        <Card className="bg-white shadow-sm border-0 rounded-xl">
+          <CardContent className="p-8 text-center">
+            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="font-medium text-gray-900 mb-2">No groups found</h3>
+            <p className="text-gray-500">
+              Try adjusting your search or create a new reading group to get started.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
