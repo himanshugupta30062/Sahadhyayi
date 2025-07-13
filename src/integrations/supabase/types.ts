@@ -786,6 +786,42 @@ export type Database = {
           },
         ]
       }
+      phone_verifications: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          phone_number: string
+          user_id: string
+          verification_code: string
+          verified: boolean | null
+          verified_at: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          phone_number: string
+          user_id: string
+          verification_code: string
+          verified?: boolean | null
+          verified_at?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          phone_number?: string
+          user_id?: string
+          verification_code?: string
+          verified?: boolean | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
@@ -1113,60 +1149,81 @@ export type Database = {
       }
       user_profile: {
         Row: {
+          allow_whatsapp_discovery: boolean | null
           bio: string | null
           deleted: boolean | null
           dob: string | null
           email: string | null
           gender: Database["public"]["Enums"]["gender_type"] | null
+          hide_phone_number: boolean | null
           id: string
           joined_at: string | null
           last_updated: string | null
           life_tags: string[] | null
           location: string | null
           name: string | null
+          phone_number: string | null
+          phone_verification_code: string | null
+          phone_verification_expires_at: string | null
+          phone_verified: boolean | null
           profile_picture_url: string | null
           social_links: Json | null
           stories_read_count: number | null
           stories_written_count: number | null
           username: string | null
+          whatsapp_invite_message: string | null
           writing_frequency: string | null
         }
         Insert: {
+          allow_whatsapp_discovery?: boolean | null
           bio?: string | null
           deleted?: boolean | null
           dob?: string | null
           email?: string | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          hide_phone_number?: boolean | null
           id?: string
           joined_at?: string | null
           last_updated?: string | null
           life_tags?: string[] | null
           location?: string | null
           name?: string | null
+          phone_number?: string | null
+          phone_verification_code?: string | null
+          phone_verification_expires_at?: string | null
+          phone_verified?: boolean | null
           profile_picture_url?: string | null
           social_links?: Json | null
           stories_read_count?: number | null
           stories_written_count?: number | null
           username?: string | null
+          whatsapp_invite_message?: string | null
           writing_frequency?: string | null
         }
         Update: {
+          allow_whatsapp_discovery?: boolean | null
           bio?: string | null
           deleted?: boolean | null
           dob?: string | null
           email?: string | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          hide_phone_number?: boolean | null
           id?: string
           joined_at?: string | null
           last_updated?: string | null
           life_tags?: string[] | null
           location?: string | null
           name?: string | null
+          phone_number?: string | null
+          phone_verification_code?: string | null
+          phone_verification_expires_at?: string | null
+          phone_verified?: boolean | null
           profile_picture_url?: string | null
           social_links?: Json | null
           stories_read_count?: number | null
           stories_written_count?: number | null
           username?: string | null
+          whatsapp_invite_message?: string | null
           writing_frequency?: string | null
         }
         Relationships: []
@@ -1192,6 +1249,78 @@ export type Database = {
           status_message?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_contacts: {
+        Row: {
+          contact_name: string | null
+          contact_phone: string
+          created_at: string | null
+          id: string
+          is_on_platform: boolean | null
+          last_synced_at: string | null
+          platform_user_id: string | null
+          user_id: string
+        }
+        Insert: {
+          contact_name?: string | null
+          contact_phone: string
+          created_at?: string | null
+          id?: string
+          is_on_platform?: boolean | null
+          last_synced_at?: string | null
+          platform_user_id?: string | null
+          user_id: string
+        }
+        Update: {
+          contact_name?: string | null
+          contact_phone?: string
+          created_at?: string | null
+          id?: string
+          is_on_platform?: boolean | null
+          last_synced_at?: string | null
+          platform_user_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_invitations: {
+        Row: {
+          clicked: boolean | null
+          clicked_at: string | null
+          id: string
+          invitation_message: string | null
+          recipient_name: string | null
+          recipient_phone: string
+          registered: boolean | null
+          registered_at: string | null
+          sender_id: string
+          sent_at: string | null
+        }
+        Insert: {
+          clicked?: boolean | null
+          clicked_at?: string | null
+          id?: string
+          invitation_message?: string | null
+          recipient_name?: string | null
+          recipient_phone: string
+          registered?: boolean | null
+          registered_at?: string | null
+          sender_id: string
+          sent_at?: string | null
+        }
+        Update: {
+          clicked?: boolean | null
+          clicked_at?: string | null
+          id?: string
+          invitation_message?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string
+          registered?: boolean | null
+          registered_at?: string | null
+          sender_id?: string
+          sent_at?: string | null
         }
         Relationships: []
       }
@@ -1242,7 +1371,12 @@ export type Database = {
       friendship_status: "pending" | "accepted" | "blocked"
       gender_type: "male" | "female" | "other"
       message_type: "text" | "image" | "file" | "emoji"
-      social_platform: "facebook" | "instagram" | "snapchat" | "telegram"
+      social_platform:
+        | "facebook"
+        | "instagram"
+        | "snapchat"
+        | "telegram"
+        | "whatsapp"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1374,7 +1508,13 @@ export const Constants = {
       friendship_status: ["pending", "accepted", "blocked"],
       gender_type: ["male", "female", "other"],
       message_type: ["text", "image", "file", "emoji"],
-      social_platform: ["facebook", "instagram", "snapchat", "telegram"],
+      social_platform: [
+        "facebook",
+        "instagram",
+        "snapchat",
+        "telegram",
+        "whatsapp",
+      ],
     },
   },
 } as const
