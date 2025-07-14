@@ -16,6 +16,7 @@ interface SelectedBook {
   title: string;
   author: string;
   cover: string;
+  description?: string;
 }
 
 interface SelectedFeeling {
@@ -144,17 +145,42 @@ export const FeedComposer = ({ onPost }: { onPost: (postData: any) => void }) =>
               )}
 
               {selectedBook && (
-                <div className="flex items-center space-x-3 mb-3 p-2 bg-white rounded-lg">
-                  <div className="w-12 h-16 bg-gradient-to-br from-orange-400 to-amber-500 rounded flex-shrink-0"></div>
-                  <div className="flex-1">
-                    <h5 className="font-medium text-gray-900 text-sm">{selectedBook.title}</h5>
-                    <p className="text-xs text-gray-500">{selectedBook.author}</p>
-                    <Badge variant="outline" className="mt-1 text-xs">Reading</Badge>
+                <div className="flex items-start space-x-3 mb-3 p-3 bg-white rounded-lg border">
+                  <div className="w-16 h-20 bg-gradient-to-br from-orange-400 to-amber-500 rounded flex-shrink-0 flex items-center justify-center">
+                    {selectedBook.cover ? (
+                      <img 
+                        src={selectedBook.cover} 
+                        alt={selectedBook.title} 
+                        className="w-full h-full object-cover rounded" 
+                      />
+                    ) : (
+                      <BookOpen className="w-8 h-8 text-white" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h5 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1">
+                      {selectedBook.title}
+                    </h5>
+                    <p className="text-xs text-gray-600 mb-1">
+                      by {selectedBook.author}
+                    </p>
+                    {selectedBook.description && (
+                      <p className="text-xs text-gray-500 line-clamp-2">
+                        {selectedBook.description.length > 120 
+                          ? selectedBook.description.substring(0, 120) + '...'
+                          : selectedBook.description
+                        }
+                      </p>
+                    )}
+                    <Badge variant="outline" className="mt-2 text-xs">
+                      Reading
+                    </Badge>
                   </div>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => setSelectedBook(null)}
+                    className="ml-2"
                   >
                     <X className="w-4 h-4" />
                   </Button>

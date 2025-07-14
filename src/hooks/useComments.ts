@@ -1,19 +1,19 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 export interface Comment {
   id: string;
   post_id: string;
-  user_id: string;
   content: string;
-  parent_comment_id: string | null;
   created_at: string;
-  updated_at: string;
-  user?: {
-    name: string;
-    avatar: string;
+  user_id: string;
+  parent_comment_id?: string;
+  user: {
+    full_name: string;
+    profile_photo_url?: string;
   };
   replies?: Comment[];
 }
@@ -21,71 +21,69 @@ export interface Comment {
 export const useComments = (postId: string) => {
   return useQuery({
     queryKey: ['comments', postId],
-    queryFn: async (): Promise<Comment[]> => {
-      const { data, error } = await supabase
+    queryFn: async () => {
+      const { data: comments, error } = await supabase
         .from('post_comments')
         .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            profile_photo_url
-          )
+          id,
+          post_id,
+          content,
+          created_at,
+          user_id,
+          parent_comment_id
         `)
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
-      // Group comments and replies
-      const comments: Comment[] = [];
-      const repliesMap: { [key: string]: Comment[] } = {};
+      // Get user profiles for all commenters
+      const userIds = [...new Set(comments?.map(c => c.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, profile_photo_url')
+        .in('id', userIds);
 
-      data?.forEach((comment) => {
-        const commentWithUser = {
-          ...comment,
-          user: {
-            name: comment.profiles?.full_name || 'Anonymous',
-            avatar: comment.profiles?.profile_photo_url || '',
-          },
-        };
-
-        if (comment.parent_comment_id) {
-          if (!repliesMap[comment.parent_comment_id]) {
-            repliesMap[comment.parent_comment_id] = [];
-          }
-          repliesMap[comment.parent_comment_id].push(commentWithUser);
-        } else {
-          comments.push(commentWithUser);
+      // Map comments with user data
+      const commentsWithUsers = comments?.map(comment => ({
+        ...comment,
+        user: profiles?.find(p => p.id === comment.user_id) || {
+          full_name: 'Unknown User',
+          profile_photo_url: null
         }
-      });
+      })) || [];
 
-      // Attach replies to their parent comments
-      comments.forEach((comment) => {
-        comment.replies = repliesMap[comment.id] || [];
-      });
+      // Organize into threads (parent comments with replies)
+      const parentComments = commentsWithUsers.filter(c => !c.parent_comment_id);
+      const replies = commentsWithUsers.filter(c => c.parent_comment_id);
 
-      return comments;
+      return parentComments.map(parent => ({
+        ...parent,
+        replies: replies.filter(reply => reply.parent_comment_id === parent.id)
+      }));
     },
   });
 };
 
 export const useAddComment = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ postId, content, parentCommentId }: { 
-      postId: string; 
-      content: string; 
+    mutationFn: async ({ postId, content, parentCommentId }: {
+      postId: string;
+      content: string;
       parentCommentId?: string;
     }) => {
+      if (!user) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('post_comments')
         .insert({
           post_id: postId,
           content,
-          parent_comment_id: parentCommentId || null,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: user.id,
+          parent_comment_id: parentCommentId
         })
         .select()
         .single();
@@ -95,66 +93,62 @@ export const useAddComment = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] });
-      toast({
-        title: "Comment posted successfully!",
-      });
+      toast({ title: 'Comment added successfully!' });
     },
     onError: () => {
-      toast({
-        title: "Failed to post comment",
-        variant: "destructive",
-      });
-    },
+      toast({ title: 'Failed to add comment', variant: 'destructive' });
+    }
   });
 };
 
 export const useUpdateComment = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ commentId, content, postId }: { 
-      commentId: string; 
+    mutationFn: async ({ id, content, postId }: {
+      id: string;
       content: string;
       postId: string;
     }) => {
       const { data, error } = await supabase
         .from('post_comments')
         .update({ content })
-        .eq('id', commentId)
+        .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return { data, postId };
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] });
-      toast({
-        title: "Comment updated successfully!",
-      });
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['comments', result.postId] });
+      toast({ title: 'Comment updated successfully!' });
     },
+    onError: () => {
+      toast({ title: 'Failed to update comment', variant: 'destructive' });
+    }
   });
 };
 
 export const useDeleteComment = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ commentId, postId }: { commentId: string; postId: string }) => {
+    mutationFn: async ({ id, postId }: { id: string; postId: string }) => {
       const { error } = await supabase
         .from('post_comments')
         .delete()
-        .eq('id', commentId);
+        .eq('id', id);
 
       if (error) throw error;
+      return { postId };
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] });
-      toast({
-        title: "Comment deleted successfully!",
-      });
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['comments', result.postId] });
+      toast({ title: 'Comment deleted successfully!' });
     },
+    onError: () => {
+      toast({ title: 'Failed to delete comment', variant: 'destructive' });
+    }
   });
 };
