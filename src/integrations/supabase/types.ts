@@ -593,6 +593,54 @@ export type Database = {
         }
         Relationships: []
       }
+      friend_requests: {
+        Row: {
+          addressee_id: string | null
+          created_at: string | null
+          id: string
+          requester_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          addressee_id?: string | null
+          created_at?: string | null
+          id?: string
+          requester_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          addressee_id?: string | null
+          created_at?: string | null
+          id?: string
+          requester_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      friends: {
+        Row: {
+          created_at: string | null
+          id: string
+          user1_id: string | null
+          user2_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user1_id?: string | null
+          user2_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user1_id?: string | null
+          user2_id?: string | null
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           addressee_id: string
@@ -644,6 +692,71 @@ export type Database = {
         }
         Relationships: []
       }
+      group_chat_members: {
+        Row: {
+          group_id: string | null
+          id: string
+          joined_at: string | null
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          group_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          group_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_chat_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "group_chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_chats: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_encrypted: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_encrypted?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_encrypted?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           group_id: string | null
@@ -669,6 +782,47 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          encrypted_content: string | null
+          group_id: string | null
+          id: string
+          message_type: string | null
+          sender_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          encrypted_content?: string | null
+          group_id?: string | null
+          id?: string
+          message_type?: string | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          encrypted_content?: string | null
+          group_id?: string | null
+          id?: string
+          message_type?: string | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "group_chats"
             referencedColumns: ["id"]
           },
         ]
@@ -860,12 +1014,52 @@ export type Database = {
           },
         ]
       }
+      private_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          encrypted_content: string | null
+          id: string
+          is_read: boolean | null
+          message_type: string | null
+          receiver_id: string | null
+          sender_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          encrypted_content?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          receiver_id?: string | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          encrypted_content?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          receiver_id?: string | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
           created_at: string
           full_name: string | null
           id: string
+          last_seen: string | null
+          location_lat: number | null
+          location_lng: number | null
+          location_sharing: boolean | null
           profile_photo_url: string | null
           stories_read_count: number | null
           stories_written_count: number | null
@@ -879,6 +1073,10 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          last_seen?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          location_sharing?: boolean | null
           profile_photo_url?: string | null
           stories_read_count?: number | null
           stories_written_count?: number | null
@@ -892,6 +1090,10 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          last_seen?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          location_sharing?: boolean | null
           profile_photo_url?: string | null
           stories_read_count?: number | null
           stories_written_count?: number | null

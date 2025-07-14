@@ -8,9 +8,9 @@ import { MessageCircle, MapPin, UsersIcon, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import { SocialFeed } from '@/components/social/SocialFeed';
-import { ReadingMap } from '@/components/social/ReadingMap';
+import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
-import { FriendsManager } from '@/components/social/FriendsManager';
+import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
 import { FloatingChat } from '@/components/social/FloatingChat';
 
 const SocialMedia = () => {
@@ -90,7 +90,7 @@ const SocialMedia = () => {
           <div className="flex gap-6">
             {/* Left Sidebar - Friends on Desktop */}
             <div className="hidden lg:block w-80 flex-shrink-0">
-              <FriendsManager />
+              <EnhancedFriendsManager />
             </div>
 
             {/* Main Feed */}
@@ -120,11 +120,11 @@ const SocialMedia = () => {
                 </TabsContent>
 
                 <TabsContent value="friends" className="mt-0 lg:hidden">
-                  <FriendsManager />
+                  <EnhancedFriendsManager />
                 </TabsContent>
 
                 <TabsContent value="map" className="mt-0">
-                  <ReadingMap />
+                  <EnhancedReadingMap />
                 </TabsContent>
 
                 <TabsContent value="groups" className="mt-0">
