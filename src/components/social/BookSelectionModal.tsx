@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, BookOpen } from 'lucide-react';
-import { useLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 
 interface Book {
   id: string;
@@ -21,7 +21,13 @@ interface BookSelectionModalProps {
 
 export const BookSelectionModal = ({ isOpen, onClose, onSelect }: BookSelectionModalProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: books, isLoading } = useLibraryBooks(searchQuery);
+  const { data: books, isLoading } = useAllLibraryBooks();
+
+  // Filter books based on search query
+  const filteredBooks = books?.filter(book => 
+    book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    book.author?.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
   const handleBookSelect = (book: Book) => {
     onSelect({
@@ -53,8 +59,8 @@ export const BookSelectionModal = ({ isOpen, onClose, onSelect }: BookSelectionM
           <div className="flex-1 overflow-y-auto space-y-2">
             {isLoading ? (
               <div className="text-center py-8 text-gray-500">Loading books...</div>
-            ) : books && books.length > 0 ? (
-              books.slice(0, 20).map((book) => (
+            ) : filteredBooks && filteredBooks.length > 0 ? (
+              filteredBooks.slice(0, 20).map((book) => (
                 <div
                   key={book.id}
                   className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"

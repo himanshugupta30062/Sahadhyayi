@@ -60,6 +60,49 @@ export const useAllLibraryBooks = () => {
   });
 };
 
+export const useLibraryBooks = (searchQuery?: string) => {
+  return useQuery({
+    queryKey: ['library-books', searchQuery],
+    queryFn: async (): Promise<Book[]> => {
+      let query = supabase
+        .from('books_library')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (searchQuery && searchQuery.trim()) {
+        query = query.or(
+          `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%`
+        );
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching library books:', error);
+        throw error;
+      }
+
+      return (data || []).map(book => ({
+        id: book.id,
+        title: book.title,
+        author: book.author || 'Unknown Author',
+        genre: book.genre,
+        cover_image_url: book.cover_image_url,
+        description: book.description,
+        publication_year: book.publication_year,
+        language: book.language || 'English',
+        pdf_url: book.pdf_url,
+        created_at: book.created_at,
+        price: 0,
+        rating: 0,
+        isbn: book.isbn,
+        pages: book.pages,
+        author_bio: book.author_bio
+      }));
+    },
+  });
+};
+
 export const useBooksByGenre = (genre: string) => {
   return useQuery({
     queryKey: ['books-by-genre', genre],
