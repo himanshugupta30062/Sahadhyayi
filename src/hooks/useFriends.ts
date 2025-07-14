@@ -10,11 +10,13 @@ export interface FriendRequest {
   status: 'pending' | 'accepted' | 'rejected';
   created_at: string;
   requester_profile?: {
+    id: string;
     full_name: string;
     profile_photo_url?: string;
     username?: string;
   };
   addressee_profile?: {
+    id: string;
     full_name: string;
     profile_photo_url?: string;
     username?: string;
@@ -27,6 +29,7 @@ export interface Friend {
   user2_id: string;
   created_at: string;
   friend_profile?: {
+    id: string;
     full_name: string;
     profile_photo_url?: string;
     username?: string;
@@ -50,8 +53,8 @@ export const useFriendRequests = () => {
         .from('friend_requests')
         .select(`
           *,
-          requester_profile:profiles!requester_id(full_name, profile_photo_url, username),
-          addressee_profile:profiles!addressee_id(full_name, profile_photo_url, username)
+          requester_profile:profiles!requester_id(id, full_name, profile_photo_url, username),
+          addressee_profile:profiles!addressee_id(id, full_name, profile_photo_url, username)
         `)
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
       
@@ -74,8 +77,8 @@ export const useFriends = () => {
         .from('friends')
         .select(`
           *,
-          user1_profile:profiles!user1_id(full_name, profile_photo_url, username, bio, location_lat, location_lng, location_sharing, last_seen),
-          user2_profile:profiles!user2_id(full_name, profile_photo_url, username, bio, location_lat, location_lng, location_sharing, last_seen)
+          user1_profile:profiles!user1_id(id, full_name, profile_photo_url, username, bio, location_lat, location_lng, location_sharing, last_seen),
+          user2_profile:profiles!user2_id(id, full_name, profile_photo_url, username, bio, location_lat, location_lng, location_sharing, last_seen)
         `)
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
       

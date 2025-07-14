@@ -11,6 +11,7 @@ export interface PrivateMessage {
   is_read: boolean;
   created_at: string;
   sender_profile?: {
+    id: string;
     full_name: string;
     profile_photo_url?: string;
   };
@@ -23,6 +24,7 @@ export interface GroupMessage {
   content: string;
   created_at: string;
   sender_profile?: {
+    id: string;
     full_name: string;
     profile_photo_url?: string;
   };
@@ -40,7 +42,7 @@ export const usePrivateMessages = (friendId: string) => {
         .from('private_messages')
         .select(`
           *,
-          sender_profile:profiles!sender_id(full_name, profile_photo_url)
+          sender_profile:profiles!sender_id(id, full_name, profile_photo_url)
         `)
         .or(`and(sender_id.eq.${user.id},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${user.id})`)
         .order('created_at', { ascending: true });
@@ -89,7 +91,7 @@ export const useGroupMessages = (groupId: string) => {
         .from('group_messages')
         .select(`
           *,
-          sender_profile:profiles!sender_id(full_name, profile_photo_url)
+          sender_profile:profiles!sender_id(id, full_name, profile_photo_url)
         `)
         .eq('group_id', groupId)
         .order('created_at', { ascending: true });

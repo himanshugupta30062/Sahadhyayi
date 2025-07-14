@@ -1,9 +1,9 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Plus, Calendar } from 'lucide-react';
 import { useUserGroups } from '@/hooks/useGroups';
-import type { GroupMember } from '@/hooks/useGroups';
 import { Link } from 'react-router-dom';
 
 const MyGroups = () => {
@@ -52,7 +52,7 @@ const MyGroups = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {userGroups.slice(0, 3).map((membership: GroupMember) => (
+            {userGroups.slice(0, 3).map((membership) => (
               <div key={membership.id} className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <h4 className="font-medium text-gray-900 mb-1">
                   {membership.groups?.name}
