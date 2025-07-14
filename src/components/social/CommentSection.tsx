@@ -33,7 +33,7 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
 
   const handleEdit = () => {
     updateComment.mutate({
-      commentId: comment.id,
+      id: comment.id,
       content: editContent,
       postId,
     });
@@ -42,7 +42,7 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
 
   const handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this comment?')) {
-      deleteComment.mutate({ commentId: comment.id, postId });
+      deleteComment.mutate({ id: comment.id, postId });
     }
   };
 
@@ -60,16 +60,16 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
     <div className={`${isReply ? 'ml-10' : ''} mb-4`}>
       <div className="flex space-x-3">
         <Avatar className="w-8 h-8">
-          <AvatarImage src={comment.user?.avatar} />
+          <AvatarImage src={comment.user?.profile_photo_url} />
           <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs">
-            {comment.user?.name.charAt(0)}
+            {comment.user?.full_name?.charAt(0) || 'U'}
           </AvatarFallback>
         </Avatar>
         
         <div className="flex-1">
           <div className="bg-gray-100 rounded-2xl px-3 py-2">
             <div className="flex items-center space-x-2 mb-1">
-              <span className="font-medium text-sm text-gray-900">{comment.user?.name}</span>
+              <span className="font-medium text-sm text-gray-900">{comment.user?.full_name || 'Unknown User'}</span>
               <span className="text-xs text-gray-500">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
               </span>
