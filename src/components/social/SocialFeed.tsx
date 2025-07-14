@@ -1,13 +1,12 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Heart, MessageCircle, Share2, BookOpen, Send, Image, Smile } from 'lucide-react';
+import { Heart, MessageCircle, Share2, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { FeedComposer } from './FeedComposer';
 
 interface Post {
   id: string;
@@ -23,6 +22,11 @@ interface Post {
     author: string;
     cover: string;
   };
+  image?: string;
+  feeling?: {
+    emoji: string;
+    label: string;
+  };
   timestamp: string;
   likes: number;
   comments: number;
@@ -35,14 +39,14 @@ const mockPosts: Post[] = [
     user: {
       name: 'Sarah Johnson',
       username: 'sarah_reads',
-      avatar: '/api/placeholder/40/40',
+      avatar: '',
       isOnline: true
     },
     content: 'Just finished reading "Atomic Habits" - incredible insights on building sustainable habits! The 1% improvement rule is a game-changer. Anyone else read this?',
     book: {
       title: 'Atomic Habits',
       author: 'James Clear',
-      cover: '/api/placeholder/60/80'
+      cover: ''
     },
     timestamp: '2 hours ago',
     likes: 24,
@@ -54,10 +58,14 @@ const mockPosts: Post[] = [
     user: {
       name: 'Mike Chen',
       username: 'bookworm_mike',
-      avatar: '/api/placeholder/40/40',
+      avatar: '',
       isOnline: false
     },
-    content: 'Started a new reading challenge today! Aiming to read 50 books this year. Who wants to join me? 📚',
+    content: 'Started a new reading challenge today! Aiming to read 50 books this year. Who wants to join me?',
+    feeling: {
+      emoji: '📚',
+      label: 'motivated'
+    },
     timestamp: '4 hours ago',
     likes: 15,
     comments: 12,
@@ -67,7 +75,6 @@ const mockPosts: Post[] = [
 
 export const SocialFeed = () => {
   const [posts, setPosts] = useState<Post[]>(mockPosts);
-  const [newPost, setNewPost] = useState('');
   const { toast } = useToast();
 
   const handleLike = (postId: string) => {
@@ -78,76 +85,30 @@ export const SocialFeed = () => {
     ));
   };
 
-  const handleCreatePost = () => {
-    if (!newPost.trim()) return;
-    
-    const post: Post = {
+  const handleCreatePost = async (postData: any) => {
+    const newPost: Post = {
       id: Date.now().toString(),
       user: {
         name: 'You',
         username: 'your_username',
-        avatar: '/api/placeholder/40/40',
+        avatar: '',
         isOnline: true
       },
-      content: newPost,
+      content: postData.content,
+      book: postData.book,
+      feeling: postData.feeling,
       timestamp: 'Just now',
       likes: 0,
       comments: 0,
       isLiked: false
     };
     
-    setPosts([post, ...posts]);
-    setNewPost('');
-    toast({ title: 'Post created successfully!' });
+    setPosts([newPost, ...posts]);
   };
 
   return (
     <div className="space-y-6">
-      {/* Create Post */}
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
-        <CardContent className="p-4">
-          <div className="flex items-start space-x-3">
-            <Avatar className="w-10 h-10">
-              <AvatarImage src="/api/placeholder/40/40" />
-              <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white">
-                Y
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-3">
-              <Textarea
-                placeholder="What's on your reading mind?"
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                className="min-h-[80px] border-0 bg-gray-50 rounded-xl resize-none focus:bg-white"
-              />
-              <div className="flex items-center justify-between">
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
-                    <Image className="w-4 h-4 mr-1" />
-                    Photo
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
-                    <BookOpen className="w-4 h-4 mr-1" />
-                    Book
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
-                    <Smile className="w-4 h-4 mr-1" />
-                    Feeling
-                  </Button>
-                </div>
-                <Button 
-                  onClick={handleCreatePost}
-                  disabled={!newPost.trim()}
-                  className="bg-orange-600 hover:bg-orange-700 rounded-xl"
-                >
-                  <Send className="w-4 h-4 mr-1" />
-                  Post
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <FeedComposer onPost={handleCreatePost} />
 
       {/* Posts Feed */}
       {posts.map((post) => (
@@ -168,7 +129,14 @@ export const SocialFeed = () => {
                   )}
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">{post.user.name}</h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium text-gray-900">{post.user.name}</h4>
+                    {post.feeling && (
+                      <span className="text-sm text-gray-500">
+                        is feeling {post.feeling.emoji} {post.feeling.label}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500">@{post.user.username} • {post.timestamp}</p>
                 </div>
               </div>
@@ -192,6 +160,13 @@ export const SocialFeed = () => {
                       Currently Reading
                     </Badge>
                   </div>
+                </div>
+              )}
+
+              {/* Image */}
+              {post.image && (
+                <div className="mt-3">
+                  <img src={post.image} alt="Post image" className="w-full max-h-96 object-cover rounded-xl" />
                 </div>
               )}
             </div>

@@ -4,13 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, MessageCircle, MapPin, UsersIcon } from 'lucide-react';
+import { MessageCircle, MapPin, UsersIcon, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import { SocialFeed } from '@/components/social/SocialFeed';
-import { SocialFriends } from '@/components/social/SocialFriends';
 import { ReadingMap } from '@/components/social/ReadingMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
+import { FriendsManager } from '@/components/social/FriendsManager';
 import { FloatingChat } from '@/components/social/FloatingChat';
 
 const SocialMedia = () => {
@@ -24,11 +24,9 @@ const SocialMedia = () => {
 
   const handleModalClose = () => {
     setShowAuthModal(false);
-    // Redirect to home page when user closes the modal
     navigate('/', { replace: true });
   };
 
-  // If user is not authenticated, show modal
   if (!user) {
     return (
       <>
@@ -81,24 +79,24 @@ const SocialMedia = () => {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
         {/* Header */}
         <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <h1 className="text-3xl font-bold text-gray-900">Social Community</h1>
             <p className="text-gray-600 mt-2">Connect with fellow readers and share your reading journey</p>
           </div>
         </div>
 
-        {/* Main Content with Facebook-like Layout */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Main Content */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex gap-6">
-            {/* Left Sidebar - Friends List */}
+            {/* Left Sidebar - Friends on Desktop */}
             <div className="hidden lg:block w-80 flex-shrink-0">
-              <SocialFriends />
+              <FriendsManager />
             </div>
 
             {/* Main Feed */}
-            <div className="flex-1 max-w-2xl mx-auto">
+            <div className="flex-1 max-w-2xl mx-auto lg:mx-0">
               <Tabs defaultValue="feed" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6 bg-white shadow-sm">
+                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-4 mb-6 bg-white shadow-sm">
                   <TabsTrigger value="feed" className="flex items-center gap-2 py-3">
                     <MessageCircle className="w-4 h-4" />
                     <span className="hidden sm:inline">Feed</span>
@@ -122,7 +120,7 @@ const SocialMedia = () => {
                 </TabsContent>
 
                 <TabsContent value="friends" className="mt-0 lg:hidden">
-                  <SocialFriends />
+                  <FriendsManager />
                 </TabsContent>
 
                 <TabsContent value="map" className="mt-0">
@@ -133,31 +131,6 @@ const SocialMedia = () => {
                   <ReadingGroups />
                 </TabsContent>
               </Tabs>
-            </div>
-
-            {/* Right Sidebar - Trending/Suggestions */}
-            <div className="hidden xl:block w-80 flex-shrink-0">
-              <div className="space-y-4">
-                <div className="bg-white rounded-lg shadow-sm p-4">
-                  <h3 className="font-semibold text-gray-900 mb-3">Trending Books</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded flex-shrink-0"></div>
-                      <div>
-                        <p className="font-medium text-sm text-gray-900">Atomic Habits</p>
-                        <p className="text-xs text-gray-500">James Clear</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-14 bg-gradient-to-br from-blue-400 to-indigo-500 rounded flex-shrink-0"></div>
-                      <div>
-                        <p className="font-medium text-sm text-gray-900">The Midnight Library</p>
-                        <p className="text-xs text-gray-500">Matt Haig</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

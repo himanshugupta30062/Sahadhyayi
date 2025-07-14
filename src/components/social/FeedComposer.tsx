@@ -1,0 +1,243 @@
+
+import React, { useState, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Image, BookOpen, Smile, Send, X } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { BookSelectionModal } from './BookSelectionModal';
+import { EmojiPicker } from './EmojiPicker';
+import { useToast } from '@/hooks/use-toast';
+
+interface SelectedBook {
+  id: string;
+  title: string;
+  author: string;
+  cover: string;
+}
+
+interface SelectedFeeling {
+  emoji: string;
+  label: string;
+}
+
+export const FeedComposer = ({ onPost }: { onPost: (postData: any) => void }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [postText, setPostText] = useState('');
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedBook, setSelectedBook] = useState<SelectedBook | null>(null);
+  const [selectedFeeling, setSelectedFeeling] = useState<SelectedFeeling | null>(null);
+  const [showBookModal, setShowBookModal] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({ title: 'Image too large', description: 'Please select an image under 5MB', variant: 'destructive' });
+        return;
+      }
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBookSelect = (book: SelectedBook) => {
+    setSelectedBook(book);
+    setShowBookModal(false);
+  };
+
+  const handleFeelingSelect = (feeling: SelectedFeeling) => {
+    setSelectedFeeling(feeling);
+    setShowEmojiPicker(false);
+  };
+
+  const clearAttachments = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    setSelectedBook(null);
+    setSelectedFeeling(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handlePost = async () => {
+    if (!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) {
+      toast({ title: 'Empty post', description: 'Please add some content to your post', variant: 'destructive' });
+      return;
+    }
+
+    setIsPosting(true);
+    try {
+      const postData = {
+        content: postText,
+        image: selectedImage,
+        book: selectedBook,
+        feeling: selectedFeeling,
+        timestamp: new Date().toISOString()
+      };
+
+      await onPost(postData);
+      
+      // Clear the composer
+      setPostText('');
+      clearAttachments();
+      
+      toast({ title: 'Post created!', description: 'Your post has been shared successfully.' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to create post. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  return (
+    <>
+      <Card className="bg-white shadow-sm border-0 rounded-xl mb-6">
+        <CardContent className="p-4">
+          <div className="flex items-start space-x-3 mb-4">
+            <Avatar className="w-10 h-10">
+              <AvatarImage src={user?.user_metadata?.avatar_url} />
+              <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white">
+                {user?.user_metadata?.full_name?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <Textarea
+                placeholder="What's on your mind?"
+                value={postText}
+                onChange={(e) => setPostText(e.target.value)}
+                className="min-h-[80px] border-0 bg-gray-50 rounded-xl resize-none focus:bg-white"
+              />
+            </div>
+          </div>
+
+          {/* Attachment Previews */}
+          {(imagePreview || selectedBook || selectedFeeling) && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-xl">
+              {imagePreview && (
+                <div className="relative mb-3">
+                  <img src={imagePreview} alt="Preview" className="w-full max-h-60 object-cover rounded-lg" />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="absolute top-2 right-2 bg-black/50 text-white hover:bg-black/70"
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setImagePreview(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+
+              {selectedBook && (
+                <div className="flex items-center space-x-3 mb-3 p-2 bg-white rounded-lg">
+                  <div className="w-12 h-16 bg-gradient-to-br from-orange-400 to-amber-500 rounded flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <h5 className="font-medium text-gray-900 text-sm">{selectedBook.title}</h5>
+                    <p className="text-xs text-gray-500">{selectedBook.author}</p>
+                    <Badge variant="outline" className="mt-1 text-xs">Reading</Badge>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSelectedBook(null)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+
+              {selectedFeeling && (
+                <div className="flex items-center space-x-2 mb-3">
+                  <span className="text-2xl">{selectedFeeling.emoji}</span>
+                  <span className="text-sm text-gray-600">feeling {selectedFeeling.label}</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSelectedFeeling(null)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between">
+            <div className="flex space-x-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Image className="w-4 h-4 mr-1" />
+                Photo
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setShowBookModal(true)}
+              >
+                <BookOpen className="w-4 h-4 mr-1" />
+                Book
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setShowEmojiPicker(true)}
+              >
+                <Smile className="w-4 h-4 mr-1" />
+                Feeling
+              </Button>
+            </div>
+            <Button
+              onClick={handlePost}
+              disabled={(!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting}
+              className="bg-orange-600 hover:bg-orange-700 rounded-xl"
+            >
+              <Send className="w-4 h-4 mr-1" />
+              {isPosting ? 'Posting...' : 'Post'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <BookSelectionModal
+        isOpen={showBookModal}
+        onClose={() => setShowBookModal(false)}
+        onSelect={handleBookSelect}
+      />
+
+      <EmojiPicker
+        isOpen={showEmojiPicker}
+        onClose={() => setShowEmojiPicker(false)}
+        onSelect={handleFeelingSelect}
+      />
+    </>
+  );
+};
