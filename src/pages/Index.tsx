@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,6 @@ const Index = () => {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const navigate = useNavigate();
-
 
   const features = [
     {
@@ -50,9 +50,9 @@ const Index = () => {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Sahadhyayi",
-    "alternateName": "Sahadhyayi Reading Community",
+    "alternateName": ["Sahadhyayi Reading Community", "Sahadhyayi Digital Library", "Fellow Reader Platform"],
     "url": "https://sahadhyayi.com",
-    "description": "Digital reading community platform connecting readers and authors worldwide",
+    "description": "Sahadhyayi means 'fellow reader' in Sanskrit. Join our digital reading community platform connecting readers and authors worldwide for deep reading experiences.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": "https://sahadhyayi.com/library?search={search_term_string}",
@@ -64,7 +64,7 @@ const Index = () => {
       "url": "https://sahadhyayi.com",
       "logo": "https://sahadhyayi.com/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png",
       "foundingDate": "2024",
-      "mission": "To revive deep reading culture and connect readers worldwide",
+      "mission": "To revive deep reading culture and connect readers worldwide as fellow study companions (Sahadhyayi)",
       "sameAs": [
         "https://sahadhyayi.com/library",
         "https://sahadhyayi.com/authors",
@@ -76,9 +76,10 @@ const Index = () => {
   return (
     <>
       <SEO
-        title="Sahadhyayi - Digital Reading Community & Book Library"
-        description="Join Sahadhyayi's vibrant reading community and book reader social media platform. Discover thousands of books, connect with fellow readers, track your progress, and explore our digital library."
+        title="Sahadhyayi - Digital Reading Community & Book Library | Fellow Readers Platform"
+        description="Sahadhyayi means 'fellow reader' in Sanskrit. Join our vibrant digital reading community and book reader social media platform. Discover thousands of books, connect with fellow readers, track your progress, and explore our comprehensive digital library with your study companions."
         url="https://sahadhyayi.com/"
+        keywords={['Sahadhyayi', 'fellow reader', 'Sanskrit meaning', 'digital reading community', 'book library', 'reading platform', 'study companions', 'book lovers']}
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
@@ -90,7 +91,7 @@ const Index = () => {
           <div className="flex justify-center mb-8">
             <img
               src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
-              alt="Sahadhyayi logo representing our book reader social media community"
+              alt="Sahadhyayi logo - Fellow Reader community platform in Sanskrit"
               className="w-24 h-24"
             />
           </div>
@@ -98,17 +99,20 @@ const Index = () => {
             Welcome to
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600"> Sahadhyayi</span>
             <br />
-            <span className="text-3xl md:text-4xl">Your Digital Reading Community</span>
+            <span className="text-3xl md:text-4xl">Your Fellow Readers Community</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed">
+          <p className="text-xl md:text-2xl text-gray-700 mb-4 leading-relaxed">
+            <strong>Sahadhyayi</strong> (सहाध्यायी) means "fellow reader" or "study companion" in Sanskrit.
+          </p>
+          <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
             Reviving the transformative power of deep reading through community, technology, and shared knowledge.
-            Join thousands of readers building a healthier, more focused reading culture.
+            Join thousands of fellow readers building a healthier, more focused reading culture together.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/signup">
               <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 text-lg shadow-lg">
                 <UserPlus className="w-5 h-5 mr-2" />
-                Sign Up Free
+                Join Sahadhyayi Free
               </Button>
             </Link>
             <Link to="/signin">
@@ -121,10 +125,45 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Mission Section */}
+      {/* What Sahadhyayi Means Section */}
       <section className="py-16 px-4 bg-white/60 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">Why Choose Sahadhyayi for Your Reading Journey?</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-8">What is Sahadhyayi? Understanding Our Name</h2>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="text-left">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">The Sanskrit Meaning of Sahadhyayi</h3>
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                <strong>Sahadhyayi</strong> (सहाध्यायी) is a beautiful Sanskrit word meaning "fellow reader" or "study companion." 
+                It comes from "saha" (together) and "adhyayi" (one who reads or studies). In ancient tradition, 
+                a Sahadhyayi was someone who studied alongside you, shared knowledge, and deepened understanding together.
+              </p>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Why We Chose the Name Sahadhyayi</h3>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Our platform embodies this ancient wisdom by creating a digital space where readers come together as 
+                study companions. When you join Sahadhyayi, you're not just accessing books - you're becoming part of 
+                a community of fellow readers who support each other's intellectual journey. 
+                <Link to="/about" className="text-orange-600 hover:text-orange-700 font-medium ml-1">Learn more about our mission</Link>.
+              </p>
+            </div>
+            <div className="bg-gradient-to-br from-orange-100 to-red-100 p-8 rounded-2xl backdrop-blur-sm border border-orange-200 shadow-lg">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Why Choose Sahadhyayi for Reading</h3>
+              <ul className="space-y-3 text-gray-700">
+                <li>• <strong>Fellow Readers:</strong> Connect with study companions worldwide</li>
+                <li>• <strong>Deep Reading:</strong> Focus on meaningful, immersive reading experiences</li>
+                <li>• <strong>Community Learning:</strong> Share insights and grow together</li>
+                <li>• <strong>Ancient Wisdom:</strong> Modern technology meets traditional study values</li>
+                <li>• <strong>Knowledge Sharing:</strong> Learn from fellow readers' perspectives</li>
+                <li>• <strong>Lasting Connections:</strong> Build relationships through shared reading</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mission Section */}
+      <section className="py-16 px-4 bg-gradient-to-br from-amber-50 to-orange-50">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-gray-900 mb-8">How Sahadhyayi Revives Reading Culture</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="text-left">
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">The Digital Reading Challenge</h3>
@@ -132,22 +171,22 @@ const Index = () => {
                 Modern digital consumption habits are shifting away from deep reading toward passive content like videos and podcasts. 
                 This change impacts our ability to focus deeply, comprehend complex ideas, and engage in meaningful reflection.
               </p>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Our Revolutionary Solution</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Sahadhyayi's Revolutionary Solution</h3>
               <p className="text-lg text-gray-700 leading-relaxed">
                 Sahadhyayi creates a social reading platform that makes books more accessible, interactive, and community-driven. 
-                We combine traditional reading with modern technology to build healthier intellectual habits. 
-                <Link to="/about" className="text-orange-600 hover:text-orange-700 font-medium ml-1">Learn about our mission</Link>.
+                We combine traditional reading with modern technology to build healthier intellectual habits among fellow readers.
+                <Link to="/blog" className="text-orange-600 hover:text-orange-700 font-medium ml-1">Read our blog posts</Link> about reading culture.
               </p>
             </div>
-            <div className="bg-gradient-to-br from-orange-100 to-red-100 p-8 rounded-2xl backdrop-blur-sm border border-orange-200 shadow-lg">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Scientifically Proven Benefits of Deep Reading</h3>
+            <div className="bg-white p-8 rounded-2xl backdrop-blur-sm border border-orange-200 shadow-lg">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Benefits of the Sahadhyayi Approach</h3>
               <ul className="space-y-3 text-gray-700">
-                <li>• Improves focus and attention span significantly</li>
-                <li>• Enhances critical thinking and analytical skills</li>
-                <li>• Reduces digital eye strain from screens</li>
-                <li>• Builds empathy and emotional intelligence</li>
-                <li>• Promotes mental clarity and deep reflection</li>
-                <li>• Creates lasting knowledge retention and understanding</li>
+                <li>• <strong>Improved Focus:</strong> Deep reading enhances attention span significantly</li>
+                <li>• <strong>Better Comprehension:</strong> Fellow readers help deepen understanding</li>
+                <li>• <strong>Community Support:</strong> Study companions motivate consistent reading</li>
+                <li>• <strong>Knowledge Retention:</strong> Collaborative learning builds lasting memories</li>
+                <li>• <strong>Critical Thinking:</strong> Discussions with fellow readers enhance analysis</li>
+                <li>• <strong>Intellectual Growth:</strong> Sahadhyayi connections foster lifelong learning</li>
               </ul>
             </div>
           </div>
@@ -157,43 +196,12 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">Comprehensive Platform Features</h2>
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">Comprehensive Sahadhyayi Platform Features</h2>
           <p className="text-xl text-gray-600 text-center mb-12 max-w-3xl mx-auto">
-            Discover powerful tools designed to enhance your reading experience and connect you with a global community of book lovers.
+            Discover powerful tools designed to enhance your reading experience and connect you with fellow readers in our global Sahadhyayi community.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: BookOpen,
-                title: "Personal Digital Bookshelf",
-                description: "Track your reading progress, manage your book collection, and read directly on our platform with advanced reading tools."
-              },
-              {
-                icon: Users,
-                title: "Global Reading Communities",
-                description: "Join book-specific discussion groups and connect with passionate readers from around the world."
-              },
-              {
-                icon: Map,
-                title: "Local Reader Discovery",
-                description: "Discover readers near you and find local book communities through our interactive reader map."
-              },
-              {
-                icon: Calendar,
-                title: "Author Connect Sessions",
-                description: "Schedule live Q&A sessions and conferences with your favorite authors and literary experts."
-              },
-              {
-                icon: Star,
-                title: "Community Reviews & Ratings",
-                description: "Share your thoughts and discover great books through our comprehensive community review system."
-              },
-              {
-                icon: Headphones,
-                title: "AI-Powered Reading Assistant",
-                description: "Get instant explanations for any word, paragraph, or chapter while reading with our intelligent AI companion."
-              }
-            ].map((feature, index) => {
+            {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <Card key={index} className="bg-white/80 backdrop-blur-sm border-orange-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
@@ -216,7 +224,7 @@ const Index = () => {
       {/* Updated Internal Links Section with Equal Sized Cards */}
       <section className="py-16 px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">Explore Our Platform</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-8">Explore the Sahadhyayi Platform</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Link to="/library" className="block">
               <Card className="bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
@@ -224,7 +232,7 @@ const Index = () => {
                   <div>
                     <BookOpen className="w-16 h-16 text-orange-600 mx-auto mb-6" />
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Digital Library</h3>
-                    <p className="text-gray-600 text-base leading-relaxed">Browse thousands of books across all genres with our comprehensive digital collection</p>
+                    <p className="text-gray-600 text-base leading-relaxed">Browse thousands of books with fellow readers in our comprehensive digital collection</p>
                   </div>
                 </CardContent>
               </Card>
@@ -235,7 +243,7 @@ const Index = () => {
                   <div>
                     <Users className="w-16 h-16 text-orange-600 mx-auto mb-6" />
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Reading Groups</h3>
-                    <p className="text-gray-600 text-base leading-relaxed">Join meaningful discussions with fellow readers who share your literary interests</p>
+                    <p className="text-gray-600 text-base leading-relaxed">Join meaningful discussions with fellow Sahadhyayi readers who share your literary interests</p>
                   </div>
                 </CardContent>
               </Card>
@@ -246,7 +254,7 @@ const Index = () => {
                   <div>
                     <Map className="w-16 h-16 text-orange-600 mx-auto mb-6" />
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Reader Map</h3>
-                    <p className="text-gray-600 text-base leading-relaxed">Find and connect with local readers and book communities in your area</p>
+                    <p className="text-gray-600 text-base leading-relaxed">Find and connect with local Sahadhyayi members and book communities in your area</p>
                   </div>
                 </CardContent>
               </Card>
@@ -257,7 +265,7 @@ const Index = () => {
                   <div>
                     <Calendar className="w-16 h-16 text-orange-600 mx-auto mb-6" />
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Meet Authors</h3>
-                    <p className="text-gray-600 text-base leading-relaxed">Connect directly with inspiring authors through live sessions and Q&As</p>
+                    <p className="text-gray-600 text-base leading-relaxed">Connect directly with inspiring authors through live Sahadhyayi sessions and Q&As</p>
                   </div>
                 </CardContent>
               </Card>
@@ -269,10 +277,10 @@ const Index = () => {
       {/* CTA Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-orange-600 to-red-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Reading Journey?</h2>
+          <h2 className="text-4xl font-bold mb-6">Ready to Join the Sahadhyayi Community?</h2>
           <p className="text-xl mb-8 opacity-90">
-            Join Sahadhyayi today and become part of a global community dedicated to deep, meaningful reading.
-            Start your journey towards better focus, enhanced comprehension, and meaningful literary connections.
+            Become a Sahadhyayi today and experience what it means to have fellow readers as your study companions.
+            Join our global community dedicated to deep, meaningful reading and intellectual growth together.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/signup">
@@ -283,7 +291,7 @@ const Index = () => {
             </Link>
             <Link to="/about">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600 px-8 py-3 text-lg">
-                Learn More About Us
+                Learn More About Sahadhyayi
               </Button>
             </Link>
           </div>

@@ -1,7 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Target, Users, TrendingUp, Heart, Globe, Mail } from "lucide-react";
+import { BookOpen, Target, Users, TrendingUp, Heart, Globe, Mail, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
 import { useState } from "react";
@@ -23,7 +22,7 @@ const About = () => {
     },
     {
       icon: Users,
-      title: "Community",
+      title: "Community", 
       description: "Reading is better together. We connect readers globally to share insights and build lasting intellectual relationships."
     },
     {
@@ -43,6 +42,25 @@ const About = () => {
     { icon: Users, number: "50K+", label: "Active Readers" },
     { icon: BookOpen, number: "500+", label: "Reading Groups" },
     { icon: TrendingUp, number: "95%", label: "User Satisfaction" }
+  ];
+
+  const faqs = [
+    {
+      question: "What does Sahadhyayi mean?",
+      answer: "Sahadhyayi (सहाध्यायी) is a Sanskrit word meaning 'fellow reader' or 'study companion.' It comes from 'saha' (together) and 'adhyayi' (one who reads or studies). This perfectly reflects our mission to create a community where readers come together, share insights, and grow intellectually as companions on the reading journey."
+    },
+    {
+      question: "How is Sahadhyayi different from other reading platforms?",
+      answer: "Sahadhyayi focuses on building a true community of fellow readers rather than just providing access to books. We combine ancient wisdom of collaborative learning with modern technology, offering reading communities, author connections, AI-powered assistance, and tools that promote deep, focused reading over passive consumption."
+    },
+    {
+      question: "Is Sahadhyayi free to use?",
+      answer: "Yes, Sahadhyayi offers free access to our core features including community discussions, basic library access, and reading tools. We believe in making quality literature and reading resources accessible to everyone, breaking down barriers to education and enlightenment."
+    },
+    {
+      question: "How does Sahadhyayi help improve reading habits?",
+      answer: "Sahadhyayi provides community accountability through reading groups, personalized goal setting, progress tracking, and AI-powered reading assistance. Our platform is designed to encourage sustained, focused reading that builds lasting habits and transforms lives."
+    }
   ];
 
   const { toast } = useToast();
@@ -104,16 +122,16 @@ const About = () => {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "AboutPage",
-    "name": "About Sahadhyayi",
-    "description": "Learn about Sahadhyayi's mission to revive reading culture",
+    "name": "About Sahadhyayi - What Sahadhyayi Means",
+    "description": "Learn about Sahadhyayi's mission to revive reading culture. Discover what Sahadhyayi means in Sanskrit and how we connect readers worldwide through our digital community platform.",
     "url": "https://sahadhyayi.com/about",
     "mainEntity": {
       "@type": "Organization",
       "name": "Sahadhyayi",
-      "description": "Digital platform dedicated to reviving deep reading culture",
+      "description": "Sahadhyayi means 'fellow reader' in Sanskrit. Our digital platform is dedicated to reviving deep reading culture and connecting readers worldwide.",
       "url": "https://sahadhyayi.com",
       "foundingDate": "2024",
-      "mission": "To revive deep reading culture and connect readers worldwide",
+      "mission": "To revive deep reading culture and connect readers worldwide as fellow study companions",
       "founder": {
         "@type": "Person",
         "name": "Himanshu Gupta",
@@ -144,10 +162,11 @@ const About = () => {
   return (
     <>
       <SEO
-        title="About Sahadhyayi - Reviving Reading Culture Worldwide"
-        description="Learn about Sahadhyayi's mission to revive deep reading culture. Discover how we connect readers globally and promote meaningful literary engagement."
+        title="About Sahadhyayi - What Sahadhyayi Means | Reviving Reading Culture Worldwide"
+        description="Learn about Sahadhyayi's mission to revive deep reading culture. Discover the Sanskrit meaning of Sahadhyayi (fellow reader) and how we connect readers globally through our digital community platform."
         canonical="https://sahadhyayi.com/about"
         url="https://sahadhyayi.com/about"
+        keywords={['About Sahadhyayi', 'what is Sahadhyayi', 'Sahadhyayi meaning', 'fellow reader', 'Sanskrit', 'reading community', 'digital library', 'book lovers']}
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
@@ -159,23 +178,62 @@ const About = () => {
           <div className="flex justify-center mb-6">
             <img 
               src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
-              alt="Sahadhyayi Logo - Digital reading platform for community connection" 
+              alt="Sahadhyayi Logo - What Sahadhyayi means: fellow reader in Sanskrit" 
               className="w-20 h-20" 
             />
           </div>
            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-             About Us - Reviving the Joy of Deep Reading
+             About Sahadhyayi - What Sahadhyayi Means & Our Mission
            </h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            We're on a mission to revive the lost art of deep reading and build a global community 
-            that values knowledge, focus, and meaningful intellectual growth.
+            Sahadhyayi (सहाध्यायी) means "fellow reader" in Sanskrit. We're on a mission to revive the lost art of deep reading and build a global community 
+            that values knowledge, focus, and meaningful intellectual growth as study companions.
           </p>
         </div>
 
-        {/* Vision Section */}
+        {/* What Sahadhyayi Means Section */}
         <section className="mb-16">
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 md:p-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Our Vision for a Reading Renaissance</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">What is Sahadhyayi? The Meaning Behind Our Name</h2>
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4">The Sanskrit Roots of Sahadhyayi</h3>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  Sahadhyayi (सहाध्यायी) is a beautiful Sanskrit word that perfectly captures our vision. It breaks down into two parts: "saha" meaning "together" and "adhyayi" meaning "one who reads or studies." In ancient Indian tradition, a Sahadhyayi was someone who studied alongside you, shared knowledge, and helped deepen your understanding.
+                </p>
+                <p className="text-gray-700 leading-relaxed">
+                  This is exactly what our platform aims to be - your digital reading companion that connects you with fellow book lovers, authors, and a wealth of literary resources. When you join Sahadhyayi, you become part of a community of fellow readers who support each other's intellectual journey.
+                </p>
+              </div>
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <h4 className="text-lg font-semibold text-gray-900 mb-3">Why Choose Sahadhyayi for Reading?</h4>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Community Connection</span>
+                    <span className="text-green-600 font-medium">Fellow Readers</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Reading Approach</span>
+                    <span className="text-green-600 font-medium">Deep & Focused</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Learning Style</span>
+                    <span className="text-green-600 font-medium">Collaborative</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Platform Goal</span>
+                    <span className="text-green-600 font-medium">Knowledge Growth</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Vision Section */}
+        <section className="mb-16">
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 md:p-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">How Sahadhyayi is Reviving Reading Culture</h2>
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div>
                 <h3 className="text-2xl font-semibold text-gray-900 mb-4">Why Reading Matters More Than Ever</h3>
@@ -186,7 +244,7 @@ const About = () => {
                 <p className="text-gray-700 leading-relaxed">
                   Reading, on the other hand, strengthens focus, enhances comprehension, and promotes mental clarity. 
                   It's active learning that builds lasting knowledge and critical thinking skills. 
-                  <Link to="/library" className="text-orange-600 hover:text-orange-700 font-medium ml-1">Start your reading journey</Link> today.
+                  <Link to="/library" className="text-orange-600 hover:text-orange-700 font-medium ml-1">Start your reading journey</Link> today with Sahadhyayi.
                 </p>
               </div>
               <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -216,7 +274,7 @@ const About = () => {
 
         {/* Values Section */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Our Core Values</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">What Sahadhyayi Stands For - Our Core Values</h2>
           <div className="grid md:grid-cols-2 gap-8">
             {values.map((value, index) => {
               const Icon = value.icon;
@@ -237,10 +295,30 @@ const About = () => {
           </div>
         </section>
 
+        {/* FAQ Section */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions About Sahadhyayi</h2>
+          <div className="space-y-6">
+            {faqs.map((faq, index) => (
+              <Card key={index} className="bg-white/70 backdrop-blur-sm border-amber-200">
+                <CardHeader>
+                  <CardTitle className="text-xl text-gray-900 flex items-center gap-3">
+                    <HelpCircle className="w-5 h-5 text-amber-600" />
+                    {faq.question}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
         {/* Stats Section */}
         <section className="mb-16">
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-amber-200">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Growing Impact</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Sahadhyayi's Growing Impact</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat, index) => {
                 const Icon = stat.icon;
@@ -260,7 +338,7 @@ const About = () => {
 
         {/* Future Plans */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Building the Future of Reading</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Building the Future of Reading with Sahadhyayi</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <Card className="bg-gradient-to-br from-amber-100 to-orange-100 border-amber-200">
               <CardHeader>
@@ -270,7 +348,7 @@ const About = () => {
                 <p className="text-gray-700 leading-relaxed">
                   We envision establishing physical reading centers in major cities across India and globally. 
                   These spaces will host book clubs, author events, and provide quiet reading environments 
-                  for our community members to meet and connect offline.
+                  for our Sahadhyayi community members to meet and connect offline as true fellow readers.
                 </p>
               </CardContent>
             </Card>
@@ -280,9 +358,9 @@ const About = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 leading-relaxed">
-                  Our platform will evolve into a comprehensive knowledge-sharing ecosystem, 
+                  Our Sahadhyayi platform will evolve into a comprehensive knowledge-sharing ecosystem, 
                   connecting readers, authors, educators, and thought leaders to create a more 
-                  informed and intellectually curious global community.
+                  informed and intellectually curious global community of fellow learners.
                 </p>
               </CardContent>
             </Card>
@@ -395,9 +473,7 @@ const About = () => {
                       </Alert>
                     )}
                     <div className="text-xs text-gray-400 pt-2">
-                      Your message will be sent directly to Himanshu Gupta’s email.
-                      <br />
-                      {/* For real email delivery, connect the form to Supabase Edge Functions, EmailJS, or similar service. */}
+                      Your message will be sent directly to Himanshu Gupta's email.
                     </div>
                   </form>
                 </div>
@@ -410,9 +486,9 @@ const About = () => {
         <section className="text-center">
           <Card className="bg-gradient-to-r from-amber-600 to-orange-600 text-white border-0">
             <CardContent className="p-8">
-              <h2 className="text-3xl font-bold mb-4">Join Our Mission</h2>
+              <h2 className="text-3xl font-bold mb-4">Join the Sahadhyayi Community</h2>
               <p className="text-xl mb-6 opacity-90">
-                Be part of the movement to revive deep reading culture and build a healthier, more focused world.
+                Be part of the movement to revive deep reading culture and experience what it means to have fellow readers as your study companions.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/library">

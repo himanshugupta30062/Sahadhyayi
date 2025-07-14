@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,17 +10,50 @@ const Blog = () => {
   const blogPosts = [
     {
       id: '1',
+      slug: 'what-is-sahadhyayi-meaning-story',
+      title: 'What is Sahadhyayi? Meaning & Story Behind Our Name',
+      excerpt: 'Discover the deep Sanskrit meaning of Sahadhyayi and how it embodies our mission to create a community of fellow readers and study companions.',
+      author: 'Himanshu Gupta',
+      date: '2024-07-14',
+      category: 'About Sahadhyayi',
+      readTime: '6 min read',
+      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop',
+      featured: true
+    },
+    {
+      id: '2',
+      slug: 'how-sahadhyayi-revives-reading-culture',
+      title: 'How Sahadhyayi Revives the Reading Culture',
+      excerpt: 'Learn how Sahadhyayi is revolutionizing reading habits in the digital age and bringing back the transformative power of deep reading.',
+      author: 'Himanshu Gupta',
+      date: '2024-07-14',
+      category: 'Reading Culture',
+      readTime: '8 min read',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop'
+    },
+    {
+      id: '3',
+      slug: 'why-book-lovers-should-join-sahadhyayi',
+      title: '5 Reasons Why Book Lovers Should Join Sahadhyayi',
+      excerpt: 'Explore the compelling reasons why Sahadhyayi is the ultimate platform for book enthusiasts and reading community members.',
+      author: 'Himanshu Gupta',
+      date: '2024-07-14',
+      category: 'Community',
+      readTime: '7 min read',
+      image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&h=400&fit=crop'
+    },
+    {
+      id: '4',
       title: 'The Science Behind Deep Reading: Why It Matters More Than Ever',
       excerpt: 'Discover how deep reading transforms your brain, improves focus, and enhances critical thinking in our digital age.',
       author: 'Dr. Sarah Chen',
       date: '2024-07-08',
       category: 'Reading Science',
       readTime: '8 min read',
-      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop',
-      featured: true
+      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop'
     },
     {
-      id: '2',
+      id: '5',
       title: 'Building Reading Communities: A Guide for Book Lovers',
       excerpt: 'Learn how to create and nurture thriving reading communities that engage readers and foster meaningful discussions.',
       author: 'Michael Rodriguez',
@@ -31,7 +63,7 @@ const Blog = () => {
       image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop'
     },
     {
-      id: '3',
+      id: '6',
       title: 'Digital vs Physical Books: Finding Your Perfect Reading Balance',
       excerpt: 'Explore the benefits of both digital and physical reading formats and how to optimize your reading experience.',
       author: 'Emma Thompson',
@@ -39,40 +71,10 @@ const Blog = () => {
       category: 'Reading Tips',
       readTime: '5 min read',
       image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&h=400&fit=crop'
-    },
-    {
-      id: '4',
-      title: 'How AI is Revolutionizing the Reading Experience',
-      excerpt: 'Discover how artificial intelligence is transforming how we discover, read, and engage with books.',
-      author: 'Tech Team',
-      date: '2024-07-01',
-      category: 'Technology',
-      readTime: '7 min read',
-      image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=400&fit=crop'
-    },
-    {
-      id: '5',
-      title: 'Creating Your Ideal Reading Environment at Home',
-      excerpt: 'Tips and tricks for designing the perfect reading nook that enhances focus and reading pleasure.',
-      author: 'Lisa Park',
-      date: '2024-06-28',
-      category: 'Lifestyle',
-      readTime: '4 min read',
-      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop'
-    },
-    {
-      id: '6',
-      title: 'The Psychology of Reading Habits: Building Consistency',
-      excerpt: 'Understanding the psychological factors that influence reading habits and how to build lasting routines.',
-      author: 'Dr. James Wilson',
-      date: '2024-06-25',
-      category: 'Psychology',
-      readTime: '9 min read',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop'
     }
   ];
 
-  const categories = ['All', 'Reading Science', 'Community', 'Reading Tips', 'Technology', 'Lifestyle', 'Psychology'];
+  const categories = ['All', 'About Sahadhyayi', 'Reading Culture', 'Community', 'Reading Science', 'Reading Tips', 'Technology', 'Lifestyle', 'Psychology'];
   const [selectedCategory, setSelectedCategory] = React.useState('All');
 
   const filteredPosts = selectedCategory === 'All' 
@@ -85,10 +87,10 @@ const Blog = () => {
   return (
     <>
       <SEO
-        title="Reading Blog - Insights, Tips & Community Stories | Sahadhyayi"
-        description="Explore our blog for reading insights, community stories, book recommendations, and tips to enhance your reading journey. Join the conversation with fellow book lovers."
+        title="Sahadhyayi Blog - Reading Insights, Community Stories & Tips"
+        description="Explore Sahadhyayi's blog for reading insights, community stories, book recommendations, and tips to enhance your reading journey. Learn what Sahadhyayi means and join the conversation with fellow book lovers."
         canonical="https://sahadhyayi.com/blog"
-        keywords={['reading blog', 'book insights', 'reading tips', 'book community', 'reading habits', 'literature discussion']}
+        keywords={['Sahadhyayi blog', 'reading insights', 'book community', 'reading tips', 'what is Sahadhyayi', 'Sahadhyayi meaning', 'reading culture']}
       />
       
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
@@ -96,10 +98,10 @@ const Blog = () => {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Reading Insights & Community Stories
+              Sahadhyayi Blog - Reading Insights & Community Stories
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Discover the latest insights on reading science, community building, and tips to enhance your reading journey.
+              Discover the latest insights on Sahadhyayi, reading science, community building, and tips to enhance your reading journey.
             </p>
           </div>
 
@@ -136,10 +138,12 @@ const Blog = () => {
                       </div>
                       <Badge variant="outline">{featuredPost.category}</Badge>
                     </div>
-                    <Button className="bg-orange-600 hover:bg-orange-700">
-                      Read Full Article
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
+                    <Link to={`/blog/${featuredPost.slug}`}>
+                      <Button className="bg-orange-600 hover:bg-orange-700">
+                        Read Full Article
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </Card>
@@ -179,7 +183,9 @@ const Blog = () => {
                 </div>
                 <CardHeader>
                   <CardTitle className="text-xl text-gray-900 hover:text-orange-600 cursor-pointer">
-                    {post.title}
+                    <Link to={post.slug ? `/blog/${post.slug}` : '#'}>
+                      {post.title}
+                    </Link>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -197,10 +203,12 @@ const Blog = () => {
                     <span className="text-sm text-gray-500">
                       {new Date(post.date).toLocaleDateString()}
                     </span>
-                    <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
-                      Read More
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </Button>
+                    <Link to={post.slug ? `/blog/${post.slug}` : '#'}>
+                      <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                        Read More
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
@@ -209,9 +217,9 @@ const Blog = () => {
 
           {/* Newsletter Signup */}
           <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-2xl p-8 text-center">
-            <h3 className="text-2xl font-bold mb-4">Stay Updated with Reading Insights</h3>
+            <h3 className="text-2xl font-bold mb-4">Stay Updated with Sahadhyayi Insights</h3>
             <p className="text-lg opacity-90 mb-6">
-              Get the latest articles, reading tips, and community stories delivered to your inbox.
+              Get the latest articles about Sahadhyayi, reading tips, and community stories delivered to your inbox.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
               <input
