@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, MessageCircle, Share2, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FeedComposer } from './FeedComposer';
+import { CommentSection } from './CommentSection';
+import { ShareModal } from './ShareModal';
 
 interface Post {
   id: string;
@@ -75,6 +77,9 @@ const mockPosts: Post[] = [
 
 export const SocialFeed = () => {
   const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [showComments, setShowComments] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
 
   const handleLike = (postId: string) => {
@@ -97,6 +102,7 @@ export const SocialFeed = () => {
       content: postData.content,
       book: postData.book,
       feeling: postData.feeling,
+      image: postData.image,
       timestamp: 'Just now',
       likes: 0,
       comments: 0,
@@ -104,6 +110,18 @@ export const SocialFeed = () => {
     };
     
     setPosts([newPost, ...posts]);
+  };
+
+  const handleShare = (post: Post) => {
+    setSelectedPost(post);
+    setShareModalOpen(true);
+  };
+
+  const toggleComments = (postId: string) => {
+    setShowComments(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
   };
 
   return (
@@ -182,18 +200,43 @@ export const SocialFeed = () => {
                 <Heart className={`w-4 h-4 mr-1 ${post.isLiked ? 'fill-current' : ''}`} />
                 {post.likes}
               </Button>
-              <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => toggleComments(post.id)}
+              >
                 <MessageCircle className="w-4 h-4 mr-1" />
                 {post.comments}
               </Button>
-              <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => handleShare(post)}
+              >
                 <Share2 className="w-4 h-4 mr-1" />
                 Share
               </Button>
             </div>
+
+            {/* Comments Section */}
+            {showComments[post.id] && (
+              <CommentSection postId={post.id} />
+            )}
           </CardContent>
         </Card>
       ))}
+
+      {/* Share Modal */}
+      {selectedPost && (
+        <ShareModal
+          isOpen={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+          postContent={selectedPost.content}
+          postId={selectedPost.id}
+        />
+      )}
     </div>
   );
 };
