@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -64,6 +65,9 @@ const App = () => (
                       <Route path="/blog/:slug" element={<BlogPost />} />
                       <Route path="/signin" element={<SignIn />} />
                       <Route path="/signup" element={<SignUp />} />
+                      <Route path="/library" element={<BookLibrary />} />
+                      <Route path="/authors" element={<Authors />} />
+                      <Route path="/social" element={<SocialMedia />} />
                       <Route 
                         path="/dashboard" 
                         element={
@@ -81,14 +85,6 @@ const App = () => (
                         } 
                       />
                       <Route 
-                        path="/library" 
-                        element={
-                          <ProtectedRoute>
-                            <BookLibrary />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
                         path="/groups" 
                         element={
                           <ProtectedRoute>
@@ -101,22 +97,6 @@ const App = () => (
                         element={
                           <ProtectedRoute>
                             <ReaderMap />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/social" 
-                        element={
-                          <ProtectedRoute>
-                            <SocialMedia />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/authors" 
-                        element={
-                          <ProtectedRoute>
-                            <Authors />
                           </ProtectedRoute>
                         } 
                       />
