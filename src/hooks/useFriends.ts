@@ -59,7 +59,7 @@ export const useFriendRequests = () => {
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
       
       if (error) throw error;
-      return data as FriendRequest[];
+      return data || [];
     },
     enabled: !!user?.id,
   });
@@ -85,10 +85,10 @@ export const useFriends = () => {
       if (error) throw error;
       
       // Transform data to include friend_profile
-      return data.map(friendship => ({
+      return (data || []).map(friendship => ({
         ...friendship,
         friend_profile: friendship.user1_id === user.id ? friendship.user2_profile : friendship.user1_profile
-      })) as Friend[];
+      }));
     },
     enabled: !!user?.id,
   });

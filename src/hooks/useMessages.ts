@@ -48,7 +48,7 @@ export const usePrivateMessages = (friendId: string) => {
         .order('created_at', { ascending: true });
       
       if (error) throw error;
-      return data as PrivateMessage[];
+      return data || [];
     },
     enabled: !!user?.id && !!friendId,
   });
@@ -97,7 +97,7 @@ export const useGroupMessages = (groupId: string) => {
         .order('created_at', { ascending: true });
       
       if (error) throw error;
-      return data as GroupMessage[];
+      return data || [];
     },
     enabled: !!groupId && !!user?.id,
   });

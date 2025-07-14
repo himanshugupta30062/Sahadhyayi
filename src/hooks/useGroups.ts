@@ -74,7 +74,7 @@ export const useUserGroups = () => {
       
       if (error) throw error;
       
-      return data as GroupMember[];
+      return data || [];
     },
     enabled: !!user?.id,
   });
@@ -93,7 +93,7 @@ export const useGroups = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Group & { group_members?: { count: number }[] })[];
+      return data as (Group & { group_members?: { count: number }[] })[] || [];
     },
   });
 };
@@ -229,7 +229,7 @@ export const useGroupMembers = (groupId: string) => {
         .eq('group_id', groupId);
       
       if (error) throw error;
-      return data as GroupMember[];
+      return data || [];
     },
     enabled: !!groupId,
   });
