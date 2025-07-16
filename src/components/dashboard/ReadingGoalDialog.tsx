@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -6,7 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const ReadingGoalDialog = () => {
+interface ReadingGoalDialogProps {
+  onGoalUpdate?: (goal: number) => void;
+}
+
+const ReadingGoalDialog: React.FC<ReadingGoalDialogProps> = ({ onGoalUpdate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [goal, setGoal] = useState(12);
   const { toast } = useToast();
@@ -15,17 +20,30 @@ const ReadingGoalDialog = () => {
   useEffect(() => {
     const existingGoal = localStorage.getItem('readingGoal2024');
     if (existingGoal) {
-      setGoal(parseInt(existingGoal) || 12);
+      const parsedGoal = parseInt(existingGoal) || 12;
+      setGoal(parsedGoal);
     }
   }, []);
 
   const handleSaveGoal = () => {
-    // For now, just save to localStorage
+    // Save to localStorage
     localStorage.setItem('readingGoal2024', goal.toString());
+    
+    // Trigger callback to update parent component
+    if (onGoalUpdate) {
+      onGoalUpdate(goal);
+    }
+    
+    // Dispatch custom event to update all components listening to goal changes
+    window.dispatchEvent(new CustomEvent('readingGoalUpdated', { 
+      detail: { goal } 
+    }));
+    
     toast({
       title: "Reading Goal Set!",
       description: `Your goal of ${goal} books for 2024 has been saved.`,
     });
+    
     setIsOpen(false);
   };
 

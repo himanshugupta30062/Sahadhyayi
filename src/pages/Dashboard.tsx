@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -17,6 +17,35 @@ import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
 const Dashboard = () => {
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
+  const [readingGoal, setReadingGoal] = useState(12);
+  const [completedBooks, setCompletedBooks] = useState(0);
+
+  // Load reading goal from localStorage and listen for updates
+  useEffect(() => {
+    const loadGoal = () => {
+      const savedGoal = localStorage.getItem('readingGoal2024');
+      if (savedGoal) {
+        setReadingGoal(parseInt(savedGoal) || 12);
+      }
+    };
+
+    loadGoal();
+
+    // Listen for goal updates from the dialog
+    const handleGoalUpdate = (event: CustomEvent) => {
+      setReadingGoal(event.detail.goal);
+    };
+
+    window.addEventListener('readingGoalUpdated', handleGoalUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('readingGoalUpdated', handleGoalUpdate as EventListener);
+    };
+  }, []);
+
+  const handleGoalUpdate = (newGoal: number) => {
+    setReadingGoal(newGoal);
+  };
 
   if (profileLoading) {
     return (
@@ -39,6 +68,7 @@ const Dashboard = () => {
   }
 
   const userName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader';
+  const progressPercentage = Math.min(100, Math.round((completedBooks / readingGoal) * 100));
 
   return (
     <>
@@ -119,7 +149,7 @@ const Dashboard = () => {
                         <span className="text-sm">Social Feed</span>
                       </Button>
                     </Link>
-                    <Link to="/groups">
+                    <Link to="/social?tab=groups">
                       <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
                         <Target className="w-5 h-5 text-amber-600" />
                         <span className="text-sm">Reading Groups</span>
@@ -139,13 +169,17 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">0 / 12</div>
+                    <div className="text-2xl font-bold text-green-600">{completedBooks} / {readingGoal}</div>
                     <div className="text-sm text-gray-600">Books This Year</div>
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${progressPercentage}%` }}
+                      ></div>
                     </div>
+                    <div className="text-xs text-gray-500 mt-1">{progressPercentage}% Complete</div>
                   </div>
-                  <ReadingGoalDialog />
+                  <ReadingGoalDialog onGoalUpdate={handleGoalUpdate} />
                 </CardContent>
               </Card>
 
