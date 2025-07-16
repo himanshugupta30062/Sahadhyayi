@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { sampleBooks } from '@/data/sampleBooks';
 
 export interface Book {
   id: string;
@@ -29,33 +30,37 @@ export const useAllLibraryBooks = () => {
   return useQuery({
     queryKey: ['all-library-books'],
     queryFn: async (): Promise<Book[]> => {
-      const { data, error } = await supabase
-        .from('books_library')
-        .select('*')
-        .order('created_at', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('books_library')
+          .select('*')
+          .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching library books:', error);
-        throw error;
+        if (error || !data) {
+          throw error;
+        }
+
+        return data.map(book => ({
+          id: book.id,
+          title: book.title,
+          author: book.author || 'Unknown Author',
+          genre: book.genre,
+          cover_image_url: book.cover_image_url,
+          description: book.description,
+          publication_year: book.publication_year,
+          language: book.language || 'English',
+          pdf_url: book.pdf_url,
+          created_at: book.created_at,
+          price: 0, // Not applicable for library books
+          rating: 0, // Could be added later
+          isbn: book.isbn,
+          pages: book.pages,
+          author_bio: book.author_bio
+        }));
+      } catch (error) {
+        console.error('Falling back to sample books due to error:', error);
+        return sampleBooks;
       }
-
-      return (data || []).map(book => ({
-        id: book.id,
-        title: book.title,
-        author: book.author || 'Unknown Author',
-        genre: book.genre,
-        cover_image_url: book.cover_image_url,
-        description: book.description,
-        publication_year: book.publication_year,
-        language: book.language || 'English',
-        pdf_url: book.pdf_url,
-        created_at: book.created_at,
-        price: 0, // Not applicable for library books
-        rating: 0, // Could be added later
-        isbn: book.isbn,
-        pages: book.pages,
-        author_bio: book.author_bio
-      }));
     },
   });
 };
