@@ -1,9 +1,7 @@
 
 import { useState, useEffect } from 'react';
 
-const SUPABASE_URL =
-  (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
-  'https://rknxtatvlzunatpyqxro.supabase.co';
+const SUPABASE_URL = 'https://rknxtatvlzunatpyqxro.supabase.co';
 
 interface CommunityStats {
   totalSignups: number;

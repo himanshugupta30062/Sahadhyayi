@@ -155,7 +155,7 @@ export const EnhancedFriendsManager = () => {
                 </div>
                 
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {availableUsers.map((user) => (
+                  {displayUsers.map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
                       <div 
                         className="flex items-center gap-3 flex-1 cursor-pointer"
@@ -172,16 +172,21 @@ export const EnhancedFriendsManager = () => {
                           <p className="text-xs text-gray-500">@{user.username || 'user'}</p>
                         </div>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs border-orange-300 text-orange-700 hover:bg-orange-50"
-                        onClick={() => handleSendRequest(user.id)}
-                        disabled={sentRequests.has(user.id)}
-                      >
-                        <UserPlus className="w-3 h-3 mr-1" />
-                        {sentRequests.has(user.id) ? 'Sent' : 'Add'}
-                      </Button>
+                      {!friendIds.has(user.id) && !pendingRequestIds.has(user.id) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs border-orange-300 text-orange-700 hover:bg-orange-50"
+                          onClick={() => handleSendRequest(user.id)}
+                          disabled={sentRequests.has(user.id)}
+                        >
+                          <UserPlus className="w-3 h-3 mr-1" />
+                          {sentRequests.has(user.id) ? 'Sent' : 'Add'}
+                        </Button>
+                      )}
+                      {friendIds.has(user.id) && (
+                        <Badge variant="secondary" className="text-xs">Friend</Badge>
+                      )}
                     </div>
                   ))}
                 </div>

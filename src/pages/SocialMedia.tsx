@@ -11,7 +11,7 @@ import { SocialFeed } from '@/components/social/SocialFeed';
 import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
 import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
-import { FloatingChat } from '@/components/social/FloatingChat';
+
 
 const SocialMedia = () => {
   const { user } = useAuth();
@@ -125,8 +125,6 @@ const SocialMedia = () => {
           </Tabs>
         </div>
 
-        {/* Floating Chat Component */}
-        <FloatingChat />
       </div>
     </>
   );

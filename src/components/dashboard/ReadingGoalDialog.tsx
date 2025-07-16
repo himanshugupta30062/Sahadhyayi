@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,14 @@ const ReadingGoalDialog = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [goal, setGoal] = useState(12);
   const { toast } = useToast();
+
+  // Load existing goal from localStorage on component mount
+  useEffect(() => {
+    const existingGoal = localStorage.getItem('readingGoal2024');
+    if (existingGoal) {
+      setGoal(parseInt(existingGoal) || 12);
+    }
+  }, []);
 
   const handleSaveGoal = () => {
     // For now, just save to localStorage
