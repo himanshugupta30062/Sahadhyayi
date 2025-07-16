@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ChatWindow } from "@/components/social/ChatWindow";
+import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import { useAuthors, type Author } from '@/hooks/useAuthors';
@@ -22,6 +24,7 @@ const Authors = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [bookCountFilter, setBookCountFilter] = useState('all');
+  const [chatAuthor, setChatAuthor] = useState<string | null>(null);
 
   console.log('Authors page state:', { 
     authorsCount: authors.length, 
@@ -339,6 +342,7 @@ interface AuthorCardProps {
 }
 
 const AuthorCard: React.FC<AuthorCardProps> = ({ author, featured }) => {
+  const [showChat, setShowChat] = useState(false);
   const getAuthorInitials = (name: string) => {
     return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
   };
@@ -428,14 +432,25 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author, featured }) => {
             </Button>
           </Link>
           <div className="grid grid-cols-2 gap-1">
-            <Button variant="outline" size="sm" className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50">
-              <Clock className="w-3 h-3 mr-1" />
-              Schedule
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs border-green-300 text-green-700 hover:bg-green-50">
+            <ScheduleSessionDialog
+              author={author}
+              trigger={
+                <Button variant="outline" size="sm" className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Schedule
+                </Button>
+              }
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs border-green-300 text-green-700 hover:bg-green-50"
+              onClick={() => setShowChat(true)}
+            >
               <MessageSquare className="w-3 h-3 mr-1" />
               Message
             </Button>
+            <ChatWindow friendId={author.id} isOpen={showChat} onClose={() => setShowChat(false)} />
           </div>
         </div>
       </CardContent>

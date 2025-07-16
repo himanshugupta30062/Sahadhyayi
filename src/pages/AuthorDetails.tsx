@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SEO from '@/components/SEO';
+import { ChatWindow } from "@/components/social/ChatWindow";
+import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import Breadcrumb from '@/components/Breadcrumb';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useAuthors } from '@/hooks/useAuthors';
@@ -17,6 +19,7 @@ const AuthorDetails = () => {
   const { data: books, isLoading: booksLoading } = useAllLibraryBooks();
   const { data: authors = [], isLoading: authorsLoading } = useAuthors();
   const [showFullBio, setShowFullBio] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const isLoading = booksLoading || authorsLoading;
 
@@ -199,14 +202,23 @@ const AuthorDetails = () => {
                           <Heart className="w-4 h-4 mr-2" />
                           Follow Author
                         </Button>
-                        <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
+                        <Button
+                          variant="outline"
+                          className="border-green-300 text-green-700 hover:bg-green-50"
+                          onClick={() => setShowChat(true)}
+                        >
                           <MessageSquare className="w-4 h-4 mr-2" />
                           Message
                         </Button>
-                        <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          Schedule Session
-                        </Button>
+                        <ScheduleSessionDialog
+                          author={author}
+                          trigger={
+                            <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                              <Calendar className="w-4 h-4 mr-2" />
+                              Schedule Session
+                            </Button>
+                          }
+                        />
                       </div>
                     </div>
                   </div>
@@ -369,6 +381,7 @@ const AuthorDetails = () => {
           </Tabs>
         </div>
       </div>
+      <ChatWindow friendId={author.id} isOpen={showChat} onClose={() => setShowChat(false)} />
     </>
   );
 };

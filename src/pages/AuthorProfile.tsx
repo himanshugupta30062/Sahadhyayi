@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChatWindow } from "@/components/social/ChatWindow";
+import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import SEO from '@/components/SEO';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 
@@ -15,6 +17,8 @@ const AuthorProfile = () => {
   const { authorName } = useParams<{ authorName: string }>();
   const { data: books, isLoading } = useAllLibraryBooks();
   const [showFullBio, setShowFullBio] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const chatId = authorName || 'author-profile';
 
   // Find author and their books
   const { author, authorBooks } = useMemo(() => {
@@ -192,14 +196,23 @@ const AuthorProfile = () => {
                           <Users className="w-4 h-4 mr-2" />
                           Follow Author
                         </Button>
-                        <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
+                        <Button
+                          variant="outline"
+                          className="border-green-300 text-green-700 hover:bg-green-50"
+                          onClick={() => setShowChat(true)}
+                        >
                           <MessageSquare className="w-4 h-4 mr-2" />
                           Message
                         </Button>
-                        <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          Schedule Session
-                        </Button>
+                        <ScheduleSessionDialog
+                          author={{ id: chatId, name: author.name, availableSlots: [] }}
+                          trigger={
+                            <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                              <Calendar className="w-4 h-4 mr-2" />
+                              Schedule Session
+                            </Button>
+                          }
+                        />
                       </div>
                     </div>
                   </div>
@@ -387,17 +400,26 @@ const AuthorProfile = () => {
                       <p className="text-gray-700 mb-4">
                         Available for writing consultations, manuscript reviews, and literary guidance sessions.
                       </p>
-                      <Button className="w-full bg-orange-600 hover:bg-orange-700">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        Schedule Consultation
-                      </Button>
+                      <ScheduleSessionDialog
+                        author={{ id: chatId, name: author.name, availableSlots: [] }}
+                        trigger={
+                          <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Schedule Consultation
+                          </Button>
+                        }
+                      />
                     </div>
                     <div>
                       <h4 className="text-lg font-semibold mb-4">Direct Messaging</h4>
                       <p className="text-gray-700 mb-4">
                         Send a message for collaboration opportunities, interviews, or general inquiries.
                       </p>
-                      <Button variant="outline" className="w-full border-green-300 text-green-700 hover:bg-green-50">
+                      <Button
+                        variant="outline"
+                        className="w-full border-green-300 text-green-700 hover:bg-green-50"
+                        onClick={() => setShowChat(true)}
+                      >
                         <MessageSquare className="w-4 h-4 mr-2" />
                         Send Message
                       </Button>
@@ -409,6 +431,7 @@ const AuthorProfile = () => {
           </Tabs>
         </div>
       </div>
+  <ChatWindow friendId={chatId} isOpen={showChat} onClose={() => setShowChat(false)} />
     </>
   );
 };
