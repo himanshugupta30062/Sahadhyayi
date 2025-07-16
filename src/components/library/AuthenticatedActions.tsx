@@ -20,7 +20,7 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
 
   const handleAddToShelf = () => {
     if (!user) return;
-    addToBookshelf.mutate({ bookId: book.id });
+    addToBookshelf.mutate({ bookId: book.id, status: 'reading' });
   };
 
   if (!user) {

@@ -8,6 +8,7 @@ import { MapPin, MessageCircle, User, Users } from 'lucide-react';
 import { useFriends } from '@/hooks/useFriends';
 import { UserProfileModal } from './UserProfileModal';
 import { ChatWindow } from './ChatWindow';
+import { ReadingMap } from './ReadingMap';
 
 interface FriendLocation {
   id: string;
@@ -86,15 +87,19 @@ export const EnhancedReadingMap = () => {
 
   return (
     <>
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
+      {/* Enhanced Reading Map showing readers of same books */}
+      <ReadingMap />
+      
+      {/* Original Friends Location Map */}
+      <Card className="bg-white shadow-sm border-0 rounded-xl mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="w-5 h-5" />
-            Reading Map
+            Friends Near Me
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Map Container - In a real implementation, you'd use a proper map library like Leaflet or Google Maps */}
+          {/* Map Container */}
           <div className="relative bg-gradient-to-br from-blue-50 to-green-50 rounded-lg h-80 border overflow-hidden">
             {/* Mock Map Background */}
             <div className="absolute inset-0 opacity-30">
