@@ -87,52 +87,42 @@ const SocialMedia = () => {
 
         {/* Main Content */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex gap-6">
-            {/* Left Sidebar - Friends on Desktop */}
-            <div className="hidden lg:block w-80 flex-shrink-0">
+          <Tabs defaultValue="feed" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-6 bg-white shadow-sm">
+              <TabsTrigger value="feed" className="flex items-center gap-2 py-3">
+                <MessageCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">Feed</span>
+              </TabsTrigger>
+              <TabsTrigger value="friends" className="flex items-center gap-2 py-3">
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Friends</span>
+              </TabsTrigger>
+              <TabsTrigger value="map" className="flex items-center gap-2 py-3">
+                <MapPin className="w-4 h-4" />
+                <span className="hidden sm:inline">Map</span>
+              </TabsTrigger>
+              <TabsTrigger value="groups" className="flex items-center gap-2 py-3">
+                <UsersIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Groups</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="feed" className="mt-0">
+              <SocialFeed />
+            </TabsContent>
+
+            <TabsContent value="friends" className="mt-0">
               <EnhancedFriendsManager />
-            </div>
+            </TabsContent>
 
-            {/* Main Feed */}
-            <div className="flex-1 max-w-2xl mx-auto lg:mx-0">
-              <Tabs defaultValue="feed" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-4 mb-6 bg-white shadow-sm">
-                  <TabsTrigger value="feed" className="flex items-center gap-2 py-3">
-                    <MessageCircle className="w-4 h-4" />
-                    <span className="hidden sm:inline">Feed</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="friends" className="flex items-center gap-2 py-3 lg:hidden">
-                    <Users className="w-4 h-4" />
-                    <span className="hidden sm:inline">Friends</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="map" className="flex items-center gap-2 py-3">
-                    <MapPin className="w-4 h-4" />
-                    <span className="hidden sm:inline">Map</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="groups" className="flex items-center gap-2 py-3">
-                    <UsersIcon className="w-4 h-4" />
-                    <span className="hidden sm:inline">Groups</span>
-                  </TabsTrigger>
-                </TabsList>
+            <TabsContent value="map" className="mt-0">
+              <EnhancedReadingMap />
+            </TabsContent>
 
-                <TabsContent value="feed" className="mt-0">
-                  <SocialFeed />
-                </TabsContent>
-
-                <TabsContent value="friends" className="mt-0 lg:hidden">
-                  <EnhancedFriendsManager />
-                </TabsContent>
-
-                <TabsContent value="map" className="mt-0">
-                  <EnhancedReadingMap />
-                </TabsContent>
-
-                <TabsContent value="groups" className="mt-0">
-                  <ReadingGroups />
-                </TabsContent>
-              </Tabs>
-            </div>
-          </div>
+            <TabsContent value="groups" className="mt-0">
+              <ReadingGroups />
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Floating Chat Component */}

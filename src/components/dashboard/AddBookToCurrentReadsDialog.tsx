@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -110,6 +111,13 @@ const AddBookToCurrentReadsDialog = () => {
             <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
+          </div>
+          <div className="pt-2 border-t">
+            <Link to="/library" onClick={() => setIsOpen(false)}>
+              <Button variant="outline" className="w-full">
+                Browse Library Instead
+              </Button>
+            </Link>
           </div>
         </form>
       </DialogContent>

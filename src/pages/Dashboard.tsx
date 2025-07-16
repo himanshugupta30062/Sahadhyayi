@@ -12,6 +12,7 @@ import DashboardStats from '@/components/dashboard/DashboardStats';
 import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
 import CurrentReads from '@/components/dashboard/CurrentReads';
 import ReadingTracker from '@/components/dashboard/ReadingTracker';
+import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -69,7 +70,7 @@ const Dashboard = () => {
                       Add Books
                     </Button>
                   </Link>
-                  <Link to="/reviews">
+                  <Link to="/social?tab=groups">
                     <Button variant="outline" className="border-amber-200 hover:bg-amber-50">
                       <Users className="w-4 h-4 mr-2" />
                       Community
@@ -112,7 +113,7 @@ const Dashboard = () => {
                         <span className="text-sm">Browse Library</span>
                       </Button>
                     </Link>
-                    <Link to="/reviews">
+                    <Link to="/social">
                       <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
                         <Users className="w-5 h-5 text-amber-600" />
                         <span className="text-sm">Social Feed</span>
@@ -144,9 +145,7 @@ const Dashboard = () => {
                       <div className="bg-green-500 h-2 rounded-full" style={{ width: '0%' }}></div>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline" className="w-full">
-                    Set Reading Goal
-                  </Button>
+                  <ReadingGoalDialog />
                 </CardContent>
               </Card>
 
@@ -159,7 +158,7 @@ const Dashboard = () => {
                   <div className="text-center py-8 text-gray-500">
                     <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p className="text-sm mb-4">No recent activity</p>
-                    <Link to="/reviews">
+                    <Link to="/social">
                       <Button size="sm" variant="outline">
                         Join Community
                       </Button>

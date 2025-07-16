@@ -100,30 +100,9 @@ const App = () => (
                           </ProtectedRoute>
                         } 
                       />
-                      <Route 
-                        path="/author/:id" 
-                        element={
-                          <ProtectedRoute>
-                            <AuthorDetails />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/author-profile/:id" 
-                        element={
-                          <ProtectedRoute>
-                            <AuthorProfile />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/book/:id" 
-                        element={
-                          <ProtectedRoute>
-                            <BookDetails />
-                          </ProtectedRoute>
-                        } 
-                      />
+                      <Route path="/author/:id" element={<AuthorDetails />} />
+                      <Route path="/author-profile/:id" element={<AuthorProfile />} />
+                      <Route path="/book/:id" element={<BookDetails />} />
                       <Route 
                         path="/bookshelf" 
                         element={
