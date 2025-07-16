@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, MessageCircle, Search, Filter } from "lucide-react";
-import { useUserBooks, useUpdateBookStatus } from "@/hooks/useBooks";
-import type { UserBook } from "@/hooks/useBooks";
+import {
+  useUserBookshelf,
+  useUpdateBookshelfItem,
+  type BookshelfItem,
+} from "@/hooks/useUserBookshelf";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
 
@@ -15,21 +18,19 @@ const Bookshelf = () => {
   const [filterStatus, setFilterStatus] = useState("All");
   const [aiQuestion, setAiQuestion] = useState("");
 
-  const { data: userBooks = [], isLoading } = useUserBooks();
-  const updateBookStatus = useUpdateBookStatus();
+  const { data: userBooks = [], isLoading } = useUserBookshelf();
+  const updateBookStatus = useUpdateBookshelfItem();
 
   const statusColors = {
-    "reading": "bg-blue-100 text-blue-800",
-    "completed": "bg-green-100 text-green-800",
-    "want_to_read": "bg-amber-100 text-amber-800",
-    "paused": "bg-yellow-100 text-yellow-800",
-    "unread": "bg-gray-100 text-gray-800"
+    reading: "bg-blue-100 text-blue-800",
+    completed: "bg-green-100 text-green-800",
+    want_to_read: "bg-amber-100 text-amber-800",
   };
 
-  const filterOptions = ["All", "reading", "completed", "want_to_read", "paused", "unread"];
+  const filterOptions = ["All", "reading", "completed", "want_to_read"];
 
-  const filteredBooks = userBooks.filter((userBook: UserBook) => {
-    const book = userBook.books;
+  const filteredBooks = userBooks.filter((userBook: BookshelfItem) => {
+    const book = userBook.books_library;
     if (!book) return false;
     
     const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,7 +40,7 @@ const Bookshelf = () => {
   });
 
   const handleStatusChange = (userBookId: string, newStatus: string) => {
-    updateBookStatus.mutate({ id: userBookId, status: newStatus });
+    updateBookStatus.mutate({ id: userBookId, updates: { status: newStatus } });
   };
 
   const handleAiQuestion = (bookTitle: string) => {
@@ -149,7 +150,7 @@ const Bookshelf = () => {
           <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-blue-600 mb-2">
-                {userBooks.filter((book: UserBook) => book.status === "reading").length}
+                {userBooks.filter((book: BookshelfItem) => book.status === "reading").length}
               </div>
               <div className="text-blue-800 font-medium">Currently Reading</div>
             </CardContent>
@@ -157,7 +158,7 @@ const Bookshelf = () => {
           <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-green-600 mb-2">
-                {userBooks.filter((book: UserBook) => book.status === "completed").length}
+                {userBooks.filter((book: BookshelfItem) => book.status === "completed").length}
               </div>
               <div className="text-green-800 font-medium">Completed</div>
             </CardContent>
@@ -165,7 +166,7 @@ const Bookshelf = () => {
           <Card className="bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200">
             <CardContent className="p-6 text-center">
               <div className="text-3xl font-bold text-amber-600 mb-2">
-                {userBooks.filter((book: UserBook) => book.status === "want_to_read").length}
+                {userBooks.filter((book: BookshelfItem) => book.status === "want_to_read").length}
               </div>
               <div className="text-amber-800 font-medium">Want to Read</div>
             </CardContent>
@@ -201,16 +202,16 @@ const Bookshelf = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredBooks.map((userBook: UserBook) => {
-              const book = userBook.books;
+            {filteredBooks.map((userBook: BookshelfItem) => {
+              const book = userBook.books_library;
               if (!book) return null;
 
               return (
                 <Card key={userBook.id} className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-xl transition-all duration-300">
                   <CardHeader className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-                    {book.cover_url ? (
+                    {book.cover_image_url ? (
                       <img
-                        src={book.cover_url}
+                        src={book.cover_image_url}
                         alt={`Cover of ${book.title}`}
                         className="w-full sm:w-32 h-48 object-cover rounded-md"
                       />
@@ -225,8 +226,8 @@ const Bookshelf = () => {
                           <CardTitle className="text-xl text-gray-900 mb-2">{book.title}</CardTitle>
                           <p className="text-gray-600">{book.author || 'Unknown Author'}</p>
                         </div>
-                        <Badge className={statusColors[userBook.status as keyof typeof statusColors] || statusColors.unread}>
-                          {userBook.status?.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Unread'}
+                        <Badge className={statusColors[userBook.status as keyof typeof statusColors] || statusColors.want_to_read}>
+                          {userBook.status?.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Want To Read'}
                         </Badge>
                       </div>
                     </div>
@@ -237,15 +238,13 @@ const Bookshelf = () => {
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-700">Reading Status</label>
                       <select
-                        value={userBook.status || 'unread'}
+                        value={userBook.status || 'want_to_read'}
                         onChange={(e) => handleStatusChange(userBook.id, e.target.value)}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                       >
-                        <option value="unread">Unread</option>
                         <option value="want_to_read">Want to Read</option>
                         <option value="reading">Currently Reading</option>
                         <option value="completed">Completed</option>
-                        <option value="paused">Paused</option>
                       </select>
                     </div>
 
