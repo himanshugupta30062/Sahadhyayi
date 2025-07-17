@@ -82,19 +82,24 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center text-base sm:text-lg">
-          <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-amber-600" />
-          Your Current Reads ({readingProgress.length})
+            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-amber-600" />
+            Your Current Reads
         </CardTitle>
         <AddBookToCurrentReadsDialog />
       </CardHeader>
       <CardContent>
+        <div className="mb-4">
+          <p className="text-sm text-gray-600">
+            You're currently reading {readingProgress.length} book{readingProgress.length !== 1 ? 's' : ''}.
+          </p>
+        </div>
         <div className="block sm:hidden">
           {/* Mobile: Stack layout */}
           <div className="space-y-4">
             {readingProgress.map((book) => {
               const progressPercent = Math.round((book.current_page / book.total_pages) * 100);
               return (
-                <Card key={book.id} className="p-4">
+                <Card key={book.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = `/book-details/${book.id}`}>
                   <div className="flex space-x-3">
                     {book.cover_image_url ? (
                       <img
@@ -109,12 +114,17 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                     )}
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-sm truncate">{book.book_title}</h4>
-                      <p className="text-xs text-gray-500 mb-2">
-                        Page {book.current_page} of {book.total_pages}
-                      </p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="text-xs text-gray-500">
+                          Page {book.current_page} of {book.total_pages}
+                        </p>
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          Currently Reading
+                        </span>
+                      </div>
                       <Progress value={progressPercent} className="h-2 mb-2" />
                       <p className="text-xs text-amber-600 font-medium mb-2">{progressPercent}% complete</p>
-                      <Button size="sm" variant="outline" className="w-full text-xs">
+                      <Button size="sm" variant="outline" className="w-full text-xs" onClick={(e) => e.stopPropagation()}>
                         Update Progress
                       </Button>
                     </div>
@@ -133,7 +143,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                 const progressPercent = Math.round((book.current_page / book.total_pages) * 100);
                 return (
                   <CarouselItem key={book.id} className="md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-full">
+                    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = `/book-details/${book.id}`}>
                       <CardContent className="p-4">
                         <div className="flex space-x-4">
                           {book.cover_image_url ? (
@@ -149,12 +159,17 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                           )}
                           <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-sm truncate">{book.book_title}</h4>
-                            <p className="text-xs text-gray-500 mb-2">
-                              Page {book.current_page} of {book.total_pages}
-                            </p>
+                            <div className="flex items-center gap-2 mb-2">
+                              <p className="text-xs text-gray-500">
+                                Page {book.current_page} of {book.total_pages}
+                              </p>
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                Currently Reading
+                              </span>
+                            </div>
                             <Progress value={progressPercent} className="h-2 mb-2" />
                             <p className="text-xs text-amber-600 font-medium">{progressPercent}% complete</p>
-                            <Button size="sm" variant="outline" className="mt-2 text-xs">
+                            <Button size="sm" variant="outline" className="mt-2 text-xs" onClick={(e) => e.stopPropagation()}>
                               Update Progress
                             </Button>
                           </div>

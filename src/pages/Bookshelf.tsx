@@ -101,10 +101,10 @@ const Bookshelf = () => {
           }
         })}
       </script>
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen pt-20 pb-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">My Bookshelf</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 relative z-10">My Bookshelf</h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto">
             Track your reading progress, take notes, and get AI-powered assistance for better understanding.
           </p>

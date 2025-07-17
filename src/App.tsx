@@ -104,6 +104,7 @@ const App = () => (
                       <Route path="/author/:id" element={<AuthorDetails />} />
                       <Route path="/author-profile/:id" element={<AuthorProfile />} />
                       <Route path="/book/:id" element={<BookDetails />} />
+                      <Route path="/book-details/:id" element={<BookDetails />} />
                       <Route 
                         path="/bookshelf" 
                         element={

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
+import { useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,12 +14,14 @@ import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
 import CurrentReads from '@/components/dashboard/CurrentReads';
 import ReadingTracker from '@/components/dashboard/ReadingTracker';
 import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
+import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: userBooks = [] } = useUserBookshelf();
   const [readingGoal, setReadingGoal] = useState(12);
-  const [completedBooks, setCompletedBooks] = useState(0);
+  const [showGoalModal, setShowGoalModal] = useState(false);
 
   // Load reading goal from localStorage and listen for updates
   useEffect(() => {
@@ -68,7 +71,26 @@ const Dashboard = () => {
   }
 
   const userName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader';
+  
+  // Calculate reading stats from user bookshelf
+  const completedBooks = userBooks.filter(book => book.status === 'completed').length;
+  const currentlyReading = userBooks.filter(book => book.status === 'reading').length;
+  const totalBooks = completedBooks + currentlyReading;
   const progressPercentage = Math.min(100, Math.round((completedBooks / readingGoal) * 100));
+
+  // Function to check reading goal before adding books
+  const checkReadingGoal = () => {
+    if (totalBooks >= readingGoal) {
+      setShowGoalModal(true);
+      return false; // Block adding book
+    }
+    return true; // Allow adding book
+  };
+
+  // Expose function globally for other components to use
+  React.useEffect(() => {
+    (window as any).checkReadingGoal = checkReadingGoal;
+  }, [totalBooks, readingGoal]);
 
   return (
     <>
@@ -179,6 +201,19 @@ const Dashboard = () => {
                     </div>
                     <div className="text-xs text-gray-500 mt-1">{progressPercentage}% Complete</div>
                   </div>
+                  
+                  {/* Reading Progress Details */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Currently Reading:</span>
+                      <span className="font-medium">{currentlyReading} books</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Total Progress:</span>
+                      <span className="font-medium">{totalBooks} books</span>
+                    </div>
+                  </div>
+                  
                   <ReadingGoalDialog onGoalUpdate={handleGoalUpdate} />
                 </CardContent>
               </Card>
@@ -221,6 +256,15 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+        
+        {/* Reading Goal Modal */}
+        <ReadingGoalModal
+          isOpen={showGoalModal}
+          onClose={() => setShowGoalModal(false)}
+          currentGoal={readingGoal}
+          totalBooksRead={totalBooks}
+          onGoalUpdate={handleGoalUpdate}
+        />
       </div>
     </>
   );

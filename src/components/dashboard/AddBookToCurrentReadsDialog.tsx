@@ -24,6 +24,12 @@ const AddBookToCurrentReadsDialog = () => {
     e.preventDefault();
     if (!user || !bookTitle || !totalPages) return;
 
+    // Check reading goal before adding
+    const checkReadingGoal = (window as any).checkReadingGoal;
+    if (checkReadingGoal && !checkReadingGoal()) {
+      return; // Goal enforcement will show modal
+    }
+
     setIsLoading(true);
     try {
       const { error } = await supabase
