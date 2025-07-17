@@ -12,7 +12,7 @@ import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import Breadcrumb from '@/components/Breadcrumb';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
-import { useAuthors } from '@/hooks/useAuthors';
+import { useAuthors, type Author } from '@/hooks/useAuthors';
 
 const AuthorDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,7 +57,7 @@ const AuthorDetails = () => {
     if (authorBooks.length === 0) return { author: null, authorBooks: [] };
     
     const firstBook = authorBooks[0];
-    const author = {
+    const author: Author = {
       id: `book-author-${id}`,
       name: firstBook.author!,
       bio: firstBook.author_bio || `${firstBook.author} is a distinguished author whose literary works have captivated readers around the world. With a unique voice and compelling storytelling, they continue to contribute meaningfully to contemporary literature.`,
@@ -73,7 +73,7 @@ const AuthorDetails = () => {
       genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      availableSlots: [] // Add this property
+      availableSlots: []
     };
     
     return { author, authorBooks };

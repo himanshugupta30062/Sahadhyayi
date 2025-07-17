@@ -13,6 +13,24 @@ import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialo
 import SEO from '@/components/SEO';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 
+interface AuthorProfileType {
+  id: string;
+  name: string;
+  bio: string;
+  location: string;
+  website: string;
+  social: {
+    twitter: string;
+    instagram: string;
+    facebook: string;
+  };
+  followers: number;
+  rating: number;
+  totalBooks: number;
+  genres: string[];
+  availableSlots: string[];
+}
+
 const AuthorProfile = () => {
   const { authorName } = useParams<{ authorName: string }>();
   const { data: books, isLoading } = useAllLibraryBooks();
@@ -31,9 +49,9 @@ const AuthorProfile = () => {
     if (authorBooks.length === 0) return { author: null, authorBooks: [] };
     
     const firstBook = authorBooks[0];
-    const author = {
+    const author: AuthorProfileType = {
       id: chatId,
-      name: firstBook.author,
+      name: firstBook.author!,
       bio: firstBook.author_bio || `${firstBook.author} is a distinguished author whose literary works have captivated readers around the world. With a unique voice and compelling storytelling, they continue to contribute meaningfully to contemporary literature.`,
       location: 'New York, USA', // Mock data
       website: 'https://author-website.com',

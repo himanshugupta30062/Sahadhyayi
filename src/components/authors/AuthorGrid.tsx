@@ -3,7 +3,7 @@ import AuthorProfile from "./AuthorProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Author {
-  id: number;
+  id: string;
   name: string;
   genre: string;
   books: string[];

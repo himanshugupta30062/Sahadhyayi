@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface AuthorProfileProps {
   author: {
-    id: number;
+    id: string;
     name: string;
     genre: string;
     books: string[];
