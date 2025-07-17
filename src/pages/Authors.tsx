@@ -335,7 +335,7 @@ const Authors = () => {
   );
 };
 
-// Author Card Component
+// Author Card Component  
 interface AuthorCardProps {
   author: Author;
   featured: boolean;

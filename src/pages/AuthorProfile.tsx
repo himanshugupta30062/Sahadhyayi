@@ -16,18 +16,18 @@ import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 interface AuthorProfileType {
   id: string;
   name: string;
-  bio: string;
-  location: string;
-  website: string;
-  social: {
-    twitter: string;
-    instagram: string;
-    facebook: string;
-  };
-  followers: number;
-  rating: number;
-  totalBooks: number;
+  bio: string | null;
+  profile_image_url: string | null;
+  location: string | null;
+  website_url: string | null;
+  social_links: any;
   genres: string[];
+  books_count: number;
+  followers_count: number;
+  rating: number;
+  upcoming_events: number;
+  created_at: string;
+  updated_at: string;
   availableSlots: string[];
 }
 
@@ -53,18 +53,22 @@ const AuthorProfile = () => {
       id: chatId,
       name: firstBook.author!,
       bio: firstBook.author_bio || `${firstBook.author} is a distinguished author whose literary works have captivated readers around the world. With a unique voice and compelling storytelling, they continue to contribute meaningfully to contemporary literature.`,
-      location: 'New York, USA', // Mock data
-      website: 'https://author-website.com',
-      social: {
+      profile_image_url: null,
+      location: 'New York, USA',
+      website_url: 'https://author-website.com',
+      social_links: {
         twitter: '@authorhandle',
         instagram: '@authorhandle',
         facebook: 'AuthorPage'
       },
-      followers: Math.floor(Math.random() * 50000 + 10000),
+      followers_count: Math.floor(Math.random() * 50000 + 10000),
       rating: parseFloat((4.2 + Math.random() * 0.8).toFixed(1)),
-      totalBooks: authorBooks.length,
+      books_count: authorBooks.length,
       genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))],
-      availableSlots: [] // Add this property
+      upcoming_events: 3,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      availableSlots: []
     };
     
     return { author, authorBooks };
@@ -185,18 +189,18 @@ const AuthorProfile = () => {
                       </div>
                       
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-blue-600">{author.totalBooks}</div>
-                          <div className="text-sm text-gray-600">Books</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">{author.rating}</div>
-                          <div className="text-sm text-gray-600">Rating</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-purple-600">{author.followers.toLocaleString()}</div>
-                          <div className="text-sm text-gray-600">Followers</div>
-                        </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-blue-600">{author.books_count}</div>
+                            <div className="text-sm text-gray-600">Books</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-600">{author.rating}</div>
+                            <div className="text-sm text-gray-600">Rating</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-purple-600">{author.followers_count.toLocaleString()}</div>
+                            <div className="text-sm text-gray-600">Followers</div>
+                          </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-orange-600">{upcomingEvents.length}</div>
                           <div className="text-sm text-gray-600">Events</div>
@@ -247,17 +251,17 @@ const AuthorProfile = () => {
                   <CardTitle className="text-lg">Connect</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <a href={author.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  <a href={author.website_url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                     <Globe className="w-5 h-5 text-blue-600" />
                     <span className="text-sm">Website</span>
                     <ExternalLink className="w-4 h-4 ml-auto text-gray-400" />
                   </a>
-                  <a href={`https://twitter.com/${author.social.twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  <a href={`https://twitter.com/${author.social_links?.twitter?.replace('@', '') || 'authorhandle'}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="w-5 h-5 bg-blue-400 rounded"></div>
                     <span className="text-sm">Twitter</span>
                     <ExternalLink className="w-4 h-4 ml-auto text-gray-400" />
                   </a>
-                  <a href={`https://instagram.com/${author.social.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  <a href={`https://instagram.com/${author.social_links?.instagram?.replace('@', '') || 'authorhandle'}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="w-5 h-5 bg-pink-400 rounded"></div>
                     <span className="text-sm">Instagram</span>
                     <ExternalLink className="w-4 h-4 ml-auto text-gray-400" />

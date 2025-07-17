@@ -10,14 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 
-interface Author {
-  id: number;
-  name: string;
-  availableSlots: string[];
-}
-
 interface ScheduleSessionDialogProps {
-  author: Author;
+  author: {
+    id: string;
+    name: string;
+    availableSlots?: string[];
+  };
   trigger: React.ReactNode;
 }
 
