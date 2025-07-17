@@ -1,22 +1,15 @@
 
 import AuthorProfile from "./AuthorProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-interface Author {
-  id: string;
-  name: string;
-  genre: string;
-  books: string[];
-  rating: number;
-  followers: number;
-  bio: string;
-  image: string;
-  availableSlots: string[];
-  nextSession: string;
-}
+import { Author } from "@/hooks/useAuthors";
 
 interface AuthorGridProps {
-  authors: Author[];
+  authors: (Author & {
+    genre?: string;
+    books?: string[];
+    image?: string;
+    nextSession?: string;
+  })[];
 }
 
 const AuthorGrid = ({ authors }: AuthorGridProps) => {

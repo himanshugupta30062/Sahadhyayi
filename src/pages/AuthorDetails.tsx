@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar, Clock, Users, BookOpen, Star, ExternalLink, MessageSquare, Globe, User, Heart, Award } from 'lucide-react';
@@ -37,12 +38,7 @@ const AuthorDetails = () => {
       ) || [];
       
       return { 
-        author: {
-          ...dbAuthor,
-          totalBooks: authorBooks.length,
-          genres: dbAuthor.genres || [],
-          availableSlots: dbAuthor.availableSlots || []
-        }, 
+        author: dbAuthor, 
         authorBooks 
       };
     }
@@ -67,7 +63,6 @@ const AuthorDetails = () => {
       social_links: {},
       followers_count: Math.floor(Math.random() * 50000 + 10000),
       rating: 4.2 + Math.random() * 0.8,
-      totalBooks: authorBooks.length,
       books_count: authorBooks.length,
       upcoming_events: Math.floor(Math.random() * 5),
       genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))],
@@ -174,7 +169,7 @@ const AuthorDetails = () => {
                       
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-orange-600">{author.books_count || author.totalBooks}</div>
+                          <div className="text-2xl font-bold text-orange-600">{author.books_count}</div>
                           <div className="text-sm text-gray-600">Books</div>
                         </div>
                         <div className="text-center">
@@ -271,7 +266,7 @@ const AuthorDetails = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Total Books</span>
-                      <span className="font-medium">{author.books_count || author.totalBooks}</span>
+                      <span className="font-medium">{author.books_count}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Average Rating</span>

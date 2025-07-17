@@ -18,7 +18,7 @@ export interface Author {
   upcoming_events: number;
   created_at: string;
   updated_at: string;
-  availableSlots?: string[]; // Add this optional property
+  availableSlots: string[];
 }
 
 export const useAuthors = () => {

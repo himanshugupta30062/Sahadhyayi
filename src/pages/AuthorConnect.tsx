@@ -11,47 +11,71 @@ const AuthorConnect = () => {
 
   const authors = [
     {
-      id: 1,
+      id: "1",
       name: "Dr. Rajesh Kumar",
       genre: "Science Fiction",
       books: ["Quantum Dreams", "The Neural Network"],
       rating: 4.8,
-      followers: 15000,
+      followers_count: 15000,
       bio: "Award-winning science fiction author with a PhD in Physics. Specializes in hard science fiction that explores the intersection of quantum mechanics and human consciousness.",
-      image: "",
+      profile_image_url: "",
       availableSlots: ["Dec 15, 2024", "Dec 22, 2024", "Jan 5, 2025"],
-      nextSession: "Dec 15, 2024 at 3:00 PM IST"
+      nextSession: "Dec 15, 2024 at 3:00 PM IST",
+      location: "New Delhi, India",
+      website_url: null,
+      social_links: {},
+      books_count: 2,
+      upcoming_events: 3,
+      genres: ["Science Fiction", "Hard Science Fiction"],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
-      id: 2,
+      id: "2",
       name: "Priya Sharma",
       genre: "Contemporary Fiction",
       books: ["Mumbai Monsoons", "Threads of Tradition"],
       rating: 4.9,
-      followers: 22000,
+      followers_count: 22000,
       bio: "Contemporary fiction author focusing on modern Indian experiences. Her works explore themes of identity, family, and cultural transition in urban India.",
-      image: "",
+      profile_image_url: "",
       availableSlots: ["Dec 18, 2024", "Dec 25, 2024", "Jan 8, 2025"],
-      nextSession: "Dec 18, 2024 at 7:00 PM IST"
+      nextSession: "Dec 18, 2024 at 7:00 PM IST",
+      location: "Mumbai, India",
+      website_url: null,
+      social_links: {},
+      books_count: 2,
+      upcoming_events: 2,
+      genres: ["Contemporary Fiction", "Indian Literature"],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
-      id: 3,
+      id: "3",
       name: "Arjun Mehta",
       genre: "Historical Fiction",
       books: ["The Last Mughal", "Swords of Swaraj"],
       rating: 4.7,
-      followers: 18500,
+      followers_count: 18500,
       bio: "Historical fiction specialist with deep knowledge of Indian history. Brings historical events to life through compelling narratives and well-researched storytelling.",
-      image: "",
+      profile_image_url: "",
       availableSlots: ["Dec 20, 2024", "Jan 3, 2025", "Jan 10, 2025"],
-      nextSession: "Dec 20, 2024 at 4:00 PM IST"
+      nextSession: "Dec 20, 2024 at 4:00 PM IST",
+      location: "Delhi, India",
+      website_url: null,
+      social_links: {},
+      books_count: 2,
+      upcoming_events: 1,
+      genres: ["Historical Fiction", "Indian History"],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
   ];
 
   const filteredAuthors = authors.filter(author =>
     author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    author.genre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    author.books.some(book => book.toLowerCase().includes(searchTerm.toLowerCase()))
+    author.genre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    author.books?.some(book => book.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
