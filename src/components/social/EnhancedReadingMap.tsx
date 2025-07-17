@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MapPin, MessageCircle, User, Users } from 'lucide-react';
+import { MapPin, MessageCircle, User, Users, Palette } from 'lucide-react';
 import { useFriends } from '@/hooks/useFriends';
 import { UserProfileModal } from './UserProfileModal';
 import { ChatWindow } from './ChatWindow';
 import { ReadingMap } from './ReadingMap';
+import { GoogleMapsContainer } from './GoogleMapsContainer';
+import { BitmojiCreator } from './BitmojiCreator';
 
 interface FriendLocation {
   id: string;
@@ -23,6 +25,10 @@ export const EnhancedReadingMap = () => {
   const [selectedFriend, setSelectedFriend] = useState<FriendLocation | null>(null);
   const [showProfile, setShowProfile] = useState<string | null>(null);
   const [showChat, setShowChat] = useState<string | null>(null);
+  const [showBitmojiCreator, setShowBitmojiCreator] = useState(false);
+  const [userBitmoji, setUserBitmoji] = useState<string | null>(
+    localStorage.getItem('userBitmoji')
+  );
   const [mapCenter, setMapCenter] = useState({ lat: 40.7128, lng: -74.0060 }); // Default to NYC
   const [zoom, setZoom] = useState(10);
 
@@ -85,10 +91,73 @@ export const EnhancedReadingMap = () => {
     }
   };
 
+  const handleSaveBitmoji = (avatarData: string) => {
+    setUserBitmoji(avatarData);
+    localStorage.setItem('userBitmoji', avatarData);
+  };
+
+  // Convert friends data to Google Maps format
+  const googleMapsFriends = friendsWithLocation.map(friend => ({
+    id: friend.id,
+    name: friend.name,
+    avatar: friend.avatar,
+    lat: friend.lat,
+    lng: friend.lng,
+    isOnline: true,
+    currentBook: 'The Great Book', // This would come from friend data
+    bitmoji: undefined, // Friends' bitmojis would be stored in their profiles
+    lastSeen: friend.lastSeen
+  }));
+
   return (
     <>
       {/* Enhanced Reading Map showing readers of same books */}
       <ReadingMap />
+      
+      {/* Avatar Customization */}
+      <Card className="bg-white shadow-sm border-0 rounded-xl mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="w-5 h-5" />
+            Your Reading Avatar
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-orange-200">
+                {userBitmoji ? (
+                  <img src={userBitmoji} alt="Your avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-orange-200 to-orange-300 flex items-center justify-center">
+                    <User className="w-8 h-8 text-orange-600" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Customize Your Avatar</h3>
+                <p className="text-sm text-gray-600">Create a unique reading persona</p>
+              </div>
+            </div>
+            <Button 
+              onClick={() => setShowBitmojiCreator(true)}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              <Palette className="w-4 h-4 mr-2" />
+              {userBitmoji ? 'Edit Avatar' : 'Create Avatar'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Google Maps Integration */}
+      <div className="mt-6">
+        <GoogleMapsContainer
+          friends={googleMapsFriends}
+          onFriendClick={handleFriendClick}
+          userLocation={mapCenter}
+        />
+      </div>
       
       {/* Original Friends Location Map */}
       <Card className="bg-white shadow-sm border-0 rounded-xl mt-6">
@@ -253,6 +322,14 @@ export const EnhancedReadingMap = () => {
           onClose={() => setShowChat(null)}
         />
       )}
+
+      {/* Bitmoji Creator */}
+      <BitmojiCreator
+        isOpen={showBitmojiCreator}
+        onClose={() => setShowBitmojiCreator(false)}
+        onSave={handleSaveBitmoji}
+        currentAvatar={userBitmoji || undefined}
+      />
     </>
   );
 };

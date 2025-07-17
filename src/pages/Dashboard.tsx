@@ -88,7 +88,7 @@ const Dashboard = () => {
   };
 
   // Expose function globally for other components to use
-  React.useEffect(() => {
+  useEffect(() => {
     (window as any).checkReadingGoal = checkReadingGoal;
   }, [totalBooks, readingGoal]);
 
