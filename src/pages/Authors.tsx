@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, RefreshCw, Star, Users, BookOpen } from 'lucide-react';
@@ -346,7 +345,6 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author, featured }) => {
   const getAuthorInitials = (name: string) => {
     return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
   };
-
 
   return (
     <Card className={`group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-orange-200 ${featured ? 'ring-2 ring-orange-300' : ''}`}>

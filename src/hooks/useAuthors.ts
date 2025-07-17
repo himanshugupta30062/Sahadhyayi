@@ -18,6 +18,7 @@ export interface Author {
   upcoming_events: number;
   created_at: string;
   updated_at: string;
+  availableSlots?: string[]; // Add this optional property
 }
 
 export const useAuthors = () => {
@@ -40,7 +41,11 @@ export const useAuthors = () => {
       }
 
       console.log('Authors fetched successfully:', data.length);
-      return data as Author[];
+      // Add availableSlots to each author from the database
+      return data.map(author => ({
+        ...author,
+        availableSlots: [] // Default empty array for available slots
+      })) as Author[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes

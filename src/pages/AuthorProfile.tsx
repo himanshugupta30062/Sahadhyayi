@@ -32,6 +32,7 @@ const AuthorProfile = () => {
     
     const firstBook = authorBooks[0];
     const author = {
+      id: chatId,
       name: firstBook.author,
       bio: firstBook.author_bio || `${firstBook.author} is a distinguished author whose literary works have captivated readers around the world. With a unique voice and compelling storytelling, they continue to contribute meaningfully to contemporary literature.`,
       location: 'New York, USA', // Mock data
@@ -42,9 +43,10 @@ const AuthorProfile = () => {
         facebook: 'AuthorPage'
       },
       followers: Math.floor(Math.random() * 50000 + 10000),
-      rating: (4.2 + Math.random() * 0.8).toFixed(1),
+      rating: parseFloat((4.2 + Math.random() * 0.8).toFixed(1)),
       totalBooks: authorBooks.length,
-      genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))]
+      genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))],
+      availableSlots: [] // Add this property
     };
     
     return { author, authorBooks };
@@ -205,7 +207,7 @@ const AuthorProfile = () => {
                           Message
                         </Button>
                         <ScheduleSessionDialog
-                          author={{ id: chatId, name: author.name, availableSlots: [] }}
+                          author={author}
                           trigger={
                             <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
                               <Calendar className="w-4 h-4 mr-2" />
@@ -222,7 +224,6 @@ const AuthorProfile = () => {
 
             {/* Quick Stats & Links */}
             <div className="space-y-6">
-              {/* Social Links */}
               <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
                 <CardHeader>
                   <CardTitle className="text-lg">Connect</CardTitle>
@@ -246,7 +247,6 @@ const AuthorProfile = () => {
                 </CardContent>
               </Card>
 
-              {/* Location Map Placeholder */}
               <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
                 <CardHeader>
                   <CardTitle className="text-lg">Location</CardTitle>
@@ -323,7 +323,7 @@ const AuthorProfile = () => {
                             <Star className="w-4 h-4 text-yellow-500 fill-current" />
                             <span className="text-sm text-gray-600">4.2 (120 reviews)</span>
                           </div>
-                          <Link to={`/books/${book.id}`}>
+                          <Link to={`/book/${book.id}`}>
                             <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
                               View Book
                             </Button>
@@ -401,7 +401,7 @@ const AuthorProfile = () => {
                         Available for writing consultations, manuscript reviews, and literary guidance sessions.
                       </p>
                       <ScheduleSessionDialog
-                        author={{ id: chatId, name: author.name, availableSlots: [] }}
+                        author={author}
                         trigger={
                           <Button className="w-full bg-orange-600 hover:bg-orange-700">
                             <Calendar className="w-4 h-4 mr-2" />

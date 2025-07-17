@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +41,10 @@ const Bookshelf = () => {
   });
 
   const handleStatusChange = (userBookId: string, newStatus: string) => {
-    updateBookStatus.mutate({ id: userBookId, updates: { status: newStatus } });
+    // Type guard to ensure newStatus is a valid status
+    if (newStatus === 'want_to_read' || newStatus === 'reading' || newStatus === 'completed') {
+      updateBookStatus.mutate({ id: userBookId, updates: { status: newStatus } });
+    }
   };
 
   const handleAiQuestion = (bookTitle: string) => {

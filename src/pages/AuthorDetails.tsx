@@ -40,7 +40,8 @@ const AuthorDetails = () => {
         author: {
           ...dbAuthor,
           totalBooks: authorBooks.length,
-          genres: dbAuthor.genres || []
+          genres: dbAuthor.genres || [],
+          availableSlots: dbAuthor.availableSlots || []
         }, 
         authorBooks 
       };
@@ -71,7 +72,8 @@ const AuthorDetails = () => {
       upcoming_events: Math.floor(Math.random() * 5),
       genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))],
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      availableSlots: [] // Add this property
     };
     
     return { author, authorBooks };
@@ -344,7 +346,7 @@ const AuthorDetails = () => {
                             <Star className="w-4 h-4 text-yellow-500 fill-current" />
                             <span className="text-sm text-gray-600">4.2 (120 reviews)</span>
                           </div>
-                          <Link to={`/books/${book.id}`}>
+                          <Link to={`/book/${book.id}`}>
                             <Button size="sm" className="w-full bg-orange-600 hover:bg-orange-700">
                               View Book
                             </Button>
