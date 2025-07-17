@@ -16,33 +16,33 @@ const Index = () => {
   const features = [
     {
       icon: BookOpen,
-      title: "Personal Digital Bookshelf",
-      description: "Track your reading progress, manage your book collection, and read directly on our platform with advanced reading tools."
+      title: "Personal Bookshelf",
+      description: "Track and manage your reading journey effortlessly."
     },
     {
       icon: Users,
-      title: "Global Reading Communities",
-      description: "Join book-specific discussion groups and connect with passionate readers from around the world."
+      title: "Global Reading Groups",
+      description: "Engage in book discussions worldwide."
     },
     {
       icon: Map,
-      title: "Local Reader Discovery",
-      description: "Discover readers near you and find local book communities through our interactive reader map."
+      title: "Find Local Readers",
+      description: "Discover local book lovers through our interactive map."
     },
     {
       icon: Calendar,
-      title: "Author Connect Sessions",
-      description: "Schedule live Q&A sessions and conferences with your favorite authors and literary experts."
+      title: "Author Connect",
+      description: "Participate in live sessions with your favorite authors."
     },
     {
       icon: Star,
-      title: "Community Reviews & Ratings",
-      description: "Share your thoughts and discover great books through our comprehensive community review system."
+      title: "Community Reviews",
+      description: "Read authentic book reviews from fellow readers."
     },
     {
       icon: Headphones,
-      title: "AI-Powered Reading Assistant",
-      description: "Get instant explanations for any word, paragraph, or chapter while reading with our intelligent AI companion."
+      title: "AI Reading Assistant",
+      description: "Instant definitions and explanations as you read."
     }
   ];
 
@@ -96,23 +96,23 @@ const Index = () => {
             />
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Welcome to
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600"> Sahadhyayi</span>
-            <br />
-            <span className="text-3xl md:text-4xl">Your Fellow Readers Community</span>
+            Rediscover the Joy of
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600"> Deep Reading</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-700 mb-4 leading-relaxed">
-            <strong>Sahadhyayi</strong> (सहाध्यायी) means "fellow reader" or "study companion" in Sanskrit.
+          <p className="text-xl md:text-2xl text-gray-700 mb-2 leading-relaxed">
+            Connect, read, and grow with thousands of fellow readers worldwide.
           </p>
-          <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-            Reviving the transformative power of deep reading through community, technology, and shared knowledge.
-            Join thousands of fellow readers building a healthier, more focused reading culture together.
+          <p className="text-lg md:text-xl text-gray-600 mb-2 leading-relaxed">
+            Join <strong>Sahadhyayi</strong>—the digital community bringing meaningful reading back into focus.
+          </p>
+          <p className="text-base md:text-lg text-gray-500 mb-8 italic">
+            Because reading deeply is reading differently.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/signup">
               <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 text-lg shadow-lg">
                 <UserPlus className="w-5 h-5 mr-2" />
-                Join Sahadhyayi Free
+                Join Our Reading Community (Free!)
               </Button>
             </Link>
             <Link to="/signin">
@@ -139,22 +139,50 @@ const Index = () => {
               </p>
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Why We Chose the Name Sahadhyayi</h3>
               <p className="text-lg text-gray-700 leading-relaxed">
-                Our platform embodies this ancient wisdom by creating a digital space where readers come together as 
-                study companions. When you join Sahadhyayi, you're not just accessing books - you're becoming part of 
-                a community of fellow readers who support each other's intellectual journey. 
+                Sahadhyayi creates a digital home for readers to connect, share insights, and support each other's reading journey.
                 <Link to="/about" className="text-orange-600 hover:text-orange-700 font-medium ml-1">Learn more about our mission</Link>.
               </p>
             </div>
             <div className="bg-gradient-to-br from-orange-100 to-red-100 p-8 rounded-2xl backdrop-blur-sm border border-orange-200 shadow-lg">
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Why Choose Sahadhyayi for Reading</h3>
-              <ul className="space-y-3 text-gray-700">
-                <li>• <strong>Fellow Readers:</strong> Connect with study companions worldwide</li>
-                <li>• <strong>Deep Reading:</strong> Focus on meaningful, immersive reading experiences</li>
-                <li>• <strong>Community Learning:</strong> Share insights and grow together</li>
-                <li>• <strong>Ancient Wisdom:</strong> Modern technology meets traditional study values</li>
-                <li>• <strong>Knowledge Sharing:</strong> Learn from fellow readers' perspectives</li>
-                <li>• <strong>Lasting Connections:</strong> Build relationships through shared reading</li>
-              </ul>
+              <div className="space-y-3 text-gray-700">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">🌎</span>
+                  <div>
+                    <strong>Global Community:</strong> Meet readers who share your passion.
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">📚</span>
+                  <div>
+                    <strong>Deep Reading:</strong> Rediscover focused, meaningful reading.
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">🤝</span>
+                  <div>
+                    <strong>Collaborative Learning:</strong> Grow through shared insights.
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">🕯️</span>
+                  <div>
+                    <strong>Ancient Wisdom, Modern Tech:</strong> Blending tradition with innovation.
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">🗣️</span>
+                  <div>
+                    <strong>Shared Perspectives:</strong> Gain diverse insights from readers worldwide.
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">💬</span>
+                  <div>
+                    <strong>Lasting Connections:</strong> Build friendships through shared reading.
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -196,9 +224,9 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">Comprehensive Sahadhyayi Platform Features</h2>
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">Explore Sahadhyayi's Powerful Tools</h2>
           <p className="text-xl text-gray-600 text-center mb-12 max-w-3xl mx-auto">
-            Discover powerful tools designed to enhance your reading experience and connect you with fellow readers in our global Sahadhyayi community.
+            Our features are designed to help you read better, understand deeper, and connect meaningfully.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => {
@@ -277,10 +305,9 @@ const Index = () => {
       {/* CTA Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-orange-600 to-red-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Join the Sahadhyayi Community?</h2>
+          <h2 className="text-4xl font-bold mb-6">Ready to Start Your Reading Journey?</h2>
           <p className="text-xl mb-8 opacity-90">
-            Become a Sahadhyayi today and experience what it means to have fellow readers as your study companions.
-            Join our global community dedicated to deep, meaningful reading and intellectual growth together.
+            Join Sahadhyayi today and experience the joy of reading together.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/signup">

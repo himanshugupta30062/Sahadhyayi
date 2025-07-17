@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Users, Mail, Heart, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ const GlobalFooter = () => {
               <h3 className="text-xl font-bold">Sahadhyayi</h3>
             </div>
             <p className="text-orange-100 text-sm mb-4">
-              Reviving the transformative power of deep reading through community, technology, and shared knowledge.
+              Rediscover the joy of deep reading through community, technology, and shared knowledge.
             </p>
             
             {/* Community Stats Button */}
@@ -85,7 +86,7 @@ const GlobalFooter = () => {
                 <div className="flex items-center text-sm text-orange-100">
                   <TrendingUp className="w-4 h-4 mr-2 text-green-300" />
                   <span>
-                    <span className="font-bold text-white">{stats.totalVisits.toLocaleString()}</span> total website visits
+                    <span className="font-bold text-white">{stats.totalVisits.toLocaleString()}</span> website visitors
                   </span>
                 </div>
                 <p className="text-xs text-orange-200">Growing every day worldwide!</p>
@@ -103,12 +104,12 @@ const GlobalFooter = () => {
             )}
           </div>
 
-          {/* Quick Links */}
+          {/* Explore Sahadhyayi */}
           <div>
-            <h4 className="font-semibold text-lg mb-4">Explore</h4>
+            <h4 className="font-semibold text-lg mb-4">Explore Sahadhyayi</h4>
             <ul className="space-y-2 text-orange-100">
               <li>
-                <a href="/library" className="hover:text-white transition-colors flex items-center">
+                <a href="/library" className="hover:text-white transition-colors">
                   Digital Library
                 </a>
               </li>
@@ -120,11 +121,6 @@ const GlobalFooter = () => {
               <li>
                 <a href="/groups" className="hover:text-white transition-colors">
                   Reading Groups
-                </a>
-              </li>
-              <li>
-                <a href="/reviews" className="hover:text-white transition-colors">
-                  Community
                 </a>
               </li>
               <li>
@@ -140,8 +136,8 @@ const GlobalFooter = () => {
             <h4 className="font-semibold text-lg mb-4">Support</h4>
             <ul className="space-y-2 text-orange-100">
               <li>
-                <a href="/about" className="hover:text-white transition-colors">
-                  About Us
+                <a href="/help" className="hover:text-white transition-colors">
+                  Help Center
                 </a>
               </li>
               <li>
@@ -154,22 +150,22 @@ const GlobalFooter = () => {
                 </button>
               </li>
               <li>
-                <a href="/help" className="hover:text-white transition-colors">
-                  Help Center
-                </a>
-              </li>
-              <li>
                 <a href="/feedback" className="hover:text-white transition-colors">
-                  Send Feedback
+                  Feedback
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Legal & Policies */}
+          {/* Company */}
           <div>
-            <h4 className="font-semibold text-lg mb-4">Legal</h4>
+            <h4 className="font-semibold text-lg mb-4">Company</h4>
             <ul className="space-y-2 text-orange-100">
+              <li>
+                <a href="/about" className="hover:text-white transition-colors">
+                  About Us
+                </a>
+              </li>
               <li>
                 <a href="/privacy" className="hover:text-white transition-colors">
                   Privacy Policy

@@ -1,8 +1,6 @@
 
 import { useState, useEffect } from 'react';
 
-const SUPABASE_URL = 'https://rknxtatvlzunatpyqxro.supabase.co';
-
 interface CommunityStats {
   totalSignups: number;
   totalVisits: number;
@@ -11,11 +9,11 @@ interface CommunityStats {
 
 export const useCommunityStats = () => {
   const [stats, setStats] = useState<CommunityStats>({
-    totalSignups: 15847,
-    totalVisits: 125000,
+    totalSignups: 0,
+    totalVisits: 0,
     lastUpdated: new Date().toISOString()
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchStats = async () => {
@@ -23,34 +21,37 @@ export const useCommunityStats = () => {
     setError(null);
 
     try {
-      const signupsResponse = await fetch(
-        `${SUPABASE_URL}/functions/v1/community-stats`
-      );
+      // Try to fetch from the community stats API
+      const response = await fetch('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/community-stats', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (!signupsResponse.ok) {
-        throw new Error('Failed to fetch community stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats({
+          totalSignups: data.totalSignups || 0,
+          totalVisits: data.totalVisits || 0,
+          lastUpdated: new Date().toISOString()
+        });
+      } else {
+        // If API fails, show 0 values
+        setStats({
+          totalSignups: 0,
+          totalVisits: 0,
+          lastUpdated: new Date().toISOString()
+        });
       }
-
-      const signupsData: CommunityStats = await signupsResponse.json();
-
-      const visitsResponse = await fetch(
-        `${SUPABASE_URL}/functions/v1/website-clicks`
-      );
-
-      if (!visitsResponse.ok) {
-        throw new Error('Failed to record website visit');
-      }
-
-      const visitData = (await visitsResponse.json()) as { totalVisits: number };
-
+    } catch (err) {
+      console.error('Failed to fetch community stats:', err);
+      // Show 0 values if API fails
       setStats({
-        totalSignups: signupsData.totalSignups,
-        totalVisits: visitData.totalVisits,
+        totalSignups: 0,
+        totalVisits: 0,
         lastUpdated: new Date().toISOString()
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      console.error('Failed to fetch community stats:', err);
+      setError('Failed to load community stats');
     } finally {
       setIsLoading(false);
     }
@@ -58,8 +59,7 @@ export const useCommunityStats = () => {
 
   const joinCommunity = async () => {
     try {
-      // Simulate joining the community
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/community-stats`, {
+      const response = await fetch('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/community-stats', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
