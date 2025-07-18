@@ -50,28 +50,9 @@ const Dashboard = () => {
     setReadingGoal(newGoal);
   };
 
-  if (profileLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-4 sm:p-8">
-        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-          <Skeleton className="h-20 sm:h-24 w-full" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              <Skeleton className="h-48 sm:h-64 w-full" />
-              <Skeleton className="h-64 sm:h-96 w-full" />
-            </div>
-            <div className="space-y-4 sm:space-y-6">
-              <Skeleton className="h-32 w-full" />
-              <Skeleton className="h-48 w-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const userName =
+    profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader';
 
-  const userName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader';
-  
   // Calculate reading stats from user bookshelf
   const completedBooks = userBooks.filter(book => book.status === 'completed').length;
   const currentlyReading = userBooks.filter(book => book.status === 'reading').length;
@@ -91,6 +72,26 @@ const Dashboard = () => {
   useEffect(() => {
     (window as any).checkReadingGoal = checkReadingGoal;
   }, [totalBooks, readingGoal]);
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+          <Skeleton className="h-20 sm:h-24 w-full" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+              <Skeleton className="h-48 sm:h-64 w-full" />
+              <Skeleton className="h-64 sm:h-96 w-full" />
+            </div>
+            <div className="space-y-4 sm:space-y-6">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-48 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
