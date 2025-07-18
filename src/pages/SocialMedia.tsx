@@ -12,7 +12,6 @@ import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
 import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
 
-
 const SocialMedia = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -38,7 +37,7 @@ const SocialMedia = () => {
         />
         
         <Dialog open={showAuthModal} onOpenChange={handleModalClose}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md mx-4">
             <DialogHeader>
               <DialogTitle className="text-center text-xl font-bold text-gray-900">
                 Welcome to Sahadhyayi's Social Reading Community!
@@ -79,31 +78,31 @@ const SocialMedia = () => {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
         {/* Header */}
         <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Social Community</h1>
-            <p className="text-gray-600 mt-2">Connect with fellow readers and share your reading journey</p>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Social Community</h1>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base">Connect with fellow readers and share your reading journey</p>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <Tabs defaultValue="feed" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6 bg-white shadow-sm">
-              <TabsTrigger value="feed" className="flex items-center gap-2 py-3">
-                <MessageCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Feed</span>
+            <TabsList className="grid w-full grid-cols-4 mb-4 sm:mb-6 bg-white shadow-sm">
+              <TabsTrigger value="feed" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
+                <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Feed</span>
               </TabsTrigger>
-              <TabsTrigger value="friends" className="flex items-center gap-2 py-3">
-                <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">Friends</span>
+              <TabsTrigger value="friends" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Friends</span>
               </TabsTrigger>
-              <TabsTrigger value="map" className="flex items-center gap-2 py-3">
-                <MapPin className="w-4 h-4" />
-                <span className="hidden sm:inline">Map</span>
+              <TabsTrigger value="map" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Map</span>
               </TabsTrigger>
-              <TabsTrigger value="groups" className="flex items-center gap-2 py-3">
-                <UsersIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">Groups</span>
+              <TabsTrigger value="groups" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
+                <UsersIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Groups</span>
               </TabsTrigger>
             </TabsList>
 
@@ -124,7 +123,6 @@ const SocialMedia = () => {
             </TabsContent>
           </Tabs>
         </div>
-
       </div>
     </>
   );

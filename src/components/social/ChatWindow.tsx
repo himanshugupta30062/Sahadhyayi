@@ -70,34 +70,34 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md h-[500px] flex flex-col p-0">
-        <DialogHeader className="p-4 pb-2 border-b">
+      <DialogContent className="sm:max-w-md h-[500px] flex flex-col p-0 mx-4">
+        <DialogHeader className="p-3 sm:p-4 pb-2 border-b shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="w-8 h-8">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <Avatar className="w-7 h-7 sm:w-8 sm:h-8 shrink-0">
                 <AvatarImage src={friendProfile?.profile_photo_url} />
-                <AvatarFallback className="text-sm bg-orange-100 text-orange-700">
+                <AvatarFallback className="text-xs sm:text-sm bg-orange-100 text-orange-700">
                   {getInitials(friendProfile?.full_name || '')}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <DialogTitle className="text-sm font-medium">
+              <div className="min-w-0">
+                <DialogTitle className="text-sm font-medium truncate">
                   {friendProfile?.full_name}
                 </DialogTitle>
-                <p className="text-xs text-gray-500">@{friendProfile?.username}</p>
+                <p className="text-xs text-gray-500 truncate">@{friendProfile?.username}</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0 shrink-0">
               <X className="w-4 h-4" />
             </Button>
           </div>
         </DialogHeader>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0">
           {messages.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <p className="text-sm">No messages yet. Start the conversation!</p>
+            <div className="text-center text-gray-500 py-6 sm:py-8">
+              <p className="text-xs sm:text-sm">No messages yet. Start the conversation!</p>
             </div>
           ) : (
             messages.map((msg) => (
@@ -105,16 +105,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
                 key={msg.id}
                 className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-[70%] ${msg.sender_id === user?.id ? 'order-2' : 'order-1'}`}>
+                <div className={`max-w-[75%] sm:max-w-[70%] ${msg.sender_id === user?.id ? 'order-2' : 'order-1'}`}>
                   {msg.sender_id !== user?.id && (
                     <div className="flex items-center gap-2 mb-1">
-                      <Avatar className="w-5 h-5">
+                      <Avatar className="w-4 h-4 sm:w-5 sm:h-5">
                         <AvatarImage src={msg.sender_profile?.profile_photo_url} />
                         <AvatarFallback className="text-xs bg-gray-100">
                           {getInitials(msg.sender_profile?.full_name || '')}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs text-gray-600">{msg.sender_profile?.full_name}</span>
+                      <span className="text-xs text-gray-600 truncate">{msg.sender_profile?.full_name}</span>
                     </div>
                   )}
                   <div
@@ -124,7 +124,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
                         : 'bg-gray-100 text-gray-900'
                     }`}
                   >
-                    <p className="text-sm">{msg.content}</p>
+                    <p className="text-sm break-words">{msg.content}</p>
                   </div>
                   <p className={`text-xs text-gray-500 mt-1 ${msg.sender_id === user?.id ? 'text-right' : 'text-left'}`}>
                     {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
@@ -137,19 +137,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
         </div>
 
         {/* Message Input */}
-        <div className="p-4 border-t">
+        <div className="p-3 sm:p-4 border-t shrink-0">
           <form onSubmit={handleSendMessage} className="flex gap-2">
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type a message..."
-              className="flex-1"
+              className="flex-1 text-sm border-orange-200 focus:border-orange-300"
               autoFocus
             />
             <Button 
               type="submit" 
               disabled={!message.trim() || sendMessage.isPending}
-              className="bg-orange-600 hover:bg-orange-700"
+              className="bg-orange-600 hover:bg-orange-700 shrink-0 px-3"
+              size="sm"
             >
               <Send className="w-4 h-4" />
             </Button>

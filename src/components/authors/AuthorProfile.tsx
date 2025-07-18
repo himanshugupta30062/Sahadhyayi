@@ -108,7 +108,7 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
               }
             />
             
-            {/* Message Dialog with proper button sizing */}
+            {/* Fixed Message Dialog - single clean modal */}
             <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
@@ -120,23 +120,27 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
                   Message
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Send Message to {author.name}</DialogTitle>
+              <DialogContent className="sm:max-w-md mx-4">
+                <DialogHeader className="space-y-3">
+                  <DialogTitle className="text-lg font-semibold">
+                    Send Message to {author.name}
+                  </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="message">Your Message</Label>
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="text-sm font-medium">
+                      Your Message
+                    </Label>
                     <Textarea
                       id="message"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Write your message to the author..."
                       rows={5}
-                      className="resize-none"
+                      className="resize-none border-orange-200 focus:border-orange-400"
                     />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 pt-2">
                     <Button 
                       onClick={handleSendMessage}
                       disabled={!message.trim()}
@@ -148,12 +152,13 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
                     <Button 
                       variant="outline" 
                       onClick={() => setIsMessageDialogOpen(false)}
+                      className="border-orange-300 text-orange-700 hover:bg-orange-50"
                     >
                       Cancel
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-500 text-center">
-                    Direct messaging feature is coming soon! This is a preview.
+                  <p className="text-xs text-gray-500 text-center bg-orange-50 p-2 rounded">
+                    💡 Direct messaging feature is coming soon! This is a preview.
                   </p>
                 </div>
               </DialogContent>
