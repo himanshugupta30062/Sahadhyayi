@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 declare global {
   interface Window {
     google: any;
-    initMap: () => void;
+    initGoogleMap: () => void;
   }
 }
 
@@ -39,6 +39,8 @@ export const ModernGoogleMap: React.FC = () => {
   const [currentBook, setCurrentBook] = useState('');
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
 
+  const GOOGLE_MAPS_API_KEY = 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y';
+
   // Load readers from Supabase with real-time updates
   useEffect(() => {
     const fetchReaders = async () => {
@@ -53,6 +55,7 @@ export const ModernGoogleMap: React.FC = () => {
           return;
         }
 
+        console.log('Fetched readers:', data);
         setReaders(data || []);
         
         // Update markers when readers change and map is ready
@@ -72,7 +75,8 @@ export const ModernGoogleMap: React.FC = () => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'readers' }, 
         () => {
-          fetchReaders(); // Refetch data when any change occurs
+          console.log('Real-time update received');
+          fetchReaders();
         }
       )
       .subscribe();
@@ -83,9 +87,14 @@ export const ModernGoogleMap: React.FC = () => {
   }, [map]);
 
   const updateMarkersOnMap = (readersData: Reader[]) => {
-    if (!map || !window.google) return;
+    if (!map || !window.google) {
+      console.log('Map or Google not ready for markers');
+      return;
+    }
 
     try {
+      console.log('Updating markers for readers:', readersData);
+      
       // Clear existing markers
       markers.forEach(marker => {
         if (marker.setMap) {
@@ -150,19 +159,38 @@ export const ModernGoogleMap: React.FC = () => {
       });
 
       setMarkers(newMarkers);
+      console.log('Added markers:', newMarkers.length);
     } catch (error) {
       console.error('Failed to update markers:', error);
     }
   };
 
-  const initializeMap = () => {
-    if (!mapRef.current || !window.google) return;
+  const initializeMap = async () => {
+    if (!mapRef.current) {
+      console.error('Map container not found');
+      return;
+    }
 
     try {
+      console.log('Initializing map...');
+      
+      // Wait for Google Maps to be available
+      if (!window.google || !window.google.maps) {
+        console.error('Google Maps not loaded');
+        return;
+      }
+
       const mapOptions = {
         center: { lat: 28.6139, lng: 77.2090 }, // New Delhi
         zoom: 12,
         mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+        disableDefaultUI: false,
+        zoomControl: true,
+        mapTypeControl: true,
+        scaleControl: true,
+        streetViewControl: true,
+        rotateControl: true,
+        fullscreenControl: true,
         styles: [
           {
             featureType: 'poi',
@@ -191,14 +219,19 @@ export const ModernGoogleMap: React.FC = () => {
 
   const loadGoogleMapsScript = () => {
     return new Promise<void>((resolve, reject) => {
+      console.log('Loading Google Maps script...');
+      
       // Check if Google Maps is already loaded
       if (window.google && window.google.maps) {
+        console.log('Google Maps already loaded');
         resolve();
         return;
       }
 
       // Check if script is already loading
-      if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+      const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
+      if (existingScript) {
+        console.log('Google Maps script already exists, waiting for load...');
         // Wait for it to load
         const checkLoaded = setInterval(() => {
           if (window.google && window.google.maps) {
@@ -206,22 +239,34 @@ export const ModernGoogleMap: React.FC = () => {
             resolve();
           }
         }, 100);
+        
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          clearInterval(checkLoaded);
+          reject(new Error('Google Maps script loading timeout'));
+        }, 10000);
         return;
       }
 
       // Create and load the script
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y&callback=initMap`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initGoogleMap&libraries=places`;
       script.async = true;
       script.defer = true;
       
       // Set up global callback
-      window.initMap = () => {
+      window.initGoogleMap = () => {
+        console.log('Google Maps callback triggered');
         resolve();
       };
       
-      script.onerror = () => {
+      script.onerror = (error) => {
+        console.error('Failed to load Google Maps script:', error);
         reject(new Error('Failed to load Google Maps script'));
+      };
+      
+      script.onload = () => {
+        console.log('Google Maps script loaded');
       };
       
       document.head.appendChild(script);
@@ -232,11 +277,14 @@ export const ModernGoogleMap: React.FC = () => {
   useEffect(() => {
     const loadMap = async () => {
       try {
+        setIsLoading(true);
         await loadGoogleMapsScript();
-        initializeMap();
+        console.log('Script loaded, initializing map...');
+        await initializeMap();
       } catch (error) {
         console.error('Error loading Google Maps:', error);
         setIsLoading(false);
+        toast.error('Failed to load Google Maps. Please refresh the page.');
       }
     };
 
@@ -357,6 +405,12 @@ export const ModernGoogleMap: React.FC = () => {
               <p className="text-gray-600 mb-4">
                 Unable to load the interactive map. Please check your internet connection and try again.
               </p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                Refresh Page
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -378,7 +432,12 @@ export const ModernGoogleMap: React.FC = () => {
         <div 
           ref={mapRef} 
           className="w-full h-[500px] rounded-xl border border-gray-200 overflow-hidden shadow-lg"
-          style={{ minHeight: '500px', height: '500px' }}
+          style={{ 
+            minHeight: '500px', 
+            height: '500px',
+            width: '100%',
+            display: 'block'
+          }}
         />
         
         <div className="flex justify-center">
