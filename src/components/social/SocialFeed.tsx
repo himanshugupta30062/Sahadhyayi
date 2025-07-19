@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { FeedComposer } from './FeedComposer';
 import { CommentSection } from './CommentSection';
 import { ShareModal } from './ShareModal';
+import { PostViewerModal } from './PostViewerModal';
 
 interface Post {
   id: string;
@@ -80,6 +81,7 @@ export const SocialFeed = () => {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [showComments, setShowComments] = useState<{[key: string]: boolean}>({});
+  const [postViewerOpen, setPostViewerOpen] = useState(false);
   const { toast } = useToast();
 
   const handleLike = (postId: string) => {
@@ -115,6 +117,11 @@ export const SocialFeed = () => {
   const handleShare = (post: Post) => {
     setSelectedPost(post);
     setShareModalOpen(true);
+  };
+
+  const handlePostClick = (post: Post) => {
+    setSelectedPost(post);
+    setPostViewerOpen(true);
   };
 
   const toggleComments = (postId: string) => {
@@ -163,8 +170,11 @@ export const SocialFeed = () => {
               </Button>
             </div>
 
-            {/* Post Content */}
-            <div className="mb-4">
+            {/* Post Content - Clickable */}
+            <div 
+              className="mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+              onClick={() => handlePostClick(post)}
+            >
               <p className="text-gray-800 mb-3">{post.content}</p>
               
               {/* Book Card */}
@@ -194,7 +204,10 @@ export const SocialFeed = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleLike(post.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLike(post.id);
+                }}
                 className={`${post.isLiked ? 'text-red-500 hover:text-red-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 <Heart className={`w-4 h-4 mr-1 ${post.isLiked ? 'fill-current' : ''}`} />
@@ -204,7 +217,10 @@ export const SocialFeed = () => {
                 variant="ghost" 
                 size="sm" 
                 className="text-gray-500 hover:text-gray-700"
-                onClick={() => toggleComments(post.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleComments(post.id);
+                }}
               >
                 <MessageCircle className="w-4 h-4 mr-1" />
                 {post.comments}
@@ -213,7 +229,10 @@ export const SocialFeed = () => {
                 variant="ghost" 
                 size="sm" 
                 className="text-gray-500 hover:text-gray-700"
-                onClick={() => handleShare(post)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleShare(post);
+                }}
               >
                 <Share2 className="w-4 h-4 mr-1" />
                 Share
@@ -237,6 +256,13 @@ export const SocialFeed = () => {
           postId={selectedPost.id}
         />
       )}
+
+      {/* Post Viewer Modal */}
+      <PostViewerModal
+        post={selectedPost}
+        isOpen={postViewerOpen}
+        onClose={() => setPostViewerOpen(false)}
+      />
     </div>
   );
 };
