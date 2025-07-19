@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGeminiTraining } from '@/hooks/useGeminiTrainingData';
+import { generateContextualResponse, COMMON_QUERIES, BOOK_CATEGORIES, PLATFORM_FEATURES } from '@/utils/chatbotKnowledge';
 import { toast } from '@/hooks/use-toast';
 
 interface Message {
@@ -20,93 +21,29 @@ interface ChatbotContextType {
 
 const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
 
-// Website knowledge base for the Book Expert
-const WEBSITE_KNOWLEDGE = `
-SAHADHYAYI DIGITAL LIBRARY - COMPREHENSIVE GUIDE
-
-ABOUT THE PLATFORM:
-- Sahadhyayi is a comprehensive digital library and reading community
-- Features 10,000+ books across multiple genres and languages
-- Offers free PDF downloads and community-driven features
-- Supports social reading, book discussions, and author connections
-
-MAIN FEATURES:
-
-1. DIGITAL LIBRARY (/library):
-   - Browse 10,000+ books by genre, author, language
-   - Free PDF downloads available
-   - Advanced search and filtering
-   - Books include: Fiction, Non-fiction, Science, Hindi literature, Devotional, Biography, History
-   - Each book has detailed information: author bio, description, ratings, publication details
-
-2. READING DASHBOARD (/dashboard):
-   - Personal bookshelf management
-   - Reading progress tracking
-   - Reading goals and statistics
-   - Current reads section
-   - Book recommendations based on preferences
-
-3. SOCIAL FEATURES (/reviews, /social-media):
-   - Reading community discussions
-   - Book reviews and ratings
-   - Friend connections and reading groups
-   - Social feed with reading updates
-   - Book-based conversations and recommendations
-
-4. AUTHOR CONNECTION (/authors):
-   - Detailed author profiles and biographies
-   - Author books and statistics
-   - Direct messaging with authors
-   - Author events and sessions
-   - Author discovery by genre and location
-
-5. PERSONALIZATION:
-   - User profiles with reading preferences
-   - Customizable reading goals
-   - Personal reading statistics
-   - Book wishlists and favorites
-
-6. ADVANCED FEATURES:
-   - AI-powered book summaries
-   - Audio summaries for books
-   - Page-by-page reading progress
-   - Book continuation and user-generated content
-   - Multi-language support (English, Hindi, etc.)
-
-NAVIGATION:
-- Home: Main landing page with featured content
-- Library: Browse and search books
-- Dashboard: Personal reading management
-- Authors: Author discovery and connection
-- Social/Reviews: Community features
-- Profile: User account management
-
-BOOK INTERACTION:
-- Users can add books to different statuses: "Want to Read", "Currently Reading", "Completed"
-- Download PDFs directly from book pages
-- Access book summaries and audio summaries
-- Track reading progress with detailed statistics
-- Leave reviews and ratings
-
-COMMUNITY FEATURES:
-- Join reading groups and discussions
-- Connect with fellow readers
-- Share reading progress and recommendations
-- Participate in book-related conversations
-- Follow authors and get updates
-
-TECHNICAL FEATURES:
-- Responsive design for all devices
-- Real-time notifications
-- Advanced search capabilities
-- Multi-language support
-- Secure user authentication
-- Cloud-based book storage
-`;
+// Enhanced website knowledge with more specific responses
+const SAHADHYAYI_RESPONSES = {
+  greetings: [
+    "Hello! I'm here to help you explore Sahadhyayi's amazing collection of books. What can I assist you with today?",
+    "Hi there! Welcome to Sahadhyayi. I can help you find books, track your reading, or connect with authors. What interests you?",
+    "Greetings! I'm your Book Expert at Sahadhyayi. Whether you're looking for recommendations or need help navigating the platform, I'm here to help!"
+  ],
+  bookRecommendations: [
+    "I'd love to recommend some great books! What genre are you in the mood for? We have excellent collections in Fiction, Science, Hindi Literature, Devotional texts, Biographies, and History.",
+    "Looking for your next great read? Tell me about your interests - do you prefer fiction or non-fiction? Any particular themes that fascinate you?",
+    "Book recommendations coming right up! Are you interested in contemporary fiction, classic literature, scientific discoveries, or perhaps something in Hindi?"
+  ],
+  helpResponses: [
+    "I'm here to guide you through everything Sahadhyayi has to offer! You can browse 10,000+ books, track your reading progress, connect with authors, and join our reading community. What would you like to explore first?",
+    "Let me help you navigate Sahadhyayi! Whether you want to find books in our Library, manage your reading in the Dashboard, or connect with fellow readers, I can guide you through it all.",
+    "Happy to help! Sahadhyayi offers book discovery, reading tracking, author connections, and a vibrant reading community. What specific feature would you like to know about?"
+  ]
+};
 
 export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [conversationContext, setConversationContext] = useState<string[]>([]);
   const { saveSample } = useGeminiTraining();
 
   const toggleChat = useCallback(() => {
@@ -116,6 +53,61 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
   const closeChat = useCallback(() => {
     setIsOpen(false);
   }, []);
+
+  // Enhanced response generation with context awareness
+  const generateIntelligentResponse = (userMessage: string, previousMessages: Message[]): string => {
+    const query = userMessage.toLowerCase().trim();
+    
+    // Handle greetings with variety
+    if (['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'].some(greeting => 
+      query.startsWith(greeting) || query === greeting)) {
+      return SAHADHYAYI_RESPONSES.greetings[Math.floor(Math.random() * SAHADHYAYI_RESPONSES.greetings.length)];
+    }
+
+    // Handle help requests with context
+    if (['help', 'what can you do', 'how can you help', 'assist'].some(term => query.includes(term))) {
+      return SAHADHYAYI_RESPONSES.helpResponses[Math.floor(Math.random() * SAHADHYAYI_RESPONSES.helpResponses.length)];
+    }
+
+    // Handle book recommendations with variety
+    if (['recommend', 'suggestion', 'what should i read', 'good books', 'book recommendation'].some(term => query.includes(term))) {
+      return SAHADHYAYI_RESPONSES.bookRecommendations[Math.floor(Math.random() * SAHADHYAYI_RESPONSES.bookRecommendations.length)];
+    }
+
+    // Genre-specific responses
+    const mentionedGenre = BOOK_CATEGORIES.find(category => 
+      query.includes(category.name.toLowerCase())
+    );
+    
+    if (mentionedGenre) {
+      return `Excellent choice! ${mentionedGenre.description}. In our ${mentionedGenre.name} section, you'll find ${mentionedGenre.popularBooks.slice(0, 2).join(' and ')} among many others. Visit our Library and filter by "${mentionedGenre.name}" to explore the full collection. Would you like specific recommendations within this genre?`;
+    }
+
+    // Feature-specific responses with more detail
+    if (query.includes('library') || query.includes('browse books')) {
+      return "Our Library is your gateway to 10,000+ books! You can search by title, author, or genre, filter by language, and download free PDFs. Each book page includes detailed descriptions, author bios, and reader reviews. What type of books are you looking to explore?";
+    }
+
+    if (query.includes('dashboard') || query.includes('track reading')) {
+      return "Your Dashboard is your personal reading command center! Set reading goals, track your progress through books, manage your bookshelf with different reading statuses, and get personalized recommendations. You can also see your reading statistics and achievements. Want me to guide you through setting up your reading goals?";
+    }
+
+    if (query.includes('author') || query.includes('writer')) {
+      return "Our Authors section lets you discover and connect with writers directly! Browse author profiles, read their biographies, explore their complete works, and even send them messages. You can also attend virtual author events and follow your favorites for updates. Are you looking for a specific author or want to discover new ones?";
+    }
+
+    if (query.includes('social') || query.includes('community') || query.includes('friends')) {
+      return "Join our vibrant reading community! Connect with fellow book lovers, share reviews and recommendations, join reading groups, and participate in book discussions. You can follow other readers, see what they're reading, and discover books through social connections. Ready to connect with other readers?";
+    }
+
+    // Download and PDF related queries
+    if (query.includes('download') || query.includes('pdf') || query.includes('free')) {
+      return "Yes! All books in our library offer free PDF downloads. Simply visit any book's page and click the download button. We believe knowledge should be accessible to everyone. Is there a specific book you'd like to download?";
+    }
+
+    // Use the existing contextual response generator as fallback
+    return generateContextualResponse(userMessage);
+  };
 
   const sendMessage = useCallback(async (userMessage: string) => {
     // Add user message
@@ -128,35 +120,55 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
     setMessages(prev => [...prev, userMsg]);
 
     try {
-      // Enhanced context for the AI
+      // First try to generate an intelligent response using local knowledge
+      const intelligentResponse = generateIntelligentResponse(userMessage, messages);
+      
+      // Update conversation context
+      setConversationContext(prev => [...prev.slice(-4), userMessage]); // Keep last 5 messages for context
+
+      // Enhanced context for AI with conversation history
+      const conversationHistory = messages.slice(-3).map(m => `${m.sender}: ${m.text}`).join('\n');
       const enhancedPrompt = `
 You are the Book Expert AI for Sahadhyayi Digital Library. You help users with book recommendations, library features, and platform navigation.
 
-CONTEXT ABOUT THE PLATFORM:
-${WEBSITE_KNOWLEDGE}
+CONVERSATION HISTORY:
+${conversationHistory}
 
-USER QUERY: ${userMessage}
+CURRENT USER QUERY: ${userMessage}
+
+PLATFORM CONTEXT:
+- Sahadhyayi has 10,000+ books across Fiction, Science, Hindi Literature, Devotional, Biography, History
+- Features: Library (/library), Dashboard (/dashboard), Authors (/authors), Social/Reviews (/reviews)
+- All books offer free PDF downloads
+- Users can track reading progress, set goals, and connect with authors
+- Active reading community with discussions and recommendations
 
 INSTRUCTIONS:
-- Provide specific, actionable responses about books and platform features
-- Reference actual platform sections when relevant (e.g., "Visit the Library section", "Check your Dashboard")
-- For book recommendations, consider genres available: Fiction, Science, Hindi literature, Devotional, Biography, History
-- If users ask about features, explain how to access them on the platform
-- Keep responses helpful, concise, and focused on books and reading
-- If you don't know something specific, suggest where they can find more information on the platform
+- Provide specific, helpful responses about books and platform features
+- Don't repeat the same generic welcome message
+- Be conversational and reference the conversation context
+- Offer actionable next steps or ask follow-up questions
+- Keep responses concise but informative
+- If discussing books, mention specific genres or features available
 
-Please provide a helpful response:`;
+Please provide a helpful, contextual response:`;
 
+      // Try API call with enhanced context
       const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
         body: { 
           prompt: enhancedPrompt,
-          context: 'chatbot_response'
+          context: 'chatbot_response',
+          conversationHistory: conversationContext
         }
       });
 
-      if (error) throw error;
+      let botResponse = intelligentResponse; // Use intelligent response as default
 
-      const botResponse = data?.response || "I'm here to help you with books and reading! Could you please rephrase your question?";
+      // Only use API response if it's different and better than our intelligent response
+      if (!error && data?.response && data.response !== intelligentResponse && 
+          !data.response.includes("Welcome to Sahadhyayi Digital Library! I'm your Book Expert AI assistant")) {
+        botResponse = data.response;
+      }
 
       // Add bot response
       const botMsg: Message = {
@@ -167,14 +179,16 @@ Please provide a helpful response:`;
       
       setMessages(prev => [...prev, botMsg]);
 
-      // Save interaction for training
-      await saveSample(enhancedPrompt, botResponse);
+      // Save interaction for training (only if we used API)
+      if (!error && data?.response) {
+        await saveSample(enhancedPrompt, botResponse, 'chatbot_conversation');
+      }
 
     } catch (error) {
       console.error('Chatbot error:', error);
       
-      // Fallback response with website knowledge
-      const fallbackResponse = generateFallbackResponse(userMessage);
+      // Use intelligent response as fallback
+      const fallbackResponse = generateIntelligentResponse(userMessage, messages);
       
       const botMsg: Message = {
         text: fallbackResponse,
@@ -185,12 +199,12 @@ Please provide a helpful response:`;
       setMessages(prev => [...prev, botMsg]);
       
       toast({
-        title: "Connection Issue",
-        description: "Using offline knowledge to help you!",
+        title: "Using Offline Mode",
+        description: "Chatbot is working with local knowledge!",
         variant: "default",
       });
     }
-  }, [saveSample]);
+  }, [messages, conversationContext, saveSample]);
 
   return (
     <ChatbotContext.Provider value={{
@@ -203,41 +217,6 @@ Please provide a helpful response:`;
       {children}
     </ChatbotContext.Provider>
   );
-};
-
-// Fallback response generator using website knowledge
-const generateFallbackResponse = (userMessage: string): string => {
-  const message = userMessage.toLowerCase();
-  
-  if (message.includes('book') && message.includes('find')) {
-    return "To find books, visit our Library section where you can browse 10,000+ books by genre, author, or language. Use the search bar to find specific titles or authors. You can filter by Fiction, Science, Hindi literature, Devotional, Biography, and History.";
-  }
-  
-  if (message.includes('read') && (message.includes('track') || message.includes('progress'))) {
-    return "Track your reading progress in the Dashboard section! You can set reading goals, monitor your current reads, view statistics, and manage your personal bookshelf with different statuses like 'Currently Reading' and 'Completed'.";
-  }
-  
-  if (message.includes('author')) {
-    return "Explore our Authors section to discover author profiles, read their biographies, browse their books, and even connect with them directly. You can search authors by genre and location, and attend author events.";
-  }
-  
-  if (message.includes('download') || message.includes('pdf')) {
-    return "Yes! Sahadhyayi offers free PDF downloads for books in our library. Simply visit any book's detail page and click the 'Download PDF' button. We have thousands of books available for free download.";
-  }
-  
-  if (message.includes('social') || message.includes('community')) {
-    return "Join our reading community! Visit the Social Media or Reviews sections to connect with fellow readers, join reading groups, share book reviews, participate in discussions, and get personalized recommendations from other readers.";
-  }
-  
-  if (message.includes('recommend') || message.includes('suggestion')) {
-    return "I'd love to help with book recommendations! We have books across many genres including Fiction, Science, Hindi literature, Devotional texts, Biographies, and History. What genre or topic interests you most? You can also check your Dashboard for personalized recommendations based on your reading history.";
-  }
-  
-  if (message.includes('help') || message.includes('how')) {
-    return "I'm here to help you navigate Sahadhyayi! You can:\n• Browse 10,000+ books in the Library\n• Track reading in your Dashboard\n• Connect with Authors\n• Join the reading community in Social/Reviews\n• Download free PDFs\n• Get book recommendations\n\nWhat specific feature would you like to know more about?";
-  }
-  
-  return "Welcome to Sahadhyayi Digital Library! I'm your Book Expert AI assistant. I can help you find books, track your reading progress, connect with authors, and navigate our community features. What would you like to know about books or our platform?";
 };
 
 export const useChatbot = () => {

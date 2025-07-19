@@ -1,6 +1,6 @@
 
 /**
- * Comprehensive knowledge base for the Book Expert chatbot
+ * Enhanced knowledge base for the Book Expert chatbot with more varied responses
  */
 
 export interface BookCategory {
@@ -20,39 +20,39 @@ export interface PlatformFeature {
 export const BOOK_CATEGORIES: BookCategory[] = [
   {
     name: "Fiction",
-    description: "Classic and contemporary fiction from renowned authors worldwide",
-    popularBooks: ["Literary classics", "Contemporary novels", "Short story collections"],
-    keyAuthors: ["Various acclaimed fiction writers"]
+    description: "Immerse yourself in captivating stories from classic and contemporary fiction",
+    popularBooks: ["Literary masterpieces", "Contemporary novels", "Short story collections", "Classic literature"],
+    keyAuthors: ["Renowned fiction writers", "Award-winning novelists"]
   },
   {
     name: "Science",
-    description: "Scientific discoveries, research, and technological advances",
-    popularBooks: ["Physics texts", "Biology research", "Technology guides"],
-    keyAuthors: ["Leading scientists and researchers"]
+    description: "Explore the wonders of scientific discovery and technological innovation",
+    popularBooks: ["Physics explorations", "Biology research", "Technology guides", "Scientific breakthroughs"],
+    keyAuthors: ["Leading scientists", "Research pioneers"]
   },
   {
     name: "Hindi Literature",
-    description: "Rich tradition of Hindi literature and contemporary works",
-    popularBooks: ["Classical Hindi texts", "Modern Hindi novels", "Poetry collections"],
-    keyAuthors: ["Renowned Hindi authors"]
+    description: "Discover the rich tapestry of Hindi literature from classical to modern works",
+    popularBooks: ["Classical Hindi texts", "Modern Hindi novels", "Poetry collections", "Cultural narratives"],
+    keyAuthors: ["Distinguished Hindi authors", "Contemporary Hindi writers"]
   },
   {
     name: "Devotional",
-    description: "Spiritual and religious texts across various traditions",
-    popularBooks: ["Religious scriptures", "Spiritual guides", "Devotional poetry"],
-    keyAuthors: ["Spiritual teachers and scholars"]
+    description: "Find spiritual guidance and inspiration through devotional texts",
+    popularBooks: ["Sacred scriptures", "Spiritual guides", "Devotional poetry", "Religious philosophy"],
+    keyAuthors: ["Spiritual teachers", "Religious scholars"]
   },
   {
     name: "Biography",
-    description: "Life stories of notable personalities and historical figures",
-    popularBooks: ["Autobiographies", "Historical biographies", "Contemporary profiles"],
-    keyAuthors: ["Various biographical subjects"]
+    description: "Learn from the life journeys of remarkable personalities",
+    popularBooks: ["Inspiring autobiographies", "Historical biographies", "Contemporary profiles", "Leadership stories"],
+    keyAuthors: ["Notable personalities", "Historical figures"]
   },
   {
     name: "History",
-    description: "Historical accounts, cultural studies, and heritage documentation",
-    popularBooks: ["World history", "Cultural heritage", "Historical analysis"],
-    keyAuthors: ["Historians and cultural experts"]
+    description: "Journey through time with engaging historical accounts and cultural studies",
+    popularBooks: ["World history", "Cultural heritage", "Historical analysis", "Ancient civilizations"],
+    keyAuthors: ["Historians", "Cultural experts"]
   }
 ];
 
@@ -60,120 +60,155 @@ export const PLATFORM_FEATURES: PlatformFeature[] = [
   {
     name: "Digital Library",
     route: "/library",
-    description: "Browse and search through 10,000+ books with advanced filtering",
+    description: "Your gateway to 10,000+ books with powerful search and discovery tools",
     keyFunctions: [
-      "Search books by title, author, or genre",
-      "Filter by language, publication year, and category",
-      "Download free PDFs",
-      "View detailed book information and author bios",
-      "Add books to personal bookshelf"
+      "Advanced search by title, author, genre, or keywords",
+      "Smart filtering by language, publication year, and category",
+      "Free PDF downloads for all books",
+      "Detailed book pages with descriptions and author bios",
+      "Personal bookshelf management with reading statuses"
     ]
   },
   {
     name: "Reading Dashboard",
     route: "/dashboard",
-    description: "Personal reading management and progress tracking",
+    description: "Your personal reading command center for tracking progress and goals",
     keyFunctions: [
-      "Set and track reading goals",
-      "Monitor current reads and progress",
-      "View reading statistics and achievements",
-      "Manage personal bookshelf with different statuses",
-      "Get personalized book recommendations"
+      "Set and monitor personalized reading goals",
+      "Track reading progress with detailed statistics",
+      "Manage your bookshelf with multiple reading statuses",
+      "Get AI-powered book recommendations",
+      "View reading achievements and milestones"
     ]
   },
   {
     name: "Author Connection",
     route: "/authors",
-    description: "Discover and connect with authors directly",
+    description: "Connect directly with authors and discover their literary worlds",
     keyFunctions: [
-      "Browse author profiles and biographies",
-      "View author's complete book collections",
-      "Message authors directly",
-      "Attend author events and sessions",
-      "Follow favorite authors for updates"
+      "Explore comprehensive author profiles and biographies",
+      "Browse complete author book collections",
+      "Send direct messages to authors",
+      "Attend virtual author events and sessions",
+      "Follow favorite authors for latest updates"
     ]
   },
   {
-    name: "Social Reading",
+    name: "Social Reading Community",
     route: "/reviews",
-    description: "Community-driven reading discussions and connections",
+    description: "Join a vibrant community of book lovers and reading enthusiasts",
     keyFunctions: [
-      "Join reading groups and book clubs",
-      "Share book reviews and ratings",
-      "Connect with fellow readers",
-      "Participate in book discussions",
-      "Share reading progress and recommendations"
+      "Connect with fellow readers and book enthusiasts",
+      "Share detailed book reviews and ratings",
+      "Join or create reading groups and book clubs",
+      "Participate in engaging book discussions",
+      "Discover books through social recommendations"
     ]
   },
   {
     name: "User Profile",
     route: "/profile",
-    description: "Manage personal reading preferences and account settings",
+    description: "Customize your reading experience and manage your account",
     keyFunctions: [
-      "Update reading preferences and goals",
-      "Manage privacy settings",
-      "View reading history and statistics",
-      "Connect social media accounts",
-      "Customize notification preferences"
+      "Set reading preferences and favorite genres",
+      "Manage privacy and notification settings",
+      "View comprehensive reading history and statistics",
+      "Connect social media accounts for sharing",
+      "Customize your reading goals and targets"
     ]
   }
 ];
 
-export const COMMON_QUERIES = {
-  bookRecommendations: {
-    triggers: ["recommend", "suggestion", "what to read", "good books"],
-    response: "I'd be happy to recommend books! What genre interests you most? We have excellent collections in Fiction, Science, Hindi Literature, Devotional texts, Biographies, and History. You can also visit your Dashboard for personalized recommendations based on your reading history."
-  },
-  findBooks: {
-    triggers: ["find books", "search books", "looking for"],
-    response: "To find books, visit our Library section where you can browse 10,000+ books. Use the search bar for specific titles or authors, and apply filters for genre, language, or publication year. All books come with detailed descriptions and free PDF downloads."
-  },
-  readingProgress: {
-    triggers: ["track reading", "reading progress", "goals"],
-    response: "Track your reading journey in the Dashboard! Set reading goals, monitor current books, view detailed statistics, and manage your bookshelf with statuses like 'Currently Reading', 'Want to Read', and 'Completed'."
-  },
-  community: {
-    triggers: ["community", "social", "discussions", "connect"],
-    response: "Join our vibrant reading community! Visit the Reviews section to connect with fellow readers, join book clubs, share reviews, and participate in discussions. You can also follow authors and get recommendations from other readers."
-  },
-  authorConnection: {
-    triggers: ["authors", "writers", "connect with author"],
-    response: "Explore our Authors section to discover detailed author profiles, browse their books, read their biographies, and even message them directly. You can also attend author events and follow your favorites for updates."
-  },
-  technicalHelp: {
-    triggers: ["how to", "help", "tutorial", "guide"],
-    response: "I'm here to guide you through Sahadhyayi! Whether you need help finding books, tracking reading progress, connecting with authors, or joining our community, I can provide step-by-step assistance. What specific feature would you like help with?"
-  }
+// Enhanced response patterns with more variety
+export const RESPONSE_PATTERNS = {
+  bookSearch: [
+    "Let me help you find the perfect book! What genre or topic interests you most?",
+    "I'd love to help you discover your next great read! Are you looking for something specific?",
+    "Book discovery time! Tell me about your reading preferences - fiction, non-fiction, or something specific?"
+  ],
+  
+  genreExploration: [
+    "Excellent choice! That genre has some fantastic options in our library.",
+    "Great selection! We have an amazing collection in that category.",
+    "Perfect! That's one of our most popular genres with incredible variety."
+  ],
+  
+  featureGuidance: [
+    "I'll guide you through that feature step by step!",
+    "Let me show you how to make the most of that section!",
+    "That's a powerful feature - here's how to use it effectively:"
+  ],
+  
+  encouragement: [
+    "That sounds like a great reading journey ahead!",
+    "Wonderful! You're going to love exploring that.",
+    "Excellent choice! I think you'll find exactly what you're looking for."
+  ]
 };
 
 export const generateContextualResponse = (userQuery: string): string => {
   const query = userQuery.toLowerCase();
   
-  // Check for specific query patterns
-  for (const [key, queryData] of Object.entries(COMMON_QUERIES)) {
-    if (queryData.triggers.some(trigger => query.includes(trigger))) {
-      return queryData.response;
-    }
+  // More specific pattern matching with varied responses
+  if (query.includes('find') && query.includes('book')) {
+    return RESPONSE_PATTERNS.bookSearch[Math.floor(Math.random() * RESPONSE_PATTERNS.bookSearch.length)] + 
+           " You can explore our Library section with 10,000+ books across all genres, or tell me your preferences for personalized recommendations!";
   }
   
-  // Genre-specific responses
+  if (query.includes('recommend') || query.includes('suggest')) {
+    return "I'd love to recommend some great reads! What draws you in - compelling characters, fascinating facts, spiritual insights, or perhaps historical adventures? Our library spans Fiction, Science, Hindi Literature, Devotional texts, Biographies, and History.";
+  }
+  
+  if (query.includes('track') && (query.includes('reading') || query.includes('progress'))) {
+    return "Your reading journey deserves proper tracking! In your Dashboard, you can set reading goals, monitor your progress through books, and see detailed statistics of your reading habits. Want help setting up your first reading goal?";
+  }
+  
+  if (query.includes('author') && query.includes('connect')) {
+    return "Author connections are one of our unique features! You can browse author profiles, read their biographies, explore their complete works, and even send them direct messages. Some authors also host virtual sessions. Are you looking for a specific author?";
+  }
+  
+  if (query.includes('community') || query.includes('social')) {
+    return "Our reading community is incredibly active! You can join reading groups, share book reviews, connect with fellow readers, and discover books through social recommendations. It's like having a book club that never sleeps! Want to explore the social features?";
+  }
+  
+  if (query.includes('download') || query.includes('pdf')) {
+    return "Absolutely! Every book in our library offers free PDF downloads - we believe knowledge should be accessible to everyone. Just visit any book's page and hit the download button. Looking for a specific book to download?";
+  }
+  
+  if (query.includes('hindi') || query.includes('हिंदी')) {
+    return "Our Hindi Literature section is a treasure trove! From classical works like Godan and Gunahon Ka Devta to contemporary Hindi novels and poetry collections. We celebrate the rich tradition of Hindi literature. Any particular Hindi author or genre you're interested in?";
+  }
+  
+  // Genre-specific responses with more personality
   const mentionedGenre = BOOK_CATEGORIES.find(category => 
-    query.includes(category.name.toLowerCase())
+    query.includes(category.name.toLowerCase()) || 
+    category.name.toLowerCase().includes(query.replace(/books?/g, '').trim())
   );
   
   if (mentionedGenre) {
-    return `Great choice! ${mentionedGenre.description}. You can find ${mentionedGenre.name} books in our Library section. ${mentionedGenre.popularBooks.join(', ')} are popular in this category. Visit the Library and filter by "${mentionedGenre.name}" to explore our collection.`;
+    const randomEncouragement = RESPONSE_PATTERNS.genreExploration[Math.floor(Math.random() * RESPONSE_PATTERNS.genreExploration.length)];
+    return `${randomEncouragement} ${mentionedGenre.description}. Our ${mentionedGenre.name} collection includes ${mentionedGenre.popularBooks.slice(0, 2).join(' and ')} among many others. Visit our Library and filter by "${mentionedGenre.name}" to explore everything we have!`;
   }
   
   // Feature-specific responses
   const mentionedFeature = PLATFORM_FEATURES.find(feature => 
-    query.includes(feature.name.toLowerCase()) || query.includes(feature.route.slice(1))
+    query.includes(feature.name.toLowerCase()) || 
+    query.includes(feature.route.slice(1)) ||
+    feature.keyFunctions.some(func => query.includes(func.toLowerCase().split(' ')[0]))
   );
   
   if (mentionedFeature) {
-    return `${mentionedFeature.description}. Key features include: ${mentionedFeature.keyFunctions.slice(0, 3).join(', ')}. Visit ${mentionedFeature.route} to access this feature.`;
+    const randomGuidance = RESPONSE_PATTERNS.featureGuidance[Math.floor(Math.random() * RESPONSE_PATTERNS.featureGuidance.length)];
+    return `${randomGuidance} ${mentionedFeature.description}. Key features include ${mentionedFeature.keyFunctions.slice(0, 2).join(' and ')}. Head to ${mentionedFeature.route} to get started!`;
   }
   
-  // Default helpful response
-  return "Welcome to Sahadhyayi Digital Library! I'm your Book Expert AI. I can help you find books, track reading progress, connect with authors, and navigate our community features. What would you like to explore today?";
+  // Default responses with more variety - avoid the repetitive message
+  const helpfulResponses = [
+    "I'm here to help you make the most of Sahadhyayi! Whether you're looking for your next great read, want to track your reading progress, or connect with our amazing community of readers, I can guide you. What interests you most?",
+    "Let's explore what Sahadhyayi has to offer together! From discovering new books to connecting with authors and fellow readers, there's so much to explore. What would you like to dive into first?",
+    "Great to chat with you! I can help you navigate our extensive library, set up reading goals, find author connections, or join our reading community. What sounds most interesting to you right now?",
+    "Welcome! I'm excited to help you discover everything Sahadhyayi offers. Whether it's finding the perfect book, tracking your reading journey, or connecting with other book lovers, I'm here to guide you. Where shall we start?"
+  ];
+  
+  return helpfulResponses[Math.floor(Math.random() * helpfulResponses.length)];
 };
