@@ -78,68 +78,112 @@ export const ModernGoogleMap: React.FC = () => {
 
   const updateMarkersOnMap = async (readersData: Reader[]) => {
     try {
-      const { AdvancedMarkerElement, PinElement } = await window.google.maps.importLibrary("marker") as any;
+      if (!map) return;
       
-      // Clear existing markers
-      markers.forEach(marker => {
-        marker.map = null;
-      });
+      // Clear existing markers by removing them from DOM
+      const existingMarkers = map.querySelectorAll('gmp-advanced-marker');
+      existingMarkers.forEach((marker: any) => marker.remove());
       
-      const newMarkers: any[] = [];
-      const infoWindow = new window.google.maps.InfoWindow();
-
-      // Add markers for each reader
+      // Add new markers for each reader
       readersData.forEach((reader) => {
-        const pin = new PinElement({
-          background: '#f97316',
-          borderColor: '#ffffff',
-          glyphColor: '#ffffff',
-          glyph: reader.name.charAt(0),
-          scale: 1.0
-        });
-
-        const marker = new AdvancedMarkerElement({
-          map: map,
-          position: { lat: Number(reader.lat), lng: Number(reader.lng) },
-          content: pin.element,
-          title: reader.name
-        });
-
-        marker.addListener('click', () => {
+        const marker = document.createElement('gmp-advanced-marker');
+        marker.setAttribute('position', `${reader.lat},${reader.lng}`);
+        marker.title = `${reader.name} - Reading: ${reader.book}`;
+        
+        // Create custom content for the marker
+        const markerContent = document.createElement('div');
+        markerContent.style.cssText = `
+          width: 40px;
+          height: 40px;
+          background: #f97316;
+          border: 3px solid white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          color: white;
+          font-size: 14px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          cursor: pointer;
+        `;
+        markerContent.textContent = reader.name.charAt(0).toUpperCase();
+        
+        // Add click handler using a simple approach
+        markerContent.addEventListener('click', () => {
           const timeAgo = reader.created_at ? 
             new Date(reader.created_at).toLocaleString() : 
             'Just now';
           
-          infoWindow.setContent(`
-            <div style="padding: 16px; font-family: system-ui, -apple-system, sans-serif; max-width: 220px;">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <div style="width: 32px; height: 32px; background: #f97316; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                  ${reader.name.charAt(0)}
-                </div>
-                <div>
-                  <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #1f2937;">
-                    ${reader.name}
-                  </h3>
-                  <p style="margin: 0; font-size: 12px; color: #6b7280;">${timeAgo}</p>
-                </div>
+          // Create a simple popup overlay
+          const popup = document.createElement('div');
+          popup.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 300px;
+            border: 1px solid #e5e7eb;
+          `;
+          
+          popup.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="width: 40px; height: 40px; background: #f97316; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                ${reader.name.charAt(0)}
               </div>
-              <p style="margin: 0; font-size: 14px; color: #6b7280;">
-                📖 Currently reading: <br>
-                <strong style="color: #f97316;">${reader.book}</strong>
-              </p>
-              <div style="margin-top: 12px; display: flex; align-items: center; gap: 6px;">
-                <span style="width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; display: inline-block;"></span>
-                <span style="font-size: 12px; color: #10b981; font-weight: 500;">Reading now</span>
+              <div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1f2937;">
+                  ${reader.name}
+                </h3>
+                <p style="margin: 0; font-size: 14px; color: #6b7280;">${timeAgo}</p>
               </div>
             </div>
-          `);
-          infoWindow.open(map, marker);
+            <p style="margin: 0 0 16px 0; font-size: 16px; color: #374151;">
+              📖 Currently reading: <br>
+              <strong style="color: #f97316;">${reader.book}</strong>
+            </p>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+              <span style="width: 12px; height: 12px; background-color: #10b981; border-radius: 50%; display: inline-block;"></span>
+              <span style="font-size: 14px; color: #10b981; font-weight: 500;">Reading now</span>
+            </div>
+            <button id="closePopup" style="width: 100%; padding: 8px 16px; background: #f97316; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+              Close
+            </button>
+          `;
+          
+          document.body.appendChild(popup);
+          
+          // Add backdrop
+          const backdrop = document.createElement('div');
+          backdrop.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            z-index: 999;
+          `;
+          document.body.appendChild(backdrop);
+          
+          const closePopup = () => {
+            document.body.removeChild(popup);
+            document.body.removeChild(backdrop);
+          };
+          
+          popup.querySelector('#closePopup')?.addEventListener('click', closePopup);
+          backdrop.addEventListener('click', closePopup);
         });
-
-        newMarkers.push(marker);
+        
+        marker.appendChild(markerContent);
+        map.appendChild(marker);
       });
 
-      setMarkers(newMarkers);
     } catch (error) {
       console.error('Failed to update markers:', error);
     }
@@ -147,50 +191,43 @@ export const ModernGoogleMap: React.FC = () => {
 
   const initializeMap = async () => {
     try {
-      const { Map } = await window.google.maps.importLibrary("maps") as any;
-      
-      if (!mapRef.current) return;
+      // Create API loader element
+      if (!document.querySelector('gmpx-api-loader')) {
+        const apiLoader = document.createElement('gmpx-api-loader');
+        apiLoader.setAttribute('key', 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y');
+        apiLoader.setAttribute('solution-channel', 'GMP_GE_mapsandplacesautocomplete_v2');
+        document.body.appendChild(apiLoader);
+      }
 
-      const mapInstance = new Map(mapRef.current, {
-        center: { lat: 28.6139, lng: 77.2090 },
-        zoom: 12,
-        styles: [
-          {
-            featureType: 'all',
-            elementType: 'geometry.fill',
-            stylers: [{ color: '#f8fafc' }]
-          },
-          {
-            featureType: 'water',
-            elementType: 'all',
-            stylers: [{ color: '#dbeafe' }]
-          },
-          {
-            featureType: 'road',
-            elementType: 'geometry',
-            stylers: [{ color: '#ffffff' }]
-          },
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }]
-          },
-          {
-            featureType: 'transit',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }]
-          }
-        ],
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: true,
-        mapId: 'DEMO_MAP_ID',
-        gestureHandling: 'cooperative'
-      });
-
-      setMap(mapInstance);
-      setIsLoaded(true);
-      setIsLoading(false);
+      // Create map element
+      if (mapRef.current && !mapRef.current.querySelector('gmp-map')) {
+        const mapElement = document.createElement('gmp-map');
+        mapElement.setAttribute('center', '28.6139,77.2090'); // New Delhi
+        mapElement.setAttribute('zoom', '12');
+        mapElement.setAttribute('map-id', 'DEMO_MAP_ID');
+        mapElement.style.width = '100%';
+        mapElement.style.height = '100%';
+        mapElement.style.borderRadius = '12px';
+        
+        // Add place picker control
+        const controlDiv = document.createElement('div');
+        controlDiv.setAttribute('slot', 'control-block-start-inline-start');
+        controlDiv.className = 'p-4';
+        
+        const placePicker = document.createElement('gmpx-place-picker');
+        placePicker.setAttribute('placeholder', 'Search for a place');
+        controlDiv.appendChild(placePicker);
+        mapElement.appendChild(controlDiv);
+        
+        mapRef.current.appendChild(mapElement);
+        
+        // Store reference to the map element
+        setMap(mapElement);
+        setIsLoaded(true);
+        setIsLoading(false);
+        
+        console.log('Map initialized successfully with Extended Components');
+      }
     } catch (error) {
       console.error('Failed to initialize Google Maps:', error);
       setIsLoading(false);
@@ -265,37 +302,46 @@ export const ModernGoogleMap: React.FC = () => {
     }
   };
 
-  // Load Google Maps API
+  // Load Google Maps API using Extended Component Library
   useEffect(() => {
-    const loadGoogleMaps = () => {
-      if (!window.google) {
+    const loadGoogleMapsExtended = async () => {
+      try {
+        // Remove any existing Google Maps scripts to prevent conflicts
+        const existingScripts = document.querySelectorAll('script[src*="maps.googleapis.com"]');
+        existingScripts.forEach(script => script.remove());
+
+        // Load the Extended Component Library
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y&libraries=marker&loading=async&v=weekly`;
-        script.async = true;
-        script.defer = true;
+        script.type = 'module';
+        script.src = 'https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js';
         
-        script.onload = () => {
-          console.log('Google Maps API loaded successfully');
-          initializeMap();
+        script.onload = async () => {
+          console.log('Google Maps Extended Components loaded successfully');
+          // Wait for custom elements to be defined
+          if (window.customElements) {
+            await window.customElements.whenDefined('gmp-map');
+            initializeMap();
+          }
         };
         
         script.onerror = () => {
-          console.error('Failed to load Google Maps API');
+          console.error('Failed to load Google Maps Extended Components');
           setIsLoading(false);
         };
         
         document.head.appendChild(script);
-      } else {
-        initializeMap();
+      } catch (error) {
+        console.error('Error loading Google Maps Extended Components:', error);
+        setIsLoading(false);
       }
     };
 
-    loadGoogleMaps();
+    loadGoogleMapsExtended();
 
     return () => {
       // Cleanup markers
       markers.forEach(marker => {
-        if (marker.map) marker.map = null;
+        if (marker && marker.map) marker.map = null;
       });
     };
   }, []);
