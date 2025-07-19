@@ -14,6 +14,7 @@ import BackToTopButton from "@/components/BackToTopButton";
 import ScrollToTop from "@/components/ScrollToTop";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAutoLogout } from "@/hooks/useAutoLogout";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
@@ -45,6 +46,12 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Component to handle auto-logout functionality
+const AutoLogoutHandler = () => {
+  useAutoLogout();
+  return null;
+};
+
 const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
@@ -56,6 +63,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <ScrollToTop />
+                <AutoLogoutHandler />
                 <div className="flex flex-col min-h-screen">
                   <Navigation />
                   <main className="flex-1">

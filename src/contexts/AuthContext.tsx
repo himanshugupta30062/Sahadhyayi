@@ -43,12 +43,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Handle sign out event
         if (event === 'SIGNED_OUT') {
-          console.log('[AUTH] User signed out, redirecting...');
+          console.log('[AUTH] User signed out, clearing local state...');
           // Clear local state
           setUser(null);
           setSession(null);
-          // Redirect to home page after sign out
-          window.location.href = '/';
+          
+          // Clear any auto-logout timers or session storage if needed
+          if (typeof window !== 'undefined') {
+            // Clear any session storage related to auto-logout
+            sessionStorage.removeItem('lastActivity');
+          }
         }
 
         // Handle new user profile creation
@@ -177,11 +181,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setSession(null);
 
-      // Remove any remaining auth tokens from localStorage
+      // Remove any remaining auth tokens from localStorage and sessionStorage
       if (typeof window !== 'undefined') {
         Object.keys(localStorage).forEach((key) => {
           if (key.startsWith('sb-')) {
             localStorage.removeItem(key);
+          }
+        });
+
+        // Clear session storage including auto-logout related data
+        Object.keys(sessionStorage).forEach((key) => {
+          if (key.startsWith('sb-') || key === 'lastActivity') {
+            sessionStorage.removeItem(key);
           }
         });
 
@@ -201,17 +212,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('[AUTH] Sign out completed successfully');
       setLoading(false);
-
-      // Redirect to home page after sign out
-      window.location.href = '/';
     } catch (error) {
       console.error('Signout error:', error);
       // Ensure local state is cleared even if there's an error
       setUser(null);
       setSession(null);
       setLoading(false);
-      // Force redirect on error
-      window.location.href = '/';
     }
   };
 
