@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, BookOpen, MessageCircle } from 'lucide-react';
+import { GoogleMapsContainer } from './GoogleMapsContainer';
 
 interface Reader {
   id: string;
@@ -64,25 +65,40 @@ export const ReadingMap = () => {
     ? readers 
     : readers.filter(reader => reader.genre === selectedGenre);
 
+  const handleReaderClick = (reader: any) => {
+    console.log('Reader clicked:', reader);
+    // Handle reader click - could open a modal or navigate to profile
+  };
+
+  // Convert mockReaders to the format expected by GoogleMapsContainer
+  const mapFriends = mockReaders.map(reader => ({
+    id: reader.id,
+    name: reader.name,
+    avatar: reader.avatar,
+    lat: 28.6139 + (Math.random() - 0.5) * 0.05, // Random positions around New Delhi
+    lng: 77.2090 + (Math.random() - 0.5) * 0.05,
+    isOnline: reader.isOnline,
+    currentBook: reader.currentBook,
+    lastSeen: 'Recently'
+  }));
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
-        <CardHeader className="p-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <MapPin className="w-5 h-5 text-orange-600" />
-            Readers Near You
-          </CardTitle>
-          <p className="text-sm text-gray-600">
-            Connect with fellow readers in your area and discover local book clubs
-          </p>
-        </CardHeader>
-      </Card>
+      {/* Google Maps Integration */}
+      <GoogleMapsContainer
+        friends={mapFriends}
+        onFriendClick={handleReaderClick}
+        userLocation={{ lat: 28.6139, lng: 77.2090 }}
+      />
 
       {/* Genre Filter */}
       <Card className="bg-white shadow-sm border-0 rounded-xl">
         <CardContent className="p-4">
           <div className="flex flex-wrap gap-2">
+            <span className="flex items-center text-sm text-gray-600 mr-3">
+              <BookOpen className="w-4 h-4 mr-1" />
+              Filter by genre:
+            </span>
             {genres.map((genre) => (
               <Button
                 key={genre}
@@ -101,21 +117,12 @@ export const ReadingMap = () => {
         </CardContent>
       </Card>
 
-      {/* Map Placeholder */}
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
-        <CardContent className="p-4">
-          <div className="h-64 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="w-12 h-12 text-orange-600 mx-auto mb-2" />
-              <p className="text-gray-600 font-medium">Interactive Map</p>
-              <p className="text-sm text-gray-500">Readers locations will be displayed here</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Readers List */}
       <div className="space-y-3">
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <Users className="w-5 h-5 text-orange-600" />
+          Book Lovers in Your Area ({filteredReaders.length})
+        </h3>
         {filteredReaders.map((reader) => (
           <Card key={reader.id} className="bg-white shadow-sm border-0 rounded-xl">
             <CardContent className="p-4">
