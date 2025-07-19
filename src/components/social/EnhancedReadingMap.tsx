@@ -29,23 +29,9 @@ export const EnhancedReadingMap = () => {
     localStorage.getItem('userBitmoji')
   );
   const [mapCenter, setMapCenter] = useState({ lat: 40.7128, lng: -74.0060 }); // Default to NYC
-  const [zoom, setZoom] = useState(10);
 
   const { data: friends = [] } = useFriends();
 
-  // Filter friends who have shared their location
-  const friendsWithLocation = friends.filter(friend => 
-    friend.friend_profile?.location_sharing && 
-    friend.friend_profile?.location_lat && 
-    friend.friend_profile?.location_lng
-  ).map(friend => ({
-    id: friend.friend_profile?.id || '',
-    name: friend.friend_profile?.full_name || '',
-    avatar: friend.friend_profile?.profile_photo_url,
-    lat: friend.friend_profile?.location_lat || 0,
-    lng: friend.friend_profile?.location_lng || 0,
-    lastSeen: friend.friend_profile?.last_seen || ''
-  }));
 
   // Get user's current location
   useEffect(() => {
@@ -95,18 +81,6 @@ export const EnhancedReadingMap = () => {
     localStorage.setItem('userBitmoji', avatarData);
   };
 
-  // Convert friends data to Google Maps format
-  const googleMapsFriends = friendsWithLocation.map(friend => ({
-    id: friend.id,
-    name: friend.name,
-    avatar: friend.avatar,
-    lat: friend.lat,
-    lng: friend.lng,
-    isOnline: true,
-    currentBook: 'The Great Book', // This would come from friend data
-    bitmoji: undefined, // Friends' bitmojis would be stored in their profiles
-    lastSeen: friend.lastSeen
-  }));
 
   return (
     <>
@@ -145,112 +119,6 @@ export const EnhancedReadingMap = () => {
               <Palette className="w-4 h-4 mr-2" />
               {userBitmoji ? 'Edit Avatar' : 'Create Avatar'}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Original Friends Location Map */}
-      <Card className="bg-white shadow-sm border-0 rounded-xl mt-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="w-5 h-5" />
-            Friends Near Me
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Map Container */}
-          <div className="relative bg-gradient-to-br from-blue-50 to-green-50 rounded-lg h-80 border overflow-hidden">
-            {/* Mock Map Background */}
-            <div className="absolute inset-0 opacity-30">
-              <div className="w-full h-full bg-gradient-to-br from-green-200 via-blue-200 to-purple-200"></div>
-            </div>
-            
-            {/* Friends Markers */}
-            {friendsWithLocation.map((friend, index) => (
-              <div
-                key={friend.id}
-                className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:scale-110 transition-transform"
-                style={{
-                  left: `${20 + (index * 15) % 60}%`,
-                  top: `${20 + (index * 20) % 50}%`
-                }}
-                onClick={() => handleFriendClick(friend)}
-              >
-                <div className="relative">
-                  <Avatar className="w-10 h-10 border-2 border-white shadow-lg">
-                    <AvatarImage src={friend.avatar} />
-                    <AvatarFallback className="text-sm bg-orange-100 text-orange-700">
-                      {getInitials(friend.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                </div>
-              </div>
-            ))}
-
-            {/* Current User Location */}
-            <div
-              className="absolute transform -translate-x-1/2 -translate-y-1/2"
-              style={{ left: '50%', top: '50%' }}
-            >
-              <div className="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
-              <div className="absolute inset-0 w-4 h-4 bg-blue-600 rounded-full animate-ping opacity-25"></div>
-            </div>
-
-            {/* Map Controls */}
-            <div className="absolute top-4 right-4 flex flex-col gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-8 h-8 p-0 bg-white"
-                onClick={() => setZoom(Math.min(zoom + 1, 18))}
-              >
-                +
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-8 h-8 p-0 bg-white"
-                onClick={() => setZoom(Math.max(zoom - 1, 1))}
-              >
-                -
-              </Button>
-            </div>
-          </div>
-
-          {/* Friends List */}
-          <div className="mt-6">
-            <h3 className="font-semibold text-gray-900 mb-3">Friends on Map ({friendsWithLocation.length})</h3>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {friendsWithLocation.length > 0 ? (
-                friendsWithLocation.map((friend) => (
-                  <div
-                    key={friend.id}
-                    className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
-                    onClick={() => handleFriendClick(friend)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={friend.avatar} />
-                        <AvatarFallback className="text-sm bg-green-100 text-green-700">
-                          {getInitials(friend.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{friend.name}</p>
-                        <p className="text-xs text-gray-500">Online</p>
-                      </div>
-                    </div>
-                    <MapPin className="w-4 h-4 text-gray-400" />
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-gray-500">
-                  <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No friends sharing location</p>
-                </div>
-              )}
-            </div>
           </div>
         </CardContent>
       </Card>
