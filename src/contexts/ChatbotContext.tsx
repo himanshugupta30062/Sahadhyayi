@@ -72,7 +72,7 @@ const searchRelevantContent = async (query: string): Promise<string | null> => {
     const { data: bookResults, error: bookError } = await supabase
       .from('books_library')
       .select('title, author, description, genre')
-      .or(`title.ilike.%${query}%,author.ilike.%${query}%,description.ilike.%${query}%,genre.ilike.%${query}%)
+      .or(`title.ilike.%${query}%,author.ilike.%${query}%,description.ilike.%${query}%,genre.ilike.%${query}%`)
       .limit(5);
 
     if (bookError) {
