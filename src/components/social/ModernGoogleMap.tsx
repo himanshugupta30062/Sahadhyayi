@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { toast } from 'sonner';
 declare global {
   interface Window {
     google: any;
+    initMap: () => void;
   }
 }
 
@@ -40,21 +42,25 @@ export const ModernGoogleMap: React.FC = () => {
   // Load readers from Supabase with real-time updates
   useEffect(() => {
     const fetchReaders = async () => {
-      const { data, error } = await supabase
-        .from('readers')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('readers')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching readers:', error);
-        return;
-      }
+        if (error) {
+          console.error('Error fetching readers:', error);
+          return;
+        }
 
-      setReaders(data || []);
-      
-      // Update markers when readers change
-      if (map && isLoaded) {
-        updateMarkersOnMap(data || []);
+        setReaders(data || []);
+        
+        // Update markers when readers change and map is ready
+        if (map && window.google) {
+          updateMarkersOnMap(data || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch readers:', error);
       }
     };
 
@@ -74,165 +80,177 @@ export const ModernGoogleMap: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [map, isLoaded]);
+  }, [map]);
 
-  const updateMarkersOnMap = async (readersData: Reader[]) => {
+  const updateMarkersOnMap = (readersData: Reader[]) => {
+    if (!map || !window.google) return;
+
     try {
-      if (!map) return;
-      
-      // Clear existing markers by removing them from DOM
-      const existingMarkers = map.querySelectorAll('gmp-advanced-marker');
-      existingMarkers.forEach((marker: any) => marker.remove());
-      
+      // Clear existing markers
+      markers.forEach(marker => {
+        if (marker.setMap) {
+          marker.setMap(null);
+        }
+      });
+      setMarkers([]);
+
       // Add new markers for each reader
+      const newMarkers: any[] = [];
+      
       readersData.forEach((reader) => {
-        const marker = document.createElement('gmp-advanced-marker');
-        marker.setAttribute('position', `${reader.lat},${reader.lng}`);
-        marker.title = `${reader.name} - Reading: ${reader.book}`;
-        
-        // Create custom content for the marker
-        const markerContent = document.createElement('div');
-        markerContent.style.cssText = `
-          width: 40px;
-          height: 40px;
-          background: #f97316;
-          border: 3px solid white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          color: white;
-          font-size: 14px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-          cursor: pointer;
-        `;
-        markerContent.textContent = reader.name.charAt(0).toUpperCase();
-        
-        // Add click handler using a simple approach
-        markerContent.addEventListener('click', () => {
-          const timeAgo = reader.created_at ? 
-            new Date(reader.created_at).toLocaleString() : 
-            'Just now';
-          
-          // Create a simple popup overlay
-          const popup = document.createElement('div');
-          popup.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            z-index: 1000;
-            max-width: 300px;
-            border: 1px solid #e5e7eb;
-          `;
-          
-          popup.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-              <div style="width: 40px; height: 40px; background: #f97316; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                ${reader.name.charAt(0)}
-              </div>
-              <div>
-                <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1f2937;">
-                  ${reader.name}
-                </h3>
-                <p style="margin: 0; font-size: 14px; color: #6b7280;">${timeAgo}</p>
-              </div>
-            </div>
-            <p style="margin: 0 0 16px 0; font-size: 16px; color: #374151;">
-              📖 Currently reading: <br>
-              <strong style="color: #f97316;">${reader.book}</strong>
-            </p>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-              <span style="width: 12px; height: 12px; background-color: #10b981; border-radius: 50%; display: inline-block;"></span>
-              <span style="font-size: 14px; color: #10b981; font-weight: 500;">Reading now</span>
-            </div>
-            <button id="closePopup" style="width: 100%; padding: 8px 16px; background: #f97316; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
-              Close
-            </button>
-          `;
-          
-          document.body.appendChild(popup);
-          
-          // Add backdrop
-          const backdrop = document.createElement('div');
-          backdrop.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.3);
-            z-index: 999;
-          `;
-          document.body.appendChild(backdrop);
-          
-          const closePopup = () => {
-            document.body.removeChild(popup);
-            document.body.removeChild(backdrop);
-          };
-          
-          popup.querySelector('#closePopup')?.addEventListener('click', closePopup);
-          backdrop.addEventListener('click', closePopup);
+        const marker = new window.google.maps.Marker({
+          position: { lat: Number(reader.lat), lng: Number(reader.lng) },
+          map: map,
+          title: `${reader.name} - Reading: ${reader.book}`,
+          icon: {
+            path: window.google.maps.SymbolPath.CIRCLE,
+            scale: 12,
+            fillColor: '#f97316',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 3,
+          }
         });
-        
-        marker.appendChild(markerContent);
-        map.appendChild(marker);
+
+        // Create info window
+        const infoWindow = new window.google.maps.InfoWindow({
+          content: `
+            <div style="padding: 10px; max-width: 250px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <div style="width: 32px; height: 32px; background: #f97316; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                  ${reader.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #1f2937;">
+                    ${reader.name}
+                  </h3>
+                  <p style="margin: 0; font-size: 12px; color: #6b7280;">
+                    ${reader.created_at ? new Date(reader.created_at).toLocaleString() : 'Just now'}
+                  </p>
+                </div>
+              </div>
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: #374151;">
+                📖 Currently reading: <br>
+                <strong style="color: #f97316;">${reader.book}</strong>
+              </p>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; display: inline-block;"></span>
+                <span style="font-size: 12px; color: #10b981; font-weight: 500;">Reading now</span>
+              </div>
+            </div>
+          `
+        });
+
+        // Add click listener to marker
+        marker.addListener('click', () => {
+          infoWindow.open(map, marker);
+        });
+
+        newMarkers.push(marker);
       });
 
+      setMarkers(newMarkers);
     } catch (error) {
       console.error('Failed to update markers:', error);
     }
   };
 
-  const initializeMap = async () => {
-    try {
-      // Create API loader element
-      if (!document.querySelector('gmpx-api-loader')) {
-        const apiLoader = document.createElement('gmpx-api-loader');
-        apiLoader.setAttribute('key', import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y');
-        apiLoader.setAttribute('solution-channel', 'GMP_GE_mapsandplacesautocomplete_v2');
-        document.body.appendChild(apiLoader);
-      }
+  const initializeMap = () => {
+    if (!mapRef.current || !window.google) return;
 
-      // Create map element
-      if (mapRef.current && !mapRef.current.querySelector('gmp-map')) {
-        const mapElement = document.createElement('gmp-map');
-        mapElement.setAttribute('center', '28.6139,77.2090'); // New Delhi
-        mapElement.setAttribute('zoom', '12');
-        mapElement.setAttribute('map-id', 'DEMO_MAP_ID');
-        mapElement.style.width = '100%';
-        mapElement.style.height = '100%';
-        mapElement.style.borderRadius = '12px';
-        
-        // Add place picker control
-        const controlDiv = document.createElement('div');
-        controlDiv.setAttribute('slot', 'control-block-start-inline-start');
-        controlDiv.className = 'p-4';
-        
-        const placePicker = document.createElement('gmpx-place-picker');
-        placePicker.setAttribute('placeholder', 'Search for a place');
-        controlDiv.appendChild(placePicker);
-        mapElement.appendChild(controlDiv);
-        
-        mapRef.current.appendChild(mapElement);
-        
-        // Store reference to the map element
-        setMap(mapElement);
-        setIsLoaded(true);
-        setIsLoading(false);
-        
-        console.log('Map initialized successfully with Extended Components');
+    try {
+      const mapOptions = {
+        center: { lat: 28.6139, lng: 77.2090 }, // New Delhi
+        zoom: 12,
+        mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+        styles: [
+          {
+            featureType: 'poi',
+            elementType: 'labels',
+            stylers: [{ visibility: 'off' }]
+          }
+        ]
+      };
+
+      const newMap = new window.google.maps.Map(mapRef.current, mapOptions);
+      setMap(newMap);
+      setIsLoaded(true);
+      setIsLoading(false);
+      
+      console.log('Google Maps initialized successfully');
+      
+      // Update markers if we have readers data
+      if (readers.length > 0) {
+        updateMarkersOnMap(readers);
       }
     } catch (error) {
       console.error('Failed to initialize Google Maps:', error);
       setIsLoading(false);
     }
   };
+
+  const loadGoogleMapsScript = () => {
+    return new Promise<void>((resolve, reject) => {
+      // Check if Google Maps is already loaded
+      if (window.google && window.google.maps) {
+        resolve();
+        return;
+      }
+
+      // Check if script is already loading
+      if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+        // Wait for it to load
+        const checkLoaded = setInterval(() => {
+          if (window.google && window.google.maps) {
+            clearInterval(checkLoaded);
+            resolve();
+          }
+        }, 100);
+        return;
+      }
+
+      // Create and load the script
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      
+      // Set up global callback
+      window.initMap = () => {
+        resolve();
+      };
+      
+      script.onerror = () => {
+        reject(new Error('Failed to load Google Maps script'));
+      };
+      
+      document.head.appendChild(script);
+    });
+  };
+
+  // Load Google Maps API
+  useEffect(() => {
+    const loadMap = async () => {
+      try {
+        await loadGoogleMapsScript();
+        initializeMap();
+      } catch (error) {
+        console.error('Error loading Google Maps:', error);
+        setIsLoading(false);
+      }
+    };
+
+    loadMap();
+
+    return () => {
+      // Cleanup markers
+      markers.forEach(marker => {
+        if (marker && marker.setMap) {
+          marker.setMap(null);
+        }
+      });
+    };
+  }, []);
 
   const handleShareLocation = () => {
     if (!navigator.geolocation) {
@@ -302,60 +320,6 @@ export const ModernGoogleMap: React.FC = () => {
     }
   };
 
-  // Load Google Maps API using Extended Component Library
-  useEffect(() => {
-    const loadGoogleMapsExtended = async () => {
-      try {
-        // Check if already loaded to prevent conflicts
-        if (document.querySelector('gmpx-api-loader')) {
-          console.log('Google Maps Extended Components already loaded');
-          if (window.customElements) {
-            await window.customElements.whenDefined('gmp-map');
-            initializeMap();
-          }
-          return;
-        }
-
-        // Remove any existing Google Maps scripts to prevent conflicts
-        const existingScripts = document.querySelectorAll('script[src*="maps.googleapis.com"]');
-        existingScripts.forEach(script => script.remove());
-
-        // Load the Extended Component Library
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.src = 'https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js';
-        
-        script.onload = async () => {
-          console.log('Google Maps Extended Components loaded successfully');
-          // Wait for custom elements to be defined
-          if (window.customElements) {
-            await window.customElements.whenDefined('gmp-map');
-            initializeMap();
-          }
-        };
-        
-        script.onerror = () => {
-          console.error('Failed to load Google Maps Extended Components');
-          setIsLoading(false);
-        };
-        
-        document.head.appendChild(script);
-      } catch (error) {
-        console.error('Error loading Google Maps Extended Components:', error);
-        setIsLoading(false);
-      }
-    };
-
-    loadGoogleMapsExtended();
-
-    return () => {
-      // Cleanup markers
-      markers.forEach(marker => {
-        if (marker && marker.map) marker.map = null;
-      });
-    };
-  }, []);
-
   if (isLoading) {
     return (
       <Card className="bg-white shadow-sm border-0 rounded-xl">
@@ -369,7 +333,7 @@ export const ModernGoogleMap: React.FC = () => {
             <div className="text-center">
               <MapPin className="w-12 h-12 mx-auto mb-4 text-orange-500 animate-pulse" />
               <p className="text-gray-600 font-medium">Loading interactive map...</p>
-              <p className="text-sm text-gray-500 mt-2">Connecting to Google Maps & Supabase</p>
+              <p className="text-sm text-gray-500 mt-2">Connecting to Google Maps</p>
             </div>
           </div>
         </CardContent>
@@ -407,14 +371,14 @@ export const ModernGoogleMap: React.FC = () => {
           📍 Readers Near You
         </CardTitle>
         <p className="text-sm text-gray-600 mt-2">
-          Discover fellow readers in your area and connect over shared book interests - Snapchat style!
+          Discover fellow readers in your area and connect over shared book interests!
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         <div 
           ref={mapRef} 
           className="w-full h-[500px] rounded-xl border border-gray-200 overflow-hidden shadow-lg"
-          style={{ minHeight: '500px' }}
+          style={{ minHeight: '500px', height: '500px' }}
         />
         
         <div className="flex justify-center">
