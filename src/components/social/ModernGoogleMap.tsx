@@ -57,8 +57,8 @@ export const ModernGoogleMap: React.FC = () => {
   const initializeMap = async () => {
     try {
       // Load Google Maps using importLibrary method
-      const { Map } = await window.google.maps.importLibrary("maps") as google.maps.MapsLibrary;
-      const { AdvancedMarkerElement, PinElement } = await window.google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
+      const { Map } = await window.google.maps.importLibrary("maps") as any;
+      const { AdvancedMarkerElement, PinElement } = await window.google.maps.importLibrary("marker") as any;
 
       if (!mapRef.current) return;
 
@@ -158,7 +158,7 @@ export const ModernGoogleMap: React.FC = () => {
         const userLng = position.coords.longitude;
 
         try {
-          const { AdvancedMarkerElement, PinElement } = await window.google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
+          const { AdvancedMarkerElement, PinElement } = await window.google.maps.importLibrary("marker") as any;
 
           // Remove existing user marker if it exists
           if (userMarker) {
