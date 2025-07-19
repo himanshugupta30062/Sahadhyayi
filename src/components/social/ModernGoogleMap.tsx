@@ -194,7 +194,7 @@ export const ModernGoogleMap: React.FC = () => {
       // Create API loader element
       if (!document.querySelector('gmpx-api-loader')) {
         const apiLoader = document.createElement('gmpx-api-loader');
-        apiLoader.setAttribute('key', 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y');
+        apiLoader.setAttribute('key', import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y');
         apiLoader.setAttribute('solution-channel', 'GMP_GE_mapsandplacesautocomplete_v2');
         document.body.appendChild(apiLoader);
       }
