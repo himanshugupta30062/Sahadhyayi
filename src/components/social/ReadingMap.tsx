@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, BookOpen, MessageCircle } from 'lucide-react';
-import { GoogleMapsContainer } from './GoogleMapsContainer';
+import { ModernGoogleMap } from './ModernGoogleMap';
 
 interface Reader {
   id: string;
@@ -70,26 +70,10 @@ export const ReadingMap = () => {
     // Handle reader click - could open a modal or navigate to profile
   };
 
-  // Convert mockReaders to the format expected by GoogleMapsContainer
-  const mapFriends = mockReaders.map(reader => ({
-    id: reader.id,
-    name: reader.name,
-    avatar: reader.avatar,
-    lat: 28.6139 + (Math.random() - 0.5) * 0.05, // Random positions around New Delhi
-    lng: 77.2090 + (Math.random() - 0.5) * 0.05,
-    isOnline: reader.isOnline,
-    currentBook: reader.currentBook,
-    lastSeen: 'Recently'
-  }));
-
   return (
     <div className="space-y-6">
-      {/* Google Maps Integration */}
-      <GoogleMapsContainer
-        friends={mapFriends}
-        onFriendClick={handleReaderClick}
-        userLocation={{ lat: 28.6139, lng: 77.2090 }}
-      />
+      {/* Modern Google Maps Integration */}
+      <ModernGoogleMap />
 
       {/* Genre Filter */}
       <Card className="bg-white shadow-sm border-0 rounded-xl">
