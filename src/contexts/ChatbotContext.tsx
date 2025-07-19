@@ -200,7 +200,7 @@ Provide a helpful, contextual response based on the relevant content:`;
       // Update conversation context
       setConversationContext(prev => [...prev.slice(-4), userMessage]);
 
-      // Call AI API for dynamic response
+      // Call OpenAI API for dynamic response
       const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
         body: { 
           prompt: enhancedPrompt,
