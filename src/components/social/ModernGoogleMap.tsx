@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { MapPin, Users, Plus } from 'lucide-react';
-import { collection, addDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 // Declare global types for Google Maps
@@ -21,7 +20,9 @@ interface Reader {
   book: string;
   lat: number;
   lng: number;
-  timestamp?: any;
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const ModernGoogleMap: React.FC = () => {
@@ -36,26 +37,43 @@ export const ModernGoogleMap: React.FC = () => {
   const [currentBook, setCurrentBook] = useState('');
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
 
-  // Load readers from Firestore
+  // Load readers from Supabase with real-time updates
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'readers'), (snapshot) => {
-      const readersData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Reader[];
-      setReaders(readersData);
+    const fetchReaders = async () => {
+      const { data, error } = await supabase
+        .from('readers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching readers:', error);
+        return;
+      }
+
+      setReaders(data || []);
       
       // Update markers when readers change
       if (map && isLoaded) {
-        updateMarkersOnMap(readersData);
+        updateMarkersOnMap(data || []);
       }
-    }, (error) => {
-      console.error('Error fetching readers:', error);
-      // Fallback to empty array if Firebase fails
-      setReaders([]);
-    });
+    };
 
-    return () => unsubscribe();
+    fetchReaders();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('readers_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'readers' }, 
+        () => {
+          fetchReaders(); // Refetch data when any change occurs
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [map, isLoaded]);
 
   const updateMarkersOnMap = async (readersData: Reader[]) => {
@@ -82,14 +100,14 @@ export const ModernGoogleMap: React.FC = () => {
 
         const marker = new AdvancedMarkerElement({
           map: map,
-          position: { lat: reader.lat, lng: reader.lng },
+          position: { lat: Number(reader.lat), lng: Number(reader.lng) },
           content: pin.element,
           title: reader.name
         });
 
         marker.addListener('click', () => {
-          const timeAgo = reader.timestamp ? 
-            new Date(reader.timestamp.seconds * 1000).toLocaleString() : 
+          const timeAgo = reader.created_at ? 
+            new Date(reader.created_at).toLocaleString() : 
             'Just now';
           
           infoWindow.setContent(`
@@ -212,13 +230,21 @@ export const ModernGoogleMap: React.FC = () => {
     }
 
     try {
-      await addDoc(collection(db, 'readers'), {
-        name: userName.trim(),
-        book: currentBook.trim(),
-        lat: userLocation.lat,
-        lng: userLocation.lng,
-        timestamp: serverTimestamp()
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase
+        .from('readers')
+        .insert({
+          name: userName.trim(),
+          book: currentBook.trim(),
+          lat: userLocation.lat,
+          lng: userLocation.lng,
+          user_id: user?.id || null
+        });
+
+      if (error) {
+        throw error;
+      }
 
       toast.success('📍 Your location has been shared with other readers!');
       
@@ -287,7 +313,7 @@ export const ModernGoogleMap: React.FC = () => {
             <div className="text-center">
               <MapPin className="w-12 h-12 mx-auto mb-4 text-orange-500 animate-pulse" />
               <p className="text-gray-600 font-medium">Loading interactive map...</p>
-              <p className="text-sm text-gray-500 mt-2">Connecting to Google Maps & Firebase</p>
+              <p className="text-sm text-gray-500 mt-2">Connecting to Google Maps & Supabase</p>
             </div>
           </div>
         </CardContent>
@@ -422,8 +448,8 @@ export const ModernGoogleMap: React.FC = () => {
                         📖 <span className="font-medium">{reader.book}</span>
                       </p>
                       <p className="text-xs text-gray-400">
-                        {reader.timestamp ? 
-                          new Date(reader.timestamp.seconds * 1000).toLocaleString() : 
+                        {reader.created_at ? 
+                          new Date(reader.created_at).toLocaleString() : 
                           'Just shared'
                         }
                       </p>
@@ -437,13 +463,6 @@ export const ModernGoogleMap: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Firebase Config Notice */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800">
-            <strong>Firebase Setup:</strong> To enable live reader sharing, update your Firebase configuration in <code>src/lib/firebase.ts</code> with your project credentials.
-          </p>
         </div>
       </CardContent>
     </Card>

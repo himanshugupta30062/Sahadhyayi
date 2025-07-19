@@ -1171,6 +1171,39 @@ export type Database = {
         }
         Relationships: []
       }
+      readers: {
+        Row: {
+          book: string
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          book: string
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          book?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       reading_progress: {
         Row: {
           book_title: string
