@@ -306,6 +306,16 @@ export const ModernGoogleMap: React.FC = () => {
   useEffect(() => {
     const loadGoogleMapsExtended = async () => {
       try {
+        // Check if already loaded to prevent conflicts
+        if (document.querySelector('gmpx-api-loader')) {
+          console.log('Google Maps Extended Components already loaded');
+          if (window.customElements) {
+            await window.customElements.whenDefined('gmp-map');
+            initializeMap();
+          }
+          return;
+        }
+
         // Remove any existing Google Maps scripts to prevent conflicts
         const existingScripts = document.querySelectorAll('script[src*="maps.googleapis.com"]');
         existingScripts.forEach(script => script.remove());

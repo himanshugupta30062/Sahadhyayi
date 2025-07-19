@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, BookOpen, MessageCircle } from 'lucide-react';
-import { ModernGoogleMap } from './ModernGoogleMap';
 
 interface Reader {
   id: string;
@@ -72,9 +71,6 @@ export const ReadingMap = () => {
 
   return (
     <div className="space-y-6">
-      {/* Modern Google Maps Integration */}
-      <ModernGoogleMap />
-
       {/* Genre Filter */}
       <Card className="bg-white shadow-sm border-0 rounded-xl">
         <CardContent className="p-4">

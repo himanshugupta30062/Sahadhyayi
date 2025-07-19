@@ -8,8 +8,7 @@ import { MapPin, MessageCircle, User, Users, Palette } from 'lucide-react';
 import { useFriends } from '@/hooks/useFriends';
 import { UserProfileModal } from './UserProfileModal';
 import { ChatWindow } from './ChatWindow';
-import { ReadingMap } from './ReadingMap';
-import { GoogleMapsContainer } from './GoogleMapsContainer';
+import { ModernGoogleMap } from './ModernGoogleMap';
 import { BitmojiCreator } from './BitmojiCreator';
 
 interface FriendLocation {
@@ -111,8 +110,8 @@ export const EnhancedReadingMap = () => {
 
   return (
     <>
-      {/* Enhanced Reading Map showing readers of same books */}
-      <ReadingMap />
+      {/* Main Google Maps Component with Real-time Reader Locations */}
+      <ModernGoogleMap />
       
       {/* Avatar Customization */}
       <Card className="bg-white shadow-sm border-0 rounded-xl mt-6">
@@ -149,15 +148,6 @@ export const EnhancedReadingMap = () => {
           </div>
         </CardContent>
       </Card>
-      
-      {/* Google Maps Integration */}
-      <div className="mt-6">
-        <GoogleMapsContainer
-          friends={googleMapsFriends}
-          onFriendClick={handleFriendClick}
-          userLocation={mapCenter}
-        />
-      </div>
       
       {/* Original Friends Location Map */}
       <Card className="bg-white shadow-sm border-0 rounded-xl mt-6">
