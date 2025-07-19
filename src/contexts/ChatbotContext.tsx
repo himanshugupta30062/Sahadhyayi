@@ -21,23 +21,98 @@ interface ChatbotContextType {
 
 const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
 
-// Enhanced website knowledge with more specific responses
-const SAHADHYAYI_RESPONSES = {
+// Predefined responses for common queries
+const PREDEFINED_RESPONSES = {
   greetings: [
     "Hello! I'm here to help you explore Sahadhyayi's amazing collection of books. What can I assist you with today?",
     "Hi there! Welcome to Sahadhyayi. I can help you find books, track your reading, or connect with authors. What interests you?",
     "Greetings! I'm your Book Expert at Sahadhyayi. Whether you're looking for recommendations or need help navigating the platform, I'm here to help!"
   ],
-  bookRecommendations: [
-    "I'd love to recommend some great books! What genre are you in the mood for? We have excellent collections in Fiction, Science, Hindi Literature, Devotional texts, Biographies, and History.",
-    "Looking for your next great read? Tell me about your interests - do you prefer fiction or non-fiction? Any particular themes that fascinate you?",
-    "Book recommendations coming right up! Are you interested in contemporary fiction, classic literature, scientific discoveries, or perhaps something in Hindi?"
+  capabilities: [
+    "I can help you with several things:\n• Find and recommend books from our 10,000+ collection\n• Guide you through our Library, Dashboard, and Authors sections\n• Help you track your reading progress and set goals\n• Connect you with authors and our reading community\n• Answer questions about specific books and authors\n\nWhat would you like to explore?",
+    "Here's what I can do for you:\n• Browse our extensive book library across all genres\n• Set up reading goals and track your progress\n• Find author profiles and connect with writers\n• Help you join our reading community\n• Answer detailed questions about books and literature\n\nHow can I help you today?",
+    "I'm equipped to assist you with:\n• Book discovery and personalized recommendations\n• Platform navigation (Library, Dashboard, Authors, Social)\n• Reading progress tracking and goal setting\n• Author connections and community features\n• Detailed book discussions and analysis\n\nWhat interests you most?"
   ],
-  helpResponses: [
-    "I'm here to guide you through everything Sahadhyayi has to offer! You can browse 10,000+ books, track your reading progress, connect with authors, and join our reading community. What would you like to explore first?",
-    "Let me help you navigate Sahadhyayi! Whether you want to find books in our Library, manage your reading in the Dashboard, or connect with fellow readers, I can guide you through it all.",
-    "Happy to help! Sahadhyayi offers book discovery, reading tracking, author connections, and a vibrant reading community. What specific feature would you like to know about?"
+  usage: [
+    "Getting started is easy! Here's how to use Sahadhyayi:\n\n📚 **Library**: Browse 10,000+ books, filter by genre, and download free PDFs\n📊 **Dashboard**: Set reading goals, track progress, and manage your bookshelf\n✍️ **Authors**: Connect with writers, read bios, and attend virtual events\n👥 **Social**: Join reading groups, share reviews, and connect with fellow readers\n\nWant me to guide you through any specific section?",
+    "Here's your quick guide to Sahadhyayi:\n\n1. **Discover Books**: Use our Library to search by title, author, or genre\n2. **Track Reading**: Set goals and monitor progress in your Dashboard\n3. **Connect**: Follow authors and join our reading community\n4. **Engage**: Share reviews, join discussions, and make reading social\n\nWhich feature would you like to explore first?",
+    "Welcome to Sahadhyayi! Here's how to make the most of it:\n\n🔍 **Search & Discover**: Find books easily with our advanced filters\n📈 **Personal Tracking**: Monitor your reading journey and achievements\n🤝 **Community**: Connect with authors and fellow book lovers\n💬 **Discussions**: Join conversations about your favorite reads\n\nWhat aspect interests you most?"
   ]
+};
+
+// Function to check if query matches predefined patterns
+const getPredefinedResponse = (query: string): string | null => {
+  const normalizedQuery = query.toLowerCase().trim();
+  
+  // Greeting patterns
+  const greetingPatterns = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'greetings'];
+  if (greetingPatterns.some(pattern => normalizedQuery.startsWith(pattern) || normalizedQuery === pattern)) {
+    return PREDEFINED_RESPONSES.greetings[Math.floor(Math.random() * PREDEFINED_RESPONSES.greetings.length)];
+  }
+  
+  // Capability/help patterns
+  const helpPatterns = ['what can you do', 'help', 'how can you help', 'what are your capabilities', 'what do you do'];
+  if (helpPatterns.some(pattern => normalizedQuery.includes(pattern))) {
+    return PREDEFINED_RESPONSES.capabilities[Math.floor(Math.random() * PREDEFINED_RESPONSES.capabilities.length)];
+  }
+  
+  // Usage/getting started patterns
+  const usagePatterns = ['how to use', 'getting started', 'how does this work', 'guide me', 'show me around'];
+  if (usagePatterns.some(pattern => normalizedQuery.includes(pattern))) {
+    return PREDEFINED_RESPONSES.usage[Math.floor(Math.random() * PREDEFINED_RESPONSES.usage.length)];
+  }
+  
+  return null;
+};
+
+// Function to search for relevant content
+const searchRelevantContent = async (query: string): Promise<string | null> => {
+  try {
+    // Search in book summaries, titles, authors, and descriptions
+    const { data: bookResults, error: bookError } = await supabase
+      .from('books_library')
+      .select('title, author, description, genre')
+      .or(`title.ilike.%${query}%,author.ilike.%${query}%,description.ilike.%${query}%,genre.ilike.%${query}%)
+      .limit(5);
+
+    if (bookError) {
+      console.error('Book search error:', bookError);
+      return null;
+    }
+
+    // Search in book summaries
+    const { data: summaryResults, error: summaryError } = await supabase
+      .from('book_summaries')
+      .select('content, book_id, books_library(title, author)')
+      .textSearch('content', query)
+      .limit(3);
+
+    if (summaryError) {
+      console.error('Summary search error:', summaryError);
+    }
+
+    // Combine results
+    let contextContent = '';
+    
+    if (bookResults && bookResults.length > 0) {
+      contextContent += 'RELEVANT BOOKS:\n';
+      bookResults.forEach(book => {
+        contextContent += `- "${book.title}" by ${book.author}\n  Genre: ${book.genre}\n  Description: ${book.description?.substring(0, 200)}...\n\n`;
+      });
+    }
+    
+    if (summaryResults && summaryResults.length > 0) {
+      contextContent += 'RELEVANT CONTENT:\n';
+      summaryResults.forEach(summary => {
+        contextContent += `- From "${summary.books_library?.title}" by ${summary.books_library?.author}\n  Summary: ${summary.content.substring(0, 300)}...\n\n`;
+      });
+    }
+    
+    return contextContent.trim() || null;
+  } catch (error) {
+    console.error('Content search error:', error);
+    return null;
+  }
 };
 
 export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
@@ -54,61 +129,6 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
     setIsOpen(false);
   }, []);
 
-  // Enhanced response generation with context awareness
-  const generateIntelligentResponse = (userMessage: string, previousMessages: Message[]): string => {
-    const query = userMessage.toLowerCase().trim();
-    
-    // Handle greetings with variety
-    if (['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'].some(greeting => 
-      query.startsWith(greeting) || query === greeting)) {
-      return SAHADHYAYI_RESPONSES.greetings[Math.floor(Math.random() * SAHADHYAYI_RESPONSES.greetings.length)];
-    }
-
-    // Handle help requests with context
-    if (['help', 'what can you do', 'how can you help', 'assist'].some(term => query.includes(term))) {
-      return SAHADHYAYI_RESPONSES.helpResponses[Math.floor(Math.random() * SAHADHYAYI_RESPONSES.helpResponses.length)];
-    }
-
-    // Handle book recommendations with variety
-    if (['recommend', 'suggestion', 'what should i read', 'good books', 'book recommendation'].some(term => query.includes(term))) {
-      return SAHADHYAYI_RESPONSES.bookRecommendations[Math.floor(Math.random() * SAHADHYAYI_RESPONSES.bookRecommendations.length)];
-    }
-
-    // Genre-specific responses
-    const mentionedGenre = BOOK_CATEGORIES.find(category => 
-      query.includes(category.name.toLowerCase())
-    );
-    
-    if (mentionedGenre) {
-      return `Excellent choice! ${mentionedGenre.description}. In our ${mentionedGenre.name} section, you'll find ${mentionedGenre.popularBooks.slice(0, 2).join(' and ')} among many others. Visit our Library and filter by "${mentionedGenre.name}" to explore the full collection. Would you like specific recommendations within this genre?`;
-    }
-
-    // Feature-specific responses with more detail
-    if (query.includes('library') || query.includes('browse books')) {
-      return "Our Library is your gateway to 10,000+ books! You can search by title, author, or genre, filter by language, and download free PDFs. Each book page includes detailed descriptions, author bios, and reader reviews. What type of books are you looking to explore?";
-    }
-
-    if (query.includes('dashboard') || query.includes('track reading')) {
-      return "Your Dashboard is your personal reading command center! Set reading goals, track your progress through books, manage your bookshelf with different reading statuses, and get personalized recommendations. You can also see your reading statistics and achievements. Want me to guide you through setting up your reading goals?";
-    }
-
-    if (query.includes('author') || query.includes('writer')) {
-      return "Our Authors section lets you discover and connect with writers directly! Browse author profiles, read their biographies, explore their complete works, and even send them messages. You can also attend virtual author events and follow your favorites for updates. Are you looking for a specific author or want to discover new ones?";
-    }
-
-    if (query.includes('social') || query.includes('community') || query.includes('friends')) {
-      return "Join our vibrant reading community! Connect with fellow book lovers, share reviews and recommendations, join reading groups, and participate in book discussions. You can follow other readers, see what they're reading, and discover books through social connections. Ready to connect with other readers?";
-    }
-
-    // Download and PDF related queries
-    if (query.includes('download') || query.includes('pdf') || query.includes('free')) {
-      return "Yes! All books in our library offer free PDF downloads. Simply visit any book's page and click the download button. We believe knowledge should be accessible to everyone. Is there a specific book you'd like to download?";
-    }
-
-    // Use the existing contextual response generator as fallback
-    return generateContextualResponse(userMessage);
-  };
-
   const sendMessage = useCallback(async (userMessage: string) => {
     // Add user message
     const userMsg: Message = {
@@ -120,40 +140,67 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
     setMessages(prev => [...prev, userMsg]);
 
     try {
-      // First try to generate an intelligent response using local knowledge
-      const intelligentResponse = generateIntelligentResponse(userMessage, messages);
+      // Step 1: Check for predefined responses first
+      const predefinedResponse = getPredefinedResponse(userMessage);
       
-      // Update conversation context
-      setConversationContext(prev => [...prev.slice(-4), userMessage]); // Keep last 5 messages for context
+      if (predefinedResponse) {
+        // Use predefined response
+        const botMsg: Message = {
+          text: predefinedResponse,
+          sender: 'bot',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, botMsg]);
+        return;
+      }
 
-      // Enhanced context for AI with conversation history
+      // Step 2: Search for relevant content for book-related queries
+      const relevantContent = await searchRelevantContent(userMessage);
+      
+      if (!relevantContent) {
+        // Step 3: No content found, use fallback message
+        const fallbackMsg: Message = {
+          text: "I couldn't find an answer yet. Try rephrasing?",
+          sender: 'bot',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, fallbackMsg]);
+        return;
+      }
+
+      // Step 4: Generate dynamic AI response with relevant content
       const conversationHistory = messages.slice(-3).map(m => `${m.sender}: ${m.text}`).join('\n');
+      
       const enhancedPrompt = `
-You are the Book Expert AI for Sahadhyayi Digital Library. You help users with book recommendations, library features, and platform navigation.
+You are the Book Expert AI for Sahadhyayi Digital Library. You help users with book recommendations, literature discussions, and platform navigation.
 
 CONVERSATION HISTORY:
 ${conversationHistory}
 
-CURRENT USER QUERY: ${userMessage}
+USER QUERY: ${userMessage}
+
+RELEVANT CONTENT FOUND:
+${relevantContent}
 
 PLATFORM CONTEXT:
 - Sahadhyayi has 10,000+ books across Fiction, Science, Hindi Literature, Devotional, Biography, History
 - Features: Library (/library), Dashboard (/dashboard), Authors (/authors), Social/Reviews (/reviews)
 - All books offer free PDF downloads
 - Users can track reading progress, set goals, and connect with authors
-- Active reading community with discussions and recommendations
 
 INSTRUCTIONS:
-- Provide specific, helpful responses about books and platform features
-- Don't repeat the same generic welcome message
-- Be conversational and reference the conversation context
-- Offer actionable next steps or ask follow-up questions
-- Keep responses concise but informative
-- If discussing books, mention specific genres or features available
+- Use the relevant content above to provide a personalized, detailed response
+- Be conversational and reference specific books/authors from the content when relevant
+- Provide actionable next steps or ask follow-up questions
+- Keep responses informative but concise (2-3 paragraphs max)
+- If discussing books, mention specific titles and authors from the relevant content
 
-Please provide a helpful, contextual response:`;
+Provide a helpful, contextual response based on the relevant content:`;
 
-      // Try API call with enhanced context
+      // Update conversation context
+      setConversationContext(prev => [...prev.slice(-4), userMessage]);
+
+      // Call AI API for dynamic response
       const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
         body: { 
           prompt: enhancedPrompt,
@@ -162,11 +209,9 @@ Please provide a helpful, contextual response:`;
         }
       });
 
-      let botResponse = intelligentResponse; // Use intelligent response as default
+      let botResponse = "I couldn't find an answer yet. Try rephrasing?";
 
-      // Only use API response if it's different and better than our intelligent response
-      if (!error && data?.response && data.response !== intelligentResponse && 
-          !data.response.includes("Welcome to Sahadhyayi Digital Library! I'm your Book Expert AI assistant")) {
+      if (!error && data?.response) {
         botResponse = data.response;
       }
 
@@ -179,7 +224,7 @@ Please provide a helpful, contextual response:`;
       
       setMessages(prev => [...prev, botMsg]);
 
-      // Save interaction for training (only if we used API)
+      // Save interaction for training
       if (!error && data?.response) {
         await saveSample(enhancedPrompt, botResponse, 'chatbot_conversation');
       }
@@ -187,8 +232,8 @@ Please provide a helpful, contextual response:`;
     } catch (error) {
       console.error('Chatbot error:', error);
       
-      // Use intelligent response as fallback
-      const fallbackResponse = generateIntelligentResponse(userMessage, messages);
+      // Use contextual fallback
+      const fallbackResponse = generateContextualResponse(userMessage);
       
       const botMsg: Message = {
         text: fallbackResponse,
