@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGeminiTraining } from '@/hooks/useGeminiTrainingData';
-import { generateContextualResponse, COMMON_QUERIES, BOOK_CATEGORIES, PLATFORM_FEATURES } from '@/utils/chatbotKnowledge';
+import { generateContextualResponse, BOOK_CATEGORIES, PLATFORM_FEATURES } from '@/utils/chatbotKnowledge';
 import { toast } from '@/hooks/use-toast';
 
 interface Message {
