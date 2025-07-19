@@ -50,9 +50,6 @@ export const ModernGoogleMap: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userMarker, setUserMarker] = useState<any>(null);
 
-  useEffect(() => {
-    initializeMap();
-  }, []);
 
   const initializeMap = async () => {
     try {
@@ -226,23 +223,31 @@ export const ModernGoogleMap: React.FC = () => {
 
   // Load Google Maps API
   useEffect(() => {
-    if (!window.google) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y&libraries=marker&loading=async&v=weekly`;
-      script.async = true;
-      script.defer = true;
-      
-      script.onload = () => {
-        // API loaded, initializeMap will be called by useEffect
-      };
-      
-      script.onerror = () => {
-        console.error('Failed to load Google Maps API');
-        setIsLoading(false);
-      };
-      
-      document.head.appendChild(script);
-    }
+    const loadGoogleMaps = () => {
+      if (!window.google) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y&libraries=marker&loading=async&v=weekly`;
+        script.async = true;
+        script.defer = true;
+        
+        script.onload = () => {
+          console.log('Google Maps API loaded successfully');
+          initializeMap();
+        };
+        
+        script.onerror = () => {
+          console.error('Failed to load Google Maps API');
+          setIsLoading(false);
+        };
+        
+        document.head.appendChild(script);
+      } else {
+        // Google Maps already loaded
+        initializeMap();
+      }
+    };
+
+    loadGoogleMaps();
 
     return () => {
       // Cleanup if needed
