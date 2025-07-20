@@ -25,7 +25,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import BookLibrary from "./pages/BookLibrary";
 import ReadingGroups from "./pages/ReadingGroups";
-import ReaderMap from "./pages/ReaderMap";
+import MapPage from "./pages/Map";
 import SocialMedia from "./pages/SocialMedia";
 import Authors from "./pages/Authors";
 import AuthorDetails from "./pages/AuthorDetails";
@@ -105,13 +105,13 @@ function App() {
                             </ProtectedRoute>
                           } 
                         />
-                        <Route 
-                          path="/map" 
+                        <Route
+                          path="/map"
                           element={
                             <ProtectedRoute>
-                              <ReaderMap />
+                              <MapPage />
                             </ProtectedRoute>
-                          } 
+                          }
                         />
                         <Route path="/author/:id" element={<AuthorDetails />} />
                         <Route path="/author-profile/:id" element={<AuthorProfile />} />
