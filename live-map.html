@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Location Map</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+      #error {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #ff5555;
+        color: #fff;
+        text-align: center;
+        padding: 0.5rem;
+        font-family: Arial, sans-serif;
+        z-index: 1;
+        display: none;
+      }
+    </style>
+    <script>
+      let map, marker;
+      const styles = [
+        { elementType: 'geometry', stylers: [{ color: '#212121' }] },
+        { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+        { elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
+        { elementType: 'labels.text.stroke', stylers: [{ color: '#212121' }] },
+        { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#757575' }] },
+        { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#bdbdbd' }] },
+        { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#181818' }] },
+        { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
+        { featureType: 'road', elementType: 'geometry.fill', stylers: [{ color: '#2c2c2c' }] },
+        { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#8a8a8a' }] },
+        { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#373737' }] },
+        { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3c3c3c' }] },
+        { featureType: 'road.highway.controlled_access', elementType: 'geometry', stylers: [{ color: '#4e4e4e' }] },
+        { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#000000' }] }
+      ];
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: { lat: 0, lng: 0 },
+          zoom: 15,
+          styles,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        });
+
+        marker = new google.maps.Marker({
+          map,
+          position: { lat: 0, lng: 0 },
+          icon: {
+            url: 'https://maps.gstatic.com/mapfiles/ms2/micons/cabs.png',
+            scaledSize: new google.maps.Size(40, 40),
+          },
+        });
+
+        if (navigator.geolocation) {
+          navigator.geolocation.watchPosition(updateLocation, handleLocationError, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000,
+          });
+        } else {
+          displayError('Geolocation is not supported by your browser.');
+        }
+      }
+
+      function updateLocation(position) {
+        const { latitude, longitude } = position.coords;
+        const pos = { lat: latitude, lng: longitude };
+        marker.setPosition(pos);
+        map.panTo(pos);
+      }
+
+      function handleLocationError(error) {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            displayError('Location permission denied.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            displayError('Location unavailable.');
+            break;
+          case error.TIMEOUT:
+            displayError('Location request timed out.');
+            break;
+          default:
+            displayError('An unknown error occurred.');
+        }
+      }
+
+      function displayError(msg) {
+        const el = document.getElementById('error');
+        el.textContent = msg;
+        el.style.display = 'block';
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+  </head>
+  <body>
+    <div id="error"></div>
+    <div id="map"></div>
+  </body>
+</html>
