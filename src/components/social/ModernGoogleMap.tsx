@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 declare global {
   interface Window {
     google: any;
-    initGoogleMap: () => void;
+    initMap: () => void;
   }
 }
 
@@ -183,8 +183,9 @@ export const ModernGoogleMap: React.FC = () => {
         return;
       }
 
+      const center = { lat: 28.6139, lng: 77.2090 };
       const mapOptions = {
-        center: { lat: 28.6139, lng: 77.2090 }, // New Delhi
+        center,
         zoom: 12,
         mapTypeId: window.google.maps.MapTypeId.ROADMAP,
         disableDefaultUI: false,
@@ -204,6 +205,8 @@ export const ModernGoogleMap: React.FC = () => {
       };
 
       const newMap = new window.google.maps.Map(mapRef.current, mapOptions);
+      // Add a default marker at the center
+      new window.google.maps.Marker({ position: center, map: newMap });
       setMap(newMap);
       setIsLoaded(true);
       setIsLoading(false);
@@ -253,12 +256,12 @@ export const ModernGoogleMap: React.FC = () => {
 
       // Create and load the script
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initGoogleMap&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap&libraries=places`;
       script.async = true;
       script.defer = true;
-      
+
       // Set up global callback
-      window.initGoogleMap = () => {
+      window.initMap = () => {
         console.log('Google Maps callback triggered');
         resolve();
       };
@@ -282,11 +285,7 @@ export const ModernGoogleMap: React.FC = () => {
       try {
         setIsLoading(true);
         await loadGoogleMapsScript();
-        console.log('Script loaded, initializing map...');
-        // Small delay to ensure DOM is ready
-        setTimeout(() => {
-          initializeMap();
-        }, 100);
+        console.log('Script loaded, waiting for callback...');
       } catch (error) {
         console.error('Error loading Google Maps:', error);
         setIsLoading(false);
@@ -294,6 +293,8 @@ export const ModernGoogleMap: React.FC = () => {
       }
     };
 
+    // Expose callback globally for Google Maps API
+    window.initMap = initializeMap;
     loadMap();
 
     return () => {
@@ -440,12 +441,13 @@ export const ModernGoogleMap: React.FC = () => {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div 
-          ref={mapRef} 
-          className="w-full h-[500px] rounded-xl border border-gray-200 overflow-hidden shadow-lg"
-          style={{ 
-            minHeight: '500px', 
-            height: '500px',
+        <div
+          id="map"
+          ref={mapRef}
+          className="w-full h-[400px] rounded-xl border border-gray-200 overflow-hidden shadow-lg"
+          style={{
+            minHeight: '400px',
+            height: '400px',
             width: '100%',
             display: 'block'
           }}
