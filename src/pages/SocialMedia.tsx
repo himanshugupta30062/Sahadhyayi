@@ -9,6 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import { SocialFeed } from '@/components/social/SocialFeed';
 import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
+import { FriendsLocationMap } from '@/components/social/FriendsLocationMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
 import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
 
@@ -114,8 +115,9 @@ const SocialMedia = () => {
               <EnhancedFriendsManager />
             </TabsContent>
 
-            <TabsContent value="map" className="mt-0">
+            <TabsContent value="map" className="mt-0 space-y-6">
               <EnhancedReadingMap />
+              <FriendsLocationMap />
             </TabsContent>
 
             <TabsContent value="groups" className="mt-0">
