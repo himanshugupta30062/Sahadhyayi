@@ -4,6 +4,7 @@ import { Users, Mail, Heart, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useCommunityStats } from "@/hooks/useCommunityStats";
+import CommunityStats from "@/components/CommunityStats";
 
 const GlobalFooter = () => {
   const [showCount, setShowCount] = useState(false);
@@ -48,6 +49,13 @@ const GlobalFooter = () => {
   return (
     <footer className="bg-gradient-to-r from-orange-600 to-amber-600 text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Community Stats Section */}
+        {showCount && (
+          <div className="mb-8">
+            <CommunityStats />
+          </div>
+        )}
+
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
@@ -72,10 +80,10 @@ const GlobalFooter = () => {
               className="border-orange-200 text-orange-100 hover:bg-orange-500 hover:text-white transition-all mb-4"
             >
               <Users className="w-4 h-4 mr-2" />
-              {isLoading ? 'Loading...' : showCount ? `${stats.totalSignups.toLocaleString()} Members` : 'Show Community Size'}
+              {isLoading ? 'Loading...' : showCount ? 'Hide Community Stats' : 'Show Community Stats'}
             </Button>
             
-            {showCount && (
+            {!showCount && (
               <div className="bg-orange-500/30 p-4 rounded-lg backdrop-blur-sm space-y-3 mb-4">
                 <div className="flex items-center text-sm text-orange-100">
                   <Heart className="w-4 h-4 mr-2 text-red-300" />
@@ -131,7 +139,6 @@ const GlobalFooter = () => {
             </ul>
           </div>
 
-          {/* Support */}
           <div>
             <h4 className="font-semibold text-lg mb-4">Support</h4>
             <ul className="space-y-2 text-orange-100">
@@ -157,7 +164,6 @@ const GlobalFooter = () => {
             </ul>
           </div>
 
-          {/* Company */}
           <div>
             <h4 className="font-semibold text-lg mb-4">Company</h4>
             <ul className="space-y-2 text-orange-100">
