@@ -1,5 +1,6 @@
 
 import { useState, useRef, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UseSpeechToTextOptions {
   onTranscript: (text: string) => void;
@@ -14,20 +15,8 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
 
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          sampleRate: 16000,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
-      });
-      
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
-      
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -42,13 +31,11 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
         setIsProcessing(true);
 
         try {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
           const formData = new FormData();
           formData.append('audio', audioBlob, 'recording.webm');
 
-          console.log('Sending audio to speech-to-text function...');
-
-          // Use direct fetch to Supabase edge function
+          // Use direct fetch for FormData to Supabase edge function
           const response = await fetch(`https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/speech-to-text`, {
             method: 'POST',
             headers: {
@@ -58,13 +45,10 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
           });
 
           if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Speech-to-text API error:', errorText);
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
           const data = await response.json();
-          console.log('Speech-to-text result:', data);
           
           if (data.error) {
             throw new Error(data.error);
@@ -88,7 +72,6 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
 
       mediaRecorder.start();
       setIsRecording(true);
-      console.log('Recording started...');
     } catch (error) {
       console.error('Error starting recording:', error);
       onError('Could not access microphone. Please check permissions.');
@@ -97,7 +80,6 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
-      console.log('Stopping recording...');
       mediaRecorderRef.current.stop();
     }
   }, [isRecording]);

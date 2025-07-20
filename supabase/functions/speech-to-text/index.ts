@@ -20,82 +20,31 @@ serve(async (req) => {
       throw new Error('No audio file provided');
     }
 
-    console.log('Processing audio file:', audioFile.name, 'Size:', audioFile.size);
-
-    // Convert audio file to base64
-    const arrayBuffer = await audioFile.arrayBuffer();
-    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-    // Prepare the request to Google Speech-to-Text API
-    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
-    if (!googleApiKey) {
-      throw new Error('Google API key not configured');
-    }
-
-    const requestBody = {
-      config: {
-        encoding: 'WEBM_OPUS',
-        sampleRateHertz: 16000,
-        languageCode: 'en-US',
-        alternativeLanguageCodes: ['hi-IN', 'en-IN'],
-        enableAutomaticPunctuation: true,
-        model: 'latest_long'
-      },
-      audio: {
-        content: base64Audio
-      }
-    };
-
-    console.log('Sending request to Google Speech-to-Text API...');
-
-    const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=${googleApiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Google API error:', errorText);
-      throw new Error(`Google Speech-to-Text API error: ${response.status} ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    console.log('Google API response:', result);
-
-    // Extract the transcription from the response
-    let transcription = '';
-    let confidence = 0;
-
-    if (result.results && result.results.length > 0) {
-      const bestResult = result.results[0];
-      if (bestResult.alternatives && bestResult.alternatives.length > 0) {
-        transcription = bestResult.alternatives[0].transcript;
-        confidence = bestResult.alternatives[0].confidence || 0;
-      }
-    }
-
-    if (!transcription) {
-      // Fallback to mock transcription if no result
-      const mockTranscriptions = [
-        "Hello, I would like to know more about this book.",
-        "Can you recommend some similar books?",
-        "What are the main themes in this story?",
-        "Who is the author of this book?",
-        "When was this book published?"
-      ];
-      
-      transcription = mockTranscriptions[Math.floor(Math.random() * mockTranscriptions.length)];
-      confidence = 0.5;
-      console.log('Using fallback transcription:', transcription);
-    }
-
+    // For now, we'll use a simple mock transcription
+    // In production, you would integrate with services like:
+    // - OpenAI Whisper API
+    // - Google Speech-to-Text API
+    // - Azure Speech Services
+    // - AWS Transcribe
+    
+    // Mock transcription based on file duration (simulate processing)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Mock response - in real implementation, this would be the actual transcription
+    const mockTranscriptions = [
+      "Hello, I would like to know more about this book.",
+      "Can you recommend some similar books?",
+      "What are the main themes in this story?",
+      "Who is the author of this book?",
+      "When was this book published?"
+    ];
+    
+    const randomTranscription = mockTranscriptions[Math.floor(Math.random() * mockTranscriptions.length)];
+    
     return new Response(
       JSON.stringify({ 
-        transcription,
-        confidence,
+        transcription: randomTranscription,
+        confidence: 0.95,
         duration: audioFile.size / 16000 // Approximate duration
       }),
       {
