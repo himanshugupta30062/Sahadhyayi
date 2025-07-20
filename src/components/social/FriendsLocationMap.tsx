@@ -6,12 +6,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 
 // Google Maps types
 declare global {
   interface Window {
     google: any;
-    initFriendsMap: () => void;
+    initGoogleMaps?: () => void;
+    googleMapsLoadingPromise?: Promise<void>;
   }
 }
 
@@ -27,21 +29,13 @@ export const FriendsLocationMap: React.FC = () => {
     (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ||
     'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y';
 
-  // Load Google Maps script
   useEffect(() => {
-    const loadScript = () => {
-      if (window.google && window.google.maps) {
-        initializeMap();
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initFriendsMap`;
-      script.async = true;
-      window.initFriendsMap = initializeMap;
-      document.head.appendChild(script);
-    };
-
-    loadScript();
+    loadGoogleMaps(GOOGLE_MAPS_API_KEY)
+      .then(initializeMap)
+      .catch(err => {
+        console.error('Failed to load Google Maps', err);
+        toast.error('Failed to load map');
+      });
   }, []);
 
   const initializeMap = () => {
