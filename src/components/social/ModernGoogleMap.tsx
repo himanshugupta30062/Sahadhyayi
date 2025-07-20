@@ -166,8 +166,10 @@ export const ModernGoogleMap: React.FC = () => {
   };
 
   const initializeMap = async () => {
+    // Wait for DOM element to be ready
     if (!mapRef.current) {
-      console.error('Map container not found');
+      console.error('Map container not found, retrying in 100ms...');
+      setTimeout(() => initializeMap(), 100);
       return;
     }
 
@@ -177,6 +179,7 @@ export const ModernGoogleMap: React.FC = () => {
       // Wait for Google Maps to be available
       if (!window.google || !window.google.maps) {
         console.error('Google Maps not loaded');
+        setIsLoading(false);
         return;
       }
 
@@ -280,7 +283,10 @@ export const ModernGoogleMap: React.FC = () => {
         setIsLoading(true);
         await loadGoogleMapsScript();
         console.log('Script loaded, initializing map...');
-        await initializeMap();
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          initializeMap();
+        }, 100);
       } catch (error) {
         console.error('Error loading Google Maps:', error);
         setIsLoading(false);
@@ -335,6 +341,11 @@ export const ModernGoogleMap: React.FC = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      if (!user) {
+        toast.error('You must be signed in to share your location.');
+        return;
+      }
+      
       const { error } = await supabase
         .from('readers')
         .insert({
@@ -342,7 +353,7 @@ export const ModernGoogleMap: React.FC = () => {
           book: currentBook.trim(),
           lat: userLocation.lat,
           lng: userLocation.lng,
-          user_id: user?.id || null
+          user_id: user.id
         });
 
       if (error) {
@@ -389,7 +400,7 @@ export const ModernGoogleMap: React.FC = () => {
     );
   }
 
-  if (!isLoaded) {
+  if (!isLoaded && !isLoading) {
     return (
       <Card className="bg-white shadow-sm border-0 rounded-xl">
         <CardHeader>
@@ -403,7 +414,7 @@ export const ModernGoogleMap: React.FC = () => {
               <MapPin className="w-12 h-12 mx-auto mb-4 text-red-400" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Map Loading Error</h3>
               <p className="text-gray-600 mb-4">
-                Unable to load the interactive map. Please check your internet connection and try again.
+                Unable to load the interactive map. This might be due to network issues or API limitations.
               </p>
               <Button 
                 onClick={() => window.location.reload()} 
