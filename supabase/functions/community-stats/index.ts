@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,36 +14,41 @@ serve(async (req) => {
     return new Response(null, { status: 200, headers: corsHeaders })
   }
 
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const supabase = createClient(supabaseUrl, supabaseKey)
+
   try {
-    // For now, we'll return mock data that simulates real statistics
-    // In production, these would come from actual database queries
-    const baseSignups = 15847;
-    const baseVisits = 125000;
-    
-    // Simulate some growth - add random increments based on time
-    const now = Date.now();
-    const daysSinceEpoch = Math.floor(now / (1000 * 60 * 60 * 24));
-    const signupIncrement = Math.floor(daysSinceEpoch * 2.5); // ~2-3 signups per day
-    const visitIncrement = Math.floor(daysSinceEpoch * 45); // ~40-50 visits per day
-    
+    // Count registered users from the profiles table
+    const { count: signups, error: signupError } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+
+    if (signupError) throw signupError
+
+    // Count recorded website visits
+    const { count: visits, error: visitError } = await supabase
+      .from('website_visits')
+      .select('*', { count: 'exact', head: true })
+
+    if (visitError) throw visitError
+
     const stats = {
-      totalSignups: baseSignups + signupIncrement,
-      totalVisits: baseVisits + visitIncrement,
+      totalSignups: signups ?? 0,
+      totalVisits: visits ?? 0,
       lastUpdated: new Date().toISOString()
-    };
+    }
 
     return new Response(JSON.stringify(stats), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error('Error fetching community stats:', error);
-    
+    console.error('Error fetching community stats:', error)
+
     return new Response(
       JSON.stringify({
-        error: 'Failed to fetch community statistics',
-        totalSignups: 15847, // fallback values
-        totalVisits: 125000
+        error: 'Failed to fetch community statistics'
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
