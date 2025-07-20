@@ -8,13 +8,13 @@ interface CommunityStats {
   lastUpdated: string;
 }
 
-export const useCommunityStats = () => {
+export const useCommunityStats = (autoFetch: boolean = true) => {
   const [stats, setStats] = useState<CommunityStats>({
     totalSignups: 0,
     totalVisits: 0,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
 
   const fetchStats = async () => {
@@ -107,8 +107,10 @@ export const useCommunityStats = () => {
   };
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    if (autoFetch) {
+      fetchStats();
+    }
+  }, [autoFetch]);
 
   return {
     stats,

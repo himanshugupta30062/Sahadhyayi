@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Users, Mail, Heart, TrendingUp } from "lucide-react";
+import { Users, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useCommunityStats } from "@/hooks/useCommunityStats";
@@ -10,7 +10,7 @@ const GlobalFooter = () => {
   const [showCount, setShowCount] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
   const { toast } = useToast();
-  const { stats, isLoading, joinCommunity } = useCommunityStats();
+  const { stats, isLoading, fetchStats, joinCommunity } = useCommunityStats(false);
 
   const handleEmailClick = () => {
     window.location.href = 'mailto:gyan@sahadhyayi.com';
@@ -24,6 +24,9 @@ const GlobalFooter = () => {
   };
 
   const handleShowStats = () => {
+    if (!showCount) {
+      fetchStats();
+    }
     setShowCount(!showCount);
   };
 
@@ -84,22 +87,8 @@ const GlobalFooter = () => {
             </Button>
             
             {!showCount && (
-              <div className="bg-orange-500/30 p-4 rounded-lg backdrop-blur-sm space-y-3 mb-4">
-                <div className="flex items-center text-sm text-orange-100">
-                  <Heart className="w-4 h-4 mr-2 text-red-300" />
-                  <span>
-                    <span className="font-bold text-white">{stats.totalSignups.toLocaleString()}</span> registered readers
-                  </span>
-                </div>
-                <div className="flex items-center text-sm text-orange-100">
-                  <TrendingUp className="w-4 h-4 mr-2 text-green-300" />
-                  <span>
-                    <span className="font-bold text-white">{stats.totalVisits.toLocaleString()}</span> website visitors
-                  </span>
-                </div>
-                <p className="text-xs text-orange-200">Growing every day worldwide!</p>
-                
-                {/* Join Community Button */}
+              <div className="bg-orange-500/30 p-4 rounded-lg backdrop-blur-sm space-y-3 mb-4 text-orange-100">
+                <p>Click "Show Community Stats" to see how we're growing.</p>
                 <Button
                   onClick={handleJoinCommunity}
                   disabled={hasJoined}
