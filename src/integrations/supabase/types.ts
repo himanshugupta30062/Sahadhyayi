@@ -1592,6 +1592,30 @@ export type Database = {
         }
         Relationships: []
       }
+      website_visits: {
+        Row: {
+          id: number
+          ip_address: string | null
+          page_url: string | null
+          user_agent: string | null
+          visited_at: string
+        }
+        Insert: {
+          id?: number
+          ip_address?: string | null
+          page_url?: string | null
+          user_agent?: string | null
+          visited_at?: string
+        }
+        Update: {
+          id?: number
+          ip_address?: string | null
+          page_url?: string | null
+          user_agent?: string | null
+          visited_at?: string
+        }
+        Relationships: []
+      }
       whatsapp_contacts: {
         Row: {
           contact_name: string | null
@@ -1700,6 +1724,14 @@ export type Database = {
           completed_books: number
           want_to_read_books: number
         }[]
+      }
+      get_website_visit_count: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      record_website_visit: {
+        Args: { ip_addr?: string; user_agent_string?: string; page?: string }
+        Returns: undefined
       }
       update_author_book_counts: {
         Args: Record<PropertyKey, never>

@@ -69,16 +69,14 @@ const CommunityStats = () => {
         errors: { ...prev.errors, visitors: null },
       }));
 
-      // Get count from website_visits table
-      const { count, error } = await supabase
-        .from('website_visits')
-        .select('*', { count: 'exact', head: true });
+      // Use the database function to get visit count
+      const { data, error } = await supabase.rpc('get_website_visit_count');
 
       if (error) throw error;
 
       setStats(prev => ({
         ...prev,
-        totalVisitors: count || 0,
+        totalVisitors: data || 0,
         loading: { ...prev.loading, visitors: false },
       }));
     } catch (error) {
