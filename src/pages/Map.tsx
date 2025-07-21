@@ -87,6 +87,13 @@ const MapPage = () => {
         styles: darkMapStyle
       });
       setReaderMap(map);
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          map.setZoom(8);
+        });
+      }
     }
 
     if (!friendsMap && friendsMapRef.current) {
@@ -97,6 +104,13 @@ const MapPage = () => {
         styles: darkMapStyle
       });
       setFriendsMap(map);
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          map.setZoom(8);
+        });
+      }
     }
   }, [mapsLoaded, readerMap, friendsMap]);
 
@@ -189,17 +203,17 @@ const MapPage = () => {
 
             <TabsContent value="readers">
               {readersLoading && <div className="h-[500px] flex items-center justify-center">Loading...</div>}
+              <div ref={readerMapRef} style={{ height: '500px' }} />
               {!readersLoading && readers.length === 0 && (
-                <Card>
+                <Card className="mt-4">
                   <CardContent className="p-4 text-center text-sm text-gray-600">{readersError || 'No readers found for this book'}</CardContent>
                 </Card>
               )}
-              <div ref={readerMapRef} style={{ height: '500px' }} className={readersLoading || readers.length === 0 ? 'hidden' : ''} />
             </TabsContent>
 
             <TabsContent value="friends">
+              <div ref={friendsMapRef} style={{ height: '500px' }} />
               {friendsLoading && <div className="h-[500px] flex items-center justify-center">Loading...</div>}
-              <div ref={friendsMapRef} style={{ height: '500px' }} className={friendsLoading ? 'hidden' : ''} />
             </TabsContent>
           </Tabs>
         </div>
