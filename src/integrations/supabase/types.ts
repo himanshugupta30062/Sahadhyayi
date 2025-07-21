@@ -1370,6 +1370,36 @@ export type Database = {
           },
         ]
       }
+      user_books_location: {
+        Row: {
+          book_id: string
+          created_at: string | null
+          id: string
+          latitude: number
+          longitude: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_bookshelf: {
         Row: {
           added_at: string | null
@@ -1597,7 +1627,6 @@ export type Database = {
           id: number
           ip_address: string | null
           page_url: string | null
-          country: string | null
           user_agent: string | null
           visited_at: string
         }
@@ -1605,7 +1634,6 @@ export type Database = {
           id?: number
           ip_address?: string | null
           page_url?: string | null
-          country?: string | null
           user_agent?: string | null
           visited_at?: string
         }
@@ -1613,28 +1641,8 @@ export type Database = {
           id?: number
           ip_address?: string | null
           page_url?: string | null
-          country?: string | null
           user_agent?: string | null
           visited_at?: string
-        }
-        Relationships: []
-      }
-      ,
-      community_users: {
-        Row: {
-          id: string
-          user_id: string
-          joined_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          joined_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          joined_at?: string | null
         }
         Relationships: []
       }
@@ -1752,7 +1760,7 @@ export type Database = {
         Returns: number
       }
       record_website_visit: {
-        Args: { ip_addr?: string; user_agent_string?: string; page?: string; country_code?: string }
+        Args: { ip_addr?: string; user_agent_string?: string; page?: string }
         Returns: undefined
       }
       update_author_book_counts: {

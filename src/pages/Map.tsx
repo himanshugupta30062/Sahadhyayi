@@ -1,22 +1,30 @@
 
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SEO from '@/components/SEO';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = 'https://rknxtatvlzunatpyqxro.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/integrations/supabase/client';
 import { useFriends } from '@/hooks/useFriends';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { ReadersMap } from '@/components/maps/ReadersMap';
 import { FriendsMap } from '@/components/maps/FriendsMap';
+import { BookFilterDropdown } from '@/components/social/BookFilterDropdown';
 
-interface ReaderProfile {
-  full_name: string | null;
-  location_lat: number | null;
-  location_lng: number | null;
+interface ReaderLocation {
+  latitude: number;
+  longitude: number;
+  user_id: string;
+  profiles?: {
+    full_name: string | null;
+    username: string | null;
+  };
+}
+
+interface BookOption {
+  id: string;
+  title: string;
+  author?: string;
+  cover_image_url?: string;
 }
 
 declare global {
@@ -55,18 +63,15 @@ const darkMapStyle = [
 const MapPage = () => {
   const [tab, setTab] = useState<'readers' | 'friends'>('readers');
   const [mapsLoaded, setMapsLoaded] = useState(false);
-  const [readers, setReaders] = useState<ReaderProfile[]>([]);
+  const [readers, setReaders] = useState<ReaderLocation[]>([]);
   const [readersLoading, setReadersLoading] = useState(false);
   const [readersError, setReadersError] = useState<string | null>(null);
+  const [selectedBook, setSelectedBook] = useState<BookOption | null>(null);
 
   // Simplify friends data handling
   const friendsQuery = useFriends();
   const friends = friendsQuery.data || [];
   const friendsLoading = friendsQuery.isLoading;
-  
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const selectedBookId = params.get('bookId');
 
   const GOOGLE_MAPS_API_KEY =
     (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ||
@@ -81,7 +86,7 @@ const MapPage = () => {
   }, [GOOGLE_MAPS_API_KEY]);
 
   useEffect(() => {
-    if (!selectedBookId) {
+    if (!selectedBook?.id) {
       setReaders([]);
       return;
     }
@@ -90,24 +95,35 @@ const MapPage = () => {
       setReadersLoading(true);
       setReadersError(null);
       try {
-        const response = await supabase
-          .from('profiles')
-          .select('full_name, location_lat, location_lng')
-          .eq('current_book_id', selectedBookId)
-          .not('location_lat', 'is', null)
-          .not('location_lng', 'is', null);
+        const { data, error } = await supabase
+          .from('user_books_location')
+          .select(`
+            latitude,
+            longitude,
+            user_id
+          `)
+          .eq('book_id', selectedBook.id);
+
+        // Get profile data separately if we have readers
+        let enrichedData: ReaderLocation[] = [];
+        if (data && data.length > 0) {
+          const userIds = data.map(d => d.user_id);
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, full_name, username')
+            .in('id', userIds);
+
+          enrichedData = data.map(reader => ({
+            ...reader,
+            profiles: profilesData?.find(profile => profile.id === reader.user_id) || null
+          }));
+        }
         
-        if (response.error) {
-          setReadersError(response.error.message);
+        if (error) {
+          setReadersError(error.message);
           setReaders([]);
         } else {
-          const profileData = response.data as any[];
-          const readerProfiles: ReaderProfile[] = profileData ? profileData.map((item: any) => ({
-            full_name: item.full_name,
-            location_lat: item.location_lat,
-            location_lng: item.location_lng
-          })) : [];
-          setReaders(readerProfiles);
+          setReaders(enrichedData);
         }
       } catch (err) {
         setReadersError('Failed to fetch readers');
@@ -117,7 +133,7 @@ const MapPage = () => {
     };
 
     fetchReaders();
-  }, [selectedBookId]);
+  }, [selectedBook?.id]);
 
   return (
     <>
@@ -130,13 +146,26 @@ const MapPage = () => {
               <TabsTrigger value="friends">🧑‍🤝‍🧑 Friends Map</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="readers">
+            <TabsContent value="readers" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Select Book to View Readers</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <BookFilterDropdown
+                    selectedBookId={selectedBook?.id || null}
+                    onBookSelect={setSelectedBook}
+                  />
+                </CardContent>
+              </Card>
+              
               <ReadersMap
                 readers={readers}
                 readersLoading={readersLoading}
                 readersError={readersError}
                 mapsLoaded={mapsLoaded}
                 darkMapStyle={darkMapStyle}
+                selectedBook={selectedBook}
               />
             </TabsContent>
 
