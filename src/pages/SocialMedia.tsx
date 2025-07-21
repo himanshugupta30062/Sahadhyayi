@@ -91,19 +91,19 @@ const SocialMedia = () => {
             <TabsList className="grid w-full grid-cols-4 mb-4 sm:mb-6 bg-white shadow-sm">
               <TabsTrigger value="feed" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
                 <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Feed</span>
+                <span className="hidden sm:inline">Feed</span>
               </TabsTrigger>
               <TabsTrigger value="friends" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
                 <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Friends</span>
+                <span className="hidden sm:inline">Friends</span>
               </TabsTrigger>
               <TabsTrigger value="map" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
                 <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Map</span>
+                <span className="hidden sm:inline">Map</span>
               </TabsTrigger>
               <TabsTrigger value="groups" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
                 <UsersIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Groups</span>
+                <span className="hidden sm:inline">Groups</span>
               </TabsTrigger>
             </TabsList>
 

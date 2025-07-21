@@ -223,15 +223,16 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials })
       </div>
     </div>
     <div className="flex gap-2">
-      <Button 
-        size="sm" 
+      <Button
+        size="sm"
         variant="outline"
+        aria-label="Add friend"
         onClick={() => onSendRequest(user.id, user.full_name || 'User')}
       >
         <UserPlus className="w-4 h-4 mr-1" />
         Add
       </Button>
-      <Button size="sm" variant="ghost">
+      <Button size="sm" variant="ghost" aria-label="Message user">
         <MessageCircle className="w-4 h-4" />
       </Button>
     </div>

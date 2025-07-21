@@ -236,7 +236,11 @@ export const ReadingGroups = () => {
             <CardContent className="p-4">
               <div className="flex gap-4">
                 {/* Group Image */}
-                <div className="w-20 h-12 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex-shrink-0"></div>
+                <img
+                  src={group.coverImage}
+                  alt={`${group.name} cover`}
+                  className="w-20 h-12 rounded-lg object-cover flex-shrink-0"
+                />
                 
                 {/* Group Info */}
                 <div className="flex-1">
