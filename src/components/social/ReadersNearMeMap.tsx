@@ -11,6 +11,7 @@ import { LocationPermissionModal } from './LocationPermissionModal';
 import { BookFilterDropdown } from './BookFilterDropdown';
 import { getCurrentLocation, calculateDistance, type LocationCoords } from '@/lib/locationService';
 import { useFriends } from '@/hooks/useFriends';
+import { useUpdateUserLocation } from '@/hooks/useUserLocation';
 
 declare global {
   interface Window {
@@ -26,6 +27,7 @@ interface NearbyReader {
   location_lng: number;
   distance: number;
   current_book_title?: string;
+  avatar_img_url?: string;
 }
 
 interface BookOption {
@@ -38,6 +40,7 @@ interface BookOption {
 export const ReadersNearMeMap: React.FC = () => {
   const { user } = useAuth();
   const { data: friends = [] } = useFriends();
+  const updateLocationMutation = useUpdateUserLocation();
   
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
@@ -63,6 +66,10 @@ export const ReadersNearMeMap: React.FC = () => {
       setLocationError(null);
       const location = await getCurrentLocation();
       setUserLocation(location);
+      
+      // Save location to database
+      await updateLocationMutation.mutateAsync(location);
+      
       setShowLocationModal(false);
       toast.success('Location access granted!');
     } catch (error: any) {
@@ -137,7 +144,8 @@ export const ReadersNearMeMap: React.FC = () => {
           profile_photo_url,
           location_lat,
           location_lng,
-          user_bookshelf!inner(book_id, status)
+          user_bookshelf!inner(book_id, status),
+          user_avatars(avatar_img_url)
         `)
         .eq('user_bookshelf.book_id', selectedBook.id)
         .in('user_bookshelf.status', ['reading', 'want_to_read'])
@@ -169,6 +177,7 @@ export const ReadersNearMeMap: React.FC = () => {
             { lat: Number(reader.location_lat), lng: Number(reader.location_lng) }
           ),
           current_book_title: selectedBook.title,
+          avatar_img_url: reader.user_avatars?.[0]?.avatar_img_url,
         }))
         .filter((reader: NearbyReader) => reader.distance <= MAX_DISTANCE_KM)
         .sort((a: NearbyReader, b: NearbyReader) => a.distance - b.distance);
@@ -177,6 +186,43 @@ export const ReadersNearMeMap: React.FC = () => {
     } catch (error) {
       console.error('Error fetching nearby readers:', error);
     }
+  };
+
+  // Create custom marker icon from avatar
+  const createAvatarMarker = (avatarUrl: string, isUser: boolean = false) => {
+    if (!window.google) return null;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 40;
+    canvas.height = 40;
+
+    if (ctx) {
+      // Draw circle background
+      ctx.beginPath();
+      ctx.arc(20, 20, 18, 0, 2 * Math.PI);
+      ctx.fillStyle = isUser ? '#3b82f6' : '#f97316';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Load and draw avatar image
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(20, 20, 15, 0, 2 * Math.PI);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(img, 5, 5, 30, 30);
+        ctx.restore();
+      };
+      img.src = avatarUrl;
+    }
+
+    return canvas.toDataURL();
   };
 
   // Update markers when readers or map change
@@ -227,7 +273,11 @@ export const ReadersNearMeMap: React.FC = () => {
         position: { lat: reader.location_lat, lng: reader.location_lng },
         map: map,
         title: reader.full_name,
-        icon: {
+        icon: reader.avatar_img_url ? {
+          url: reader.avatar_img_url,
+          scaledSize: new window.google.maps.Size(40, 40),
+          anchor: new window.google.maps.Point(20, 20),
+        } : {
           path: window.google.maps.SymbolPath.CIRCLE,
           scale: 12,
           fillColor: '#f97316',
@@ -244,7 +294,7 @@ export const ReadersNearMeMap: React.FC = () => {
           <div style="padding: 12px; max-width: 250px;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
               <div style="width: 40px; height: 40px; background: ${isFriend ? '#10b981' : '#f97316'}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                ${reader.full_name.charAt(0).toUpperCase()}
+                ${reader.avatar_img_url ? `<img src="${reader.avatar_img_url}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />` : reader.full_name.charAt(0).toUpperCase()}
               </div>
               <div>
                 <h3 style="margin: 0; font-size: 16px; font-weight: 600;">
@@ -461,10 +511,18 @@ export const ReadersNearMeMap: React.FC = () => {
                       className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg cursor-pointer transition-all duration-200 border border-gray-100 hover:border-orange-200 hover:shadow-sm"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 bg-gradient-to-br ${isFriend ? 'from-green-400 to-green-600' : 'from-orange-400 to-orange-600'} rounded-full flex items-center justify-center shadow-sm`}>
-                          <span className="text-sm font-bold text-white">
-                            {reader.full_name.charAt(0).toUpperCase()}
-                          </span>
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm overflow-hidden ${isFriend ? 'border-2 border-green-400' : 'border-2 border-orange-400'}`}>
+                          {reader.avatar_img_url ? (
+                            <img 
+                              src={reader.avatar_img_url} 
+                              alt={reader.full_name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className={`text-sm font-bold text-white bg-gradient-to-br ${isFriend ? 'from-green-400 to-green-600' : 'from-orange-400 to-orange-600'} w-full h-full flex items-center justify-center`}>
+                              {reader.full_name.charAt(0).toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">

@@ -1338,6 +1338,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_avatars: {
+        Row: {
+          avatar_img_url: string | null
+          avatar_json: Json | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_img_url?: string | null
+          avatar_json?: Json | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_img_url?: string | null
+          avatar_json?: Json | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_books: {
         Row: {
           added_at: string
@@ -1405,6 +1432,7 @@ export type Database = {
           added_at: string | null
           book_id: string
           id: string
+          location_sharing: boolean | null
           notes: string | null
           rating: number | null
           status: string | null
@@ -1414,6 +1442,7 @@ export type Database = {
           added_at?: string | null
           book_id: string
           id?: string
+          location_sharing?: boolean | null
           notes?: string | null
           rating?: number | null
           status?: string | null
@@ -1423,6 +1452,7 @@ export type Database = {
           added_at?: string | null
           book_id?: string
           id?: string
+          location_sharing?: boolean | null
           notes?: string | null
           rating?: number | null
           status?: string | null
@@ -1487,6 +1517,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_locations: {
+        Row: {
+          id: string
+          is_active: boolean | null
+          last_updated: string | null
+          latitude: number
+          longitude: number
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          latitude: number
+          longitude: number
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          latitude?: number
+          longitude?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       user_personal_library: {
         Row: {

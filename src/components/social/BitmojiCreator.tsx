@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { User, Palette, Save, RotateCcw } from 'lucide-react';
+import { useUpdateUserAvatar } from '@/hooks/useUserAvatar';
+import { toast } from 'sonner';
 
 interface BitmojiFeatures {
   skinTone: string;
@@ -41,6 +43,8 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
     outfit: 'casual',
     accessory: 'none'
   });
+
+  const updateAvatarMutation = useUpdateUserAvatar();
 
   // Predefined options for each feature
   const skinTones = ['#f4d1ae', '#deb887', '#d2691e', '#8b4513', '#654321', '#2f1b14'];
@@ -137,11 +141,23 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
       (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
   };
 
-  const handleSave = () => {
-    const avatarSvg = generateAvatarSvg();
-    const avatarDataUrl = 'data:image/svg+xml;base64,' + btoa(avatarSvg);
-    onSave(avatarDataUrl);
-    onClose();
+  const handleSave = async () => {
+    try {
+      const avatarSvg = generateAvatarSvg();
+      const avatarDataUrl = 'data:image/svg+xml;base64,' + btoa(avatarSvg);
+      
+      await updateAvatarMutation.mutateAsync({
+        avatar_json: features,
+        avatar_img_url: avatarDataUrl,
+      });
+
+      onSave(avatarDataUrl);
+      toast.success('Avatar saved successfully!');
+      onClose();
+    } catch (error) {
+      console.error('Error saving avatar:', error);
+      toast.error('Failed to save avatar');
+    }
   };
 
   const resetToDefault = () => {
@@ -179,9 +195,13 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
               />
             </div>
             <div className="flex gap-2 justify-center">
-              <Button onClick={handleSave} className="bg-orange-600 hover:bg-orange-700">
+              <Button 
+                onClick={handleSave} 
+                className="bg-orange-600 hover:bg-orange-700"
+                disabled={updateAvatarMutation.isPending}
+              >
                 <Save className="w-4 h-4 mr-2" />
-                Save Avatar
+                {updateAvatarMutation.isPending ? 'Saving...' : 'Save Avatar'}
               </Button>
               <Button onClick={resetToDefault} variant="outline">
                 <RotateCcw className="w-4 h-4 mr-2" />
