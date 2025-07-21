@@ -22,47 +22,24 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     setError(null);
 
     try {
-      // Get the current session for authorization
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
+      const { error: joinError, count: signups } = await supabase
+        .from('community_users')
+        .select('*', { count: 'exact', head: true });
 
-      // Add authorization header if user is authenticated
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
+      if (joinError) throw joinError;
 
-      const response = await fetch('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/community-stats', {
-        headers,
+      const { data: visits, error: visitError } = await supabase.rpc('get_website_visit_count');
+
+      if (visitError) throw visitError;
+
+      setStats({
+        totalSignups: signups ?? 0,
+        totalVisits: visits ?? 0,
+        lastUpdated: new Date().toISOString(),
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setStats({
-          totalSignups: data.totalSignups || 0,
-          totalVisits: data.totalVisits || 0,
-          lastUpdated: new Date().toISOString()
-        });
-      } else {
-        console.error('Community stats API failed:', response.status, response.statusText);
-        // Fallback to default stats
-        setStats({
-          totalSignups: 15847,
-          totalVisits: 125000,
-          lastUpdated: new Date().toISOString()
-        });
-      }
     } catch (err) {
       console.error('Failed to fetch community stats:', err);
-      // Show fallback values if API fails
-      setStats({
-        totalSignups: 15847,
-        totalVisits: 125000,
-        lastUpdated: new Date().toISOString()
-      });
-      setError('Failed to load community stats - showing cached data');
+      setError('Failed to load community stats');
     } finally {
       setIsLoading(false);
     }
@@ -71,39 +48,28 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
   const joinCommunity = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
 
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
+      if (!session?.user) return false;
 
-      const response = await fetch('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/community-stats', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ action: 'join' })
-      });
+      const { error } = await supabase
+        .from('community_users')
+        .upsert({ user_id: session.user.id });
 
-      if (response.ok) {
-        // Optimistically update the stats
-        setStats(prev => ({
-          ...prev,
-          totalSignups: prev.totalSignups + 1,
-          lastUpdated: new Date().toISOString()
-        }));
-        
-        // Fetch updated stats
-        await fetchStats();
-        
-        return true;
-      }
+      if (error) throw error;
+
+      setStats(prev => ({
+        ...prev,
+        totalSignups: prev.totalSignups + 1,
+        lastUpdated: new Date().toISOString(),
+      }));
+
+      await fetchStats();
+
+      return true;
     } catch (err) {
       console.error('Failed to join community:', err);
+      return false;
     }
-    
-    return false;
   };
 
   useEffect(() => {

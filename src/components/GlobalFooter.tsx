@@ -5,12 +5,16 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useCommunityStats } from "@/hooks/useCommunityStats";
 import CommunityStats from "@/components/CommunityStats";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const GlobalFooter = () => {
   const [showCount, setShowCount] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
   const { toast } = useToast();
   const { stats, isLoading, fetchStats, joinCommunity } = useCommunityStats(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleEmailClick = () => {
     window.location.href = 'mailto:gyan@sahadhyayi.com';
@@ -32,20 +36,31 @@ const GlobalFooter = () => {
 
   const handleJoinCommunity = async () => {
     if (hasJoined) return;
-    
+
+    if (!user) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to join the Sahadhyayi community.'
+      });
+      navigate('/signin');
+      return;
+    }
+
     const success = await joinCommunity();
     if (success) {
       setHasJoined(true);
       toast({
-        title: "Thanks for joining!",
-        description: "Welcome to the Sahadhyayi reading community!",
+        title: 'Thanks for joining!',
+        description: 'Welcome to the Sahadhyayi reading community!'
       });
+      navigate('/social');
     } else {
       toast({
-        title: "Welcome!",
-        description: "Thanks for your interest in joining our community!",
+        title: 'Welcome!',
+        description: 'Thanks for your interest in joining our community!'
       });
       setHasJoined(true);
+      navigate('/social');
     }
   };
 

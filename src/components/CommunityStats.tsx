@@ -39,9 +39,9 @@ const CommunityStats = () => {
         errors: { ...prev.errors, members: null },
       }));
 
-      // Get count of registered users from profiles table
+      // Get count of community members
       const { count, error } = await supabase
-        .from('profiles')
+        .from('community_users')
         .select('*', { count: 'exact', head: true });
 
       if (error) throw error;
@@ -93,11 +93,12 @@ const CommunityStats = () => {
     getCommunityUserCount();
     getTotalPageViews();
 
-    // Set up real-time updates for user registrations
+    // Set up real-time updates for community membership
     const profilesChannel = supabase
-      .channel('profiles-changes')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'profiles' }, 
+      .channel('community-users-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'community_users' },
         () => {
           getCommunityUserCount();
         }
