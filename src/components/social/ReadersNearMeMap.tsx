@@ -56,9 +56,24 @@ export const ReadersNearMeMap: React.FC = () => {
   const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y';
   const MAX_DISTANCE_KM = 50;
 
-  // Request location permission on component mount
+  // Auto-load map and request location on component mount
   useEffect(() => {
-    setShowLocationModal(true);
+    const autoRequestLocation = async () => {
+      try {
+        const location = await getCurrentLocation();
+        setUserLocation(location);
+        
+        // Save location to database
+        await updateLocationMutation.mutateAsync(location);
+        
+        toast.success('Location detected for map');
+      } catch (error: any) {
+        console.log('Location permission not available, loading map without location');
+        // Still load the map even without location
+      }
+    };
+
+    autoRequestLocation();
   }, []);
 
   const handleRequestLocation = async () => {
@@ -95,12 +110,12 @@ export const ReadersNearMeMap: React.FC = () => {
     loadMap();
   }, [GOOGLE_MAPS_API_KEY]);
 
-  // Initialize map when loaded and user location is available
+  // Initialize map when loaded (with or without user location)
   useEffect(() => {
-    if (isLoaded && userLocation && mapRef.current && window.google) {
+    if (isLoaded && mapRef.current && window.google) {
       initializeMap();
     }
-  }, [isLoaded, userLocation]);
+  }, [isLoaded]);
 
   // Fetch nearby readers when location and selected book are available
   useEffect(() => {
@@ -112,11 +127,12 @@ export const ReadersNearMeMap: React.FC = () => {
   }, [userLocation, selectedBook]);
 
   const initializeMap = () => {
-    if (!mapRef.current || !window.google || !userLocation) return;
+    if (!mapRef.current || !window.google) return;
 
+    const defaultCenter = { lat: 20, lng: 0 }; // World center as fallback
     const mapOptions = {
-      center: userLocation,
-      zoom: 12,
+      center: userLocation || defaultCenter,
+      zoom: userLocation ? 12 : 2,
       mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       styles: [
         {
@@ -129,6 +145,31 @@ export const ReadersNearMeMap: React.FC = () => {
 
     const newMap = new window.google.maps.Map(mapRef.current, mapOptions);
     setMap(newMap);
+
+    // Try to get user location after map is initialized if not already available
+    if (!userLocation && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setUserLocation(location);
+          newMap.setCenter(location);
+          newMap.setZoom(12);
+          
+          // Save location to database
+          try {
+            await updateLocationMutation.mutateAsync(location);
+          } catch (error) {
+            console.log('Failed to save location to database');
+          }
+        },
+        () => {
+          console.log('Geolocation failed, using default map view');
+        }
+      );
+    }
   };
 
   const fetchNearbyReaders = async () => {
@@ -405,45 +446,6 @@ export const ReadersNearMeMap: React.FC = () => {
     );
   }
 
-  if (!userLocation) {
-    return (
-      <>
-        <Card className="bg-white shadow-sm border-0 rounded-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
-              📚 Readers Near Me
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl h-[500px] border overflow-hidden flex items-center justify-center">
-              <div className="text-center max-w-md">
-                <MapPin className="w-12 h-12 mx-auto mb-4 text-amber-500" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Location Required</h3>
-                <p className="text-gray-600 mb-4">
-                  We need your location to show readers near you who are reading the same book.
-                </p>
-                <Button 
-                  onClick={() => setShowLocationModal(true)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Enable Location
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <LocationPermissionModal
-          isOpen={showLocationModal}
-          onClose={() => setShowLocationModal(false)}
-          onRequestLocation={handleRequestLocation}
-          hasError={!!locationError}
-          errorMessage={locationError || undefined}
-        />
-      </>
-    );
-  }
 
   return (
     <>
@@ -564,13 +566,6 @@ export const ReadersNearMeMap: React.FC = () => {
         </CardContent>
       </Card>
 
-      <LocationPermissionModal
-        isOpen={showLocationModal}
-        onClose={() => setShowLocationModal(false)}
-        onRequestLocation={handleRequestLocation}
-        hasError={!!locationError}
-        errorMessage={locationError || undefined}
-      />
     </>
   );
 };
