@@ -1,91 +1,32 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MapPin, MessageCircle, User, Users, Palette } from 'lucide-react';
-import { useFriends } from '@/hooks/useFriends';
+import { User, Palette } from 'lucide-react';
 import { UserProfileModal } from './UserProfileModal';
 import { ChatWindow } from './ChatWindow';
-import { ModernGoogleMap } from './ModernGoogleMap';
+import { ReadersNearMeMap } from './ReadersNearMeMap';
 import { BitmojiCreator } from './BitmojiCreator';
 
-interface FriendLocation {
-  id: string;
-  name: string;
-  avatar?: string;
-  lat: number;
-  lng: number;
-  lastSeen: string;
-}
-
 export const EnhancedReadingMap = () => {
-  const [selectedFriend, setSelectedFriend] = useState<FriendLocation | null>(null);
   const [showProfile, setShowProfile] = useState<string | null>(null);
   const [showChat, setShowChat] = useState<string | null>(null);
   const [showBitmojiCreator, setShowBitmojiCreator] = useState(false);
   const [userBitmoji, setUserBitmoji] = useState<string | null>(
     localStorage.getItem('userBitmoji')
   );
-  const [mapCenter, setMapCenter] = useState({ lat: 40.7128, lng: -74.0060 }); // Default to NYC
-
-  const { data: friends = [] } = useFriends();
-
-
-  // Get user's current location
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setMapCenter({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.log('Location access denied:', error);
-        }
-      );
-    }
-  }, []);
-
-  const getInitials = (name: string) => {
-    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
-  };
-
-  const handleFriendClick = (friend: FriendLocation) => {
-    setSelectedFriend(friend);
-  };
-
-  const handleCloseDetails = () => {
-    setSelectedFriend(null);
-  };
-
-  const handleViewProfile = () => {
-    if (selectedFriend) {
-      setShowProfile(selectedFriend.id);
-      setSelectedFriend(null);
-    }
-  };
-
-  const handleStartChat = () => {
-    if (selectedFriend) {
-      setShowChat(selectedFriend.id);
-      setSelectedFriend(null);
-    }
-  };
 
   const handleSaveBitmoji = (avatarData: string) => {
     setUserBitmoji(avatarData);
     localStorage.setItem('userBitmoji', avatarData);
   };
 
-
   return (
     <>
-      {/* Main Google Maps Component with Real-time Reader Locations */}
-      <ModernGoogleMap />
+      {/* Main Readers Near Me Map */}
+      <ReadersNearMeMap />
       
       {/* Avatar Customization */}
       <Card className="bg-white shadow-sm border-0 rounded-xl mt-6">
@@ -122,48 +63,6 @@ export const EnhancedReadingMap = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Friend Details Modal */}
-      {selectedFriend && (
-        <Dialog open={!!selectedFriend} onOpenChange={handleCloseDetails}>
-          <DialogContent className="sm:max-w-sm">
-            <DialogHeader>
-              <DialogTitle className="text-center">Friend Details</DialogTitle>
-            </DialogHeader>
-            <div className="text-center space-y-4">
-              <Avatar className="w-16 h-16 mx-auto">
-                <AvatarImage src={selectedFriend.avatar} />
-                <AvatarFallback className="text-lg bg-orange-100 text-orange-700">
-                  {getInitials(selectedFriend.name)}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div>
-                <h3 className="font-semibold text-gray-900">{selectedFriend.name}</h3>
-                <p className="text-sm text-gray-600">Currently reading nearby</p>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button 
-                  variant="outline" 
-                  className="flex-1 border-orange-300 text-orange-700 hover:bg-orange-50"
-                  onClick={handleViewProfile}
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
-                </Button>
-                <Button 
-                  className="flex-1 bg-orange-600 hover:bg-orange-700"
-                  onClick={handleStartChat}
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Chat
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
 
       {showProfile && (
         <UserProfileModal
