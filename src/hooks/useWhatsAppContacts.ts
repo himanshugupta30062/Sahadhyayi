@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -18,7 +18,7 @@ export const useWhatsAppContacts = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async () => {
     if (!user) return;
 
     setIsLoading(true);
@@ -38,7 +38,7 @@ export const useWhatsAppContacts = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   const syncContacts = async (contactList: Array<{ phone: string; name: string }>) => {
     if (!user) return;
@@ -113,7 +113,7 @@ export const useWhatsAppContacts = () => {
 
   useEffect(() => {
     fetchContacts();
-  }, [user]);
+  }, [user, fetchContacts]);
 
   return {
     contacts,

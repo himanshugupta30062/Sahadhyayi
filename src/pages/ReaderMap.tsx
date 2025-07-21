@@ -46,7 +46,7 @@ const ReaderMap = () => {
       .catch(err => {
         console.error('Failed to load Google Maps', err);
       });
-  }, []);
+  }, [GOOGLE_MAPS_API_KEY]);
 
   useEffect(() => {
     const fetchReaders = async () => {

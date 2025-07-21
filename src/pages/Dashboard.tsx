@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
@@ -60,18 +60,18 @@ const Dashboard = () => {
   const progressPercentage = Math.min(100, Math.round((completedBooks / readingGoal) * 100));
 
   // Function to check reading goal before adding books
-  const checkReadingGoal = () => {
+  const checkReadingGoal = useCallback(() => {
     if (totalBooks >= readingGoal) {
       setShowGoalModal(true);
       return false; // Block adding book
     }
     return true; // Allow adding book
-  };
+  }, [totalBooks, readingGoal]);
 
   // Expose function globally for other components to use
   useEffect(() => {
     (window as any).checkReadingGoal = checkReadingGoal;
-  }, [totalBooks, readingGoal]);
+  }, [checkReadingGoal]);
 
   if (profileLoading) {
     return (
