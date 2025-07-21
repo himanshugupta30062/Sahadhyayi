@@ -99,7 +99,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
             {readingProgress.map((book) => {
               const progressPercent = Math.round((book.current_page / book.total_pages) * 100);
               return (
-                <Card key={book.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = `/book-details/${book.id}`}>
+                <Card key={book.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = `/book/${book.id}`}>
                   <div className="flex space-x-3">
                     {book.cover_image_url ? (
                       <img
@@ -143,7 +143,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                 const progressPercent = Math.round((book.current_page / book.total_pages) * 100);
                 return (
                   <CarouselItem key={book.id} className="md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = `/book-details/${book.id}`}>
+                    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = `/book/${book.id}`}>
                       <CardContent className="p-4">
                         <div className="flex space-x-4">
                           {book.cover_image_url ? (
