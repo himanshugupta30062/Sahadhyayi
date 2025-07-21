@@ -134,3 +134,7 @@ npx sonar-scanner
 ```
 
 Ensure you set the appropriate `SONAR_TOKEN` and `SONAR_HOST_URL` environment variables before running the command.
+
+## Resetting Website Visit IDs
+
+To clear existing website visit data and restart the auto-incrementing ID counter, execute the SQL commands in [docs/ResetWebsiteVisitIDs.md](docs/ResetWebsiteVisitIDs.md).
