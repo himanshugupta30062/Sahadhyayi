@@ -212,14 +212,29 @@ export const ReadersMap = ({ readers, readersLoading, readersError, mapsLoaded, 
           marker.setIcon(hoverIcon);
         }
         
-        // Show a preview tooltip
+        // Show a preview tooltip with enhanced user information
         const previewContent = `
-          <div style="padding: 8px; font-family: system-ui; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            <div style="font-weight: 600; color: #1F2937; margin-bottom: 4px;">${displayName}</div>
-            <div style="font-size: 12px; color: #6B7280;">📖 ${selectedBook?.title || 'Reading'}</div>
-            <div style="font-size: 11px; color: #9CA3AF; margin-top: 2px;">${distance}</div>
-          </div>
-        `;
+          <div style="padding: 12px; font-family: system-ui; background: white; border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); min-width: 200px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <img src="${avatarUrl}" alt="${displayName}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #F3F4F6;" 
+                onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSI4IiB5PSI4Ij4KPHBhdGggZD0iTTEzIDEzdi0xYTIgMiAwIDAgMC0yLTJINWEyIDIgMCAwIDAtMiAydjEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSI4IiBjeT0iNSIgcj0iMiIgc3Ryb2tlPSIjNkI3MjgwIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K'">
+              <div style="font-weight: 700; color: #1F2937; font-size: 14px;">${displayName}</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); padding: 8px; border-radius: 6px; margin-bottom: 6px;">
+              <div style="font-size: 12px; color: #92400E; font-weight: 600; margin-bottom: 2px;">📖 Currently Reading:</div>
+              <div style="font-size: 11px; color: #451A03; font-weight: 500;">${selectedBook?.title || 'Unknown Book'}</div>
+              ${selectedBook?.author ? `<div style="font-size: 10px; color: #78716C; margin-top: 1px;">by ${selectedBook.author}</div>` : ''}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-size: 11px; color: #6B7280; display: flex; align-items: center; gap: 4px;">
+                <span style="display: inline-block; width: 4px; height: 4px; background: #10B981; border-radius: 50%;"></span>
+                ${distance}
+              </div>
+              <div style="font-size: 10px; color: #9CA3AF; background: #F9FAFB; padding: 2px 6px; border-radius: 4px;">
+                Click for details
+              </div>
+            </div>
+          </div>`;
         
         const hoverInfoWindow = new window.google.maps.InfoWindow({
           content: previewContent,
