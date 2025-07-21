@@ -46,60 +46,40 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     }
 
     try {
-      // Get the current session for authorization
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
+      const { count: signups, error: signupError } = await supabase
+        .from('community_users')
+        .select('*', { count: 'exact', head: true });
 
-      // Add authorization header if user is authenticated
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
+      if (signupError) throw signupError;
 
-      let response: Response | null = null;
-      if (COMMUNITY_STATS_URL) {
-        response = await fetch(COMMUNITY_STATS_URL, { headers });
-      }
+      const { count: visits, error: visitError } = await supabase
+        .from('website_visits')
+        .select('*', { count: 'exact', head: true });
 
-      if (!response || !response.ok) {
-        console.error('Community stats API failed:', response?.status, response?.statusText);
-        const fallback = {
-          totalSignups: 15847,
-          totalVisits: 125000,
-          lastUpdated: new Date().toISOString(),
-        };
-        setStats(fallback);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(fallback));
-        }
-        return;
-      }
+      if (visitError) throw visitError;
 
-      const data = await response.json();
       const updated = {
-        totalSignups: data.totalSignups || 0,
-        totalVisits: data.totalVisits || 0,
+        totalSignups: signups ?? 0,
+        totalVisits: visits ?? 0,
         lastUpdated: new Date().toISOString(),
       };
+
       setStats(updated);
       if (typeof window !== 'undefined') {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
       }
     } catch (err) {
       console.error('Failed to fetch community stats:', err);
-      // Show fallback values if API fails
       const fallback = {
-        totalSignups: 15847,
-        totalVisits: 125000,
-        lastUpdated: new Date().toISOString()
+        totalSignups: 0,
+        totalVisits: 0,
+        lastUpdated: new Date().toISOString(),
       };
       setStats(fallback);
       if (typeof window !== 'undefined') {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(fallback));
       }
-      setError('Failed to load community stats - showing cached data');
+      setError('Failed to load community stats');
     } finally {
       setIsLoading(false);
     }
@@ -108,43 +88,29 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
   const joinCommunity = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
+      const userId = session?.user?.id;
 
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
+      if (!userId) return false;
 
-      if (!COMMUNITY_STATS_URL) {
-        return false;
-      }
+      const { error } = await supabase
+        .from('community_users')
+        .upsert({ user_id: userId });
 
-      const response = await fetch(COMMUNITY_STATS_URL, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ action: 'join' })
-      });
+      if (error) throw error;
 
-      if (response.ok) {
-        // Optimistically update the stats
-        setStats(prev => ({
-          ...prev,
-          totalSignups: prev.totalSignups + 1,
-          lastUpdated: new Date().toISOString()
-        }));
-        
-        // Fetch updated stats
-        await fetchStats();
-        
-        return true;
-      }
+      setStats(prev => ({
+        ...prev,
+        totalSignups: prev.totalSignups + 1,
+        lastUpdated: new Date().toISOString()
+      }));
+
+      await fetchStats();
+
+      return true;
     } catch (err) {
       console.error('Failed to join community:', err);
+      return false;
     }
-    
-    return false;
   };
 
   useEffect(() => {

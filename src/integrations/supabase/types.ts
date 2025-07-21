@@ -1616,6 +1616,25 @@ export type Database = {
         }
         Relationships: []
       }
+      ,
+      community_users: {
+        Row: {
+          id: string
+          user_id: string
+          joined_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          joined_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          joined_at?: string | null
+        }
+        Relationships: []
+      }
       whatsapp_contacts: {
         Row: {
           contact_name: string | null
