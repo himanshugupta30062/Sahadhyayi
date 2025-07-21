@@ -47,7 +47,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
     try {
       const { count: signups, error: signupError } = await supabase
-        .from('community_users')
+        .from('profiles')
         .select('*', { count: 'exact', head: true });
 
       if (signupError) throw signupError;
@@ -92,17 +92,26 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
       if (!userId) return false;
 
-      const { error } = await supabase
-        .from('community_users')
-        .upsert({ user_id: userId });
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (!existingProfile) {
+        const { error } = await supabase
+          .from('profiles')
+          .insert({ id: userId });
 
-      setStats(prev => ({
-        ...prev,
-        totalSignups: prev.totalSignups + 1,
-        lastUpdated: new Date().toISOString()
-      }));
+        if (error) throw error;
+
+        setStats(prev => ({
+          ...prev,
+          totalSignups: prev.totalSignups + 1,
+          lastUpdated: new Date().toISOString()
+        }));
+      }
 
       await fetchStats();
 

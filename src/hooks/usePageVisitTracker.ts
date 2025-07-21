@@ -14,8 +14,7 @@ export const usePageVisitTracker = () => {
         const { error } = await supabase.rpc('record_website_visit', {
           ip_addr: null, // IP captured server-side
           user_agent_string: userAgent,
-          page: currentPage,
-          country_code: null
+          page: currentPage
         });
 
         if (error) {
