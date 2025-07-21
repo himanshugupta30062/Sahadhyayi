@@ -17,6 +17,9 @@ import { useAuthors, type Author } from '@/hooks/useAuthors';
 import { toast } from '@/hooks/use-toast';
 import { generateWebsiteSchema, generateBreadcrumbSchema } from '@/utils/schema';
 
+const slugify = (text: string) =>
+  text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
 const Authors = () => {
   console.log('Authors component rendering');
   
@@ -425,7 +428,7 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author, featured }) => {
 
         {/* Actions */}
         <div className="grid grid-cols-1 gap-2">
-          <Link to={`/author-details/${author.id}`}>
+          <Link to={`/authors/${slugify(author.name)}`}>
             <Button size="sm" className="w-full bg-orange-600 hover:bg-orange-700 text-white">
               View Profile
             </Button>
