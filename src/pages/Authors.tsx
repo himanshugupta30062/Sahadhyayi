@@ -496,7 +496,13 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author, books, featured }) => {
               <MessageSquare className="w-3 h-3 mr-1" />
               Message
             </Button>
-            <ChatWindow friendId={author.id} isOpen={showChat} onClose={() => setShowChat(false)} />
+            {showChat && (
+              <ChatWindow
+                friendId={author.id}
+                isOpen={showChat}
+                onClose={() => setShowChat(false)}
+              />
+            )}
           </div>
         </div>
       </CardContent>
