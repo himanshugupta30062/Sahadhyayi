@@ -85,6 +85,16 @@ These values are required for the application to connect to Supabase and for the
 chatbot to fetch responses from the Gemini API. The application will throw an error if any of them are missing.
 Ensure `VITE_SUPABASE_URL` points to the Supabase project hosting the community stats function (e.g. `https://rknxtatvlzunatpyqxro.supabase.co`).
 
+## Previewing the production build
+
+Run `npm run build` to generate the static assets in the `dist` folder. To test the build locally with history fallback, execute:
+
+```sh
+npm run preview
+```
+
+This serves the `dist` directory with routing support so pages like `/book/123` or `/about` load correctly. If you use another HTTP server, ensure it falls back to `index.html` for unmatched routes.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0) and click on Share -> Publish.
