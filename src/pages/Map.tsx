@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
 import SEO from '@/components/SEO';
 import { supabase } from '@/integrations/supabase/client';
 import { useFriends } from '@/hooks/useFriends';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
+import { ReadersMap } from '@/components/maps/ReadersMap';
+import { FriendsMap } from '@/components/maps/FriendsMap';
 
 interface ReaderProfile {
   full_name: string | null;
@@ -48,17 +50,12 @@ const darkMapStyle = [
 
 const MapPage = () => {
   const [tab, setTab] = useState<'readers' | 'friends'>('readers');
-  const readerMapRef = useRef<HTMLDivElement>(null);
-  const friendsMapRef = useRef<HTMLDivElement>(null);
-  const [readerMap, setReaderMap] = useState<any>(null);
-  const [friendsMap, setFriendsMap] = useState<any>(null);
   const [mapsLoaded, setMapsLoaded] = useState(false);
-  const [readerMarkers, setReaderMarkers] = useState<any[]>([]);
-  const [friendMarkers, setFriendMarkers] = useState<any[]>([]);
   const [readers, setReaders] = useState<ReaderProfile[]>([]);
   const [readersLoading, setReadersLoading] = useState(false);
   const [readersError, setReadersError] = useState<string | null>(null);
 
+  // Simplify friends data handling
   const friendsQuery = useFriends();
   const friends = friendsQuery.data || [];
   const friendsLoading = friendsQuery.isLoading;
@@ -78,44 +75,6 @@ const MapPage = () => {
         console.error('Failed to load Google Maps', err);
       });
   }, [GOOGLE_MAPS_API_KEY]);
-
-  useEffect(() => {
-    if (!mapsLoaded || !window.google?.maps) return;
-
-    if (!readerMap && readerMapRef.current) {
-      const center = { lat: 20, lng: 0 };
-      const map = new window.google.maps.Map(readerMapRef.current, {
-        center,
-        zoom: 2,
-        styles: darkMapStyle
-      });
-      setReaderMap(map);
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          map.setZoom(8);
-        });
-      }
-    }
-
-    if (!friendsMap && friendsMapRef.current) {
-      const center = { lat: 20, lng: 0 };
-      const map = new window.google.maps.Map(friendsMapRef.current, {
-        center,
-        zoom: 2,
-        styles: darkMapStyle
-      });
-      setFriendsMap(map);
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          map.setZoom(8);
-        });
-      }
-    }
-  }, [mapsLoaded, readerMap, friendsMap]);
 
   useEffect(() => {
     if (!selectedBookId) {
@@ -144,62 +103,6 @@ const MapPage = () => {
     fetchReaders();
   }, [selectedBookId]);
 
-  useEffect(() => {
-    if (!readerMap || !mapsLoaded || !window.google?.maps) return;
-
-    // Clear existing markers
-    readerMarkers.forEach(marker => marker.setMap(null));
-    
-    const newMarkers: any[] = [];
-
-    readers.forEach(reader => {
-      if (reader.location_lat != null && reader.location_lng != null) {
-        const marker = new window.google.maps.Marker({
-          position: { lat: Number(reader.location_lat), lng: Number(reader.location_lng) },
-          map: readerMap,
-          title: reader.full_name || 'Reader'
-        });
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `<div class="p-1">${reader.full_name || 'Reader'}</div>`
-        });
-        marker.addListener('click', () => infoWindow.open(readerMap, marker));
-        newMarkers.push(marker);
-      }
-    });
-
-    setReaderMarkers(newMarkers);
-  }, [readers, readerMap, mapsLoaded]);
-
-  useEffect(() => {
-    if (!friendsMap || !mapsLoaded || !window.google?.maps) return;
-
-    // Clear existing markers
-    friendMarkers.forEach(marker => marker.setMap(null));
-    
-    const newMarkers: any[] = [];
-
-    // Process friends data more explicitly to avoid type issues
-    const friendsList = Array.isArray(friends) ? friends : [];
-    
-    friendsList.forEach((friend: any) => {
-      const profile = friend?.friend_profile;
-      if (profile?.location_sharing && profile.location_lat != null && profile.location_lng != null) {
-        const marker = new window.google.maps.Marker({
-          position: { lat: Number(profile.location_lat), lng: Number(profile.location_lng) },
-          map: friendsMap,
-          title: profile.full_name
-        });
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `<div class="p-1">${profile.full_name}</div>`
-        });
-        marker.addListener('click', () => infoWindow.open(friendsMap, marker));
-        newMarkers.push(marker);
-      }
-    });
-
-    setFriendMarkers(newMarkers);
-  }, [friends, friendsMap, mapsLoaded]);
-
   return (
     <>
       <SEO title="Map" description="Readers and friends map" canonical="https://sahadhyayi.com/map" url="https://sahadhyayi.com/map" />
@@ -212,18 +115,22 @@ const MapPage = () => {
             </TabsList>
 
             <TabsContent value="readers">
-              {readersLoading && <div className="h-[500px] flex items-center justify-center">Loading...</div>}
-              <div ref={readerMapRef} style={{ height: '500px' }} />
-              {!readersLoading && readers.length === 0 && (
-                <Card className="mt-4">
-                  <CardContent className="p-4 text-center text-sm text-gray-600">{readersError || 'No readers found for this book'}</CardContent>
-                </Card>
-              )}
+              <ReadersMap
+                readers={readers}
+                readersLoading={readersLoading}
+                readersError={readersError}
+                mapsLoaded={mapsLoaded}
+                darkMapStyle={darkMapStyle}
+              />
             </TabsContent>
 
             <TabsContent value="friends">
-              <div ref={friendsMapRef} style={{ height: '500px' }} />
-              {friendsLoading && <div className="h-[500px] flex items-center justify-center">Loading...</div>}
+              <FriendsMap
+                friends={friends}
+                friendsLoading={friendsLoading}
+                mapsLoaded={mapsLoaded}
+                darkMapStyle={darkMapStyle}
+              />
             </TabsContent>
           </Tabs>
         </div>
