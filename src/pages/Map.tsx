@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -60,7 +59,10 @@ const MapPage = () => {
   const [readersLoading, setReadersLoading] = useState(false);
   const [readersError, setReadersError] = useState<string | null>(null);
 
-  const { data: friends = [], isLoading: friendsLoading } = useFriends();
+  const friendsQuery = useFriends();
+  const friends = friendsQuery.data || [];
+  const friendsLoading = friendsQuery.isLoading;
+  
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const selectedBookId = params.get('bookId');
@@ -176,8 +178,11 @@ const MapPage = () => {
     
     const newMarkers: any[] = [];
 
-    friends.forEach(friend => {
-      const profile = (friend as any).friend_profile;
+    // Process friends data more explicitly to avoid type issues
+    const friendsList = Array.isArray(friends) ? friends : [];
+    
+    friendsList.forEach((friend: any) => {
+      const profile = friend?.friend_profile;
       if (profile?.location_sharing && profile.location_lat != null && profile.location_lng != null) {
         const marker = new window.google.maps.Marker({
           position: { lat: Number(profile.location_lat), lng: Number(profile.location_lng) },
