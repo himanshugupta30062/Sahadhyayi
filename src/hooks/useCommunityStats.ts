@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const COMMUNITY_STATS_URL = import.meta.env.VITE_COMMUNITY_STATS_URL as string | undefined;
+const LOCAL_STORAGE_KEY = 'community-stats';
 
 interface CommunityStats {
   totalSignups: number;
@@ -11,10 +12,26 @@ interface CommunityStats {
 }
 
 export const useCommunityStats = (autoFetch: boolean = true) => {
-  const [stats, setStats] = useState<CommunityStats>({
-    totalSignups: 0,
-    totalVisits: 0,
-    lastUpdated: new Date().toISOString(),
+  const getCachedStats = (): CommunityStats | null => {
+    if (typeof window === 'undefined') return null;
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!cached) return null;
+    try {
+      return JSON.parse(cached) as CommunityStats;
+    } catch {
+      return null;
+    }
+  };
+
+  const [stats, setStats] = useState<CommunityStats>(() => {
+    const cached = getCachedStats();
+    return (
+      cached || {
+        totalSignups: 0,
+        totalVisits: 0,
+        lastUpdated: new Date().toISOString(),
+      }
+    );
   });
   const [isLoading, setIsLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +39,11 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
   const fetchStats = async () => {
     setIsLoading(true);
     setError(null);
+
+    const cached = getCachedStats();
+    if (cached) {
+      setStats(cached);
+    }
 
     try {
       // Get the current session for authorization
@@ -43,28 +65,40 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
       if (!response || !response.ok) {
         console.error('Community stats API failed:', response?.status, response?.statusText);
-        setStats({
+        const fallback = {
           totalSignups: 15847,
           totalVisits: 125000,
           lastUpdated: new Date().toISOString(),
-        });
+        };
+        setStats(fallback);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(fallback));
+        }
         return;
       }
 
       const data = await response.json();
-      setStats({
+      const updated = {
         totalSignups: data.totalSignups || 0,
         totalVisits: data.totalVisits || 0,
         lastUpdated: new Date().toISOString(),
-      });
+      };
+      setStats(updated);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      }
     } catch (err) {
       console.error('Failed to fetch community stats:', err);
       // Show fallback values if API fails
-      setStats({
+      const fallback = {
         totalSignups: 15847,
         totalVisits: 125000,
         lastUpdated: new Date().toISOString()
-      });
+      };
+      setStats(fallback);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(fallback));
+      }
       setError('Failed to load community stats - showing cached data');
     } finally {
       setIsLoading(false);
