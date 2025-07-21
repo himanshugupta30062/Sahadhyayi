@@ -24,12 +24,22 @@ const AuthorDetails = () => {
 
   const isLoading = booksLoading || authorsLoading;
 
-  // Find author from database first, then fallback to books
+  // Enhanced author finding logic with better fallback data
   const { author, authorBooks } = useMemo(() => {
     if (!id) return { author: null, authorBooks: [] };
     
-    // First try to find author in authors table
-    const dbAuthor = authors.find(a => a.id === id);
+    // First try to find author in authors table by ID
+    let dbAuthor = authors.find(a => a.id === id);
+    
+    // If not found by ID, try by slug (name-based)
+    if (!dbAuthor && books) {
+      const decodedId = decodeURIComponent(id);
+      const nameFromSlug = decodedId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      dbAuthor = authors.find(a => 
+        a.name.toLowerCase() === nameFromSlug.toLowerCase() ||
+        a.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === decodedId.toLowerCase()
+      );
+    }
     
     if (dbAuthor) {
       // Find books by this author
@@ -43,43 +53,57 @@ const AuthorDetails = () => {
       };
     }
     
-    // Fallback to finding author from books
-    if (!books) return { author: null, authorBooks: [] };
+    // Enhanced fallback: create author from books data
+    if (books) {
+      const decodedId = decodeURIComponent(id);
+      const authorBooks = books.filter(book => {
+        if (!book.author) return false;
+        const bookAuthorSlug = book.author.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const bookAuthorName = book.author.toLowerCase();
+        const searchName = decodedId.toLowerCase().replace(/-/g, ' ');
+        
+        return bookAuthorSlug === decodedId.toLowerCase() || 
+               bookAuthorName === searchName ||
+               bookAuthorName.includes(searchName);
+      });
+      
+      if (authorBooks.length > 0) {
+        const firstBook = authorBooks[0];
+        const author: Author = {
+          id: `book-author-${id}`,
+          name: firstBook.author!,
+          bio: firstBook.author_bio || `${firstBook.author} is a distinguished author whose literary works have captivated readers around the world. With a unique voice and compelling storytelling, they continue to contribute meaningfully to contemporary literature. Their works span multiple genres and have touched the lives of countless readers globally.`,
+          location: 'Global',
+          website_url: null,
+          profile_image_url: null,
+          social_links: {},
+          followers_count: Math.floor(Math.random() * 75000 + 25000),
+          rating: 4.1 + Math.random() * 0.8,
+          books_count: authorBooks.length,
+          upcoming_events: Math.floor(Math.random() * 3) + 1,
+          genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          availableSlots: [
+            'Monday 10:00 AM - 11:00 AM',
+            'Wednesday 2:00 PM - 3:00 PM',
+            'Friday 4:00 PM - 5:00 PM'
+          ]
+        };
+        
+        return { author, authorBooks };
+      }
+    }
     
-    const authorBooks = books.filter(book =>
-      book.author && book.author.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') === id
-    );
-    
-    if (authorBooks.length === 0) return { author: null, authorBooks: [] };
-    
-    const firstBook = authorBooks[0];
-    const author: Author = {
-      id: `book-author-${id}`,
-      name: firstBook.author!,
-      bio: firstBook.author_bio || `${firstBook.author} is a distinguished author whose literary works have captivated readers around the world. With a unique voice and compelling storytelling, they continue to contribute meaningfully to contemporary literature.`,
-      location: 'Unknown',
-      website_url: null,
-      profile_image_url: null,
-      social_links: {},
-      followers_count: Math.floor(Math.random() * 50000 + 10000),
-      rating: 4.2 + Math.random() * 0.8,
-      books_count: authorBooks.length,
-      upcoming_events: Math.floor(Math.random() * 5),
-      genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      availableSlots: []
-    };
-    
-    return { author, authorBooks };
+    return { author: null, authorBooks: [] };
   }, [books, authors, id]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center pt-16">
-        <div className="animate-pulse text-center">
-          <div className="w-16 h-16 bg-orange-200 rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading author profile...</p>
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-200 rounded-full mx-auto mb-4 animate-pulse"></div>
+          <p className="text-gray-600 animate-pulse">Loading author profile...</p>
         </div>
       </div>
     );
@@ -88,18 +112,25 @@ const AuthorDetails = () => {
   if (!author) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center pt-16">
-        <div className="text-center max-w-md mx-auto">
+        <div className="text-center max-w-md mx-auto p-8">
           <div className="w-16 h-16 bg-red-200 rounded-full mx-auto mb-4 flex items-center justify-center">
             <User className="w-8 h-8 text-red-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Author Not Found</h1>
-          <p className="text-gray-600 mb-4">Sorry, we couldn't find the author you're looking for.</p>
-          <Link to="/authors">
-            <Button variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Authors
-            </Button>
-          </Link>
+          <p className="text-gray-600 mb-6">Sorry, we couldn't find the author you're looking for. They may have been moved or the link might be incorrect.</p>
+          <div className="space-y-3">
+            <Link to="/authors">
+              <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Browse All Authors
+              </Button>
+            </Link>
+            <Link to="/">
+              <Button variant="outline" className="w-full">
+                Go to Homepage
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -123,11 +154,11 @@ const AuthorDetails = () => {
       />
 
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-16">
-        {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-orange-200 sticky top-16 z-10">
+        {/* Improved Header */}
+        <div className="bg-white/90 backdrop-blur-md border-b border-orange-200 sticky top-16 z-10 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <Link to="/authors">
-              <Button variant="ghost" className="hover:bg-orange-100">
+              <Button variant="ghost" className="hover:bg-orange-100 transition-colors">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Authors
               </Button>
@@ -146,14 +177,14 @@ const AuthorDetails = () => {
             />
           </div>
 
-          {/* Author Header */}
+          {/* Enhanced Author Header */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             {/* Author Info */}
             <div className="lg:col-span-2">
-              <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg">
+              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-xl rounded-2xl overflow-hidden">
                 <CardContent className="p-8">
                   <div className="flex flex-col sm:flex-row items-start gap-6">
-                    <Avatar className="w-32 h-32 ring-4 ring-orange-200">
+                    <Avatar className="w-32 h-32 ring-4 ring-orange-200 shadow-lg">
                       <AvatarImage src={author.profile_image_url || ""} alt={author.name} />
                       <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white">
                         {getAuthorInitials(author.name)}
@@ -188,14 +219,14 @@ const AuthorDetails = () => {
 
                       <div className="flex flex-wrap gap-2 mb-6">
                         {author.genres.map(genre => (
-                          <Badge key={genre} variant="secondary" className="bg-orange-100 text-orange-800">
+                          <Badge key={genre} variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200 transition-colors">
                             {genre}
                           </Badge>
                         ))}
                       </div>
 
                       <div className="flex flex-wrap gap-3">
-                        <Button className="bg-orange-600 hover:bg-orange-700">
+                        <Button className="bg-orange-600 hover:bg-orange-700 shadow-lg">
                           <Heart className="w-4 h-4 mr-2" />
                           Follow Author
                         </Button>
@@ -223,10 +254,10 @@ const AuthorDetails = () => {
               </Card>
             </div>
 
-            {/* Social Links & Info */}
+            {/* Enhanced Sidebar */}
             <div className="space-y-6">
               {/* Social Links */}
-              <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg">
+              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Globe className="w-5 h-5" />
@@ -235,13 +266,13 @@ const AuthorDetails = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {author.website_url && (
-                    <a href={author.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <a href={author.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                       <Globe className="w-5 h-5 text-orange-600" />
-                      <span className="text-sm">Website</span>
+                      <span className="text-sm font-medium">Website</span>
                       <ExternalLink className="w-4 h-4 ml-auto text-gray-400" />
                     </a>
                   )}
-                  <div className="flex items-center gap-3 p-2 text-gray-500">
+                  <div className="flex items-center gap-3 p-3 text-gray-500">
                     <MessageSquare className="w-5 h-5" />
                     <span className="text-sm">More social links coming soon</span>
                   </div>
@@ -249,7 +280,7 @@ const AuthorDetails = () => {
               </Card>
 
               {/* Quick Stats */}
-              <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg">
+              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Award className="w-5 h-5" />
@@ -275,6 +306,10 @@ const AuthorDetails = () => {
                         {typeof author.rating === 'number' ? author.rating.toFixed(1) : '4.5'}
                       </span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Followers</span>
+                      <span className="font-medium">{author.followers_count?.toLocaleString()}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -283,7 +318,7 @@ const AuthorDetails = () => {
 
           {/* Main Content Tabs */}
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6 bg-white/80 backdrop-blur-sm border border-orange-200 rounded-xl h-auto p-2">
+            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6 bg-white/90 backdrop-blur-sm border border-orange-200 rounded-xl h-auto p-2">
               <TabsTrigger value="about" className="py-3 rounded-lg data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800">
                 About
               </TabsTrigger>
@@ -296,7 +331,7 @@ const AuthorDetails = () => {
             </TabsList>
 
             <TabsContent value="about">
-              <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg">
+              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl">
                 <CardContent className="p-8">
                   <h3 className="text-2xl font-bold mb-4">Biography</h3>
                   <div className="prose max-w-none">
@@ -320,7 +355,7 @@ const AuthorDetails = () => {
             <TabsContent value="books">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {authorBooks.length > 0 ? authorBooks.map(book => (
-                  <Card key={book.id} className="group hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm border-orange-200">
+                  <Card key={book.id} className="group hover:shadow-xl transition-all duration-300 bg-white/90 backdrop-blur-sm border-orange-200 rounded-xl overflow-hidden">
                     <CardContent className="p-6">
                       <div className="flex gap-4">
                         <div className="w-16 h-20 bg-gradient-to-br from-orange-200 to-amber-200 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -351,16 +386,17 @@ const AuthorDetails = () => {
                     </CardContent>
                   </Card>
                 )) : (
-                  <div className="col-span-full text-center py-8">
+                  <div className="col-span-full text-center py-12">
                     <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No books found for this author</p>
+                    <p className="text-gray-500 text-lg">No books found for this author</p>
+                    <p className="text-gray-400 text-sm">Check back later for new releases</p>
                   </div>
                 )}
               </div>
             </TabsContent>
 
             <TabsContent value="community">
-              <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg">
+              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl">
                 <CardContent className="p-8">
                   <div className="text-center">
                     <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />

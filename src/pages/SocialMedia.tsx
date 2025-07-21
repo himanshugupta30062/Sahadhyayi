@@ -76,52 +76,81 @@ const SocialMedia = () => {
         url="https://sahadhyayi.com/social"
       />
       
-      <div className="min-h-screen pt-16 bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm sticky top-16 z-10">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Social Community</h1>
-            <p className="text-gray-600 mt-2 text-sm sm:text-base">Connect with fellow readers and share your reading journey</p>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+        {/* Improved Header with better spacing */}
+        <div className="bg-white/90 backdrop-blur-md border-b border-orange-200 shadow-sm sticky top-0 z-50 pt-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="text-center">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Social Community</h1>
+              <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto">
+                Connect with fellow readers and share your reading journey
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        {/* Main Content with improved layout */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Tabs defaultValue="feed" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-4 sm:mb-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-2">
-              <TabsTrigger value="feed" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
-                <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+            {/* Improved tabs design */}
+            <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/90 backdrop-blur-sm border border-orange-200 rounded-2xl p-1 shadow-lg">
+              <TabsTrigger 
+                value="feed" 
+                className="flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-200 data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800 data-[state=active]:shadow-md"
+              >
+                <MessageCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">Feed</span>
               </TabsTrigger>
-              <TabsTrigger value="friends" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
-                <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+              <TabsTrigger 
+                value="friends" 
+                className="flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-200 data-[state=active]:bg-green-100 data-[state=active]:text-green-800 data-[state=active]:shadow-md"
+              >
+                <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">Friends</span>
               </TabsTrigger>
-              <TabsTrigger value="map" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
-                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+              <TabsTrigger 
+                value="map" 
+                className="flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-200 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 data-[state=active]:shadow-md"
+              >
+                <MapPin className="w-4 h-4" />
                 <span className="hidden sm:inline">Map</span>
               </TabsTrigger>
-              <TabsTrigger value="groups" className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 text-xs sm:text-sm">
-                <UsersIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+              <TabsTrigger 
+                value="groups" 
+                className="flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-200 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800 data-[state=active]:shadow-md"
+              >
+                <UsersIcon className="w-4 h-4" />
                 <span className="hidden sm:inline">Groups</span>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="feed" className="mt-0">
-              <SocialFeed />
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-orange-200 shadow-lg p-6">
+                <SocialFeed />
+              </div>
             </TabsContent>
 
             <TabsContent value="friends" className="mt-0">
-              <EnhancedFriendsManager />
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-green-200 shadow-lg p-6">
+                <EnhancedFriendsManager />
+              </div>
             </TabsContent>
 
-            <TabsContent value="map" className="mt-0 space-y-6">
-              <EnhancedReadingMap />
-              <FriendsLocationMap />
+            <TabsContent value="map" className="mt-0">
+              <div className="space-y-6">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-blue-200 shadow-lg p-6">
+                  <EnhancedReadingMap />
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-blue-200 shadow-lg p-6">
+                  <FriendsLocationMap />
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="groups" className="mt-0">
-              <ReadingGroups />
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-purple-200 shadow-lg p-6">
+                <ReadingGroups />
+              </div>
             </TabsContent>
           </Tabs>
         </div>

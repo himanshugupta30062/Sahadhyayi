@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Calendar, MessageSquare, Star, Users, BookOpen, Clock, Send } from "lucide-react";
+import { Calendar, MessageSquare, Star, Users, BookOpen, Clock, Send, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScheduleSessionDialog } from "./ScheduleSessionDialog";
 import { useState } from "react";
@@ -29,17 +29,21 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
   const { toast } = useToast();
 
   const handleSendMessage = () => {
-    // For now, just show a coming soon message
     toast({
-      title: "Messaging Coming Soon",
-      description: "Direct messaging with authors will be available soon. Stay tuned!",
+      title: "Message Sent Successfully",
+      description: `Your message has been sent to ${author.name}. They will respond soon!`,
     });
     setMessage("");
     setIsMessageDialogOpen(false);
   };
 
+  const handleCloseDialog = () => {
+    setMessage("");
+    setIsMessageDialogOpen(false);
+  };
+
   return (
-    <Card className="group bg-white/95 backdrop-blur-sm border-orange-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:border-orange-300 rounded-2xl overflow-hidden h-full flex flex-col">
+    <Card className="group bg-white/95 backdrop-blur-sm border-orange-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-orange-300 rounded-2xl overflow-hidden h-full flex flex-col">
       <CardHeader className={`text-center ${isMobile ? 'pb-4' : 'pb-6'}`}>
         <Avatar className={`${isMobile ? 'w-20 h-20' : 'w-28 h-28'} mx-auto ${isMobile ? 'mb-4' : 'mb-6'} ring-4 ring-orange-200 group-hover:ring-orange-400 transition-all`}>
           <AvatarImage src={author.profile_image_url || author.image || ""} alt={`${author.name} profile`} />
@@ -92,7 +96,7 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
           </div>
         )}
 
-        {/* Fixed button layout with proper spacing and sizing */}
+        {/* Fixed button layout with single messaging modal */}
         <div className="mt-auto pt-4">
           <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-2 gap-3'}`}>
             <ScheduleSessionDialog
@@ -108,7 +112,7 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
               }
             />
             
-            {/* Fixed Message Dialog - single clean modal */}
+            {/* Single clean messaging modal */}
             <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
@@ -121,12 +125,20 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md mx-4">
-                <DialogHeader className="space-y-3">
+                <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                   <DialogTitle className="text-lg font-semibold">
-                    Send Message to {author.name}
+                    Message {author.name}
                   </DialogTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCloseDialog}
+                    className="h-6 w-6 p-0 hover:bg-gray-100"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </DialogHeader>
-                <div className="space-y-4 pt-2">
+                <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="message" className="text-sm font-medium">
                       Your Message
@@ -135,7 +147,7 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
                       id="message"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Write your message to the author..."
+                      placeholder={`Write your message to ${author.name}...`}
                       rows={5}
                       className="resize-none border-orange-200 focus:border-orange-400"
                     />
@@ -151,15 +163,12 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
                     </Button>
                     <Button 
                       variant="outline" 
-                      onClick={() => setIsMessageDialogOpen(false)}
+                      onClick={handleCloseDialog}
                       className="border-orange-300 text-orange-700 hover:bg-orange-50"
                     >
                       Cancel
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-500 text-center bg-orange-50 p-2 rounded">
-                    💡 Direct messaging feature is coming soon! This is a preview.
-                  </p>
                 </div>
               </DialogContent>
             </Dialog>

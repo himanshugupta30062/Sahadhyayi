@@ -22,22 +22,26 @@ const CommunityStories = () => {
         keywords={['community stories', 'creative writing', 'user generated content', 'book community', 'alternative endings', 'story sharing']}
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Community Stories
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Share your creative interpretations, alternative endings, and story continuations. 
-              Connect with fellow readers through the power of storytelling.
-            </p>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 pt-16">
+        {/* Improved Header */}
+        <div className="bg-white/90 backdrop-blur-md border-b border-purple-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Community Stories
+              </h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Share your creative interpretations, alternative endings, and story continuations. 
+                Connect with fellow readers through the power of storytelling.
+              </p>
+            </div>
           </div>
+        </div>
 
+        <div className="max-w-7xl mx-auto px-4 py-8">
           {!user ? (
             <div className="text-center mb-12">
-              <Card className="max-w-2xl mx-auto bg-white/80 backdrop-blur-sm border-purple-200">
+              <Card className="max-w-2xl mx-auto bg-white/90 backdrop-blur-sm border-purple-200 shadow-xl rounded-2xl">
                 <CardContent className="p-8">
                   <Heart className="w-16 h-16 mx-auto mb-4 text-purple-600" />
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">
@@ -48,7 +52,7 @@ const CommunityStories = () => {
                   </p>
                   <div className="flex gap-4 justify-center">
                     <Link to="/signin">
-                      <Button className="bg-purple-600 hover:bg-purple-700">
+                      <Button className="bg-purple-600 hover:bg-purple-700 shadow-lg">
                         Sign In
                       </Button>
                     </Link>
@@ -63,12 +67,18 @@ const CommunityStories = () => {
             </div>
           ) : (
             <Tabs defaultValue="browse" className="mb-8">
-              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
-                <TabsTrigger value="browse" className="flex items-center gap-2">
+              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8 bg-white/90 backdrop-blur-sm border border-purple-200 rounded-2xl p-1 shadow-lg">
+                <TabsTrigger 
+                  value="browse" 
+                  className="flex items-center gap-2 py-3 px-4 rounded-xl transition-all duration-200 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800 data-[state=active]:shadow-md"
+                >
                   <BookOpen className="w-4 h-4" />
                   Browse Stories
                 </TabsTrigger>
-                <TabsTrigger value="create" className="flex items-center gap-2">
+                <TabsTrigger 
+                  value="create" 
+                  className="flex items-center gap-2 py-3 px-4 rounded-xl transition-all duration-200 data-[state=active]:bg-pink-100 data-[state=active]:text-pink-800 data-[state=active]:shadow-md"
+                >
                   <PenTool className="w-4 h-4" />
                   Create Story
                 </TabsTrigger>
@@ -85,7 +95,9 @@ const CommunityStories = () => {
                     </p>
                   </div>
                   
-                  <UserContentFeed />
+                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-purple-200 shadow-lg p-6">
+                    <UserContentFeed />
+                  </div>
                 </div>
               </TabsContent>
 
@@ -100,21 +112,23 @@ const CommunityStories = () => {
                     </p>
                   </div>
                   
-                  <UserContentEditor 
-                    bookId="" 
-                    onSuccess={() => {
-                      // Switch to browse tab after successful submission
-                      const browseTab = document.querySelector('[value="browse"]') as HTMLElement;
-                      browseTab?.click();
-                    }}
-                  />
+                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-pink-200 shadow-lg p-6">
+                    <UserContentEditor 
+                      bookId="" 
+                      onSuccess={() => {
+                        // Switch to browse tab after successful submission
+                        const browseTab = document.querySelector('[value="browse"]') as HTMLElement;
+                        browseTab?.click();
+                      }}
+                    />
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>
           )}
 
           {/* Community Guidelines */}
-          <Card className="mt-12 bg-white/80 backdrop-blur-sm border-purple-200">
+          <Card className="mt-12 bg-white/90 backdrop-blur-sm border-purple-200 shadow-lg rounded-2xl">
             <CardHeader>
               <CardTitle className="text-2xl text-center text-gray-900">
                 Community Guidelines
