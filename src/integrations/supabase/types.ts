@@ -1624,6 +1624,7 @@ export type Database = {
       }
       website_visits: {
         Row: {
+          country_code: string | null
           id: number
           ip_address: string | null
           page_url: string | null
@@ -1631,6 +1632,7 @@ export type Database = {
           visited_at: string
         }
         Insert: {
+          country_code?: string | null
           id?: number
           ip_address?: string | null
           page_url?: string | null
@@ -1638,6 +1640,7 @@ export type Database = {
           visited_at?: string
         }
         Update: {
+          country_code?: string | null
           id?: number
           ip_address?: string | null
           page_url?: string | null
@@ -1760,7 +1763,14 @@ export type Database = {
         Returns: number
       }
       record_website_visit: {
-        Args: { ip_addr?: string; user_agent_string?: string; page?: string }
+        Args:
+          | { ip_addr?: string; user_agent_string?: string; page?: string }
+          | {
+              ip_addr?: unknown
+              user_agent_string?: string
+              page?: string
+              country_code?: string
+            }
         Returns: undefined
       }
       update_author_book_counts: {

@@ -10,15 +10,28 @@ export const usePageVisitTracker = () => {
         const userAgent = navigator.userAgent;
         const currentPage = window.location.pathname;
         
-        // Record the visit using the database function
-        const { error } = await supabase.rpc('record_website_visit', {
-          ip_addr: null, // IP captured server-side
-          user_agent_string: userAgent,
-          page: currentPage
+        // Call the edge function which will capture IP and country automatically
+        const { error } = await supabase.functions.invoke('website-visits', {
+          body: {
+            userAgent,
+            page: currentPage
+          }
         });
 
         if (error) {
           console.error('Error recording visit:', error);
+          
+          // Fallback to the original function if edge function fails
+          const { error: fallbackError } = await supabase.rpc('record_website_visit', {
+            ip_addr: null,
+            user_agent_string: userAgent,
+            page: currentPage,
+            country_code: null
+          });
+          
+          if (fallbackError) {
+            console.error('Fallback error recording visit:', fallbackError);
+          }
         }
       } catch (error) {
         console.error('Failed to record visit:', error);
