@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+const COMMUNITY_STATS_URL = import.meta.env.VITE_COMMUNITY_STATS_URL as string | undefined;
+
 interface CommunityStats {
   totalSignups: number;
   totalVisits: number;
@@ -34,26 +36,27 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
 
-      const response = await fetch('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/community-stats', {
-        headers,
-      });
+      let response: Response | null = null;
+      if (COMMUNITY_STATS_URL) {
+        response = await fetch(COMMUNITY_STATS_URL, { headers });
+      }
 
-      if (response.ok) {
-        const data = await response.json();
-        setStats({
-          totalSignups: data.totalSignups || 0,
-          totalVisits: data.totalVisits || 0,
-          lastUpdated: new Date().toISOString()
-        });
-      } else {
-        console.error('Community stats API failed:', response.status, response.statusText);
-        // Fallback to default stats
+      if (!response || !response.ok) {
+        console.error('Community stats API failed:', response?.status, response?.statusText);
         setStats({
           totalSignups: 15847,
           totalVisits: 125000,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
         });
+        return;
       }
+
+      const data = await response.json();
+      setStats({
+        totalSignups: data.totalSignups || 0,
+        totalVisits: data.totalVisits || 0,
+        lastUpdated: new Date().toISOString(),
+      });
     } catch (err) {
       console.error('Failed to fetch community stats:', err);
       // Show fallback values if API fails
@@ -80,7 +83,11 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
 
-      const response = await fetch('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/community-stats', {
+      if (!COMMUNITY_STATS_URL) {
+        return false;
+      }
+
+      const response = await fetch(COMMUNITY_STATS_URL, {
         method: 'POST',
         headers,
         body: JSON.stringify({ action: 'join' })
