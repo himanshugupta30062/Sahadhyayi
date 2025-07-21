@@ -72,7 +72,7 @@ const AuthorProfile = () => {
     };
     
     return { author, authorBooks };
-  }, [books, authorName]);
+  }, [books, authorName, chatId]);
 
   // Mock upcoming events
   const upcomingEvents = [

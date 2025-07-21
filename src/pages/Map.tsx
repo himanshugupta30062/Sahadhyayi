@@ -74,7 +74,7 @@ const MapPage = () => {
       .catch(err => {
         console.error('Failed to load Google Maps', err);
       });
-  }, []);
+  }, [GOOGLE_MAPS_API_KEY]);
 
   useEffect(() => {
     if (!mapsLoaded) return;
@@ -163,7 +163,7 @@ const MapPage = () => {
     });
 
     setReaderMarkers(newMarkers);
-  }, [readers, readerMap, mapsLoaded]);
+  }, [readers, readerMap, mapsLoaded, readerMarkers]);
 
   useEffect(() => {
     if (!friendsMap || !mapsLoaded) return;
@@ -188,7 +188,7 @@ const MapPage = () => {
     });
 
     setFriendMarkers(newMarkers);
-  }, [friends, friendsMap, mapsLoaded]);
+  }, [friends, friendsMap, mapsLoaded, friendMarkers]);
 
   return (
     <>
