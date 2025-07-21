@@ -51,11 +51,11 @@ const MapPage = () => {
   const [tab, setTab] = useState<'readers' | 'friends'>('readers');
   const readerMapRef = useRef<HTMLDivElement>(null);
   const friendsMapRef = useRef<HTMLDivElement>(null);
-  const [readerMap, setReaderMap] = useState<google.maps.Map | null>(null);
-  const [friendsMap, setFriendsMap] = useState<google.maps.Map | null>(null);
+  const [readerMap, setReaderMap] = useState<any>(null);
+  const [friendsMap, setFriendsMap] = useState<any>(null);
   const [mapsLoaded, setMapsLoaded] = useState(false);
-  const [readerMarkers, setReaderMarkers] = useState<google.maps.Marker[]>([]);
-  const [friendMarkers, setFriendMarkers] = useState<google.maps.Marker[]>([]);
+  const [readerMarkers, setReaderMarkers] = useState<any[]>([]);
+  const [friendMarkers, setFriendMarkers] = useState<any[]>([]);
   const [readers, setReaders] = useState<ReaderProfile[]>([]);
   const [readersLoading, setReadersLoading] = useState(false);
   const [readersError, setReadersError] = useState<string | null>(null);
@@ -145,8 +145,10 @@ const MapPage = () => {
   useEffect(() => {
     if (!readerMap || !mapsLoaded || !window.google?.maps) return;
 
+    // Clear existing markers
     readerMarkers.forEach(marker => marker.setMap(null));
-    const newMarkers: google.maps.Marker[] = [];
+    
+    const newMarkers: any[] = [];
 
     readers.forEach(reader => {
       if (reader.location_lat != null && reader.location_lng != null) {
@@ -169,8 +171,10 @@ const MapPage = () => {
   useEffect(() => {
     if (!friendsMap || !mapsLoaded || !window.google?.maps) return;
 
+    // Clear existing markers
     friendMarkers.forEach(marker => marker.setMap(null));
-    const newMarkers: google.maps.Marker[] = [];
+    
+    const newMarkers: any[] = [];
 
     friends.forEach(friend => {
       const profile = (friend as any).friend_profile;
