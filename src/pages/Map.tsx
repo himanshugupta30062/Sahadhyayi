@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -50,11 +51,11 @@ const MapPage = () => {
   const [tab, setTab] = useState<'readers' | 'friends'>('readers');
   const readerMapRef = useRef<HTMLDivElement>(null);
   const friendsMapRef = useRef<HTMLDivElement>(null);
-  const [readerMap, setReaderMap] = useState<any>(null);
-  const [friendsMap, setFriendsMap] = useState<any>(null);
+  const [readerMap, setReaderMap] = useState<google.maps.Map | null>(null);
+  const [friendsMap, setFriendsMap] = useState<google.maps.Map | null>(null);
   const [mapsLoaded, setMapsLoaded] = useState(false);
-  const [readerMarkers, setReaderMarkers] = useState<any[]>([]);
-  const [friendMarkers, setFriendMarkers] = useState<any[]>([]);
+  const [readerMarkers, setReaderMarkers] = useState<google.maps.Marker[]>([]);
+  const [friendMarkers, setFriendMarkers] = useState<google.maps.Marker[]>([]);
   const [readers, setReaders] = useState<ReaderProfile[]>([]);
   const [readersLoading, setReadersLoading] = useState(false);
   const [readersError, setReadersError] = useState<string | null>(null);
@@ -77,7 +78,7 @@ const MapPage = () => {
   }, [GOOGLE_MAPS_API_KEY]);
 
   useEffect(() => {
-    if (!mapsLoaded) return;
+    if (!mapsLoaded || !window.google?.maps) return;
 
     if (!readerMap && readerMapRef.current) {
       const center = { lat: 20, lng: 0 };
@@ -142,10 +143,10 @@ const MapPage = () => {
   }, [selectedBookId]);
 
   useEffect(() => {
-    if (!readerMap || !mapsLoaded) return;
+    if (!readerMap || !mapsLoaded || !window.google?.maps) return;
 
-    readerMarkers.forEach(m => m.setMap(null));
-    const newMarkers: any[] = [];
+    readerMarkers.forEach(marker => marker.setMap(null));
+    const newMarkers: google.maps.Marker[] = [];
 
     readers.forEach(reader => {
       if (reader.location_lat != null && reader.location_lng != null) {
@@ -154,41 +155,41 @@ const MapPage = () => {
           map: readerMap,
           title: reader.full_name || 'Reader'
         });
-        const info = new window.google.maps.InfoWindow({
+        const infoWindow = new window.google.maps.InfoWindow({
           content: `<div class="p-1">${reader.full_name || 'Reader'}</div>`
         });
-        marker.addListener('click', () => info.open(readerMap, marker));
+        marker.addListener('click', () => infoWindow.open(readerMap, marker));
         newMarkers.push(marker);
       }
     });
 
     setReaderMarkers(newMarkers);
-  }, [readers, readerMap, mapsLoaded, readerMarkers]);
+  }, [readers, readerMap, mapsLoaded]);
 
   useEffect(() => {
-    if (!friendsMap || !mapsLoaded) return;
+    if (!friendsMap || !mapsLoaded || !window.google?.maps) return;
 
-    friendMarkers.forEach(m => m.setMap(null));
-    const newMarkers: any[] = [];
+    friendMarkers.forEach(marker => marker.setMap(null));
+    const newMarkers: google.maps.Marker[] = [];
 
     friends.forEach(friend => {
-      const profile: any = (friend as any).friend_profile;
+      const profile = (friend as any).friend_profile;
       if (profile?.location_sharing && profile.location_lat != null && profile.location_lng != null) {
         const marker = new window.google.maps.Marker({
           position: { lat: Number(profile.location_lat), lng: Number(profile.location_lng) },
           map: friendsMap,
           title: profile.full_name
         });
-        const info = new window.google.maps.InfoWindow({
+        const infoWindow = new window.google.maps.InfoWindow({
           content: `<div class="p-1">${profile.full_name}</div>`
         });
-        marker.addListener('click', () => info.open(friendsMap, marker));
+        marker.addListener('click', () => infoWindow.open(friendsMap, marker));
         newMarkers.push(marker);
       }
     });
 
     setFriendMarkers(newMarkers);
-  }, [friends, friendsMap, mapsLoaded, friendMarkers]);
+  }, [friends, friendsMap, mapsLoaded]);
 
   return (
     <>
