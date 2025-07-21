@@ -14,6 +14,7 @@ import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialo
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import { useAuthors, type Author } from '@/hooks/useAuthors';
+import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { toast } from '@/hooks/use-toast';
 import { generateWebsiteSchema, generateBreadcrumbSchema } from '@/utils/schema';
 
@@ -24,16 +25,29 @@ const Authors = () => {
   console.log('Authors component rendering');
   
   const { data: authors = [], isLoading, error, refetch } = useAuthors();
+  const { data: libraryBooks = [] } = useAllLibraryBooks();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [bookCountFilter, setBookCountFilter] = useState('all');
   const [chatAuthor, setChatAuthor] = useState<string | null>(null);
 
-  console.log('Authors page state:', { 
-    authorsCount: authors.length, 
-    isLoading, 
-    error: error?.message 
+  console.log('Authors page state:', {
+    authorsCount: authors.length,
+    isLoading,
+    error: error?.message
   });
+
+  // Map books by author name for quick lookup
+  const booksByAuthor = useMemo(() => {
+    const map: Record<string, Book[]> = {};
+    libraryBooks.forEach(book => {
+      const key = book.author?.toLowerCase().trim();
+      if (!key) return;
+      if (!map[key]) map[key] = [];
+      map[key].push(book);
+    });
+    return map;
+  }, [libraryBooks]);
 
   // Show error toast if there's an error
   React.useEffect(() => {
@@ -75,10 +89,15 @@ const Authors = () => {
     });
   }, [authors, searchTerm, selectedGenre, bookCountFilter]);
 
-  // Featured authors (top 6 by rating and followers)
+  // Featured authors prioritize those with books in the library
   const featuredAuthors = useMemo(() => {
     return [...authors]
-      .sort((a, b) => (b.rating * b.followers_count) - (a.rating * a.followers_count))
+      .sort((a, b) => {
+        if (b.books_count !== a.books_count) {
+          return b.books_count - a.books_count;
+        }
+        return (b.rating * b.followers_count) - (a.rating * a.followers_count);
+      })
       .slice(0, 6);
   }, [authors]);
 
@@ -295,7 +314,12 @@ const Authors = () => {
                   <h2 id="featured-authors" className="text-2xl font-bold text-gray-900 mb-6">Featured Authors</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {featuredAuthors.map(author => (
-                      <AuthorCard key={author.id} author={author} featured={true} />
+                      <AuthorCard
+                        key={author.id}
+                        author={author}
+                        books={booksByAuthor[author.name.toLowerCase().trim()] ?? []}
+                        featured={true}
+                      />
                     ))}
                   </div>
                 </section>
@@ -325,7 +349,12 @@ const Authors = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredAuthors.map(author => (
-                      <AuthorCard key={author.id} author={author} featured={false} />
+                      <AuthorCard
+                        key={author.id}
+                        author={author}
+                        books={booksByAuthor[author.name.toLowerCase().trim()] ?? []}
+                        featured={false}
+                      />
                     ))}
                   </div>
                 )}
@@ -341,10 +370,11 @@ const Authors = () => {
 // Author Card Component  
 interface AuthorCardProps {
   author: Author;
+  books: Book[];
   featured: boolean;
 }
 
-const AuthorCard: React.FC<AuthorCardProps> = ({ author, featured }) => {
+const AuthorCard: React.FC<AuthorCardProps> = ({ author, books, featured }) => {
   const [showChat, setShowChat] = useState(false);
   const getAuthorInitials = (name: string) => {
     return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
@@ -407,6 +437,20 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author, featured }) => {
             </div>
           )}
         </div>
+
+        {books.length > 0 && (
+          <div className={`mb-4 ${featured ? 'text-sm' : 'text-xs'} text-left`}>
+            <p className="font-medium text-gray-700 mb-1">Books:</p>
+            <ul className="list-disc list-inside space-y-1">
+              {books.slice(0, 2).map(book => (
+                <li key={book.id} className="text-gray-600">{book.title}</li>
+              ))}
+              {books.length > 2 && (
+                <li className="text-gray-500">+{books.length - 2} more</li>
+              )}
+            </ul>
+          </div>
+        )}
 
         {/* Genres */}
         {author.genres.length > 0 && (
