@@ -18,34 +18,7 @@ export const useCurrentBook = () => {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      // First try to get from user's reading progress
-      const { data: progressData } = await supabase
-        .from('detailed_reading_progress')
-        .select(`
-          book_id,
-          books_library!inner(
-            id,
-            title,
-            author,
-            cover_image_url
-          )
-        `)
-        .eq('user_id', user.id)
-        .is('completed_at', null)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (progressData?.books_library) {
-        return {
-          id: progressData.books_library.id,
-          title: progressData.books_library.title,
-          author: progressData.books_library.author,
-          cover_image_url: progressData.books_library.cover_image_url,
-        } as CurrentBook;
-      }
-
-      // Fallback to user bookshelf with 'reading' status
+      // Try to get from user bookshelf with 'reading' status
       const { data: bookshelfData } = await supabase
         .from('user_bookshelf')
         .select(`

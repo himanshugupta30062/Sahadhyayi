@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import SEO from '@/components/SEO';
@@ -10,7 +11,6 @@ interface ReaderProfile {
   full_name: string | null;
   location_lat: number | null;
   location_lng: number | null;
-  current_book_id: string | null;
 }
 
 declare global {
@@ -53,8 +53,11 @@ const ReaderMap = () => {
       if (!bookId) return;
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('current_book_id', bookId);
+        .select('id, full_name, location_lat, location_lng')
+        .eq('location_sharing', true)
+        .not('location_lat', 'is', null)
+        .not('location_lng', 'is', null);
+      
       if (error) {
         console.error('Error fetching readers', error);
         return;

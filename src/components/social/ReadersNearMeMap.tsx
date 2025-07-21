@@ -8,8 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { LocationPermissionModal } from './LocationPermissionModal';
+import { BookFilterDropdown } from './BookFilterDropdown';
 import { getCurrentLocation, calculateDistance, type LocationCoords } from '@/lib/locationService';
-import { useCurrentBook } from '@/hooks/useCurrentBook';
 import { useFriends } from '@/hooks/useFriends';
 
 declare global {
@@ -28,9 +28,15 @@ interface NearbyReader {
   current_book_title?: string;
 }
 
+interface BookOption {
+  id: string;
+  title: string;
+  author?: string;
+  cover_image_url?: string;
+}
+
 export const ReadersNearMeMap: React.FC = () => {
   const { user } = useAuth();
-  const { data: currentBook } = useCurrentBook();
   const { data: friends = [] } = useFriends();
   
   const mapRef = useRef<HTMLDivElement>(null);
@@ -42,6 +48,7 @@ export const ReadersNearMeMap: React.FC = () => {
   const [nearbyReaders, setNearbyReaders] = useState<NearbyReader[]>([]);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [selectedBook, setSelectedBook] = useState<BookOption | null>(null);
 
   const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y';
   const MAX_DISTANCE_KM = 50;
@@ -88,12 +95,14 @@ export const ReadersNearMeMap: React.FC = () => {
     }
   }, [isLoaded, userLocation]);
 
-  // Fetch nearby readers when location and current book are available
+  // Fetch nearby readers when location and selected book are available
   useEffect(() => {
-    if (userLocation && currentBook) {
+    if (userLocation && selectedBook) {
       fetchNearbyReaders();
+    } else {
+      setNearbyReaders([]);
     }
-  }, [userLocation, currentBook]);
+  }, [userLocation, selectedBook]);
 
   const initializeMap = () => {
     if (!mapRef.current || !window.google || !userLocation) return;
@@ -116,7 +125,7 @@ export const ReadersNearMeMap: React.FC = () => {
   };
 
   const fetchNearbyReaders = async () => {
-    if (!userLocation || !currentBook || !user) return;
+    if (!userLocation || !selectedBook || !user) return;
 
     try {
       // Fetch users reading the same book with location data
@@ -130,7 +139,7 @@ export const ReadersNearMeMap: React.FC = () => {
           location_lng,
           user_bookshelf!inner(book_id, status)
         `)
-        .eq('user_bookshelf.book_id', currentBook.id)
+        .eq('user_bookshelf.book_id', selectedBook.id)
         .in('user_bookshelf.status', ['reading', 'want_to_read'])
         .eq('location_sharing', true)
         .not('location_lat', 'is', null)
@@ -159,7 +168,7 @@ export const ReadersNearMeMap: React.FC = () => {
             userLocation,
             { lat: Number(reader.location_lat), lng: Number(reader.location_lng) }
           ),
-          current_book_title: currentBook.title,
+          current_book_title: selectedBook.title,
         }))
         .filter((reader: NearbyReader) => reader.distance <= MAX_DISTANCE_KM)
         .sort((a: NearbyReader, b: NearbyReader) => a.distance - b.distance);
@@ -200,7 +209,7 @@ export const ReadersNearMeMap: React.FC = () => {
             📍 Your Location
           </div>
           <p style="margin: 0; font-size: 14px;">
-            ${currentBook ? `Reading: ${currentBook.title}` : 'No current book'}
+            ${selectedBook ? `Looking for readers of: ${selectedBook.title}` : 'Select a book to find nearby readers'}
           </p>
         </div>
       `
@@ -283,12 +292,11 @@ export const ReadersNearMeMap: React.FC = () => {
       newMarkers.forEach(marker => bounds.extend(marker.getPosition()));
       map.fitBounds(bounds);
     }
-  }, [map, nearbyReaders, userLocation, friends]);
+  }, [map, nearbyReaders, userLocation, friends, selectedBook]);
 
   // Global handler for connect button in info windows
   useEffect(() => {
     (window as any).handleConnectReader = (readerId: string) => {
-      // You can implement connect logic here
       toast.success('Connect feature coming soon!');
     };
 
@@ -393,20 +401,23 @@ export const ReadersNearMeMap: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
             📚 Readers Near Me
-            {currentBook && (
-              <span className="text-sm font-normal text-gray-600">
-                • {currentBook.title}
-              </span>
-            )}
           </CardTitle>
           <p className="text-sm text-gray-600 mt-2">
-            {currentBook ? 
-              `Find other readers near you reading "${currentBook.title}"` :
-              'Set a current book to see nearby readers'
-            }
+            Select a book from your library to find nearby readers
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Book Selection Dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select a Book
+            </label>
+            <BookFilterDropdown
+              selectedBookId={selectedBook?.id || null}
+              onBookSelect={setSelectedBook}
+            />
+          </div>
+
           <div
             ref={mapRef}
             className="w-full h-[500px] rounded-xl border border-gray-200 overflow-hidden shadow-lg"
@@ -417,15 +428,24 @@ export const ReadersNearMeMap: React.FC = () => {
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Users className="w-4 h-4 text-orange-600" />
               Nearby Readers ({nearbyReaders.length})
+              {selectedBook && (
+                <span className="text-sm font-normal text-gray-600">
+                  reading "{selectedBook.title}"
+                </span>
+              )}
             </h3>
-            {nearbyReaders.length === 0 ? (
+            {!selectedBook ? (
               <div className="text-center py-8 text-gray-500">
                 <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">
-                  {currentBook ? 
-                    `No nearby readers found for "${currentBook.title}"` :
-                    'Set your current book to find nearby readers'
-                  }
+                  Please select a book from the dropdown above to find nearby readers
+                </p>
+              </div>
+            ) : nearbyReaders.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">
+                  No readers found for "{selectedBook.title}" yet
                 </p>
                 <p className="text-xs mt-1">
                   Readers within {MAX_DISTANCE_KM} km will appear here
