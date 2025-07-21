@@ -165,7 +165,12 @@ export const SocialFeed = () => {
                   <p className="text-sm text-gray-500">@{post.user.username} • {post.timestamp}</p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="More options"
+              >
                 •••
               </Button>
             </div>

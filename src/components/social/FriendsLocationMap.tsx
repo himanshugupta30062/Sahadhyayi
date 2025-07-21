@@ -142,7 +142,11 @@ export const FriendsLocationMap: React.FC = () => {
           className="rounded-lg border"
         />
         <div className="flex justify-center mt-4">
-          <Button onClick={shareLocation} className="bg-green-600 hover:bg-green-700">
+          <Button
+            onClick={shareLocation}
+            className="bg-green-600 hover:bg-green-700"
+            aria-label="Share my location"
+          >
             Share My Location
           </Button>
         </div>
