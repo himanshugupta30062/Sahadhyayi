@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
-const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
+const LAST_ACTIVITY_KEY = 'lastActivity';
 
 export const useAutoLogout = () => {
   const { user, signOut } = useAuth();
@@ -57,6 +58,9 @@ export const useAutoLogout = () => {
       clearTimeout(timeoutRef.current);
     }
 
+    // Update last activity timestamp
+    sessionStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+
     // Set new timeout
     timeoutRef.current = setTimeout(() => {
       handleInactivityLogout();
@@ -80,11 +84,18 @@ export const useAutoLogout = () => {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
+      sessionStorage.removeItem(LAST_ACTIVITY_KEY);
       return;
     }
 
     console.log('[AUTO-LOGOUT] Activating auto-logout for protected route');
-    
+
+    const lastActivity = Number(sessionStorage.getItem(LAST_ACTIVITY_KEY));
+    if (lastActivity && Date.now() - lastActivity > INACTIVITY_TIMEOUT) {
+      handleInactivityLogout();
+      return;
+    }
+
     // Start the timer when user is on a protected route
     resetTimer();
 
@@ -132,7 +143,7 @@ export const useAutoLogout = () => {
 
       console.log('[AUTO-LOGOUT] Cleanup completed');
     };
-  }, [user, handleActivity, resetTimer, isProtectedRoute]);
+  }, [user, handleActivity, resetTimer, isProtectedRoute, handleInactivityLogout]);
 
   // Cleanup on unmount
   useEffect(() => {
