@@ -19,18 +19,16 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    // Count registered users from the profiles table
-    const { count: signups, error: signupError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
+    // Fetch counts in parallel to reduce total wait time
+    const [
+      { count: signups, error: signupError },
+      { count: visits, error: visitError }
+    ] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('website_visits').select('*', { count: 'exact', head: true })
+    ])
 
     if (signupError) throw signupError
-
-    // Count recorded website visits
-    const { count: visits, error: visitError } = await supabase
-      .from('website_visits')
-      .select('*', { count: 'exact', head: true })
-
     if (visitError) throw visitError
 
     const stats = {

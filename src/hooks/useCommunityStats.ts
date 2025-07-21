@@ -22,17 +22,9 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     setError(null);
 
     try {
-      // Get the current session for authorization
-      const { data: { session } } = await supabase.auth.getSession();
-      
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
       };
-
-      // Add authorization header if user is authenticated
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
 
       const response = await fetch('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/community-stats', {
         headers,
@@ -70,15 +62,9 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
   const joinCommunity = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
       };
-
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
 
       const response = await fetch('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/community-stats', {
         method: 'POST',
