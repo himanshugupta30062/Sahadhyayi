@@ -3,7 +3,11 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SEO from '@/components/SEO';
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://rknxtatvlzunatpyqxro.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U';
+const supabase = createClient(supabaseUrl, supabaseKey);
 import { useFriends } from '@/hooks/useFriends';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { ReadersMap } from '@/components/maps/ReadersMap';
@@ -85,17 +89,29 @@ const MapPage = () => {
     const fetchReaders = async () => {
       setReadersLoading(true);
       setReadersError(null);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('full_name, location_lat, location_lng')
-        .eq('current_book_id', selectedBookId)
-        .not('location_lat', 'is', null)
-        .not('location_lng', 'is', null);
-      if (error) {
-        setReadersError(error.message);
+      try {
+        const response = await supabase
+          .from('profiles')
+          .select('full_name, location_lat, location_lng')
+          .eq('current_book_id', selectedBookId)
+          .not('location_lat', 'is', null)
+          .not('location_lng', 'is', null);
+        
+        if (response.error) {
+          setReadersError(response.error.message);
+          setReaders([]);
+        } else {
+          const profileData = response.data as any[];
+          const readerProfiles: ReaderProfile[] = profileData ? profileData.map((item: any) => ({
+            full_name: item.full_name,
+            location_lat: item.location_lat,
+            location_lng: item.location_lng
+          })) : [];
+          setReaders(readerProfiles);
+        }
+      } catch (err) {
+        setReadersError('Failed to fetch readers');
         setReaders([]);
-      } else {
-        setReaders((data || []) as ReaderProfile[]);
       }
       setReadersLoading(false);
     };
