@@ -17,9 +17,27 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
+    const ip =
+      req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+      req.headers.get('x-real-ip');
+
+    let body: { page_url?: string } = {};
+    try {
+      body = await req.json();
+    } catch (_) {
+      // no body provided
+    }
+
+    const country =
+      req.headers.get('x-vercel-ip-country') ||
+      req.headers.get('cf-ipcountry') ||
+      req.headers.get('x-nf-country');
+
     const { error: insertError } = await supabase.from('website_visits').insert({
-      ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
-      user_agent: req.headers.get('user-agent')
+      ip_address: ip,
+      user_agent: req.headers.get('user-agent'),
+      page_url: body.page_url,
+      country
     });
     if (insertError) throw insertError;
 

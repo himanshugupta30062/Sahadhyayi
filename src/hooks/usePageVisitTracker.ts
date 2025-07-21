@@ -12,9 +12,10 @@ export const usePageVisitTracker = () => {
         
         // Record the visit using the database function
         const { error } = await supabase.rpc('record_website_visit', {
-          ip_addr: null, // We can't get IP from client-side
+          ip_addr: null, // IP captured server-side
           user_agent_string: userAgent,
-          page: currentPage
+          page: currentPage,
+          country_code: null
         });
 
         if (error) {
