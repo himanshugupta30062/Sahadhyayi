@@ -1,16 +1,22 @@
 
 import { useState } from "react";
-import { Users, Mail } from "lucide-react";
+import { Users, Mail, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useCommunityStats } from "@/hooks/useCommunityStats";
+import { useAuth } from "@/contexts/AuthContext";
 import CommunityStats from "@/components/CommunityStats";
 
 const GlobalFooter = () => {
   const [showCount, setShowCount] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   const { toast } = useToast();
   const { stats, isLoading, fetchStats, joinCommunity } = useCommunityStats(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleEmailClick = () => {
     window.location.href = 'mailto:gyan@sahadhyayi.com';
@@ -32,7 +38,12 @@ const GlobalFooter = () => {
 
   const handleJoinCommunity = async () => {
     if (hasJoined) return;
-    
+
+    if (!user) {
+      setShowSignIn(true);
+      return;
+    }
+
     const success = await joinCommunity();
     if (success) {
       setHasJoined(true);
@@ -40,6 +51,7 @@ const GlobalFooter = () => {
         title: "Thanks for joining!",
         description: "Welcome to the Sahadhyayi reading community!",
       });
+      navigate('/social');
     } else {
       toast({
         title: "Welcome!",
@@ -50,6 +62,7 @@ const GlobalFooter = () => {
   };
 
   return (
+    <>
     <footer className="bg-gradient-to-r from-orange-600 to-amber-600 text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Community Stats Section */}
@@ -227,6 +240,22 @@ const GlobalFooter = () => {
         </div>
       </div>
     </footer>
+    <Dialog open={showSignIn} onOpenChange={setShowSignIn}>
+      <DialogContent className="sm:max-w-md mx-4">
+        <DialogHeader>
+          <DialogTitle className="text-center text-xl font-bold text-gray-900">
+            Join the Sahadhyayi Community
+          </DialogTitle>
+        </DialogHeader>
+        <div className="text-center space-y-4 py-4">
+          <p className="text-gray-600">Please sign in to join our community.</p>
+          <Button onClick={() => navigate('/signin')} className="w-full bg-orange-600 hover:bg-orange-700">
+            <LogIn className="w-4 h-4 mr-2" /> Sign In
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 
