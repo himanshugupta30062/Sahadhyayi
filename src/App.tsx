@@ -30,6 +30,7 @@ import SocialMedia from "./pages/SocialMedia";
 import Authors from "./pages/Authors";
 import AuthorDetails from "./pages/AuthorDetails";
 import AuthorProfile from "./pages/AuthorProfile";
+import AuthorSlugPage from "./pages/authors/[slug]";
 import BookDetails from "./pages/BookDetails";
 import Bookshelf from "./pages/Bookshelf";
 import Quotes from "./pages/Quotes";
@@ -80,6 +81,7 @@ function App() {
                         <Route path="/signup" element={<SignUp />} />
                         <Route path="/library" element={<BookLibrary />} />
                         <Route path="/authors" element={<Authors />} />
+                        <Route path="/authors/:slug" element={<AuthorSlugPage />} />
                         <Route path="/social" element={<SocialMedia />} />
                         <Route 
                           path="/dashboard" 
