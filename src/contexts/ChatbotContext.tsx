@@ -1,9 +1,9 @@
-
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGeminiTraining } from '@/hooks/useGeminiTrainingData';
 import { generateContextualResponse, BOOK_CATEGORIES, PLATFORM_FEATURES } from '@/utils/chatbotKnowledge';
 import { toast } from '@/hooks/use-toast';
+import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
 
 interface Message {
   text: string;
@@ -125,7 +125,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationContext, setConversationContext] = useState<string[]>([]);
-  const { saveSample } = useGeminiTraining();
+  const { saveEnhancedTrainingSample } = useEnhancedGeminiTraining();
 
   const toggleChat = useCallback(() => {
     setIsOpen(prev => !prev);
@@ -159,6 +159,13 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
           timestamp: new Date(),
         };
         setMessages(prev => [...prev, botMsg]);
+        
+        // Save enhanced training data
+        await saveEnhancedTrainingSample(
+          userMessage, 
+          predefinedResponse, 
+          'predefined_response'
+        );
         return;
       }
 
@@ -169,8 +176,10 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
       const conversationHistory = messages.slice(-3).map(m => `${m.sender}: ${m.text}`).join('\n');
       
       let enhancedPrompt = '';
+      let category = 'general_queries';
       
       if (relevantContent) {
+        category = 'book_interaction';
         enhancedPrompt = `
 You are the Book Expert AI for Sahadhyayi Digital Library. You help users with book recommendations, literature discussions, and platform navigation.
 
@@ -197,7 +206,7 @@ INSTRUCTIONS:
 
 Provide a helpful, contextual response based on the relevant content:`;
       } else {
-        // Even without specific content, try to provide a helpful response
+        category = 'platform_navigation';
         enhancedPrompt = `
 You are the Book Expert AI for Sahadhyayi Digital Library. You help users with book recommendations, literature discussions, and platform navigation.
 
@@ -244,6 +253,7 @@ Provide a helpful response about books or the platform:`;
         console.error('Function call error:', error);
         // Use contextual fallback
         botResponse = generateContextualResponse(userMessage);
+        category = 'fallback_response';
         
         toast({
           title: "Using Offline Mode",
@@ -256,6 +266,7 @@ Provide a helpful response about books or the platform:`;
       } else {
         console.log('No response from AI, using contextual fallback');
         botResponse = generateContextualResponse(userMessage);
+        category = 'fallback_response';
       }
 
       // Add bot response
@@ -267,11 +278,18 @@ Provide a helpful response about books or the platform:`;
       
       setMessages(prev => [...prev, botMsg]);
 
-      // Save interaction for training if successful
-      if (!error && data?.response) {
-        console.log('Saving training data');
-        await saveSample(enhancedPrompt, botResponse, 'chatbot_conversation');
-      }
+      // Save enhanced training data with book context if available
+      const bookContext = relevantContent ? {
+        bookContext: 'multiple_books_referenced',
+        hasRelevantContent: true
+      } : undefined;
+
+      await saveEnhancedTrainingSample(
+        userMessage, 
+        botResponse, 
+        category,
+        bookContext
+      );
 
     } catch (error) {
       console.error('Chatbot error:', error);
@@ -287,25 +305,30 @@ Provide a helpful response about books or the platform:`;
       
       setMessages(prev => [...prev, botMsg]);
       
+      // Save fallback training data
+      await saveEnhancedTrainingSample(
+        userMessage, 
+        fallbackResponse, 
+        'error_fallback'
+      );
+      
       toast({
         title: "Using Offline Mode",
         description: "Chatbot is working with local knowledge!",
         variant: "default",
       });
     }
-  }, [messages, conversationContext, saveSample]);
+  }, [messages, conversationContext, saveEnhancedTrainingSample]);
 
-  return (
-    <ChatbotContext.Provider value={{
-      isOpen,
-      messages,
-      toggleChat,
-      closeChat,
-      sendMessage,
-    }}>
-      {children}
-    </ChatbotContext.Provider>
-  );
+  const value = {
+    isOpen,
+    messages,
+    toggleChat,
+    closeChat,
+    sendMessage,
+  };
+
+  return <ChatbotContext.Provider value={value}>{children}</ChatbotContext.Provider>;
 };
 
 export const useChatbot = () => {
