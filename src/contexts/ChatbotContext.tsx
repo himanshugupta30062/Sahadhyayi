@@ -68,6 +68,8 @@ const getPredefinedResponse = (query: string): string | null => {
 // Function to search for relevant content
 const searchRelevantContent = async (query: string): Promise<string | null> => {
   try {
+    console.log('Searching for relevant content with query:', query);
+    
     // Search in book summaries, titles, authors, and descriptions
     const { data: bookResults, error: bookError } = await supabase
       .from('books_library')
@@ -77,7 +79,8 @@ const searchRelevantContent = async (query: string): Promise<string | null> => {
 
     if (bookError) {
       console.error('Book search error:', bookError);
-      return null;
+    } else {
+      console.log('Book search results:', bookResults);
     }
 
     // Search in book summaries
@@ -89,6 +92,8 @@ const searchRelevantContent = async (query: string): Promise<string | null> => {
 
     if (summaryError) {
       console.error('Summary search error:', summaryError);
+    } else {
+      console.log('Summary search results:', summaryResults);
     }
 
     // Combine results
@@ -108,6 +113,7 @@ const searchRelevantContent = async (query: string): Promise<string | null> => {
       });
     }
     
+    console.log('Final context content:', contextContent);
     return contextContent.trim() || null;
   } catch (error) {
     console.error('Content search error:', error);
@@ -130,6 +136,8 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const sendMessage = useCallback(async (userMessage: string) => {
+    console.log('User message received:', userMessage);
+    
     // Add user message
     const userMsg: Message = {
       text: userMessage,
@@ -144,7 +152,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
       const predefinedResponse = getPredefinedResponse(userMessage);
       
       if (predefinedResponse) {
-        // Use predefined response
+        console.log('Using predefined response');
         const botMsg: Message = {
           text: predefinedResponse,
           sender: 'bot',
@@ -157,21 +165,13 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
       // Step 2: Search for relevant content for book-related queries
       const relevantContent = await searchRelevantContent(userMessage);
       
-      if (!relevantContent) {
-        // Step 3: No content found, use fallback message
-        const fallbackMsg: Message = {
-          text: "I couldn't find an answer yet. Try rephrasing?",
-          sender: 'bot',
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, fallbackMsg]);
-        return;
-      }
-
-      // Step 4: Generate dynamic AI response with relevant content
+      // Step 3: Try to generate AI response even if no specific content found
       const conversationHistory = messages.slice(-3).map(m => `${m.sender}: ${m.text}`).join('\n');
       
-      const enhancedPrompt = `
+      let enhancedPrompt = '';
+      
+      if (relevantContent) {
+        enhancedPrompt = `
 You are the Book Expert AI for Sahadhyayi Digital Library. You help users with book recommendations, literature discussions, and platform navigation.
 
 CONVERSATION HISTORY:
@@ -196,11 +196,38 @@ INSTRUCTIONS:
 - If discussing books, mention specific titles and authors from the relevant content
 
 Provide a helpful, contextual response based on the relevant content:`;
+      } else {
+        // Even without specific content, try to provide a helpful response
+        enhancedPrompt = `
+You are the Book Expert AI for Sahadhyayi Digital Library. You help users with book recommendations, literature discussions, and platform navigation.
 
+CONVERSATION HISTORY:
+${conversationHistory}
+
+USER QUERY: ${userMessage}
+
+PLATFORM CONTEXT:
+- Sahadhyayi has 10,000+ books across Fiction, Science, Hindi Literature, Devotional, Biography, History
+- Features: Library (/library), Dashboard (/dashboard), Authors (/authors), Social/Reviews (/reviews)
+- All books offer free PDF downloads
+- Users can track reading progress, set goals, and connect with authors
+
+INSTRUCTIONS:
+- Provide a helpful response based on general book knowledge and platform features
+- Be conversational and offer to help find specific books or information
+- Suggest using the Library search if the user is looking for specific content
+- Keep responses helpful and engaging (2-3 paragraphs max)
+- Guide users to appropriate platform sections when relevant
+
+Provide a helpful response about books or the platform:`;
+      }
+
+      console.log('Calling enhanced-book-summary function with prompt');
+      
       // Update conversation context
       setConversationContext(prev => [...prev.slice(-4), userMessage]);
 
-      // Call OpenAI API for dynamic response
+      // Call Supabase Edge Function for AI response
       const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
         body: { 
           prompt: enhancedPrompt,
@@ -209,10 +236,26 @@ Provide a helpful, contextual response based on the relevant content:`;
         }
       });
 
-      let botResponse = "I couldn't find an answer yet. Try rephrasing?";
+      console.log('Function response:', { data, error });
 
-      if (!error && data?.response) {
+      let botResponse = "";
+
+      if (error) {
+        console.error('Function call error:', error);
+        // Use contextual fallback
+        botResponse = generateContextualResponse(userMessage);
+        
+        toast({
+          title: "Using Offline Mode",
+          description: "Chatbot is working with local knowledge!",
+          variant: "default",
+        });
+      } else if (data?.response) {
+        console.log('AI response received:', data.response);
         botResponse = data.response;
+      } else {
+        console.log('No response from AI, using contextual fallback');
+        botResponse = generateContextualResponse(userMessage);
       }
 
       // Add bot response
@@ -224,8 +267,9 @@ Provide a helpful, contextual response based on the relevant content:`;
       
       setMessages(prev => [...prev, botMsg]);
 
-      // Save interaction for training
+      // Save interaction for training if successful
       if (!error && data?.response) {
+        console.log('Saving training data');
         await saveSample(enhancedPrompt, botResponse, 'chatbot_conversation');
       }
 

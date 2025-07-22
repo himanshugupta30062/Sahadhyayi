@@ -143,43 +143,78 @@ export const RESPONSE_PATTERNS = {
     "That sounds like a great reading journey ahead!",
     "Wonderful! You're going to love exploring that.",
     "Excellent choice! I think you'll find exactly what you're looking for."
+  ],
+
+  bookRecommendations: [
+    "Based on your interest, I'd recommend exploring our {genre} section. We have some incredible titles that might capture your attention!",
+    "That's a fascinating topic! Our library has several books that dive deep into {topic}. Would you like me to suggest some specific titles?",
+    "Great question! For {topic}, I'd suggest checking out our curated collection. You can find them by visiting our Library and filtering by genre."
+  ],
+
+  generalHelp: [
+    "I'm here to help you make the most of Sahadhyayi! Whether you're looking for your next great read, want to track your reading progress, or connect with our amazing community of readers, I can guide you.",
+    "Let's explore what Sahadhyayi has to offer together! From discovering new books to connecting with authors and fellow readers, there's so much to explore.",
+    "Great to chat with you! I can help you navigate our extensive library, set up reading goals, find author connections, or join our reading community.",
+    "Welcome! I'm excited to help you discover everything Sahadhyayi offers. Whether it's finding the perfect book, tracking your reading journey, or connecting with other book lovers, I'm here to guide you."
   ]
 };
 
 export const generateContextualResponse = (userQuery: string): string => {
   const query = userQuery.toLowerCase();
   
-  // More specific pattern matching with varied responses
-  if (query.includes('find') && query.includes('book')) {
-    return RESPONSE_PATTERNS.bookSearch[Math.floor(Math.random() * RESPONSE_PATTERNS.bookSearch.length)] + 
+  console.log('Generating contextual response for query:', query);
+  
+  // Book search queries
+  if (query.includes('book') && (query.includes('find') || query.includes('search') || query.includes('looking for'))) {
+    const response = RESPONSE_PATTERNS.bookSearch[Math.floor(Math.random() * RESPONSE_PATTERNS.bookSearch.length)] + 
            " You can explore our Library section with 10,000+ books across all genres, or tell me your preferences for personalized recommendations!";
+    console.log('Using book search response');
+    return response;
   }
   
-  if (query.includes('recommend') || query.includes('suggest')) {
-    return "I'd love to recommend some great reads! What draws you in - compelling characters, fascinating facts, spiritual insights, or perhaps historical adventures? Our library spans Fiction, Science, Hindi Literature, Devotional texts, Biographies, and History.";
+  // Recommendation queries
+  if (query.includes('recommend') || query.includes('suggest') || query.includes('what should i read')) {
+    console.log('Using recommendation response');
+    return "I'd love to recommend some great reads! What draws you in - compelling characters, fascinating facts, spiritual insights, or perhaps historical adventures? Our library spans Fiction, Science, Hindi Literature, Devotional texts, Biographies, and History. Visit our Library section to explore, or tell me more about your preferences!";
   }
   
+  // Reading tracking queries
   if (query.includes('track') && (query.includes('reading') || query.includes('progress'))) {
+    console.log('Using reading tracking response');
     return "Your reading journey deserves proper tracking! In your Dashboard, you can set reading goals, monitor your progress through books, and see detailed statistics of your reading habits. Want help setting up your first reading goal?";
   }
   
-  if (query.includes('author') && query.includes('connect')) {
+  // Author connection queries
+  if (query.includes('author') && (query.includes('connect') || query.includes('contact') || query.includes('meet'))) {
+    console.log('Using author connection response');
     return "Author connections are one of our unique features! You can browse author profiles, read their biographies, explore their complete works, and even send them direct messages. Some authors also host virtual sessions. Are you looking for a specific author?";
   }
   
-  if (query.includes('community') || query.includes('social')) {
+  // Community/social queries
+  if (query.includes('community') || query.includes('social') || query.includes('friends') || query.includes('group')) {
+    console.log('Using community response');
     return "Our reading community is incredibly active! You can join reading groups, share book reviews, connect with fellow readers, and discover books through social recommendations. It's like having a book club that never sleeps! Want to explore the social features?";
   }
   
-  if (query.includes('download') || query.includes('pdf')) {
+  // Download queries
+  if (query.includes('download') || query.includes('pdf') || query.includes('free')) {
+    console.log('Using download response');
     return "Absolutely! Every book in our library offers free PDF downloads - we believe knowledge should be accessible to everyone. Just visit any book's page and hit the download button. Looking for a specific book to download?";
   }
   
+  // Hindi literature queries
   if (query.includes('hindi') || query.includes('हिंदी')) {
-    return "Our Hindi Literature section is a treasure trove! From classical works like Godan and Gunahon Ka Devta to contemporary Hindi novels and poetry collections. We celebrate the rich tradition of Hindi literature. Any particular Hindi author or genre you're interested in?";
+    console.log('Using Hindi literature response');
+    return "Our Hindi Literature section is a treasure trove! From classical works to contemporary Hindi novels and poetry collections. We celebrate the rich tradition of Hindi literature. Any particular Hindi author or genre you're interested in?";
   }
-  
-  // Genre-specific responses with more personality
+
+  // Specific book title queries
+  if (query.includes('about') && (query.includes('book') || query.includes('title'))) {
+    console.log('Using specific book response');
+    return "I'd be happy to help you learn about specific books! You can search for any book in our Library section, or tell me the title you're interested in and I'll help you find information about it, including summaries, author details, and reader reviews.";
+  }
+
+  // Genre-specific responses
   const mentionedGenre = BOOK_CATEGORIES.find(category => 
     query.includes(category.name.toLowerCase()) || 
     category.name.toLowerCase().includes(query.replace(/books?/g, '').trim())
@@ -187,6 +222,7 @@ export const generateContextualResponse = (userQuery: string): string => {
   
   if (mentionedGenre) {
     const randomEncouragement = RESPONSE_PATTERNS.genreExploration[Math.floor(Math.random() * RESPONSE_PATTERNS.genreExploration.length)];
+    console.log('Using genre-specific response for:', mentionedGenre.name);
     return `${randomEncouragement} ${mentionedGenre.description}. Our ${mentionedGenre.name} collection includes ${mentionedGenre.popularBooks.slice(0, 2).join(' and ')} among many others. Visit our Library and filter by "${mentionedGenre.name}" to explore everything we have!`;
   }
   
@@ -199,16 +235,14 @@ export const generateContextualResponse = (userQuery: string): string => {
   
   if (mentionedFeature) {
     const randomGuidance = RESPONSE_PATTERNS.featureGuidance[Math.floor(Math.random() * RESPONSE_PATTERNS.featureGuidance.length)];
+    console.log('Using feature-specific response for:', mentionedFeature.name);
     return `${randomGuidance} ${mentionedFeature.description}. Key features include ${mentionedFeature.keyFunctions.slice(0, 2).join(' and ')}. Head to ${mentionedFeature.route} to get started!`;
   }
   
-  // Default responses with more variety - avoid the repetitive message
-  const helpfulResponses = [
-    "I'm here to help you make the most of Sahadhyayi! Whether you're looking for your next great read, want to track your reading progress, or connect with our amazing community of readers, I can guide you. What interests you most?",
-    "Let's explore what Sahadhyayi has to offer together! From discovering new books to connecting with authors and fellow readers, there's so much to explore. What would you like to dive into first?",
-    "Great to chat with you! I can help you navigate our extensive library, set up reading goals, find author connections, or join our reading community. What sounds most interesting to you right now?",
-    "Welcome! I'm excited to help you discover everything Sahadhyayi offers. Whether it's finding the perfect book, tracking your reading journey, or connecting with other book lovers, I'm here to guide you. Where shall we start?"
-  ];
+  // Default helpful responses
+  const helpfulResponses = RESPONSE_PATTERNS.generalHelp;
+  const randomResponse = helpfulResponses[Math.floor(Math.random() * helpfulResponses.length)];
   
-  return helpfulResponses[Math.floor(Math.random() * helpfulResponses.length)];
+  console.log('Using general helpful response');
+  return randomResponse + " What interests you most - discovering new books, tracking your reading, or connecting with our community?";
 };
