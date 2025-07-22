@@ -82,7 +82,7 @@ const EnhancedReadersMap = () => {
       const processedReaders: Reader[] = (data || []).map(reader => {
         // Handle the case where user_profile might be null or an error object
         const userProfile = reader.user_profile;
-        if (!userProfile || (userProfile && typeof userProfile === 'object' && 'error' in userProfile)) {
+        if (!userProfile || (typeof userProfile === 'object' && userProfile !== null && 'error' in userProfile)) {
           return {
             ...reader,
             user_profile: {
