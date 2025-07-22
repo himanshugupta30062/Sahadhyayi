@@ -9,6 +9,7 @@ import { ChatWindow } from './ChatWindow';
 import { ReadersNearMeMap } from './ReadersNearMeMap';
 import { BitmojiCreator } from './BitmojiCreator';
 import { useUserAvatar } from '@/hooks/useUserAvatar';
+import EnhancedReadersMap from '@/components/maps/EnhancedReadersMap';
 
 export const EnhancedReadingMap = () => {
   const [showProfile, setShowProfile] = useState<string | null>(null);
@@ -24,7 +25,7 @@ export const EnhancedReadingMap = () => {
   return (
     <>
       {/* Main Readers Near Me Map */}
-      <ReadersNearMeMap />
+      <EnhancedReadersMap />
       
       {/* Avatar Customization */}
       <Card className="bg-white shadow-sm border-0 rounded-xl mt-6">

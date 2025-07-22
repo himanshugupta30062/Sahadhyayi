@@ -1,12 +1,11 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, MessageCircle, MapPin, Heart, Share2, TrendingUp } from 'lucide-react';
-import SocialFeed from '@/components/social/SocialFeed';
+import { SocialFeed } from '@/components/social/SocialFeed';
 import EnhancedFriendsManager from '@/components/social/EnhancedFriendsManager';
 import EnhancedReadersMap from '@/components/maps/EnhancedReadersMap';
-import WhatsAppIntegration from '@/components/social/WhatsAppIntegration';
+import { WhatsAppIntegration } from '@/components/social/WhatsAppIntegration';
 import { Badge } from '@/components/ui/badge';
 
 const SocialMedia = () => {

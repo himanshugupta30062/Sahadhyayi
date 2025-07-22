@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,6 +9,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { loadGoogleMaps } from '@/lib/googleMapsLoader';
+
+interface UserProfile {
+  full_name?: string;
+  username?: string;
+  profile_photo_url?: string;
+  bio?: string;
+}
 
 interface Reader {
   id: string;
@@ -18,12 +26,8 @@ interface Reader {
   lat: number;
   lng: number;
   created_at: string;
-  user_profile?: {
-    full_name: string;
-    username: string;
-    profile_photo_url?: string;
-    bio?: string;
-  };
+  updated_at?: string;
+  user_profile?: UserProfile;
 }
 
 const mapContainerStyle = {
@@ -46,11 +50,35 @@ const EnhancedReadersMap = () => {
   const [currentlyReading, setCurrentlyReading] = useState('');
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [hoveredReader, setHoveredReader] = useState<Reader | null>(null);
+  const [mapsLoaded, setMapsLoaded] = useState(false);
 
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-  });
+  // Load Google Maps API
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+    
+    if (apiKey) {
+      loadGoogleMaps(apiKey)
+        .then(() => {
+          setMapsLoaded(true);
+          console.log('Google Maps API loaded successfully');
+        })
+        .catch(error => {
+          console.error('Error loading Google Maps:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load maps. Please try again later.",
+            variant: "destructive",
+          });
+        });
+    } else {
+      console.error('Google Maps API key is not defined');
+      toast({
+        title: "Configuration Error",
+        description: "Maps functionality is unavailable due to missing API key.",
+        variant: "destructive",
+      });
+    }
+  }, []);
 
   // Load readers from database
   const loadReaders = useCallback(async () => {
@@ -71,7 +99,23 @@ const EnhancedReadersMap = () => {
       }
 
       console.log('Loaded readers:', data?.length || 0);
-      setReaders(data || []);
+      
+      // Transform the data to handle potential errors in the join
+      const processedReaders: Reader[] = (data || []).map(reader => {
+        // If there's an error in the join or the user_profile is null
+        if (!reader.user_profile || typeof reader.user_profile === 'string' || 'error' in reader.user_profile) {
+          return {
+            ...reader,
+            user_profile: {
+              full_name: reader.name,
+              username: '',
+            }
+          };
+        }
+        return reader as Reader;
+      });
+      
+      setReaders(processedReaders);
     } catch (error) {
       console.error('Error loading readers:', error);
     }
@@ -204,11 +248,11 @@ const EnhancedReadersMap = () => {
 
   // Initialize map and load data
   useEffect(() => {
-    if (isLoaded) {
+    if (mapsLoaded) {
       loadReaders();
       getCurrentLocation();
     }
-  }, [isLoaded, loadReaders, getCurrentLocation]);
+  }, [mapsLoaded, loadReaders, getCurrentLocation]);
 
   // Custom marker icon for current user
   const createUserMarkerIcon = () => {
@@ -246,7 +290,7 @@ const EnhancedReadersMap = () => {
     return user && reader.user_id === user.id;
   };
 
-  if (!isLoaded) {
+  if (!mapsLoaded) {
     return (
       <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
         <div className="text-center">
