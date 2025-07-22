@@ -7,10 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, MessageCircle, UserMinus, Shield, Users, UserPlus } from 'lucide-react';
+import { Search, MessageCircle, UserMinus, Shield, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { WhatsAppTab } from './WhatsAppTab';
-import { toast } from 'sonner';
 
 interface Friend {
   id: string;
@@ -25,101 +24,37 @@ export const SocialFriends = () => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  // Load real friends data from database
+  // Mock data for demonstration
   useEffect(() => {
-    const loadFriends = async () => {
-      if (!user?.id) return;
-
-      setLoading(true);
-      try {
-        // Get user's friends
-        const { data: friendships, error } = await supabase
-          .from('friends')
-          .select(`
-            user1_id,
-            user2_id,
-            created_at
-          `)
-          .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
-
-        if (error) throw error;
-
-        if (friendships && friendships.length > 0) {
-          // Get friend profiles
-          const friendIds = friendships.map(f => 
-            f.user1_id === user.id ? f.user2_id : f.user1_id
-          );
-
-          const { data: profiles, error: profileError } = await supabase
-            .from('profiles')
-            .select('id, full_name, profile_photo_url, last_seen')
-            .in('id', friendIds);
-
-          if (profileError) throw profileError;
-
-          const friendsData = profiles?.map(profile => ({
-            id: profile.id,
-            name: profile.full_name || 'Anonymous User',
-            avatar: profile.profile_photo_url || '',
-            isOnline: profile.last_seen ? 
-              new Date(profile.last_seen) > new Date(Date.now() - 5 * 60 * 1000) : false,
-            mutualBooks: Math.floor(Math.random() * 20), // TODO: Calculate real mutual books
-            commonInterests: ['Reading', 'Literature'] // TODO: Get real interests
-          })) || [];
-
-          setFriends(friendsData);
-        }
-      } catch (error) {
-        console.error('Error loading friends:', error);
-        toast.error('Failed to load friends');
-      } finally {
-        setLoading(false);
+    const mockFriends: Friend[] = [
+      {
+        id: '1',
+        name: 'Sarah Johnson',
+        avatar: '',
+        isOnline: true,
+        mutualBooks: 12,
+        commonInterests: ['Fiction', 'Mystery', 'Biography']
+      },
+      {
+        id: '2',
+        name: 'Mike Chen',
+        avatar: '',
+        isOnline: false,
+        mutualBooks: 8,
+        commonInterests: ['Technology', 'Science Fiction']
+      },
+      {
+        id: '3',
+        name: 'Emma Wilson',
+        avatar: '',
+        isOnline: true,
+        mutualBooks: 15,
+        commonInterests: ['Romance', 'Historical Fiction', 'Poetry']
       }
-    };
-
-    loadFriends();
-  }, [user?.id]);
-
-  const handleSendFriendRequest = async (friendId: string) => {
-    if (!user?.id) return;
-
-    try {
-      const { error } = await supabase
-        .from('friend_requests')
-        .insert({
-          requester_id: user.id,
-          addressee_id: friendId,
-          status: 'pending'
-        });
-
-      if (error) throw error;
-      toast.success('Friend request sent!');
-    } catch (error) {
-      console.error('Error sending friend request:', error);
-      toast.error('Failed to send friend request');
-    }
-  };
-
-  const handleRemoveFriend = async (friendId: string) => {
-    if (!user?.id) return;
-
-    try {
-      const { error } = await supabase
-        .from('friends')
-        .delete()
-        .or(`and(user1_id.eq.${user.id},user2_id.eq.${friendId}),and(user1_id.eq.${friendId},user2_id.eq.${user.id})`);
-
-      if (error) throw error;
-      
-      setFriends(friends.filter(f => f.id !== friendId));
-      toast.success('Friend removed');
-    } catch (error) {
-      console.error('Error removing friend:', error);
-      toast.error('Failed to remove friend');
-    }
-  };
+    ];
+    setFriends(mockFriends);
+  }, []);
 
   const filteredFriends = friends.filter(friend =>
     friend.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -195,34 +130,23 @@ export const SocialFriends = () => {
                       </div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0" title="Send Message">
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
                         <MessageCircle className="w-4 h-4" />
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                        onClick={() => handleRemoveFriend(friend.id)}
-                        title="Remove Friend"
-                      >
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700">
                         <UserMinus className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700">
+                        <Shield className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
                 ))}
                 
-                {loading && (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto mb-2"></div>
-                    <p className="text-sm">Loading friends...</p>
-                  </div>
-                )}
-                
-                {!loading && filteredFriends.length === 0 && (
+                {filteredFriends.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
                     <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No friends found</p>
-                    <p className="text-xs mt-1">Start connecting with other readers!</p>
                   </div>
                 )}
               </div>
