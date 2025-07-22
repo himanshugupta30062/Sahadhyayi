@@ -68,6 +68,8 @@ const getPredefinedResponse = (query: string): string | null => {
 // Function to search for relevant content
 const searchRelevantContent = async (query: string): Promise<string | null> => {
   try {
+    console.log('Searching for relevant content with query:', query);
+    
     // Search in book summaries, titles, authors, and descriptions
     const { data: bookResults, error: bookError } = await supabase
       .from('books_library')
@@ -108,6 +110,7 @@ const searchRelevantContent = async (query: string): Promise<string | null> => {
       });
     }
     
+    console.log('Found relevant content:', contextContent ? 'Yes' : 'No');
     return contextContent.trim() || null;
   } catch (error) {
     console.error('Content search error:', error);
@@ -130,6 +133,8 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const sendMessage = useCallback(async (userMessage: string) => {
+    console.log('User message:', userMessage);
+    
     // Add user message
     const userMsg: Message = {
       text: userMessage,
@@ -144,7 +149,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
       const predefinedResponse = getPredefinedResponse(userMessage);
       
       if (predefinedResponse) {
-        // Use predefined response
+        console.log('Using predefined response');
         const botMsg: Message = {
           text: predefinedResponse,
           sender: 'bot',
@@ -157,18 +162,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
       // Step 2: Search for relevant content for book-related queries
       const relevantContent = await searchRelevantContent(userMessage);
       
-      if (!relevantContent) {
-        // Step 3: No content found, use fallback message
-        const fallbackMsg: Message = {
-          text: "I couldn't find an answer yet. Try rephrasing?",
-          sender: 'bot',
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, fallbackMsg]);
-        return;
-      }
-
-      // Step 4: Generate dynamic AI response with relevant content
+      // Step 3: Generate AI response using Gemini
       const conversationHistory = messages.slice(-3).map(m => `${m.sender}: ${m.text}`).join('\n');
       
       const enhancedPrompt = `
@@ -179,8 +173,7 @@ ${conversationHistory}
 
 USER QUERY: ${userMessage}
 
-RELEVANT CONTENT FOUND:
-${relevantContent}
+${relevantContent ? `RELEVANT CONTENT FOUND:\n${relevantContent}\n` : ''}
 
 PLATFORM CONTEXT:
 - Sahadhyayi has 10,000+ books across Fiction, Science, Hindi Literature, Devotional, Biography, History
@@ -189,18 +182,22 @@ PLATFORM CONTEXT:
 - Users can track reading progress, set goals, and connect with authors
 
 INSTRUCTIONS:
-- Use the relevant content above to provide a personalized, detailed response
-- Be conversational and reference specific books/authors from the content when relevant
+${relevantContent ? 
+  '- Use the relevant content above to provide a personalized, detailed response\n- Be conversational and reference specific books/authors from the content when relevant' : 
+  '- Provide helpful information about Sahadhyayi\'s features and book collection\n- Guide users to explore the platform\'s capabilities'
+}
 - Provide actionable next steps or ask follow-up questions
 - Keep responses informative but concise (2-3 paragraphs max)
-- If discussing books, mention specific titles and authors from the relevant content
+- Be encouraging and enthusiastic about books and reading
 
-Provide a helpful, contextual response based on the relevant content:`;
+Provide a helpful, contextual response:`;
+
+      console.log('Calling Gemini API with enhanced prompt');
 
       // Update conversation context
       setConversationContext(prev => [...prev.slice(-4), userMessage]);
 
-      // Call OpenAI API for dynamic response
+      // Call Gemini API through enhanced-book-summary edge function
       const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
         body: { 
           prompt: enhancedPrompt,
@@ -209,10 +206,29 @@ Provide a helpful, contextual response based on the relevant content:`;
         }
       });
 
-      let botResponse = "I couldn't find an answer yet. Try rephrasing?";
+      let botResponse = "I'm here to help you explore Sahadhyayi's amazing book collection! Could you tell me more about what you're looking for?";
 
       if (!error && data?.response) {
+        console.log('Received successful response from Gemini');
         botResponse = data.response;
+        
+        // Save interaction for training
+        await saveSample(enhancedPrompt, botResponse, 'chatbot_conversation');
+      } else {
+        console.error('Gemini API error:', error);
+        
+        // Use contextual fallback
+        if (relevantContent) {
+          botResponse = `I found some relevant information for you!\n\n${relevantContent}\n\nWould you like me to help you explore any of these books or find something specific?`;
+        } else {
+          botResponse = generateContextualResponse(userMessage);
+        }
+        
+        toast({
+          title: "Using Offline Mode",
+          description: "Chatbot is working with local knowledge!",
+          variant: "default",
+        });
       }
 
       // Add bot response
@@ -223,11 +239,6 @@ Provide a helpful, contextual response based on the relevant content:`;
       };
       
       setMessages(prev => [...prev, botMsg]);
-
-      // Save interaction for training
-      if (!error && data?.response) {
-        await saveSample(enhancedPrompt, botResponse, 'chatbot_conversation');
-      }
 
     } catch (error) {
       console.error('Chatbot error:', error);
