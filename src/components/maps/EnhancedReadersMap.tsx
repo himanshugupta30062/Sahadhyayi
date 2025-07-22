@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 
 interface UserProfile {
   full_name?: string;
@@ -40,8 +41,6 @@ const defaultCenter = {
   lng: -74.0060
 };
 
-const libraries: ("places")[] = ["places"];
-
 const EnhancedReadersMap = () => {
   const { user } = useAuth();
   const [readers, setReaders] = useState<Reader[]>([]);
@@ -51,12 +50,35 @@ const EnhancedReadersMap = () => {
   const [currentlyReading, setCurrentlyReading] = useState('');
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [hoveredReader, setHoveredReader] = useState<Reader | null>(null);
+  const [mapsLoaded, setMapsLoaded] = useState(false);
 
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries
-  });
+  // Load Google Maps API
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+    
+    if (apiKey) {
+      loadGoogleMaps(apiKey)
+        .then(() => {
+          setMapsLoaded(true);
+          console.log('Google Maps API loaded successfully');
+        })
+        .catch(error => {
+          console.error('Error loading Google Maps:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load maps. Please try again later.",
+            variant: "destructive",
+          });
+        });
+    } else {
+      console.error('Google Maps API key is not defined');
+      toast({
+        title: "Configuration Error",
+        description: "Maps functionality is unavailable due to missing API key.",
+        variant: "destructive",
+      });
+    }
+  }, []);
 
   // Load readers from database
   const loadReaders = useCallback(async () => {
@@ -80,11 +102,8 @@ const EnhancedReadersMap = () => {
       
       // Transform the data to handle potential errors in the join
       const processedReaders: Reader[] = (data || []).map(reader => {
-        // Handle the case where user_profile might be null or an error object
-        const userProfile = reader.user_profile;
-        
-        // Check if userProfile is null or undefined first
-        if (!userProfile) {
+        // If there's an error in the join or the user_profile is null
+        if (!reader.user_profile || typeof reader.user_profile === 'string' || 'error' in reader.user_profile) {
           return {
             ...reader,
             user_profile: {
@@ -93,18 +112,6 @@ const EnhancedReadersMap = () => {
             }
           };
         }
-        
-        // Then check if it's an error object (userProfile is guaranteed to be non-null here)
-        if (typeof userProfile === 'object' && 'error' in (userProfile as any)) {
-          return {
-            ...reader,
-            user_profile: {
-              full_name: reader.name,
-              username: '',
-            }
-          };
-        }
-        
         return reader as Reader;
       });
       
@@ -241,31 +248,39 @@ const EnhancedReadersMap = () => {
 
   // Initialize map and load data
   useEffect(() => {
-    if (isLoaded) {
+    if (mapsLoaded) {
       loadReaders();
       getCurrentLocation();
     }
-  }, [isLoaded, loadReaders, getCurrentLocation]);
+  }, [mapsLoaded, loadReaders, getCurrentLocation]);
 
   // Custom marker icon for current user
-  const createUserMarkerIcon = (): google.maps.Symbol => ({
-    path: google.maps.SymbolPath.CIRCLE,
-    scale: 12,
-    fillColor: '#3B82F6',
-    fillOpacity: 1,
-    strokeColor: '#FFFFFF',
-    strokeWeight: 3
-  });
+  const createUserMarkerIcon = () => {
+    if (!window.google) return null;
+    
+    return {
+      path: window.google.maps.SymbolPath.CIRCLE,
+      scale: 12,
+      fillColor: '#3B82F6',
+      fillOpacity: 1,
+      strokeColor: '#FFFFFF',
+      strokeWeight: 3
+    };
+  };
 
   // Custom marker icon for other readers
-  const createReaderMarkerIcon = (): google.maps.Symbol => ({
-    path: google.maps.SymbolPath.CIRCLE,
-    scale: 10,
-    fillColor: '#F59E0B',
-    fillOpacity: 0.8,
-    strokeColor: '#FFFFFF',
-    strokeWeight: 2
-  });
+  const createReaderMarkerIcon = () => {
+    if (!window.google) return null;
+    
+    return {
+      path: window.google.maps.SymbolPath.CIRCLE,
+      scale: 10,
+      fillColor: '#F59E0B',
+      fillOpacity: 0.8,
+      strokeColor: '#FFFFFF',
+      strokeWeight: 2
+    };
+  };
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -275,18 +290,7 @@ const EnhancedReadersMap = () => {
     return user && reader.user_id === user.id;
   };
 
-  if (loadError) {
-    return (
-      <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">Error loading maps</p>
-          <p className="text-gray-600">Please check your API key configuration</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoaded) {
+  if (!mapsLoaded) {
     return (
       <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
         <div className="text-center">
@@ -456,12 +460,12 @@ const EnhancedReadersMap = () => {
             )}
 
             {/* Hover info window */}
-            {hoveredReader && hoveredReader !== selectedReader && isLoaded && (
+            {hoveredReader && hoveredReader !== selectedReader && (
               <InfoWindow
                 position={{ lat: hoveredReader.lat, lng: hoveredReader.lng }}
                 options={{
                   disableAutoPan: true,
-                  pixelOffset: new google.maps.Size(0, -40)
+                  pixelOffset: new window.google.maps.Size(0, -40)
                 }}
               >
                 <div className="p-2 text-center">
