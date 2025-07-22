@@ -83,19 +83,8 @@ const EnhancedReadersMap = () => {
         // Handle the case where user_profile might be null or an error object
         const userProfile = reader.user_profile;
         
-        // If userProfile is null or undefined, use fallback
-        if (userProfile === null || userProfile === undefined) {
-          return {
-            ...reader,
-            user_profile: {
-              full_name: reader.name,
-              username: '',
-            }
-          };
-        }
-        
-        // Check if userProfile is an error object (now TypeScript knows it's not null)
-        if (typeof userProfile === 'object' && 'error' in userProfile) {
+        // If userProfile is null, undefined, or an error object, use fallback
+        if (!userProfile || (typeof userProfile === 'object' && 'error' in userProfile)) {
           return {
             ...reader,
             user_profile: {
