@@ -82,6 +82,8 @@ const EnhancedReadersMap = () => {
       const processedReaders: Reader[] = (data || []).map(reader => {
         // Handle the case where user_profile might be null or an error object
         const userProfile = reader.user_profile;
+        
+        // If userProfile is null or undefined, use fallback
         if (userProfile === null || userProfile === undefined) {
           return {
             ...reader,
@@ -92,7 +94,7 @@ const EnhancedReadersMap = () => {
           };
         }
         
-        // Check if userProfile is an error object
+        // Check if userProfile is an error object (now TypeScript knows it's not null)
         if (typeof userProfile === 'object' && 'error' in userProfile) {
           return {
             ...reader,
