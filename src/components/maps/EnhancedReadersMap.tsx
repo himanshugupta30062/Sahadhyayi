@@ -84,7 +84,7 @@ const EnhancedReadersMap = () => {
         const userProfile = reader.user_profile;
         
         // If userProfile is null, undefined, or an error object, use fallback
-        if (!userProfile || (typeof userProfile === 'object' && 'error' in userProfile)) {
+        if (!userProfile || (userProfile && typeof userProfile === 'object' && 'error' in userProfile)) {
           return {
             ...reader,
             user_profile: {
