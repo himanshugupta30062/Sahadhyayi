@@ -94,8 +94,8 @@ const EnhancedReadersMap = () => {
           };
         }
         
-        // Then check if it's an error object
-        if (typeof userProfile === 'object' && 'error' in userProfile) {
+        // Then check if it's an error object (userProfile is guaranteed to be non-null here)
+        if (typeof userProfile === 'object' && 'error' in (userProfile as any)) {
           return {
             ...reader,
             user_profile: {
