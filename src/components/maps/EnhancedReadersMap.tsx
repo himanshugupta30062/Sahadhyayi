@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
 import { Button } from '@/components/ui/button';
@@ -80,9 +81,9 @@ const EnhancedReadersMap = () => {
       
       // Transform the data to handle potential errors in the join
       const processedReaders: Reader[] = (data || []).map(reader => {
-        // Handle the case where user_profile might be an error object
+        // Handle the case where user_profile might be null or an error object
         const userProfile = reader.user_profile;
-        if (!userProfile || typeof userProfile === 'string' || ('error' in userProfile && userProfile.error)) {
+        if (!userProfile || (typeof userProfile === 'object' && 'error' in userProfile)) {
           return {
             ...reader,
             user_profile: {
