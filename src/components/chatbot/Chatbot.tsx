@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { BookOpen, X, Send, Minimize2, Mic, MicOff, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import { useSpeechToText } from '@/hooks/useSpeechToText';
 import { cn } from '@/lib/utils';
 
 const Chatbot = () => {
-  const { isOpen, toggleChat, closeChat, messages, sendMessage, isLoading } = useChatbot();
+  const { isOpen, toggleChat, closeChat, messages, sendMessage, isLoading, trainingDataCount } = useChatbot();
   const { exportTrainingData, initializeWebsiteKnowledge } = useEnhancedGeminiTraining();
   const [input, setInput] = useState('');
   const [colorIndex, setColorIndex] = useState(0);
@@ -82,16 +81,36 @@ const Chatbot = () => {
   const handleExportData = async () => {
     try {
       await exportTrainingData();
+      toast({
+        title: "Training Data Exported",
+        description: `Successfully exported ${trainingDataCount} training samples`,
+        variant: "default",
+      });
     } catch (error) {
       console.error('Error exporting data:', error);
+      toast({
+        title: "Export Failed",
+        description: "Failed to export training data",
+        variant: "destructive",
+      });
     }
   };
 
   const handleRefreshKnowledge = async () => {
     try {
       await initializeWebsiteKnowledge();
+      toast({
+        title: "Knowledge Refreshed",
+        description: "Website knowledge has been updated",
+        variant: "default",
+      });
     } catch (error) {
       console.error('Error refreshing knowledge:', error);
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh knowledge base",
+        variant: "destructive",
+      });
     }
   };
 
@@ -155,7 +174,9 @@ const Chatbot = () => {
           </div>
           <div>
             <span className="font-semibold text-sm">Book Expert AI</span>
-            <div className="text-xs opacity-80">Enhanced with Sahadhyayi Knowledge</div>
+            <div className="text-xs opacity-80">
+              {trainingDataCount} training samples loaded
+            </div>
           </div>
         </div>
         <div className="flex items-center space-x-1">
@@ -179,7 +200,7 @@ const Chatbot = () => {
                 <Download className="h-3 w-3" />
               </button>
             </TooltipTrigger>
-            <TooltipContent><p>Export Training Data</p></TooltipContent>
+            <TooltipContent><p>Export Training Data ({trainingDataCount})</p></TooltipContent>
           </Tooltip>
           <button 
             onClick={() => setIsMinimized(!isMinimized)} 
@@ -205,9 +226,9 @@ const Chatbot = () => {
                 <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <BookOpen className="h-6 w-6 text-white" />
                 </div>
-                <p className="text-gray-600 mb-2">Welcome to Enhanced Book Expert!</p>
-                <p className="text-xs text-gray-500">I'm trained on your entire website and book collection.</p>
-                <p className="text-xs text-gray-500 mt-2">Ask me about books, authors, or platform features!</p>
+                <p className="text-gray-600 mb-2">Welcome to Book Expert!</p>
+                <p className="text-xs text-gray-500">I'm trained with {trainingDataCount} samples about your website.</p>
+                <p className="text-xs text-gray-500 mt-2">Ask me about books, authors, or features!</p>
               </div>
             )}
             
@@ -313,7 +334,7 @@ const Chatbot = () => {
               </div>
             </div>
             <div className="text-xs text-gray-400 mt-2 px-1">
-              Enhanced with {process.env.NODE_ENV === 'development' ? 'live' : 'real-time'} website knowledge
+              Enhanced with {trainingDataCount} training samples • Short & precise responses
             </div>
           </div>
         </>

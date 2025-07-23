@@ -69,6 +69,13 @@ export const generateEnhancedPrompt = async (userQuery: string, context: Website
   
   return `You are the Book Expert AI for Sahadhyayi Digital Library. You are an expert on books, literature, and our platform.
 
+CRITICAL RESPONSE RULES:
+- Keep responses SHORT and CONCISE (maximum 2-3 sentences)
+- Be direct and to the point
+- No lengthy explanations unless specifically asked
+- Use bullet points for lists when appropriate
+- Focus on actionable information
+
 PLATFORM INFORMATION:
 - Website: Sahadhyayi Digital Library
 - Mission: Reviving reading culture through accessible literature
@@ -78,8 +85,8 @@ PLATFORM INFORMATION:
 - Date: ${currentDate}
 
 RECENT BOOKS IN LIBRARY:
-${context.recentBooks.map(book => 
-  `• "${book.title}" by ${book.author} (${book.genre}) - ${book.description?.substring(0, 100)}...`
+${context.recentBooks.slice(0, 5).map(book => 
+  `• "${book.title}" by ${book.author} (${book.genre})`
 ).join('\n')}
 
 PLATFORM NAVIGATION:
@@ -91,17 +98,15 @@ PLATFORM NAVIGATION:
 
 USER QUERY: ${userQuery}
 
-INSTRUCTIONS:
-1. Always respond as an expert on both books and the Sahadhyayi platform
-2. Provide specific information about our book collection when relevant
+RESPONSE INSTRUCTIONS:
+1. Answer in 1-3 sentences maximum
+2. Be specific about our book collection when relevant
 3. Guide users to appropriate platform sections
-4. Be conversational and helpful
-5. If asked about books not in our library, acknowledge and suggest alternatives
-6. Always emphasize our free access and community features
-7. Keep responses informative but concise (2-3 paragraphs max)
-8. Include actionable next steps when helpful
+4. If asked about books not in our library, briefly acknowledge and suggest alternatives
+5. Always emphasize our free access
+6. Include ONE actionable next step when helpful
 
-Provide a helpful, knowledgeable response about books or the platform:`;
+Provide a helpful, brief response:`;
 };
 
 export const searchRelevantBooks = async (query: string, limit: number = 5): Promise<BookData[]> => {
@@ -133,5 +138,129 @@ export const getBookSummaries = async (bookIds: string[]): Promise<any[]> => {
   } catch (error) {
     console.error('Error fetching book summaries:', error);
     return [];
+  }
+};
+
+export const populateInitialTrainingData = async (userId: string) => {
+  const trainingData = [
+    {
+      prompt: JSON.stringify({
+        original_prompt: "What is Sahadhyayi?",
+        category: "platform_overview",
+        context: "website_knowledge",
+        metadata: {
+          timestamp: new Date().toISOString(),
+          platform: "sahadhyayi",
+          interaction_type: "knowledge_base"
+        }
+      }),
+      completion: "Sahadhyayi is a digital library platform with 10,000+ free books across Fiction, Science, Hindi Literature, Devotional, Biography, and History genres. You can download PDFs for free, track reading progress, and connect with authors and readers."
+    },
+    {
+      prompt: JSON.stringify({
+        original_prompt: "How do I find books?",
+        category: "book_discovery",
+        context: "website_knowledge",
+        metadata: {
+          timestamp: new Date().toISOString(),
+          platform: "sahadhyayi",
+          interaction_type: "navigation"
+        }
+      }),
+      completion: "Visit /library to browse our collection, use the search bar for specific titles/authors, or filter by genre. You can also get personalized recommendations based on your reading preferences."
+    },
+    {
+      prompt: JSON.stringify({
+        original_prompt: "What features does Sahadhyayi offer?",
+        category: "features",
+        context: "website_knowledge",
+        metadata: {
+          timestamp: new Date().toISOString(),
+          platform: "sahadhyayi",
+          interaction_type: "features"
+        }
+      }),
+      completion: "Key features include: free PDF downloads, reading progress tracking (/dashboard), author connections (/authors), social reading community (/reviews), book recommendations, and reading goals. All books are completely free to access."
+    },
+    {
+      prompt: JSON.stringify({
+        original_prompt: "How do I download books?",
+        category: "download_process",
+        context: "website_knowledge",
+        metadata: {
+          timestamp: new Date().toISOString(),
+          platform: "sahadhyayi",
+          interaction_type: "process"
+        }
+      }),
+      completion: "Find any book in our library, click on it to open the detail page, then click 'Download PDF'. All 10,000+ books are completely free to download with no registration required."
+    },
+    {
+      prompt: JSON.stringify({
+        original_prompt: "Tell me about Hindi literature",
+        category: "genre_specific",
+        context: "book_collection",
+        metadata: {
+          timestamp: new Date().toISOString(),
+          platform: "sahadhyayi",
+          interaction_type: "genre_inquiry"
+        }
+      }),
+      completion: "Our Hindi Literature collection includes classical and modern Hindi texts, poetry collections, and works by renowned Hindi authors. Browse the /library section and filter by 'Hindi Literature' to explore our extensive collection."
+    },
+    {
+      prompt: JSON.stringify({
+        original_prompt: "Can I track my reading progress?",
+        category: "progress_tracking",
+        context: "website_knowledge",
+        metadata: {
+          timestamp: new Date().toISOString(),
+          platform: "sahadhyayi",
+          interaction_type: "feature_inquiry"
+        }
+      }),
+      completion: "Yes! Visit your /dashboard to set reading goals, track progress, manage your bookshelf, and view detailed reading statistics. You can organize books by status: reading, completed, or want to read."
+    },
+    {
+      prompt: JSON.stringify({
+        original_prompt: "How do I connect with authors?",
+        category: "author_connection",
+        context: "website_knowledge",
+        metadata: {
+          timestamp: new Date().toISOString(),
+          platform: "sahadhyayi",
+          interaction_type: "social_feature"
+        }
+      }),
+      completion: "Visit /authors to browse author profiles, read their biographies, and connect with them directly. You can also attend virtual author events and join author-led reading discussions."
+    },
+    {
+      prompt: JSON.stringify({
+        original_prompt: "What genres are available?",
+        category: "genres",
+        context: "book_collection",
+        metadata: {
+          timestamp: new Date().toISOString(),
+          platform: "sahadhyayi",
+          interaction_type: "collection_inquiry"
+        }
+      }),
+      completion: "We offer 6 main genres: Fiction (novels, stories), Science (physics, biology, tech), Hindi Literature (classical, modern), Devotional (spiritual texts), Biography (life stories), and History (world, cultural heritage)."
+    }
+  ];
+
+  try {
+    for (const data of trainingData) {
+      await supabase
+        .from('gemini_training_data')
+        .insert({
+          user_id: userId,
+          prompt: data.prompt,
+          completion: data.completion,
+        });
+    }
+    console.log('Initial training data populated successfully');
+  } catch (error) {
+    console.error('Error populating training data:', error);
   }
 };

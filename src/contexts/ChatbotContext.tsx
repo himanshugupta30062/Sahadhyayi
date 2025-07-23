@@ -19,6 +19,7 @@ interface ChatbotContextType {
   closeChat: () => void;
   sendMessage: (message: string) => Promise<void>;
   isLoading: boolean;
+  trainingDataCount: number;
 }
 
 const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
@@ -28,21 +29,25 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [trainingDataCount, setTrainingDataCount] = useState(0);
   
   const { 
     initializeWebsiteKnowledge, 
     saveChatInteraction, 
-    saveBookSpecificInteraction 
+    saveBookSpecificInteraction,
+    getTrainingDataStats
   } = useEnhancedGeminiTraining();
 
-  // Initialize knowledge base on first load
+  // Initialize knowledge base and get stats
   useEffect(() => {
     const initializeKnowledge = async () => {
       if (!isInitialized) {
         try {
           await initializeWebsiteKnowledge();
+          const count = await getTrainingDataStats();
+          setTrainingDataCount(count);
           setIsInitialized(true);
-          console.log('Chatbot knowledge base initialized');
+          console.log(`Chatbot initialized with ${count} training samples`);
         } catch (error) {
           console.error('Failed to initialize knowledge base:', error);
         }
@@ -50,7 +55,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
     };
 
     initializeKnowledge();
-  }, [initializeWebsiteKnowledge, isInitialized]);
+  }, [initializeWebsiteKnowledge, isInitialized, getTrainingDataStats]);
 
   const toggleChat = useCallback(() => {
     setIsOpen(prev => !prev);
@@ -91,16 +96,9 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
       // Add relevant content to prompt if found
       let contextualPrompt = enhancedPrompt;
       if (relevantBooks.length > 0) {
-        contextualPrompt += '\n\nRELEVANT BOOKS FOUND:\n';
+        contextualPrompt += '\n\nRELEVANT BOOKS:\n';
         relevantBooks.forEach(book => {
-          contextualPrompt += `• "${book.title}" by ${book.author} (${book.genre})\n  ${book.description?.substring(0, 200)}...\n`;
-        });
-      }
-
-      if (bookSummaries.length > 0) {
-        contextualPrompt += '\n\nBOOK SUMMARIES:\n';
-        bookSummaries.forEach(summary => {
-          contextualPrompt += `• ${summary.books_library?.title}: ${summary.content.substring(0, 300)}...\n`;
+          contextualPrompt += `• "${book.title}" by ${book.author} (${book.genre})\n`;
         });
       }
 
@@ -159,6 +157,10 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
         );
       }
 
+      // Update training data count
+      const newCount = await getTrainingDataStats();
+      setTrainingDataCount(newCount);
+
     } catch (error) {
       console.error('Chatbot error:', error);
       
@@ -181,7 +183,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [saveChatInteraction, saveBookSpecificInteraction]);
+  }, [saveChatInteraction, saveBookSpecificInteraction, getTrainingDataStats]);
 
   return (
     <ChatbotContext.Provider value={{
@@ -191,6 +193,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
       closeChat,
       sendMessage,
       isLoading,
+      trainingDataCount,
     }}>
       {children}
     </ChatbotContext.Provider>
