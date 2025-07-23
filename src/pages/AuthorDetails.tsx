@@ -1,12 +1,11 @@
 
 import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Calendar, Clock, Users, BookOpen, Star, ExternalLink, MessageSquare, Globe, User, Heart, Award } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Users, BookOpen, Star, ExternalLink, MessageSquare, Globe, User, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SEO from '@/components/SEO';
 import { ChatWindow } from "@/components/social/ChatWindow";
@@ -14,6 +13,8 @@ import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialo
 import Breadcrumb from '@/components/Breadcrumb';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useAuthors, type Author } from '@/hooks/useAuthors';
+import { FollowButton } from '@/components/authors/FollowButton';
+import { VerificationBadge } from '@/components/authors/VerificationBadge';
 
 const AuthorDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -141,6 +142,15 @@ const AuthorDetails = () => {
   };
 
   const shortBio = author.bio && author.bio.length > 300 ? author.bio.substring(0, 300) + '...' : author.bio;
+  const social = (author as any).social_links || {};
+  const socialLinks = [
+    { label: 'Website', url: author.website_url },
+    { label: 'Wikipedia', url: social.wikipedia },
+    { label: 'Goodreads', url: social.goodreads },
+    { label: 'Twitter', url: social.twitter },
+    { label: 'Instagram', url: social.instagram },
+    { label: 'Facebook', url: social.facebook },
+  ].filter(link => link.url);
 
   return (
     <>
@@ -192,7 +202,10 @@ const AuthorDetails = () => {
                     </Avatar>
                     
                     <div className="flex-1">
-                      <h1 className="text-4xl font-bold text-gray-900 mb-2">{author.name}</h1>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h1 className="text-4xl font-bold text-gray-900">{author.name}</h1>
+                        <VerificationBadge verified={author.verified || false} verificationType={author.verification_type} />
+                      </div>
                       <div className="flex items-center gap-2 mb-4">
                         <MapPin className="w-5 h-5 text-gray-500" />
                         <span className="text-gray-600">{author.location || 'Location not specified'}</span>
@@ -226,10 +239,7 @@ const AuthorDetails = () => {
                       </div>
 
                       <div className="flex flex-wrap gap-3">
-                        <Button className="bg-orange-600 hover:bg-orange-700 shadow-lg">
-                          <Heart className="w-4 h-4 mr-2" />
-                          Follow Author
-                        </Button>
+                        <FollowButton authorId={author.id} />
                         <Button
                           variant="outline"
                           className="border-green-300 text-green-700 hover:bg-green-50"
@@ -264,20 +274,29 @@ const AuthorDetails = () => {
                     Connect
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {author.website_url && (
-                    <a href={author.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <Globe className="w-5 h-5 text-orange-600" />
-                      <span className="text-sm font-medium">Website</span>
-                      <ExternalLink className="w-4 h-4 ml-auto text-gray-400" />
-                    </a>
-                  )}
-                  <div className="flex items-center gap-3 p-3 text-gray-500">
-                    <MessageSquare className="w-5 h-5" />
-                    <span className="text-sm">More social links coming soon</span>
-                  </div>
-                </CardContent>
-              </Card>
+                  <CardContent className="space-y-3">
+                    {socialLinks.length > 0 ? (
+                      socialLinks.map(link => (
+                        <a
+                          key={link.label}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <Globe className="w-5 h-5 text-orange-600" />
+                          <span className="text-sm font-medium">{link.label}</span>
+                          <ExternalLink className="w-4 h-4 ml-auto text-gray-400" />
+                        </a>
+                      ))
+                    ) : (
+                      <div className="flex items-center gap-3 p-3 text-gray-500">
+                        <MessageSquare className="w-5 h-5" />
+                        <span className="text-sm">No public profiles available</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
               {/* Quick Stats */}
               <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl">
