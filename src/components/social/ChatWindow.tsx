@@ -58,7 +58,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
         content: message.trim(),
       });
       setMessage('');
-      refetch();
+      await refetch();
+      scrollToBottom();
     } catch (error) {
       console.error('Failed to send message:', error);
     }
@@ -87,9 +88,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
                 <p className="text-xs text-gray-500 truncate">@{friendProfile?.username}</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0 shrink-0">
-              <X className="w-4 h-4" />
-            </Button>
+            {/* Close handled by DialogContent's built-in button */}
           </div>
         </DialogHeader>
 
