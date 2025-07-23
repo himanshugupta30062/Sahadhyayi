@@ -43,6 +43,133 @@ export type Database = {
           },
         ]
       }
+      author_post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          parent_comment_id: string | null
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          parent_comment_id?: string | null
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "author_post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "author_post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "author_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "author_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      author_post_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reaction_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "author_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "author_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      author_posts: {
+        Row: {
+          allow_comments: boolean
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_published: boolean
+          post_type: string
+          title: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          allow_comments?: boolean
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          post_type?: string
+          title?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          allow_comments?: boolean
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          post_type?: string
+          title?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "author_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       authors: {
         Row: {
           bio: string | null

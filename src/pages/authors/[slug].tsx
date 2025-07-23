@@ -10,6 +10,10 @@ import { useAuthorBooks } from '@/hooks/useAuthorBooks';
 import SEO from '@/components/SEO';
 import NotFound from '../NotFound';
 import { FollowButton } from '@/components/authors/FollowButton';
+import { CreatePostForm } from '@/components/authors/CreatePostForm';
+import { AuthorPostCard } from '@/components/authors/AuthorPostCard';
+import { useAuthorPosts } from '@/hooks/useAuthorPosts';
+import { useAuth } from '@/contexts/AuthContext';
 
 
 const slugify = (text: string) =>
@@ -17,8 +21,13 @@ const slugify = (text: string) =>
 
 const AuthorSlugPage = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { user } = useAuth();
   const { data: author, isLoading } = useAuthorBySlug(slug);
   const { data: authorBooks, isLoading: booksLoading } = useAuthorBooks(author?.id || '');
+  const { data: authorPosts, isLoading: postsLoading } = useAuthorPosts(author?.id);
+
+  // Check if current user is the author
+  const isCurrentAuthor = user?.id === author?.id;
 
   if (isLoading) {
     return (
@@ -99,9 +108,10 @@ const AuthorSlugPage = () => {
 
           {/* Content Tabs */}
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsList className="grid w-full grid-cols-4 mb-6">
               <TabsTrigger value="about">About</TabsTrigger>
               <TabsTrigger value="books">Bibliography</TabsTrigger>
+              <TabsTrigger value="updates">Updates</TabsTrigger>
               <TabsTrigger value="connect">Connect</TabsTrigger>
             </TabsList>
 
@@ -241,6 +251,58 @@ const AuthorSlugPage = () => {
                     <div className="text-center py-12">
                       <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground">No books found for this author.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="updates" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Author Updates
+                  </CardTitle>
+                  <p className="text-muted-foreground">
+                    Latest news and updates from {author.name}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {/* Show create post form only to the author themselves */}
+                  {isCurrentAuthor && (
+                    <CreatePostForm 
+                      authorId={author.id} 
+                      onPostCreated={() => {
+                        // Optionally refresh posts
+                      }} 
+                    />
+                  )}
+
+                  {/* Posts feed */}
+                  {postsLoading ? (
+                    <div className="space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="animate-pulse">
+                          <div className="bg-muted rounded-lg h-32 mb-3"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : authorPosts && authorPosts.length > 0 ? (
+                    <div className="space-y-6">
+                      {authorPosts.map((post) => (
+                        <AuthorPostCard key={post.id} post={post} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">
+                        {isCurrentAuthor 
+                          ? "Share your first update with your followers!" 
+                          : `${author.name} hasn't posted any updates yet.`
+                        }
+                      </p>
                     </div>
                   )}
                 </CardContent>
