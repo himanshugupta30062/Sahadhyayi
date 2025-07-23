@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { BookOpen, X, Send, Minimize2, Mic, MicOff } from 'lucide-react';
+import { BookOpen, X, Send, Minimize2, Mic, MicOff, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -8,15 +8,16 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useChatbot } from '@/contexts/ChatbotContext';
+import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
 import { cn } from '@/lib/utils';
 
 const Chatbot = () => {
-  const { isOpen, toggleChat, closeChat, messages, sendMessage } = useChatbot();
+  const { isOpen, toggleChat, closeChat, messages, sendMessage, isLoading } = useChatbot();
+  const { exportTrainingData, initializeWebsiteKnowledge } = useEnhancedGeminiTraining();
   const [input, setInput] = useState('');
   const [colorIndex, setColorIndex] = useState(0);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   
   const { isRecording, isProcessing, toggleRecording } = useSpeechToText({
@@ -63,14 +64,11 @@ const Chatbot = () => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     
-    setIsLoading(true);
     try {
       await sendMessage(input);
       setInput('');
     } catch (error) {
       console.error('Error sending message:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -78,6 +76,22 @@ const Chatbot = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleExportData = async () => {
+    try {
+      await exportTrainingData();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
+  };
+
+  const handleRefreshKnowledge = async () => {
+    try {
+      await initializeWebsiteKnowledge();
+    } catch (error) {
+      console.error('Error refreshing knowledge:', error);
     }
   };
 
@@ -122,7 +136,7 @@ const Chatbot = () => {
         <TooltipTrigger asChild>{button}</TooltipTrigger>
         <TooltipContent side="left">
           <p className="font-medium">Book Expert AI</p>
-          <p className="text-xs text-gray-500">Ask me about books!</p>
+          <p className="text-xs text-gray-500">Enhanced with website knowledge!</p>
         </TooltipContent>
       </Tooltip>
     );
@@ -131,7 +145,7 @@ const Chatbot = () => {
   return (
     <div className={cn(
       "fixed bottom-4 right-4 z-[9999] flex flex-col overflow-hidden rounded-2xl border bg-white shadow-2xl transition-all duration-300",
-      isMinimized ? "h-14 w-80" : "h-[32rem] w-80 sm:w-96"
+      isMinimized ? "h-14 w-80" : "h-[36rem] w-80 sm:w-96"
     )}>
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-gradient-to-r from-amber-600 to-orange-600 p-3 text-white flex-shrink-0">
@@ -140,21 +154,41 @@ const Chatbot = () => {
             <BookOpen className="h-4 w-4" />
           </div>
           <div>
-            <span className="font-semibold text-sm">Book Expert</span>
-            <div className="text-xs opacity-80">AI Literary Assistant</div>
+            <span className="font-semibold text-sm">Book Expert AI</span>
+            <div className="text-xs opacity-80">Enhanced with Sahadhyayi Knowledge</div>
           </div>
         </div>
         <div className="flex items-center space-x-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button 
+                onClick={handleRefreshKnowledge}
+                className="p-1 text-white hover:bg-white/20 rounded transition-colors"
+              >
+                <RefreshCw className="h-3 w-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent><p>Refresh Knowledge</p></TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button 
+                onClick={handleExportData}
+                className="p-1 text-white hover:bg-white/20 rounded transition-colors"
+              >
+                <Download className="h-3 w-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent><p>Export Training Data</p></TooltipContent>
+          </Tooltip>
           <button 
             onClick={() => setIsMinimized(!isMinimized)} 
-            aria-label="Minimize chat" 
             className="p-1 text-white hover:bg-white/20 rounded transition-colors"
           >
             <Minimize2 className="h-4 w-4" />
           </button>
           <button 
             onClick={closeChat} 
-            aria-label="Close chat" 
             className="p-1 text-white hover:bg-white/20 rounded transition-colors"
           >
             <X className="h-4 w-4" />
@@ -171,9 +205,9 @@ const Chatbot = () => {
                 <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <BookOpen className="h-6 w-6 text-white" />
                 </div>
-                <p className="text-gray-600 mb-2">Welcome to Book Expert!</p>
-                <p className="text-xs text-gray-500">Ask me about books, authors, or reading recommendations.</p>
-                <p className="text-xs text-gray-500 mt-2">💬 Type or 🎤 speak your question</p>
+                <p className="text-gray-600 mb-2">Welcome to Enhanced Book Expert!</p>
+                <p className="text-xs text-gray-500">I'm trained on your entire website and book collection.</p>
+                <p className="text-xs text-gray-500 mt-2">Ask me about books, authors, or platform features!</p>
               </div>
             )}
             
@@ -240,21 +274,20 @@ const Chatbot = () => {
             <div ref={bottomRef} />
           </div>
 
-          {/* Enhanced Input Area */}
+          {/* Input Area */}
           <div className="border-t bg-white p-3 flex-shrink-0">
             <div className="relative">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me about books!"
+                placeholder="Ask me about books, authors, or platform features!"
                 className="w-full resize-none rounded-lg border border-gray-300 pl-4 pr-20 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 rows={1}
                 disabled={isLoading || isRecording || isProcessing}
                 style={{ minHeight: '48px', maxHeight: '96px' }}
               />
               
-              {/* Icons inside input */}
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
                 <Button
                   size="sm"
@@ -280,7 +313,7 @@ const Chatbot = () => {
               </div>
             </div>
             <div className="text-xs text-gray-400 mt-2 px-1">
-              Press Enter to send, Shift + Enter for new line, or click mic to speak
+              Enhanced with {process.env.NODE_ENV === 'development' ? 'live' : 'real-time'} website knowledge
             </div>
           </div>
         </>
