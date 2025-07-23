@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import NotificationDropdown from "@/components/notifications/NotificationDropdown";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);

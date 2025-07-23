@@ -1,139 +1,113 @@
-
-import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface Notification {
   id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  user_id: string;
+  author_id: string;
+  type: 'new_book' | 'author_update' | 'event_announcement';
   title: string;
   message: string;
-  timestamp: Date;
   read: boolean;
-  actionUrl?: string;
+  created_at: string;
+  updated_at: string;
+  authors?: {
+    id: string;
+    name: string;
+    profile_image_url?: string;
+  };
 }
 
 export const useNotifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const { toast } = useToast();
+  const { user } = useAuth();
 
-  // Mock notifications - replace with actual API calls
-  useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'success',
-        title: 'Session Scheduled',
-        message: 'Your session with Jane Austen has been confirmed for tomorrow at 2:00 PM.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        read: false,
-        actionUrl: '/sessions'
-      },
-      {
-        id: '2',
-        type: 'info',
-        title: 'New Book Recommendation',
-        message: 'Based on your reading history, we recommend "The Seven Husbands of Evelyn Hugo".',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-        read: false,
-        actionUrl: '/library'
-      },
-      {
-        id: '3',
-        type: 'warning',
-        title: 'Reading Goal Update',
-        message: 'You\'re 2 books behind your annual reading goal. Keep it up!',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-        read: true,
-        actionUrl: '/dashboard'
-      },
-      {
-        id: '4',
-        type: 'info',
-        title: 'Group Discussion',
-        message: 'New messages in "Classic Literature Club" discussion.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-        read: true,
-        actionUrl: '/groups'
-      },
-      {
-        id: '5',
-        type: 'success',
-        title: 'Book Completed',
-        message: 'Congratulations! You\'ve finished reading "Atomic Habits".',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-        read: true,
-        actionUrl: '/bookshelf'
-      }
-    ];
+  return useQuery({
+    queryKey: ['notifications', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('notifications')
+        .select(`
+          *,
+          authors:author_id (
+            id,
+            name,
+            profile_image_url
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      
+      if (error) throw error;
+      return data as Notification[] || [];
+    },
+    enabled: !!user?.id,
+  });
+};
 
-    setNotifications(mockNotifications);
-    setUnreadCount(mockNotifications.filter(n => !n.read).length);
-  }, []);
+export const useUnreadNotificationsCount = () => {
+  const { user } = useAuth();
 
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, read: true }
-          : notification
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
-  };
+  return useQuery({
+    queryKey: ['unread-notifications-count', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
+      
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!user?.id,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+};
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    );
-    setUnreadCount(0);
-  };
+export const useMarkNotificationAsRead = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  const deleteNotification = (notificationId: string) => {
-    const notification = notifications.find(n => n.id === notificationId);
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    if (notification && !notification.read) {
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    }
-  };
+  return useMutation({
+    mutationFn: async (notificationId: string) => {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', notificationId)
+        .eq('user_id', user?.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', user?.id] });
+    },
+  });
+};
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: Date.now().toString(),
-      timestamp: new Date(),
-      read: false
-    };
+export const useMarkAllNotificationsAsRead = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-    setNotifications(prev => [newNotification, ...prev]);
-    setUnreadCount(prev => prev + 1);
-
-    // Show toast for new notifications
-    toast({
-      title: notification.title,
-      description: notification.message,
-      variant: notification.type === 'error' ? 'destructive' : 'default',
-    });
-  };
-
-  const getNotificationsByType = (type: Notification['type']) => {
-    return notifications.filter(n => n.type === type);
-  };
-
-  const getRecentNotifications = (limit: number = 10) => {
-    return notifications
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, limit);
-  };
-
-  return {
-    notifications,
-    unreadCount,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-    addNotification,
-    getNotificationsByType,
-    getRecentNotifications,
-  };
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', user?.id)
+        .eq('read', false);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', user?.id] });
+    },
+  });
 };

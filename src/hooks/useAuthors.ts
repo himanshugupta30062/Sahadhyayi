@@ -172,7 +172,7 @@ export const usePaginatedAuthors = (page = 1, pageSize = 10) => {
         };
       }
     },
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

@@ -9,6 +9,7 @@ import { useAuthorBySlug } from '@/hooks/useAuthorBySlug';
 import { useAuthorBooks } from '@/hooks/useAuthorBooks';
 import SEO from '@/components/SEO';
 import NotFound from '../NotFound';
+import { FollowButton } from '@/components/authors/FollowButton';
 
 
 const slugify = (text: string) =>
@@ -71,21 +72,26 @@ const AuthorSlugPage = () => {
                     ))}
                   </div>
                   
-                  {/* Quick Stats */}
-                  <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <BookOpen className="w-4 h-4" />
-                      <span>{author.books_count} Books</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>{author.followers_count.toLocaleString()} Followers</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                      <span>{author.rating}</span>
-                    </div>
-                  </div>
+                   {/* Quick Stats */}
+                   <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm text-muted-foreground">
+                     <div className="flex items-center gap-1">
+                       <BookOpen className="w-4 h-4" />
+                       <span>{author.books_count} Books</span>
+                     </div>
+                     <div className="flex items-center gap-1">
+                       <Users className="w-4 h-4" />
+                       <span>{author.followers_count.toLocaleString()} Followers</span>
+                     </div>
+                     <div className="flex items-center gap-1">
+                       <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                       <span>{author.rating}</span>
+                     </div>
+                   </div>
+                   
+                   {/* Follow Button */}
+                   <div className="mt-4 flex justify-center md:justify-start">
+                     <FollowButton authorId={author.id} size="lg" />
+                   </div>
                 </div>
               </div>
             </div>

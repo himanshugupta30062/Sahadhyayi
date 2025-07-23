@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      author_followers: {
+        Row: {
+          author_id: string
+          followed_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          author_id: string
+          followed_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          author_id?: string
+          followed_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "author_followers_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       authors: {
         Row: {
           bio: string | null
@@ -1003,6 +1032,50 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phone_verifications: {
         Row: {
           attempts: number | null
@@ -1857,6 +1930,15 @@ export type Database = {
       normalize_name: {
         Args: { name: string }
         Returns: string
+      }
+      notify_author_followers: {
+        Args: {
+          author_uuid: string
+          notification_type: string
+          notification_title: string
+          notification_message: string
+        }
+        Returns: undefined
       }
       record_website_visit: {
         Args:
