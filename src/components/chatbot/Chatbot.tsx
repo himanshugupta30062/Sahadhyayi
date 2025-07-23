@@ -9,6 +9,7 @@ import {
 import { useChatbot } from '@/contexts/ChatbotContext';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
+import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const Chatbot = () => {
