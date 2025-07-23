@@ -1,5 +1,5 @@
-
 import { useEffect, useRef, useState } from 'react';
+import { createCustomMarker, createTooltipContent, createHoverTooltip, type MarkerConfig } from './MapMarkerUtils';
 
 interface ReaderLocation {
   latitude: number;
@@ -28,13 +28,23 @@ interface ReadersMapProps {
   mapsLoaded: boolean;
   darkMapStyle: any[];
   selectedBook: BookOption | null;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
-export const ReadersMap = ({ readers, readersLoading, readersError, mapsLoaded, darkMapStyle, selectedBook }: ReadersMapProps) => {
+export const ReadersMap = ({ 
+  readers, 
+  readersLoading, 
+  readersError, 
+  mapsLoaded, 
+  darkMapStyle, 
+  selectedBook,
+  userLocation
+}: ReadersMapProps) => {
   const readerMapRef = useRef<HTMLDivElement>(null);
   const [readerMap, setReaderMap] = useState<any>(null);
   const [readerMarkers, setReaderMarkers] = useState<any[]>([]);
   const [infoWindows, setInfoWindows] = useState<any[]>([]);
+  const [currentUserLocation, setCurrentUserLocation] = useState<{ lat: number; lng: number } | null>(userLocation || null);
 
   useEffect(() => {
     if (!mapsLoaded || !readerMapRef.current || !window.google?.maps) return;
@@ -50,43 +60,30 @@ export const ReadersMap = ({ readers, readersLoading, readersError, mapsLoaded, 
 
     setReaderMap(map);
 
-    // Try to center map on user's location
-    if (navigator.geolocation) {
+    // Try to get user's location if not provided
+    if (!currentUserLocation && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const userLocation = {
+          const userPos = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
-          map.setCenter(userLocation);
+          setCurrentUserLocation(userPos);
+          map.setCenter(userPos);
           map.setZoom(8);
-          
-          // Add user's current location marker
-          new window.google.maps.Marker({
-            position: userLocation,
-            map: map,
-            title: 'Your Location',
-            icon: {
-              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="#3B82F6" stroke="white" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              `),
-              scaledSize: new window.google.maps.Size(40, 40),
-              anchor: new window.google.maps.Point(20, 20),
-            },
-          });
         },
         () => {
           // Fallback to default center if geolocation fails
         }
       );
+    } else if (currentUserLocation) {
+      map.setCenter(currentUserLocation);
+      map.setZoom(8);
     }
-  }, [mapsLoaded, darkMapStyle]);
+  }, [mapsLoaded, darkMapStyle, currentUserLocation]);
 
   useEffect(() => {
-    if (!readerMap || !window.google?.maps || !readers.length) return;
+    if (!readerMap || !window.google?.maps) return;
 
     // Clear existing markers and info windows
     readerMarkers.forEach(marker => marker.setMap(null));
@@ -97,107 +94,102 @@ export const ReadersMap = ({ readers, readersLoading, readersError, mapsLoaded, 
     const newMarkers: any[] = [];
     const newInfoWindows: any[] = [];
 
-    // Add new markers with enhanced hover effects
-    readers.forEach((reader, index) => {
-      const displayName = reader.profiles?.full_name || reader.profiles?.username || 'Anonymous Reader';
-      const avatarUrl = reader.profiles?.profile_photo_url;
-      const bookStatus = reader.book_status || 'Reading';
-      const distance = reader.distance ? `${reader.distance.toFixed(1)} km away` : 'Distance unknown';
-      
-      // Create custom marker with user avatar or default icon
-      const markerIcon = avatarUrl ? {
-        url: avatarUrl,
-        scaledSize: new window.google.maps.Size(50, 50),
-        anchor: new window.google.maps.Point(25, 50),
-        origin: new window.google.maps.Point(0, 0),
-        labelOrigin: new window.google.maps.Point(25, -10)
-      } : {
-        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="#F97316" stroke="white" stroke-width="2">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-        `),
-        scaledSize: new window.google.maps.Size(40, 40),
-        anchor: new window.google.maps.Point(20, 40),
+    // Add current user's location marker if available
+    if (currentUserLocation) {
+      const userMarkerConfig: MarkerConfig = {
+        position: currentUserLocation,
+        title: 'Your Location',
+        isCurrentUser: true,
+        userName: 'You',
+        bookTitle: selectedBook?.title
       };
 
-      const marker = new window.google.maps.Marker({
-        position: {
-          lat: reader.latitude,
-          lng: reader.longitude,
-        },
+      const userMarkerIcon = createCustomMarker(userMarkerConfig, true);
+      
+      const userMarker = new window.google.maps.Marker({
+        position: currentUserLocation,
         map: readerMap,
-        title: displayName,
-        icon: markerIcon,
-        animation: window.google.maps.Animation.DROP,
-        zIndex: index + 1,
+        title: 'Your Location',
+        icon: userMarkerIcon,
+        zIndex: 1000,
       });
 
-      // Enhanced info window content
-      const infoWindowContent = `
-        <div style="padding: 12px; max-width: 250px; font-family: system-ui, -apple-system, sans-serif;">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-            ${avatarUrl ? 
-              `<img src="${avatarUrl}" alt="${displayName}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #F97316;">` : 
-              `<div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #F97316, #FB923C); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px;">${displayName.charAt(0).toUpperCase()}</div>`
-            }
-            <div>
-              <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #1F2937;">${displayName}</h3>
-              <p style="margin: 2px 0 0 0; font-size: 12px; color: #6B7280;">${distance}</p>
-            </div>
-          </div>
-          
-          <div style="border-top: 1px solid #E5E7EB; padding-top: 8px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-              <span style="font-size: 12px; padding: 2px 8px; background: #FEF3C7; color: #92400E; border-radius: 12px; font-weight: 500;">${bookStatus}</span>
-            </div>
-            
-            <p style="margin: 0; font-size: 14px; color: #374151; font-weight: 500;">
-              📖 Reading: ${selectedBook?.title || 'Unknown Book'}
-            </p>
-            
-            ${selectedBook?.author ? `<p style="margin: 4px 0 0 0; font-size: 12px; color: #6B7280;">by ${selectedBook.author}</p>` : ''}
-          </div>
-          
-          <div style="margin-top: 12px; display: flex; gap: 8px;">
-            <button onclick="sendFriendRequest('${reader.user_id}')" style="
-              background: #F97316; 
-              color: white; 
-              border: none; 
-              padding: 6px 12px; 
-              border-radius: 6px; 
-              font-size: 12px; 
-              font-weight: 500; 
-              cursor: pointer;
-              transition: background 0.2s;
-            " onmouseover="this.style.background='#EA580C'" onmouseout="this.style.background='#F97316'">
-              👋 Connect
-            </button>
-            <button onclick="viewProfile('${reader.user_id}')" style="
-              background: transparent; 
-              color: #F97316; 
-              border: 1px solid #F97316; 
-              padding: 6px 12px; 
-              border-radius: 6px; 
-              font-size: 12px; 
-              font-weight: 500; 
-              cursor: pointer;
-              transition: all 0.2s;
-            " onmouseover="this.style.background='#FEF3C7'" onmouseout="this.style.background='transparent'">
-              👤 Profile
-            </button>
-          </div>
-        </div>
-      `;
-
-      const infoWindow = new window.google.maps.InfoWindow({
-        content: infoWindowContent,
+      // Enhanced tooltip for current user
+      const userTooltipContent = createTooltipContent(userMarkerConfig, true);
+      const userInfoWindow = new window.google.maps.InfoWindow({
+        content: userTooltipContent,
         disableAutoPan: false,
         pixelOffset: new window.google.maps.Size(0, -10),
       });
 
-      // Enhanced hover effects
+      // Hover tooltip for current user
+      let hoverTimeout: NodeJS.Timeout;
+      userMarker.addListener('mouseover', () => {
+        const hoverContent = createHoverTooltip(userMarkerConfig, true);
+        const hoverInfoWindow = new window.google.maps.InfoWindow({
+          content: hoverContent,
+          disableAutoPan: true,
+        });
+        
+        hoverInfoWindow.open(readerMap, userMarker);
+        
+        hoverTimeout = setTimeout(() => {
+          hoverInfoWindow.close();
+        }, 3000);
+      });
+
+      userMarker.addListener('mouseout', () => {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+      });
+
+      userMarker.addListener('click', () => {
+        newInfoWindows.forEach(iw => iw.close());
+        userInfoWindow.open(readerMap, userMarker);
+      });
+
+      newMarkers.push(userMarker);
+      newInfoWindows.push(userInfoWindow);
+    }
+
+    // Add readers markers with enhanced tooltips
+    readers.forEach((reader, index) => {
+      const displayName = reader.profiles?.full_name || reader.profiles?.username || 'Anonymous Reader';
+      const avatarUrl = reader.profiles?.profile_photo_url;
+      const bookStatus = reader.book_status || 'Reading';
+      const distance = reader.distance;
+      
+      const readerMarkerConfig: MarkerConfig = {
+        position: { lat: reader.latitude, lng: reader.longitude },
+        title: displayName,
+        isCurrentUser: false,
+        avatarUrl,
+        userName: displayName,
+        distance,
+        bookTitle: selectedBook?.title,
+        isFriend: false // This would need to be determined based on friends list
+      };
+
+      const readerMarkerIcon = createCustomMarker(readerMarkerConfig, true);
+
+      const marker = new window.google.maps.Marker({
+        position: { lat: reader.latitude, lng: reader.longitude },
+        map: readerMap,
+        title: displayName,
+        icon: readerMarkerIcon,
+        animation: window.google.maps.Animation.DROP,
+        zIndex: index + 1,
+      });
+
+      // Enhanced tooltip content
+      const tooltipContent = createTooltipContent(readerMarkerConfig, true);
+      const infoWindow = new window.google.maps.InfoWindow({
+        content: tooltipContent,
+        disableAutoPan: false,
+        pixelOffset: new window.google.maps.Size(0, -10),
+      });
+
+      // Enhanced hover effects with proper tooltips
+      let hoverTimeout: NodeJS.Timeout;
       marker.addListener('mouseover', () => {
         // Scale up the marker on hover
         const currentIcon = marker.getIcon();
@@ -205,46 +197,48 @@ export const ReadersMap = ({ readers, readersLoading, readersError, mapsLoaded, 
           const hoverIcon = { ...currentIcon };
           hoverIcon.scaledSize = avatarUrl ? 
             new window.google.maps.Size(60, 60) : 
-            new window.google.maps.Size(50, 50);
-          hoverIcon.anchor = avatarUrl ? 
-            new window.google.maps.Point(30, 60) : 
-            new window.google.maps.Point(25, 50);
+            new window.google.maps.Size(18, 18);
+          if (avatarUrl) {
+            hoverIcon.anchor = new window.google.maps.Point(30, 30);
+          }
+          marker.setIcon(hoverIcon);
+        } else if (currentIcon && typeof currentIcon === 'object' && 'scale' in currentIcon) {
+          const hoverIcon = { ...currentIcon };
+          hoverIcon.scale = 18;
           marker.setIcon(hoverIcon);
         }
         
-        // Show a preview tooltip
-        const previewContent = `
-          <div style="padding: 8px; font-family: system-ui; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            <div style="font-weight: 600; color: #1F2937; margin-bottom: 4px;">${displayName}</div>
-            <div style="font-size: 12px; color: #6B7280;">📖 ${selectedBook?.title || 'Reading'}</div>
-            <div style="font-size: 11px; color: #9CA3AF; margin-top: 2px;">${distance}</div>
-          </div>
-        `;
-        
+        // Show hover tooltip
+        const hoverContent = createHoverTooltip(readerMarkerConfig, true);
         const hoverInfoWindow = new window.google.maps.InfoWindow({
-          content: previewContent,
+          content: hoverContent,
           disableAutoPan: true,
         });
         
         hoverInfoWindow.open(readerMap, marker);
         
-        // Close hover info window after 2 seconds
-        setTimeout(() => {
+        hoverTimeout = setTimeout(() => {
           hoverInfoWindow.close();
-        }, 2000);
+        }, 3000);
       });
 
       marker.addListener('mouseout', () => {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+        
         // Scale back to original size
         const currentIcon = marker.getIcon();
         if (currentIcon && typeof currentIcon === 'object' && 'scaledSize' in currentIcon) {
           const originalIcon = { ...currentIcon };
           originalIcon.scaledSize = avatarUrl ? 
             new window.google.maps.Size(50, 50) : 
-            new window.google.maps.Size(40, 40);
-          originalIcon.anchor = avatarUrl ? 
-            new window.google.maps.Point(25, 50) : 
-            new window.google.maps.Point(20, 40);
+            new window.google.maps.Size(15, 15);
+          if (avatarUrl) {
+            originalIcon.anchor = new window.google.maps.Point(25, 25);
+          }
+          marker.setIcon(originalIcon);
+        } else if (currentIcon && typeof currentIcon === 'object' && 'scale' in currentIcon) {
+          const originalIcon = { ...currentIcon };
+          originalIcon.scale = 15;
           marker.setIcon(originalIcon);
         }
       });
@@ -262,7 +256,7 @@ export const ReadersMap = ({ readers, readersLoading, readersError, mapsLoaded, 
     setReaderMarkers(newMarkers);
     setInfoWindows(newInfoWindows);
 
-    // Fit map to show all markers if there are multiple readers
+    // Fit map to show all markers if there are multiple
     if (newMarkers.length > 1) {
       const bounds = new window.google.maps.LatLngBounds();
       newMarkers.forEach(marker => {
@@ -282,15 +276,13 @@ export const ReadersMap = ({ readers, readersLoading, readersError, mapsLoaded, 
     // Add global functions for info window buttons
     (window as any).sendFriendRequest = (userId: string) => {
       console.log('Sending friend request to:', userId);
-      // This will be handled by the parent component
     };
 
     (window as any).viewProfile = (userId: string) => {
       console.log('Viewing profile:', userId);
-      // This will be handled by the parent component
     };
 
-  }, [readers, readerMap, selectedBook]);
+  }, [readers, readerMap, selectedBook, currentUserLocation]);
 
   if (readersLoading || !mapsLoaded) {
     return (
