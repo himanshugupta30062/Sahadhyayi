@@ -13,7 +13,7 @@ import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/ui/breadcrumb';
-import { useAuthors, type Author } from '@/hooks/useAuthors';
+import { usePaginatedAuthors, type Author } from '@/hooks/useAuthors';
 import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { toast } from '@/hooks/use-toast';
 import { generateWebsiteSchema, generateBreadcrumbSchema } from '@/utils/schema';
@@ -24,7 +24,14 @@ const slugify = (text: string) =>
 const Authors = () => {
   console.log('Authors component rendering');
   
-  const { data: authors = [], isLoading, error, refetch } = useAuthors();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const { data: paginated = { authors: [], total: 0 }, isLoading, error, refetch } = usePaginatedAuthors(page, pageSize);
+  const authors = paginated.authors;
+  const totalAuthors = paginated.total;
+  const totalPages = Math.ceil(totalAuthors / pageSize) || 1;
+
   const { data: libraryBooks = [] } = useAllLibraryBooks();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('all');
@@ -32,7 +39,7 @@ const Authors = () => {
   const [chatAuthor, setChatAuthor] = useState<string | null>(null);
 
   console.log('Authors page state:', {
-    authorsCount: authors.length,
+    authorsCount: totalAuthors,
     isLoading,
     error: error?.message
   });
@@ -121,7 +128,7 @@ const Authors = () => {
     "mainEntity": {
       "@type": "ItemList",
       "name": "Featured Authors",
-      "numberOfItems": authors.length,
+      "numberOfItems": totalAuthors,
       "itemListElement": authors.slice(0, 10).map((author, index) => ({
         "@type": "Person",
         "position": index + 1,
@@ -231,8 +238,8 @@ const Authors = () => {
               Discover talented authors, explore their works, and connect with writers who inspire you.
             </p>
             <div className="text-sm text-gray-500">
-              {authors.length > 0 ? (
-                `Found ${authors.length} author${authors.length !== 1 ? 's' : ''} in our community`
+              {totalAuthors > 0 ? (
+                `Found ${totalAuthors} author${totalAuthors !== 1 ? 's' : ''} in our community`
               ) : (
                 'Building our authors directory...'
               )}
@@ -293,7 +300,7 @@ const Authors = () => {
           </section>
 
           {/* Show message if no authors found */}
-          {authors.length === 0 ? (
+          {totalAuthors === 0 ? (
             <div className="text-center py-12">
               <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-500 mb-2">No Authors Found</h2>
@@ -336,6 +343,19 @@ const Authors = () => {
                       </span>
                     )}
                   </h2>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Page Size:</span>
+                    <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(parseInt(v, 10)); setPage(1); }}>
+                      <SelectTrigger className="w-20 h-8 border border-gray-200">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[10, 20, 50, 100].map(size => (
+                          <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {filteredAuthors.length === 0 ? (
@@ -356,6 +376,25 @@ const Authors = () => {
                         featured={false}
                       />
                     ))}
+                  </div>
+                )}
+                {filteredAuthors.length > 0 && totalPages > 1 && (
+                  <div className="pagination-controls flex justify-center mt-6 space-x-2">
+                    <Button variant="outline" onClick={() => setPage(prev => Math.max(prev - 1, 1))} disabled={page === 1}>
+                      Previous
+                    </Button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
+                      <Button
+                        key={pageNumber}
+                        variant={pageNumber === page ? 'default' : 'outline'}
+                        onClick={() => setPage(pageNumber)}
+                      >
+                        {pageNumber}
+                      </Button>
+                    ))}
+                    <Button variant="outline" onClick={() => setPage(prev => Math.min(prev + 1, totalPages))} disabled={page === totalPages}>
+                      Next
+                    </Button>
                   </div>
                 )}
               </section>

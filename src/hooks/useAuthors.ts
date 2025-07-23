@@ -115,3 +115,65 @@ export const useAuthors = () => {
     retryDelay: 1000,
   });
 };
+
+export interface PaginatedAuthors {
+  authors: Author[];
+  total: number;
+}
+
+export const usePaginatedAuthors = (page = 1, pageSize = 10) => {
+  return useQuery({
+    queryKey: ['paginated-authors', page, pageSize],
+    queryFn: async (): Promise<PaginatedAuthors> => {
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = page * pageSize - 1;
+
+      try {
+        const { data, error, count } = await supabase
+          .rpc('get_authors_with_books', {}, { count: 'exact' })
+          .range(startIndex, endIndex)
+          .order('name', { ascending: true });
+
+        if (error || !data) {
+          console.error('Failed to fetch paginated authors:', error?.message || error);
+          return {
+            authors: fallbackAuthors.slice(startIndex, endIndex + 1),
+            total: fallbackAuthors.length,
+          };
+        }
+
+        const authors = data.map((author: any) => ({
+          id: author.id,
+          name: author.name,
+          bio: author.bio || 'Bio will be updated by the author.',
+          profile_image_url: author.profile_image_url,
+          location: author.location || 'Unknown',
+          website_url: author.website_url,
+          social_links: author.social_links || {},
+          genres: author.genres || [],
+          books_count: parseInt(author.actual_books_count) || 0,
+          followers_count: author.followers_count || 0,
+          rating: parseFloat(author.rating) || 4.0,
+          upcoming_events: author.upcoming_events || 0,
+          created_at: author.created_at,
+          updated_at: author.updated_at,
+          availableSlots:
+            author.actual_books_count > 0
+              ? [`Meet the author of ${author.actual_books_count} book${author.actual_books_count > 1 ? 's' : ''}`]
+              : ['Available for consultation'],
+        })) as Author[];
+
+        return { authors, total: count ?? authors.length };
+      } catch (err) {
+        console.error('Exception while fetching paginated authors:', err);
+        return {
+          authors: fallbackAuthors.slice(startIndex, endIndex + 1),
+          total: fallbackAuthors.length,
+        };
+      }
+    },
+    keepPreviousData: true,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
