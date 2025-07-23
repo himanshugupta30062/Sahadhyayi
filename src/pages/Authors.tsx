@@ -37,7 +37,7 @@ const Authors = () => {
     error: error?.message
   });
 
-  // Map books by author name for quick lookup
+  // Map books by author name for quick lookup  
   const booksByAuthor = useMemo(() => {
     const map: Record<string, Book[]> = {};
     libraryBooks.forEach(book => {

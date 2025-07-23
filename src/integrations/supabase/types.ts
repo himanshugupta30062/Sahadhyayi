@@ -202,6 +202,7 @@ export type Database = {
         Row: {
           author: string | null
           author_bio: string | null
+          author_id: string | null
           cover_image_url: string | null
           created_at: string | null
           description: string | null
@@ -217,6 +218,7 @@ export type Database = {
         Insert: {
           author?: string | null
           author_bio?: string | null
+          author_id?: string | null
           cover_image_url?: string | null
           created_at?: string | null
           description?: string | null
@@ -232,6 +234,7 @@ export type Database = {
         Update: {
           author?: string | null
           author_bio?: string | null
+          author_id?: string | null
           cover_image_url?: string | null
           created_at?: string | null
           description?: string | null
@@ -244,7 +247,15 @@ export type Database = {
           publication_year?: number | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "books_library_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       books_test: {
         Row: {
@@ -1806,6 +1817,26 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_authors_with_books: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          name: string
+          bio: string
+          profile_image_url: string
+          location: string
+          website_url: string
+          social_links: Json
+          genres: string[]
+          books_count: number
+          followers_count: number
+          rating: number
+          upcoming_events: number
+          created_at: string
+          updated_at: string
+          actual_books_count: number
+        }[]
+      }
       get_user_bookshelf_stats: {
         Args: { user_uuid: string }
         Returns: {
@@ -1818,6 +1849,14 @@ export type Database = {
       get_website_visit_count: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      link_books_to_authors: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      normalize_name: {
+        Args: { name: string }
+        Returns: string
       }
       record_website_visit: {
         Args:

@@ -63,27 +63,42 @@ export const useAuthors = () => {
   return useQuery({
     queryKey: ['authors'],
     queryFn: async (): Promise<Author[]> => {
-      console.log('Fetching authors from database...');
+      console.log('Fetching authors with books from database...');
 
       try {
-        const { data, error } = await supabase.rpc('get_authors_data');
+        // Use the new function that only returns authors with books
+        const { data, error } = await supabase.rpc('get_authors_with_books');
 
         if (error) {
-          console.error('Failed to fetch authors:', error.message || error);
+          console.error('Failed to fetch authors with books:', error.message || error);
           console.info('Using fallback author data due to API error');
           return fallbackAuthors;
         }
 
         if (!data || data.length === 0) {
-          console.warn('No authors returned from database, using fallback data');
+          console.warn('No authors with books found, using fallback data');
           return fallbackAuthors;
         }
 
-        console.log('Authors fetched successfully:', data.length);
-        // Add availableSlots to each author from the database
-        return data.map(author => ({
-          ...author,
-          availableSlots: [] // Default empty array for available slots
+        console.log('Authors with books fetched successfully:', data.length);
+        return data.map((author: any) => ({
+          id: author.id,
+          name: author.name,
+          bio: author.bio || 'Bio will be updated by the author.',
+          profile_image_url: author.profile_image_url,
+          location: author.location || 'Unknown',
+          website_url: author.website_url,
+          social_links: author.social_links || {},
+          genres: author.genres || [],
+          books_count: parseInt(author.actual_books_count) || 0, // Use actual count from database
+          followers_count: author.followers_count || 0,
+          rating: parseFloat(author.rating) || 4.0,
+          upcoming_events: author.upcoming_events || 0,
+          created_at: author.created_at,
+          updated_at: author.updated_at,
+          availableSlots: author.actual_books_count > 0 ? 
+            [`Meet the author of ${author.actual_books_count} book${author.actual_books_count > 1 ? 's' : ''}`] : 
+            ['Available for consultation']
         })) as Author[];
       } catch (err) {
         console.error('Exception while fetching authors:', err);
@@ -93,7 +108,6 @@ export const useAuthors = () => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    // Show loading for maximum 2 seconds
     retry: (failureCount, error) => {
       console.error(`Author fetch attempt ${failureCount + 1} failed:`, error);
       return failureCount < 2;
