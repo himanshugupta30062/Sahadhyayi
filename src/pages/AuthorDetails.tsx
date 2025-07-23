@@ -101,7 +101,7 @@ const AuthorDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center pt-16">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted flex items-center justify-center pt-16">
         <div className="text-center">
           <div className="w-16 h-16 bg-orange-200 rounded-full mx-auto mb-4 animate-pulse"></div>
           <p className="text-gray-600 animate-pulse">Loading author profile...</p>
@@ -112,7 +112,7 @@ const AuthorDetails = () => {
 
   if (!author) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center pt-16">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted flex items-center justify-center pt-16">
         <div className="text-center max-w-md mx-auto p-8">
           <div className="w-16 h-16 bg-red-200 rounded-full mx-auto mb-4 flex items-center justify-center">
             <User className="w-8 h-8 text-red-600" />
@@ -163,12 +163,12 @@ const AuthorDetails = () => {
         author={author.name}
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-16">
-        {/* Improved Header */}
-        <div className="bg-white/90 backdrop-blur-md border-b border-orange-200 sticky top-16 z-10 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted pt-16">
+        {/* Page Header */}
+        <div className="bg-white/80 backdrop-blur-sm border-b border-border sticky top-16 z-10">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <Link to="/authors">
-              <Button variant="ghost" className="hover:bg-orange-100 transition-colors">
+              <Button variant="ghost" className="hover:bg-muted">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Authors
               </Button>
@@ -176,7 +176,7 @@ const AuthorDetails = () => {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumb Navigation */}
           <div className="mb-6">
             <Breadcrumb 
@@ -191,12 +191,12 @@ const AuthorDetails = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             {/* Author Info */}
             <div className="lg:col-span-2">
-              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-xl rounded-2xl overflow-hidden">
+              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-warm rounded-2xl overflow-hidden">
                 <CardContent className="p-8">
                   <div className="flex flex-col sm:flex-row items-start gap-6">
-                    <Avatar className="w-32 h-32 ring-4 ring-orange-200 shadow-lg">
+                    <Avatar className="w-32 h-32 ring-4 ring-border shadow-lg">
                       <AvatarImage src={author.profile_image_url || ""} alt={author.name} />
-                      <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white">
+                      <AvatarFallback className="text-3xl font-bold bg-gradient-primary text-white">
                         {getAuthorInitials(author.name)}
                       </AvatarFallback>
                     </Avatar>
@@ -267,7 +267,7 @@ const AuthorDetails = () => {
             {/* Enhanced Sidebar */}
             <div className="space-y-6">
               {/* Social Links */}
-              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl">
+              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-soft rounded-xl">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Globe className="w-5 h-5" />
@@ -299,7 +299,7 @@ const AuthorDetails = () => {
                 </Card>
 
               {/* Quick Stats */}
-              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl">
+              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-soft rounded-xl">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Award className="w-5 h-5" />
@@ -337,7 +337,7 @@ const AuthorDetails = () => {
 
           {/* Main Content Tabs */}
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6 bg-white/90 backdrop-blur-sm border border-orange-200 rounded-xl h-auto p-2">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6 bg-white/80 backdrop-blur-sm border border-border rounded-xl h-auto p-2">
               <TabsTrigger value="about" className="py-3 rounded-lg data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800">
                 About
               </TabsTrigger>
@@ -350,7 +350,7 @@ const AuthorDetails = () => {
             </TabsList>
 
             <TabsContent value="about">
-              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl">
+              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-soft rounded-xl">
                 <CardContent className="p-8">
                   <h3 className="text-2xl font-bold mb-4">Biography</h3>
                   <div className="prose max-w-none">
@@ -374,7 +374,7 @@ const AuthorDetails = () => {
             <TabsContent value="books">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {authorBooks.length > 0 ? authorBooks.map(book => (
-                  <Card key={book.id} className="group hover:shadow-xl transition-all duration-300 bg-white/90 backdrop-blur-sm border-orange-200 rounded-xl overflow-hidden">
+                  <Card key={book.id} className="group hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm border border-border rounded-xl overflow-hidden">
                     <CardContent className="p-6">
                       <div className="flex gap-4">
                         <div className="w-16 h-20 bg-gradient-to-br from-orange-200 to-amber-200 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -415,7 +415,7 @@ const AuthorDetails = () => {
             </TabsContent>
 
             <TabsContent value="community">
-              <Card className="bg-white/90 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl">
+              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-soft rounded-xl">
                 <CardContent className="p-8">
                   <div className="text-center">
                     <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
