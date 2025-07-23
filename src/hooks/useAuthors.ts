@@ -19,6 +19,8 @@ export interface Author {
   created_at: string;
   updated_at: string;
   availableSlots: string[];
+  verified?: boolean;
+  verification_type?: string;
 }
 
 // Mock fallback data for when API fails
@@ -96,6 +98,8 @@ export const useAuthors = () => {
           upcoming_events: author.upcoming_events || 0,
           created_at: author.created_at,
           updated_at: author.updated_at,
+          verified: author.verified || false,
+          verification_type: author.verification_type,
           availableSlots: author.actual_books_count > 0 ? 
             [`Meet the author of ${author.actual_books_count} book${author.actual_books_count > 1 ? 's' : ''}`] : 
             ['Available for consultation']
@@ -157,6 +161,8 @@ export const usePaginatedAuthors = (page = 1, pageSize = 10) => {
           upcoming_events: author.upcoming_events || 0,
           created_at: author.created_at,
           updated_at: author.updated_at,
+          verified: author.verified || false,
+          verification_type: author.verification_type,
           availableSlots:
             author.actual_books_count > 0
               ? [`Meet the author of ${author.actual_books_count} book${author.actual_books_count > 1 ? 's' : ''}`]

@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      author_event_attendees: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      author_events: {
+        Row: {
+          author_id: string
+          created_at: string
+          description: string | null
+          end_date: string | null
+          event_type: string
+          event_url: string | null
+          id: string
+          image_url: string | null
+          is_published: boolean
+          location: string | null
+          max_attendees: number | null
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          event_type?: string
+          event_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          location?: string | null
+          max_attendees?: number | null
+          start_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          event_type?: string
+          event_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          location?: string | null
+          max_attendees?: number | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       author_followers: {
         Row: {
           author_id: string
@@ -170,6 +245,45 @@ export type Database = {
           },
         ]
       }
+      author_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          author_id: string
+          created_at: string
+          id: string
+          is_answered: boolean
+          is_published: boolean
+          question: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          author_id: string
+          created_at?: string
+          id?: string
+          is_answered?: boolean
+          is_published?: boolean
+          question: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          author_id?: string
+          created_at?: string
+          id?: string
+          is_answered?: boolean
+          is_published?: boolean
+          question?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       authors: {
         Row: {
           bio: string | null
@@ -185,6 +299,8 @@ export type Database = {
           social_links: Json | null
           upcoming_events: number | null
           updated_at: string | null
+          verification_type: string | null
+          verified: boolean
           website_url: string | null
         }
         Insert: {
@@ -201,6 +317,8 @@ export type Database = {
           social_links?: Json | null
           upcoming_events?: number | null
           updated_at?: string | null
+          verification_type?: string | null
+          verified?: boolean
           website_url?: string | null
         }
         Update: {
@@ -217,6 +335,8 @@ export type Database = {
           social_links?: Json | null
           upcoming_events?: number | null
           updated_at?: string | null
+          verification_type?: string | null
+          verified?: boolean
           website_url?: string | null
         }
         Relationships: []

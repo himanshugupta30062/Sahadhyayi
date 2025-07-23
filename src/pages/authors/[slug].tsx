@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, BookOpen, Users, Star, Globe, Calendar, ExternalLink } from 'lucide-react';
+import { MapPin, BookOpen, Users, Star, Globe, Calendar, ExternalLink, MessageSquare } from 'lucide-react';
 import { useAuthorBySlug } from '@/hooks/useAuthorBySlug';
 import { useAuthorBooks } from '@/hooks/useAuthorBooks';
 import SEO from '@/components/SEO';
@@ -14,6 +14,12 @@ import { CreatePostForm } from '@/components/authors/CreatePostForm';
 import { AuthorPostCard } from '@/components/authors/AuthorPostCard';
 import { useAuthorPosts } from '@/hooks/useAuthorPosts';
 import { useAuth } from '@/contexts/AuthContext';
+import { AskQuestionForm } from '@/components/authors/AskQuestionForm';
+import { QuestionAnswerCard } from '@/components/authors/QuestionAnswerCard';
+import { EventCard } from '@/components/authors/EventCard';
+import { useAuthorQuestions } from '@/hooks/useAuthorQuestions';
+import { useAuthorEvents } from '@/hooks/useAuthorEvents';
+import { VerificationBadge } from '@/components/authors/VerificationBadge';
 
 
 const slugify = (text: string) =>
@@ -25,6 +31,8 @@ const AuthorSlugPage = () => {
   const { data: author, isLoading } = useAuthorBySlug(slug);
   const { data: authorBooks, isLoading: booksLoading } = useAuthorBooks(author?.id || '');
   const { data: authorPosts, isLoading: postsLoading } = useAuthorPosts(author?.id);
+  const { data: questions, isLoading: questionsLoading } = useAuthorQuestions(author?.id);
+  const { data: events, isLoading: eventsLoading } = useAuthorEvents(author?.id);
 
   // Check if current user is the author
   const isCurrentAuthor = user?.id === author?.id;
@@ -72,7 +80,13 @@ const AuthorSlugPage = () => {
                 </div>
                 
                 <div className="flex-1 text-center md:text-left">
-                  <h1 className="text-4xl md:text-5xl font-bold mb-2 text-foreground">{author.name}</h1>
+                  <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                    <h1 className="text-4xl md:text-5xl font-bold text-foreground">{author.name}</h1>
+                    <VerificationBadge 
+                      verified={author.verified || false} 
+                      verificationType={author.verification_type} 
+                    />
+                  </div>
                   <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
                     {author.genres?.map(genre => (
                       <Badge key={genre} variant="secondary" className="text-sm">
@@ -108,10 +122,12 @@ const AuthorSlugPage = () => {
 
           {/* Content Tabs */}
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-6 mb-6">
               <TabsTrigger value="about">About</TabsTrigger>
               <TabsTrigger value="books">Bibliography</TabsTrigger>
               <TabsTrigger value="updates">Updates</TabsTrigger>
+              <TabsTrigger value="qa">Q&A</TabsTrigger>
+              <TabsTrigger value="events">Events</TabsTrigger>
               <TabsTrigger value="connect">Connect</TabsTrigger>
             </TabsList>
 
@@ -309,6 +325,88 @@ const AuthorSlugPage = () => {
               </Card>
             </TabsContent>
 
+            <TabsContent value="qa" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                  <AskQuestionForm authorId={author.id} authorName={author.name} />
+                </div>
+                <div className="lg:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageSquare className="w-5 h-5" />
+                        Questions & Answers
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {questionsLoading ? (
+                        <div className="space-y-4">
+                          {[...Array(3)].map((_, i) => (
+                            <div key={i} className="animate-pulse">
+                              <div className="bg-muted rounded-lg h-32 mb-3"></div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : questions && questions.length > 0 ? (
+                        <div className="space-y-4">
+                          {questions.map((qa) => (
+                            <QuestionAnswerCard key={qa.id} qa={qa} />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                          <p className="text-muted-foreground">No questions answered yet.</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Be the first to ask {author.name} a question!
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="events" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Upcoming Events
+                  </CardTitle>
+                  <p className="text-muted-foreground">
+                    Don't miss {author.name}'s upcoming appearances and events
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {eventsLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="animate-pulse">
+                          <div className="bg-muted rounded-lg h-48 mb-3"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : events && events.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {events.map((event) => (
+                        <EventCard key={event.id} event={event} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No upcoming events scheduled.</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Follow {author.name} to be notified when new events are announced!
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="connect" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -367,7 +465,56 @@ const AuthorSlugPage = () => {
                       </a>
                     )}
                     
-                    {!author.website_url && !social.goodreads && !social.wikipedia && (
+                    {/* Social media links from social_links field */}
+                    {social.twitter && (
+                      <a 
+                        href={social.twitter} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                      >
+                        <Globe className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">Twitter</div>
+                          <div className="text-sm text-muted-foreground">Follow on Twitter</div>
+                        </div>
+                        <ExternalLink className="w-4 h-4 ml-auto" />
+                      </a>
+                    )}
+                    
+                    {social.instagram && (
+                      <a 
+                        href={social.instagram} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                      >
+                        <Globe className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">Instagram</div>
+                          <div className="text-sm text-muted-foreground">Follow on Instagram</div>
+                        </div>
+                        <ExternalLink className="w-4 h-4 ml-auto" />
+                      </a>
+                    )}
+                    
+                    {social.facebook && (
+                      <a 
+                        href={social.facebook} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                      >
+                        <Globe className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">Facebook</div>
+                          <div className="text-sm text-muted-foreground">Follow on Facebook</div>
+                        </div>
+                        <ExternalLink className="w-4 h-4 ml-auto" />
+                      </a>
+                    )}
+                    
+                    {!author.website_url && !social.goodreads && !social.wikipedia && !social.twitter && !social.instagram && !social.facebook && (
                       <div className="text-center py-8">
                         <Globe className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                         <p className="text-muted-foreground">No public profiles available for this author.</p>
