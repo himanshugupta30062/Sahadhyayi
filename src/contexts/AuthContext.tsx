@@ -48,15 +48,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
           setSession(null);
           
-          // Clear any auto-logout timers or session storage if needed
+          // Clear session-related storage
           if (typeof window !== 'undefined') {
-            // Clear any session storage related to auto-logout
-            sessionStorage.removeItem('lastActivity');
+            // Clear all session-related data
+            ['lastActivity', 'sessionStart', 'browserSession'].forEach(key => {
+              localStorage.removeItem(key);
+              sessionStorage.removeItem(key);
+            });
           }
         }
 
-        // Handle new user profile creation
+        // Handle sign in event
         if (event === 'SIGNED_IN' && session?.user) {
+          console.log('[AUTH] User signed in, setting up session...');
+          
+          // Set up session tracking
+          if (typeof window !== 'undefined') {
+            const now = Date.now().toString();
+            localStorage.setItem('sessionStart', now);
+            localStorage.setItem('lastActivity', now);
+          }
+          
           try {
             const { data: existingProfile } = await supabase
               .from('profiles')
@@ -95,6 +107,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+          
+          // If there's a session, check if it's valid based on our enhanced logic
+          if (session?.user && typeof window !== 'undefined') {
+            const sessionStart = localStorage.getItem('sessionStart');
+            const browserSession = localStorage.getItem('browserSession');
+            const sessionBrowserSession = sessionStorage.getItem('browserSession');
+            
+            // If no session tracking data exists or browser was reopened, potentially invalid session
+            if (!sessionStart || !browserSession || !sessionBrowserSession) {
+              console.log('[AUTH] Session tracking data missing, may need re-authentication');
+              
+              // Check session age from Supabase
+              const sessionAge = Date.now() - (session.expires_at ? (session.expires_at * 1000) : 0);
+              const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+              
+              if (sessionAge > maxAge) {
+                console.log('[AUTH] Session too old, signing out');
+                await supabase.auth.signOut();
+              }
+            }
+          }
         }
       } catch (error) {
         console.error('Error in getSession:', error);
@@ -184,14 +217,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Remove any remaining auth tokens from localStorage and sessionStorage
       if (typeof window !== 'undefined') {
         Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith('sb-')) {
+          if (key.startsWith('sb-') || ['lastActivity', 'sessionStart', 'browserSession'].includes(key)) {
             localStorage.removeItem(key);
           }
         });
 
         // Clear session storage including auto-logout related data
         Object.keys(sessionStorage).forEach((key) => {
-          if (key.startsWith('sb-') || key === 'lastActivity') {
+          if (key.startsWith('sb-') || ['lastActivity', 'sessionStart', 'browserSession'].includes(key)) {
             sessionStorage.removeItem(key);
           }
         });
