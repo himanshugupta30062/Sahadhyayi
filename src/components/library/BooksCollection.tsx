@@ -3,7 +3,7 @@ import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { Library, Search, Plus, Trash2 } from 'lucide-react';
 import { usePersonalLibrary, useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
-import { useBooksByGenre } from '@/hooks/useLibraryBooks';
+import { useInfiniteLibraryBooks } from '@/hooks/useInfiniteLibraryBooks';
 import type { Book } from '@/hooks/useLibraryBooks';
 import BooksGrid from './BooksGrid';
 import LoadingGrid from './LoadingGrid';
@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import LibraryPagination from './LibraryPagination';
 import {
   Select,
@@ -43,8 +44,27 @@ const BooksCollection = ({
 }: BooksCollectionProps) => {
   const { user } = useAuth();
   
-  // All library books (global)
-  const { data: allLibraryBooks = [], isLoading: isLoadingAll, refetch: refetchAll } = useBooksByGenre(selectedGenre);
+  // All library books with infinite scroll
+  const {
+    data,
+    isLoading: isLoadingAll,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch: refetchAll,
+  } = useInfiniteLibraryBooks({
+    genre: selectedGenre,
+    searchQuery,
+    author: selectedAuthor,
+    year: selectedYear,
+    language: selectedLanguage,
+    pageSize: 20,
+  });
+
+  const allLibraryBooks: Book[] = useMemo(
+    () => (data?.pages ?? []).flatMap((p) => p.books),
+    [data]
+  );
   
   // Personal library (user-specific)
   const { data: personalLibrary = [], isLoading: isLoadingPersonal, refetch: refetchPersonal } = usePersonalLibrary();
@@ -62,12 +82,11 @@ const BooksCollection = ({
   const [foundBooks, setFoundBooks] = useState<any[]>([]);
   const [lastSearchTerm, setLastSearchTerm] = useState('');
 
-  // Pagination state
-  // Default to showing 10 items per page
+  // Pagination state for personal library only
   const [pageSize, setPageSize] = useState(10);
-  const [currentPageAll, setCurrentPageAll] = useState(1);
   const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
   const allGridRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const personalGridRef = useRef<HTMLDivElement>(null);
 
   // Convert personal library to Book format for compatibility
@@ -227,11 +246,6 @@ const BooksCollection = ({
   const filteredAllBooks = useMemo(() => getFilteredBooks(allLibraryBooks), [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
   const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
-  const paginatedAllBooks = useMemo(
-    () =>
-      filteredAllBooks.slice((currentPageAll - 1) * pageSize, currentPageAll * pageSize),
-    [filteredAllBooks, currentPageAll, pageSize]
-  );
 
   const paginatedPersonalBooks = useMemo(
     () =>
@@ -243,18 +257,20 @@ const BooksCollection = ({
   );
 
   useEffect(() => {
-    setCurrentPageAll(1);
-  }, [filteredAllBooks, pageSize]);
-
-  useEffect(() => {
     setCurrentPagePersonal(1);
   }, [filteredPersonalBooks, pageSize]);
 
-  const startAll =
-    filteredAllBooks.length === 0
-      ? 0
-      : (currentPageAll - 1) * pageSize + 1;
-  const endAll = Math.min(currentPageAll * pageSize, filteredAllBooks.length);
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    }, { rootMargin: '200px' });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [loadMoreRef, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const startPersonal =
     filteredPersonalBooks.length === 0
@@ -376,37 +392,20 @@ const BooksCollection = ({
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="text-sm text-gray-600 font-medium">
-                  Showing {startAll}-{endAll} of {filteredAllBooks.length} books
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700">Books per page:</span>
-                  <Select value={String(pageSize)} onValueChange={(value) => setPageSize(parseInt(value, 10))}>
-                    <SelectTrigger className="w-20 h-9 border-2 border-gray-200 hover:border-blue-300 transition-colors">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[10, 20, 30, 50].map((size) => (
-                        <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="text-sm text-gray-600 font-medium">
+                Showing {filteredAllBooks.length} books
               </div>
             </div>
           </div>
 
           <div ref={allGridRef} className="space-y-6">
-            <BooksGrid books={paginatedAllBooks} onDownloadPDF={handleDownloadPDF} />
-            <LibraryPagination
-              totalCount={filteredAllBooks.length}
-              currentPage={currentPageAll}
-              pageSize={pageSize}
-              onPageChange={setCurrentPageAll}
-              onPageSizeChange={setPageSize}
-              scrollTargetRef={allGridRef}
-            />
+            <BooksGrid books={filteredAllBooks} onDownloadPDF={handleDownloadPDF} />
+            <div ref={loadMoreRef} className="py-4 text-center">
+              {isFetchingNextPage && <LoadingSpinner />}
+              {!isFetchingNextPage && hasNextPage && (
+                <span className="text-sm text-gray-500">Scroll to load more…</span>
+              )}
+            </div>
           </div>
         </TabsContent>
 

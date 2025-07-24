@@ -70,7 +70,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "react-window": "^1.8.11",
+    "react-virtualized-auto-sizer": "^1.0.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
