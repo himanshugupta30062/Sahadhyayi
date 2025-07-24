@@ -16,6 +16,7 @@ import {
   Reply
 } from 'lucide-react';
 import { AuthorPost, usePostComments, usePostReactions, useAddComment, useToggleReaction } from '@/hooks/useAuthorPosts';
+import { useCommentLikes, useToggleCommentLike } from '@/hooks/useCommentLikes';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -35,6 +36,68 @@ const reactionLabels = {
   love: 'Love',
   celebrate: 'Celebrate',
   insightful: 'Insightful',
+};
+
+interface CommentItemProps {
+  comment: PostComment;
+  onReply: (id: string) => void;
+}
+
+const CommentItem = ({ comment, onReply }: CommentItemProps) => {
+  const { data } = useCommentLikes(comment.id);
+  const toggleLike = useToggleCommentLike();
+
+  return (
+    <div className="flex gap-2">
+      <Avatar className="h-8 w-8">
+        <AvatarImage src={comment.profiles?.profile_photo_url} />
+        <AvatarFallback>
+          {comment.profiles?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 space-y-1">
+        <div className="bg-muted p-3 rounded-lg">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-medium text-sm">
+              {comment.profiles?.full_name || 'Anonymous'}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+            </span>
+          </div>
+          <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => toggleLike.mutate({ commentId: comment.id })}
+            disabled={toggleLike.isPending}
+            className={`h-6 px-2 text-xs flex items-center gap-1 transition-colors ${data?.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
+          >
+            <Heart className={`w-3 h-3 ${data?.isLiked ? 'fill-current' : ''}`} />
+            {data?.count ?? 0}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onReply(comment.id)}
+            className="h-6 px-2 text-xs"
+          >
+            <Reply className="w-3 h-3 mr-1" />
+            Reply
+          </Button>
+        </div>
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="ml-4 space-y-2 border-l pl-4">
+            {comment.replies.map(reply => (
+              <CommentItem key={reply.id} comment={reply} onReply={onReply} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export const AuthorPostCard = ({ post }: AuthorPostCardProps) => {
@@ -260,66 +323,7 @@ export const AuthorPostCard = ({ post }: AuthorPostCardProps) => {
             {/* Comments list */}
             <div className="space-y-3">
               {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={comment.profiles?.profile_photo_url} />
-                    <AvatarFallback>
-                      {comment.profiles?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-1">
-                    <div className="bg-muted p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">
-                          {comment.profiles?.full_name || 'Anonymous'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-                    </div>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setReplyTo(comment.id)}
-                      className="h-6 px-2 text-xs"
-                    >
-                      <Reply className="w-3 h-3 mr-1" />
-                      Reply
-                    </Button>
-
-                    {/* Render replies */}
-                    {comment.replies && comment.replies.length > 0 && (
-                      <div className="ml-4 space-y-2 border-l pl-4">
-                        {comment.replies.map((reply) => (
-                          <div key={reply.id} className="flex gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={reply.profiles?.profile_photo_url} />
-                              <AvatarFallback className="text-xs">
-                                {reply.profiles?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <div className="bg-muted/50 p-2 rounded-lg">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium text-xs">
-                                    {reply.profiles?.full_name || 'Anonymous'}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
-                                  </span>
-                                </div>
-                                <p className="text-xs whitespace-pre-wrap">{reply.content}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <CommentItem key={comment.id} comment={comment} onReply={setReplyTo} />
               ))}
             </div>
           </div>
