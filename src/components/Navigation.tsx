@@ -15,11 +15,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, signOut } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
   const location = useLocation();
   const isMobile = useIsMobile();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -58,6 +60,7 @@ const Navigation = () => {
     { name: "Social Media", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
     { name: "Guidelines", href: "/community-guidelines" },
+    ...(isAdmin ? [{ name: "Admin", href: "/admin/feedback" }] : []),
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },

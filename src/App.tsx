@@ -40,6 +40,7 @@ import CommunityStories from "./pages/CommunityStories";
 import BookSearchTest from "./pages/BookSearchTest";
 import HelpCenter from "./pages/HelpCenter";
 import Feedback from "./pages/Feedback";
+import AdminFeedback from "./pages/AdminFeedback";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -47,6 +48,8 @@ import CookiePolicy from "./pages/CookiePolicy";
 import DmcaPolicy from "./pages/DmcaPolicy";
 import Investors from "./pages/Investors";
 import NotFound from "./pages/NotFound";
+import AdminRoute from "@/components/AdminRoute";
+import FeedbackButton from "@/components/FeedbackButton";
 
 const queryClient = new QueryClient();
 
@@ -151,6 +154,16 @@ function App() {
                         <Route path="/book-search" element={<BookSearchTest />} />
                         <Route path="/help" element={<HelpCenter />} />
                         <Route path="/feedback" element={<Feedback />} />
+                        <Route
+                          path="/admin/feedback"
+                          element={
+                            <ProtectedRoute>
+                              <AdminRoute>
+                                <AdminFeedback />
+                              </AdminRoute>
+                            </ProtectedRoute>
+                          }
+                        />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />
                         <Route path="/cookies" element={<CookiePolicy />} />
@@ -164,6 +177,7 @@ function App() {
                   </div>
                   <BackToTopButton />
                   <Chatbot />
+                  <FeedbackButton />
                 </BrowserRouter>
               </TooltipProvider>
             </ChatbotProvider>

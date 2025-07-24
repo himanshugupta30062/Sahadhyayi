@@ -679,6 +679,42 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          message: string
+          name: string | null
+          rating: number | null
+          responded: boolean | null
+          subject: string | null
+          type: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message: string
+          name?: string | null
+          rating?: number | null
+          responded?: boolean | null
+          subject?: string | null
+          type?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string
+          name?: string | null
+          rating?: number | null
+          responded?: boolean | null
+          subject?: string | null
+          type?: string | null
+        }
+        Relationships: []
+      }
       content_comments: {
         Row: {
           comment_text: string

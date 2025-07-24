@@ -69,6 +69,17 @@ const HelpCenter = () => {
     }
   ];
 
+  const tutorialVideos = [
+    {
+      title: 'Getting Started with Sahadhyayi',
+      url: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+    },
+    {
+      title: 'Joining Reading Groups',
+      url: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+    }
+  ];
+
   const filteredFaqs = faqs.filter(faq =>
     faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
     faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
@@ -99,8 +110,25 @@ const HelpCenter = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 h-12 text-lg"
               />
-            </div>
           </div>
+        </div>
+
+        {/* Tutorial Videos */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Tutorial Videos</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {tutorialVideos.map((video, idx) => (
+              <div key={idx} className="aspect-w-16 aspect-h-9">
+                <iframe
+                  src={video.url}
+                  title={video.title}
+                  className="w-full h-full rounded-lg"
+                  allowFullScreen
+                />
+              </div>
+            ))}
+          </div>
+        </div>
 
           {/* Categories */}
           <div className="grid md:grid-cols-2 gap-6 mb-12">
