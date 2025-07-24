@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { sanitizeSearchQuery, isRateLimited } from '@/utils/validation';
+import { useToast } from '@/hooks/use-toast';
 
 interface BookSearchBarProps {
   onSearch: (searchTerm: string) => void;
@@ -10,12 +12,48 @@ interface BookSearchBarProps {
 
 const BookSearchBar: React.FC<BookSearchBarProps> = ({ onSearch, loading }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      onSearch(searchTerm.trim());
+    
+    if (!searchTerm.trim()) {
+      toast({
+        title: "Search Required",
+        description: "Please enter a search term.",
+        variant: "destructive"
+      });
+      return;
     }
+
+    // Rate limiting check
+    if (isRateLimited('book_search', 10, 60000)) { // 10 searches per minute
+      toast({
+        title: "Too Many Searches",
+        description: "Please wait a moment before searching again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Sanitize the search query
+    const sanitizedQuery = sanitizeSearchQuery(searchTerm);
+    if (!sanitizedQuery) {
+      toast({
+        title: "Invalid Search",
+        description: "Please enter a valid search term.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    onSearch(sanitizedQuery);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Sanitize input as user types (basic sanitization)
+    const value = e.target.value.replace(/[<>]/g, '');
+    setSearchTerm(value);
   };
 
   return (
@@ -26,7 +64,7 @@ const BookSearchBar: React.FC<BookSearchBarProps> = ({ onSearch, loading }) => {
           type="text"
           placeholder="Search for any book by title, author, or keyword - we'll find it across 4 major sources!"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleInputChange}
           className="pl-10 h-12 text-base"
           disabled={loading}
         />

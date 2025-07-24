@@ -10,6 +10,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
 import SEO from '@/components/SEO';
+import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation';
+import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
+import { useToast } from '@/hooks/use-toast';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +25,7 @@ const SignIn = () => {
   const location = useLocation();
   const { user, signIn } = useAuth();
   const { joinCommunity } = useCommunityStats(false);
+  const { toast } = useToast();
 
   // Redirect if already signed in
   useEffect(() => {
@@ -49,10 +53,15 @@ const SignIn = () => {
       return false;
     }
     
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email.trim())) {
+    // Enhanced email validation using secure validation function
+    if (!validateEmail(formData.email)) {
       setError("Please enter a valid email address.");
+      return false;
+    }
+    
+    // Check password length
+    if (formData.password.length < 8 || formData.password.length > 128) {
+      setError("Password must be between 8 and 128 characters.");
       return false;
     }
     
@@ -61,6 +70,17 @@ const SignIn = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting check
+    if (isRateLimited('signin', 5, 300000)) { // 5 attempts per 5 minutes
+      toast({
+        title: "Too Many Attempts",
+        description: "Too many sign-in attempts. Please wait 5 minutes before trying again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -70,9 +90,19 @@ const SignIn = () => {
     }
 
     try {
-      const { error } = await signIn(formData.email.trim(), formData.password);
+      const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
+      
+      // Log security event for failed attempts
+      const { error } = await signIn(sanitizedEmail, formData.password);
 
       if (error) {
+        // Log failed login attempt
+        logSecurityEvent('LOGIN_FAILED', { 
+          email: sanitizedEmail,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
+
         // Enhanced error handling with user-friendly messages
         let errorMessage = error.message;
         
@@ -80,19 +110,33 @@ const SignIn = () => {
           errorMessage = 'Invalid email or password. Please check your credentials and try again.';
         } else if (error.message.includes('Email not confirmed')) {
           errorMessage = 'Please check your email and click the confirmation link before signing in.';
-        } else if (error.message.includes('rate limit')) {
+        } else if (error.message.includes('rate limit') || error.message.includes('too many')) {
           errorMessage = 'Too many sign-in attempts. Please wait a moment before trying again.';
         } else if (error.message.includes('Invalid email')) {
           errorMessage = 'Please enter a valid email address.';
+        } else {
+          errorMessage = 'Sign-in failed. Please try again.';
         }
         
         setError(errorMessage);
         return;
       }
 
+      // Success - initialize secure session
+      initializeSecureSession();
+      
+      logSecurityEvent('LOGIN_SUCCESS', { 
+        email: sanitizedEmail,
+        timestamp: new Date().toISOString()
+      });
+
       // Success will be handled by the useEffect above
     } catch (error: unknown) {
       console.error('Signin error:', error);
+      logSecurityEvent('LOGIN_ERROR', { 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -102,9 +146,14 @@ const SignIn = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
+    // Sanitize input for XSS prevention
+    const sanitizedValue = name === 'email' 
+      ? sanitizeInput(value, 254)
+      : value.substring(0, 128); // Limit password length during input
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: sanitizedValue
     }));
     
     // Clear error when user starts typing

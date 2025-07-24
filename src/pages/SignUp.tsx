@@ -9,7 +9,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserPlus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { PasswordStrength } from '@/components/ui/password-strength';
-import { validateEmail, validatePassword, sanitizeInput } from '@/utils/validation';
+import { validateEmail, validatePassword, sanitizeInput, validateUsername, isRateLimited } from '@/utils/validation';
+import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
+import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 
 const SignUp = () => {
@@ -26,6 +28,7 @@ const SignUp = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { user, signUp } = useAuth();
+  const { toast } = useToast();
 
   // Redirect if already signed in
   React.useEffect(() => {
@@ -75,6 +78,17 @@ const SignUp = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting check
+    if (isRateLimited('signup', 3, 600000)) { // 3 attempts per 10 minutes
+      toast({
+        title: "Too Many Attempts",
+        description: "Too many sign-up attempts. Please wait 10 minutes before trying again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -85,13 +99,23 @@ const SignUp = () => {
     }
 
     try {
+      const sanitizedName = sanitizeInput(formData.name.trim(), 100);
+      const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
+      
       const { error } = await signUp(
-        formData.email.trim(), 
+        sanitizedEmail, 
         formData.password, 
-        formData.name.trim()
+        sanitizedName
       );
 
       if (error) {
+        // Log failed signup attempt
+        logSecurityEvent('SIGNUP_FAILED', { 
+          email: sanitizedEmail,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
+
         // Enhanced error handling with user-friendly messages
         let errorMessage = error.message;
         
@@ -99,13 +123,19 @@ const SignUp = () => {
           errorMessage = 'An account with this email already exists. Please sign in.';
         } else if (error.message.includes('Invalid email')) {
           errorMessage = 'Please enter a valid email address.';
-        } else if (error.message.includes('Password')) {
+        } else if (error.message.includes('Password') || error.message.includes('password')) {
           errorMessage = 'Password does not meet requirements. Please try a stronger password.';
-        } else if (error.message.includes('rate limit')) {
+        } else if (error.message.includes('rate limit') || error.message.includes('too many')) {
           errorMessage = 'Too many attempts. Please wait a moment before trying again.';
         } else if (error.message.includes('email') && error.message.includes('confirm')) {
           errorMessage = 'A verification email has been sent to your email.';
           setSuccess(errorMessage);
+          
+          // Log successful signup
+          logSecurityEvent('SIGNUP_SUCCESS', { 
+            email: sanitizedEmail,
+            timestamp: new Date().toISOString()
+          });
           
           // Clear form on success
           setFormData({
@@ -122,12 +152,20 @@ const SignUp = () => {
           
           setLoading(false);
           return;
+        } else {
+          errorMessage = 'Registration failed. Please try again.';
         }
         
         setError(errorMessage);
         setLoading(false);
         return;
       }
+
+      // Success case
+      logSecurityEvent('SIGNUP_SUCCESS', { 
+        email: sanitizedEmail,
+        timestamp: new Date().toISOString()
+      });
 
       setSuccess('A verification email has been sent to your email.');
       
@@ -146,7 +184,11 @@ const SignUp = () => {
       
     } catch (error: unknown) {
       console.error('Signup error:', error);
-      setError('Account may have been created successfully. Please try signing in.');
+      logSecurityEvent('SIGNUP_ERROR', { 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
