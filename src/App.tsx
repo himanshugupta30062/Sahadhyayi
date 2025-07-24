@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { QuotesProvider } from "@/contexts/QuotesContext";
 import { ChatbotProvider } from "@/contexts/ChatbotContext";
 import Chatbot from "@/components/chatbot/Chatbot";
 import { HelmetProvider } from 'react-helmet-async';
@@ -62,7 +63,8 @@ function App() {
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <ChatbotProvider>
+            <QuotesProvider>
+              <ChatbotProvider>
               <TooltipProvider>
                 <Toaster />
                 <Sonner />
@@ -161,6 +163,7 @@ function App() {
                 </BrowserRouter>
               </TooltipProvider>
             </ChatbotProvider>
+          </QuotesProvider>
           </AuthProvider>
         </QueryClientProvider>
       </HelmetProvider>
