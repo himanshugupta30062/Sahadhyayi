@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Users, Mail, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,6 +17,12 @@ const GlobalFooter = () => {
   const { stats, isLoading, fetchStats, joinCommunity } = useCommunityStats(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && showSignIn) {
+      setShowSignIn(false);
+    }
+  }, [user, showSignIn]);
 
   const handleEmailClick = () => {
     window.location.href = 'mailto:gyan@sahadhyayi.com';
@@ -253,7 +259,13 @@ const GlobalFooter = () => {
         </DialogHeader>
         <div className="text-center space-y-4 py-4">
           <p className="text-gray-600">Please sign in to join our community.</p>
-          <Button onClick={() => navigate('/signin')} className="w-full bg-orange-600 hover:bg-orange-700">
+          <Button
+            onClick={() => {
+              setShowSignIn(false);
+              navigate('/signin');
+            }}
+            className="w-full bg-orange-600 hover:bg-orange-700"
+          >
             <LogIn className="w-4 h-4 mr-2" /> Sign In
           </Button>
         </div>
