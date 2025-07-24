@@ -171,7 +171,8 @@ const Navigation = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2"
+                className="p-2 border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+                aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
               >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
