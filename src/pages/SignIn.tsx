@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Mail, Lock } from 'lucide-react';
+import { useCommunityStats } from '@/hooks/useCommunityStats';
 import SEO from '@/components/SEO';
 
 const SignIn = () => {
@@ -20,15 +21,27 @@ const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signIn } = useAuth();
+  const { joinCommunity } = useCommunityStats(false);
 
   // Redirect if already signed in
   useEffect(() => {
+    const joinAfterSignIn = localStorage.getItem('joinCommunityAfterSignIn') === 'true';
+
     if (user) {
+      if (joinAfterSignIn) {
+        // Clear the flag and join the community automatically
+        localStorage.removeItem('joinCommunityAfterSignIn');
+        joinCommunity().then(() => {
+          navigate('/social', { replace: true });
+        });
+        return;
+      }
+
       // Get the intended destination from location state, default to dashboard
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
     }
-  }, [user, navigate, location.state]);
+  }, [user, navigate, location.state, joinCommunity]);
 
   const validateForm = () => {
     if (!formData.email?.trim() || !formData.password) {
