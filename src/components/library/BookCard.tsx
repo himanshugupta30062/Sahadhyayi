@@ -13,11 +13,43 @@ interface BookCardProps {
 
 const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isOffline, setIsOffline] = useState(() => {
+    const stored = localStorage.getItem('offlineBooks');
+    if (!stored) return false;
+    try {
+      return JSON.parse(stored).includes(book.id);
+    } catch {
+      return false;
+    }
+  });
 
   const handleDownload = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onDownloadPDF(book);
+  };
+
+  const handleToggleOffline = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const cache = await caches.open('sahadhyayi-cache-v1');
+    let offline = [] as string[];
+    try {
+      offline = JSON.parse(localStorage.getItem('offlineBooks') || '[]');
+    } catch {
+      offline = [];
+    }
+    if (isOffline) {
+      offline = offline.filter(id => id !== book.id);
+      localStorage.setItem('offlineBooks', JSON.stringify(offline));
+      if (book.pdf_url) await cache.delete(book.pdf_url);
+      setIsOffline(false);
+    } else {
+      if (book.pdf_url) await cache.add(book.pdf_url);
+      offline.push(book.id);
+      localStorage.setItem('offlineBooks', JSON.stringify(offline));
+      setIsOffline(true);
+    }
   };
 
   return (
@@ -61,6 +93,16 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           >
             <Download className="w-5 h-5" />
             <span className="text-xs font-medium">Download</span>
+          </button>
+
+          {/* Offline Toggle */}
+          <button
+            onClick={handleToggleOffline}
+            className="flex flex-col items-center gap-2 bg-gray-700/80 backdrop-blur-sm hover:bg-gray-800/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
+            title="Download for Offline"
+          >
+            <Download className="w-5 h-5" />
+            <span className="text-xs font-medium">{isOffline ? 'Remove' : 'Offline'}</span>
           </button>
           
           {/* Details Button */}
