@@ -101,6 +101,10 @@ npm run preview
 
 This serves the `dist` directory with routing support so pages like `/book/123` or `/about` load correctly. If you use another HTTP server, ensure it falls back to `index.html` for unmatched routes.
 
+## Mobile & Offline Support
+
+Sahadhyayi works great on phones and tablets. A service worker caches key pages and any book PDFs you mark for offline use. Tap **Download for Offline** on a book card to save it locally. Remove it again from the same button. Cached books are stored in your browser and listed under `offlineBooks` in `localStorage`.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0) and click on Share -> Publish.
