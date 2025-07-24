@@ -145,3 +145,7 @@ Ensure you set the appropriate `SONAR_TOKEN` and `SONAR_HOST_URL` environment va
 ## Resetting Website Visit IDs
 
 To clear existing website visit data and restart the auto-incrementing ID counter, execute the SQL commands in [docs/ResetWebsiteVisitIDs.md](docs/ResetWebsiteVisitIDs.md).
+
+## Generating Sitemap and Pre-rendered Pages
+
+Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs, including author and book pages. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. The generated files are placed under `public/prerender` and copied to the final build so search engines can index them easily.

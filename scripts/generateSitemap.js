@@ -1,0 +1,58 @@
+import fs from 'fs';
+import path from 'path';
+
+const staticPages = [
+  '/',
+  '/library',
+  '/authors',
+  '/groups',
+  '/map',
+  '/blog',
+  '/community-stories',
+  '/quotes',
+  '/about',
+  '/social',
+  '/help',
+  '/feedback',
+  '/signin',
+  '/signup',
+  '/privacy',
+  '/terms',
+  '/cookies',
+  '/dmca',
+  '/investors'
+];
+
+const books = [
+  { id: '1', title: 'A Brief History of Time' },
+  { id: '2', title: 'गोदान' },
+  { id: '3', title: 'Pride and Prejudice' },
+  { id: '4', title: 'Sapiens' },
+  { id: '5', title: 'गुनाहों का देवता' }
+];
+
+const authors = [
+  { name: 'Rabindranath Tagore' },
+  { name: 'Haruki Murakami' }
+];
+
+const slugify = text => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+const urls = [];
+const today = new Date().toISOString().split('T')[0];
+
+function addUrl(loc, changefreq='weekly', priority='0.6') {
+  urls.push({ loc: `https://sahadhyayi.com${loc}`, lastmod: today, changefreq, priority });
+}
+
+staticPages.forEach(p => addUrl(p, p === '/' ? 'weekly' : 'monthly', p === '/' ? '1.0' : '0.5'));
+books.forEach(b => addUrl(`/book/${b.id}`, 'weekly', '0.5'));
+authors.forEach(a => addUrl(`/authors/${slugify(a.name)}`, 'weekly', '0.6'));
+
+const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+  urls.map(u => {
+    return `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`;}).join('\n') +
+  '\n</urlset>\n';
+
+fs.writeFileSync(path.join('public','sitemap.xml'), xml, 'utf8');
+console.log('sitemap.xml generated with', urls.length, 'urls');
