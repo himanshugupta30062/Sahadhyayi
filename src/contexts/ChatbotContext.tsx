@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
-import { getWebsiteContext, generateEnhancedPrompt, searchRelevantBooks, getBookSummaries } from '@/utils/enhancedChatbotKnowledge';
+import { getWebsiteContext, generateEnhancedPrompt, searchRelevantBooks, getBookSummaries, BookData } from '@/utils/enhancedChatbotKnowledge';
 import { generateContextualResponse } from '@/utils/chatbotKnowledge';
 import { toast } from '@/hooks/use-toast';
 
@@ -10,6 +10,7 @@ interface Message {
   text: string;
   sender: 'user' | 'bot';
   timestamp: Date;
+  books?: BookData[];
 }
 
 interface ChatbotContextType {
@@ -66,6 +67,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const sendMessage = useCallback(async (userMessage: string) => {
+    let relevantBooks: BookData[] = [];
     console.log('User message received:', userMessage);
     
     // Add user message
@@ -83,7 +85,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
       const websiteContext = await getWebsiteContext();
       
       // Search for relevant books
-      const relevantBooks = await searchRelevantBooks(userMessage, 3);
+      relevantBooks = await searchRelevantBooks(userMessage, 3);
       
       // Get book summaries if relevant
       const bookSummaries = relevantBooks.length > 0 
@@ -140,6 +142,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
         text: botResponse,
         sender: 'bot',
         timestamp: new Date(),
+        books: relevantBooks,
       };
       
       setMessages(prev => [...prev, botMsg]);
@@ -171,6 +174,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
         text: fallbackResponse,
         sender: 'bot',
         timestamp: new Date(),
+        books: relevantBooks,
       };
       
       setMessages(prev => [...prev, botMsg]);
