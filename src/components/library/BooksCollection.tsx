@@ -3,9 +3,10 @@ import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { Library, Search, Plus, Trash2 } from 'lucide-react';
 import { usePersonalLibrary, useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
-import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useInfiniteLibraryBooks } from '@/hooks/useInfiniteLibraryBooks';
 import type { Book } from '@/hooks/useLibraryBooks';
 import BooksGrid from './BooksGrid';
+import VirtualizedBooksGrid from './VirtualizedBooksGrid';
 import LoadingGrid from './LoadingGrid';
 import BookSearchBar from '@/components/books/BookSearchBar';
 import BookSelectionModal from './BookSelectionModal';
@@ -43,8 +44,15 @@ const BooksCollection = ({
 }: BooksCollectionProps) => {
   const { user } = useAuth();
   
-  // All library books (global)
-  const { data: allLibraryBooks = [], isLoading: isLoadingAll, refetch: refetchAll } = useAllLibraryBooks();
+  // All library books with infinite scroll
+  const {
+    data: allBooksData,
+    isLoading: isLoadingAll,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch: refetchAll,
+  } = useInfiniteLibraryBooks();
   
   // Personal library (user-specific)
   const { data: personalLibrary = [], isLoading: isLoadingPersonal, refetch: refetchPersonal } = usePersonalLibrary();
@@ -65,7 +73,6 @@ const BooksCollection = ({
   // Pagination state
   // Default to showing 10 items per page
   const [pageSize, setPageSize] = useState(10);
-  const [currentPageAll, setCurrentPageAll] = useState(1);
   const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
   const allGridRef = useRef<HTMLDivElement>(null);
   const personalGridRef = useRef<HTMLDivElement>(null);
@@ -224,14 +231,15 @@ const BooksCollection = ({
     }
   };
 
-  const filteredAllBooks = useMemo(() => getFilteredBooks(allLibraryBooks), [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
-  const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
-
-  const paginatedAllBooks = useMemo(
-    () =>
-      filteredAllBooks.slice((currentPageAll - 1) * pageSize, currentPageAll * pageSize),
-    [filteredAllBooks, currentPageAll, pageSize]
+  const allLibraryBooks = useMemo(
+    () => allBooksData?.pages.flat() ?? [],
+    [allBooksData]
   );
+  const filteredAllBooks = useMemo(
+    () => getFilteredBooks(allLibraryBooks),
+    [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]
+  );
+  const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
   const paginatedPersonalBooks = useMemo(
     () =>
@@ -243,18 +251,8 @@ const BooksCollection = ({
   );
 
   useEffect(() => {
-    setCurrentPageAll(1);
-  }, [filteredAllBooks, pageSize]);
-
-  useEffect(() => {
     setCurrentPagePersonal(1);
   }, [filteredPersonalBooks, pageSize]);
-
-  const startAll =
-    filteredAllBooks.length === 0
-      ? 0
-      : (currentPageAll - 1) * pageSize + 1;
-  const endAll = Math.min(currentPageAll * pageSize, filteredAllBooks.length);
 
   const startPersonal =
     filteredPersonalBooks.length === 0
@@ -376,36 +374,19 @@ const BooksCollection = ({
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="text-sm text-gray-600 font-medium">
-                  Showing {startAll}-{endAll} of {filteredAllBooks.length} books
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700">Books per page:</span>
-                  <Select value={String(pageSize)} onValueChange={(value) => setPageSize(parseInt(value, 10))}>
-                    <SelectTrigger className="w-20 h-9 border-2 border-gray-200 hover:border-blue-300 transition-colors">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[10, 20, 30, 50].map((size) => (
-                        <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="flex items-center gap-3 text-sm text-gray-600 font-medium">
+                Loaded {filteredAllBooks.length} books
               </div>
             </div>
           </div>
 
           <div ref={allGridRef} className="space-y-6">
-            <BooksGrid books={paginatedAllBooks} onDownloadPDF={handleDownloadPDF} />
-            <LibraryPagination
-              totalCount={filteredAllBooks.length}
-              currentPage={currentPageAll}
-              pageSize={pageSize}
-              onPageChange={setCurrentPageAll}
-              onPageSizeChange={setPageSize}
-              scrollTargetRef={allGridRef}
+            <VirtualizedBooksGrid
+              books={filteredAllBooks}
+              fetchMore={fetchNextPage}
+              hasMore={Boolean(hasNextPage)}
+              isFetching={isFetchingNextPage}
+              onDownloadPDF={handleDownloadPDF}
             />
           </div>
         </TabsContent>
