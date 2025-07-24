@@ -97,20 +97,26 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
               </div>
               <div className="absolute right-4 top-4 flex gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-orange-50">
+                <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full hover:bg-orange-50"
+                      aria-label="Edit story"
+                    >
                       <Edit className="w-5 h-5 text-orange-500 hover:scale-110 transition-transform" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Edit</TooltipContent>
                 </Tooltip>
                 <Tooltip>
-                  <TooltipTrigger asChild>
+                <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="rounded-full hover:bg-orange-50"
                       onClick={() => handleDelete(story.id)}
+                      aria-label="Delete story"
                     >
                       <Trash2 className="w-5 h-5 text-red-400 hover:scale-110 transition-transform" />
                     </Button>

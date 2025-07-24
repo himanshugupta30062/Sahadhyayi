@@ -96,7 +96,7 @@ const GlobalFooter = () => {
               />
               <h3 className="text-xl font-bold">Sahadhyayi</h3>
             </div>
-            <p className="text-orange-100 text-sm mb-4">
+            <p className="text-white text-sm mb-4">
               Rediscover the joy of deep reading through community, technology, and shared knowledge.
             </p>
             
@@ -106,14 +106,14 @@ const GlobalFooter = () => {
               size="sm"
               onClick={handleShowStats}
               disabled={isLoading}
-              className="border-orange-200 text-orange-100 hover:bg-orange-500 hover:text-white transition-all mb-4"
+              className="border-orange-200 text-white hover:bg-orange-500 hover:text-white transition-all mb-4"
             >
               <Users className="w-4 h-4 mr-2" />
               {isLoading ? 'Loading...' : showCount ? 'Hide Community Stats' : 'Show Community Stats'}
             </Button>
             
             {!showCount && (
-              <div className="bg-orange-500/30 p-4 rounded-lg backdrop-blur-sm space-y-3 mb-4 text-orange-100">
+              <div className="bg-orange-500/30 p-4 rounded-lg backdrop-blur-sm space-y-3 mb-4 text-white">
                 <p>Click "Show Community Stats" to see how we're growing.</p>
                 <Button
                   onClick={handleJoinCommunity}
@@ -130,7 +130,7 @@ const GlobalFooter = () => {
           {/* Explore Sahadhyayi */}
           <div>
             <h4 className="font-semibold text-lg mb-4">Explore Sahadhyayi</h4>
-            <ul className="space-y-2 text-orange-100">
+            <ul className="space-y-2 text-white">
               <li>
                 <a href="/library" className="hover:text-white transition-colors">
                   Digital Library
@@ -156,7 +156,7 @@ const GlobalFooter = () => {
 
           <div>
             <h4 className="font-semibold text-lg mb-4">Support</h4>
-            <ul className="space-y-2 text-orange-100">
+            <ul className="space-y-2 text-white">
               <li>
                 <a href="/help" className="hover:text-white transition-colors">
                   Help Center
@@ -181,7 +181,7 @@ const GlobalFooter = () => {
 
           <div>
             <h4 className="font-semibold text-lg mb-4">Company</h4>
-            <ul className="space-y-2 text-orange-100">
+            <ul className="space-y-2 text-white">
               <li>
                 <a href="/about" className="hover:text-white transition-colors">
                   About Us
@@ -213,13 +213,13 @@ const GlobalFooter = () => {
 
         {/* Bottom Section */}
         <div className="border-t border-orange-500 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-orange-100 text-sm">
+          <p className="text-white text-sm">
             © 2024 Sahadhyayi. All rights reserved. Building a global reading community.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <button 
               onClick={() => handleSocialClick('Facebook')}
-              className="text-orange-100 hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
+              className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="Facebook"
             >
               <span className="sr-only">Facebook</span>
@@ -227,7 +227,7 @@ const GlobalFooter = () => {
             </button>
             <button 
               onClick={() => handleSocialClick('Twitter')}
-              className="text-orange-100 hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
+              className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="Twitter"
             >
               <span className="sr-only">Twitter</span>
@@ -235,7 +235,7 @@ const GlobalFooter = () => {
             </button>
             <button 
               onClick={() => handleSocialClick('Instagram')}
-              className="text-orange-100 hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
+              className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="Instagram"
             >
               <span className="sr-only">Instagram</span>
@@ -243,7 +243,7 @@ const GlobalFooter = () => {
             </button>
             <button 
               onClick={() => handleSocialClick('LinkedIn')}
-              className="text-orange-100 hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
+              className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="LinkedIn"
             >
               <span className="sr-only">LinkedIn</span>

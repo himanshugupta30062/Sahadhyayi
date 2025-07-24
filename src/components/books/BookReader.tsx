@@ -682,6 +682,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   size="sm"
                   className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
                   onClick={navigatePrevious}
+                  aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
@@ -690,6 +691,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   size="sm"
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
                   onClick={navigateNext}
+                  aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>

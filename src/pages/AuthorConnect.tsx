@@ -100,20 +100,20 @@ const AuthorConnect = () => {
                   Meet Our Authors
                 </h1>
               </div>
-              <p className="text-lg sm:text-xl text-orange-100 max-w-3xl mx-auto mb-8 leading-relaxed">
+              <p className="text-lg sm:text-xl text-white max-w-3xl mx-auto mb-8 leading-relaxed">
                 Connect with experienced writers and get personalized guidance for your literary journey.
               </p>
               <div className="flex items-center justify-center space-x-3 mb-6">
                 <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
                   <Calendar className="w-8 h-8 text-white" />
                 </div>
-                <span className="text-lg text-orange-100">Schedule Live Sessions</span>
+                <span className="text-lg text-white">Schedule Live Sessions</span>
               </div>
               <div className="flex items-center justify-center space-x-3 mb-6">
                 <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
                   <Search className="w-8 h-8 text-white" />
                 </div>
-                <span className="text-lg text-orange-100">Search by Genre</span>
+                <span className="text-lg text-white">Search by Genre</span>
               </div>
             </div>
           </div>

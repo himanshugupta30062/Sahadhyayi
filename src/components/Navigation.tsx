@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ const Navigation = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +37,16 @@ const Navigation = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [scrolled]);
+
+  useEffect(() => {
+    if (isMobile) {
+      if (isOpen) {
+        menuRef.current?.querySelector<HTMLElement>('a, button')?.focus();
+      } else {
+        menuButtonRef.current?.focus();
+      }
+    }
+  }, [isOpen, isMobile]);
 
   // Updated navigation items with Authors tab
   const navItems = user ? [
@@ -61,6 +73,8 @@ const Navigation = () => {
 
   return (
     <nav
+      role="navigation"
+      aria-label="Main"
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
         scrolled
           ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200'
@@ -172,7 +186,8 @@ const Navigation = () => {
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
                 className="p-2 border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
-                aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                ref={menuButtonRef}
               >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
@@ -182,7 +197,10 @@ const Navigation = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobile && isOpen && (
-          <div className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md">
+          <div
+            className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md"
+            ref={menuRef}
+          >
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navItems.map((item) => (
                 <Link

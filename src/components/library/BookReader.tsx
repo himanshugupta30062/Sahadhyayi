@@ -101,16 +101,31 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
             </Button>
             
             {/* Zoom Controls */}
-            <Button variant="outline" size="sm" onClick={handleZoomOut}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleZoomOut}
+              aria-label="Zoom out"
+            >
               <ZoomOut className="w-4 h-4" />
             </Button>
             <span className="text-sm min-w-[50px] text-center">{zoom}%</span>
-            <Button variant="outline" size="sm" onClick={handleZoomIn}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleZoomIn}
+              aria-label="Zoom in"
+            >
               <ZoomIn className="w-4 h-4" />
             </Button>
             
             {/* Rotate */}
-            <Button variant="outline" size="sm" onClick={handleRotate}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRotate}
+              aria-label="Rotate page"
+            >
               <RotateCw className="w-4 h-4" />
             </Button>
             
@@ -119,12 +134,22 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
               variant="outline"
               size="sm"
               onClick={() => setIsFullscreen(!isFullscreen)}
+              aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             >
-              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              {isFullscreen ? (
+                <Minimize className="w-4 h-4" />
+              ) : (
+                <Maximize className="w-4 h-4" />
+              )}
             </Button>
             
             {/* Close */}
-            <Button variant="outline" size="sm" onClick={onClose}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              aria-label="Close reader"
+            >
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -140,6 +165,7 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
               onClick={handlePrevPage}
               disabled={currentPage <= 1}
               className="h-16"
+              aria-label="Previous page"
             >
               <ChevronLeft className="w-6 h-6" />
             </Button>
@@ -163,6 +189,7 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
               onClick={handleNextPage}
               disabled={currentPage >= totalPages}
               className="h-16"
+              aria-label="Next page"
             >
               <ChevronRight className="w-6 h-6" />
             </Button>
