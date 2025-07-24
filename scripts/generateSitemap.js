@@ -1,40 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const staticPages = [
-  '/',
-  '/library',
-  '/authors',
-  '/groups',
-  '/map',
-  '/blog',
-  '/community-stories',
-  '/quotes',
-  '/about',
-  '/social',
-  '/help',
-  '/feedback',
-  '/signin',
-  '/signup',
-  '/privacy',
-  '/terms',
-  '/cookies',
-  '/dmca',
-  '/investors'
-];
-
-const books = [
-  { id: '1', title: 'A Brief History of Time' },
-  { id: '2', title: 'गोदान' },
-  { id: '3', title: 'Pride and Prejudice' },
-  { id: '4', title: 'Sapiens' },
-  { id: '5', title: 'गुनाहों का देवता' }
-];
-
-const authors = [
-  { name: 'Rabindranath Tagore' },
-  { name: 'Haruki Murakami' }
-];
+import { staticPages, books, authors } from './seoData.js';
 
 const slugify = text => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 

@@ -149,3 +149,4 @@ To clear existing website visit data and restart the auto-incrementing ID counte
 ## Generating Sitemap and Pre-rendered Pages
 
 Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs, including author and book pages. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. The generated files are placed under `public/prerender` and copied to the final build so search engines can index them easily.
+These steps run automatically when you execute `npm run build`.
