@@ -59,6 +59,10 @@ const Navigation = () => {
     return email.charAt(0).toUpperCase();
   };
 
+  const signInUrl = `/signin?next=${encodeURIComponent(
+    location.pathname + location.search + location.hash
+  )}`;
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
@@ -147,7 +151,10 @@ const Navigation = () => {
                   </>
                 ) : (
                   <div className="flex items-center space-x-4">
-                    <Link to="/signin">
+                    <Link
+                      to={signInUrl}
+                      onClick={() => sessionStorage.setItem('authRedirectScroll', String(window.scrollY))}
+                    >
                       <Button variant="ghost" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                         Sign In
                       </Button>
@@ -242,7 +249,14 @@ const Navigation = () => {
                 </div>
               ) : (
                 <div className="pt-4 space-y-3 border-t border-gray-200">
-                  <Link to="/signin" onClick={() => setIsOpen(false)} className="block">
+                  <Link
+                    to={signInUrl}
+                    onClick={() => {
+                      sessionStorage.setItem('authRedirectScroll', String(window.scrollY));
+                      setIsOpen(false);
+                    }}
+                    className="block"
+                  >
                     <Button variant="ghost" size="sm" className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                       Sign In
                     </Button>

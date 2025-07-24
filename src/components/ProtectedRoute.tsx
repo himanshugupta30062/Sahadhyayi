@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProtectedRouteProps {
@@ -10,6 +10,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -27,7 +28,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!user) {
-    return <Navigate to="/signin" replace />;
+    const nextUrl = `${location.pathname}${location.search}${location.hash}`;
+
+    // store current scroll position so it can be restored after login
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('authRedirectScroll', String(window.scrollY));
+    }
+
+    return (
+      <Navigate
+        to={`/signin?next=${encodeURIComponent(nextUrl)}`}
+        state={{ from: location }}
+        replace
+      />
+    );
   }
 
   return <>{children}</>;

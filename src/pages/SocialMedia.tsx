@@ -49,7 +49,10 @@ const SocialMedia = () => {
                 Please sign in to access Sahadhyayi's Social Reading Community!
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link to="/signin">
+                <Link
+                  to={`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`}
+                  onClick={() => sessionStorage.setItem('authRedirectScroll', String(window.scrollY))}
+                >
                   <Button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700">
                     Sign In
                   </Button>

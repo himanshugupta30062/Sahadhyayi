@@ -24,9 +24,16 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
   };
 
   if (!user) {
+    const signInUrl = `/signin?next=${encodeURIComponent(
+      window.location.pathname + window.location.search + window.location.hash
+    )}`;
     return (
       <div className="flex gap-2 mt-3">
-        <Link to="/signin" className="flex-1">
+        <Link
+          to={signInUrl}
+          className="flex-1"
+          onClick={() => sessionStorage.setItem('authRedirectScroll', String(window.scrollY))}
+        >
           <Button variant="outline" size="sm" className="w-full">
             Sign in to Add to Shelf
           </Button>

@@ -115,7 +115,11 @@ const Index = () => {
                   Join Our Reading Community (Free!)
                 </Button>
               </Link>
-              <Link to="/signin" className="w-full sm:w-auto">
+              <Link
+                to={`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`}
+                className="w-full sm:w-auto"
+                onClick={() => sessionStorage.setItem('authRedirectScroll', String(window.scrollY))}
+              >
                 <Button variant="outline" size="lg" className="w-full sm:w-auto border-orange-400 text-orange-600 hover:bg-orange-50 px-6 sm:px-8 py-3 text-base sm:text-lg shadow-lg">
                   <LogIn className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Sign In

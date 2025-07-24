@@ -11,7 +11,9 @@ const AuthSection = () => {
   const navigate = useNavigate();
 
   const handleSignInClick = () => {
-    navigate('/signin');
+    const nextUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    sessionStorage.setItem('authRedirectScroll', String(window.scrollY));
+    navigate(`/signin?next=${encodeURIComponent(nextUrl)}`);
   };
 
   const handleSignUpClick = () => {

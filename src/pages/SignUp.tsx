@@ -338,7 +338,11 @@ const SignUp = () => {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <Link to="/signin" className="text-amber-600 hover:text-amber-700 font-medium">
+                <Link
+                  to={`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`}
+                  className="text-amber-600 hover:text-amber-700 font-medium"
+                  onClick={() => sessionStorage.setItem('authRedirectScroll', String(window.scrollY))}
+                >
                   Sign in here
                 </Link>
               </p>

@@ -51,7 +51,10 @@ const CommunityStories = () => {
                     Sign in to share your own stories and connect with fellow creative readers.
                   </p>
                   <div className="flex gap-4 justify-center">
-                    <Link to="/signin">
+                    <Link
+                      to={`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`}
+                      onClick={() => sessionStorage.setItem('authRedirectScroll', String(window.scrollY))}
+                    >
                       <Button className="bg-purple-600 hover:bg-purple-700 shadow-lg">
                         Sign In
                       </Button>

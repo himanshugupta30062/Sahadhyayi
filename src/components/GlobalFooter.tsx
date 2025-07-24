@@ -265,7 +265,9 @@ const GlobalFooter = () => {
           <Button
             onClick={() => {
               setShowSignIn(false);
-              navigate('/signin');
+              const nextUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+              sessionStorage.setItem('authRedirectScroll', String(window.scrollY));
+              navigate(`/signin?next=${encodeURIComponent(nextUrl)}`);
             }}
             className="w-full bg-orange-600 hover:bg-orange-700"
           >

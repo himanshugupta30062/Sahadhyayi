@@ -33,6 +33,10 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const signInUrl = `/signin?next=${encodeURIComponent(
+    location.pathname + location.search + location.hash
+  )}`;
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
@@ -99,7 +103,7 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
             </>
           ) : (
             <>
-              <Link to="/signin" className="block px-4 py-2 rounded-md hover:bg-gray-100">
+              <Link to={signInUrl} className="block px-4 py-2 rounded-md hover:bg-gray-100">
                 Sign In
               </Link>
               <Link to="/signup" className="block px-4 py-2 rounded-md hover:bg-gray-100">

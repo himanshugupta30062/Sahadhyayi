@@ -41,9 +41,21 @@ const SignIn = () => {
         return;
       }
 
-      // Get the intended destination from location state, default to dashboard
-      const from = location.state?.from?.pathname || '/dashboard';
+      // Determine the intended destination
+      const searchParams = new URLSearchParams(location.search);
+      const fromQuery = searchParams.get('next');
+      const fromState = location.state?.from?.pathname
+        ? `${location.state.from.pathname}${location.state.from.search}${location.state.from.hash}`
+        : null;
+      const from = fromQuery || fromState || '/dashboard';
+
       navigate(from, { replace: true });
+
+      const scroll = sessionStorage.getItem('authRedirectScroll');
+      if (scroll) {
+        sessionStorage.removeItem('authRedirectScroll');
+        window.scrollTo(0, parseInt(scroll, 10));
+      }
     }
   }, [user, navigate, location.state, joinCommunity]);
 

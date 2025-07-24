@@ -51,8 +51,12 @@ export const useAutoLogout = () => {
         duration: 5000,
       });
       
-      // Redirect to signin page
-      navigate('/signin', { replace: true });
+      // Redirect to signin page with return URL and scroll position
+      const nextUrl = `${location.pathname}${location.search}${location.hash}`;
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('authRedirectScroll', String(window.scrollY));
+      }
+      navigate(`/signin?next=${encodeURIComponent(nextUrl)}`, { replace: true });
     } catch (error) {
       console.error('[AUTO-LOGOUT] Error during auto logout:', error);
     }
@@ -77,7 +81,11 @@ export const useAutoLogout = () => {
       });
       
       // Redirect to signin page
-      navigate('/signin', { replace: true });
+      const nextUrl = `${location.pathname}${location.search}${location.hash}`;
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('authRedirectScroll', String(window.scrollY));
+      }
+      navigate(`/signin?next=${encodeURIComponent(nextUrl)}`, { replace: true });
     } catch (error) {
       console.error('[AUTO-LOGOUT] Error during session timeout:', error);
     }
