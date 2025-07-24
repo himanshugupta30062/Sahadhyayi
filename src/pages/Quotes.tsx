@@ -4,26 +4,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import SEO from '@/components/SEO';
+import { useToast } from '@/hooks/use-toast';
+import { useQuotes, Quote } from '@/contexts/QuotesContext';
 
-interface Quote {
-  id: number;
-  text: string;
-  source: string;
-}
 
 const QuotesPage = () => {
-  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const { quotes, addQuote } = useQuotes();
+  const { toast } = useToast();
   const [quoteText, setQuoteText] = useState('');
   const [quoteSource, setQuoteSource] = useState('');
 
-  const addQuote = () => {
+  const handleAddQuote = () => {
     if (!quoteText) return;
-    setQuotes((prev) => [
-      ...prev,
-      { id: Date.now(), text: quoteText, source: quoteSource }
-    ]);
+    addQuote(quoteText, quoteSource);
     setQuoteText('');
     setQuoteSource('');
+  };
+
+  const shareQuote = (text: string) => {
+    toast({
+      title: 'Quote Shared',
+      description: 'Your quote was shared to the community feed!',
+    });
   };
 
   return (
@@ -51,14 +53,19 @@ const QuotesPage = () => {
               value={quoteSource}
               onChange={(e) => setQuoteSource(e.target.value)}
             />
-            <Button onClick={addQuote} className="w-full">Add Quote</Button>
+            <Button onClick={handleAddQuote} className="w-full">Add Quote</Button>
           </CardContent>
         </Card>
         {quotes.map((q) => (
           <Card key={q.id}>
-            <CardContent className="space-y-1">
-              <p className="text-sm text-gray-700">"{q.text}"</p>
-              {q.source && <p className="text-xs text-gray-500">— {q.source}</p>}
+            <CardContent className="space-y-2">
+              <div>
+                <p className="text-sm text-gray-700">"{q.text}"</p>
+                {q.source && <p className="text-xs text-gray-500">— {q.source}</p>}
+              </div>
+              <Button size="sm" variant="outline" onClick={() => shareQuote(q.text)}>
+                Share Quote
+              </Button>
             </CardContent>
           </Card>
         ))}

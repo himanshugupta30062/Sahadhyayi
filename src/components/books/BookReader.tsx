@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useQuotes } from '@/contexts/QuotesContext';
 import { 
   BookOpen, 
   ChevronLeft, 
@@ -44,6 +45,7 @@ interface BookReaderProps {
 const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { addQuote } = useQuotes();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState(16);
   const [showToc, setShowToc] = useState(false);
@@ -56,6 +58,8 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const [tocItems, setTocItems] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState('');
   const [bookmarks, setBookmarks] = useState<string[]>([]);
+  const [selectedText, setSelectedText] = useState('');
+  const [showSaveQuote, setShowSaveQuote] = useState(false);
   const viewerRef = useRef<HTMLDivElement>(null);
   const renditionRef = useRef<any>(null);
   const bookRef = useRef<any>(null);
@@ -104,6 +108,15 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       loadEpubBook();
     }
   }, [isEpub, bookUrl]);
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer) return;
+    viewer.addEventListener('mouseup', handleSelection);
+    return () => {
+      viewer.removeEventListener('mouseup', handleSelection);
+    };
+  }, [bookUrl]);
 
   useEffect(() => {
     if (chapterProgress && chapterProgress.length > 0) {
@@ -280,6 +293,25 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       title: "Bookmark Added",
       description: "Page bookmarked successfully!",
     });
+  };
+
+  const handleSelection = () => {
+    const sel = window.getSelection();
+    const text = sel ? sel.toString().trim() : '';
+    if (text) {
+      setSelectedText(text);
+      setShowSaveQuote(true);
+    } else {
+      setShowSaveQuote(false);
+    }
+  };
+
+  const saveSelectedQuote = () => {
+    if (!selectedText) return;
+    addQuote(selectedText, bookTitle);
+    toast({ title: 'Quote Saved', description: 'Highlight added to your quotes.' });
+    setSelectedText('');
+    setShowSaveQuote(false);
   };
 
   const goToBookmark = (bookmark: string) => {
@@ -648,13 +680,21 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
           {/* Enhanced Reader Area */}
           <div className="relative">
             {isEpub ? (
-              <div
-                ref={viewerRef}
-                className={`w-full border rounded-lg overflow-hidden ${
-                  isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
-                } ${isFullscreen ? 'h-screen' : 'h-[600px]'}`}
-                style={{ fontSize: `${fontSize}px` }}
-              />
+              <>
+                <div
+                  ref={viewerRef}
+                  className={`w-full border rounded-lg overflow-hidden ${
+                    isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                  } ${isFullscreen ? 'h-screen' : 'h-[600px]'}`}
+                  style={{ fontSize: `${fontSize}px` }}
+                />
+                {showSaveQuote && (
+                  <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded shadow flex gap-2">
+                    <Button size="sm" onClick={saveSelectedQuote}>Save Quote</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setShowSaveQuote(false)}>Cancel</Button>
+                  </div>
+                )}
+              </>
             ) : isPdf ? (
               <div className="relative">
                 <iframe
