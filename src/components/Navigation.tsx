@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ const Navigation = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const firstNavLinkRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +37,15 @@ const Navigation = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [scrolled]);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    if (isOpen) {
+      firstNavLinkRef.current?.focus();
+    } else {
+      menuButtonRef.current?.focus();
+    }
+  }, [isOpen, isMobile]);
 
   // Updated navigation items with Authors tab
   const navItems = user ? [
@@ -61,6 +72,7 @@ const Navigation = () => {
 
   return (
     <nav
+      role="navigation"
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
         scrolled
           ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200'
@@ -168,6 +180,7 @@ const Navigation = () => {
             <div className="flex items-center space-x-2">
               {user && <NotificationDropdown />}
               <Button
+                ref={menuButtonRef}
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
@@ -184,15 +197,16 @@ const Navigation = () => {
         {isMobile && isOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map((item) => (
+              {navItems.map((item, idx) => (
                 <Link
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsOpen(false)}
+                  ref={idx === 0 ? firstNavLinkRef : undefined}
                   className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                    (location.pathname === item.href || 
-                     (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                      ? 'text-amber-600 bg-amber-50' 
+                    (location.pathname === item.href ||
+                     (item.href === "/" && location.pathname === "/dashboard" && user))
+                      ? 'text-amber-600 bg-amber-50'
                       : 'text-gray-700 hover:text-amber-600 hover:bg-gray-50'
                   }`}
                 >

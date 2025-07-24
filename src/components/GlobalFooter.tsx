@@ -76,7 +76,10 @@ const GlobalFooter = () => {
 
   return (
     <>
-    <footer className="bg-gradient-to-r from-orange-600 to-amber-600 text-white">
+    <footer
+      role="contentinfo"
+      className="bg-gradient-to-r from-orange-600 to-amber-600 text-white"
+    >
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Community Stats Section */}
         {showCount && (

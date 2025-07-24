@@ -123,9 +123,9 @@ export class SecurityMiddleware {
   static sanitizeUserAgent(userAgent: string): string {
     if (!userAgent || typeof userAgent !== 'string') return 'Unknown';
     
-    return userAgent
-      .replace(/[<>'\"&]/g, '')
-      .substring(0, 200);
+      return userAgent
+        .replace(/[<>'"&]/g, '')
+        .substring(0, 200);
   }
 
   static validateReferer(referer: string): boolean {
