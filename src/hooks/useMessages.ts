@@ -2,6 +2,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
+import { toast } from '@/hooks/use-toast';
 
 export interface PrivateMessage {
   id: string;
@@ -81,12 +83,36 @@ export const useSendPrivateMessage = () => {
 
 export const useGroupMessages = (groupId: string) => {
   const { user } = useAuth();
-  
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!groupId || !user?.id) return;
+
+    const channel = supabase
+      .channel(`group-messages-${groupId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'group_messages', filter: `group_id=eq.${groupId}` },
+        payload => {
+          const newMessage = payload.new as GroupMessage;
+          queryClient.setQueryData<GroupMessage[]>(['group-messages', groupId], old => [...(old || []), newMessage]);
+          if (newMessage.sender_id !== user.id) {
+            toast({ title: 'New group message', description: newMessage.content });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [groupId, user?.id, queryClient]);
+
   return useQuery({
     queryKey: ['group-messages', groupId],
     queryFn: async () => {
       if (!groupId) return [];
-      
+
       const { data, error } = await supabase
         .from('group_messages')
         .select(`
@@ -95,7 +121,7 @@ export const useGroupMessages = (groupId: string) => {
         `)
         .eq('group_id', groupId)
         .order('created_at', { ascending: true });
-      
+
       if (error) throw error;
       return data || [];
     },

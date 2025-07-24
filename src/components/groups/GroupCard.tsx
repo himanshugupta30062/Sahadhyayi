@@ -11,13 +11,15 @@ interface GroupCardProps {
   isJoined?: boolean;
   onJoin?: (groupId: string) => void;
   onLeave?: (groupId: string) => void;
+  onChat?: (groupId: string) => void;
 }
 
-const GroupCard: React.FC<GroupCardProps> = ({ 
-  group, 
-  isJoined = false, 
-  onJoin, 
-  onLeave 
+const GroupCard: React.FC<GroupCardProps> = ({
+  group,
+  isJoined = false,
+  onJoin,
+  onLeave,
+  onChat
 }) => {
   const joinGroup = useJoinGroup();
   const leaveGroup = useLeaveGroup();
@@ -74,12 +76,20 @@ const GroupCard: React.FC<GroupCardProps> = ({
           <span>Online & Local Meetups</span>
         </div>
 
-        <Button 
+        {isJoined && onChat && (
+          <Button
+            onClick={() => onChat(group.id)}
+            className="w-full bg-orange-50 text-orange-700 hover:bg-orange-100"
+          >
+            Open Chat
+          </Button>
+        )}
+        <Button
           onClick={handleJoinLeave}
           disabled={joinGroup.isPending || leaveGroup.isPending}
           className={`w-full ${
-            isJoined 
-              ? "bg-red-600 hover:bg-red-700" 
+            isJoined
+              ? "bg-red-600 hover:bg-red-700"
               : "bg-amber-600 hover:bg-amber-700"
           }`}
         >
