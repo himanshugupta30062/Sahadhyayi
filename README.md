@@ -42,6 +42,8 @@ bun install
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+# Step 4b: Launch the real-time discussion server.
+npm run start:server
 
 # Step 5: Run the linter to check for code quality issues.
 npm run lint
@@ -79,6 +81,7 @@ along with the Gemini API key:
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 VITE_GEMINI_API_KEY=your_key_here
 # Optional URL for community statistics
 VITE_COMMUNITY_STATS_URL=https://your-project.supabase.co/functions/v1/community-stats
@@ -124,6 +127,10 @@ node scripts/exportGeminiTrainingData.js
 ```
 
 The script creates a `gemini_training_data.json` file that can be used with Google's tuning tools or any other model training pipeline.
+
+## Real-time Group Discussions
+
+Run `npm run start:server` to launch a Socket.io server that pushes new group chat messages immediately to connected clients. The endpoint is available at `/discussions` and each discussion thread maps to a Socket.io room. Authentication is required and only members of a group can join its room.
 
 ## SonarQube Analysis
 
