@@ -47,6 +47,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 import DmcaPolicy from "./pages/DmcaPolicy";
 import Investors from "./pages/Investors";
 import NotFound from "./pages/NotFound";
+import OpenSourceLicenses from "./pages/OpenSourceLicenses";
 
 const queryClient = new QueryClient();
 
@@ -157,6 +158,7 @@ function App() {
                         <Route path="/dmca" element={<DmcaPolicy />} />
                         <Route path="/investors" element={<Investors />} />
                         <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+                        <Route path="/open-source-licenses" element={<OpenSourceLicenses />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>

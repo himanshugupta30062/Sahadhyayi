@@ -1,0 +1,307 @@
+[
+  {
+    "name": "@google/maps",
+    "version": "1.1.3",
+    "license": "Apache-2.0"
+  },
+  {
+    "name": "@hookform/resolvers",
+    "version": "3.9.0",
+    "license": "MIT"
+  },
+  {
+    "name": "@radix-ui/react-accordion",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-alert-dialog",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-aspect-ratio",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-avatar",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-checkbox",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-collapsible",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-context-menu",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-dialog",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-dropdown-menu",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-hover-card",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-label",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-menubar",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-navigation-menu",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-popover",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-progress",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-radio-group",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-scroll-area",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-select",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-separator",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-slider",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-slot",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-switch",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-tabs",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-toast",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-toggle",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-toggle-group",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@radix-ui/react-tooltip",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "@supabase/supabase-js",
+    "version": "2.50.0",
+    "license": "MIT"
+  },
+  {
+    "name": "@tanstack/react-query",
+    "version": "5.59.16",
+    "license": "MIT"
+  },
+  {
+    "name": "class-variance-authority",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "clsx",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "cmdk",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "cors",
+    "version": "2.8.5",
+    "license": "MIT"
+  },
+  {
+    "name": "date-fns",
+    "version": "3.6.0",
+    "license": "MIT"
+  },
+  {
+    "name": "dompurify",
+    "version": "2.4.4",
+    "license": "(MPL-2.0 OR Apache-2.0)"
+  },
+  {
+    "name": "dotenv",
+    "version": "16.6.1",
+    "license": "BSD-2-Clause"
+  },
+  {
+    "name": "embla-carousel-react",
+    "version": "8.3.0",
+    "license": "MIT"
+  },
+  {
+    "name": "express",
+    "version": "4.21.2",
+    "license": "MIT"
+  },
+  {
+    "name": "goodreads-api-node",
+    "version": "0.0.12",
+    "license": "MIT"
+  },
+  {
+    "name": "input-otp",
+    "version": "1.2.4",
+    "license": "MIT"
+  },
+  {
+    "name": "lucide-react",
+    "version": "0.462.0",
+    "license": "ISC"
+  },
+  {
+    "name": "react",
+    "version": "18.3.1",
+    "license": "MIT"
+  },
+  {
+    "name": "react-day-picker",
+    "version": "8.10.1",
+    "license": "MIT"
+  },
+  {
+    "name": "react-dom",
+    "version": "18.3.1",
+    "license": "MIT"
+  },
+  {
+    "name": "react-helmet-async",
+    "version": "2.0.5",
+    "license": "Apache-2.0"
+  },
+  {
+    "name": "react-hook-form",
+    "version": "7.53.1",
+    "license": "MIT"
+  },
+  {
+    "name": "react-resizable-panels",
+    "version": "2.1.5",
+    "license": "MIT"
+  },
+  {
+    "name": "react-router-dom",
+    "version": "6.27.0",
+    "license": "MIT"
+  },
+  {
+    "name": "react-virtualized-auto-sizer",
+    "version": "1.0.26",
+    "license": "MIT"
+  },
+  {
+    "name": "react-window",
+    "version": "1.8.11",
+    "license": "MIT"
+  },
+  {
+    "name": "recharts",
+    "version": "2.13.0",
+    "license": "MIT"
+  },
+  {
+    "name": "socket.io",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "sonner",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "tailwind-merge",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "tailwindcss-animate",
+    "version": "1.0.7",
+    "license": "MIT"
+  },
+  {
+    "name": "terser",
+    "version": "5.43.1",
+    "license": "BSD-2-Clause"
+  },
+  {
+    "name": "vaul",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "vite-plugin-compression",
+    "version": "N/A",
+    "license": "UNKNOWN"
+  },
+  {
+    "name": "zod",
+    "version": "3.23.8",
+    "license": "MIT"
+  }
+]
