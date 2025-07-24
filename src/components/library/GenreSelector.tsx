@@ -16,7 +16,8 @@ const GenreSelector = ({ genres, selected, onSelect }: GenreSelectorProps) => {
           variant={selected === genre ? 'default' : 'outline'}
           size="sm"
           onClick={() => onSelect(genre)}
-          className={selected === genre ? 'bg-blue-600 hover:bg-blue-700 text-white' : ''}
+          aria-pressed={selected === genre}
+          className={selected === genre ? 'bg-orange-600 hover:bg-orange-700 text-white' : ''}
         >
           {genre}
         </Button>
