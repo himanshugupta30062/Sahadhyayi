@@ -80,6 +80,7 @@ const ChapterSummaryCard: React.FC<ChapterSummaryCardProps> = ({
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
             className="text-amber-700 hover:text-amber-900"
+            aria-label={isExpanded ? 'Collapse summary' : 'Expand summary'}
           >
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
