@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { BookOpen, X, Send, Minimize2, Mic, MicOff, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -254,6 +255,19 @@ const Chatbot = () => {
                   >
                     {m.text}
                   </div>
+                  {m.books && m.books.length > 0 && (
+                    <div className="mt-1 flex flex-col space-y-1">
+                      {m.books.map(book => (
+                        <Link
+                          key={book.id}
+                          to={`/book/${book.id}`}
+                          className="text-amber-600 underline text-sm hover:text-amber-700"
+                        >
+                          {book.title}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                   {m.timestamp && (
                     <div className={cn(
                       'text-xs text-gray-400 px-1',
