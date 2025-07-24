@@ -25,6 +25,7 @@ import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import BookLibrary from "./pages/BookLibrary";
+import Discovery from "./pages/Discovery";
 import ReadingGroups from "./pages/ReadingGroups";
 import MapPage from "./pages/Map";
 import SocialMedia from "./pages/SocialMedia";
@@ -83,6 +84,7 @@ function App() {
                         <Route path="/signin" element={<SignIn />} />
                         <Route path="/signup" element={<SignUp />} />
                         <Route path="/library" element={<BookLibrary />} />
+                        <Route path="/discovery" element={<Discovery />} />
                         <Route path="/authors" element={<Authors />} />
                         <Route path="/authors/:slug" element={<AuthorSlugPage />} />
                         <Route path="/social" element={<SocialMedia />} />
