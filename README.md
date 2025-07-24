@@ -149,3 +149,7 @@ To clear existing website visit data and restart the auto-incrementing ID counte
 ## Generating Sitemap and Pre-rendered Pages
 
 Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs, including author and book pages. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. The generated files are placed under `public/prerender` and copied to the final build so search engines can index them easily.
+
+## External Integrations
+
+Sahadhyayi can connect to Goodreads so you can import your existing bookshelf and export your reading history back to Goodreads. See [docs/ExternalIntegrations.md](docs/ExternalIntegrations.md) for details.
