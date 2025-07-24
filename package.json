@@ -10,7 +10,9 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start:server": "node server.js"
+    "start:server": "node server.js",
+    "generate:sitemap": "node scripts/generateSitemap.js",
+    "prerender": "node scripts/prerender.js"
   },
   "dependencies": {
     "@google/maps": "^1.1.3",
