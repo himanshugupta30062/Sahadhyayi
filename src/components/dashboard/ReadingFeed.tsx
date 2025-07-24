@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, BookOpen } from 'lucide-react';
+import SocialShare from '@/components/SocialShare';
 
 interface FeedPost {
   id: string;
@@ -128,14 +129,15 @@ const ReadingFeed: React.FC = () => {
                     <span>{post.likes}</span>
                   </Button>
                   
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                <Button
+                    variant="ghost"
+                    size="sm"
                     className="text-gray-500 hover:text-amber-600 px-2 py-1 h-7 text-xs min-w-0"
                   >
                     <MessageCircle className="w-3 h-3 mr-1 flex-shrink-0" />
                     <span>{post.comments.length}</span>
                   </Button>
+                  <SocialShare text={post.content} />
                 </div>
                 
                 {/* Comments */}
