@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { BookOpen, PenTool, Vote, Users, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface BookContinuationSectionProps {
   bookId: string;
@@ -19,6 +19,7 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [continuationSummary, setContinuationSummary] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [voteForSequel, setVoteForSequel] = useState<'yes' | 'no' | null>(null);
@@ -32,7 +33,11 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
                    genre?.toLowerCase().includes('mystery');
 
   const handleSignInPrompt = () => {
-    navigate('/signin');
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('redirectScrollY', String(window.scrollY));
+    }
+    const redirect = `${location.pathname}${location.search}${location.hash}`;
+    navigate(`/signin?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
   };
 
   const handleSubmitContinuation = async () => {

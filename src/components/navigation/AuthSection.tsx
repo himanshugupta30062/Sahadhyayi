@@ -1,5 +1,5 @@
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import UserDropdownMenu from "./UserDropdownMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
@@ -9,9 +9,14 @@ import { LogIn, UserPlus } from "lucide-react";
 const AuthSection = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignInClick = () => {
-    navigate('/signin');
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('redirectScrollY', String(window.scrollY));
+    }
+    const redirect = `${location.pathname}${location.search}${location.hash}`;
+    navigate(`/signin?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
   };
 
   const handleSignUpClick = () => {

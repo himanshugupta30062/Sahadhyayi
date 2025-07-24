@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageCircle, MapPin, UsersIcon, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { SocialFeed } from '@/components/social/SocialFeed';
 import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
@@ -49,11 +50,11 @@ const SocialMedia = () => {
                 Please sign in to access Sahadhyayi's Social Reading Community!
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link to="/signin">
+                <SignInLink>
                   <Button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700">
                     Sign In
                   </Button>
-                </Link>
+                </SignInLink>
                 <Link to="/signup">
                   <Button variant="outline" className="w-full sm:w-auto border-orange-300 text-orange-700 hover:bg-orange-50">
                     Sign Up

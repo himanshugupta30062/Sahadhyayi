@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Check, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SignInLink from '@/components/SignInLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -26,11 +27,11 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
   if (!user) {
     return (
       <div className="flex gap-2 mt-3">
-        <Link to="/signin" className="flex-1">
+        <SignInLink className="flex-1">
           <Button variant="outline" size="sm" className="w-full">
             Sign in to Add to Shelf
           </Button>
-        </Link>
+        </SignInLink>
         {book.pdf_url && onDownloadPDF && (
           <Button 
             variant="outline" 

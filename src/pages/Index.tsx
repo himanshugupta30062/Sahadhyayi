@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
@@ -115,12 +116,12 @@ const Index = () => {
                   Join Our Reading Community (Free!)
                 </Button>
               </Link>
-              <Link to="/signin" className="w-full sm:w-auto">
+              <SignInLink className="w-full sm:w-auto">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto border-orange-400 text-orange-600 hover:bg-orange-50 px-6 sm:px-8 py-3 text-base sm:text-lg shadow-lg">
                   <LogIn className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Sign In
                 </Button>
-              </Link>
+              </SignInLink>
             </div>
           </div>
         </section>

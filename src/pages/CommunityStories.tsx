@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { BookOpen, PenTool, Heart } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { Link } from 'react-router-dom';
+import SignInLink from '@/components/SignInLink';
 import { Button } from '@/components/ui/button';
 
 const CommunityStories = () => {
@@ -51,11 +52,11 @@ const CommunityStories = () => {
                     Sign in to share your own stories and connect with fellow creative readers.
                   </p>
                   <div className="flex gap-4 justify-center">
-                    <Link to="/signin">
+                    <SignInLink>
                       <Button className="bg-purple-600 hover:bg-purple-700 shadow-lg">
                         Sign In
                       </Button>
-                    </Link>
+                    </SignInLink>
                     <Link to="/signup">
                       <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
                         Sign Up
