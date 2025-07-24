@@ -14,7 +14,7 @@ export const encodeHTML = (str: string): string => {
     '=': '&#x3D;'
   };
   
-  return String(str).replace(/[&<>"'`=\/]/g, (s) => entityMap[s]);
+  return String(str).replace(/[&<>"'`=/]/g, (s) => entityMap[s]);
 };
 
 // Advanced XSS sanitization using DOMPurify-like approach

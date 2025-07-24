@@ -138,3 +138,15 @@ Ensure you set the appropriate `SONAR_TOKEN` and `SONAR_HOST_URL` environment va
 ## Resetting Website Visit IDs
 
 To clear existing website visit data and restart the auto-incrementing ID counter, execute the SQL commands in [docs/ResetWebsiteVisitIDs.md](docs/ResetWebsiteVisitIDs.md).
+
+## SEO Enhancements
+
+Generate the sitemap after updating content:
+
+```sh
+npm run generate:sitemap
+```
+
+This command queries Supabase for all public books and authors and writes `public/sitemap.xml` with their URLs. Search engines use this file to discover important pages on the site.
+
+Production builds pre-render a few key routes using `vite-plugin-prerender` so the generated HTML already contains meta tags from React Helmet. This improves indexing of pages like `/about`, `/library`, and `/authors` when the site is hosted statically.

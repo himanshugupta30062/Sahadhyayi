@@ -124,7 +124,7 @@ export class SecurityMiddleware {
     if (!userAgent || typeof userAgent !== 'string') return 'Unknown';
     
     return userAgent
-      .replace(/[<>'\"&]/g, '')
+      .replace(/[<>'"&]/g, '')
       .substring(0, 200);
   }
 
