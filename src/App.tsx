@@ -27,6 +27,7 @@ import Profile from "./pages/Profile";
 import BookLibrary from "./pages/BookLibrary";
 import Discovery from "./pages/Discovery";
 import ReadingGroups from "./pages/ReadingGroups";
+import GroupDetails from "./pages/GroupDetails";
 import MapPage from "./pages/Map";
 import SocialMedia from "./pages/SocialMedia";
 import Authors from "./pages/Authors";
@@ -105,13 +106,21 @@ function App() {
                             </ProtectedRoute>
                           } 
                         />
-                        <Route 
-                          path="/groups" 
+                        <Route
+                          path="/groups"
                           element={
                             <ProtectedRoute>
                               <ReadingGroups />
                             </ProtectedRoute>
-                          } 
+                          }
+                        />
+                        <Route
+                          path="/groups/:id"
+                          element={
+                            <ProtectedRoute>
+                              <GroupDetails />
+                            </ProtectedRoute>
+                          }
                         />
                         <Route
                           path="/map"
