@@ -40,6 +40,10 @@ const GlobalFooter = () => {
     if (hasJoined) return;
 
     if (!user) {
+      // Remember intent to join after the user signs in
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('joinCommunityAfterSignIn', 'true');
+      }
       setShowSignIn(true);
       return;
     }
