@@ -3,17 +3,17 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Plus, Star } from 'lucide-react';
-import { useLibraryBooks } from '@/hooks/useLibrary';
+import { useAuth } from '@/contexts/AuthContext';
+import { useBookRecommendations } from '@/hooks/useBookRecommendations';
 
 interface BookRecommendationsProps {
   userId?: string;
 }
 
 const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => {
-  const { data: libraryBooks = [], isLoading } = useLibraryBooks();
-  
-  // Get first 4 books as recommendations
-  const recommendations = libraryBooks.slice(0, 4);
+  const { user } = useAuth();
+  const targetId = userId || user?.id;
+  const { data: recommendations = [], isLoading } = useBookRecommendations(targetId);
 
   if (isLoading) {
     return (

@@ -15,6 +15,7 @@ import CurrentReads from '@/components/dashboard/CurrentReads';
 import ReadingTracker from '@/components/dashboard/ReadingTracker';
 import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
 import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
+import BookRecommendations from '@/components/dashboard/BookRecommendations';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -238,22 +239,7 @@ const Dashboard = () => {
               </Card>
 
               {/* Recommendations */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Recommended for You</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-6 text-gray-500">
-                    <BookOpen className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-                    <p className="text-sm mb-4">Start reading to get personalized recommendations!</p>
-                    <Link to="/library">
-                      <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
-                        Explore Books
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+              <BookRecommendations />
             </div>
           </div>
         </div>
