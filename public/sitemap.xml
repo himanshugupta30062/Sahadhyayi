@@ -1,193 +1,159 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <!-- Homepage -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://sahadhyayi.com/</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <image:image>
-      <image:loc>https://sahadhyayi.com/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png</image:loc>
-      <image:title>Sahadhyayi - Digital Reading Community</image:title>
-      <image:caption>Join Sahadhyayi's vibrant reading community and discover thousands of books online</image:caption>
-    </image:image>
   </url>
-
-  <!-- Main Navigation Pages -->
   <url>
     <loc>https://sahadhyayi.com/library</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/authors</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/groups</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/map</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-
-  <!-- New Content Pages -->
   <url>
     <loc>https://sahadhyayi.com/blog</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-
   <url>
     <loc>https://sahadhyayi.com/community-stories</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-
   <url>
     <loc>https://sahadhyayi.com/quotes</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-
-  <!-- About and Information Pages -->
   <url>
     <loc>https://sahadhyayi.com/about</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/social</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/help</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/feedback</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
-
-  <!-- Authentication Pages -->
   <url>
     <loc>https://sahadhyayi.com/signin</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/signup</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.5</priority>
   </url>
-
-  <!-- Legal Pages -->
   <url>
     <loc>https://sahadhyayi.com/privacy</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/terms</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/cookies</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/dmca</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
-  
   <url>
     <loc>https://sahadhyayi.com/investors</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.5</priority>
   </url>
-
-  <!-- Dynamic Author Pages -->
-  <url>
-    <loc>https://sahadhyayi.com/authors/rabindranath-tagore</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://sahadhyayi.com/authors/haruki-murakami</loc>
-    <lastmod>2025-07-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- Dynamic Book Pages -->
   <url>
     <loc>https://sahadhyayi.com/book/1</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://sahadhyayi.com/book/2</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://sahadhyayi.com/book/3</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://sahadhyayi.com/book/4</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://sahadhyayi.com/book/5</loc>
-    <lastmod>2025-07-12</lastmod>
+    <lastmod>2025-07-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/rabindranath-tagore</loc>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/haruki-murakami</loc>
+    <lastmod>2025-07-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>
