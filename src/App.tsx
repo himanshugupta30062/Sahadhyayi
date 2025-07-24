@@ -40,6 +40,7 @@ import CommunityStories from "./pages/CommunityStories";
 import BookSearchTest from "./pages/BookSearchTest";
 import HelpCenter from "./pages/HelpCenter";
 import Feedback from "./pages/Feedback";
+import CommunityGuidelines from "./pages/CommunityGuidelines";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
@@ -155,6 +156,7 @@ function App() {
                         <Route path="/cookies" element={<CookiePolicy />} />
                         <Route path="/dmca" element={<DmcaPolicy />} />
                         <Route path="/investors" element={<Investors />} />
+                        <Route path="/community-guidelines" element={<CommunityGuidelines />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>

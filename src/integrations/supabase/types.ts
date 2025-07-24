@@ -2109,6 +2109,33 @@ export type Database = {
         }
         Relationships: []
       }
+      content_reports: {
+        Row: {
+          id: string
+          reporter_id: string
+          content_id: string
+          content_type: string
+          reason: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          reporter_id: string
+          content_id: string
+          content_type: string
+          reason?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          reporter_id?: string
+          content_id?: string
+          content_type?: string
+          reason?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
