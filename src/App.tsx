@@ -10,6 +10,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import Navigation from "@/components/Navigation";
 import GlobalFooter from "@/components/GlobalFooter";
 import BackToTopButton from "@/components/BackToTopButton";
+import FeedbackButton from "@/components/FeedbackButton";
 import ScrollToTop from "@/components/ScrollToTop";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -38,6 +39,7 @@ import CommunityStories from "./pages/CommunityStories";
 import BookSearchTest from "./pages/BookSearchTest";
 import HelpCenter from "./pages/HelpCenter";
 import Feedback from "./pages/Feedback";
+import AdminFeedback from "./pages/AdminFeedback";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
@@ -146,6 +148,7 @@ function App() {
                         <Route path="/book-search" element={<BookSearchTest />} />
                         <Route path="/help" element={<HelpCenter />} />
                         <Route path="/feedback" element={<Feedback />} />
+                        <Route path="/admin/feedback" element={<AdminFeedback />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />
                         <Route path="/cookies" element={<CookiePolicy />} />
@@ -157,6 +160,7 @@ function App() {
                     <GlobalFooter />
                   </div>
                   <BackToTopButton />
+                  <FeedbackButton />
                   <Chatbot />
                 </BrowserRouter>
               </TooltipProvider>

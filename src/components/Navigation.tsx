@@ -56,6 +56,9 @@ const Navigation = () => {
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
+    ...(user.user_metadata?.role === 'admin'
+      ? [{ name: 'Admin', href: '/admin/feedback' }]
+      : []),
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },

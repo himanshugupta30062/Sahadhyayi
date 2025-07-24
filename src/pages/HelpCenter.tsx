@@ -69,6 +69,17 @@ const HelpCenter = () => {
     }
   ];
 
+  const tutorialVideos = [
+    {
+      title: 'Getting Started with Sahadhyayi',
+      url: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+    },
+    {
+      title: 'Using the Reader Map',
+      url: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+    }
+  ];
+
   const filteredFaqs = faqs.filter(faq =>
     faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
     faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
@@ -104,20 +115,38 @@ const HelpCenter = () => {
 
           {/* Categories */}
           <div className="grid md:grid-cols-2 gap-6 mb-12">
-            {categories.map((category, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <span className="text-2xl">{category.icon}</span>
-                    <div>
-                      <h3 className="text-lg font-semibold">{category.title}</h3>
-                      <p className="text-sm text-gray-600 font-normal">{category.description}</p>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-              </Card>
+          {categories.map((category, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <span className="text-2xl">{category.icon}</span>
+                  <div>
+                    <h3 className="text-lg font-semibold">{category.title}</h3>
+                    <p className="text-sm text-gray-600 font-normal">{category.description}</p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+
+        {/* Tutorial Videos */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Tutorial Videos</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {tutorialVideos.map(video => (
+              <div key={video.title} className="aspect-video">
+                <iframe
+                  src={video.url}
+                  title={video.title}
+                  className="w-full h-full rounded-lg"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
             ))}
           </div>
+        </div>
 
           {/* FAQ Section */}
           <div className="mb-12">
