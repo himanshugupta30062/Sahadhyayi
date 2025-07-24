@@ -139,6 +139,8 @@ const BookLibrary = () => {
                     'All',
                     'Science',
                     'Fiction',
+                    'Fantasy',
+                    'Mystery',
                     'Hindi',
                     'Devotional',
                     'Biography',

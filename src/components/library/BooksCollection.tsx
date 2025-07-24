@@ -3,7 +3,7 @@ import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { Library, Search, Plus, Trash2 } from 'lucide-react';
 import { usePersonalLibrary, useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
-import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useBooksByGenre } from '@/hooks/useLibraryBooks';
 import type { Book } from '@/hooks/useLibraryBooks';
 import BooksGrid from './BooksGrid';
 import LoadingGrid from './LoadingGrid';
@@ -44,7 +44,7 @@ const BooksCollection = ({
   const { user } = useAuth();
   
   // All library books (global)
-  const { data: allLibraryBooks = [], isLoading: isLoadingAll, refetch: refetchAll } = useAllLibraryBooks();
+  const { data: allLibraryBooks = [], isLoading: isLoadingAll, refetch: refetchAll } = useBooksByGenre(selectedGenre);
   
   // Personal library (user-specific)
   const { data: personalLibrary = [], isLoading: isLoadingPersonal, refetch: refetchPersonal } = usePersonalLibrary();
