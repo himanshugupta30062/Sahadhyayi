@@ -155,6 +155,16 @@ To clear existing website visit data and restart the auto-incrementing ID counte
 
 Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs, including author and book pages. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. The generated files are placed under `public/prerender` and copied to the final build so search engines can index them easily.
 
+## Open Source Licenses & Compliance
+
+This project makes use of open-source packages, and we are committed to complying with all their license terms. Below are the steps we take to ensure license compliance:
+
+- **Third-Party License Attribution:** All dependencies and their licenses are listed on our [Open Source Licenses](./open-source-licenses) page.
+- **Permissive-Only Policy:** We avoid GPL or AGPL packages. The CI pipeline fails if a disallowed license is detected.
+- **License Notices:** For MIT or Apache-2.0 libraries, the license text is accessible via the attribution page.
+- **SBOM (Software Bill of Materials):** A `sbom.json` file enumerates all components and their licenses.
+- **Regular Audits:** Scripts are provided to verify license metadata using the deps.dev API.
+
 ## External Integrations
 
 Sahadhyayi can connect to Goodreads so you can import your existing bookshelf and export your reading history back to Goodreads. See [docs/ExternalIntegrations.md](docs/ExternalIntegrations.md) for details.

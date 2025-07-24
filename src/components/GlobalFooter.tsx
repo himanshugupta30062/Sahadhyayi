@@ -209,6 +209,11 @@ const GlobalFooter = () => {
                   DMCA Policy
                 </a>
               </li>
+              <li>
+                <a href="/open-source-licenses" className="hover:text-white transition-colors">
+                  Open Source Licenses
+                </a>
+              </li>
             </ul>
           </div>
         </div>
