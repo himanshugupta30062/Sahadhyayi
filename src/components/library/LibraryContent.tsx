@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { useBooksByGenre } from '@/hooks/useLibraryBooks';
+import { useInfiniteLibraryBooks } from '@/hooks/useInfiniteLibraryBooks';
 import BookGridView from '@/components/library/BookGridView';
 import BookListView from '@/components/library/BookListView';
-import LibraryPagination from '@/components/library/LibraryPagination';
 
 interface LibraryContentProps {
   viewMode: 'grid' | 'list';
@@ -22,22 +21,18 @@ const LibraryContent = ({
   ratingFilter,
   shelfFilter
 }: LibraryContentProps) => {
-  const { data: books = [], isLoading } = useBooksByGenre(selectedGenre);
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteLibraryBooks(selectedGenre, searchQuery);
+  const books = React.useMemo(() => data?.pages.flat() || [], [data]);
 
   // Filter and sort books based on all criteria
   const filteredBooks = React.useMemo(() => {
-    let filtered = books.filter(book => {
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          book.title.toLowerCase().includes(query) ||
-          book.author.toLowerCase().includes(query) ||
-          (book.genre && book.genre.toLowerCase().includes(query))
-        );
-      }
-      return true;
-    });
+    let filtered = books;
 
     // Rating filter
     filtered = filtered.filter(book => {
@@ -74,7 +69,7 @@ const LibraryContent = ({
     });
 
     return filtered;
-  }, [books, searchQuery, ratingFilter, sortBy]);
+  }, [books, ratingFilter, sortBy]);
 
   if (isLoading) {
     return (
@@ -102,17 +97,11 @@ const LibraryContent = ({
       {viewMode === 'grid' ? (
         <BookGridView books={filteredBooks} />
       ) : (
-        <BookListView books={filteredBooks} />
-      )}
-
-      {/* Pagination */}
-      {filteredBooks.length > 0 && (
-        <LibraryPagination
-          totalCount={filteredBooks.length}
-          currentPage={1}
-          pageSize={filteredBooks.length}
-          onPageChange={() => {}}
-          onPageSizeChange={() => {}}
+        <BookListView
+          books={filteredBooks}
+          loadMore={fetchNextPage}
+          hasNextPage={!!hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
         />
       )}
     </div>
