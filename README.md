@@ -85,6 +85,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 VITE_GEMINI_API_KEY=your_key_here
 # Optional URL for community statistics
 VITE_COMMUNITY_STATS_URL=https://your-project.supabase.co/functions/v1/community-stats
+VITE_RECOMMENDATIONS_URL=https://your-project.supabase.co/functions/v1/recommendations
 ```
 These values are required for the application to connect to Supabase and for the
 chatbot to fetch responses from the Gemini API. The application will throw an error if any of them are missing.

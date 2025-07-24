@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.website-visits]
 verify_jwt = false
+
+[functions.recommendations]
+verify_jwt = false
