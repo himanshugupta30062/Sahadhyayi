@@ -8,10 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Users, Calendar, Map, Plus } from "lucide-react";
 import { useGroups, useCreateGroup } from "@/hooks/useGroups";
 import GroupCard from "@/components/groups/GroupCard";
+import GroupChatWindow from "@/components/social/GroupChatWindow";
 import SEO from "@/components/SEO";
 
 const ReadingGroups = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [chatGroupId, setChatGroupId] = useState<string | null>(null);
   const [newGroup, setNewGroup] = useState({
     name: '',
     description: ''
@@ -172,7 +174,12 @@ const ReadingGroups = () => {
           {!isLoading && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {groups.map((group) => (
-                <GroupCard key={group.id} group={group} />
+                <GroupCard
+                  key={group.id}
+                  group={group}
+                  isJoined={!!group.user_role}
+                  onChat={(id) => setChatGroupId(id)}
+                />
               ))}
             </div>
           )}
@@ -212,6 +219,13 @@ const ReadingGroups = () => {
         </div>
       </div>
     </div>
+    {chatGroupId && (
+      <GroupChatWindow
+        groupId={chatGroupId}
+        isOpen={!!chatGroupId}
+        onClose={() => setChatGroupId(null)}
+      />
+    )}
     </>
   );
 };
