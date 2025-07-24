@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Users } from 'lucide-react';
 import { SearchBar } from '@/components/ui/search-bar';
 import FilterPopup from '@/components/library/FilterPopup';
@@ -14,6 +14,17 @@ const BookLibrary = () => {
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('scroll-/library');
+    if (stored) {
+      const y = parseInt(stored, 10);
+      window.scrollTo(0, y);
+    }
+    return () => {
+      sessionStorage.setItem('scroll-/library', String(window.scrollY));
+    };
+  }, []);
 
   const handleClearFilters = () => {
     setSelectedGenre('All');
