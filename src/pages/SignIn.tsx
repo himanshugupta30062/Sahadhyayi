@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,7 @@ const SignIn = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { user, signIn } = useAuth();
   const { joinCommunity } = useCommunityStats(false);
   const { toast } = useToast();
@@ -41,11 +42,21 @@ const SignIn = () => {
         return;
       }
 
-      // Get the intended destination from location state, default to dashboard
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      // Determine intended destination from state or query parameter
+      const fromState = location.state?.from as string | undefined;
+      const fromQuery = searchParams.get('redirect');
+      const destination = fromState || fromQuery || '/dashboard';
+      navigate(destination, { replace: true });
+
+      const scrollY = sessionStorage.getItem('redirectScrollY');
+      if (scrollY) {
+        setTimeout(() => {
+          window.scrollTo(0, parseInt(scrollY, 10));
+          sessionStorage.removeItem('redirectScrollY');
+        }, 0);
+      }
     }
-  }, [user, navigate, location.state, joinCommunity]);
+  }, [user, navigate, location.state, joinCommunity, searchParams]);
 
   const validateForm = () => {
     if (!formData.email?.trim() || !formData.password) {

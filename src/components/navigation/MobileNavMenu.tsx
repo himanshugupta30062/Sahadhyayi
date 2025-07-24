@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -99,9 +100,9 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
             </>
           ) : (
             <>
-              <Link to="/signin" className="block px-4 py-2 rounded-md hover:bg-gray-100">
+              <SignInLink className="block px-4 py-2 rounded-md hover:bg-gray-100">
                 Sign In
-              </Link>
+              </SignInLink>
               <Link to="/signup" className="block px-4 py-2 rounded-md hover:bg-gray-100">
                 Sign Up
               </Link>

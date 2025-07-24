@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import { Users, Mail, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useCommunityStats } from "@/hooks/useCommunityStats";
 import { useAuth } from "@/contexts/AuthContext";
 import CommunityStats from "@/components/CommunityStats";
+import SignInLink from '@/components/SignInLink';
 
 const GlobalFooter = () => {
   const [showCount, setShowCount] = useState(false);
@@ -17,6 +18,7 @@ const GlobalFooter = () => {
   const { stats, isLoading, fetchStats, joinCommunity } = useCommunityStats(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (user && showSignIn) {
@@ -265,7 +267,11 @@ const GlobalFooter = () => {
           <Button
             onClick={() => {
               setShowSignIn(false);
-              navigate('/signin');
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem('redirectScrollY', String(window.scrollY));
+              }
+              const redirect = `${location.pathname}${location.search}${location.hash}`;
+              navigate(`/signin?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
             }}
             className="w-full bg-orange-600 hover:bg-orange-700"
           >

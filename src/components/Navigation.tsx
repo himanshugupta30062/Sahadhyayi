@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
+import SignInLink from '@/components/SignInLink';
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -161,11 +162,11 @@ const Navigation = () => {
                   </>
                 ) : (
                   <div className="flex items-center space-x-4">
-                    <Link to="/signin">
+                    <SignInLink>
                       <Button variant="ghost" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                         Sign In
                       </Button>
-                    </Link>
+                    </SignInLink>
                     <Link to="/signup">
                       <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
                         Sign Up
@@ -260,11 +261,11 @@ const Navigation = () => {
                 </div>
               ) : (
                 <div className="pt-4 space-y-3 border-t border-gray-200">
-                  <Link to="/signin" onClick={() => setIsOpen(false)} className="block">
+                  <SignInLink onClick={() => setIsOpen(false)} className="block">
                     <Button variant="ghost" size="sm" className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                       Sign In
                     </Button>
-                  </Link>
+                  </SignInLink>
                   <Link to="/signup" onClick={() => setIsOpen(false)} className="block">
                     <Button size="sm" className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
                       Sign Up

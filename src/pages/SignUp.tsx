@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import SignInLink from '@/components/SignInLink';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -338,9 +339,9 @@ const SignUp = () => {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <Link to="/signin" className="text-amber-600 hover:text-amber-700 font-medium">
+                <SignInLink className="text-amber-600 hover:text-amber-700 font-medium">
                   Sign in here
-                </Link>
+                </SignInLink>
               </p>
             </div>
           </CardContent>
