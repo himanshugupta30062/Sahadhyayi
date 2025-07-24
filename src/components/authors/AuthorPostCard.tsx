@@ -19,6 +19,8 @@ import { AuthorPost, usePostComments, usePostReactions, useAddComment, useToggle
 import { useCommentLikes, useToggleCommentLike } from '@/hooks/useCommentLikes';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { containsInappropriateLanguage } from '@/utils/trustAndSafety';
+import { useBlockUser, useBlockedUsers, useReportContent } from '@/hooks/useTrustAndSafety';
 
 interface AuthorPostCardProps {
   post: AuthorPost;
@@ -105,11 +107,18 @@ export const AuthorPostCard = ({ post }: AuthorPostCardProps) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState<string | null>(null);
+  const { data: blockedUsers = [] } = useBlockedUsers();
+  const blockUser = useBlockUser(post.author_id);
+  const reportContent = useReportContent();
 
   const { data: comments = [] } = usePostComments(post.id);
   const { data: reactions = [] } = usePostReactions(post.id);
   const addComment = useAddComment();
   const toggleReaction = useToggleReaction();
+
+  if (blockedUsers.includes(post.author_id)) {
+    return null;
+  }
 
   const userReaction = reactions.find(r => r.user_id === user?.id);
   
@@ -123,6 +132,9 @@ export const AuthorPostCard = ({ post }: AuthorPostCardProps) => {
     if (!user) {
       toast.error('Please sign in to comment');
       return;
+    }
+    if (containsInappropriateLanguage(newComment)) {
+      reportContent.mutate({ contentId: post.id, contentType: 'post', reason: 'Inappropriate language in comment' });
     }
 
     try {
@@ -272,6 +284,22 @@ export const AuthorPostCard = ({ post }: AuthorPostCardProps) => {
               )}
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => reportContent.mutate({ contentId: post.id, contentType: 'post', reason: 'User report' })}
+            className="flex items-center gap-1"
+          >
+            Report
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => blockUser.mutate()}
+            className="flex items-center gap-1"
+          >
+            Block
+          </Button>
         </div>
 
         {/* Comments section */}

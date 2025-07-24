@@ -9,6 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import { PenTool, Send, Image, Video, X } from 'lucide-react';
 import { useCreatePost } from '@/hooks/useAuthorPosts';
 import { toast } from 'sonner';
+import { containsInappropriateLanguage } from '@/utils/trustAndSafety';
+import { useReportContent } from '@/hooks/useTrustAndSafety';
 
 interface CreatePostFormProps {
   authorId: string;
@@ -25,11 +27,16 @@ export const CreatePostForm = ({ authorId, onPostCreated }: CreatePostFormProps)
   const [videoUrl, setVideoUrl] = useState('');
 
   const createPost = useCreatePost();
+  const reportContent = useReportContent();
 
   const handleSubmit = async () => {
     if (!content.trim()) {
       toast.error('Please add some content to your post');
       return;
+    }
+
+    if (containsInappropriateLanguage(`${title} ${content}`)) {
+      reportContent.mutate({ contentId: authorId, contentType: 'post', reason: 'Inappropriate language in post' });
     }
 
     try {
