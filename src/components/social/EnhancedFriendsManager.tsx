@@ -10,9 +10,11 @@ import { Search, UserPlus, MessageCircle, Users, Loader2 } from 'lucide-react';
 import { useUserSearch, useAllUsers } from '@/hooks/useUserSearch';
 import { useFriends, useSendFriendRequest } from '@/hooks/useFriends';
 import { useToast } from '@/hooks/use-toast';
+import { ChatWindow } from '@/components/social/ChatWindow';
 
 export const EnhancedFriendsManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [chatId, setChatId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Use the improved search hook with debouncing
@@ -43,6 +45,7 @@ export const EnhancedFriendsManager = () => {
   };
 
   return (
+    <>
     <div className="space-y-6">
       <Card>
         <CardHeader>
@@ -99,11 +102,13 @@ export const EnhancedFriendsManager = () => {
                   // Show search results
                   searchResults.length > 0 ? (
                     searchResults.map((user) => (
-                      <UserCard 
-                        key={user.id} 
-                        user={user} 
+                      <UserCard
+                        key={user.id}
+                        user={user}
                         onSendRequest={handleSendFriendRequest}
                         getInitials={getInitials}
+                        isFriend={friends.some(f => f.friend_profile?.id === user.id)}
+                        onMessage={(id) => setChatId(id)}
                       />
                     ))
                   ) : !isSearching ? (
@@ -123,11 +128,13 @@ export const EnhancedFriendsManager = () => {
                       </div>
                     ) : allUsers.length > 0 ? (
                       allUsers.map((user) => (
-                        <UserCard 
-                          key={user.id} 
-                          user={user} 
+                        <UserCard
+                          key={user.id}
+                          user={user}
                           onSendRequest={handleSendFriendRequest}
                           getInitials={getInitials}
+                          isFriend={friends.some(f => f.friend_profile?.id === user.id)}
+                          onMessage={(id) => setChatId(id)}
                         />
                       ))
                     ) : (
@@ -162,7 +169,11 @@ export const EnhancedFriendsManager = () => {
                           </p>
                         </div>
                       </div>
-                      <Button size="sm" variant="outline">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setChatId(friendship.friend_profile?.id || '')}
+                      >
                         <MessageCircle className="w-4 h-4 mr-2" />
                         Message
                       </Button>
@@ -189,6 +200,10 @@ export const EnhancedFriendsManager = () => {
         </CardContent>
       </Card>
     </div>
+    {chatId && (
+      <ChatWindow friendId={chatId} isOpen={!!chatId} onClose={() => setChatId(null)} />
+    )}
+    </>
   );
 };
 
@@ -197,9 +212,11 @@ interface UserCardProps {
   user: any;
   onSendRequest: (userId: string, userName: string) => void;
   getInitials: (name: string) => string;
+  isFriend?: boolean;
+  onMessage?: (userId: string) => void;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials }) => (
+const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, onMessage }) => (
   <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
     <div className="flex items-center gap-3">
       <Avatar className="w-10 h-10">
@@ -232,9 +249,11 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials })
         <UserPlus className="w-4 h-4 mr-1" />
         Add
       </Button>
-      <Button size="sm" variant="ghost" aria-label="Message user">
-        <MessageCircle className="w-4 h-4" />
-      </Button>
+      {isFriend && onMessage && (
+        <Button size="sm" variant="ghost" aria-label="Message user" onClick={() => onMessage(user.id)}>
+          <MessageCircle className="w-4 h-4" />
+        </Button>
+      )}
     </div>
   </div>
 );

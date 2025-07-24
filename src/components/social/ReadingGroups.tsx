@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,6 +72,7 @@ const mockGroups: ReadingGroup[] = [
 ];
 
 export const ReadingGroups = () => {
+  const navigate = useNavigate();
   const [groups, setGroups] = useState<ReadingGroup[]>(mockGroups);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -303,7 +305,12 @@ export const ReadingGroups = () => {
                         <MessageCircle className="w-4 h-4 mr-1" />
                         Group Chat
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-orange-600 hover:text-orange-700"
+                        onClick={() => navigate(`/groups/${group.id}`)}
+                      >
                         View Details
                       </Button>
                     </div>
