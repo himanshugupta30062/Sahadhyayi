@@ -32,6 +32,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useReadingProgress, useUpdateReadingProgress } from '@/hooks/useReadingProgress';
 import { useAudioSummary } from '@/hooks/useAudioSummaries';
+import { useChapterProgress, useMarkChapterAsRead } from '@/hooks/useChapterProgress';
 
 interface BookReaderProps {
   bookId: string;
@@ -59,11 +60,14 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const renditionRef = useRef<any>(null);
   const bookRef = useRef<any>(null);
   const readingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [completedChapters, setCompletedChapters] = useState<number[]>([]);
 
   // Hooks for data management
   const { data: readingProgress } = useReadingProgress();
   const updateProgress = useUpdateReadingProgress();
   const { data: audioSummary } = useAudioSummary(bookId);
+  const { data: chapterProgress = [] } = useChapterProgress(bookId);
+  const markChapterRead = useMarkChapterAsRead(bookId);
 
   // Determine if we have an EPUB or PDF
   const isEpub = epubUrl && epubUrl.length > 0;
@@ -72,6 +76,8 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
 
   // Calculate reading progress percentage
   const progressPercentage = totalPages > 0 ? (currentPage / totalPages) * 100 : 0;
+  const chapterProgressPercent =
+    tocItems.length > 0 ? (completedChapters.length / tocItems.length) * 100 : 0;
 
   // Initialize reading session
   useEffect(() => {
@@ -98,6 +104,12 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       loadEpubBook();
     }
   }, [isEpub, bookUrl]);
+
+  useEffect(() => {
+    if (chapterProgress && chapterProgress.length > 0) {
+      setCompletedChapters(chapterProgress.map(cp => cp.chapter_number));
+    }
+  }, [chapterProgress]);
 
   const startReadingTimer = () => {
     if (readingTimerRef.current) {
@@ -313,6 +325,18 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     if (renditionRef.current) {
       renditionRef.current.display(href);
       setShowToc(false);
+    }
+  };
+
+  const handleMarkChapterRead = async (chapterNumber: number) => {
+    if (completedChapters.includes(chapterNumber)) return;
+    const previous = completedChapters;
+    setCompletedChapters(prev => [...prev, chapterNumber]);
+    try {
+      await markChapterRead.mutateAsync(chapterNumber);
+    } catch (error) {
+      console.error('Error marking chapter as read:', error);
+      setCompletedChapters(previous);
     }
   };
 
@@ -584,16 +608,38 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 <CardTitle className="text-sm">Table of Contents</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
+                <div className="mb-3">
+                  <Progress value={chapterProgressPercent} className="h-2" />
+                  <div className="text-xs text-gray-600 text-center mt-1">
+                    {completedChapters.length}/{tocItems.length} chapters read
+                  </div>
+                </div>
                 <div className="space-y-1">
-                  {tocItems.map((item, index) => (
-                    <button
-                      key={index}
-                      className="w-full text-left p-2 text-sm hover:bg-white rounded transition-colors"
-                      onClick={() => goToChapter(item.href)}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+                  {tocItems.map((item, index) => {
+                    const chapterNumber = index + 1;
+                    const isDone = completedChapters.includes(chapterNumber);
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between"
+                      >
+                        <button
+                          className="flex-1 text-left p-2 text-sm hover:bg-white rounded transition-colors"
+                          onClick={() => goToChapter(item.href)}
+                        >
+                          {item.label}
+                        </button>
+                        <Button
+                          size="xs"
+                          variant="ghost"
+                          onClick={() => handleMarkChapterRead(chapterNumber)}
+                          disabled={isDone}
+                        >
+                          {isDone ? 'Read' : 'Mark as Read'}
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
