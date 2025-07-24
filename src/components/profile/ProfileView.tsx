@@ -20,6 +20,7 @@ import ProfileAvatar from "./ProfileAvatar";
 import ProfileInfo from "./ProfileInfo";
 import ProfileTags from "./ProfileTags";
 import ProfileSocialLinks from "./ProfileSocialLinks";
+import UserBadges from "./UserBadges";
 import EditProfileDialog from "./EditProfileDialog";
 import DeleteProfileDialog from "./DeleteProfileDialog";
 import { openPopupWindow } from "./openPopupWindow";
@@ -193,6 +194,8 @@ export const ProfileView: React.FC = () => {
             </div>
             {/* Tags/Life phases */}
             <ProfileTags life_tags={profile?.life_tags ?? []} />
+            {/* Earned Badges */}
+            <UserBadges />
             {/* Social Links */}
             <ProfileSocialLinks social_links={profile?.social_links} />
             {/* Action Buttons */}

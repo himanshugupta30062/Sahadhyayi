@@ -13,6 +13,7 @@ import DashboardStats from '@/components/dashboard/DashboardStats';
 import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
 import CurrentReads from '@/components/dashboard/CurrentReads';
 import ReadingTracker from '@/components/dashboard/ReadingTracker';
+import ReadingChallengesSection from '@/components/dashboard/ReadingChallengesSection';
 import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
 import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
 
@@ -146,7 +147,10 @@ const Dashboard = () => {
               
               {/* Reading Progress Tracker */}
               {user?.id && <ReadingTracker userId={user.id} />}
-              
+
+              {/* Reading Challenges */}
+              <ReadingChallengesSection />
+
               {/* My Library Section */}
               <EnhancedBookshelf />
               
