@@ -54,6 +54,7 @@ const GlobalFooter = () => {
       return;
     }
 
+    // User is signed in, take them to social page and join community
     const success = await joinCommunity();
     if (success) {
       setHasJoined(true);
@@ -61,7 +62,6 @@ const GlobalFooter = () => {
         title: "Thanks for joining!",
         description: "Welcome to the Sahadhyayi reading community!",
       });
-      navigate('/social');
     } else {
       toast({
         title: "Welcome!",
@@ -69,6 +69,9 @@ const GlobalFooter = () => {
       });
       setHasJoined(true);
     }
+    
+    // Navigate to social page
+    navigate('/social');
   };
 
   return (

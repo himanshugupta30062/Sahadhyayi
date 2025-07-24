@@ -176,16 +176,14 @@ const BookSelectionModal = ({ isOpen, onClose, books, searchTerm, onBooksAdded }
           </div>
 
           <div className="flex gap-2">
-            {!user && (
-              <Button
-                onClick={handleSaveSelectedBooks}
-                disabled={selectedBooks.size === 0 || isSaving}
-                className="flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                {isSaving ? 'Saving...' : `Add Selected to Library (${selectedBooks.size})`}
-              </Button>
-            )}
+            <Button
+              onClick={handleSaveSelectedBooks}
+              disabled={selectedBooks.size === 0 || isSaving}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              {isSaving ? 'Saving...' : `Add Selected to Library (${selectedBooks.size})`}
+            </Button>
           </div>
         </div>
 
@@ -199,15 +197,13 @@ const BookSelectionModal = ({ isOpen, onClose, books, searchTerm, onBooksAdded }
                 <CardContent className="p-0">
                   <div className="flex gap-4 p-4">
                     {/* Selection Checkbox */}
-                    {!user && (
-                      <div className="flex-shrink-0 pt-1">
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={(checked) => handleBookSelection(book.id, !!checked)}
-                          disabled={isSaved}
-                        />
-                      </div>
-                    )}
+                    <div className="flex-shrink-0 pt-1">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => handleBookSelection(book.id, !!checked)}
+                        disabled={isSaved}
+                      />
+                    </div>
 
                     {/* Book Cover */}
                     <div className="flex-shrink-0">
@@ -321,14 +317,14 @@ const BookSelectionModal = ({ isOpen, onClose, books, searchTerm, onBooksAdded }
         <div className="flex justify-between items-center gap-2 mt-6 pt-4 border-t">
           <div className="text-sm text-muted-foreground">
             {user ? (
-              "For signed-in users: Click 'Add to Personal Library' for each book you want to save to your personal collection."
+              "Select books to add to the global library, or click 'Add to Personal Library' for individual books to save them to your personal collection."
             ) : (
               `Select books and click 'Add Selected to Library' to save them to the database for all users.`
             )}
           </div>
           
           <div className="flex gap-2">
-            {!user && selectedBooks.size > 0 && (
+            {selectedBooks.size > 0 && (
               <Button
                 onClick={handleSaveSelectedBooks}
                 disabled={isSaving}
