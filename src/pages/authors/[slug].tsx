@@ -24,6 +24,7 @@ import { VerificationBadge } from '@/components/authors/VerificationBadge';
 import { generateAuthorSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import { slugify } from '@/utils/slugify';
+import SocialShare from '@/components/SocialShare';
 
 const AuthorSlugPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -89,17 +90,15 @@ const AuthorSlugPage = () => {
 
           {/* Hero/Profile Section */}
           <div className="relative mb-20">
-            <div className="h-48 md:h-64 rounded-lg overflow-hidden relative">
-              {author.profile_image_url && (
-                <img
-                  src={author.profile_image_url}
-                  alt={`${author.name} banner`}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
-                />
-              )}
-              <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
-            </div>
+          <div className="h-48 md:h-64 rounded-lg overflow-hidden relative">
+            <img
+              src={author.profile_image_url || '/placeholder.svg'}
+              alt={`${author.name} banner`}
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
+          </div>
 
             {/* Avatar overlapping */}
             <div className="absolute left-4 bottom-0 translate-y-1/2">
@@ -120,29 +119,40 @@ const AuthorSlugPage = () => {
           {/* Author Name & Stats */}
           <div className="mt-[-3rem] md:ml-40 flex flex-col md:flex-row md:items-end gap-6">
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-1">
-                {author.name}
-              </h1>
+              <div className="flex flex-col items-center md:flex-row md:items-center md:gap-4">
+                <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-1">
+                  {author.name}
+                </h1>
+                <FollowButton authorId={author.id} size="lg" className="mt-2 md:mt-0" />
+                <SocialShare text={`Check out ${author.name} on Sahadhyayi`} url={authorUrl} />
+              </div>
               <p className="text-sm text-muted-foreground mb-4">
                 {author.genres?.[0] || 'Author'}
               </p>
 
               <div className="flex justify-center md:justify-start gap-8 text-sm text-muted-foreground mb-4">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5" />
-                  <span className="font-medium">{author.books_count}</span>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <BookOpen className="w-5 h-5" />
+                    <span className="font-semibold">{author.books_count}</span>
+                  </div>
+                  <span className="text-xs">Books</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  <span className="font-medium">{author.followers_count.toLocaleString()}</span>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <Users className="w-5 h-5" />
+                    <span className="font-semibold">{author.followers_count.toLocaleString()}</span>
+                  </div>
+                  <span className="text-xs">Followers</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                  <span className="font-medium">{author.rating}</span>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <span className="font-semibold">{author.rating}</span>
+                  </div>
+                  <span className="text-xs">Rating</span>
                 </div>
               </div>
-
-              <FollowButton authorId={author.id} size="lg" />
             </div>
           </div>
 
