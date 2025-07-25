@@ -117,7 +117,7 @@ const AuthorSlugPage = () => {
           </div>
 
           {/* Author Name & Stats */}
-          <div className="mt-[-3rem] md:ml-40 flex flex-col md:flex-row md:items-end gap-6">
+          <div className="mt-6 md:mt-[-3rem] md:ml-40 flex flex-col md:flex-row md:items-end gap-6">
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col items-center md:flex-row md:items-center md:gap-4">
                 <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-1">
@@ -166,7 +166,7 @@ const AuthorSlugPage = () => {
 
           {/* Content Tabs */}
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-6 bg-muted rounded-lg overflow-x-auto">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 mb-6 bg-muted rounded-lg overflow-x-auto">
               <TabsTrigger value="about" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">About</TabsTrigger>
               <TabsTrigger value="books" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Bibliography</TabsTrigger>
               <TabsTrigger value="updates" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Updates</TabsTrigger>
