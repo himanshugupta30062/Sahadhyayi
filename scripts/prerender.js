@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
 const template = fs.readFileSync('index.html', 'utf8');
 
@@ -10,18 +11,46 @@ const basePages = [
   { path: '/about', title: 'About Sahadhyayi', description: 'Learn about the Sahadhyayi mission and community.' }
 ];
 
-const books = [
-  { id: '1', title: 'A Brief History of Time', description: 'An overview of cosmology and the origins of the universe.' },
-  { id: '2', title: 'गोदान', description: 'A classic Hindi novel depicting rural life in India.' },
-  { id: '3', title: 'Pride and Prejudice', description: 'A romantic novel that critiques the British landed gentry.' },
-  { id: '4', title: 'Sapiens', description: 'A brief history of humankind.' },
-  { id: '5', title: 'गुनाहों का देवता', description: 'A popular Hindi novel exploring a tragic love story.' }
-];
+let books = [];
+let authors = [];
 
-const authors = [
-  { name: 'Rabindranath Tagore', bio: 'Nobel Prize-winning Bengali polymath who reshaped Bengali literature and music.' },
-  { name: 'Haruki Murakami', bio: 'Japanese writer known for works blending surrealism with pop culture and magical realism.' }
-];
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+if (SUPABASE_URL && SUPABASE_KEY) {
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  try {
+    const { data: bookData } = await supabase
+      .from('books_library')
+      .select('id, title, description');
+    books = bookData || [];
+
+    const { data: authorData } = await supabase
+      .from('authors')
+      .select('name, bio');
+    authors = authorData || [];
+  } catch (error) {
+    console.error('Failed to fetch data from Supabase:', error.message);
+  }
+}
+
+if (books.length === 0) {
+  books = [
+    { id: '1', title: 'A Brief History of Time', description: 'An overview of cosmology and the origins of the universe.' },
+    { id: '2', title: 'गोदान', description: 'A classic Hindi novel depicting rural life in India.' },
+    { id: '3', title: 'Pride and Prejudice', description: 'A romantic novel that critiques the British landed gentry.' },
+    { id: '4', title: 'Sapiens', description: 'A brief history of humankind.' },
+    { id: '5', title: 'गुनाहों का देवता', description: 'A popular Hindi novel exploring a tragic love story.' }
+  ];
+}
+
+if (authors.length === 0) {
+  authors = [
+    { name: 'Rabindranath Tagore', bio: 'Nobel Prize-winning Bengali polymath who reshaped Bengali literature and music.' },
+    { name: 'Haruki Murakami', bio: 'Japanese writer known for works blending surrealism with pop culture and magical realism.' }
+  ];
+}
 
 const slugify = text => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
