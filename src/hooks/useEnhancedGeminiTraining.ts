@@ -112,11 +112,13 @@ export const useEnhancedGeminiTraining = () => {
   }, [saveTrainingData]);
 
   const exportTrainingData = useCallback(async () => {
+    if (!user?.id) return;
+
     try {
       const { data, error } = await supabase
         .from('gemini_training_data')
         .select('prompt, completion, created_at')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -145,11 +147,13 @@ export const useEnhancedGeminiTraining = () => {
   }, [user?.id]);
 
   const getTrainingDataStats = useCallback(async () => {
+    if (!user?.id) return 0;
+
     try {
       const { count, error } = await supabase
         .from('gemini_training_data')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id);
 
       if (error) throw error;
       return count || 0;
