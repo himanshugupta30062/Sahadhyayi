@@ -17,15 +17,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AskQuestionForm } from '@/components/authors/AskQuestionForm';
 import { QuestionAnswerCard } from '@/components/authors/QuestionAnswerCard';
 import { EventCard } from '@/components/authors/EventCard';
+import ReadNowButton from '@/components/books/ReadNowButton';
 import { useAuthorQuestions } from '@/hooks/useAuthorQuestions';
 import { useAuthorEvents } from '@/hooks/useAuthorEvents';
 import { VerificationBadge } from '@/components/authors/VerificationBadge';
 import { generateAuthorSchema, generateBreadcrumbSchema } from '@/utils/schema';
+import Breadcrumb from '@/components/ui/breadcrumb';
 import { slugify } from '@/utils/slugify';
-
-
-const slugify = (text: string) =>
-  text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const AuthorSlugPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -87,74 +85,84 @@ const AuthorSlugPage = () => {
       />
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted pt-16">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
-          {/* Author Header Section */}
-          <div className="relative mb-8">
-            <div className="bg-gradient-to-r from-primary/10 to-primary/20 rounded-2xl p-8">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                <div className="relative">
-                  <Avatar className="w-32 h-32 ring-4 ring-background shadow-lg">
-                    <AvatarImage
-                      src={author.profile_image_url || ''}
-                      alt={author.name}
-                      loading="lazy"
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="text-3xl font-bold bg-primary text-primary-foreground">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                
-                <div className="flex-1 text-center md:text-left">
-                  <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-                    <h1 className="text-4xl md:text-5xl font-bold text-foreground">{author.name}</h1>
-                    <VerificationBadge 
-                      verified={author.verified || false} 
-                      verificationType={author.verification_type} 
-                    />
-                  </div>
-                  <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
-                    {author.genres?.map(genre => (
-                      <Badge key={genre} variant="secondary" className="text-sm">
-                        {genre}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                   {/* Quick Stats */}
-                   <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm text-muted-foreground">
-                     <div className="flex items-center gap-1">
-                       <BookOpen className="w-4 h-4" />
-                       <span>{author.books_count} Books</span>
-                     </div>
-                     <div className="flex items-center gap-1">
-                       <Users className="w-4 h-4" />
-                       <span>{author.followers_count.toLocaleString()} Followers</span>
-                     </div>
-                     <div className="flex items-center gap-1">
-                       <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                       <span>{author.rating}</span>
-                     </div>
-                   </div>
-                   
-                   {/* Follow Button */}
-                   <div className="mt-4 flex justify-center md:justify-start">
-                     <FollowButton authorId={author.id} size="lg" />
-                   </div>
-                </div>
-              </div>
+          <Breadcrumb items={breadcrumbItems} className="mb-4" />
+
+          {/* Hero/Profile Section */}
+          <div className="relative mb-20">
+            <div className="h-48 md:h-64 rounded-lg overflow-hidden relative">
+              {author.profile_image_url && (
+                <img
+                  src={author.profile_image_url}
+                  alt={`${author.name} banner`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                />
+              )}
+              <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
+            </div>
+
+            {/* Avatar overlapping */}
+            <div className="absolute left-4 bottom-0 translate-y-1/2">
+              <Avatar className="w-28 h-28 md:w-32 md:h-32 ring-4 ring-background shadow-lg">
+                <AvatarImage
+                  src={author.profile_image_url || ''}
+                  alt={author.name}
+                  loading="lazy"
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-3xl font-bold bg-primary text-primary-foreground">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </div>
 
+          {/* Author Name & Stats */}
+          <div className="mt-[-3rem] md:ml-40 flex flex-col md:flex-row md:items-end gap-6">
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-1">
+                {author.name}
+              </h1>
+              <p className="text-sm text-muted-foreground mb-4">
+                {author.genres?.[0] || 'Author'}
+              </p>
+
+              <div className="flex justify-center md:justify-start gap-8 text-sm text-muted-foreground mb-4">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  <span className="font-medium">{author.books_count}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  <span className="font-medium">{author.followers_count.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                  <span className="font-medium">{author.rating}</span>
+                </div>
+              </div>
+
+              <FollowButton authorId={author.id} size="lg" />
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <Link to="/authors" className="text-sm text-muted-foreground hover:underline">
+              &larr; Back to Authors
+            </Link>
+          </div>
+
+          <div className="mt-6">
+
           {/* Content Tabs */}
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-6">
-              <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="books">Bibliography</TabsTrigger>
-              <TabsTrigger value="updates">Updates</TabsTrigger>
-              <TabsTrigger value="qa">Q&A</TabsTrigger>
-              <TabsTrigger value="events">Events</TabsTrigger>
-              <TabsTrigger value="connect">Connect</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-6 mb-6 bg-muted rounded-lg overflow-x-auto">
+              <TabsTrigger value="about" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">About</TabsTrigger>
+              <TabsTrigger value="books" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Bibliography</TabsTrigger>
+              <TabsTrigger value="updates" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Updates</TabsTrigger>
+              <TabsTrigger value="qa" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Q&A</TabsTrigger>
+              <TabsTrigger value="events" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Events</TabsTrigger>
+              <TabsTrigger value="connect" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Connect</TabsTrigger>
             </TabsList>
 
             <TabsContent value="about" className="space-y-6">
@@ -168,7 +176,7 @@ const AuthorSlugPage = () => {
                 <CardContent>
                   <div className="prose prose-gray dark:prose-invert max-w-none">
                     <p className="text-muted-foreground leading-relaxed text-base">
-                      {author.bio || `${author.name} is a distinguished author with ${author.books_count} published works. Their writing spans across ${author.genres?.join(', ') || 'various genres'}, captivating readers with compelling narratives and insightful perspectives.`}
+                      {author.bio ? author.bio : "This author hasn\u2019t added a bio yet. Check back soon!"}
                     </p>
                   </div>
                   
@@ -252,13 +260,18 @@ const AuthorSlugPage = () => {
                             </div>
                           </div>
 
-                          <CardContent className="p-4 space-y-2">
+                          <CardContent className="p-4 space-y-3">
                             <div>
                               <h3 className="font-semibold text-base line-clamp-2 group-hover:text-primary transition-colors duration-200">
                                 {book.title}
                               </h3>
                               <p className="text-muted-foreground text-sm">{book.author}</p>
                             </div>
+                            {book.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-3">
+                                {book.description}
+                              </p>
+                            )}
 
                             <div className="flex items-center justify-between text-xs">
                               <div className="flex gap-2">
@@ -279,12 +292,12 @@ const AuthorSlugPage = () => {
                             </div>
 
                             <div className="pt-2">
-                              <Link to={`/book-details/${book.id}`}>
-                                <Button variant="outline" size="sm" className="w-full">
-                                  <BookOpen className="w-3 h-3 mr-1" />
-                                  View Details
-                                </Button>
-                              </Link>
+                              <ReadNowButton
+                                bookId={book.id}
+                                bookTitle={book.title}
+                                size="sm"
+                                className="w-full"
+                              />
                             </div>
                           </CardContent>
                         </Card>
@@ -551,15 +564,9 @@ const AuthorSlugPage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-          </Tabs>
-
-          <div className="mt-8 text-center">
-            <Link to="/authors">
-              <Button variant="outline" size="lg">
-                ← Back to Authors
-              </Button>
-            </Link>
+            </Tabs>
           </div>
+
         </div>
       </div>
     </>
