@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import type { Author } from './useAuthors';
 
 const slugify = (text: string) =>
@@ -13,10 +12,16 @@ export const useAuthorBySlug = (slug?: string) => {
     queryKey: ['author', slug],
     enabled: !!slug,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_authors_data');
-      if (error) throw error;
-      const author = (data || []).find((a: any) => slugify(a.name) === slug);
-      return author as Author | null;
+      const res = await fetch(`/api/authors?slug=${slug}`, {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const err: any = new Error('Failed to fetch author');
+        err.status = res.status;
+        throw err;
+      }
+      const author = (await res.json()) as Author | null;
+      return author;
     },
   });
 };

@@ -1,14 +1,13 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, RefreshCw, Star, Users, BookOpen } from 'lucide-react';
+import { Search, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, Star, Users, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import SEO from '@/components/SEO';
@@ -179,27 +178,29 @@ const Authors = () => {
 
   // Error state with retry option
   if (error) {
+    const status = (error as any).status;
+    const unauthorized = status === 401 || status === 403;
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center max-w-md mx-auto">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Unable to Load Authors</h1>
-            <Alert className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {error.message || 'There was an error loading the authors data. Please try again.'}
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-4">
-              <Button onClick={handleRetry} className="bg-orange-600 hover:bg-orange-700">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Try Again
-              </Button>
-              <p className="text-sm text-gray-500">
-                If the problem persists, please refresh the page or contact support.
-              </p>
-            </div>
+          <div className="text-center max-w-md mx-auto space-y-4">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto" />
+            {unauthorized ? (
+              <>
+                <h1 className="text-2xl font-bold text-gray-900">Please sign in to view authors.</h1>
+                <Button asChild className="bg-orange-600 hover:bg-orange-700">
+                  <Link to="/signin">Sign In</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold text-gray-900">Couldn't load authors.</h1>
+                <p className="text-gray-600">Couldn’t load authors. Please check your internet connection or try again later.</p>
+                <Button onClick={handleRetry} className="bg-orange-600 hover:bg-orange-700">
+                  Retry
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

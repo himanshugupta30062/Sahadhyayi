@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import type { Book } from './useLibraryBooks';
 
 export const useAuthorBooks = (authorId: string) => {
@@ -8,18 +7,15 @@ export const useAuthorBooks = (authorId: string) => {
     queryFn: async (): Promise<Book[]> => {
       if (!authorId) return [];
       
-      const { data, error } = await supabase
-        .from('books_library')
-        .select('*')
-        .eq('author_id', authorId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching author books:', error);
-        throw error;
+      const res = await fetch(`/api/authors/${authorId}/books`, { credentials: 'include' });
+      if (!res.ok) {
+        const err: any = new Error('Failed to fetch author books');
+        err.status = res.status;
+        throw err;
       }
+      const data = await res.json();
 
-      return (data || []).map(book => ({
+      return (data || []).map((book: any) => ({
         id: book.id,
         title: book.title,
         author: book.author || 'Unknown Author',
@@ -46,19 +42,17 @@ export const useBooksByAuthorName = (authorName: string) => {
     queryKey: ['books-by-author-name', authorName],
     queryFn: async (): Promise<Book[]> => {
       if (!authorName) return [];
-      
-      const { data, error } = await supabase
-        .from('books_library')
-        .select('*')
-        .ilike('author', `%${authorName}%`)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching books by author name:', error);
-        throw error;
+      const res = await fetch(`/api/books?author=${encodeURIComponent(authorName)}`, {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const err: any = new Error('Failed to fetch books');
+        err.status = res.status;
+        throw err;
       }
+      const data = await res.json();
 
-      return (data || []).map(book => ({
+      return (data || []).map((book: any) => ({
         id: book.id,
         title: book.title,
         author: book.author || 'Unknown Author',
@@ -73,7 +67,7 @@ export const useBooksByAuthorName = (authorName: string) => {
         rating: 0,
         isbn: book.isbn,
         pages: book.pages,
-        author_bio: book.author_bio
+        author_bio: book.author_bio,
       }));
     },
     enabled: !!authorName,

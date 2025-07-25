@@ -31,7 +31,12 @@ const AuthorSlugPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { data: author, isLoading } = useAuthorBySlug(slug);
-  const { data: authorBooks, isLoading: booksLoading } = useAuthorBooks(author?.id || '');
+  const {
+    data: authorBooks,
+    isLoading: booksLoading,
+    isError: booksError,
+    refetch: refetchBooks,
+  } = useAuthorBooks(author?.id || '');
   const { data: authorPosts, isLoading: postsLoading } = useAuthorPosts(author?.id);
   const { data: questions, isLoading: questionsLoading } = useAuthorQuestions(author?.id);
   const { data: events, isLoading: eventsLoading } = useAuthorEvents(author?.id);
@@ -168,7 +173,7 @@ const AuthorSlugPage = () => {
                 <CardContent>
                   <div className="prose prose-gray dark:prose-invert max-w-none">
                     <p className="text-muted-foreground leading-relaxed text-base">
-                      {author.bio || `${author.name} is a distinguished author with ${author.books_count} published works. Their writing spans across ${author.genres?.join(', ') || 'various genres'}, captivating readers with compelling narratives and insightful perspectives.`}
+                      {author.bio || 'Bio not yet provided.'}
                     </p>
                   </div>
                   
@@ -178,7 +183,7 @@ const AuthorSlugPage = () => {
                         <div className="font-medium text-foreground">Location</div>
                         <div className="text-muted-foreground flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
-                          {author.location}
+                          {author.location || 'Location not specified'}
                         </div>
                       </div>
                       <div>
@@ -223,6 +228,11 @@ const AuthorSlugPage = () => {
                           <div className="h-3 bg-muted rounded w-3/4"></div>
                         </div>
                       ))}
+                    </div>
+                  ) : booksError ? (
+                    <div className="text-center py-12 space-y-4">
+                      <p className="text-muted-foreground">Couldn't load books. Please try again.</p>
+                      <Button variant="outline" onClick={() => refetchBooks()}>Retry</Button>
                     </div>
                   ) : authorBooks && authorBooks.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
