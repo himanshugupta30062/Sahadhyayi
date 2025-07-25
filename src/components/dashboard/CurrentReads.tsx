@@ -116,7 +116,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                       <h4 className="font-semibold text-sm truncate">{book.book_title}</h4>
                       <div className="flex items-center gap-2 mb-2">
                         <p className="text-xs text-gray-500">
-                          Page {book.current_page} of {book.total_pages}
+                          Pages read: {book.current_page} / {book.total_pages}
                         </p>
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                           Currently Reading
@@ -173,7 +173,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                             <h4 className="font-semibold text-sm truncate">{book.book_title}</h4>
                             <div className="flex items-center gap-2 mb-2">
                               <p className="text-xs text-gray-500">
-                                Page {book.current_page} of {book.total_pages}
+                                Pages read: {book.current_page} / {book.total_pages}
                               </p>
                               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                                 Currently Reading
