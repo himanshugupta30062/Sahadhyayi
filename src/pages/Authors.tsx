@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
+import { useAuth } from '@/contexts/AuthContext';
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import { usePaginatedAuthors, type Author } from '@/hooks/useAuthors';
@@ -415,6 +416,19 @@ interface AuthorCardProps {
 
 const AuthorCard: React.FC<AuthorCardProps> = ({ author, books, featured }) => {
   const [showChat, setShowChat] = useState(false);
+  const { user } = useAuth();
+
+  const handleMessageClick = () => {
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to message authors.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    setShowChat(true);
+  };
   const getAuthorInitials = (name: string) => {
     return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
   };
@@ -530,7 +544,7 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author, books, featured }) => {
               variant="outline"
               size="sm"
               className="text-xs border-green-300 text-green-700 hover:bg-green-50"
-              onClick={() => setShowChat(true)}
+              onClick={handleMessageClick}
             >
               <MessageSquare className="w-3 h-3 mr-1" />
               Message
