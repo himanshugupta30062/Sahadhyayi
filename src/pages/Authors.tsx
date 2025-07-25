@@ -13,7 +13,7 @@ import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/ui/breadcrumb';
-import { usePaginatedAuthors, type Author } from '@/hooks/useAuthors';
+import { useAuthors, type Author } from '@/hooks/useAuthors';
 import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { toast } from '@/hooks/use-toast';
 import { generateWebsiteSchema, generateBreadcrumbSchema } from '@/utils/schema';
@@ -27,10 +27,8 @@ const Authors = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const { data: paginated = { authors: [], total: 0 }, isLoading, error, refetch } = usePaginatedAuthors(page, pageSize);
-  const authors = paginated.authors;
-  const totalAuthors = paginated.total;
-  const totalPages = Math.ceil(totalAuthors / pageSize) || 1;
+  const { data: authors = [], isLoading, error, refetch } = useAuthors();
+  const totalAuthors = authors.length;
 
   const { data: libraryBooks = [] } = useAllLibraryBooks();
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,9 +90,18 @@ const Authors = () => {
         (bookCountFilter === '4-10' && author.books_count >= 4 && author.books_count <= 10) ||
         (bookCountFilter === '10+' && author.books_count > 10);
       
-      return matchesSearch && matchesGenre && matchesBookCount;
-    });
+    return matchesSearch && matchesGenre && matchesBookCount;
+  });
   }, [authors, searchTerm, selectedGenre, bookCountFilter]);
+
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredAuthors.length / pageSize) || 1;
+  }, [filteredAuthors, pageSize]);
+
+  const paginatedAuthors = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredAuthors.slice(start, start + pageSize);
+  }, [filteredAuthors, page, pageSize]);
 
   // Featured authors prioritize those with books in the library
   const featuredAuthors = useMemo(() => {
@@ -107,6 +114,10 @@ const Authors = () => {
       })
       .slice(0, 6);
   }, [authors]);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedGenre, bookCountFilter]);
 
   const handleRetry = () => {
     console.log('Retrying to fetch authors...');
@@ -300,7 +311,7 @@ const Authors = () => {
           </section>
 
           {/* Show message if no authors found */}
-          {totalAuthors === 0 ? (
+          {filteredAuthors.length === 0 ? (
             <div className="text-center py-12">
               <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-500 mb-2">No Authors Found</h2>
@@ -368,7 +379,7 @@ const Authors = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredAuthors.map(author => (
+                    {paginatedAuthors.map(author => (
                       <AuthorCard
                         key={author.id}
                         author={author}
