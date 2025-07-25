@@ -124,19 +124,19 @@ const CommunityStats = () => {
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       <div className="text-center mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
           📊 Sahadhyayi Community Stats
         </h2>
-        <p className="text-gray-600">Real-time community growth metrics</p>
+        <p className="text-white/90">Real-time community growth metrics</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Registered Members Card */}
-        <Card className="bg-white shadow-lg rounded-xl border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+        <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20 hover:shadow-xl transition-shadow duration-300">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Users className="w-5 h-5 text-orange-600" />
               </div>
               📚 Registered Members
             </CardTitle>
@@ -151,7 +151,7 @@ const CommunityStats = () => {
               <p className="text-red-600 font-medium">{stats.errors.members}</p>
             ) : (
               <div>
-                <div className="text-2xl font-bold text-blue-600 mb-1">
+                <div className="text-2xl font-bold text-orange-600 mb-1">
                   {stats.registeredMembers.toLocaleString()}
                 </div>
                 <p className="text-gray-700">
@@ -166,11 +166,11 @@ const CommunityStats = () => {
         </Card>
 
         {/* Site Visitors Card */}
-        <Card className="bg-white shadow-lg rounded-xl border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+        <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20 hover:shadow-xl transition-shadow duration-300">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Eye className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <Eye className="w-5 h-5 text-amber-600" />
               </div>
               👀 Visitors to Site
             </CardTitle>
@@ -185,7 +185,7 @@ const CommunityStats = () => {
               <p className="text-red-600 font-medium">{stats.errors.visitors}</p>
             ) : (
               <div>
-                <div className="text-2xl font-bold text-green-600 mb-1">
+                <div className="text-2xl font-bold text-amber-600 mb-1">
                   {stats.totalVisitors.toLocaleString()}
                 </div>
                 <p className="text-gray-700">

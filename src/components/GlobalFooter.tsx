@@ -108,7 +108,7 @@ const GlobalFooter = () => {
               size="sm"
               onClick={handleShowStats}
               disabled={isLoading}
-              className="border-orange-200 text-white hover:bg-orange-500 hover:text-white transition-all mb-4"
+              className="border-white text-white hover:bg-white hover:text-orange-600 transition-all mb-4 font-medium"
             >
               <Users className="w-4 h-4 mr-2" />
               {isLoading ? 'Loading...' : showCount ? 'Hide Community Stats' : 'Show Community Stats'}
@@ -139,6 +139,11 @@ const GlobalFooter = () => {
                 </a>
               </li>
               <li>
+                <a href="/discovery" className="hover:text-white transition-colors">
+                  Discovery
+                </a>
+              </li>
+              <li>
                 <a href="/authors" className="hover:text-white transition-colors">
                   Meet Authors
                 </a>
@@ -162,6 +167,11 @@ const GlobalFooter = () => {
               <li>
                 <a href="/help" className="hover:text-white transition-colors">
                   Help Center
+                </a>
+              </li>
+              <li>
+                <a href="/community-guidelines" className="hover:text-white transition-colors">
+                  Community Guidelines
                 </a>
               </li>
               <li>

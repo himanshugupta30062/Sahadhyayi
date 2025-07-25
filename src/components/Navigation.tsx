@@ -49,24 +49,18 @@ const Navigation = () => {
     }
   }, [isOpen, isMobile]);
 
-  // Updated navigation items with Authors tab
+  // Updated navigation items with core functionality only
   const navItems = user ? [
     { name: "Home", href: "/dashboard" },
     { name: "Library", href: "/library" },
-    { name: "Discovery", href: "/discovery" },
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
-    { name: "Guidelines", href: "/community-guidelines" },
-    { name: "Feedback", href: "/feedback" },
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
-    { name: "Discovery", href: "/discovery" },
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
-    { name: "Guidelines", href: "/community-guidelines" },
-    { name: "Feedback", href: "/feedback" },
   ];
 
   const handleSignOut = async () => {
