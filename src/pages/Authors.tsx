@@ -179,6 +179,7 @@ const Authors = () => {
 
   // Error state with retry option
   if (error) {
+    const unauthorized = (error as any)?.status === 401 || (error as any)?.status === 403;
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <div className="container mx-auto px-4 py-8">
@@ -188,13 +189,18 @@ const Authors = () => {
             <Alert className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {error.message || 'There was an error loading the authors data. Please try again.'}
+                Couldn't load authors. Please check your internet connection or try again later.
               </AlertDescription>
             </Alert>
+            {unauthorized && (
+              <p className="text-sm text-gray-500 mb-4">
+                Please <Link to="/signin" className="underline text-primary">sign in</Link> to view authors.
+              </p>
+            )}
             <div className="space-y-4">
               <Button onClick={handleRetry} className="bg-orange-600 hover:bg-orange-700">
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Try Again
+                Retry
               </Button>
               <p className="text-sm text-gray-500">
                 If the problem persists, please refresh the page or contact support.
