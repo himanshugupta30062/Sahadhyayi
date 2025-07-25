@@ -95,14 +95,16 @@ export const useFriends = () => {
 };
 
 export const useSendFriendRequest = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async ({ addresseeId }: { addresseeId: string }) => {
+      if (!user?.id) throw new Error("User not authenticated");
       const { data, error } = await supabase
         .from('friend_requests')
         .insert([{
-          requester_id: (await supabase.auth.getUser()).data.user?.id,
+          requester_id: user.id,
           addressee_id: addresseeId,
           status: 'pending'
         }])
