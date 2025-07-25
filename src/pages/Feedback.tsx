@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import SEO from "@/components/SEO";
 
 const Feedback = () => {
@@ -44,23 +45,38 @@ const Feedback = () => {
     }
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      const { error } = await supabase.from('feedback').insert({
+        name: formData.name,
+        email: formData.email,
+        type: formData.type,
+        subject: formData.subject,
+        message: formData.message,
+        rating: formData.rating || null
+      });
+
+      if (error) throw error;
+
       toast({
-        title: "Feedback Submitted!",
+        title: 'Feedback Submitted!',
         description: "Thank you for your feedback. We'll review it and get back to you soon.",
       });
+
       setFormData({
-        name: "",
-        email: "",
-        type: "",
-        subject: "",
-        message: "",
+        name: '',
+        email: '',
+        type: '',
+        subject: '',
+        message: '',
         rating: 0
       });
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Failed to submit feedback', variant: 'destructive' });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (

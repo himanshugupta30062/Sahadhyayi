@@ -2109,6 +2109,42 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          id: string
+          name: string | null
+          email: string | null
+          type: string | null
+          subject: string | null
+          message: string | null
+          rating: number | null
+          responded: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name?: string | null
+          email?: string | null
+          type?: string | null
+          subject?: string | null
+          message?: string | null
+          rating?: number | null
+          responded?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string | null
+          email?: string | null
+          type?: string | null
+          subject?: string | null
+          message?: string | null
+          rating?: number | null
+          responded?: boolean | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       content_reports: {
         Row: {
           id: string
