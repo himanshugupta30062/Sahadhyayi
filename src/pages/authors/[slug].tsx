@@ -8,6 +8,8 @@ import { MapPin, BookOpen, Users, Star, Globe, Calendar, ExternalLink, MessageSq
 import { useAuthorBySlug } from '@/hooks/useAuthorBySlug';
 import { useAuthorBooks } from '@/hooks/useAuthorBooks';
 import SEO from '@/components/SEO';
+import { useCanonicalUrl } from '@/hooks/useCanonicalUrl';
+import { generateAuthorSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import NotFound from '../NotFound';
 import { FollowButton } from '@/components/authors/FollowButton';
 import { CreatePostForm } from '@/components/authors/CreatePostForm';
@@ -33,6 +35,7 @@ const AuthorSlugPage = () => {
   const { data: authorPosts, isLoading: postsLoading } = useAuthorPosts(author?.id);
   const { data: questions, isLoading: questionsLoading } = useAuthorQuestions(author?.id);
   const { data: events, isLoading: eventsLoading } = useAuthorEvents(author?.id);
+  const canonicalUrl = useCanonicalUrl();
 
   // Check if current user is the author
   const isCurrentAuthor = user?.id === author?.id;
@@ -54,15 +57,31 @@ const AuthorSlugPage = () => {
 
   const social = (author as any).social_links || {};
 
+  const breadcrumbItems = [
+    { name: 'Authors', url: 'https://sahadhyayi.com/authors' },
+    { name: author.name, url: canonicalUrl }
+  ];
+
+  const authorSchema = generateAuthorSchema({
+    name: author.name,
+    bio: author.bio || '',
+    url: canonicalUrl,
+    image: author.profile_image_url || undefined
+  });
+  const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+  const combinedSchema = [authorSchema, breadcrumbSchema];
+
   return (
     <>
       <SEO
         title={`Author Profile - ${author.name} | Sahadhyayi`}
         description={author.bio || `Learn more about ${author.name}`}
-        canonical={`https://sahadhyayi.com/authors/${slug}`}
-        url={`https://sahadhyayi.com/authors/${slug}`}
+        canonical={canonicalUrl}
+        url={canonicalUrl}
         type="profile"
         author={author.name}
+        schema={combinedSchema}
+        breadcrumbs={breadcrumbItems}
       />
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted pt-16">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -72,7 +91,7 @@ const AuthorSlugPage = () => {
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                 <div className="relative">
                   <Avatar className="w-32 h-32 ring-4 ring-background shadow-lg">
-                    <AvatarImage src={author.profile_image_url || ''} alt={author.name} className="object-cover" />
+                    <AvatarImage src={author.profile_image_url || ''} alt={author.name} className="object-cover" loading="lazy" />
                     <AvatarFallback className="text-3xl font-bold bg-primary text-primary-foreground">
                       {initials}
                     </AvatarFallback>
@@ -208,6 +227,7 @@ const AuthorSlugPage = () => {
                                 src={book.cover_image_url}
                                 alt={book.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
                                   e.currentTarget.nextElementSibling?.classList.remove('hidden');

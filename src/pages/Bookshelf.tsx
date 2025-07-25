@@ -218,6 +218,7 @@ const Bookshelf = () => {
                         src={book.cover_image_url}
                         alt={`Cover of ${book.title}`}
                         className="w-full sm:w-32 h-48 object-cover rounded-md"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full sm:w-32 h-48 bg-gradient-to-br from-amber-100 to-orange-100 rounded-md flex items-center justify-center">

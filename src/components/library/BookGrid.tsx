@@ -4,6 +4,9 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
+
+const slugify = (text: string) =>
+  text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 import { BookOpen } from 'lucide-react';
 import { useBooksByGenre, useGenres } from '@/hooks/useLibraryBooks';
 import type { Book, Genre } from '@/hooks/useLibraryBooks';
@@ -66,9 +69,17 @@ const BookGrid = () => {
           <Card key={book.id} className="flex flex-col">
             <CardContent className="flex-1 space-y-1 p-6">
               <h3 className="text-lg font-semibold">{book.title}</h3>
-              <p className="text-sm text-gray-500">{book.author}</p>
+              <p className="text-sm text-gray-500">
+                <Link to={`/authors/${slugify(book.author)}`} className="underline hover:text-blue-700">
+                  {book.author}
+                </Link>
+              </p>
               {book.genre && (
-                <p className="text-xs text-blue-600 font-medium">{book.genre}</p>
+                <p className="text-xs text-blue-600 font-medium">
+                  <Link to={`/library?genre=${encodeURIComponent(book.genre)}`} className="hover:underline">
+                    {book.genre}
+                  </Link>
+                </p>
               )}
               {book.description && (
                 <p className="text-sm text-gray-700 line-clamp-2">

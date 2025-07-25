@@ -9,6 +9,14 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(
+  express.static('public', {
+    maxAge: '1y',
+    setHeaders(res) {
+      res.setHeader('Cache-Control', 'public, immutable');
+    },
+  })
+);
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {

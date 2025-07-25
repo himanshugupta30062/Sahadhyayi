@@ -115,6 +115,7 @@ const Blog = () => {
                       src={featuredPost.image}
                       alt={featuredPost.title}
                       className="w-full h-64 md:h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                   <div className="md:w-1/2 p-8">
@@ -176,6 +177,7 @@ const Blog = () => {
                     src={post.image}
                     alt={post.title}
                     className="w-full h-48 object-cover"
+                    loading="lazy"
                   />
                   <Badge className="absolute top-3 left-3 bg-white/90 text-gray-800">
                     {post.category}

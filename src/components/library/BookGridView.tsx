@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, Eye, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const slugify = (text: string) =>
+  text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 import BookDetailModal from './BookDetailModal';
 import BookReader from './BookReader';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -99,7 +102,12 @@ const BookGridView = ({ books }: BookGridViewProps) => {
 
               {/* Author */}
               {book.author && (
-                <p className="text-gray-600 text-sm">by {book.author}</p>
+                <p className="text-gray-600 text-sm">
+                  by{' '}
+                  <Link to={`/authors/${slugify(book.author)}`} className="underline hover:text-blue-700">
+                    {book.author}
+                  </Link>
+                </p>
               )}
 
               {/* Genre, Year, and Language */}
@@ -107,7 +115,9 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                 <div className="flex flex-wrap gap-1">
                   {book.genre && (
                     <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                      {book.genre}
+                      <Link to={`/library?genre=${encodeURIComponent(book.genre)}`} className="hover:underline">
+                        {book.genre}
+                      </Link>
                     </span>
                   )}
                   {book.language && book.language !== 'English' && (

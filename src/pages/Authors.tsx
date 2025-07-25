@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import SEO from '@/components/SEO';
+import { useCanonicalUrl } from '@/hooks/useCanonicalUrl';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import { usePaginatedAuthors, type Author } from '@/hooks/useAuthors';
 import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
@@ -163,6 +164,8 @@ const Authors = () => {
     }
   };
 
+  const canonicalUrl = useCanonicalUrl();
+
   // Loading state
   if (isLoading) {
     return (
@@ -211,8 +214,8 @@ const Authors = () => {
       <SEO
         title="Authors Directory - Meet Talented Writers & Connect"
         description="Discover talented authors on Sahadhyayi reading community. Browse author profiles, read biographies, explore their works, and connect with writers from around the world. Find your next favorite author today."
-        canonical="https://sahadhyayi.com/authors"
-        url="https://sahadhyayi.com/authors"
+        canonical={canonicalUrl}
+        url={canonicalUrl}
         keywords={[
           'authors directory', 'writers community', 'book authors', 'literary writers',
           'author profiles', 'connect with authors', 'famous authors', 'new authors',

@@ -8,11 +8,13 @@ import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
+import { useCanonicalUrl } from '@/hooks/useCanonicalUrl';
 
 const Index = () => {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const navigate = useNavigate();
+  const canonicalUrl = useCanonicalUrl();
 
   const features = [
     {
@@ -79,7 +81,8 @@ const Index = () => {
       <SEO
         title="Sahadhyayi - Digital Reading Community & Book Library | Fellow Readers Platform"
         description="Sahadhyayi means 'fellow reader' in Sanskrit. Join our vibrant digital reading community and book reader social media platform. Discover thousands of books, connect with fellow readers, track your progress, and explore our comprehensive digital library with your study companions."
-        url="https://sahadhyayi.com/"
+        canonical={canonicalUrl}
+        url={canonicalUrl}
         keywords={['Sahadhyayi', 'fellow reader', 'Sanskrit meaning', 'digital reading community', 'book library', 'reading platform', 'study companions', 'book lovers']}
       />
       <script type="application/ld+json">
@@ -94,6 +97,7 @@ const Index = () => {
                 src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
                 alt="Sahadhyayi logo - Fellow Reader community platform in Sanskrit"
                 className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24"
+                loading="lazy"
               />
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">

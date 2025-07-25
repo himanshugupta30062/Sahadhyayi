@@ -14,6 +14,7 @@ import { validateEmail, validatePassword, sanitizeInput, validateUsername, isRat
 import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
+import { useCanonicalUrl } from '@/hooks/useCanonicalUrl';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -30,6 +31,7 @@ const SignUp = () => {
   const navigate = useNavigate();
   const { user, signUp } = useAuth();
   const { toast } = useToast();
+  const canonicalUrl = useCanonicalUrl();
 
   // Redirect if already signed in
   React.useEffect(() => {
@@ -219,8 +221,8 @@ const SignUp = () => {
       <SEO
         title="Sign Up - Sahadhyayi"
         description="Create your free Sahadhyayi account to join the reading community."
-        canonical="https://sahadhyayi.com/signup"
-        url="https://sahadhyayi.com/signup"
+        canonical={canonicalUrl}
+        url={canonicalUrl}
       />
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md">

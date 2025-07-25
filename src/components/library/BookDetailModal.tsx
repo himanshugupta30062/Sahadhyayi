@@ -4,7 +4,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, BookOpen, Calendar, Globe, Info, Download } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+
+const slugify = (text: string) =>
+  text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 import { useAuth } from '@/contexts/AuthContext';
 import type { Book } from '@/hooks/useLibraryBooks';
 import AudioSummaryButton from '@/components/books/AudioSummaryButton';
@@ -126,7 +129,12 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
               {/* Basic Info */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-xl font-semibold">by {book.author}</h3>
+                  <h3 className="text-xl font-semibold">
+                    by{' '}
+                    <Link to={`/authors/${slugify(book.author)}`} className="underline hover:text-blue-700">
+                      {book.author}
+                    </Link>
+                  </h3>
                   <Button
                     variant="ghost"
                     size="sm"

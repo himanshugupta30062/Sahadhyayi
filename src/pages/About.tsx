@@ -176,10 +176,11 @@ const About = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
-            <img 
-              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
-              alt="Sahadhyayi Logo - What Sahadhyayi means: fellow reader in Sanskrit" 
-              className="w-20 h-20" 
+            <img
+              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
+              alt="Sahadhyayi Logo - What Sahadhyayi means: fellow reader in Sanskrit"
+              className="w-20 h-20"
+              loading="lazy"
             />
           </div>
            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -384,6 +385,7 @@ const About = () => {
                     src="/lovable-uploads/3f0d5de6-4956-4feb-937f-90f70f359001.png"
                     alt="Himanshu Gupta Founder"
                     className="rounded-xl shadow-lg w-40 h-40 object-cover border-2 border-amber-200"
+                    loading="lazy"
                   />
                   <div className="w-full flex flex-col items-center md:items-start gap-1">
                     <h3 className="font-semibold text-lg text-amber-700">Himanshu Gupta</h3>

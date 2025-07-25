@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
 import SEO from '@/components/SEO';
+import { useCanonicalUrl } from '@/hooks/useCanonicalUrl';
 import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation';
 import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +28,7 @@ const SignIn = () => {
   const { user, signIn } = useAuth();
   const { joinCommunity } = useCommunityStats(false);
   const { toast } = useToast();
+  const canonicalUrl = useCanonicalUrl();
 
   // Redirect if already signed in
   useEffect(() => {
@@ -183,8 +185,8 @@ const SignIn = () => {
       <SEO
         title="Sign In - Sahadhyayi"
         description="Access your Sahadhyayi account and continue reading."
-        canonical="https://sahadhyayi.com/signin"
-        url="https://sahadhyayi.com/signin"
+        canonical={canonicalUrl}
+        url={canonicalUrl}
       />
       <div className="min-h-screen flex items-center justify-center p-4 pt-16">
         <Card className="w-full max-w-md">

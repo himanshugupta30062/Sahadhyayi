@@ -5,6 +5,7 @@ import FilterPopup from '@/components/library/FilterPopup';
 import BooksCollection from '@/components/library/BooksCollection';
 import GenreSelector from '@/components/library/GenreSelector';
 import SEO from '@/components/SEO';
+import { useCanonicalUrl } from '@/hooks/useCanonicalUrl';
 import { Link } from 'react-router-dom';
 
 const BookLibrary = () => {
@@ -68,12 +69,15 @@ const BookLibrary = () => {
     }
   };
 
+  const canonicalUrl = useCanonicalUrl();
+
   return (
     <>
       <SEO
         title="Digital Book Library - Discover & Read Books Online | Sahadhyayi"
         description="Explore our comprehensive digital library with thousands of books across all genres. Read online, track progress, and join discussions with fellow readers worldwide."
-        canonical="https://sahadhyayi.com/library"
+        canonical={canonicalUrl}
+        url={canonicalUrl}
         keywords={['digital library', 'online books', 'read books online', 'ebooks', 'book collection', 'reading platform']}
       />
       <script type="application/ld+json">
