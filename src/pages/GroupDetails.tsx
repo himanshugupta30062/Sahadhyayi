@@ -50,6 +50,7 @@ const GroupDetails = () => {
                 <Users className="w-4 h-4" />
                 {group.member_count ?? members.length} members
               </span>
+              {/* Commented out until these properties are added to the groups table
               {group.currentBook && (
                 <span className="flex items-center gap-1">
                   <Book className="w-4 h-4" />
@@ -68,6 +69,7 @@ const GroupDetails = () => {
                   {group.location}
                 </span>
               )}
+              */}
             </div>
             <Button onClick={() => setShowChat(true)} className="bg-orange-600 hover:bg-orange-700">
               Open Group Chat

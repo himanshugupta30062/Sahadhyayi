@@ -662,7 +662,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                           {item.label}
                         </button>
                         <Button
-                          size="xs"
+                          size="sm"
                           variant="ghost"
                           onClick={() => handleMarkChapterRead(chapterNumber)}
                           disabled={isDone}

@@ -28,6 +28,7 @@ export const useInfiniteLibraryBooks = ({
 }: InfiniteParams) => {
   return useInfiniteQuery({
     queryKey: ['infinite-library-books', genre, searchQuery, author, year, language, pageSize],
+    initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }): Promise<BooksPage> => {
       const start = pageParam * pageSize;
       const end = start + pageSize - 1;

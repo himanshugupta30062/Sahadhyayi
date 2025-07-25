@@ -62,7 +62,7 @@ const BooksCollection = ({
   });
 
   const allLibraryBooks: Book[] = useMemo(
-    () => (data?.pages ?? []).flatMap((p) => p.books),
+    () => (data?.pages ?? []).flatMap((page: any) => page?.books ?? []),
     [data]
   );
   

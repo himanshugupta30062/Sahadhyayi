@@ -40,6 +40,19 @@ const reactionLabels = {
   insightful: 'Insightful',
 };
 
+interface PostComment {
+  id: string;
+  content: string;
+  user_id: string;
+  created_at: string;
+  parent_comment_id?: string;
+  profiles?: {
+    full_name?: string;
+    profile_photo_url?: string;
+  };
+  replies?: PostComment[];
+}
+
 interface CommentItemProps {
   comment: PostComment;
   onReply: (id: string) => void;
