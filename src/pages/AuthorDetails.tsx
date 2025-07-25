@@ -101,7 +101,7 @@ const AuthorDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted flex items-center justify-center pt-16">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted flex items-center justify-center pt-12">
         <div className="text-center">
           <div className="w-16 h-16 bg-orange-200 rounded-full mx-auto mb-4 animate-pulse"></div>
           <p className="text-gray-600 animate-pulse">Loading author profile...</p>
@@ -112,7 +112,7 @@ const AuthorDetails = () => {
 
   if (!author) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted flex items-center justify-center pt-16">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted flex items-center justify-center pt-12">
         <div className="text-center max-w-md mx-auto p-8">
           <div className="w-16 h-16 bg-red-200 rounded-full mx-auto mb-4 flex items-center justify-center">
             <User className="w-8 h-8 text-red-600" />
@@ -163,7 +163,7 @@ const AuthorDetails = () => {
         author={author.name}
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted pt-16">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted pt-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header with Back Button and Breadcrumb */}
           <div className="flex items-center justify-between mb-6">
