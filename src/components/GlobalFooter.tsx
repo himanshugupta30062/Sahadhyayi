@@ -108,7 +108,7 @@ const GlobalFooter = () => {
               size="sm"
               onClick={handleShowStats}
               disabled={isLoading}
-              className="border-white text-white hover:bg-white hover:text-orange-600 transition-all mb-4 font-medium"
+              className="border-white text-white bg-transparent hover:bg-white hover:text-orange-600 transition-all mb-4 font-medium"
             >
               <Users className="w-4 h-4 mr-2" />
               {isLoading ? 'Loading...' : showCount ? 'Hide Community Stats' : 'Show Community Stats'}
