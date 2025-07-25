@@ -9,6 +9,7 @@ import { usePrivateMessages, useSendPrivateMessage } from '@/hooks/useMessages';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import SignInLink from '@/components/SignInLink';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ChatWindowProps {
@@ -68,6 +69,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
   const getInitials = (name: string) => {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
   };
+
+  if (!user) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md p-6 text-center space-y-4">
+          <p className="text-sm text-gray-600">Please sign in to send messages.</p>
+          <SignInLink>
+            <Button className="bg-orange-600 hover:bg-orange-700">Sign In</Button>
+          </SignInLink>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
