@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run generate:licenses && npm run generate:sbom && vite build",
+    "build": "npm run generate:licenses && npm run generate:sbom && npm run generate:sitemap && npm run prerender && vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
