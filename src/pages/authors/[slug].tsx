@@ -32,7 +32,7 @@ const AuthorSlugPage = () => {
   const { data: author, isLoading } = useAuthorBySlug(slug);
   const { data: authorBooks, isLoading: booksLoading } = useAuthorBooks(author?.id || '');
   const { data: authorPosts, isLoading: postsLoading } = useAuthorPosts(author?.id);
-  const { data: questions, isLoading: questionsLoading } = useAuthorQuestions(author?.id);
+  const { data: questions, isLoading: questionsLoading } = useAuthorQuestions(author?.id, user?.id);
   const { data: events, isLoading: eventsLoading } = useAuthorEvents(author?.id);
 
   // Check if current user is the author
