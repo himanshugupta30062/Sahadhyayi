@@ -68,14 +68,18 @@ export const useAuthors = () => {
       console.log('Fetching authors with books from database...');
 
       try {
-        // Use the new function that only returns authors with books
-        const { data, error } = await supabase.rpc('get_authors_with_books');
+        const res = await fetch('/api/authors?page=1&pageSize=100', {
+          credentials: 'include',
+        });
 
-        if (error) {
-          console.error('Failed to fetch authors with books:', error.message || error);
-          console.info('Using fallback author data due to API error');
-          return fallbackAuthors;
+        if (!res.ok) {
+          const err: any = new Error('Failed to fetch authors');
+          err.status = res.status;
+          throw err;
         }
+
+        const result = await res.json();
+        const data = result.authors as any[];
 
         if (!data || data.length === 0) {
           console.warn('No authors with books found, using fallback data');
@@ -129,24 +133,18 @@ export const usePaginatedAuthors = (page = 1, pageSize = 10) => {
   return useQuery({
     queryKey: ['paginated-authors', page, pageSize],
     queryFn: async (): Promise<PaginatedAuthors> => {
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = page * pageSize - 1;
-
       try {
-        const { data, error, count } = await supabase
-          .rpc('get_authors_with_books', {}, { count: 'exact' })
-          .range(startIndex, endIndex)
-          .order('name', { ascending: true });
-
-        if (error || !data) {
-          console.error('Failed to fetch paginated authors:', error?.message || error);
-          return {
-            authors: fallbackAuthors.slice(startIndex, endIndex + 1),
-            total: fallbackAuthors.length,
-          };
+        const res = await fetch(`/api/authors?page=${page}&pageSize=${pageSize}`, {
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          const err: any = new Error('Failed to fetch authors');
+          err.status = res.status;
+          throw err;
         }
 
-        const authors = data.map((author: any) => ({
+        const result = await res.json();
+        const authors = (result.authors || []).map((author: any) => ({
           id: author.id,
           name: author.name,
           bio: author.bio || 'Bio will be updated by the author.',
@@ -155,7 +153,7 @@ export const usePaginatedAuthors = (page = 1, pageSize = 10) => {
           website_url: author.website_url,
           social_links: author.social_links || {},
           genres: author.genres || [],
-          books_count: parseInt(author.actual_books_count) || 0,
+          books_count: parseInt(author.books_count) || 0,
           followers_count: author.followers_count || 0,
           rating: parseFloat(author.rating) || 4.0,
           upcoming_events: author.upcoming_events || 0,
@@ -164,16 +162,16 @@ export const usePaginatedAuthors = (page = 1, pageSize = 10) => {
           verified: author.verified || false,
           verification_type: author.verification_type,
           availableSlots:
-            author.actual_books_count > 0
-              ? [`Meet the author of ${author.actual_books_count} book${author.actual_books_count > 1 ? 's' : ''}`]
+            author.books_count > 0
+              ? [`Meet the author of ${author.books_count} book${author.books_count > 1 ? 's' : ''}`]
               : ['Available for consultation'],
         })) as Author[];
 
-        return { authors, total: count ?? authors.length };
+        return { authors, total: result.total ?? authors.length };
       } catch (err) {
         console.error('Exception while fetching paginated authors:', err);
         return {
-          authors: fallbackAuthors.slice(startIndex, endIndex + 1),
+          authors: fallbackAuthors.slice(0, pageSize),
           total: fallbackAuthors.length,
         };
       }

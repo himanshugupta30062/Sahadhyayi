@@ -2,6 +2,11 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
   <head>
+    <script>
+      if (location.hostname === 'www.sahadhyayi.com') {
+        location.replace(`https://sahadhyayi.com${location.pathname}${location.search}${location.hash}`);
+      }
+    </script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-82BF21X121"></script>
     <script>

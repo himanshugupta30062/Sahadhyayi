@@ -4,11 +4,21 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
+import cors from 'cors';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: [
+      'https://sahadhyayi.com',
+      'https://www.sahadhyayi.com',
+    ],
+    credentials: true,
+  })
+);
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
@@ -121,6 +131,30 @@ app.post('/goodreads/export', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Simple API endpoint to serve author data with optional pagination
+app.get('/api/authors', async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const pageSize = parseInt(req.query.pageSize, 10) || 10;
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize - 1;
+  try {
+    const { data, error, count } = await supabase
+      .rpc('get_authors_with_books', {}, { count: 'exact' })
+      .range(startIndex, endIndex)
+      .order('name', { ascending: true });
+
+    if (error) {
+      const status = error.code === '42501' ? 401 : 500;
+      return res.status(status).json({ error: error.message });
+    }
+
+    res.json({ authors: data || [], total: count ?? 0 });
+  } catch (err) {
+    console.error('Error fetching authors:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
