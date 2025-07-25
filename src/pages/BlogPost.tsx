@@ -240,6 +240,7 @@ const BlogPost = () => {
                 <img
                   src={post.image}
                   alt={post.title}
+                  loading="lazy"
                   className="w-full h-64 object-cover rounded-lg mb-6"
                 />
                 <CardTitle className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">

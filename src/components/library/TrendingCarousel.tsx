@@ -2,6 +2,8 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { slugify } from '@/utils/slugify';
 
 const TrendingCarousel = () => {
   const trendingBooks = [
@@ -24,7 +26,9 @@ const TrendingCarousel = () => {
                   {book.title.slice(0, 20)}...
                 </div>
                 <h3 className="font-medium text-sm line-clamp-2 mb-1">{book.title}</h3>
-                <p className="text-xs text-gray-600 mb-2">{book.author}</p>
+                <p className="text-xs text-gray-600 mb-2">
+                  <Link to={`/authors/${slugify(book.author)}`}>{book.author}</Link>
+                </p>
                 <div className="flex items-center gap-1">
                   <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                   <span className="text-xs font-medium">{book.rating}</span>

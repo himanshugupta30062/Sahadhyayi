@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Library, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { slugify } from '@/utils/slugify';
 import { useLibraryBooks } from '@/hooks/useLibrary';
 
 const LibraryPreview = () => {
@@ -41,9 +42,10 @@ const LibraryPreview = () => {
               <div key={book.id} className="border rounded-lg p-3 hover:bg-gray-50 transition-colors">
                 <div className="aspect-[3/4] bg-gradient-to-br from-amber-100 to-orange-200 rounded mb-2 flex items-center justify-center">
                   {book.cover_image_url ? (
-                    <img 
-                      src={book.cover_image_url} 
+                    <img
+                      src={book.cover_image_url}
                       alt={book.title}
+                      loading="lazy"
                       className="w-full h-full object-cover rounded"
                     />
                   ) : (
@@ -52,7 +54,9 @@ const LibraryPreview = () => {
                 </div>
                 <h4 className="font-medium text-xs truncate">{book.title}</h4>
                 {book.author && (
-                  <p className="text-xs text-gray-500 truncate">{book.author}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    <Link to={`/authors/${slugify(book.author)}`}>{book.author}</Link>
+                  </p>
                 )}
               </div>
             ))}

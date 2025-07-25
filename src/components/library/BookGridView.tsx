@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, Eye, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { slugify } from '@/utils/slugify';
 import BookDetailModal from './BookDetailModal';
 import BookReader from './BookReader';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -99,7 +100,9 @@ const BookGridView = ({ books }: BookGridViewProps) => {
 
               {/* Author */}
               {book.author && (
-                <p className="text-gray-600 text-sm">by {book.author}</p>
+                <p className="text-gray-600 text-sm">
+                  by <Link to={`/authors/${slugify(book.author)}`}>{book.author}</Link>
+                </p>
               )}
 
               {/* Genre, Year, and Language */}

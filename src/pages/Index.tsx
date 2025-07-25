@@ -93,6 +93,7 @@ const Index = () => {
               <img
                 src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
                 alt="Sahadhyayi logo - Fellow Reader community platform in Sanskrit"
+                loading="lazy"
                 className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24"
               />
             </div>

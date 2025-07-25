@@ -3,6 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Plus, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { slugify } from '@/utils/slugify';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
 
@@ -48,6 +50,7 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => 
                   <img
                     src={book.cover_image_url}
                     alt={book.title}
+                    loading="lazy"
                     className="w-16 h-20 object-cover rounded shadow-sm flex-shrink-0"
                   />
                 ) : (
@@ -58,7 +61,9 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => 
                 <div className="flex-1 min-w-0 space-y-2">
                   <div>
                     <h4 className="font-semibold text-sm line-clamp-2 text-gray-900">{book.title}</h4>
-                    <p className="text-xs text-gray-500">{book.author || 'Unknown Author'}</p>
+                    <p className="text-xs text-gray-500">
+                      <Link to={`/authors/${slugify(book.author)}`}>{book.author || 'Unknown Author'}</Link>
+                    </p>
                   </div>
                   {book.genre && (
                     <span className="inline-block bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded-full">
