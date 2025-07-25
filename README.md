@@ -94,7 +94,7 @@ Set `VITE_COMMUNITY_STATS_URL` to an empty string if the API is unavailable.
 
 ## Previewing the production build
 
-Run `npm run build` to generate the static assets in the `dist` folder. To test the build locally with history fallback, execute:
+Run `npm run build` to generate the static assets in the `dist` folder. The build process automatically runs `generate:sitemap` and `prerender` so the output contains a fresh `sitemap.xml` and HTML snapshots for important pages. To test the build locally with history fallback, execute:
 
 ```sh
 npm run preview
@@ -153,7 +153,7 @@ To clear existing website visit data and restart the auto-incrementing ID counte
 
 ## Generating Sitemap and Pre-rendered Pages
 
-Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs, including author and book pages. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. The generated files are placed under `public/prerender` and copied to the final build so search engines can index them easily.
+Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs. If `VITE_SUPABASE_URL` and a service or anon key are available, the script pulls book and author data directly from Supabase before falling back to sample values. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. It uses the same Supabase credentials to pre-render pages for each book and author under `public/prerender` so search engines can index the content on first load.
 
 ## Open Source Licenses & Compliance
 
