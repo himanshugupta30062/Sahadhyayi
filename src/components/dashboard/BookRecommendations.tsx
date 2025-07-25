@@ -40,36 +40,38 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => 
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {recommendations.map((book) => (
-            <div key={book.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <Card key={book.id} className="p-4 hover:shadow-md transition-shadow border border-gray-200">
               <div className="flex space-x-3">
                 {book.cover_image_url ? (
                   <img
                     src={book.cover_image_url}
                     alt={book.title}
-                    className="w-12 h-16 object-cover rounded shadow-sm"
+                    className="w-16 h-20 object-cover rounded shadow-sm flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-12 h-16 bg-amber-100 rounded flex items-center justify-center">
+                  <div className="w-16 h-20 bg-amber-100 rounded flex items-center justify-center flex-shrink-0">
                     <BookOpen className="w-6 h-6 text-amber-600" />
                   </div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-sm truncate text-gray-900">{book.title}</h4>
-                  <p className="text-xs text-gray-500 mb-2">{book.author || 'Unknown Author'}</p>
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div>
+                    <h4 className="font-semibold text-sm line-clamp-2 text-gray-900">{book.title}</h4>
+                    <p className="text-xs text-gray-500">{book.author || 'Unknown Author'}</p>
+                  </div>
                   {book.genre && (
-                    <span className="inline-block bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded-full mb-2">
+                    <span className="inline-block bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded-full">
                       {book.genre}
                     </span>
                   )}
-                  <Button size="sm" className="w-full bg-amber-600 hover:bg-amber-700 text-white">
+                  <Button size="sm" className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs">
                     <Plus className="w-3 h-3 mr-1" />
-                    Add to My List
+                    Add to List
                   </Button>
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
         

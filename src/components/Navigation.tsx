@@ -98,7 +98,7 @@ const Navigation = () => {
               alt="Sahadhyayi navigation logo"
               className="w-8 h-8 flex-shrink-0"
             />
-            <span className="whitespace-nowrap">Sahadhyayi</span>
+            <span className="whitespace-nowrap leading-none">Digital Library</span>
           </Link>
 
           {/* Desktop Navigation */}

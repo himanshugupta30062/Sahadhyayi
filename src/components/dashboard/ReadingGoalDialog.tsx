@@ -75,7 +75,7 @@ const ReadingGoalDialog: React.FC<ReadingGoalDialogProps> = ({ onGoalUpdate }) =
             />
           </div>
           <div className="text-sm text-gray-600">
-            Reading {goal} books means about {Math.ceil(goal / 12)} book{Math.ceil(goal / 12) > 1 ? 's' : ''} per month.
+            Reading {goal} books means about {Math.round(goal / 12 * 10) / 10} book{Math.ceil(goal / 12) > 1 ? 's' : ''} per month.
           </div>
         </div>
         <div className="flex gap-3 justify-end">

@@ -13,6 +13,9 @@ const DashboardStats = () => {
   const currentlyReading = bookshelf.filter(book => book.status === 'reading').length + readingProgress.length;
   const wantToRead = bookshelf.filter(book => book.status === 'want_to_read').length;
   const totalReviews = 0; // We can implement this later when reviews are connected
+  
+  // Calculate dynamic books per month (if reading 6 books total, and there are 12 months)
+  const booksPerMonth = completedBooks > 0 ? Math.max(1, Math.round(completedBooks / 12)) : 1;
 
   const stats = [
     {

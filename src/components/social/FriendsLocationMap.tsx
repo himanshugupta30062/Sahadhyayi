@@ -220,27 +220,54 @@ export const FriendsLocationMap: React.FC = () => {
       return;
     }
 
+    if (!user) {
+      toast.error('You must be signed in to share location');
+      return;
+    }
+
     try {
+      // Show loading state
+      toast.loading('Getting your location...');
+      
       const position = await getCurrentLocation();
       
-      if (!user) {
-        toast.error('You must be signed in to share location');
-        return;
+      // Check if user profile exists first
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      let updateResult;
+      
+      if (existingProfile) {
+        // Update existing profile
+        updateResult = await supabase
+          .from('profiles')
+          .update({
+            location_lat: position.lat,
+            location_lng: position.lng,
+            location_sharing: true,
+            last_seen: new Date().toISOString(),
+          })
+          .eq('id', user.id);
+      } else {
+        // Insert new profile
+        updateResult = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            location_lat: position.lat,
+            location_lng: position.lng,
+            location_sharing: true,
+            last_seen: new Date().toISOString(),
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
+          });
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          location_lat: position.lat,
-          location_lng: position.lng,
-          location_sharing: true,
-          last_seen: new Date().toISOString(),
-        })
-        .eq('id', user.id);
-
-      if (error) {
-        console.error('Failed to share location:', error);
-        toast.error('Failed to share location');
+      if (updateResult.error) {
+        console.error('Failed to share location:', updateResult.error);
+        toast.error('Failed to share location: ' + updateResult.error.message);
       } else {
         setUserLocation(position);
         toast.success('Location shared with friends!');
@@ -252,8 +279,9 @@ export const FriendsLocationMap: React.FC = () => {
           map.setZoom(14);
         }
       }
-    } catch (error) {
-      toast.error('Unable to retrieve location');
+    } catch (error: any) {
+      console.error('Location error:', error);
+      toast.error(error.message || 'Unable to retrieve location');
     }
   };
 

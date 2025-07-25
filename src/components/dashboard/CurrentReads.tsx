@@ -124,7 +124,19 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                       </div>
                       <Progress value={progressPercent} className="h-2 mb-2" />
                       <p className="text-xs text-amber-600 font-medium mb-2">{progressPercent}% complete</p>
-                      <Button size="sm" variant="outline" className="w-full text-xs" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="w-full text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newPage = prompt(`Current page (${book.current_page}/${book.total_pages}):`);
+                          if (newPage && !isNaN(Number(newPage)) && Number(newPage) >= 0 && Number(newPage) <= book.total_pages) {
+                            // Here you would update the reading progress
+                            console.log('Update progress to page:', newPage);
+                          }
+                        }}
+                      >
                         Update Progress
                       </Button>
                     </div>
@@ -169,7 +181,19 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                             </div>
                             <Progress value={progressPercent} className="h-2 mb-2" />
                             <p className="text-xs text-amber-600 font-medium">{progressPercent}% complete</p>
-                            <Button size="sm" variant="outline" className="mt-2 text-xs" onClick={(e) => e.stopPropagation()}>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="mt-2 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const newPage = prompt(`Current page (${book.current_page}/${book.total_pages}):`);
+                                if (newPage && !isNaN(Number(newPage)) && Number(newPage) >= 0 && Number(newPage) <= book.total_pages) {
+                                  // Here you would update the reading progress
+                                  console.log('Update progress to page:', newPage);
+                                }
+                              }}
+                            >
                               Update Progress
                             </Button>
                           </div>
