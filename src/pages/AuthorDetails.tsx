@@ -310,7 +310,7 @@ const AuthorDetails = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Total Books</span>
-                      <span className="font-medium">{author.books_count}</span>
+                      <span className="font-medium">{authorBooks.length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Average Rating</span>
