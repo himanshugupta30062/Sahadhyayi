@@ -119,6 +119,31 @@ const HelpCenter = () => {
             ))}
           </div>
 
+          {/* Tutorial Videos */}
+          <div className="mb-12 space-y-6">
+            <h2 className="text-2xl font-bold text-gray-900">Video Guides</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="aspect-video">
+                <iframe
+                  className="w-full h-full rounded-lg"
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                  title="Getting Started"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <div className="aspect-video">
+                <iframe
+                  className="w-full h-full rounded-lg"
+                  src="https://www.youtube.com/embed/oHg5SJYRHA0"
+                  title="Using Reading Groups"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </div>
+
           {/* FAQ Section */}
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>

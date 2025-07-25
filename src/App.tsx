@@ -41,6 +41,7 @@ import CommunityStories from "./pages/CommunityStories";
 import BookSearchTest from "./pages/BookSearchTest";
 import HelpCenter from "./pages/HelpCenter";
 import Feedback from "./pages/Feedback";
+import AdminFeedback from "./pages/AdminFeedback";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -161,6 +162,14 @@ function App() {
                         <Route path="/book-search" element={<BookSearchTest />} />
                         <Route path="/help" element={<HelpCenter />} />
                         <Route path="/feedback" element={<Feedback />} />
+                        <Route
+                          path="/admin/feedback"
+                          element={
+                            <ProtectedRoute>
+                              <AdminFeedback />
+                            </ProtectedRoute>
+                          }
+                        />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />
                         <Route path="/cookies" element={<CookiePolicy />} />
