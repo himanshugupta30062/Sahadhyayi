@@ -15,21 +15,24 @@ export interface AuthorQuestion {
   answered_at?: string;
 }
 
-export const useAuthorQuestions = (authorId?: string) => {
+export const useAuthorQuestions = (authorId?: string, currentUserId?: string) => {
   return useQuery({
-    queryKey: ['author-questions', authorId],
+    queryKey: ['author-questions', authorId, currentUserId],
     enabled: !!authorId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('author_questions')
         .select('*')
         .eq('author_id', authorId)
-        .eq('is_published', true)
-        .eq('is_answered', true)
         .order('answered_at', { ascending: false });
 
       if (error) throw error;
-      return data as AuthorQuestion[];
+
+      const questions = (data as AuthorQuestion[]) || [];
+
+      return questions.filter((q) =>
+        (q.is_answered && q.is_published) || q.user_id === currentUserId
+      );
     },
   });
 };
@@ -56,7 +59,10 @@ export const useAskQuestion = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['author-questions', data.author_id],
+      });
       toast({
         title: "Question submitted!",
         description: "Your question has been sent to the author.",

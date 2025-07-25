@@ -19,7 +19,9 @@ export const QuestionAnswerCard = ({ qa }: QuestionAnswerCardProps) => {
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="w-3 h-3" />
-            {formatDistanceToNow(new Date(qa.answered_at!), { addSuffix: true })}
+            {qa.answered_at
+              ? formatDistanceToNow(new Date(qa.answered_at), { addSuffix: true })
+              : 'Pending'}
           </div>
         </div>
       </CardHeader>
@@ -31,7 +33,11 @@ export const QuestionAnswerCard = ({ qa }: QuestionAnswerCardProps) => {
         <div className="border-t pt-4">
           <h4 className="font-medium text-foreground mb-2">Author's Answer:</h4>
           <div className="prose prose-sm dark:prose-invert max-w-none">
-            <p className="text-foreground leading-relaxed whitespace-pre-wrap">{qa.answer}</p>
+            {qa.answer ? (
+              <p className="text-foreground leading-relaxed whitespace-pre-wrap">{qa.answer}</p>
+            ) : (
+              <p className="text-muted-foreground italic">Awaiting response...</p>
+            )}
           </div>
         </div>
       </CardContent>
