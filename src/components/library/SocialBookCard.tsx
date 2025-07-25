@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { slugify } from '@/utils/slugify';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -92,6 +94,7 @@ const SocialBookCard: React.FC<SocialBookCardProps> = ({ book }) => {
             <img
               src={book.cover_url}
               alt={`Cover of ${book.title}`}
+              loading="lazy"
               className="w-20 h-28 object-cover rounded-lg shadow-md"
             />
           ) : (
@@ -104,7 +107,9 @@ const SocialBookCard: React.FC<SocialBookCardProps> = ({ book }) => {
             <CardTitle className="text-lg text-gray-900 mb-1 line-clamp-2">
               {book.title}
             </CardTitle>
-            <p className="text-gray-600 text-sm mb-2">by {book.author}</p>
+            <p className="text-gray-600 text-sm mb-2">
+              by <Link to={`/authors/${slugify(book.author)}`}>{book.author}</Link>
+            </p>
             
             {/* Rating */}
             <div className="flex items-center gap-2 mb-2">

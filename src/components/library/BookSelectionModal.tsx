@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BookOpen, Download, Plus, Check, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { slugify } from '@/utils/slugify';
 import { useAddToPersonalLibrary } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { useAuth } from '@/contexts/AuthContext';
@@ -209,9 +211,10 @@ const BookSelectionModal = ({ isOpen, onClose, books, searchTerm, onBooksAdded }
                     <div className="flex-shrink-0">
                       <div className="w-16 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg overflow-hidden">
                         {book.cover_image_url ? (
-                          <img 
-                            src={book.cover_image_url} 
+                          <img
+                            src={book.cover_image_url}
                             alt={book.title}
+                            loading="lazy"
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
@@ -233,7 +236,9 @@ const BookSelectionModal = ({ isOpen, onClose, books, searchTerm, onBooksAdded }
                             {book.title}
                           </h3>
                           {book.author && (
-                            <p className="text-muted-foreground mt-1">{book.author}</p>
+                            <p className="text-muted-foreground mt-1">
+                              <Link to={`/authors/${slugify(book.author)}`}>{book.author}</Link>
+                            </p>
                           )}
                           
                           <div className="flex flex-wrap gap-2 mt-2">

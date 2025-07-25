@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { slugify } from '@/utils/slugify';
 import type { Book } from '@/hooks/useLibraryBooks';
 import AuthenticatedActions from './AuthenticatedActions';
 
@@ -63,6 +64,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           <img
             src={book.cover_image_url}
             alt={book.title}
+            loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
@@ -123,7 +125,9 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
             {book.title}
           </h3>
           {book.author && (
-            <p className="text-gray-600 text-sm mt-1">{book.author}</p>
+            <p className="text-gray-600 text-sm mt-1">
+              <Link to={`/authors/${slugify(book.author)}`}>{book.author}</Link>
+            </p>
           )}
         </div>
 

@@ -20,6 +20,8 @@ import { EventCard } from '@/components/authors/EventCard';
 import { useAuthorQuestions } from '@/hooks/useAuthorQuestions';
 import { useAuthorEvents } from '@/hooks/useAuthorEvents';
 import { VerificationBadge } from '@/components/authors/VerificationBadge';
+import { generateAuthorSchema, generateBreadcrumbSchema } from '@/utils/schema';
+import { slugify } from '@/utils/slugify';
 
 
 const slugify = (text: string) =>
@@ -54,6 +56,23 @@ const AuthorSlugPage = () => {
 
   const social = (author as any).social_links || {};
 
+  const authorUrl = `https://sahadhyayi.com/authors/${slug}`;
+  const breadcrumbItems = [
+    { name: 'Home', url: 'https://sahadhyayi.com/' },
+    { name: 'Authors', url: 'https://sahadhyayi.com/authors' },
+    { name: author.name, url: authorUrl }
+  ];
+
+  const authorSchema = generateAuthorSchema({
+    name: author.name,
+    bio: author.bio || undefined,
+    url: authorUrl,
+    image: author.profile_image_url || undefined
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+  const combinedSchema = [authorSchema, breadcrumbSchema];
+
   return (
     <>
       <SEO
@@ -63,6 +82,8 @@ const AuthorSlugPage = () => {
         url={`https://sahadhyayi.com/authors/${slug}`}
         type="profile"
         author={author.name}
+        schema={combinedSchema}
+        breadcrumbs={breadcrumbItems}
       />
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted pt-16">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -72,7 +93,12 @@ const AuthorSlugPage = () => {
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                 <div className="relative">
                   <Avatar className="w-32 h-32 ring-4 ring-background shadow-lg">
-                    <AvatarImage src={author.profile_image_url || ''} alt={author.name} className="object-cover" />
+                    <AvatarImage
+                      src={author.profile_image_url || ''}
+                      alt={author.name}
+                      loading="lazy"
+                      className="object-cover"
+                    />
                     <AvatarFallback className="text-3xl font-bold bg-primary text-primary-foreground">
                       {initials}
                     </AvatarFallback>
@@ -207,6 +233,7 @@ const AuthorSlugPage = () => {
                               <img
                                 src={book.cover_image_url}
                                 alt={book.title}
+                                loading="lazy"
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';

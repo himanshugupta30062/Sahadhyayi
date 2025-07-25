@@ -12,6 +12,8 @@ import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import SEO from '@/components/SEO';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
+import { generateAuthorSchema, generateBreadcrumbSchema } from '@/utils/schema';
+import { slugify } from '@/utils/slugify';
 
 interface AuthorProfileType {
   id: string;
@@ -142,6 +144,23 @@ const AuthorProfile = () => {
 
   const shortBio = author.bio.length > 300 ? author.bio.substring(0, 300) + '...' : author.bio;
 
+  const authorUrl = `https://sahadhyayi.com/author/${authorName}`;
+  const breadcrumbItems = [
+    { name: 'Home', url: 'https://sahadhyayi.com/' },
+    { name: 'Authors', url: 'https://sahadhyayi.com/authors' },
+    { name: author.name, url: authorUrl }
+  ];
+
+  const authorSchema = generateAuthorSchema({
+    name: author.name,
+    bio: author.bio || undefined,
+    url: authorUrl,
+    image: author.profile_image_url || undefined
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+  const combinedSchema = [authorSchema, breadcrumbSchema];
+
   return (
     <>
       <SEO
@@ -151,6 +170,8 @@ const AuthorProfile = () => {
         url={`https://sahadhyayi.com/author/${authorName}`}
         type="profile"
         author={author.name}
+        schema={combinedSchema}
+        breadcrumbs={breadcrumbItems}
       />
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-16">
