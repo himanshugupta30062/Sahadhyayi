@@ -12,9 +12,26 @@ interface CommunityStats {
 }
 
 export const useCommunityStats = (autoFetch: boolean = true) => {
+  const safeGetItem = (key: string): string | null => {
+    try {
+      return typeof window !== 'undefined' ? localStorage.getItem(key) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const safeSetItem = (key: string, value: string) => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(key, value);
+      }
+    } catch {
+      // Ignore write errors (e.g. private mode)
+    }
+  };
+
   const getCachedStats = (): CommunityStats | null => {
-    if (typeof window === 'undefined') return null;
-    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const cached = safeGetItem(LOCAL_STORAGE_KEY);
     if (!cached) return null;
     try {
       return JSON.parse(cached) as CommunityStats;
@@ -65,9 +82,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
       };
 
       setStats(updated);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-      }
+      safeSetItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
     } catch (err) {
       console.error('Failed to fetch community stats:', err);
       const fallback = {
@@ -76,9 +91,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
         lastUpdated: new Date().toISOString(),
       };
       setStats(fallback);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(fallback));
-      }
+      safeSetItem(LOCAL_STORAGE_KEY, JSON.stringify(fallback));
       setError('Failed to load community stats');
     } finally {
       setIsLoading(false);

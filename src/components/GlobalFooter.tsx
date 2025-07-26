@@ -50,7 +50,11 @@ const GlobalFooter = () => {
     if (!user) {
       // Remember intent to join after the user signs in
       if (typeof window !== 'undefined') {
-        localStorage.setItem('joinCommunityAfterSignIn', 'true');
+        try {
+          localStorage.setItem('joinCommunityAfterSignIn', 'true');
+        } catch {
+          // ignore storage errors
+        }
       }
       setShowSignIn(true);
       return;
