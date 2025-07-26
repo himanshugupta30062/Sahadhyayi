@@ -26,17 +26,22 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
 
   if (!user) {
     return (
-      <div className="flex gap-2 mt-3">
+      <div className="flex flex-col sm:flex-row gap-2 mt-3">
         <SignInLink className="flex-1">
-          <Button variant="outline" size="sm" className="w-full">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full whitespace-normal"
+          >
             Sign in to Add to Shelf
           </Button>
         </SignInLink>
         {book.pdf_url && onDownloadPDF && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => onDownloadPDF(book)}
+            className="sm:w-auto"
           >
             <Download className="w-4 h-4 mr-1" />
             PDF
@@ -47,7 +52,7 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
   }
 
   return (
-    <div className="flex gap-2 mt-3">
+    <div className="flex flex-col sm:flex-row gap-2 mt-3">
       <Button
         onClick={handleAddToShelf}
         disabled={isInShelf || addToBookshelf.isPending}
@@ -67,10 +72,11 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
         )}
       </Button>
       {book.pdf_url && onDownloadPDF && (
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           onClick={() => onDownloadPDF(book)}
+          className="sm:w-auto"
         >
           <Download className="w-4 h-4 mr-1" />
           PDF
