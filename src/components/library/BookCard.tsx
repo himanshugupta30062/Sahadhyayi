@@ -84,9 +84,11 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
         </div>
 
         {/* Hover Overlay with Download and Details Buttons */}
-        <div className={`absolute inset-0 bg-black/60 flex items-center justify-center gap-3 transition-all duration-300 ${
-          isHovered ? 'opacity-100' : 'opacity-0'
-        }`}>
+        <div
+          className={`absolute inset-0 bg-black/60 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 transition-all duration-300 ${
+            isHovered ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
           {/* Download Button */}
           <button
             onClick={handleDownload}
