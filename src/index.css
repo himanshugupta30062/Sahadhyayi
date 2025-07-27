@@ -46,13 +46,17 @@
     --sahadhyayi-warm-light: 210 40% 98%;
     --brand-orange: 38 92% 50%;
     
-    /* Gradients */
+    /* Professional gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--sahadhyayi-orange)), hsl(var(--sahadhyayi-amber)));
     --gradient-warm: linear-gradient(135deg, hsl(var(--sahadhyayi-amber-light)), hsl(var(--sahadhyayi-orange-light)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--sahadhyayi-orange) / 0.1), hsl(var(--sahadhyayi-amber) / 0.1));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.9), hsl(0 0% 100% / 0.6));
     
-    /* Shadows */
-    --shadow-warm: 0 4px 12px hsl(var(--sahadhyayi-orange) / 0.15);
-    --shadow-soft: 0 2px 8px hsl(var(--border) / 0.1);
+    /* Professional shadows */
+    --shadow-warm: 0 8px 32px hsl(var(--sahadhyayi-orange) / 0.12);
+    --shadow-soft: 0 4px 16px hsl(var(--border) / 0.08);
+    --shadow-elevated: 0 12px 40px hsl(var(--sahadhyayi-orange) / 0.15);
+    --shadow-button: 0 4px 12px hsl(var(--sahadhyayi-orange) / 0.25);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 222.2 84% 4.9%;
@@ -212,13 +216,45 @@ mark.search-highlight {
   font-weight: 500;
 }
 
-/* Better button states */
+/* Enhanced button states using design tokens */
 .btn-primary {
-  @apply bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-200;
+  background: var(--gradient-primary);
+  color: hsl(var(--sahadhyayi-warm-light));
+  box-shadow: var(--shadow-button);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
 }
 
 .btn-secondary {
-  @apply border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 bg-white transition-all duration-200;
+  background: hsl(var(--background));
+  border: 2px solid hsl(var(--sahadhyayi-orange) / 0.3);
+  color: hsl(var(--sahadhyayi-orange));
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: hsl(var(--sahadhyayi-orange-light));
+  border-color: hsl(var(--sahadhyayi-orange));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Enhanced card styles */
+.card-elegant {
+  background: var(--gradient-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.3s ease;
+}
+
+.card-elegant:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-warm);
 }
 
 /* Loading states */

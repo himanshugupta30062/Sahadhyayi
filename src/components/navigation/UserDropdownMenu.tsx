@@ -73,28 +73,28 @@ const UserDropdownMenu = () => {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-72 bg-white shadow-xl border border-gray-200" align="end" forceMount>
-          <div className="flex items-center gap-3 p-4 border-b border-gray-100">
-            <Avatar className="h-12 w-12">
+        <DropdownMenuContent className="w-80 card-elegant shadow-elevated border-sahadhyayi-orange/20" align="end" forceMount>
+          <div className="flex items-center gap-4 p-6 border-b border-sahadhyayi-orange/10 bg-gradient-warm">
+            <Avatar className="h-14 w-14 ring-2 ring-sahadhyayi-orange/20">
               <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
-              <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white text-lg font-semibold">
+              <AvatarFallback className="bg-gradient-primary text-white text-xl font-bold">
                 {avatarFallback}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 truncate">{profile?.full_name || 'User'}</p>
-              <p className="text-sm text-gray-500 truncate">{user.email}</p>
+              <p className="font-bold text-lg text-sahadhyayi-warm truncate">{profile?.full_name || 'User'}</p>
+              <p className="text-sm text-gray-600 truncate">{user.email}</p>
               {sessionInfo && (
-                <div className="flex items-center gap-1 mt-1">
-                  <Clock className="w-3 h-3 text-gray-400" />
-                  <span className="text-xs text-gray-400">
+                <div className="flex items-center gap-2 mt-2 px-2 py-1 bg-white/50 rounded-lg">
+                  <Clock className="w-3 h-3 text-sahadhyayi-orange" />
+                  <span className="text-xs text-sahadhyayi-warm font-medium">
                     Active: {sessionInfo.timeSinceActivity}m ago
                   </span>
                 </div>
               )}
             </div>
-            <Button variant="ghost" className="rounded-full p-2 hover:bg-gray-100" aria-label="Notifications">
-              <Bell className="w-5 h-5 text-amber-700" />
+            <Button variant="ghost" className="rounded-full p-3 hover:bg-white/20" aria-label="Notifications">
+              <Bell className="w-5 h-5 text-sahadhyayi-orange" />
             </Button>
           </div>
           

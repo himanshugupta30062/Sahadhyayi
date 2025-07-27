@@ -85,41 +85,55 @@ const Index = () => {
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
       </script>
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+      <div className="min-h-screen bg-gradient-to-br from-sahadhyayi-amber-light via-sahadhyayi-orange-light to-background">
         {/* Hero Section */}
-        <section className="relative py-12 sm:py-16 lg:py-20 px-4 text-center">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex justify-center mb-6 sm:mb-8">
-              <img
-                src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
-                alt="Sahadhyayi logo - Fellow Reader community platform in Sanskrit"
-                loading="lazy"
-                className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24"
-              />
+        <section className="relative py-16 sm:py-20 lg:py-24 px-4 text-center">
+          {/* Decorative background elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-sahadhyayi-orange opacity-5 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-1/3 right-1/4 w-48 h-48 bg-sahadhyayi-amber opacity-5 rounded-full blur-3xl animate-float delay-2000"></div>
+          </div>
+          
+          <div className="max-w-5xl mx-auto relative z-10">
+            <div className="flex justify-center mb-8 sm:mb-10">
+              <div className="relative">
+                <img
+                  src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
+                  alt="Sahadhyayi logo - Fellow Reader community platform in Sanskrit"
+                  loading="lazy"
+                  className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 drop-shadow-lg"
+                />
+                <div className="absolute inset-0 bg-sahadhyayi-orange opacity-20 rounded-full blur-xl"></div>
+              </div>
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
+            
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-sahadhyayi-warm mb-6 sm:mb-8 leading-tight">
               Rediscover the Joy of
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600"> Deep Reading</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-primary mt-2"> Deep Reading</span>
             </h1>
-            <p className="text-lg sm:text-xl lg:text-2xl text-gray-700 mb-2 leading-relaxed px-4">
-              Connect, read, and grow with thousands of fellow readers worldwide.
-            </p>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-2 leading-relaxed px-4">
-              Join <strong>Sahadhyayi</strong>—the digital community bringing meaningful reading back into focus.
-            </p>
-            <p className="text-sm sm:text-base lg:text-lg text-gray-500 mb-6 sm:mb-8 italic px-4">
-              Because reading deeply is reading differently.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+            
+            <div className="space-y-4 mb-8 sm:mb-12">
+              <p className="text-xl sm:text-2xl lg:text-3xl text-gray-700 leading-relaxed font-medium px-4">
+                Connect, read, and grow with thousands of fellow readers worldwide.
+              </p>
+              <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 leading-relaxed px-4">
+                Join <strong className="text-sahadhyayi-orange">Sahadhyayi</strong>—the digital community bringing meaningful reading back into focus.
+              </p>
+              <p className="text-base sm:text-lg lg:text-xl text-gray-500 italic px-4">
+                Because reading deeply is reading differently.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4 max-w-2xl mx-auto">
               <Link to="/signup" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-3 text-base sm:text-lg shadow-lg">
-                  <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <Button size="lg" className="btn-primary w-full sm:w-auto px-8 sm:px-10 py-4 text-lg sm:text-xl font-semibold">
+                  <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 mr-3" />
                   Join Our Reading Community (Free!)
                 </Button>
               </Link>
               <SignInLink className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto border-orange-400 text-orange-600 hover:bg-orange-50 px-6 sm:px-8 py-3 text-base sm:text-lg shadow-lg">
-                  <LogIn className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <Button variant="outline" size="lg" className="btn-secondary w-full sm:w-auto px-8 sm:px-10 py-4 text-lg sm:text-xl font-semibold">
+                  <LogIn className="w-5 h-5 sm:w-6 sm:h-6 mr-3" />
                   Sign In
                 </Button>
               </SignInLink>
@@ -224,25 +238,27 @@ const Index = () => {
         </section>
 
         {/* Features Section */}
-        <section className="py-12 sm:py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-3 sm:mb-4">Explore Sahadhyayi's Powerful Tools</h2>
-            <p className="text-lg sm:text-xl text-gray-600 text-center mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
-              Our features are designed to help you read better, understand deeper, and connect meaningfully.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <section className="py-16 sm:py-20 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-sahadhyayi-warm mb-6">Explore Sahadhyayi's Powerful Tools</h2>
+              <p className="text-xl sm:text-2xl text-gray-600 max-w-4xl mx-auto px-4 leading-relaxed">
+                Our features are designed to help you read better, understand deeper, and connect meaningfully with fellow readers worldwide.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
               {features.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
-                  <Card key={index} className="bg-white/80 backdrop-blur-sm border-orange-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    <CardHeader className="pb-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
-                        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+                  <Card key={index} className="card-elegant group hover:scale-105 transition-all duration-300">
+                    <CardHeader className="pb-6">
+                      <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <Icon className="w-8 h-8 text-white drop-shadow-sm" />
                       </div>
-                      <CardTitle className="text-lg sm:text-xl text-gray-900">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl sm:text-2xl text-sahadhyayi-warm mb-3">{feature.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm sm:text-base text-gray-700">{feature.description}</p>
+                      <p className="text-base sm:text-lg text-gray-700 leading-relaxed">{feature.description}</p>
                     </CardContent>
                   </Card>
                 );
