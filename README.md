@@ -153,7 +153,7 @@ To clear existing website visit data and restart the auto-incrementing ID counte
 
 ## Generating Sitemap and Pre-rendered Pages
 
-Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs. If `VITE_SUPABASE_URL` and a service or anon key are available, the script pulls book and author data directly from Supabase before falling back to sample values. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. It uses the same Supabase credentials to pre-render pages for each book and author under `public/prerender` so search engines can index the content on first load.
+Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs. The script now embeds an image for the homepage and includes additional routes like `/discovery` and `/book-search`. If `VITE_SUPABASE_URL` and a service or anon key are available, book and author data is pulled directly from Supabase before falling back to sample values. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. It uses the same Supabase credentials to pre-render pages for each book and author under `public/prerender` so search engines can index the content on first load.
 
 ## Open Source Licenses & Compliance
 
