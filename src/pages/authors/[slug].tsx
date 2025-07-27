@@ -123,7 +123,7 @@ const AuthorSlugPage = () => {
                 <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-1">
                   {author.name}
                 </h1>
-                <FollowButton authorId={author.id} size="lg" className="mt-2 md:mt-0" />
+                <FollowButton authorId={author.id} size="lg" />
                 <SocialShare text={`Check out ${author.name} on Sahadhyayi`} url={authorUrl} />
               </div>
               <p className="text-sm text-muted-foreground mb-4">
