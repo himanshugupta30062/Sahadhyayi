@@ -204,8 +204,8 @@ export const FeedComposer = ({ onPost }: { onPost: (postData: any) => void }) =>
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between">
-            <div className="flex space-x-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap sm:flex-nowrap gap-2">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -244,7 +244,7 @@ export const FeedComposer = ({ onPost }: { onPost: (postData: any) => void }) =>
             <Button
               onClick={handlePost}
               disabled={(!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting}
-              className="bg-orange-600 hover:bg-orange-700 rounded-xl"
+              className="bg-orange-600 hover:bg-orange-700 rounded-xl w-full sm:w-auto mt-2 sm:mt-0"
             >
               <Send className="w-4 h-4 mr-1" />
               {isPosting ? 'Posting...' : 'Post'}
