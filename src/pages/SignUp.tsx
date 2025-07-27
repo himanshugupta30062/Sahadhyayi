@@ -222,26 +222,14 @@ const SignUp = () => {
         canonical="https://sahadhyayi.com/signup"
         url="https://sahadhyayi.com/signup"
       />
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-sahadhyayi-amber-light via-sahadhyayi-orange-light to-background">
-        <div className="w-full max-w-md">
-          {/* Welcome Section */}
-          <div className="text-center mb-8">
-            <img
-              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
-              alt="Sahadhyayi logo"
-              className="w-16 h-16 mx-auto mb-4 drop-shadow-lg"
-            />
-            <h1 className="text-3xl font-bold text-sahadhyayi-warm mb-2">Join Sahadhyayi</h1>
-            <p className="text-gray-600">Create your free account and start your reading journey</p>
-          </div>
-          
-          <Card className="card-elegant">
-            <CardHeader className="text-center pb-6">
-              <CardTitle className="flex items-center justify-center gap-3 text-2xl text-sahadhyayi-warm">
-                <UserPlus className="w-6 h-6 text-sahadhyayi-orange" />
-                Create Your Account
-              </CardTitle>
-            </CardHeader>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+              <UserPlus className="w-6 h-6" />
+              Join Sahadhyayi
+            </CardTitle>
+          </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
@@ -343,22 +331,21 @@ const SignUp = () => {
                 </div>
               </div>
               
-              <Button type="submit" className="btn-primary w-full text-lg py-3" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>
             
-            <div className="mt-8 text-center">
-              <p className="text-gray-600">
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <SignInLink className="text-sahadhyayi-orange hover:text-sahadhyayi-amber font-semibold transition-colors">
+                <SignInLink className="text-amber-600 hover:text-amber-700 font-medium">
                   Sign in here
                 </SignInLink>
               </p>
             </div>
           </CardContent>
         </Card>
-        </div>
       </div>
     </>
   );

@@ -104,42 +104,30 @@ const Dashboard = () => {
         url="https://sahadhyayi.com/dashboard"
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-sahadhyayi-amber-light via-sahadhyayi-orange-light to-background">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-          {/* Enhanced Welcome Header */}
-          <div className="mb-10">
-            <div className="card-elegant rounded-3xl border border-sahadhyayi-orange/20 shadow-warm p-8 sm:p-10">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-gradient-primary rounded-2xl flex items-center justify-center">
-                      <BookOpen className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-3xl sm:text-4xl font-bold text-sahadhyayi-warm mb-1">
-                        Welcome back, {userName}!
-                      </h1>
-                      <div className="flex items-center gap-2 text-sahadhyayi-orange">
-                        <span className="text-2xl">📚</span>
-                        <span className="text-lg font-medium">Ready to read?</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
-                    Continue your reading journey and discover new books in your personal library. 
-                    Connect with fellow readers and explore our growing community.
+          {/* Welcome Header */}
+          <div className="mb-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-amber-200 shadow-lg p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                    Welcome back, {userName}! 📚
+                  </h1>
+                  <p className="text-gray-600 text-sm sm:text-base">
+                    Continue your reading journey and discover new books in your personal library.
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                  <Link to="/library" className="w-full sm:w-auto">
-                    <Button className="btn-primary w-full sm:w-auto">
-                      <Plus className="w-5 h-5 mr-2" />
+                <div className="flex gap-2">
+                  <Link to="/library">
+                    <Button className="bg-amber-600 hover:bg-amber-700 shadow-lg">
+                      <Plus className="w-4 h-4 mr-2" />
                       Add Books
                     </Button>
                   </Link>
-                  <Link to="/social?tab=groups" className="w-full sm:w-auto">
-                    <Button className="btn-secondary w-full sm:w-auto">
-                      <Users className="w-5 h-5 mr-2" />
+                  <Link to="/social?tab=groups">
+                    <Button variant="outline" className="border-amber-200 hover:bg-amber-50">
+                      <Users className="w-4 h-4 mr-2" />
                       Community
                     </Button>
                   </Link>
