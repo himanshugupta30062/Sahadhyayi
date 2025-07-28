@@ -61,8 +61,8 @@ const AutoLogoutHandler = () => {
 };
 
 function App() {
-  // Track page visits
-  usePageVisitTracker();
+  // Track page visits - temporarily disabled to resolve bundling issue
+  // usePageVisitTracker();
 
   return (
     <ErrorBoundary>
