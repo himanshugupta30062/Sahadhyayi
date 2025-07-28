@@ -16,7 +16,8 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface LibraryPaginationProps {
   totalCount: number;
@@ -140,18 +141,23 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
   }
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6 shadow-sm space-y-6">
-      {/* Summary and Page Size Selector */}
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6 shadow-sm space-y-6">
+      {/* Enhanced Summary and Page Size Selector */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="text-sm font-medium text-gray-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
-          Showing <span className="font-bold text-blue-600">{start}-{end}</span> of{' '}
-          <span className="font-bold text-blue-600">{totalCount}</span> books
+        <div className="flex items-center gap-3">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
+            📚 {totalCount} books total
+          </Badge>
+          <div className="text-sm font-medium text-gray-700 bg-white/80 px-4 py-2 rounded-lg border border-blue-200">
+            Showing <span className="font-bold text-blue-600">{start}-{end}</span> of{' '}
+            <span className="font-bold text-blue-600">{totalCount}</span> books
+          </div>
         </div>
         
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-gray-700">Items per page:</span>
           <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-            <SelectTrigger className="w-24 h-9 border-2 border-gray-200 hover:border-blue-300 transition-colors font-medium">
+            <SelectTrigger className="w-24 h-9 border-2 border-blue-200 hover:border-blue-300 transition-colors font-medium bg-white/80">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -179,7 +185,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                       size="sm"
                       disabled={currentPage === 1}
                       onClick={() => onPageChange(1)}
-                      className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 hover:bg-blue-50"
                     >
                       <ChevronsLeft className="h-4 w-4" />
                       <span className="hidden sm:inline ml-1">First</span>
@@ -194,7 +200,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                     size="sm"
                     disabled={currentPage === 1}
                     onClick={() => onPageChange(currentPage - 1)}
-                    className={`border-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`border-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 hover:bg-blue-50 ${
                       isMobile ? 'h-9 w-9 px-0' : 'h-10 px-3'
                     }`}
                   >
@@ -216,12 +222,12 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                           e.preventDefault();
                           onPageChange(page);
                         }}
-                        className={`border-2 font-medium transition-all ${
+                        className={`border-2 font-medium transition-all bg-white/80 ${
                           isMobile ? 'h-9 w-9 text-sm' : 'h-10 w-10'
                         } ${
                           page === currentPage
                             ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                            : 'border-blue-200 hover:border-blue-300 hover:bg-blue-50'
                         }`}
                       >
                         {page}
@@ -237,7 +243,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                     size="sm"
                     disabled={currentPage === totalPages}
                     onClick={() => onPageChange(currentPage + 1)}
-                    className={`border-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`border-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 hover:bg-blue-50 ${
                       isMobile ? 'h-9 w-9 px-0' : 'h-10 px-3'
                     }`}
                   >
@@ -254,7 +260,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                       size="sm"
                       disabled={currentPage === totalPages}
                       onClick={() => onPageChange(totalPages)}
-                      className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/80 hover:bg-blue-50"
                     >
                       <span className="hidden sm:inline mr-1">Last</span>
                       <ChevronsRight className="h-4 w-4" />
@@ -264,10 +270,13 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
               </PaginationContent>
             </Pagination>
 
-            {/* Jump to Page (only show if more than 10 pages) */}
-            {totalPages > 10 && (
-              <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Jump to page:</span>
+            {/* Enhanced Jump to Page (show if more than 5 pages) */}
+            {totalPages > 5 && (
+              <div className="flex flex-col sm:flex-row items-center gap-3 bg-white/80 p-4 rounded-lg border border-blue-200 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <ArrowRight className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-medium text-gray-700">Jump to page:</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
@@ -275,7 +284,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                     onChange={(e) => setGoInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder={`1-${totalPages}`}
-                    className="w-20 h-9 text-center border-2 border-gray-200 focus:border-blue-400"
+                    className="w-20 h-9 text-center border-2 border-blue-200 focus:border-blue-400 bg-white"
                     min={1}
                     max={totalPages}
                   />
@@ -288,12 +297,48 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                   </Button>
                 </div>
                 {error && (
-                  <span className="text-red-500 text-sm font-medium bg-red-50 px-3 py-1 rounded border border-red-200">
+                  <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
                     {error}
-                  </span>
+                  </Badge>
                 )}
               </div>
             )}
+
+            {/* Quick Navigation Buttons */}
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="font-medium">Quick:</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onPageChange(1)}
+                disabled={currentPage === 1}
+                className="h-6 px-2 text-xs"
+              >
+                1
+              </Button>
+              {totalPages > 10 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onPageChange(Math.floor(totalPages / 2))}
+                  disabled={currentPage === Math.floor(totalPages / 2)}
+                  className="h-6 px-2 text-xs"
+                >
+                  {Math.floor(totalPages / 2)}
+                </Button>
+              )}
+              {totalPages > 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onPageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="h-6 px-2 text-xs"
+                >
+                  {totalPages}
+                </Button>
+              )}
+            </div>
           </div>
         </>
       )}
