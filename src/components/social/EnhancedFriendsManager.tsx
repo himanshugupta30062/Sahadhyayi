@@ -184,34 +184,47 @@ export const EnhancedFriendsManager = () => {
             <TabsContent value="friends" className="space-y-4">
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {friends.length > 0 ? (
-                  friends.map((friendship) => (
-                    <div key={friendship.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={friendship.friend_profile?.profile_photo_url || ''} />
-                          <AvatarFallback>
-                            {getInitials(friendship.friend_profile?.full_name || '')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {friendship.friend_profile?.full_name || 'Unknown User'}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            @{friendship.friend_profile?.username || 'username'}
-                          </p>
+                  friends.map((friendship) => {
+                    // Get the friend's profile (the one that's not the current user)
+                    const friendProfile = friendship.user1_id === user?.id 
+                      ? friendship.user2_profile 
+                      : friendship.user1_profile;
+                    
+                    return (
+                      <div key={friendship.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={friendProfile?.profile_photo_url || ''} />
+                            <AvatarFallback className="bg-gradient-to-r from-green-400 to-blue-500 text-white">
+                              {getInitials(friendProfile?.full_name || '')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {friendProfile?.full_name || 'Unknown User'}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              @{friendProfile?.username || 'username'}
+                            </p>
+                            {friendProfile?.bio && (
+                              <p className="text-xs text-gray-400 truncate">
+                                {friendProfile.bio}
+                              </p>
+                            )}
+                          </div>
                         </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setChatId(friendProfile?.id || '')}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Message
+                        </Button>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setChatId(friendship.friend_profile?.id || '')}
-                      >
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        Message
-                      </Button>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -373,18 +386,20 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
       </div>
     </div>
     <div className="flex gap-2">
-      <Button
-        size="sm"
-        variant="outline"
-        aria-label="Add friend"
-        onClick={() => onSendRequest(user.id, user.full_name || 'User')}
-      >
-        <UserPlus className="w-4 h-4 mr-1" />
-        Add
-      </Button>
-      {isFriend && onMessage && (
-        <Button size="sm" variant="ghost" aria-label="Message user" onClick={() => onMessage(user.id)}>
-          <MessageCircle className="w-4 h-4" />
+      {!isFriend ? (
+        <Button
+          size="sm"
+          variant="outline"
+          aria-label="Add friend"
+          onClick={() => onSendRequest(user.id, user.full_name || 'User')}
+        >
+          <UserPlus className="w-4 h-4 mr-1" />
+          Add
+        </Button>
+      ) : (
+        <Button size="sm" variant="ghost" aria-label="Message user" onClick={() => onMessage?.(user.id)}>
+          <MessageCircle className="w-4 h-4 mr-1" />
+          Message
         </Button>
       )}
     </div>

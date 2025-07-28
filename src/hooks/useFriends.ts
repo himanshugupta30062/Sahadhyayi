@@ -116,6 +116,7 @@ export const useSendFriendRequest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['all-users'] }); // Refresh discover section
     },
   });
 };
@@ -138,6 +139,7 @@ export const useRespondToFriendRequest = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
       queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries({ queryKey: ['all-users'] }); // Refresh discover section
     },
   });
 };

@@ -237,12 +237,23 @@ export const ReadingGroups = () => {
           <Card key={group.id} className="bg-white shadow-sm border-0 rounded-xl">
             <CardContent className="p-4">
               <div className="flex gap-4">
-                {/* Group Image */}
-                <img
-                  src={group.coverImage}
-                  alt={`${group.name} cover`}
-                  className="w-20 h-12 rounded-lg object-cover flex-shrink-0"
-                />
+                {/* Group Image/Avatar */}
+                <div className="w-20 h-12 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg">
+                  {group.coverImage && group.coverImage.startsWith('http') ? (
+                    <img
+                      src={group.coverImage}
+                      alt={`${group.name} cover`}
+                      className="w-full h-full rounded-lg object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  <div className={group.coverImage && group.coverImage.startsWith('http') ? 'hidden' : ''}>
+                    {group.name?.charAt(0)?.toUpperCase() || 'G'}
+                  </div>
+                </div>
                 
                 {/* Group Info */}
                 <div className="flex-1">
