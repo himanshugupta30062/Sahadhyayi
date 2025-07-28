@@ -78,7 +78,8 @@ function App() {
           <AuthProvider>
             <QuotesProvider>
               <ChatbotProvider>
-              <TooltipProvider>
+              {/* Temporarily removing TooltipProvider to isolate React import issue */}
+              <div>
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
@@ -193,7 +194,7 @@ function App() {
                   <BackToTopButton />
                   <Chatbot />
                 </BrowserRouter>
-              </TooltipProvider>
+              </div>
             </ChatbotProvider>
           </QuotesProvider>
           </AuthProvider>
