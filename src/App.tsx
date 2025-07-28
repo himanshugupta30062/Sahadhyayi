@@ -190,7 +190,8 @@ function App() {
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
-                    <GlobalFooter />
+                    {/* Temporarily commenting out GlobalFooter to isolate React import issue */}
+                    {/* <GlobalFooter /> */}
                   </div>
                   {/* Temporarily commenting out components to isolate tooltip issue */}
                   {/* <BackToTopButton /> */}
