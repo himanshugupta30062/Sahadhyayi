@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback } from 'react';
+import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UseSpeechToTextOptions {
@@ -8,12 +8,12 @@ interface UseSpeechToTextOptions {
 }
 
 export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOptions) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const [isRecording, setIsRecording] = React.useState(false);
+  const [isProcessing, setIsProcessing] = React.useState(false);
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+  const audioChunksRef = React.useRef<Blob[]>([]);
 
-  const startRecording = useCallback(async () => {
+  const startRecording = React.useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -78,13 +78,13 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
     }
   }, [onTranscript, onError]);
 
-  const stopRecording = useCallback(() => {
+  const stopRecording = React.useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
     }
   }, [isRecording]);
 
-  const toggleRecording = useCallback(() => {
+  const toggleRecording = React.useCallback(() => {
     if (isRecording) {
       stopRecording();
     } else {
