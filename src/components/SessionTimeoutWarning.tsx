@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Clock } from 'lucide-react';
@@ -11,7 +11,7 @@ interface SessionTimeoutWarningProps {
   isVisible: boolean;
 }
 
-const SessionTimeoutWarning: React.FC<SessionTimeoutWarningProps> = ({
+const SessionTimeoutWarning: FC<SessionTimeoutWarningProps> = ({
   onExtendSession,
   timeRemaining,
   isVisible

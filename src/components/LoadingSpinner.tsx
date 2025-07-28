@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { FC } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, Users, Heart } from 'lucide-react';
 
@@ -7,7 +7,7 @@ interface LoadingSpinnerProps {
   type?: 'default' | 'page' | 'posts' | 'books';
 }
 
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ type = 'default' }) => {
+const LoadingSpinner: FC<LoadingSpinnerProps> = ({ type = 'default' }) => {
   if (type === 'page') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center">
