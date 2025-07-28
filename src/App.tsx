@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QuotesProvider } from "@/contexts/QuotesContext";
 import { ChatbotProvider } from "@/contexts/ChatbotContext";
@@ -88,11 +89,12 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <QuotesProvider>
-            <ChatbotProvider>
-            <TooltipProvider>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <QuotesProvider>
+              <ChatbotProvider>
+              <TooltipProvider>
               <Toaster />
               <Sonner />
               <BrowserRouter>
@@ -197,6 +199,14 @@ function App() {
                       <Route path="/cookies" element={<CookiePolicy />} />
                       <Route path="/dmca" element={<DmcaPolicy />} />
                       <Route path="/investors" element={<Investors />} />
+                      <Route 
+                        path="/settings" 
+                        element={
+                          <ProtectedRoute>
+                            <Profile />
+                          </ProtectedRoute>
+                        } 
+                      />
                       <Route path="/community-guidelines" element={<CommunityGuidelines />} />
                       <Route path="/open-source-licenses" element={<OpenSourceLicenses />} />
                       <Route path="*" element={<NotFound />} />
@@ -212,6 +222,7 @@ function App() {
         </QuotesProvider>
         </AuthProvider>
       </QueryClientProvider>
+      </HelmetProvider>
     </ErrorBoundary>
   );
 }
