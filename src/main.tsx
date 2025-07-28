@@ -22,8 +22,11 @@ root.render(
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => {
-      console.error('Service Worker registration failed:', err);
-    });
+    // Only register service worker if not running in StackBlitz
+    if (!window.location.hostname.includes('stackblitz')) {
+      navigator.serviceWorker.register('/sw.js').catch(err => {
+        console.error('Service Worker registration failed:', err);
+      });
+    }
   });
 }
