@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session) => {
+      (event: AuthChangeEvent, session) => {
         console.log('[AUTH] State change:', event, session?.user?.email);
         
         if (!mounted) return;
@@ -59,39 +59,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        // Handle sign in event
+        // Handle sign in event - defer async operations
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('[AUTH] User signed in, setting up session...');
           
-          // Set up session tracking
+          // Set up session tracking (synchronous)
           if (typeof window !== 'undefined') {
             const now = Date.now().toString();
             localStorage.setItem('sessionStart', now);
             localStorage.setItem('lastActivity', now);
           }
           
-          try {
-            const { data: existingProfile } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('id', session.user.id)
-              .single();
-
-            if (!existingProfile) {
-              const { error } = await supabase
+          // Defer async profile operations to prevent deadlock
+          setTimeout(async () => {
+            try {
+              const { data: existingProfile } = await supabase
                 .from('profiles')
-                .insert({
-                  id: session.user.id,
-                  full_name: session.user.user_metadata?.full_name || '',
-                });
-              
-              if (error) {
-                console.error('Error creating profile:', error);
+                .select('id')
+                .eq('id', session.user.id)
+                .single();
+
+              if (!existingProfile) {
+                const { error } = await supabase
+                  .from('profiles')
+                  .insert({
+                    id: session.user.id,
+                    full_name: session.user.user_metadata?.full_name || '',
+                  });
+                
+                if (error) {
+                  console.error('Error creating profile:', error);
+                }
               }
+            } catch (error) {
+              console.error('Error checking/creating profile:', error);
             }
-          } catch (error) {
-            console.error('Error checking/creating profile:', error);
-          }
+          }, 0);
         }
       }
     );
