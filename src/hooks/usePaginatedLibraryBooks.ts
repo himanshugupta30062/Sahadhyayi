@@ -24,7 +24,7 @@ interface PaginatedBooksResponse {
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
 
   const {
     searchQuery,
