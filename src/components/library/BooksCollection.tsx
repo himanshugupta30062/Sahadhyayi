@@ -92,6 +92,16 @@ const BooksCollection = ({
   const totalPages = paginatedData?.totalPages || 1;
   const hasNextPage = paginatedData?.hasNextPage || false;
   const hasPrevPage = paginatedData?.hasPrevPage || false;
+  
+  // Smooth scroll to top on page change
+  useEffect(() => {
+    if (allGridRef.current) {
+      allGridRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  }, [page]);
 
   // Convert personal library to Book format for compatibility
   const personalBooks: Book[] = useMemo(() => {
@@ -396,7 +406,7 @@ const BooksCollection = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-lg z-50">
-                      {[12, 20, 36, 48].map((size) => (
+                      {[5, 10, 20, 50, 100].map((size) => (
                         <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
                       ))}
                     </SelectContent>
@@ -418,17 +428,56 @@ const BooksCollection = ({
               </Alert>
             ) : (
               <>
-                <BooksGrid books={allLibraryBooks} onDownloadPDF={handleDownloadPDF} />
+                {/* Books List */}
+                <div className="space-y-4">
+                  {allLibraryBooks.map((book) => (
+                    <div key={book.id} className="bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0">
+                          <img 
+                            src={book.cover_image_url || '/placeholder.svg'} 
+                            alt={book.title}
+                            className="w-16 h-20 object-cover rounded border"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate">{book.title}</h3>
+                          <p className="text-sm text-gray-600 mb-1">by {book.author}</p>
+                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                            {book.genre && <span className="bg-gray-100 px-2 py-1 rounded">{book.genre}</span>}
+                            {book.publication_year && <span>{book.publication_year}</span>}
+                            {book.language && <span>• {book.language}</span>}
+                          </div>
+                          {book.description && (
+                            <p className="text-sm text-gray-600 line-clamp-2">{book.description}</p>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0 flex items-center">
+                          {book.pdf_url && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDownloadPDF(book)}
+                              className="text-blue-600 hover:text-blue-700"
+                            >
+                              Download PDF
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
                 
                 {/* Pagination Controls */}
-                <div className="flex items-center justify-center gap-4 py-6">
+                <div className="flex items-center justify-center gap-4 py-6 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
                   <Button
                     variant="outline"
-                    disabled={!hasPrevPage}
+                    disabled={page === 1}
                     onClick={goToPrevPage}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 disabled:opacity-50"
                   >
-                    Previous
+                    Prev
                   </Button>
                   
                   <span className="text-sm font-medium text-gray-700 px-4">
@@ -437,9 +486,9 @@ const BooksCollection = ({
                   
                   <Button
                     variant="outline"
-                    disabled={!hasNextPage}
+                    disabled={page === totalPages}
                     onClick={goToNextPage}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 disabled:opacity-50"
                   >
                     Next
                   </Button>
@@ -477,7 +526,7 @@ const BooksCollection = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-2 border-gray-200 shadow-lg z-50">
-                        {[12, 20, 36, 48].map((size) => (
+                        {[5, 10, 20, 50, 100].map((size) => (
                           <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
                         ))}
                       </SelectContent>

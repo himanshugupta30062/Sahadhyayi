@@ -25,7 +25,8 @@ interface PaginatedBooksResponse {
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
 
   const {
     searchQuery,
@@ -92,7 +93,8 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
       }
 
       const totalCount = count || 0;
-      const totalPages = Math.ceil(totalCount / pageSize);
+      const calculatedTotalPages = Math.ceil(totalCount / pageSize);
+      setTotalPages(calculatedTotalPages);
 
       const books: Book[] = (data || []).map(book => ({
         id: book.id,
@@ -115,10 +117,10 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
       return {
         books,
         totalCount,
-        totalPages,
+        totalPages: calculatedTotalPages,
         currentPage: page,
         pageSize,
-        hasNextPage: page < totalPages,
+        hasNextPage: page < calculatedTotalPages,
         hasPrevPage: page > 1
       };
     } catch (error) {
@@ -154,12 +156,14 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
   const changePageSize = useCallback((newPageSize: number) => {
     setPageSize(newPageSize);
     setPage(1); // Reset to first page when changing page size
+    setTotalPages(0); // Reset total pages
   }, []);
 
   return {
     ...query,
     page,
     pageSize,
+    totalPages,
     goToPage,
     goToNextPage,
     goToPrevPage,
