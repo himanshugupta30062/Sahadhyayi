@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Verified } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
