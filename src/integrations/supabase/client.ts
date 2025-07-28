@@ -3,46 +3,11 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Validate Supabase environment variables with fail-fast approach
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Use hardcoded Supabase configuration (VITE_* variables are not supported in Lovable)
+const SUPABASE_URL = 'https://rknxtatvlzunatpyqxro.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U';
 
-// Fail immediately if required environment variables are missing
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  const errorMessage = `
-🚫 [Configuration Error] Supabase credentials are required but missing!
-
-Check your .env file and ensure these variables are set:
-  - VITE_SUPABASE_URL: ${SUPABASE_URL ? '✅ set' : '❌ missing'}
-  - VITE_SUPABASE_ANON_KEY: ${SUPABASE_PUBLISHABLE_KEY ? '✅ set' : '❌ missing'}
-
-Expected format:
-  VITE_SUPABASE_URL=https://your-project.supabase.co
-  VITE_SUPABASE_ANON_KEY=your_anon_key_here
-
-Without these credentials, the application cannot connect to Supabase.
-`;
-  
-  console.error(errorMessage);
-  throw new Error('[Supabase Configuration] Missing required environment variables. Check console for details.');
-}
-
-// Validate URL format
-try {
-  new URL(SUPABASE_URL);
-} catch {
-  const errorMessage = `
-🚫 [Configuration Error] Invalid Supabase URL format!
-
-Current value: ${SUPABASE_URL}
-Expected format: https://your-project.supabase.co
-`;
-  
-  console.error(errorMessage);
-  throw new Error('[Supabase Configuration] Invalid VITE_SUPABASE_URL format.');
-}
-
-console.log('✅ [Supabase] Configuration validated successfully');
+console.log('✅ [Supabase] Configuration loaded successfully');
 
 // Configure Supabase client with enhanced security settings
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
