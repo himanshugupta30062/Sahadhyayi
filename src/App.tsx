@@ -186,8 +186,9 @@ function App() {
                     {/* Temporarily commenting out GlobalFooter to isolate React import issue */}
                     {/* <GlobalFooter /> */}
                   </div>
-                  <BackToTopButton />
-                  <Chatbot />
+                  {/* Temporarily commenting out components to isolate tooltip issue */}
+                  {/* <BackToTopButton /> */}
+                  {/* <Chatbot /> */}
                 </BrowserRouter>
               </div>
             </ChatbotProvider>
