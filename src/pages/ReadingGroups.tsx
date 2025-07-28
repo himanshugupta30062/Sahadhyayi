@@ -6,14 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Users, Calendar, Map, Plus } from "lucide-react";
-import { useGroups, useCreateGroup } from "@/hooks/useGroups";
+import { useGroups, useCreateGroup, useUserJoinedGroups } from "@/hooks/useGroups";
 import GroupCard from "@/components/groups/GroupCard";
-import GroupChatWindow from "@/components/social/GroupChatWindow";
+import GroupMessaging from "@/components/groups/GroupMessaging";
 import SEO from "@/components/SEO";
 
 const ReadingGroups = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [chatGroupId, setChatGroupId] = useState<string | null>(null);
+  const [chatGroupName, setChatGroupName] = useState<string>('');
   const [newGroup, setNewGroup] = useState({
     name: '',
     description: ''
@@ -21,6 +22,12 @@ const ReadingGroups = () => {
 
   const { data: groups = [], isLoading } = useGroups();
   const createGroup = useCreateGroup();
+
+  const handleOpenChat = (groupId: string) => {
+    const group = groups.find(g => g.id === groupId);
+    setChatGroupId(groupId);
+    setChatGroupName(group?.name || 'Group Chat');
+  };
 
   const upcomingEvents = [
     {
@@ -178,7 +185,7 @@ const ReadingGroups = () => {
                   key={group.id}
                   group={group}
                   isJoined={!!group.user_role}
-                  onChat={(id) => setChatGroupId(id)}
+                  onChat={(id) => handleOpenChat(id)}
                 />
               ))}
             </div>
@@ -220,8 +227,9 @@ const ReadingGroups = () => {
       </div>
     </div>
     {chatGroupId && (
-      <GroupChatWindow
+      <GroupMessaging
         groupId={chatGroupId}
+        groupName={chatGroupName}
         isOpen={!!chatGroupId}
         onClose={() => setChatGroupId(null)}
       />

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Calendar, MapPin, BookOpen } from 'lucide-react';
+import { Users, Calendar, MapPin, BookOpen, MessageCircle } from 'lucide-react';
 import { Group } from '@/hooks/useGroups';
 import { useJoinGroup, useLeaveGroup } from '@/hooks/useGroups';
 
@@ -76,25 +76,29 @@ const GroupCard: React.FC<GroupCardProps> = ({
           <span>Online & Local Meetups</span>
         </div>
 
-        {isJoined && onChat && (
+        <div className="flex gap-2">
+          {isJoined && onChat && (
+            <Button
+              onClick={() => onChat(group.id)}
+              className="flex-1 bg-blue-50 text-blue-700 hover:bg-blue-100"
+              variant="outline"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Chat
+            </Button>
+          )}
           <Button
-            onClick={() => onChat(group.id)}
-            className="w-full bg-orange-50 text-orange-700 hover:bg-orange-100"
+            onClick={handleJoinLeave}
+            disabled={joinGroup.isPending || leaveGroup.isPending}
+            className={`${isJoined && onChat ? 'flex-1' : 'w-full'} ${
+              isJoined
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-amber-600 hover:bg-amber-700"
+            }`}
           >
-            Open Chat
+            {isJoined ? 'Leave Group' : 'Join Group'}
           </Button>
-        )}
-        <Button
-          onClick={handleJoinLeave}
-          disabled={joinGroup.isPending || leaveGroup.isPending}
-          className={`w-full ${
-            isJoined
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-amber-600 hover:bg-amber-700"
-          }`}
-        >
-          {isJoined ? 'Leave Group' : 'Join Group'}
-        </Button>
+        </div>
       </CardContent>
     </Card>
   );

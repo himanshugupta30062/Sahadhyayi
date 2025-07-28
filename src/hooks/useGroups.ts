@@ -81,19 +81,33 @@ export const useUserGroups = () => {
 };
 
 export const useGroups = () => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['all-groups'],
+    queryKey: ['all-groups', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('group_chats')
         .select(`
           *,
-          group_members:group_chat_members(count)
+          group_members:group_chat_members(count),
+          user_membership:group_chat_members!left(role, joined_at)
         `)
+        .eq('group_chat_members.user_id', user?.id || '')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Group & { group_members?: { count: number }[] })[] || [];
+      
+      // Add user_role to each group based on membership
+      const groupsWithMembership = data?.map(group => ({
+        ...group,
+        user_role: group.user_membership?.[0]?.role || null
+      })) || [];
+      
+      return groupsWithMembership as (Group & { 
+        group_members?: { count: number }[];
+        user_role?: string | null;
+      })[];
     },
   });
 };
@@ -232,5 +246,106 @@ export const useGroupMembers = (groupId: string) => {
       return data || [];
     },
     enabled: !!groupId,
+  });
+};
+
+export const useGroupMessages = (groupId: string) => {
+  return useQuery({
+    queryKey: ['group-messages', groupId],
+    queryFn: async () => {
+      if (!groupId) return [];
+      
+      const { data, error } = await supabase
+        .from('group_messages')
+        .select(`
+          *,
+          sender:profiles!sender_id(id, full_name, profile_photo_url, username)
+        `)
+        .eq('group_id', groupId)
+        .order('created_at', { ascending: true })
+        .limit(100);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!groupId,
+  });
+};
+
+export const useSendMessage = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ groupId, content, messageType = 'text' }: { 
+      groupId: string; 
+      content: string; 
+      messageType?: string; 
+    }) => {
+      const userId = (await supabase.auth.getUser()).data.user?.id;
+      if (!userId) throw new Error('User not authenticated');
+      
+      // Parse @username mentions and convert to user IDs
+      const mentions = extractMentions(content);
+      
+      const { data, error } = await supabase
+        .from('group_messages')
+        .insert([{
+          group_id: groupId,
+          sender_id: userId,
+          content,
+          message_type: messageType,
+        }])
+        .select(`
+          *,
+          sender:profiles!sender_id(id, full_name, profile_photo_url, username)
+        `)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['group-messages', data.group_id] });
+    },
+  });
+};
+
+// Helper function to extract @mentions from text
+export const extractMentions = (text: string): string[] => {
+  const mentionRegex = /@(\w+)/g;
+  const mentions: string[] = [];
+  let match;
+  
+  while ((match = mentionRegex.exec(text)) !== null) {
+    mentions.push(match[1]);
+  }
+  
+  return mentions;
+};
+
+// Get user joined groups with isJoined status
+export const useUserJoinedGroups = () => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['user-joined-groups', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('group_chat_members')
+        .select(`
+          *,
+          groups:group_chats (
+            *,
+            group_members:group_chat_members(count)
+          )
+        `)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
   });
 };
