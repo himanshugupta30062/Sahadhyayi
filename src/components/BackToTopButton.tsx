@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import * as React from "react";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const BackToTopButton = () => {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const toggleVisibility = () => {
       setVisible(window.scrollY > 100);
     };
