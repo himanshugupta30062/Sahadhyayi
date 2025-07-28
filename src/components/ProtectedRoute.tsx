@@ -1,5 +1,5 @@
 
-import { ReactNode, FC } from 'react';
+import React, { ReactNode, FC } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';

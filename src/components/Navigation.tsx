@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
