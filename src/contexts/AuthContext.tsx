@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {
   user: User | null;
@@ -12,7 +13,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -26,6 +27,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  // Function to clear all React Query cache
+  const clearQueryCache = () => {
+    console.log('[AUTH] Clearing React Query cache...');
+    queryClient.clear();
+  };
+
+  // Function to clear all local storage and session storage
+  const clearAllStorage = () => {
+    if (typeof window !== 'undefined') {
+      console.log('[AUTH] Clearing all storage...');
+      
+      // Clear localStorage
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('sb-') || 
+            ['lastActivity', 'sessionStart', 'browserSession'].includes(key)) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Clear sessionStorage
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith('sb-') || 
+            ['lastActivity', 'sessionStart', 'browserSession'].includes(key)) {
+          sessionStorage.removeItem(key);
+        }
+      });
+
+      // Clear cookies
+      document.cookie.split(';').forEach((cookie) => {
+        const eqPos = cookie.indexOf('=');
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = `${name.trim()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+      });
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -37,25 +75,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (!mounted) return;
         
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-
         // Handle sign out event
         if (event === 'SIGNED_OUT') {
-          console.log('[AUTH] User signed out, clearing local state...');
+          console.log('[AUTH] User signed out, clearing everything...');
+          
           // Clear local state
           setUser(null);
           setSession(null);
           
-          // Clear session-related storage
-          if (typeof window !== 'undefined') {
-            // Clear all session-related data
-            ['lastActivity', 'sessionStart', 'browserSession'].forEach(key => {
-              localStorage.removeItem(key);
-              sessionStorage.removeItem(key);
-            });
-          }
+          // Clear React Query cache
+          clearQueryCache();
+          
+          // Clear all storage
+          clearAllStorage();
+          
+          setLoading(false);
+          return;
         }
 
         // Handle sign in event
@@ -67,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const now = Date.now().toString();
             localStorage.setItem('sessionStart', now);
             localStorage.setItem('lastActivity', now);
+            sessionStorage.setItem('browserSession', 'true');
           }
           
           try {
@@ -92,6 +128,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Error checking/creating profile:', error);
           }
         }
+
+        // Update state
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
       }
     );
 
@@ -143,7 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [queryClient, clearQueryCache]);
 
   const signUp = async (email: string, password: string, fullName?: string): Promise<{ error: AuthError | null }> => {
     try {
@@ -214,28 +255,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setSession(null);
 
-      // Remove any remaining auth tokens from localStorage and sessionStorage
-      if (typeof window !== 'undefined') {
-        Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith('sb-') || ['lastActivity', 'sessionStart', 'browserSession'].includes(key)) {
-            localStorage.removeItem(key);
-          }
-        });
+      // Clear React Query cache
+      clearQueryCache();
 
-        // Clear session storage including auto-logout related data
-        Object.keys(sessionStorage).forEach((key) => {
-          if (key.startsWith('sb-') || ['lastActivity', 'sessionStart', 'browserSession'].includes(key)) {
-            sessionStorage.removeItem(key);
-          }
-        });
-
-        // Clear cookies
-        document.cookie.split(';').forEach((cookie) => {
-          const eqPos = cookie.indexOf('=');
-          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-          document.cookie = `${name.trim()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-        });
-      }
+      // Clear all storage
+      clearAllStorage();
 
       // Sign out from Supabase (this will trigger the auth state change)
       const { error } = await supabase.auth.signOut();
