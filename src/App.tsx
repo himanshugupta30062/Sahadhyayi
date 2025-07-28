@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -84,6 +85,12 @@ const AppHooks = () => {
   return null;
 };
 
+// Temporarily disable TooltipProvider to avoid React initialization issues
+const SafeTooltipProvider = ({ children }: { children: React.ReactNode }) => {
+  // For now, just return children without TooltipProvider
+  return <>{children}</>;
+};
+
 function App() {
 
   return (
@@ -93,7 +100,7 @@ function App() {
           <AuthProvider>
             <QuotesProvider>
               <ChatbotProvider>
-              <TooltipProvider>
+              <SafeTooltipProvider>
               <Toaster />
               <Sonner />
               <BrowserRouter>
@@ -216,7 +223,7 @@ function App() {
                 <BackToTopButton />
                 <Chatbot />
               </BrowserRouter>
-            </TooltipProvider>
+            </SafeTooltipProvider>
           </ChatbotProvider>
         </QuotesProvider>
         </AuthProvider>
