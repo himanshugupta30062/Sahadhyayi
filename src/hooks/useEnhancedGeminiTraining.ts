@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { populateInitialTrainingData } from '@/utils/enhancedChatbotKnowledge';
 
 export interface TrainingDataPoint {
