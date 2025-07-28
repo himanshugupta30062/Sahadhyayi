@@ -45,6 +45,19 @@ export interface GroupMember {
   };
 }
 
+// Helper function to extract @mentions from text
+export const extractMentions = (text: string): string[] => {
+  const mentionRegex = /@(\w+)/g;
+  const mentions: string[] = [];
+  let match;
+  
+  while ((match = mentionRegex.exec(text)) !== null) {
+    mentions.push(match[1]);
+  }
+  
+  return mentions;
+};
+
 export const useUserGroups = () => {
   const { user } = useAuth();
   
@@ -310,18 +323,6 @@ export const useSendMessage = () => {
   });
 };
 
-// Helper function to extract @mentions from text
-export const extractMentions = (text: string): string[] => {
-  const mentionRegex = /@(\w+)/g;
-  const mentions: string[] = [];
-  let match;
-  
-  while ((match = mentionRegex.exec(text)) !== null) {
-    mentions.push(match[1]);
-  }
-  
-  return mentions;
-};
 
 // Get user joined groups with isJoined status
 export const useUserJoinedGroups = () => {
