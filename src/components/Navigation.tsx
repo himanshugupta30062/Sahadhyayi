@@ -1,5 +1,5 @@
 
-import * as React from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
@@ -17,15 +17,15 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 
 const Navigation = () => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [scrolled, setScrolled] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
   const isMobile = useIsMobile();
-  const menuRef = React.useRef<HTMLDivElement>(null);
-  const menuButtonRef = React.useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => {
       const isScrolled = window.scrollY > 20;
       if (isScrolled !== scrolled) {
@@ -39,7 +39,7 @@ const Navigation = () => {
     };
   }, [scrolled]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isMobile) {
       if (isOpen) {
         menuRef.current?.querySelector<HTMLElement>('a, button')?.focus();

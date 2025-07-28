@@ -1,5 +1,5 @@
 
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { Users, Mail, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,16 +11,16 @@ import CommunityStats from "@/components/CommunityStats";
 import SignInLink from '@/components/SignInLink';
 
 const GlobalFooter = () => {
-  const [showCount, setShowCount] = React.useState(false);
-  const [hasJoined, setHasJoined] = React.useState(false);
-  const [showSignIn, setShowSignIn] = React.useState(false);
+  const [showCount, setShowCount] = useState(false);
+  const [hasJoined, setHasJoined] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   const { toast } = useToast();
   const { stats, isLoading, fetchStats, joinCommunity } = useCommunityStats(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user && showSignIn) {
       setShowSignIn(false);
     }

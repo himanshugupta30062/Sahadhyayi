@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, X, Send, Minimize2, Mic, MicOff, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,6 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  TooltipProvider,
 } from '@/components/ui/tooltip';
 import { useChatbot } from '@/contexts/ChatbotContext';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
@@ -17,10 +16,10 @@ import { cn } from '@/lib/utils';
 const Chatbot = () => {
   const { isOpen, toggleChat, closeChat, messages, sendMessage, isLoading, trainingDataCount } = useChatbot();
   const { exportTrainingData, initializeWebsiteKnowledge } = useEnhancedGeminiTraining();
-  const [input, setInput] = React.useState('');
-  const [colorIndex, setColorIndex] = React.useState(0);
-  const [isMinimized, setIsMinimized] = React.useState(false);
-  const bottomRef = React.useRef<HTMLDivElement>(null);
+  const [input, setInput] = useState('');
+  const [colorIndex, setColorIndex] = useState(0);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
   
   const { isRecording, isProcessing, toggleRecording } = useSpeechToText({
     onTranscript: (text) => {
@@ -42,13 +41,13 @@ const Chatbot = () => {
     'bg-gradient-to-r from-amber-600 via-lime-600 to-green-600',
   ];
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (bottomRef.current && isOpen) {
       bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const colorInterval = setInterval(() => {
       setColorIndex((prev) => (prev + 1) % colorClasses.length);
     }, 2000);
@@ -154,15 +153,13 @@ const Chatbot = () => {
     );
 
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
-          <TooltipContent side="left">
-            <p className="font-medium">Book Expert AI</p>
-            <p className="text-xs text-gray-500">Enhanced with website knowledge!</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent side="left">
+          <p className="font-medium">Book Expert AI</p>
+          <p className="text-xs text-gray-500">Enhanced with website knowledge!</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 
@@ -185,30 +182,28 @@ const Chatbot = () => {
           </div>
         </div>
         <div className="flex items-center space-x-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button 
-                  onClick={handleRefreshKnowledge}
-                  className="p-1 text-white hover:bg-white/20 rounded transition-colors"
-                >
-                  <RefreshCw className="h-3 w-3" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent><p>Refresh Knowledge</p></TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button 
-                  onClick={handleExportData}
-                  className="p-1 text-white hover:bg-white/20 rounded transition-colors"
-                >
-                  <Download className="h-3 w-3" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent><p>Export Training Data ({trainingDataCount})</p></TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button 
+                onClick={handleRefreshKnowledge}
+                className="p-1 text-white hover:bg-white/20 rounded transition-colors"
+              >
+                <RefreshCw className="h-3 w-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent><p>Refresh Knowledge</p></TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button 
+                onClick={handleExportData}
+                className="p-1 text-white hover:bg-white/20 rounded transition-colors"
+              >
+                <Download className="h-3 w-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent><p>Export Training Data ({trainingDataCount})</p></TooltipContent>
+          </Tooltip>
           <button 
             onClick={() => setIsMinimized(!isMinimized)} 
             className="p-1 text-white hover:bg-white/20 rounded transition-colors"

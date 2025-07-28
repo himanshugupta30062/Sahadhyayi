@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Link, useLocation, type LinkProps } from 'react-router-dom';
 
 const SignInLink: React.FC<Omit<LinkProps, 'to'>> = ({ children, onClick, ...props }) => {

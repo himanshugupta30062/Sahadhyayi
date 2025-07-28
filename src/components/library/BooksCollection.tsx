@@ -82,15 +82,12 @@ const BooksCollection = ({
   const [foundBooks, setFoundBooks] = useState<any[]>([]);
   const [lastSearchTerm, setLastSearchTerm] = useState('');
 
-  // Pagination state for both tabs
+  // Pagination state for personal library only
   const [pageSize, setPageSize] = useState(10);
   const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
-  const [currentPageAll, setCurrentPageAll] = useState(1);
-  const [allBooksPageSize, setAllBooksPageSize] = useState(20);
   const allGridRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const personalGridRef = useRef<HTMLDivElement>(null);
-  const allBooksGridRef = useRef<HTMLDivElement>(null);
 
   // Convert personal library to Book format for compatibility
   const personalBooks: Book[] = useMemo(() => {
@@ -249,15 +246,6 @@ const BooksCollection = ({
   const filteredAllBooks = useMemo(() => getFilteredBooks(allLibraryBooks), [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
   const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
-  // Pagination for All Books
-  const paginatedAllBooks = useMemo(
-    () =>
-      filteredAllBooks.slice(
-        (currentPageAll - 1) * allBooksPageSize,
-        currentPageAll * allBooksPageSize
-      ),
-    [filteredAllBooks, currentPageAll, allBooksPageSize]
-  );
 
   const paginatedPersonalBooks = useMemo(
     () =>
@@ -268,11 +256,9 @@ const BooksCollection = ({
     [filteredPersonalBooks, currentPagePersonal, pageSize]
   );
 
-  // Reset pagination when filters change
   useEffect(() => {
     setCurrentPagePersonal(1);
-    setCurrentPageAll(1);
-  }, [filteredPersonalBooks, filteredAllBooks, pageSize, allBooksPageSize]);
+  }, [filteredPersonalBooks, pageSize]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -293,15 +279,6 @@ const BooksCollection = ({
   const endPersonal = Math.min(
     currentPagePersonal * pageSize,
     filteredPersonalBooks.length
-  );
-
-  const startAll =
-    filteredAllBooks.length === 0
-      ? 0
-      : (currentPageAll - 1) * allBooksPageSize + 1;
-  const endAll = Math.min(
-    currentPageAll * allBooksPageSize,
-    filteredAllBooks.length
   );
 
   if (isLoadingAll) {
@@ -415,41 +392,14 @@ const BooksCollection = ({
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="text-sm text-gray-600 font-medium">
-                  Showing {startAll}-{endAll} of {filteredAllBooks.length} books
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700">Books per page:</span>
-                  <Select value={String(allBooksPageSize)} onValueChange={(value) => setAllBooksPageSize(parseInt(value, 10))}>
-                    <SelectTrigger className="w-20 h-9 border-2 border-gray-200 hover:border-blue-300 transition-colors">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[10, 20, 30, 50].map((size) => (
-                        <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="text-sm text-gray-600 font-medium">
+                Showing {filteredAllBooks.length} books
               </div>
             </div>
           </div>
 
-          <div ref={allBooksGridRef} className="space-y-6">
-            <BooksGrid books={paginatedAllBooks} onDownloadPDF={handleDownloadPDF} />
-            
-            {/* Pagination for All Books */}
-            <LibraryPagination
-              totalCount={filteredAllBooks.length}
-              currentPage={currentPageAll}
-              pageSize={allBooksPageSize}
-              onPageChange={setCurrentPageAll}
-              onPageSizeChange={setAllBooksPageSize}
-              scrollTargetRef={allBooksGridRef}
-            />
-            
-            {/* Infinite Scroll Load More (optional) */}
+          <div ref={allGridRef} className="space-y-6">
+            <BooksGrid books={filteredAllBooks} onDownloadPDF={handleDownloadPDF} />
             <div ref={loadMoreRef} className="py-4 text-center">
               {isFetchingNextPage && <LoadingSpinner />}
               {!isFetchingNextPage && hasNextPage && (
