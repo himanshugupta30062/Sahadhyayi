@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Verified } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -21,11 +20,19 @@ export const VerificationBadge = ({ verified, verificationType, className }: Ver
     }
   };
 
-  // Temporarily disable tooltip to isolate React import issue
   return (
-    <Badge variant="secondary" className={`bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 ${className}`}>
-      <CheckCircle className="w-3 h-3 mr-1" />
-      Verified
-    </Badge>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <Badge variant="secondary" className={`bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 ${className}`}>
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Verified
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{getVerificationText()}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };

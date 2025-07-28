@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React from 'react';
 import { Star } from 'lucide-react';
 
 export const renderStars = (rating: number) => {

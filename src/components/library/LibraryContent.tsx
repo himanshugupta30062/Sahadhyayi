@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React from 'react';
 import { useBooksByGenre } from '@/hooks/useLibraryBooks';
 import BookGridView from '@/components/library/BookGridView';
 import BookListView from '@/components/library/BookListView';

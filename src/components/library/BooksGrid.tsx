@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen } from 'lucide-react';
 import type { Book } from '@/hooks/useLibraryBooks';

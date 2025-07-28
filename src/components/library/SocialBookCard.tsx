@@ -1,6 +1,5 @@
 
-import * as React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

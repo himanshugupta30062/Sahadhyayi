@@ -1,6 +1,5 @@
 
-import * as React from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -33,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: AuthChangeEvent, session) => {
+      async (event: AuthChangeEvent, session) => {
         console.log('[AUTH] State change:', event, session?.user?.email);
         
         if (!mounted) return;
@@ -59,42 +58,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        // Handle sign in event - defer async operations
+        // Handle sign in event
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('[AUTH] User signed in, setting up session...');
           
-          // Set up session tracking (synchronous)
+          // Set up session tracking
           if (typeof window !== 'undefined') {
             const now = Date.now().toString();
             localStorage.setItem('sessionStart', now);
             localStorage.setItem('lastActivity', now);
           }
           
-          // Defer async profile operations to prevent deadlock
-          setTimeout(async () => {
-            try {
-              const { data: existingProfile } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('id', session.user.id)
-                .single();
+          try {
+            const { data: existingProfile } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('id', session.user.id)
+              .single();
 
-              if (!existingProfile) {
-                const { error } = await supabase
-                  .from('profiles')
-                  .insert({
-                    id: session.user.id,
-                    full_name: session.user.user_metadata?.full_name || '',
-                  });
-                
-                if (error) {
-                  console.error('Error creating profile:', error);
-                }
+            if (!existingProfile) {
+              const { error } = await supabase
+                .from('profiles')
+                .insert({
+                  id: session.user.id,
+                  full_name: session.user.user_metadata?.full_name || '',
+                });
+              
+              if (error) {
+                console.error('Error creating profile:', error);
               }
-            } catch (error) {
-              console.error('Error checking/creating profile:', error);
             }
-          }, 0);
+          } catch (error) {
+            console.error('Error checking/creating profile:', error);
+          }
         }
       }
     );

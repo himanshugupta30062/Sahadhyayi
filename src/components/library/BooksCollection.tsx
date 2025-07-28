@@ -1,10 +1,9 @@
 
-import * as React from 'react';
-import { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { Library, Search, Plus, Trash2 } from 'lucide-react';
 import { usePersonalLibrary, useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
-import { usePaginatedLibraryBooks } from '@/hooks/usePaginatedLibraryBooks';
+import { useInfiniteLibraryBooks } from '@/hooks/useInfiniteLibraryBooks';
 import type { Book } from '@/hooks/useLibraryBooks';
 import BooksGrid from './BooksGrid';
 import LoadingGrid from './LoadingGrid';
@@ -45,27 +44,27 @@ const BooksCollection = ({
 }: BooksCollectionProps) => {
   const { user } = useAuth();
   
-  // Pagination state for all books
-  const [currentPageAll, setCurrentPageAll] = useState(1);
-  const [pageSizeAll, setPageSizeAll] = useState(20);
-
-  // All library books with pagination
+  // All library books with infinite scroll
   const {
-    data: allBooksData,
+    data,
     isLoading: isLoadingAll,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     refetch: refetchAll,
-  } = usePaginatedLibraryBooks({
+  } = useInfiniteLibraryBooks({
     genre: selectedGenre,
     searchQuery,
     author: selectedAuthor,
     year: selectedYear,
     language: selectedLanguage,
-    page: currentPageAll,
-    pageSize: pageSizeAll,
+    pageSize: 20,
   });
 
-  const allLibraryBooks = allBooksData?.books ?? [];
-  const allBooksTotal = allBooksData?.totalCount ?? 0;
+  const allLibraryBooks: Book[] = useMemo(
+    () => (data?.pages ?? []).flatMap((page: any) => page?.books ?? []),
+    [data]
+  );
   
   // Personal library (user-specific)
   const { data: personalLibrary = [], isLoading: isLoadingPersonal, refetch: refetchPersonal } = usePersonalLibrary();
@@ -87,6 +86,7 @@ const BooksCollection = ({
   const [pageSize, setPageSize] = useState(10);
   const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
   const allGridRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const personalGridRef = useRef<HTMLDivElement>(null);
 
   // Convert personal library to Book format for compatibility
@@ -243,8 +243,7 @@ const BooksCollection = ({
     }
   };
 
-  // Since filtering is handled by the API, we don't need client-side filtering for allLibraryBooks
-  const filteredAllBooks = allLibraryBooks;
+  const filteredAllBooks = useMemo(() => getFilteredBooks(allLibraryBooks), [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
   const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
 
@@ -261,10 +260,17 @@ const BooksCollection = ({
     setCurrentPagePersonal(1);
   }, [filteredPersonalBooks, pageSize]);
 
-  // Reset page when filters change
   useEffect(() => {
-    setCurrentPageAll(1);
-  }, [selectedGenre, searchQuery, selectedAuthor, selectedYear, selectedLanguage]);
+    const target = loadMoreRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    }, { rootMargin: '200px' });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [loadMoreRef, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const startPersonal =
     filteredPersonalBooks.length === 0
@@ -358,7 +364,7 @@ const BooksCollection = ({
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all-books" className="flex items-center gap-2">
             <Library className="w-4 h-4" />
-            All Books ({allBooksTotal})
+            All Books ({filteredAllBooks.length})
           </TabsTrigger>
           {user && (
             <TabsTrigger value="my-library" className="flex items-center gap-2">
@@ -387,21 +393,19 @@ const BooksCollection = ({
               </div>
               
               <div className="text-sm text-gray-600 font-medium">
-                Showing {((currentPageAll - 1) * pageSizeAll) + 1}-{Math.min(currentPageAll * pageSizeAll, allBooksTotal)} of {allBooksTotal} books
+                Showing {filteredAllBooks.length} books
               </div>
             </div>
           </div>
 
           <div ref={allGridRef} className="space-y-6">
-            <BooksGrid books={allLibraryBooks} onDownloadPDF={handleDownloadPDF} />
-            <LibraryPagination
-              totalCount={allBooksTotal}
-              currentPage={currentPageAll}
-              pageSize={pageSizeAll}
-              onPageChange={setCurrentPageAll}
-              onPageSizeChange={setPageSizeAll}
-              scrollTargetRef={allGridRef}
-            />
+            <BooksGrid books={filteredAllBooks} onDownloadPDF={handleDownloadPDF} />
+            <div ref={loadMoreRef} className="py-4 text-center">
+              {isFetchingNextPage && <LoadingSpinner />}
+              {!isFetchingNextPage && hasNextPage && (
+                <span className="text-sm text-gray-500">Scroll to load more…</span>
+              )}
+            </div>
           </div>
         </TabsContent>
 

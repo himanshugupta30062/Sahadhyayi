@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -52,14 +51,7 @@ import Investors from "./pages/Investors";
 import NotFound from "./pages/NotFound";
 import OpenSourceLicenses from "./pages/OpenSourceLicenses";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 // Component to handle auto-logout functionality
 const AutoLogoutHandler = () => {
@@ -78,11 +70,9 @@ function App() {
           <AuthProvider>
             <QuotesProvider>
               <ChatbotProvider>
-              {/* Temporarily removing TooltipProvider to isolate React import issue */}
-              <div>
-                {/* Temporarily removing all toast components to isolate React import issue */}
-                {/* <Toaster /> */}
-                {/* <Sonner /> */}
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
                 <BrowserRouter>
                   <ScrollToTop />
                   <AutoLogoutHandler />
@@ -190,14 +180,12 @@ function App() {
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
-                    {/* Temporarily commenting out GlobalFooter to isolate React import issue */}
-                    {/* <GlobalFooter /> */}
+                    <GlobalFooter />
                   </div>
-                  {/* Temporarily commenting out components to isolate tooltip issue */}
-                  {/* <BackToTopButton /> */}
-                  {/* <Chatbot /> */}
+                  <BackToTopButton />
+                  <Chatbot />
                 </BrowserRouter>
-              </div>
+              </TooltipProvider>
             </ChatbotProvider>
           </QuotesProvider>
           </AuthProvider>
