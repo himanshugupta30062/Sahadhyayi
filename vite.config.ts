@@ -14,9 +14,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
-    // Enable Gzip compression
+    mode === 'development' && componentTagger(),
     compression({
       algorithm: 'gzip',
       ext: '.gz',
@@ -39,8 +37,11 @@ export default defineConfig(({ mode }) => ({
     'process.env.NODE_ENV': JSON.stringify(mode),
     global: 'globalThis',
   },
+  esbuild: {
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+  },
   build: {
-    // Enable browser caching with content hashing
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'terser',
@@ -54,6 +55,5 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-  // Optimize images
   assetsInclude: ['**/*.webp', '**/*.avif'],
 }));

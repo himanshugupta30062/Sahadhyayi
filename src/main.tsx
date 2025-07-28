@@ -1,9 +1,15 @@
 
-import React, { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { initializeSecurity } from './utils/security'
+import * as React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+import { initializeSecurity } from './utils/security';
+
+// Ensure React is properly loaded
+if (!React || !React.useState) {
+  console.error('React is not properly loaded!');
+  throw new Error('React bundling issue detected');
+}
 
 // Initialize security measures
 initializeSecurity();
@@ -15,9 +21,9 @@ if (!container) {
 
 const root = createRoot(container);
 root.render(
-  <StrictMode>
-    <App />
-  </StrictMode>
+  React.createElement(React.StrictMode, null,
+    React.createElement(App)
+  )
 );
 
 if ('serviceWorker' in navigator) {
