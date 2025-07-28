@@ -1,5 +1,6 @@
 
-import React, { useState, useMemo } from 'react';
+import * as React from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, RefreshCw, Star, Users, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -56,7 +57,7 @@ const Authors = () => {
   }, [libraryBooks]);
 
   // Show error toast if there's an error
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       console.error('Authors page error:', error);
       toast({
@@ -116,7 +117,7 @@ const Authors = () => {
       .slice(0, 6);
   }, [authors]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPage(1);
   }, [searchTerm, selectedGenre, bookCountFilter]);
 
