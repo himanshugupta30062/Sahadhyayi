@@ -71,7 +71,8 @@ function App() {
           <AuthProvider>
             <QuotesProvider>
               <ChatbotProvider>
-              <TooltipProvider>
+              {/* Temporarily removing TooltipProvider completely to test React imports */}
+              <div>
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
@@ -186,7 +187,7 @@ function App() {
                   <BackToTopButton />
                   <Chatbot />
                 </BrowserRouter>
-              </TooltipProvider>
+              </div>
             </ChatbotProvider>
           </QuotesProvider>
           </AuthProvider>
