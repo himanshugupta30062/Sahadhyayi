@@ -77,12 +77,14 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
-  // Initialize auto-logout functionality
+// Component to handle hooks that need context providers
+const AppHooks = () => {
   useAutoLogout();
-  
-  // Track page visits
   usePageVisitTracker();
+  return null;
+};
+
+function App() {
 
   return (
     <ErrorBoundary>
@@ -95,6 +97,7 @@ function App() {
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <AppHooks />
                 <ScrollToTop />
                 <div className="flex flex-col min-h-screen">
                   <Navigation />
