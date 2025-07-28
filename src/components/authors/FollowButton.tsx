@@ -35,28 +35,22 @@ export const FollowButton = ({
   } = useAuthorFollow(authorId);
 
   if (!user) {
+    // Temporarily disable tooltip to isolate React import issue
     return (
-      <TooltipProvider delayDuration={200}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button
-                variant={variant}
-                size={size}
-                disabled
-                className={cn(
-                  'rounded-full bg-[hsl(var(--brand-orange))] text-white hover:bg-[hsl(var(--brand-orange)/.85)]',
-                  variant !== 'default' && ''
-                )}
-              >
-                <UserPlus className="w-4 h-4" />
-                {showText && <span className="ml-2">Follow</span>}
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>Sign in to follow authors</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <span>
+        <Button
+          variant={variant}
+          size={size}
+          disabled
+          className={cn(
+            'rounded-full bg-[hsl(var(--brand-orange))] text-white hover:bg-[hsl(var(--brand-orange)/.85)]',
+            variant !== 'default' && ''
+          )}
+        >
+          <UserPlus className="w-4 h-4" />
+          {showText && <span className="ml-2">Follow</span>}
+        </Button>
+      </span>
     );
   }
 

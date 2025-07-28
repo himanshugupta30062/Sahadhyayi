@@ -71,8 +71,7 @@ function App() {
           <AuthProvider>
             <QuotesProvider>
               <ChatbotProvider>
-              {/* Temporarily removing TooltipProvider to isolate the issue */}
-              <div>
+              <TooltipProvider>
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
@@ -187,7 +186,7 @@ function App() {
                   <BackToTopButton />
                   <Chatbot />
                 </BrowserRouter>
-              </div>
+              </TooltipProvider>
             </ChatbotProvider>
           </QuotesProvider>
           </AuthProvider>
