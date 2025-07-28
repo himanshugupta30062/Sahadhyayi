@@ -29,14 +29,18 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "react": "react",
-      "react-dom": "react-dom"
+      "react": path.resolve("./node_modules/react"),
+      "react-dom": path.resolve("./node_modules/react-dom")
     },
+    dedupe: ['react', 'react-dom']
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react/jsx-runtime'],
     exclude: ['@vite/client', '@vite/env'],
     force: true
+  },
+  define: {
+    'process.env.NODE_ENV': '"development"'
   },
   build: {
     rollupOptions: {
