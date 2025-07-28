@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Check, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';

@@ -1,5 +1,6 @@
 
-import React, { useMemo, useEffect, useState, useRef } from 'react';
+import * as React from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { Library, Search, Plus, Trash2 } from 'lucide-react';
 import { usePersonalLibrary, useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
