@@ -183,7 +183,8 @@ function App() {
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
-                    <GlobalFooter />
+                    {/* Temporarily commenting out GlobalFooter to isolate React import issue */}
+                    {/* <GlobalFooter /> */}
                   </div>
                   <BackToTopButton />
                   <Chatbot />
