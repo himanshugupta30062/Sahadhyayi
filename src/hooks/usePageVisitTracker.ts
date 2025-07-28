@@ -6,19 +6,6 @@ export const usePageVisitTracker = () => {
   useEffect(() => {
     const recordVisit = async () => {
       try {
-        // Skip tracking in development environments or when Supabase is not properly configured
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        
-        if (!supabaseUrl || !supabaseKey || 
-            supabaseUrl.includes('your-project') || 
-            supabaseKey.includes('your_') ||
-            window.location.hostname.includes('stackblitz') ||
-            window.location.hostname.includes('webcontainer')) {
-          console.log('Skipping visit tracking in development environment');
-          return;
-        }
-
         // Get basic visitor info
         const userAgent = navigator.userAgent;
         const currentPage = window.location.pathname;
@@ -32,7 +19,7 @@ export const usePageVisitTracker = () => {
         });
 
         if (error) {
-          console.warn('Edge function unavailable, trying fallback:', error.message);
+          console.error('Error recording visit:', error);
           
           // Fallback to the original function if edge function fails
           const { error: fallbackError } = await supabase.rpc('record_website_visit', {
@@ -43,11 +30,11 @@ export const usePageVisitTracker = () => {
           });
           
           if (fallbackError) {
-            console.warn('Visit tracking unavailable:', fallbackError.message);
+            console.error('Fallback error recording visit:', fallbackError);
           }
         }
       } catch (error) {
-        console.warn('Visit tracking failed (this is normal in development):', error instanceof Error ? error.message : 'Unknown error');
+        console.error('Failed to record visit:', error);
       }
     };
 

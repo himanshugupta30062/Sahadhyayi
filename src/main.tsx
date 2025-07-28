@@ -22,15 +22,8 @@ root.render(
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    // Only register service worker if not running in StackBlitz or WebContainer
-    if (!window.location.hostname.includes('stackblitz') && 
-        !window.location.hostname.includes('webcontainer') &&
-        !window.location.hostname.includes('local-credentialless')) {
-      navigator.serviceWorker.register('/sw.js').catch(err => {
-        console.warn('Service Worker registration failed:', err.message);
-      });
-    } else {
-      console.log('Service Worker registration skipped in development environment');
-    }
+    navigator.serviceWorker.register('/sw.js').catch(err => {
+      console.error('Service Worker registration failed:', err);
+    });
   });
 }
