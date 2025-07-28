@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import React from 'react';
+import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Book } from './useLibraryBooks';
@@ -24,9 +23,9 @@ interface PaginatedBooksResponse {
 }
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
+  const [totalPages, setTotalPages] = React.useState(0);
 
   const {
     searchQuery,
@@ -38,11 +37,11 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
   } = params;
 
   // Reset page when filters change
-  useEffect(() => {
+  React.useEffect(() => {
     setPage(1);
   }, [searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
-  const fetchPaginatedBooks = useCallback(async (): Promise<PaginatedBooksResponse> => {
+  const fetchPaginatedBooks = React.useCallback(async (): Promise<PaginatedBooksResponse> => {
     try {
       // Start building the query
       let query = supabase
@@ -135,25 +134,25 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const goToPage = useCallback((newPage: number) => {
+  const goToPage = React.useCallback((newPage: number) => {
     if (newPage >= 1 && newPage <= (query.data?.totalPages || 1)) {
       setPage(newPage);
     }
   }, [query.data?.totalPages]);
 
-  const goToNextPage = useCallback(() => {
+  const goToNextPage = React.useCallback(() => {
     if (query.data?.hasNextPage) {
       setPage(prev => prev + 1);
     }
   }, [query.data?.hasNextPage]);
 
-  const goToPrevPage = useCallback(() => {
+  const goToPrevPage = React.useCallback(() => {
     if (query.data?.hasPrevPage) {
       setPage(prev => prev - 1);
     }
   }, [query.data?.hasPrevPage]);
 
-  const changePageSize = useCallback((newPageSize: number) => {
+  const changePageSize = React.useCallback((newPageSize: number) => {
     setPageSize(newPageSize);
     setPage(1); // Reset to first page when changing page size
     setTotalPages(0); // Reset total pages
