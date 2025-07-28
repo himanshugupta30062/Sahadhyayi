@@ -38,16 +38,25 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react/jsx-runtime'],
     exclude: ['@vite/client', '@vite/env'],
-    force: true
+    force: true,
+    esbuildOptions: {
+      target: 'es2020'
+    }
   },
   define: {
     'process.env.NODE_ENV': '"development"'
   },
   build: {
+    target: 'es2020',
     rollupOptions: {
       output: {
-        manualChunks: undefined, // Let Vite handle chunking automatically
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom']
+        }
       },
+      external: (id) => {
+        return false; // Don't externalize anything
+      }
     },
     // Enable browser caching with content hashing
     assetsDir: 'assets',
