@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, UserPlus, MessageCircle, Users, Loader2 } from 'lucide-react';
+import { Search, UserPlus, MessageCircle, Users, Loader2, Check, X } from 'lucide-react';
 import { useUserSearch, useAllUsers } from '@/hooks/useUserSearch';
-import { useFriends, useSendFriendRequest } from '@/hooks/useFriends';
+import { useFriends, useSendFriendRequest, useFriendRequests, useRespondToFriendRequest } from '@/hooks/useFriends';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { ChatWindow } from '@/components/social/ChatWindow';
 
 export const EnhancedFriendsManager = () => {
@@ -21,7 +22,9 @@ export const EnhancedFriendsManager = () => {
   const { data: searchResults = [], isLoading: isSearching, error: searchError } = useUserSearch(searchTerm);
   const { data: allUsers = [], isLoading: isLoadingUsers } = useAllUsers();
   const { data: friends = [] } = useFriends();
+  const { data: friendRequests = [], isLoading: isLoadingRequests } = useFriendRequests();
   const sendFriendRequest = useSendFriendRequest();
+  const respondToFriendRequest = useRespondToFriendRequest();
 
   const handleSendFriendRequest = async (userId: string, userName: string) => {
     try {
@@ -40,9 +43,39 @@ export const EnhancedFriendsManager = () => {
     }
   };
 
+  const handleRespondToRequest = async (requestId: string, status: 'accepted' | 'rejected', requesterName: string) => {
+    try {
+      await respondToFriendRequest.mutateAsync({ requestId, status });
+      toast({
+        title: status === 'accepted' ? 'Friend Request Accepted' : 'Friend Request Rejected',
+        description: status === 'accepted' 
+          ? `You are now friends with ${requesterName}!`
+          : `Friend request from ${requesterName} has been rejected.`,
+      });
+    } catch (error) {
+      console.error('Failed to respond to friend request:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to respond to friend request. Please try again.',
+      });
+    }
+  };
+
   const getInitials = (name: string) => {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?';
   };
+
+  // Separate incoming and outgoing requests
+  const { user } = useAuth();
+  const incomingRequests = friendRequests.filter(req => req.addressee_id === user?.id && req.status === 'pending');
+  const outgoingRequests = friendRequests.filter(req => req.requester_id === user?.id && req.status === 'pending');
+
+  // Debug logging
+  console.log('Friend requests data:', friendRequests);
+  console.log('Current user ID:', user?.id);
+  console.log('Incoming requests:', incomingRequests);
+  console.log('Outgoing requests:', outgoingRequests);
 
   return (
     <>
@@ -64,7 +97,7 @@ export const EnhancedFriendsManager = () => {
               </TabsTrigger>
               <TabsTrigger value="requests" className="flex items-center gap-2">
                 <UserPlus className="w-4 h-4" />
-                Requests
+                Requests ({incomingRequests.length + outgoingRequests.length})
               </TabsTrigger>
             </TabsList>
 
@@ -190,11 +223,111 @@ export const EnhancedFriendsManager = () => {
             </TabsContent>
 
             <TabsContent value="requests" className="space-y-4">
-              <div className="text-center py-8 text-gray-500">
-                <UserPlus className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No pending requests</p>
-                <p className="text-xs">Friend requests will appear here</p>
-              </div>
+              {isLoadingRequests ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  <span className="ml-2 text-gray-500">Loading requests...</span>
+                </div>
+              ) : (
+                <>
+                  {/* Incoming Friend Requests */}
+                  {incomingRequests.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-gray-700 px-2">
+                        Incoming Requests ({incomingRequests.length})
+                      </h3>
+                      {incomingRequests.map((request) => (
+                        <div key={request.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-10 h-10">
+                              <AvatarImage src={request.requester_profile?.profile_photo_url || ''} />
+                              <AvatarFallback>
+                                {getInitials(request.requester_profile?.full_name || '')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {request.requester_profile?.full_name || 'Unknown User'}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                @{request.requester_profile?.username || 'username'}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                Sent {new Date(request.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleRespondToRequest(request.id, 'accepted', request.requester_profile?.full_name || 'User')}
+                              disabled={respondToFriendRequest.isPending}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              Accept
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRespondToRequest(request.id, 'rejected', request.requester_profile?.full_name || 'User')}
+                              disabled={respondToFriendRequest.isPending}
+                              className="border-red-300 text-red-700 hover:bg-red-50"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Decline
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Outgoing Friend Requests */}
+                  {outgoingRequests.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-gray-700 px-2">
+                        Sent Requests ({outgoingRequests.length})
+                      </h3>
+                      {outgoingRequests.map((request) => (
+                        <div key={request.id} className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-10 h-10">
+                              <AvatarImage src={request.addressee_profile?.profile_photo_url || ''} />
+                              <AvatarFallback>
+                                {getInitials(request.addressee_profile?.full_name || '')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {request.addressee_profile?.full_name || 'Unknown User'}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                @{request.addressee_profile?.username || 'username'}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                Sent {new Date(request.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                            Pending
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* No Requests State */}
+                  {incomingRequests.length === 0 && outgoingRequests.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <UserPlus className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No pending requests</p>
+                      <p className="text-xs">Friend requests will appear here</p>
+                    </div>
+                  )}
+                </>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
