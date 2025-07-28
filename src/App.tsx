@@ -85,22 +85,14 @@ const AppHooks = () => {
   return null;
 };
 
-// Temporarily disable TooltipProvider to avoid React initialization issues
-const SafeTooltipProvider = ({ children }: { children: React.ReactNode }) => {
-  // For now, just return children without TooltipProvider
-  return <>{children}</>;
-};
-
 function App() {
 
   return (
     <ErrorBoundary>
-      <HelmetProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <QuotesProvider>
               <ChatbotProvider>
-              <SafeTooltipProvider>
               <Toaster />
               <Sonner />
               <BrowserRouter>
@@ -223,12 +215,10 @@ function App() {
                 <BackToTopButton />
                 <Chatbot />
               </BrowserRouter>
-            </SafeTooltipProvider>
-          </ChatbotProvider>
+            </ChatbotProvider>
         </QuotesProvider>
         </AuthProvider>
       </QueryClientProvider>
-      </HelmetProvider>
     </ErrorBoundary>
   );
 }

@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+import * as React from 'react';
 import { useLocation } from 'react-router-dom';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
