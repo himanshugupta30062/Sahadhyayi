@@ -77,13 +77,10 @@ const queryClient = new QueryClient({
   },
 });
 
-// Component to handle auto-logout functionality
-const AutoLogoutHandler = () => {
-  useAutoLogout();
-  return null;
-};
-
 function App() {
+  // Initialize auto-logout functionality
+  useAutoLogout();
+  
   // Track page visits
   usePageVisitTracker();
 
@@ -99,7 +96,6 @@ function App() {
               <Sonner />
               <BrowserRouter>
                 <ScrollToTop />
-                <AutoLogoutHandler />
                 <div className="flex flex-col min-h-screen">
                   <Navigation />
                   <main className="flex-1">
