@@ -426,6 +426,27 @@ const BooksCollection = ({
                   Error loading books: {allBooksError.message}
                 </AlertDescription>
               </Alert>
+            ) : allLibraryBooks.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-8 shadow-sm">
+                  <Library className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No books found</h3>
+                  <p className="text-gray-600 mb-4">
+                    {selectedGenre !== 'All' || selectedAuthor !== 'All' || searchQuery || selectedYear || selectedLanguage !== 'All' 
+                      ? 'No books match your current filters. Try adjusting your search criteria.'
+                      : 'No books available in the library.'}
+                  </p>
+                  {(selectedGenre !== 'All' || selectedAuthor !== 'All' || searchQuery || selectedYear || selectedLanguage !== 'All') && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => window.location.reload()}
+                      className="mt-2"
+                    >
+                      Clear All Filters
+                    </Button>
+                  )}
+                </div>
+              </div>
             ) : (
               <>
                 {/* Books List */}
@@ -470,29 +491,31 @@ const BooksCollection = ({
                 </div>
                 
                 {/* Pagination Controls */}
-                <div className="flex items-center justify-center gap-4 py-6 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
-                  <Button
-                    variant="outline"
-                    disabled={page === 1}
-                    onClick={goToPrevPage}
-                    className="flex items-center gap-2 disabled:opacity-50"
-                  >
-                    Prev
-                  </Button>
-                  
-                  <span className="text-sm font-medium text-gray-700 px-4">
-                    Page {page} of {totalPages}
-                  </span>
-                  
-                  <Button
-                    variant="outline"
-                    disabled={page === totalPages}
-                    onClick={goToNextPage}
-                    className="flex items-center gap-2 disabled:opacity-50"
-                  >
-                    Next
-                  </Button>
-                </div>
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-4 py-6 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
+                    <Button
+                      variant="outline"
+                      disabled={page === 1}
+                      onClick={goToPrevPage}
+                      className="flex items-center gap-2 disabled:opacity-50"
+                    >
+                      Prev
+                    </Button>
+                    
+                    <span className="text-sm font-medium text-gray-700 px-4">
+                      Page {page} of {totalPages}
+                    </span>
+                    
+                    <Button
+                      variant="outline"
+                      disabled={page === totalPages}
+                      onClick={goToNextPage}
+                      className="flex items-center gap-2 disabled:opacity-50"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </>
             )}
           </div>
