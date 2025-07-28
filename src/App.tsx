@@ -73,8 +73,9 @@ function App() {
               <ChatbotProvider>
               {/* Temporarily removing TooltipProvider completely to test React imports */}
               <div>
-                <Toaster />
-                <Sonner />
+                {/* Temporarily removing all toast components to isolate React import issue */}
+                {/* <Toaster /> */}
+                {/* <Sonner /> */}
                 <BrowserRouter>
                   <ScrollToTop />
                   <AutoLogoutHandler />
