@@ -80,8 +80,9 @@ function App() {
               <ChatbotProvider>
               {/* Temporarily removing TooltipProvider to isolate React import issue */}
               <div>
-                <Toaster />
-                <Sonner />
+                {/* Temporarily removing all toast components to isolate React import issue */}
+                {/* <Toaster /> */}
+                {/* <Sonner /> */}
                 <BrowserRouter>
                   <ScrollToTop />
                   <AutoLogoutHandler />
@@ -191,8 +192,9 @@ function App() {
                     </main>
                     <GlobalFooter />
                   </div>
-                  <BackToTopButton />
-                  <Chatbot />
+                  {/* Temporarily commenting out components to isolate tooltip issue */}
+                  {/* <BackToTopButton /> */}
+                  {/* <Chatbot /> */}
                 </BrowserRouter>
               </div>
             </ChatbotProvider>
