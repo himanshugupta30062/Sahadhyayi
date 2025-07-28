@@ -138,29 +138,29 @@ const GlobalFooter = () => {
             <h4 className="font-semibold text-lg mb-4">Explore Sahadhyayi</h4>
             <ul className="space-y-2 text-white">
               <li>
-                <a href="/library" className="hover:text-white transition-colors">
+                <Link to="/library" className="hover:text-white transition-colors">
                   Digital Library
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/discovery" className="hover:text-white transition-colors">
+                <Link to="/discovery" className="hover:text-white transition-colors">
                   Discovery
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/authors" className="hover:text-white transition-colors">
+                <Link to="/authors" className="hover:text-white transition-colors">
                   Meet Authors
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/groups" className="hover:text-white transition-colors">
+                <Link to="/groups" className="hover:text-white transition-colors">
                   Reading Groups
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/map" className="hover:text-white transition-colors">
+                <Link to="/map" className="hover:text-white transition-colors">
                   Reader Map
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -169,14 +169,14 @@ const GlobalFooter = () => {
             <h4 className="font-semibold text-lg mb-4">Support</h4>
             <ul className="space-y-2 text-white">
               <li>
-                <a href="/help" className="hover:text-white transition-colors">
+                <Link to="/help" className="hover:text-white transition-colors">
                   Help Center
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/community-guidelines" className="hover:text-white transition-colors">
+                <Link to="/community-guidelines" className="hover:text-white transition-colors">
                   Community Guidelines
-                </a>
+                </Link>
               </li>
               <li>
                 <button 
@@ -188,9 +188,9 @@ const GlobalFooter = () => {
                 </button>
               </li>
               <li>
-                <a href="/feedback" className="hover:text-white transition-colors">
+                <Link to="/feedback" className="hover:text-white transition-colors">
                   Feedback
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -199,34 +199,34 @@ const GlobalFooter = () => {
             <h4 className="font-semibold text-lg mb-4">Company</h4>
             <ul className="space-y-2 text-white">
               <li>
-                <a href="/about" className="hover:text-white transition-colors">
+                <Link to="/about" className="hover:text-white transition-colors">
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/privacy" className="hover:text-white transition-colors">
+                <Link to="/privacy" className="hover:text-white transition-colors">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/terms" className="hover:text-white transition-colors">
+                <Link to="/terms" className="hover:text-white transition-colors">
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/cookies" className="hover:text-white transition-colors">
+                <Link to="/cookies" className="hover:text-white transition-colors">
                   Cookie Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/dmca" className="hover:text-white transition-colors">
+                <Link to="/dmca" className="hover:text-white transition-colors">
                   DMCA Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/open-source-licenses" className="hover:text-white transition-colors">
+                <Link to="/open-source-licenses" className="hover:text-white transition-colors">
                   Open Source Licenses
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

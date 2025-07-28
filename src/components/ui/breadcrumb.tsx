@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 
@@ -26,7 +26,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
       </Link>
       
       {items.map((item, index) => (
-        <React.Fragment key={index}>
+        <Fragment key={index}>
           <ChevronRight className="w-4 h-4 text-gray-300" />
           {item.current ? (
             <span className="font-medium text-gray-900" aria-current="page">
@@ -40,7 +40,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
               {item.name}
             </Link>
           )}
-        </React.Fragment>
+        </Fragment>
       ))}
     </nav>
   );
