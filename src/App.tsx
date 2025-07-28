@@ -6,8 +6,6 @@ import { QuotesProvider } from "@/contexts/QuotesContext";
 import { ChatbotProvider } from "@/contexts/ChatbotContext";
 import Chatbot from "@/components/chatbot/Chatbot";
 
-import Navigation from "@/components/Navigation";
-import GlobalFooter from "@/components/GlobalFooter";
 import BackToTopButton from "@/components/BackToTopButton";
 import ScrollToTop from "@/components/ScrollToTop";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -93,7 +91,17 @@ function App() {
                 <AppHooks />
                 <ScrollToTop />
                 <div className="flex flex-col min-h-screen">
-                  <Navigation />
+                  {/* Temporarily simplified navigation */}
+                  <div className="bg-white shadow-sm border-b p-4">
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
+                      <h1 className="text-xl font-bold text-orange-600">Sahadhyayi</h1>
+                      <div className="space-x-4">
+                        <a href="/library" className="text-gray-600 hover:text-orange-600">Library</a>
+                        <a href="/authors" className="text-gray-600 hover:text-orange-600">Authors</a>
+                        <a href="/signin" className="text-gray-600 hover:text-orange-600">Sign In</a>
+                      </div>
+                    </div>
+                  </div>
                   <main className="flex-1">
                     <Routes>
                       <Route path="/" element={<Index />} />
@@ -204,7 +212,12 @@ function App() {
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
-                  <GlobalFooter />
+                  {/* Temporarily simplified footer */}
+                  <footer className="bg-orange-600 text-white p-8">
+                    <div className="max-w-7xl mx-auto text-center">
+                      <p>© 2024 Sahadhyayi. All rights reserved.</p>
+                    </div>
+                  </footer>
                 </div>
                 <BackToTopButton />
                 <Chatbot />
