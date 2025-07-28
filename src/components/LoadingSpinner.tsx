@@ -1,5 +1,5 @@
 
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, Users, Heart } from 'lucide-react';
 
