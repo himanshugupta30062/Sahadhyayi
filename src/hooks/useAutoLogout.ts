@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useCallback } from 'react';
+import * as React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -14,12 +14,12 @@ export const useAutoLogout = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const sessionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isActiveRef = useRef(true);
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const sessionTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const isActiveRef = React.useRef(true);
 
   // Check if current page requires authentication
-  const isProtectedRoute = useCallback(() => {
+  const isProtectedRoute = React.useCallback(() => {
     const protectedRoutes = [
       '/dashboard',
       '/profile',
@@ -34,7 +34,7 @@ export const useAutoLogout = () => {
   }, [location.pathname]);
 
   // Handle logout due to inactivity
-  const handleInactivityLogout = useCallback(async () => {
+  const handleInactivityLogout = React.useCallback(async () => {
     if (!user || !isProtectedRoute()) return;
 
     try {
@@ -63,7 +63,7 @@ export const useAutoLogout = () => {
   }, [user, signOut, navigate, isProtectedRoute]);
 
   // Handle logout due to session timeout
-  const handleSessionTimeout = useCallback(async () => {
+  const handleSessionTimeout = React.useCallback(async () => {
     if (!user || !isProtectedRoute()) return;
 
     try {
@@ -92,7 +92,7 @@ export const useAutoLogout = () => {
   }, [user, signOut, navigate, isProtectedRoute]);
 
   // Check if browser session is valid
-  const checkBrowserSession = useCallback(() => {
+  const checkBrowserSession = React.useCallback(() => {
     if (!user || !isProtectedRoute()) return true;
 
     const browserSessionId = localStorage.getItem(BROWSER_SESSION_KEY);
@@ -109,7 +109,7 @@ export const useAutoLogout = () => {
   }, [user, isProtectedRoute, handleInactivityLogout]);
 
   // Reset the inactivity timer
-  const resetTimer = useCallback(() => {
+  const resetTimer = React.useCallback(() => {
     if (!user || !isProtectedRoute()) return;
 
     // Clear existing timeout
@@ -129,7 +129,7 @@ export const useAutoLogout = () => {
   }, [user, handleInactivityLogout, isProtectedRoute]);
 
   // Setup session timeout
-  const setupSessionTimeout = useCallback(() => {
+  const setupSessionTimeout = React.useCallback(() => {
     if (!user || !isProtectedRoute()) return;
 
     const sessionStart = localStorage.getItem(SESSION_START_KEY);
@@ -161,14 +161,14 @@ export const useAutoLogout = () => {
   }, [user, isProtectedRoute, handleSessionTimeout]);
 
   // Activity event handlers
-  const handleActivity = useCallback(() => {
+  const handleActivity = React.useCallback(() => {
     if (isActiveRef.current) {
       resetTimer();
     }
   }, [resetTimer]);
 
   // Handle page visibility change
-  const handleVisibilityChange = useCallback(() => {
+  const handleVisibilityChange = React.useCallback(() => {
     if (document.hidden) {
       isActiveRef.current = false;
     } else {
@@ -182,12 +182,12 @@ export const useAutoLogout = () => {
   }, [checkBrowserSession, handleActivity]);
 
   // Handle page unload (browser close)
-  const handleBeforeUnload = useCallback(() => {
+  const handleBeforeUnload = React.useCallback(() => {
     // Clear session storage to detect browser reopening
     sessionStorage.removeItem(BROWSER_SESSION_KEY);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Only activate auto-logout for authenticated users on protected routes
     if (!user || !isProtectedRoute()) {
       // Clear any existing timeouts if user logs out or leaves protected route
@@ -278,7 +278,7 @@ export const useAutoLogout = () => {
   }, [user, handleActivity, resetTimer, isProtectedRoute, handleInactivityLogout, handleVisibilityChange, handleBeforeUnload, checkBrowserSession, setupSessionTimeout]);
 
   // Cleanup on unmount
-  useEffect(() => {
+  React.useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
