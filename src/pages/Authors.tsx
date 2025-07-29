@@ -23,7 +23,6 @@ const slugify = (text: string) =>
   text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const Authors = () => {
-  console.log('Authors component rendering');
   
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -37,11 +36,6 @@ const Authors = () => {
   const [bookCountFilter, setBookCountFilter] = useState('all');
   const [chatAuthor, setChatAuthor] = useState<string | null>(null);
 
-  console.log('Authors page state:', {
-    authorsCount: totalAuthors,
-    isLoading,
-    error: error?.message
-  });
 
   // Map books by author name for quick lookup  
   const booksByAuthor = useMemo(() => {
@@ -121,7 +115,6 @@ const Authors = () => {
   }, [searchTerm, selectedGenre, bookCountFilter]);
 
   const handleRetry = () => {
-    console.log('Retrying to fetch authors...');
     refetch();
   };
 

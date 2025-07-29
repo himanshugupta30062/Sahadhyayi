@@ -48,7 +48,6 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
           const count = await getTrainingDataStats();
           setTrainingDataCount(count);
           setIsInitialized(true);
-          console.log(`Chatbot initialized with ${count} training samples`);
         } catch (error) {
           console.error('Failed to initialize knowledge base:', error);
         }
@@ -68,7 +67,6 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
 
   const sendMessage = useCallback(async (userMessage: string) => {
     let relevantBooks: BookData[] = [];
-    console.log('User message received:', userMessage);
     
     // Add user message
     const userMsg: Message = {
@@ -104,7 +102,6 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
         });
       }
 
-      console.log('Calling enhanced-book-summary function with enhanced prompt');
 
       // Call Supabase Edge Function for AI response
       const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
@@ -115,7 +112,6 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
         }
       });
 
-      console.log('Function response:', { data, error });
 
       let botResponse = "";
 
@@ -130,10 +126,8 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
           variant: "default",
         });
       } else if (data?.response) {
-        console.log('AI response received:', data.response);
         botResponse = data.response;
       } else {
-        console.log('No response from AI, using contextual fallback');
         botResponse = generateContextualResponse(userMessage);
       }
 
