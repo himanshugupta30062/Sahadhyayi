@@ -71,11 +71,6 @@ export const EnhancedFriendsManager = () => {
   const incomingRequests = friendRequests.filter(req => req.addressee_id === user?.id && req.status === 'pending');
   const outgoingRequests = friendRequests.filter(req => req.requester_id === user?.id && req.status === 'pending');
 
-  // Debug logging
-  console.log('Friend requests data:', friendRequests);
-  console.log('Current user ID:', user?.id);
-  console.log('Incoming requests:', incomingRequests);
-  console.log('Outgoing requests:', outgoingRequests);
 
   return (
     <>

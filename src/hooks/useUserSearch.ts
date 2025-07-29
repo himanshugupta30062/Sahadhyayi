@@ -31,7 +31,6 @@ export const useUserSearch = (searchTerm: string) => {
     queryFn: async () => {
       if (!debouncedSearchTerm || debouncedSearchTerm.length < 2) return [];
       
-      console.log('Searching for users with term:', debouncedSearchTerm);
       
       try {
         const { data, error } = await supabase
@@ -47,7 +46,6 @@ export const useUserSearch = (searchTerm: string) => {
           return [];
         }
         
-        console.log('User search results:', data?.length || 0, 'users found');
         return data as SearchUser[];
       } catch (err) {
         console.error('User search exception:', err);
@@ -107,7 +105,6 @@ export const useAllUsers = () => {
           return [];
         }
         
-        console.log(`Discover users: ${data.length} found (excluded ${excludeIds.length} friends/pending)`);
         return data as SearchUser[];
       } catch (err) {
         console.error('All users exception:', err);

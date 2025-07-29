@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session) => {
-        console.log('[AUTH] State change:', event, session?.user?.email);
         
         if (!mounted) return;
         
@@ -43,7 +42,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // Handle sign out event
         if (event === 'SIGNED_OUT') {
-          console.log('[AUTH] User signed out, clearing local state...');
           // Clear local state
           setUser(null);
           setSession(null);
@@ -60,7 +58,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // Handle sign in event
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('[AUTH] User signed in, setting up session...');
           
           // Set up session tracking
           if (typeof window !== 'undefined') {
@@ -116,14 +113,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             
             // If no session tracking data exists or browser was reopened, potentially invalid session
             if (!sessionStart || !browserSession || !sessionBrowserSession) {
-              console.log('[AUTH] Session tracking data missing, may need re-authentication');
               
               // Check session age from Supabase
               const sessionAge = Date.now() - (session.expires_at ? (session.expires_at * 1000) : 0);
               const maxAge = 24 * 60 * 60 * 1000; // 24 hours
               
               if (sessionAge > maxAge) {
-                console.log('[AUTH] Session too old, signing out');
                 await supabase.auth.signOut();
               }
             }
@@ -207,7 +202,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      console.log('[AUTH] Starting sign out process...');
       setLoading(true);
 
       // Clear local auth state first
@@ -243,7 +237,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error signing out from Supabase:', error);
       }
 
-      console.log('[AUTH] Sign out completed successfully');
       setLoading(false);
     } catch (error) {
       console.error('Signout error:', error);
