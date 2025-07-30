@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {
   user: User | null;
@@ -26,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [session, setSession] = React.useState<Session | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const queryClient = useQueryClient();
 
   React.useEffect(() => {
     let mounted = true;
@@ -194,12 +196,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: { message: 'Please enter a valid email address' } as AuthError };
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
 
-      return { error };
+      if (!error && data.session && data.user) {
+        setSession(data.session);
+        setUser(data.user);
+        setLoading(false);
+        queryClient.invalidateQueries();
+      }
+
+      return { error: error ?? null };
     } catch (error) {
       console.error('Signin error:', error);
       return { error: error as AuthError };
@@ -242,6 +251,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) {
         console.error('Error signing out from Supabase:', error);
       }
+
+      queryClient.clear();
 
       setLoading(false);
     } catch (error) {
