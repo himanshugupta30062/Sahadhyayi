@@ -1,9 +1,9 @@
 
 import React, { useMemo, useEffect, useState, useRef } from 'react';
-import { Library, Search, Plus, Trash2 } from 'lucide-react';
+import { Library, Search, Trash2 } from 'lucide-react';
 import { usePersonalLibrary, useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
-import { useInfiniteLibraryBooks } from '@/hooks/useInfiniteLibraryBooks';
+import { usePaginatedLibraryBooks } from '@/hooks/usePaginatedLibraryBooks';
 import type { Book } from '@/hooks/useLibraryBooks';
 import BooksGrid from './BooksGrid';
 import LoadingGrid from './LoadingGrid';
@@ -44,33 +44,23 @@ const BooksCollection = ({
 }: BooksCollectionProps) => {
   const { user } = useAuth();
   
-  // Pagination state for All Books
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [isLoadingAllBooks, setIsLoadingAllBooks] = useState(false);
-  const [allBooksData, setAllBooksData] = useState<{books: Book[], totalCount: number}>({books: [], totalCount: 0});
-  
-  // All library books with pagination (replacing infinite scroll)
+  // All library books with server-side pagination
   const {
-    data,
+    data: paginatedData,
     isLoading: isLoadingAll,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    page,
+    pageSize,
+    totalPages,
+    setPage,
+    setPageSize,
     refetch: refetchAll,
-  } = useInfiniteLibraryBooks({
-    genre: selectedGenre,
+  } = usePaginatedLibraryBooks({
     searchQuery,
-    author: selectedAuthor,
-    year: selectedYear,
-    language: selectedLanguage,
-    pageSize: 20,
+    selectedGenre,
+    selectedAuthor,
+    selectedYear,
+    selectedLanguage,
   });
-
-  const allLibraryBooks: Book[] = useMemo(
-    () => (data?.pages ?? []).flatMap((page: any) => page?.books ?? []),
-    [data]
-  );
   
   // Personal library (user-specific)
   const { data: personalLibrary = [], isLoading: isLoadingPersonal, refetch: refetchPersonal } = usePersonalLibrary();
@@ -92,7 +82,6 @@ const BooksCollection = ({
   const [pageSizePersonal, setPageSizePersonal] = useState(10);
   const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
   const allGridRef = useRef<HTMLDivElement>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
   const personalGridRef = useRef<HTMLDivElement>(null);
 
   // Convert personal library to Book format for compatibility
@@ -249,40 +238,16 @@ const BooksCollection = ({
     }
   };
 
-  const filteredAllBooks = useMemo(() => getFilteredBooks(allLibraryBooks), [allLibraryBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
-  const filteredPersonalBooks = useMemo(() => getFilteredBooks(personalBooks), [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
+  const filteredAllBooks = useMemo(
+    () => getFilteredBooks(paginatedData?.books ?? []),
+    [paginatedData, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]
+  );
+  const filteredPersonalBooks = useMemo(
+    () => getFilteredBooks(personalBooks),
+    [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]
+  );
 
-  // Fetch paginated books for All Books tab
-  const fetchPaginatedBooks = async (pageNum: number, size: number) => {
-    setIsLoadingAllBooks(true);
-    try {
-      // Simulate API call - replace with actual API endpoint
-      const startIndex = (pageNum - 1) * size;
-      const endIndex = startIndex + size;
-      const paginatedBooks = filteredAllBooks.slice(startIndex, endIndex);
-      
-      setAllBooksData({
-        books: paginatedBooks,
-        totalCount: filteredAllBooks.length
-      });
-    } catch (error) {
-      console.error('Error fetching paginated books:', error);
-    } finally {
-      setIsLoadingAllBooks(false);
-    }
-  };
-
-  // Effect to fetch books when page or pageSize changes
-  useEffect(() => {
-    if (filteredAllBooks.length > 0) {
-      fetchPaginatedBooks(page, pageSize);
-    }
-  }, [page, pageSize, filteredAllBooks]);
-
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
+  // Reset page when filters change handled inside hook
 
   const paginatedPersonalBooks = useMemo(
     () =>
@@ -297,7 +262,6 @@ const BooksCollection = ({
     setCurrentPagePersonal(1);
   }, [filteredPersonalBooks, pageSizePersonal]);
 
-  const totalPages = Math.ceil(filteredAllBooks.length / pageSize);
 
   const startPersonal =
     filteredPersonalBooks.length === 0
@@ -391,7 +355,7 @@ const BooksCollection = ({
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all-books" className="flex items-center gap-2">
             <Library className="w-4 h-4" />
-            All Books ({filteredAllBooks.length})
+            All Books ({paginatedData?.totalCount ?? 0})
           </TabsTrigger>
           {user && (
             <TabsTrigger value="my-library" className="flex items-center gap-2">
@@ -421,7 +385,7 @@ const BooksCollection = ({
               
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <div className="text-sm text-gray-600 font-medium">
-                  Showing {((page - 1) * pageSize) + 1}-{Math.min(page * pageSize, filteredAllBooks.length)} of {filteredAllBooks.length} books
+                  Showing {((page - 1) * pageSize) + 1}-{Math.min(page * pageSize, paginatedData?.totalCount ?? 0)} of {paginatedData?.totalCount ?? 0} books
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-gray-700">Books per page:</span>
@@ -447,11 +411,11 @@ const BooksCollection = ({
           </div>
 
           <div ref={allGridRef} className="space-y-6">
-            {isLoadingAllBooks ? (
+            {isLoadingAll ? (
               <LoadingSpinner />
             ) : (
               <>
-                <BooksGrid books={allBooksData.books} onDownloadPDF={handleDownloadPDF} />
+                <BooksGrid books={filteredAllBooks} onDownloadPDF={handleDownloadPDF} />
                 
                 {/* Pagination Controls */}
                 <div className="flex items-center justify-center gap-4 py-6">
