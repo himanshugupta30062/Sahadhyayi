@@ -19,12 +19,16 @@ const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
       onError: (error) => console.error('Speech recognition error:', error)
     })
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        onSearch?.()
-      }
-    }
+    // Trigger search when user presses Enter
+    const handleKeyDown = React.useCallback(
+      (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          onSearch?.()
+        }
+      },
+      [onSearch]
+    )
 
     return (
       <div className={cn('relative w-full', className)}>
