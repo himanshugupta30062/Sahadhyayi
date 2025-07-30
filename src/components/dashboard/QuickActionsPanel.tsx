@@ -20,7 +20,7 @@ const QuickActionsPanel: React.FC = () => {
       title: 'Write Review',
       description: 'Share your thoughts on a book',
       icon: Edit,
-      onClick: () => navigate('/reviews'),
+      onClick: () => navigate('/social'),
       color: 'bg-blue-500 hover:bg-blue-600'
     },
     {

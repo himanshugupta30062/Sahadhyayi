@@ -93,7 +93,7 @@ PLATFORM NAVIGATION:
 - Library: /library (Browse all books, search, filter)
 - Dashboard: /dashboard (Reading progress, goals, bookshelf)
 - Authors: /authors (Connect with authors, profiles, events)
-- Social: /reviews (Community, reviews, reading groups)
+ - Social: /social (Community, reviews, reading groups)
 - Profile: /profile (User settings, preferences)
 
 USER QUERY: ${userQuery}
@@ -180,7 +180,7 @@ export const populateInitialTrainingData = async (userId: string) => {
           interaction_type: "features"
         }
       }),
-      completion: "Key features include: free PDF downloads, reading progress tracking (/dashboard), author connections (/authors), social reading community (/reviews), book recommendations, and reading goals. All books are completely free to access."
+      completion: "Key features include: free PDF downloads, reading progress tracking (/dashboard), author connections (/authors), social reading community (/social), book recommendations, and reading goals. All books are completely free to access."
     },
     {
       prompt: JSON.stringify({

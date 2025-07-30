@@ -95,7 +95,7 @@ export const PLATFORM_FEATURES: PlatformFeature[] = [
   },
   {
     name: "Social Reading Community",
-    route: "/reviews",
+    route: "/social",
     description: "Join a vibrant community of book lovers and reading enthusiasts",
     keyFunctions: [
       "Connect with fellow readers and book enthusiasts",

@@ -104,7 +104,7 @@ const ReadingStats: React.FC<ReadingStatsProps> = ({ bookId, bookTitle }) => {
                 {showAllReaders ? 'Show Less' : `View All ${stats.readers.length} Readers`}
               </Button>
             )}
-            <Link to="/reviews" className="flex-1">
+            <Link to="/social" className="flex-1">
               <Button size="sm" className="bg-orange-600 hover:bg-orange-700 w-full">
                 <Share2 className="w-4 h-4 mr-2" />
                 Connect with Readers
