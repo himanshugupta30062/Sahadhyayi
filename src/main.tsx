@@ -1,15 +1,8 @@
-
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { initializeSecurity } from './utils/security';
-
-// Ensure React is properly loaded
-if (!React || !React.useState) {
-  console.error('React is not properly loaded!');
-  throw new Error('React bundling issue detected');
-}
 
 // Initialize security measures
 initializeSecurity();
