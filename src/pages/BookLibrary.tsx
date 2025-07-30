@@ -172,7 +172,7 @@ const BookLibrary = () => {
               Available Books
             </h2>
             <Link 
-              to="/reviews" 
+              to="/social"
               className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors font-medium"
             >
               <Users className="w-4 h-4" />
@@ -241,8 +241,8 @@ const BookLibrary = () => {
                   Share your reading journey, discover what others are reading, and join discussions about your favorite books. 
                   <Link to="/authors" className="text-amber-600 hover:text-amber-700 font-medium ml-1">Connect with authors</Link> too!
                 </p>
-                <Link 
-                  to="/reviews" 
+                <Link
+                  to="/social"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors font-medium"
                 >
                   <Users className="w-4 h-4" />
