@@ -177,7 +177,7 @@ const About = () => {
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
             <img 
-              src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png" 
+              src="/lovable-uploads/sahadhyayi-logo-digital-reading.png" 
               alt="Sahadhyayi Logo - What Sahadhyayi means: fellow reader in Sanskrit" 
               className="w-20 h-20" 
             />
@@ -381,7 +381,7 @@ const About = () => {
                 {/* Left: Founder Image and Info */}
                 <div className="flex flex-col items-center md:items-start md:w-56 w-full gap-4">
                   <img
-                    src="/lovable-uploads/3f0d5de6-4956-4feb-937f-90f70f359001.png"
+                    src="/lovable-uploads/sahadhyayi-founder-photo.png"
                     alt="Himanshu Gupta Founder"
                     className="rounded-xl shadow-lg w-40 h-40 object-cover border-2 border-amber-200"
                   />

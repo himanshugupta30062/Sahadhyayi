@@ -75,7 +75,7 @@ function addUrl(loc, changefreq='weekly', priority='0.6', image) {
   urls.push({ loc: `https://sahadhyayi.com${loc}`, lastmod: today, changefreq, priority, image });
 }
 
-const HOME_IMAGE = 'https://sahadhyayi.com/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png';
+const HOME_IMAGE = 'https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png';
 
 addUrl('/', 'weekly', '1.0', HOME_IMAGE);
 staticPages.forEach(p => addUrl(p, 'monthly', '0.5'));
