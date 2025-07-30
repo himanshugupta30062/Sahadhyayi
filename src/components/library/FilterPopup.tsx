@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -38,14 +38,64 @@ const FilterPopup = ({
   const authors = ['All', 'J.K. Rowling', 'Stephen King', 'Agatha Christie', 'Isaac Asimov', 'Maya Angelou', 'Stephen Hawking'];
   const languages = ['All', 'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'];
 
-  const hasActiveFilters = selectedGenre !== 'All' || selectedAuthor !== 'All' || 
-    selectedYear !== '' || selectedLanguage !== 'All' || 
-    priceRange[0] !== 0 || priceRange[1] !== 100;
+  const [open, setOpen] = useState(false);
+
+  const [localGenre, setLocalGenre] = useState(selectedGenre);
+  const [localAuthor, setLocalAuthor] = useState(selectedAuthor);
+  const [localYear, setLocalYear] = useState(selectedYear);
+  const [localLanguage, setLocalLanguage] = useState(selectedLanguage);
+  const [localPriceRange, setLocalPriceRange] = useState<[number, number]>(priceRange);
+
+  useEffect(() => {
+    setLocalGenre(selectedGenre);
+  }, [selectedGenre, open]);
+
+  useEffect(() => {
+    setLocalAuthor(selectedAuthor);
+  }, [selectedAuthor, open]);
+
+  useEffect(() => {
+    setLocalYear(selectedYear);
+  }, [selectedYear, open]);
+
+  useEffect(() => {
+    setLocalLanguage(selectedLanguage);
+  }, [selectedLanguage, open]);
+
+  useEffect(() => {
+    setLocalPriceRange(priceRange);
+  }, [priceRange, open]);
+
+  const hasActiveFilters =
+    selectedGenre !== 'All' ||
+    selectedAuthor !== 'All' ||
+    selectedYear !== '' ||
+    selectedLanguage !== 'All' ||
+    priceRange[0] !== 0 ||
+    priceRange[1] !== 100;
+
+  const handleApply = () => {
+    onGenreChange(localGenre);
+    onAuthorChange(localAuthor);
+    onYearChange(localYear);
+    onLanguageChange(localLanguage);
+    onPriceRangeChange(localPriceRange);
+    setOpen(false);
+  };
+
+  const handleClear = () => {
+    setLocalGenre('All');
+    setLocalAuthor('All');
+    setLocalYear('');
+    setLocalLanguage('All');
+    setLocalPriceRange([0, 100]);
+    onClearFilters();
+  };
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button 
+        <Button
           variant="outline" 
           size="sm" 
           className="flex items-center gap-2 bg-white border-2 border-blue-200 hover:border-blue-400 transition-colors"
@@ -71,7 +121,7 @@ const FilterPopup = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onClearFilters}
+                onClick={handleClear}
                 className="text-sm"
               >
                 <X className="w-4 h-4 mr-1" />
@@ -85,7 +135,7 @@ const FilterPopup = ({
           {/* Genre Filter */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700 block">Genre</label>
-            <Select value={selectedGenre} onValueChange={onGenreChange}>
+            <Select value={localGenre} onValueChange={setLocalGenre}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select genre" />
               </SelectTrigger>
@@ -102,7 +152,7 @@ const FilterPopup = ({
           {/* Author Filter */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700 block">Author</label>
-            <Select value={selectedAuthor} onValueChange={onAuthorChange}>
+            <Select value={localAuthor} onValueChange={setLocalAuthor}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select author" />
               </SelectTrigger>
@@ -122,8 +172,8 @@ const FilterPopup = ({
             <Input
               type="number"
               placeholder="e.g. 2020"
-              value={selectedYear}
-              onChange={(e) => onYearChange(e.target.value)}
+              value={localYear}
+              onChange={(e) => setLocalYear(e.target.value)}
               className="w-full"
             />
           </div>
@@ -131,7 +181,7 @@ const FilterPopup = ({
           {/* Language Filter */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700 block">Language</label>
-            <Select value={selectedLanguage} onValueChange={onLanguageChange}>
+            <Select value={localLanguage} onValueChange={setLocalLanguage}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
@@ -148,18 +198,23 @@ const FilterPopup = ({
           {/* Price Range Filter */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700 block">
-              Price Range: ${priceRange[0]} - ${priceRange[1]}
+              Price Range: ${localPriceRange[0]} - ${localPriceRange[1]}
             </label>
             <div className="px-3">
               <Slider
-                value={priceRange}
-                onValueChange={(value) => onPriceRangeChange(value as [number, number])}
+                value={localPriceRange}
+                onValueChange={(value) => setLocalPriceRange(value as [number, number])}
                 max={100}
                 min={0}
                 step={5}
                 className="w-full"
               />
             </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={handleClear}>Clear Filters</Button>
+            <Button onClick={handleApply}>Apply Filters</Button>
           </div>
         </div>
       </SheetContent>
