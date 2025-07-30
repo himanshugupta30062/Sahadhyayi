@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { Filter, X } from 'lucide-react';
+import { Filter } from 'lucide-react';
 
 interface FilterPopupProps {
   selectedGenre: string;
@@ -19,6 +19,8 @@ interface FilterPopupProps {
   priceRange: [number, number];
   onPriceRangeChange: (range: [number, number]) => void;
   onClearFilters: () => void;
+  onApplyFilters: () => void;
+  hasActiveFilters: boolean;
 }
 
 const FilterPopup = ({
@@ -32,22 +34,20 @@ const FilterPopup = ({
   onLanguageChange,
   priceRange,
   onPriceRangeChange,
-  onClearFilters
+  onClearFilters,
+  onApplyFilters,
+  hasActiveFilters
 }: FilterPopupProps) => {
   const genres = ['All', 'Fiction', 'Science', 'History', 'Biography', 'Philosophy', 'Technology', 'Self-Help'];
   const authors = ['All', 'J.K. Rowling', 'Stephen King', 'Agatha Christie', 'Isaac Asimov', 'Maya Angelou', 'Stephen Hawking'];
   const languages = ['All', 'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'];
 
-  const hasActiveFilters = selectedGenre !== 'All' || selectedAuthor !== 'All' || 
-    selectedYear !== '' || selectedLanguage !== 'All' || 
-    priceRange[0] !== 0 || priceRange[1] !== 100;
-
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="flex items-center gap-2 bg-white border-2 border-blue-200 hover:border-blue-400 transition-colors"
         >
           <Filter className="w-4 h-4" />
@@ -74,13 +74,12 @@ const FilterPopup = ({
                 onClick={onClearFilters}
                 className="text-sm"
               >
-                <X className="w-4 h-4 mr-1" />
                 Clear All
               </Button>
             )}
           </SheetTitle>
         </SheetHeader>
-        
+
         <div className="space-y-6">
           {/* Genre Filter */}
           <div className="space-y-3">
@@ -160,6 +159,13 @@ const FilterPopup = ({
                 className="w-full"
               />
             </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={onClearFilters}>
+              Clear Filters
+            </Button>
+            <Button onClick={onApplyFilters}>Apply Filters</Button>
           </div>
         </div>
       </SheetContent>
