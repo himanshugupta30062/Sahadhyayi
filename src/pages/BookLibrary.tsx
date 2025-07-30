@@ -5,7 +5,7 @@ import FilterPopup from '@/components/library/FilterPopup';
 import BooksCollection from '@/components/library/BooksCollection';
 import GenreSelector from '@/components/library/GenreSelector';
 import SEO from '@/components/SEO';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 const BookLibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,6 +14,9 @@ const BookLibrary = () => {
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const stored = sessionStorage.getItem('scroll-/library');
@@ -25,6 +28,19 @@ const BookLibrary = () => {
       sessionStorage.setItem('scroll-/library', String(window.scrollY));
     };
   }, []);
+
+  useEffect(() => {
+    const genreParam = searchParams.get('genre');
+    const languageParam = searchParams.get('language');
+
+    if (genreParam) {
+      setSelectedGenre(genreParam.charAt(0).toUpperCase() + genreParam.slice(1));
+    }
+
+    if (languageParam) {
+      setSelectedLanguage(languageParam.charAt(0).toUpperCase() + languageParam.slice(1));
+    }
+  }, [searchParams]);
 
   const handleClearFilters = () => {
     setSelectedGenre('All');
@@ -198,8 +214,8 @@ const BookLibrary = () => {
             <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Fiction & Literature</h3>
               <p className="text-gray-600 mb-4">Explore classic and contemporary fiction from renowned authors worldwide.</p>
-              <button 
-                onClick={() => setSelectedGenre('Fiction')}
+              <button
+                onClick={() => navigate('/library?genre=Fiction')}
                 className="text-amber-600 hover:text-amber-700 font-medium"
               >
                 Browse Fiction →
@@ -208,8 +224,8 @@ const BookLibrary = () => {
             <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Hindi Literature</h3>
               <p className="text-gray-600 mb-4">Discover the rich tradition of Hindi literature and contemporary works.</p>
-              <button 
-                onClick={() => setSelectedLanguage('Hindi')}
+              <button
+                onClick={() => navigate('/library?language=Hindi')}
                 className="text-amber-600 hover:text-amber-700 font-medium"
               >
                 Browse Hindi Books →
@@ -218,8 +234,8 @@ const BookLibrary = () => {
             <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Science & Technology</h3>
               <p className="text-gray-600 mb-4">Stay updated with the latest scientific discoveries and technological advances.</p>
-              <button 
-                onClick={() => setSelectedGenre('Science')}
+              <button
+                onClick={() => navigate('/library?genre=Science')}
                 className="text-amber-600 hover:text-amber-700 font-medium"
               >
                 Browse Science Books →
