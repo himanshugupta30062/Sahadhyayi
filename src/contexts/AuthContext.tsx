@@ -110,15 +110,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const sessionStart = localStorage.getItem('sessionStart');
             const browserSession = localStorage.getItem('browserSession');
             const sessionBrowserSession = sessionStorage.getItem('browserSession');
-            
-            // If no session tracking data exists or browser was reopened, potentially invalid session
+
+            // If the Supabase session token has expired, sign the user out
+            const expiresAt = session.expires_at ? session.expires_at * 1000 : null;
+            if (expiresAt && Date.now() > expiresAt) {
+              await supabase.auth.signOut();
+              return;
+            }
+
+            // If no session tracking data exists or browser was reopened, check session age
             if (!sessionStart || !browserSession || !sessionBrowserSession) {
-              
-              // Check session age from Supabase
-              const sessionAge = Date.now() - (session.expires_at ? (session.expires_at * 1000) : 0);
+              const createdAt = session?.user?.created_at ? new Date(session.user.created_at).getTime() : 0;
+              const sessionAgeMs = Date.now() - createdAt;
               const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-              
-              if (sessionAge > maxAge) {
+
+              if (sessionAgeMs > maxAge) {
                 await supabase.auth.signOut();
               }
             }
