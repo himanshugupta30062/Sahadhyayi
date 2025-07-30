@@ -63,7 +63,7 @@ const Index = () => {
       "@type": "Organization",
       "name": "Sahadhyayi",
       "url": "https://sahadhyayi.com",
-      "logo": "https://sahadhyayi.com/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png",
+      "logo": "https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png",
       "foundingDate": "2024",
       "mission": "To revive deep reading culture and connect readers worldwide as fellow study companions (Sahadhyayi)",
       "sameAs": [
@@ -91,7 +91,7 @@ const Index = () => {
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-center mb-6 sm:mb-8">
               <img
-                src="/lovable-uploads/fff3e49f-a95f-4fcf-ad47-da2dc6626f29.png"
+                src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
                 alt="Sahadhyayi logo - Fellow Reader community platform in Sanskrit"
                 loading="lazy"
                 className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24"
