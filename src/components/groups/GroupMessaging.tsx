@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Send, Users, X } from 'lucide-react';
-import { useGroupMessages, useSendMessage, useGroupMembers, extractMentions } from '@/hooks/useGroups';
+import { useGroupMessages, useSendMessage, useGroupMembers } from '@/hooks/useGroups';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -181,6 +181,18 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
       const newCursorPos = atIndex + username.length + 2;
       inputRef.current?.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
+  };
+
+  const extractMentions = (text: string): string[] => {
+    const mentionRegex = /@(\w+)/g;
+    const mentions: string[] = [];
+    let match;
+    
+    while ((match = mentionRegex.exec(text)) !== null) {
+      mentions.push(match[1]);
+    }
+    
+    return mentions;
   };
 
   const renderMessage = (message: Message) => {
