@@ -24,28 +24,21 @@ export default defineConfig(({ mode }) => ({
       ext: '.br',
     }),
   ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
   optimizeDeps: {
-    include: ['react', 'react-dom'],
+    include: ['react', 'react-dom', '@radix-ui/react-tooltip'],
     force: true,
-    esbuildOptions: {
-      jsx: 'transform',
-      jsxFactory: 'React.createElement',
-      jsxFragment: 'React.Fragment',
-    }
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(mode),
     global: 'globalThis',
   },
-  esbuild: {
-    jsx: 'transform',
-    jsxFactory: 'React.createElement',
-    jsxFragment: 'React.Fragment',
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      "react": path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+    },
+    dedupe: ['react', 'react-dom'],
   },
   build: {
     assetsDir: 'assets',
