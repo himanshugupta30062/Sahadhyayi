@@ -13,9 +13,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react({
-      jsxImportSource: undefined,
-    }),
+    react(),
     mode === 'development' && componentTagger(),
     compression({
       algorithm: 'gzip',
