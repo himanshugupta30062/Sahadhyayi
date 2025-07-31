@@ -38,7 +38,6 @@ export const useAutoLogout = () => {
     if (!user || !isProtectedRoute()) return;
 
     try {
-      console.log('[AUTO-LOGOUT] Logging out due to inactivity');
       await signOut();
       
       // Clear all session data
@@ -67,7 +66,6 @@ export const useAutoLogout = () => {
     if (!user || !isProtectedRoute()) return;
 
     try {
-      console.log('[AUTO-LOGOUT] Logging out due to session timeout');
       await signOut();
       
       // Clear all session data
@@ -100,7 +98,6 @@ export const useAutoLogout = () => {
     
     // If no session storage ID but localStorage has one, it means browser was reopened
     if (browserSessionId && !sessionSessionId) {
-      console.log('[AUTO-LOGOUT] Browser was reopened, logging out');
       handleInactivityLogout();
       return false;
     }
@@ -125,7 +122,6 @@ export const useAutoLogout = () => {
       handleInactivityLogout();
     }, INACTIVITY_TIMEOUT);
 
-    console.log('[AUTO-LOGOUT] Timer reset - user activity detected');
   }, [user, handleInactivityLogout, isProtectedRoute]);
 
   // Setup session timeout
@@ -206,7 +202,6 @@ export const useAutoLogout = () => {
       return;
     }
 
-    console.log('[AUTO-LOGOUT] Activating enhanced auto-logout for protected route');
 
     // Generate unique session ID for browser session tracking
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -273,7 +268,6 @@ export const useAutoLogout = () => {
         sessionTimeoutRef.current = null;
       }
 
-      console.log('[AUTO-LOGOUT] Cleanup completed');
     };
   }, [user, handleActivity, resetTimer, isProtectedRoute, handleInactivityLogout, handleVisibilityChange, handleBeforeUnload, checkBrowserSession, setupSessionTimeout]);
 

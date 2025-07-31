@@ -68,11 +68,12 @@ export const useAskQuestion = () => {
         description: "Your question has been sent to the author.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Failed to submit question';
       toast({
-        title: "Error",
-        description: error.message || "Failed to submit question",
-        variant: "destructive",
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
       });
     },
   });
@@ -105,11 +106,12 @@ export const useAnswerQuestion = () => {
         description: "Your answer has been published.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Failed to answer question';
       toast({
-        title: "Error",
-        description: error.message || "Failed to answer question",
-        variant: "destructive",
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
       });
     },
   });

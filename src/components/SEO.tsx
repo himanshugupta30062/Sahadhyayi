@@ -12,7 +12,7 @@ interface SEOProps {
   publishedTime?: string;
   modifiedTime?: string;
   keywords?: string[];
-  schema?: any;
+  schema?: Record<string, unknown>;
   noIndex?: boolean;
   alternateUrls?: { hreflang: string; href: string }[];
   breadcrumbs?: { name: string; url: string }[];

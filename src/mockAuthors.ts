@@ -5,7 +5,7 @@ export interface MockAuthor {
   profile_image_url: string | null;
   location: string;
   website_url: string | null;
-  social_links: any;
+  social_links: Record<string, string>;
   genres: string[];
   books_count: number;
   followers_count: number;

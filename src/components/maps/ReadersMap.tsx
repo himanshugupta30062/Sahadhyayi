@@ -26,7 +26,7 @@ interface ReadersMapProps {
   readersLoading: boolean;
   readersError: string | null;
   mapsLoaded: boolean;
-  darkMapStyle: any[];
+  darkMapStyle: google.maps.MapTypeStyle[];
   selectedBook: BookOption | null;
   userLocation?: { lat: number; lng: number } | null;
 }
@@ -41,9 +41,9 @@ export const ReadersMap = ({
   userLocation
 }: ReadersMapProps) => {
   const readerMapRef = useRef<HTMLDivElement>(null);
-  const [readerMap, setReaderMap] = useState<any>(null);
-  const [readerMarkers, setReaderMarkers] = useState<any[]>([]);
-  const [infoWindows, setInfoWindows] = useState<any[]>([]);
+  const [readerMap, setReaderMap] = useState<google.maps.Map | null>(null);
+  const [readerMarkers, setReaderMarkers] = useState<google.maps.Marker[]>([]);
+  const [infoWindows, setInfoWindows] = useState<google.maps.InfoWindow[]>([]);
   const [currentUserLocation, setCurrentUserLocation] = useState<{ lat: number; lng: number } | null>(userLocation || null);
 
   useEffect(() => {
