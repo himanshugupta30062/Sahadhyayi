@@ -16,7 +16,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
-import { usePageVisitTracker } from '@/hooks/usePageVisitTracker';
+import usePageVisitTracker from '@/hooks/usePageVisitTracker';
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Blog from "./pages/Blog";

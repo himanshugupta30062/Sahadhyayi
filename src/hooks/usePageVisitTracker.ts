@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export const usePageVisitTracker = () => {
+const usePageVisitTracker = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const recordVisit = async () => {
@@ -43,3 +43,5 @@ export const usePageVisitTracker = () => {
     recordVisit();
   }, []);
 };
+
+export default usePageVisitTracker;
