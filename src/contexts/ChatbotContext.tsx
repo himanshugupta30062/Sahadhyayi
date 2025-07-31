@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
 import { getWebsiteContext, generateEnhancedPrompt, searchRelevantBooks, getBookSummaries, BookData } from '@/utils/enhancedChatbotKnowledge';
