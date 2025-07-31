@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, MessageCircle, Calendar, Settings } from 'lucide-react';
-import { useUserJoinedGroups } from '@/hooks/useGroups';
+import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import GroupMessaging from './GroupMessaging';
 import { formatDistanceToNow } from 'date-fns';
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Plus, Calendar } from 'lucide-react';
-import { useUserGroups } from '@/hooks/useGroups';
+import { useUserGroups } from '@/hooks/useUserGroups';
 import { Link } from 'react-router-dom';
 
 const MyGroups = () => {

@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { Users, Plus, Search, Calendar, MapPin, Book, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useUserJoinedGroups, useCreateGroup } from '@/hooks/useGroups';
+import { useUserJoinedGroups } from '@/hooks/useUserGroups';
+import { useCreateGroup } from '@/hooks/useGroupManagement';
 
 interface ReadingGroup {
   id: string;

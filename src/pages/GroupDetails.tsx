@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/SEO';
-import { useGroups, useGroupMembers } from '@/hooks/useGroups';
+import { useGroups } from '@/hooks/useGroupManagement';
+import { useGroupMembers } from '@/hooks/useGroupMessaging';
 import GroupChatWindow from '@/components/social/GroupChatWindow';
 
 const GroupDetails = () => {

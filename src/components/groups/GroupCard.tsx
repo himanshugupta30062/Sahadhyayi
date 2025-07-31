@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Calendar, MapPin, BookOpen, MessageCircle } from 'lucide-react';
-import { Group } from '@/hooks/useGroups';
-import { useJoinGroup, useLeaveGroup } from '@/hooks/useGroups';
+import { Group } from '@/hooks/useGroupManagement';
+import { useJoinGroup, useLeaveGroup } from '@/hooks/useGroupManagement';
 
 interface GroupCardProps {
   group: Group & { group_members?: { count: number }[] };
