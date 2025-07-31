@@ -1,9 +1,9 @@
 
-import React, { useEffect } from 'react';
+import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const usePageVisitTracker = () => {
-  useEffect(() => {
+  React.useEffect(() => {
     const recordVisit = async () => {
       try {
         // Get basic visitor info
