@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import LibraryPagination from './LibraryPagination';
+import { searchExternalSources, type ExternalBook } from '@/utils/searchExternalSources';
 import {
   Select,
   SelectContent,
@@ -76,7 +77,9 @@ const BooksCollection = ({
   // Modal state for book selection
   const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [foundBooks, setFoundBooks] = useState<any[]>([]);
+  const [openAccessBooks, setOpenAccessBooks] = useState<ExternalBook[]>([]);
   const [lastSearchTerm, setLastSearchTerm] = useState('');
+  const [useExternalSources, setUseExternalSources] = useState(true);
 
   // Pagination state for personal library only
   const [pageSizePersonal, setPageSizePersonal] = useState(10);
@@ -108,10 +111,23 @@ const BooksCollection = ({
   const handleSearch = async (searchTerm: string) => {
     console.log('🔍 Starting book search for:', searchTerm);
     const results = await searchBooks(searchTerm);
-    
-    if (results && results.length > 0) {
-      console.log('📚 Found books:', results.length);
+    let external: ExternalBook[] = [];
+    if (useExternalSources) {
+      try {
+        external = await searchExternalSources(searchTerm);
+      } catch (err) {
+        console.error('External search failed', err);
+      }
+    }
+
+    const uniqueExternal = external.filter(ext => {
+      return !results.some(r => r.title === ext.title && r.author === ext.author);
+    });
+
+    if ((results && results.length > 0) || uniqueExternal.length > 0) {
+      console.log('📚 Found books:', results.length, 'external:', uniqueExternal.length);
       setFoundBooks(results);
+      setOpenAccessBooks(uniqueExternal);
       setLastSearchTerm(searchTerm);
       setShowSelectionModal(true);
     }
@@ -296,7 +312,11 @@ const BooksCollection = ({
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <div className="flex-1 w-full">
-              <BookSearchBar onSearch={handleSearch} loading={searchLoading} />
+              <BookSearchBar
+                onSearch={handleSearch}
+                loading={searchLoading}
+                onToggleExternal={setUseExternalSources}
+              />
             </div>
             <div className="flex gap-2">
               <Button
@@ -493,8 +513,12 @@ const BooksCollection = ({
       {/* Book Selection Modal */}
       <BookSelectionModal
         isOpen={showSelectionModal}
-        onClose={() => setShowSelectionModal(false)}
+        onClose={() => {
+          setShowSelectionModal(false);
+          setOpenAccessBooks([]);
+        }}
         books={foundBooks}
+        externalBooks={openAccessBooks}
         searchTerm={lastSearchTerm}
         onBooksAdded={handleBooksAdded}
       />

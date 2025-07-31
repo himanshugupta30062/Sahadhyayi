@@ -8,10 +8,12 @@ import { useToast } from '@/hooks/use-toast';
 interface BookSearchBarProps {
   onSearch: (searchTerm: string) => void;
   loading: boolean;
+  onToggleExternal?: (value: boolean) => void;
 }
 
-const BookSearchBar: React.FC<BookSearchBarProps> = ({ onSearch, loading }) => {
+const BookSearchBar: React.FC<BookSearchBarProps> = ({ onSearch, loading, onToggleExternal }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [useExternal, setUseExternal] = useState(true);
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -56,8 +58,14 @@ const BookSearchBar: React.FC<BookSearchBarProps> = ({ onSearch, loading }) => {
     setSearchTerm(value);
   };
 
+  const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.checked;
+    setUseExternal(val);
+    onToggleExternal?.(val);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3 w-full max-w-2xl">
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-2xl">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input
@@ -86,6 +94,12 @@ const BookSearchBar: React.FC<BookSearchBarProps> = ({ onSearch, loading }) => {
           </>
         )}
       </Button>
+      {onToggleExternal && (
+        <label className="flex items-center text-xs gap-2 pl-1">
+          <input type="checkbox" checked={useExternal} onChange={handleToggle} />
+          Search External Sources
+        </label>
+      )}
     </form>
   );
 };
