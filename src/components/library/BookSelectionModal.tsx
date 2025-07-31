@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BookOpen, Download, Plus, Check, User } from 'lucide-react';
+import OpenAccessBookCard from '@/components/books/OpenAccessBookCard';
+import type { ExternalBook } from '@/utils/searchExternalSources';
 import { Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
 import { useAddToPersonalLibrary } from '@/hooks/usePersonalLibrary';
@@ -30,11 +32,12 @@ interface BookSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   books: BookSearchResult[];
+  externalBooks?: ExternalBook[];
   searchTerm: string;
   onBooksAdded?: () => void;
 }
 
-const BookSelectionModal = ({ isOpen, onClose, books, searchTerm, onBooksAdded }: BookSelectionModalProps) => {
+const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], searchTerm, onBooksAdded }: BookSelectionModalProps) => {
   const { user } = useAuth();
   const addToLibraryMutation = useAddToPersonalLibrary();
   const { saveSelectedBooks, loading: isSaving } = useBookSearch();
@@ -318,6 +321,20 @@ const BookSelectionModal = ({ isOpen, onClose, books, searchTerm, onBooksAdded }
             );
           })}
         </div>
+
+        {externalBooks.length > 0 && (
+          <div className="mt-6 space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              <span>\ud83d\udcda Found on Open Access Sources</span>
+            </h3>
+            <div className="grid gap-4">
+              {externalBooks.map(book => (
+                <OpenAccessBookCard key={book.id} book={book} />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex justify-between items-center gap-2 mt-6 pt-4 border-t">
           <div className="text-sm text-muted-foreground">
