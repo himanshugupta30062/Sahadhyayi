@@ -109,14 +109,13 @@ const BooksCollection = ({
   }, [personalLibrary]);
 
   const handleSearch = async (searchTerm: string) => {
-    console.log('🔍 Starting book search for:', searchTerm);
     const results = await searchBooks(searchTerm);
     let external: ExternalBook[] = [];
     if (useExternalSources) {
       try {
         external = await searchExternalSources(searchTerm);
-      } catch (err) {
-        console.error('External search failed', err);
+      } catch {
+        // ignore external search errors
       }
     }
 
@@ -125,7 +124,6 @@ const BooksCollection = ({
     });
 
     if ((results && results.length > 0) || uniqueExternal.length > 0) {
-      console.log('📚 Found books:', results.length, 'external:', uniqueExternal.length);
       setFoundBooks(results);
       setOpenAccessBooks(uniqueExternal);
       setLastSearchTerm(searchTerm);
@@ -149,18 +147,8 @@ const BooksCollection = ({
   };
 
   const getFilteredBooks = (books: Book[]) => {
-    console.log('Filtering books with criteria:', {
-      searchQuery,
-      selectedGenre,
-      selectedAuthor,
-      selectedYear,
-      selectedLanguage,
-      priceRange,
-      totalBooks: books.length
-    });
 
     const filtered = books.filter(book => {
-      console.log('Checking book:', book.title, 'Language:', book.language, 'Genre:', book.genre);
       
       // Search filter
       if (searchQuery) {
@@ -170,7 +158,6 @@ const BooksCollection = ({
           book.author.toLowerCase().includes(query) ||
           (book.genre && book.genre.toLowerCase().includes(query));
         if (!matchesSearch) {
-          console.log('Book filtered out by search:', book.title);
           return false;
         }
       }
@@ -179,39 +166,32 @@ const BooksCollection = ({
       if (selectedGenre !== 'All') {
         if (selectedGenre === 'Hindi') {
           if (book.language !== 'Hindi') {
-            console.log('Book filtered out by Hindi language filter:', book.title, 'Language:', book.language);
             return false;
           }
         } else if (book.genre !== selectedGenre) {
-          console.log('Book filtered out by genre filter:', book.title, 'Expected:', selectedGenre, 'Actual:', book.genre);
           return false;
         }
       }
 
       // Author filter
       if (selectedAuthor !== 'All' && book.author !== selectedAuthor) {
-        console.log('Book filtered out by author filter:', book.title);
         return false;
       }
 
       // Year filter
       if (selectedYear && book.publication_year !== parseInt(selectedYear)) {
-        console.log('Book filtered out by year filter:', book.title);
         return false;
       }
 
       // Language filter
       if (selectedLanguage !== 'All' && book.language !== selectedLanguage) {
-        console.log('Book filtered out by language filter:', book.title);
         return false;
       }
 
-      console.log('Book passed all filters:', book.title);
       return true;
     });
 
-    console.log('Filtered books result:', filtered.length, 'books');
-    console.log('Hindi books in result:', filtered.filter(book => book.language === 'Hindi').map(book => book.title));
+    
 
     // Sort to prioritize books that have both a cover image and PDF first,
     // followed by those that only have a PDF, then the rest
@@ -248,8 +228,7 @@ const BooksCollection = ({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
+    } catch {
       alert('Failed to download PDF. Please try again.');
     }
   };

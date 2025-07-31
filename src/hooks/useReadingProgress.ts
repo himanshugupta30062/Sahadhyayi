@@ -19,11 +19,8 @@ export const useReadingProgress = () => {
     queryKey: ['reading-progress', user?.id],
     queryFn: async () => {
       if (!user) {
-        console.log('No user found, returning empty array');
         return [];
       }
-
-      console.log('Fetching reading progress for user:', user.id);
       
       const { data, error } = await supabase
         .from('reading_progress')
@@ -32,11 +29,8 @@ export const useReadingProgress = () => {
         .order('id', { ascending: false });
 
       if (error) {
-        console.error('Error fetching reading progress:', error);
         throw error;
       }
-
-      console.log('Reading progress data:', data);
       return data as ReadingProgressItem[];
     },
     enabled: !!user,

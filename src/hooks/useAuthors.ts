@@ -1,7 +1,11 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { mockAuthors } from "@/mockAuthors";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { mockAuthors } from '@/mockAuthors';
+
+export interface SocialLinks {
+  [key: string]: string;
+}
 
 export interface Author {
   id: string;
@@ -10,7 +14,7 @@ export interface Author {
   profile_image_url: string | null;
   location: string;
   website_url: string | null;
-  social_links: any;
+  social_links: SocialLinks;
   genres: string[];
   books_count: number;
   followers_count: number;
@@ -65,24 +69,18 @@ export const useAuthors = () => {
   return useQuery({
     queryKey: ['authors'],
     queryFn: async (): Promise<Author[]> => {
-      console.log('Fetching authors with books from database...');
-
       try {
         // Use the new function that only returns authors with books
         const { data, error } = await supabase.rpc('get_authors_with_books');
 
         if (error) {
-          console.error('Failed to fetch authors with books:', error.message || error);
-          console.info('Using fallback author data due to API error');
           return fallbackAuthors;
         }
 
         if (!data || data.length === 0) {
-          console.warn('No authors with books found, using fallback data');
           return fallbackAuthors;
         }
 
-        console.log('Authors with books fetched successfully:', data.length);
         return data.map((author: any) => ({
           id: author.id,
           name: author.name,
@@ -104,16 +102,13 @@ export const useAuthors = () => {
             [`Meet the author of ${author.actual_books_count} book${author.actual_books_count > 1 ? 's' : ''}`] : 
             ['Available for consultation']
         })) as Author[];
-      } catch (err) {
-        console.error('Exception while fetching authors:', err);
-        console.info('Using fallback author data due to exception');
+      } catch {
         return fallbackAuthors;
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      console.error(`Author fetch attempt ${failureCount + 1} failed:`, error);
+    retry: (failureCount) => {
       return failureCount < 2;
     },
     retryDelay: 1000,
@@ -139,7 +134,6 @@ export const usePaginatedAuthors = (page = 1, pageSize = 10) => {
           .order('name', { ascending: true });
 
         if (error || !data) {
-          console.error('Failed to fetch paginated authors:', error?.message || error);
           return {
             authors: fallbackAuthors.slice(startIndex, endIndex + 1),
             total: fallbackAuthors.length,
@@ -170,8 +164,7 @@ export const usePaginatedAuthors = (page = 1, pageSize = 10) => {
         })) as Author[];
 
         return { authors, total: count ?? authors.length };
-      } catch (err) {
-        console.error('Exception while fetching paginated authors:', err);
+      } catch {
         return {
           authors: fallbackAuthors.slice(startIndex, endIndex + 1),
           total: fallbackAuthors.length,

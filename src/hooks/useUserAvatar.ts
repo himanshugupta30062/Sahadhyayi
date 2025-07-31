@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export interface UserAvatar {
   id: string;
   user_id: string;
-  avatar_json?: any;
+  avatar_json?: Record<string, unknown>;
   avatar_img_url?: string;
   created_at: string;
   updated_at: string;
@@ -39,7 +39,7 @@ export const useUpdateUserAvatar = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (avatarData: { avatar_json?: any; avatar_img_url?: string }) => {
+    mutationFn: async (avatarData: { avatar_json?: Record<string, unknown>; avatar_img_url?: string }) => {
       if (!user) throw new Error('No authenticated user');
 
       const { data, error } = await supabase

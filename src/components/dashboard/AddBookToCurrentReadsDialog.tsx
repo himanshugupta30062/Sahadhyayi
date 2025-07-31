@@ -54,10 +54,11 @@ const AddBookToCurrentReadsDialog = () => {
       setBookTitle('');
       setTotalPages('');
       setCoverUrl('');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to add book';
       toast({
         title: 'Error',
-        description: error.message || 'Failed to add book',
+        description: message,
         variant: 'destructive',
       });
     } finally {
