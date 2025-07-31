@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import * as React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -14,11 +14,11 @@ interface WhatsAppContact {
 
 export const useWhatsAppContacts = () => {
   const { user } = useAuth();
-  const [contacts, setContacts] = useState<WhatsAppContact[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [contacts, setContacts] = React.useState<WhatsAppContact[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const fetchContacts = useCallback(async () => {
+  const fetchContacts = React.useCallback(async () => {
     if (!user) return;
 
     setIsLoading(true);
@@ -111,7 +111,7 @@ export const useWhatsAppContacts = () => {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     fetchContacts();
   }, [user, fetchContacts]);
 

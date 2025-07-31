@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import React, { useEffect } from 'react';
+import * as React from 'react';
 import { toast } from '@/hooks/use-toast';
 
 export interface PrivateMessage {
@@ -85,7 +85,7 @@ export const useGroupMessages = (groupId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!groupId || !user?.id) return;
 
     const channel = supabase

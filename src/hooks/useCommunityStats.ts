@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const COMMUNITY_STATS_URL = import.meta.env.VITE_COMMUNITY_STATS_URL as string | undefined;
@@ -40,7 +40,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     }
   };
 
-  const [stats, setStats] = useState<CommunityStats>(() => {
+  const [stats, setStats] = React.useState<CommunityStats>(() => {
     const cached = getCachedStats();
     return (
       cached || {
@@ -50,8 +50,8 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
       }
     );
   });
-  const [isLoading, setIsLoading] = useState(autoFetch);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(autoFetch);
+  const [error, setError] = React.useState<string | null>(null);
 
   const fetchStats = async () => {
     setIsLoading(true);
@@ -135,7 +135,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (autoFetch) {
       fetchStats();
     }

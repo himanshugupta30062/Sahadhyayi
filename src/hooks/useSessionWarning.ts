@@ -1,16 +1,16 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import * as React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const WARNING_TIME = 5 * 60 * 1000; // Show warning 5 minutes before timeout
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes total
 
 export const useSessionWarning = () => {
-  const [showWarning, setShowWarning] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [showWarning, setShowWarning] = React.useState(false);
+  const [timeRemaining, setTimeRemaining] = React.useState(0);
   const { user } = useAuth();
 
-  const extendSession = useCallback(() => {
+  const extendSession = React.useCallback(() => {
     setShowWarning(false);
     setTimeRemaining(0);
     
@@ -20,7 +20,7 @@ export const useSessionWarning = () => {
     }
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!user) {
       setShowWarning(false);
       return;

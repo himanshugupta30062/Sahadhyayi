@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
 import { getWebsiteContext, generateEnhancedPrompt, searchRelevantBooks, getBookSummaries, BookData } from '@/utils/enhancedChatbotKnowledge';
@@ -23,14 +23,14 @@ interface ChatbotContextType {
   trainingDataCount: number;
 }
 
-const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
+const ChatbotContext = React.createContext<ChatbotContextType | undefined>(undefined);
 
-export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [trainingDataCount, setTrainingDataCount] = useState(0);
+export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [messages, setMessages] = React.useState<Message[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isInitialized, setIsInitialized] = React.useState(false);
+  const [trainingDataCount, setTrainingDataCount] = React.useState(0);
   
   const { 
     initializeWebsiteKnowledge, 
@@ -40,7 +40,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
   } = useEnhancedGeminiTraining();
 
   // Initialize knowledge base and get stats
-  useEffect(() => {
+  React.useEffect(() => {
     const initializeKnowledge = async () => {
       if (!isInitialized) {
         try {
@@ -57,15 +57,15 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
     initializeKnowledge();
   }, [initializeWebsiteKnowledge, isInitialized, getTrainingDataStats]);
 
-  const toggleChat = useCallback(() => {
+  const toggleChat = React.useCallback(() => {
     setIsOpen(prev => !prev);
   }, []);
 
-  const closeChat = useCallback(() => {
+  const closeChat = React.useCallback(() => {
     setIsOpen(false);
   }, []);
 
-  const sendMessage = useCallback(async (userMessage: string) => {
+  const sendMessage = React.useCallback(async (userMessage: string) => {
     let relevantBooks: BookData[] = [];
     
     // Add user message
@@ -199,7 +199,7 @@ export const ChatbotProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useChatbot = () => {
-  const context = useContext(ChatbotContext);
+  const context = React.useContext(ChatbotContext);
   if (context === undefined) {
     throw new Error('useChatbot must be used within a ChatbotProvider');
   }

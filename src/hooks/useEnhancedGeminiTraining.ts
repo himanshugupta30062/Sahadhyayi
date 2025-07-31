@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import React, { useCallback } from 'react';
+import * as React from 'react';
 import { populateInitialTrainingData } from '@/utils/enhancedChatbotKnowledge';
 
 export interface TrainingDataPoint {
@@ -15,7 +15,7 @@ export interface TrainingDataPoint {
 export const useEnhancedGeminiTraining = () => {
   const { user } = useAuth();
 
-  const saveTrainingData = useCallback(async (data: TrainingDataPoint) => {
+  const saveTrainingData = React.useCallback(async (data: TrainingDataPoint) => {
     if (!user?.id) return;
 
     try {
@@ -44,7 +44,7 @@ export const useEnhancedGeminiTraining = () => {
     }
   }, [user?.id]);
 
-  const initializeWebsiteKnowledge = useCallback(async () => {
+  const initializeWebsiteKnowledge = React.useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -72,7 +72,7 @@ export const useEnhancedGeminiTraining = () => {
     }
   }, [user?.id]);
 
-  const saveChatInteraction = useCallback(async (
+  const saveChatInteraction = React.useCallback(async (
     userMessage: string,
     botResponse: string,
     context: string = 'general_chat'
@@ -91,7 +91,7 @@ export const useEnhancedGeminiTraining = () => {
     });
   }, [saveTrainingData]);
 
-  const saveBookSpecificInteraction = useCallback(async (
+  const saveBookSpecificInteraction = React.useCallback(async (
     bookId: string,
     bookTitle: string,
     userQuery: string,
@@ -111,7 +111,7 @@ export const useEnhancedGeminiTraining = () => {
     });
   }, [saveTrainingData]);
 
-  const exportTrainingData = useCallback(async () => {
+  const exportTrainingData = React.useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -146,7 +146,7 @@ export const useEnhancedGeminiTraining = () => {
     }
   }, [user?.id]);
 
-  const getTrainingDataStats = useCallback(async () => {
+  const getTrainingDataStats = React.useCallback(async () => {
     if (!user?.id) return 0;
 
     try {

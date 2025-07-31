@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import * as React from 'react';
 
 export interface Quote {
   id: number;
@@ -13,10 +13,10 @@ interface QuotesContextType {
   removeQuote: (id: number) => void;
 }
 
-const QuotesContext = createContext<QuotesContextType | undefined>(undefined);
+const QuotesContext = React.createContext<QuotesContextType | undefined>(undefined);
 
 export const useQuotes = () => {
-  const context = useContext(QuotesContext);
+  const context = React.useContext(QuotesContext);
   if (!context) {
     throw new Error('useQuotes must be used within a QuotesProvider');
   }
@@ -24,16 +24,16 @@ export const useQuotes = () => {
 };
 
 export const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
-  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [quotes, setQuotes] = React.useState<Quote[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const stored = localStorage.getItem('savedQuotes');
     if (stored) {
       setQuotes(JSON.parse(stored));
     }
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem('savedQuotes', JSON.stringify(quotes));
   }, [quotes]);
 
