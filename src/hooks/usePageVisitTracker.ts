@@ -44,5 +44,4 @@ const usePageVisitTracker = () => {
   }, []);
 };
 
-export { usePageVisitTracker };
 export default usePageVisitTracker;
