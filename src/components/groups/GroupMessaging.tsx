@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Send, Users, X } from 'lucide-react';
-import { useGroupMessages, useSendMessage, useGroupMembers } from '@/hooks/useGroups';
+import { useGroupMessages, useSendMessage, useGroupMembers } from '@/hooks/useGroupMessaging';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
