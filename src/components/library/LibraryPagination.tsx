@@ -70,12 +70,35 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
     }
   };
 
-  // Generate all page numbers without ellipsis
+  // Generate page numbers with ellipsis if needed
   const getVisiblePages = () => {
-    const pages: number[] = [];
-    for (let i = 1; i <= totalPages; i++) {
+    type PageType = number | "ellipsis";
+    const pages: PageType[] = [];
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+      return pages;
+    }
+
+    pages.push(1);
+    const left = Math.max(currentPage - 1, 2);
+    const right = Math.min(currentPage + 1, totalPages - 1);
+
+    if (left > 2) {
+      pages.push("ellipsis");
+    }
+
+    for (let i = left; i <= right; i++) {
       pages.push(i);
     }
+
+    if (right < totalPages - 1) {
+      pages.push("ellipsis");
+    }
+
+    pages.push(totalPages);
     return pages;
   };
 
@@ -163,27 +186,33 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                 </PaginationItem>
 
                 {/* Page Numbers */}
-                {visiblePages.map((page) => (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      href="#"
-                      isActive={page === currentPage}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        onPageChange(page);
-                      }}
-                      className={`border-2 font-medium transition-all ${
-                        isMobile ? 'h-9 w-9 text-sm' : 'h-10 w-10'
-                      } ${
-                        page === currentPage
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                          : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                      }`}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
+                {visiblePages.map((page, idx) =>
+                  page === "ellipsis" ? (
+                    <PaginationItem key={`ellipsis-${idx}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        isActive={page === currentPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onPageChange(page);
+                        }}
+                        className={`border-2 font-medium transition-all ${
+                          isMobile ? 'h-9 w-9 text-sm' : 'h-10 w-10'
+                        } ${
+                          page === currentPage
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
+                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                        }`}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                )}
 
                 {/* Next Page */}
                 <PaginationItem>
