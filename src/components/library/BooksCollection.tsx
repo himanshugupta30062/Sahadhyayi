@@ -417,30 +417,14 @@ const BooksCollection = ({
               <>
                 <BooksGrid books={filteredAllBooks} onDownloadPDF={handleDownloadPDF} />
                 
-                {/* Pagination Controls */}
-                <div className="flex items-center justify-center gap-4 py-6">
-                  <Button
-                    variant="outline"
-                    disabled={page === 1}
-                    onClick={() => setPage(page - 1)}
-                    className="flex items-center gap-2"
-                  >
-                    Previous
-                  </Button>
-                  
-                  <span className="text-sm font-medium text-gray-700 px-4">
-                    Page {page} of {totalPages}
-                  </span>
-                  
-                  <Button
-                    variant="outline"
-                    disabled={page === totalPages}
-                    onClick={() => setPage(page + 1)}
-                    className="flex items-center gap-2"
-                  >
-                    Next
-                  </Button>
-                </div>
+                <LibraryPagination
+                  totalCount={paginatedData?.totalCount ?? 0}
+                  currentPage={page}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                  onPageSizeChange={setPageSize}
+                  scrollTargetRef={allGridRef}
+                />
               </>
             )}
           </div>

@@ -5,7 +5,6 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationEllipsis,
 } from '@/components/ui/pagination';
 import {
   Select,
@@ -71,52 +70,12 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
     }
   };
 
-  // Generate page numbers for display with mobile responsiveness
-  const getVisiblePages = (isMobile = false) => {
-    const pages: (number | 'ellipsis')[] = [];
-    const maxPages = isMobile ? 3 : 7; // Show fewer pages on mobile
-    
-    if (totalPages <= maxPages) {
-      // Show all pages if within limit
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (isMobile) {
-        // Mobile: show current page and maybe one on each side
-        if (currentPage <= 2) {
-          pages.push(1, 2, 3, 'ellipsis', totalPages);
-        } else if (currentPage >= totalPages - 1) {
-          pages.push(1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages);
-        } else {
-          pages.push(1, 'ellipsis', currentPage, 'ellipsis', totalPages);
-        }
-      } else {
-        // Desktop: original logic
-        pages.push(1);
-        
-        if (currentPage <= 4) {
-          for (let i = 2; i <= 5; i++) {
-            pages.push(i);
-          }
-          pages.push('ellipsis');
-          pages.push(totalPages);
-        } else if (currentPage >= totalPages - 3) {
-          pages.push('ellipsis');
-          for (let i = totalPages - 4; i <= totalPages; i++) {
-            pages.push(i);
-          }
-        } else {
-          pages.push('ellipsis');
-          for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-            pages.push(i);
-          }
-          pages.push('ellipsis');
-          pages.push(totalPages);
-        }
-      }
+  // Generate all page numbers without ellipsis
+  const getVisiblePages = () => {
+    const pages: number[] = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
     }
-    
     return pages;
   };
 
@@ -133,7 +92,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const visiblePages = getVisiblePages(isMobile);
+  const visiblePages = getVisiblePages();
 
   if (totalCount === 0) {
     return null;
@@ -204,29 +163,25 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
                 </PaginationItem>
 
                 {/* Page Numbers */}
-                {visiblePages.map((page, index) => (
-                  <PaginationItem key={index}>
-                    {page === 'ellipsis' ? (
-                      <PaginationEllipsis className={isMobile ? 'h-9 w-6' : ''} />
-                    ) : (
-                      <PaginationLink
-                        href="#"
-                        isActive={page === currentPage}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          onPageChange(page);
-                        }}
-                        className={`border-2 font-medium transition-all ${
-                          isMobile ? 'h-9 w-9 text-sm' : 'h-10 w-10'
-                        } ${
-                          page === currentPage
-                            ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                        }`}
-                      >
-                        {page}
-                      </PaginationLink>
-                    )}
+                {visiblePages.map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href="#"
+                      isActive={page === currentPage}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onPageChange(page);
+                      }}
+                      className={`border-2 font-medium transition-all ${
+                        isMobile ? 'h-9 w-9 text-sm' : 'h-10 w-10'
+                      } ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
+                          : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                    >
+                      {page}
+                    </PaginationLink>
                   </PaginationItem>
                 ))}
 
