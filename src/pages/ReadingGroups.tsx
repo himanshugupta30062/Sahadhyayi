@@ -184,7 +184,7 @@ const ReadingGroups = () => {
                 <GroupCard
                   key={group.id}
                   group={group}
-                  isJoined={!!group.user_role}
+                  isJoined={false}
                   onChat={(id) => handleOpenChat(id)}
                 />
               ))}

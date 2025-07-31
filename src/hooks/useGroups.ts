@@ -90,24 +90,13 @@ export const useGroups = () => {
         .from('group_chats')
         .select(`
           *,
-          group_members:group_chat_members(count),
-          user_membership:group_chat_members!left(role, joined_at)
+          group_members:group_chat_members(count)
         `)
-        .eq('group_chat_members.user_id', user?.id || '')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      // Add user_role to each group based on membership
-      const groupsWithMembership = data?.map(group => ({
-        ...group,
-        user_role: group.user_membership?.[0]?.role || null
-      })) || [];
-      
-      return groupsWithMembership as (Group & { 
-        group_members?: { count: number }[];
-        user_role?: string | null;
-      })[];
+      return data || [];
     },
   });
 };

@@ -128,7 +128,7 @@ const BookDetails = () => {
     breadcrumbItems.map(item => ({ name: item.name, url: `https://sahadhyayi.com${item.path}` }))
   );
 
-  const combinedSchema = [bookSchema, breadcrumbSchema];
+  const combinedSchema = [bookSchema, breadcrumbSchema] as any;
 
   const handleViewSummary = () => {
     console.log('View summary clicked for book:', book.title);

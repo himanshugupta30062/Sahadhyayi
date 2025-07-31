@@ -48,7 +48,7 @@ const GroupDetails = () => {
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
-                {group.member_count ?? members.length} members
+                {group.group_members?.[0]?.count ?? members.length} members
               </span>
               {/* Commented out until these properties are added to the groups table
               {group.currentBook && (

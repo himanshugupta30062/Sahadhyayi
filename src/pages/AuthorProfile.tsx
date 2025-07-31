@@ -159,7 +159,7 @@ const AuthorProfile = () => {
   });
 
   const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
-  const combinedSchema = [authorSchema, breadcrumbSchema];
+  const combinedSchema = [authorSchema, breadcrumbSchema] as any;
 
   return (
     <>

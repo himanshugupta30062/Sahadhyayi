@@ -39,14 +39,15 @@ export const useUpdateUserAvatar = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (avatarData: { avatar_json?: Record<string, unknown>; avatar_img_url?: string }) => {
+    mutationFn: async (avatarData: { avatar_json?: any; avatar_img_url?: string }) => {
       if (!user) throw new Error('No authenticated user');
 
       const { data, error } = await supabase
         .from('user_avatars')
         .upsert({
           user_id: user.id,
-          ...avatarData,
+          avatar_json: avatarData.avatar_json,
+          avatar_img_url: avatarData.avatar_img_url,
         })
         .select()
         .single();

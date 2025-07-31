@@ -5,6 +5,7 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
+  PaginationEllipsis,
 } from '@/components/ui/pagination';
 import {
   Select,

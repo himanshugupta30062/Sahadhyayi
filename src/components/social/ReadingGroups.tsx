@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { Users, Plus, Search, Calendar, MapPin, Book, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useUserJoinedGroups, useCreateGroup } from '@/hooks/useGroups';
 
 interface ReadingGroup {
   id: string;
@@ -83,6 +85,10 @@ export const ReadingGroups = () => {
     isPrivate: false
   });
   const { toast } = useToast();
+  
+  // Use real data from database
+  const { data: userGroups = [] } = useUserJoinedGroups();
+  const createGroupMutation = useCreateGroup();
 
   const filteredGroups = groups.filter(group =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -99,31 +105,24 @@ export const ReadingGroups = () => {
     toast({ title: 'Group membership updated!' });
   };
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!newGroup.name.trim() || !newGroup.description.trim()) {
       toast({ title: 'Please fill in all required fields', variant: 'destructive' });
       return;
     }
 
-    const group: ReadingGroup = {
-      id: Date.now().toString(),
-      name: newGroup.name,
-      description: newGroup.description,
-      coverImage: 'https://via.placeholder.com/100/60/orange/white?text=Group',
-      members: 1,
-      maxMembers: newGroup.maxMembers,
-      currentBook: 'No book selected',
-      nextMeeting: 'TBD',
-      location: 'TBD',
-      isJoined: true,
-      isPrivate: newGroup.isPrivate,
-      genre: ['General']
-    };
-
-    setGroups([group, ...groups]);
-    setNewGroup({ name: '', description: '', maxMembers: 25, isPrivate: false });
-    setShowCreateDialog(false);
-    toast({ title: 'Reading group created successfully!' });
+    try {
+      await createGroupMutation.mutateAsync({
+        name: newGroup.name,
+        description: newGroup.description
+      });
+      
+      setNewGroup({ name: '', description: '', maxMembers: 25, isPrivate: false });
+      setShowCreateDialog(false);
+      toast({ title: 'Reading group created successfully!' });
+    } catch (error) {
+      toast({ title: 'Failed to create group', variant: 'destructive' });
+    }
   };
 
   return (
@@ -231,9 +230,95 @@ export const ReadingGroups = () => {
         </CardContent>
       </Card>
 
-      {/* Groups List */}
-      <div className="grid gap-4">
-        {filteredGroups.map((group) => (
+      {/* User's Real Groups */}
+      {userGroups.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900">Your Groups</h3>
+          <div className="grid gap-4">
+            {userGroups.map((membership) => {
+              const group = membership.groups;
+              if (!group) return null;
+              
+              return (
+                <Card key={group.id} className="bg-white shadow-sm border-0 rounded-xl">
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      {/* Group Image/Avatar */}
+                      <div className="w-20 h-12 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg">
+                        {group.image_url ? (
+                          <img
+                            src={group.image_url}
+                            alt={`${group.name} cover`}
+                            className="w-full h-full rounded-lg object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.parentElement!.querySelector('.fallback-text')?.classList.remove('hidden');
+                            }}
+                          />
+                        ) : null}
+                        <div className={`fallback-text ${group.image_url ? 'hidden' : ''}`}>
+                          {group.name?.charAt(0)?.toUpperCase() || 'G'}
+                        </div>
+                      </div>
+                      
+                      {/* Group Info */}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                              {membership.role === 'admin' && (
+                                <Badge variant="outline" className="text-xs">
+                                  Admin
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                              {group.description || 'No description available'}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl"
+                            onClick={() => navigate(`/groups/${group.id}`)}
+                          >
+                            View Group
+                          </Button>
+                        </div>
+                        
+                        {/* Group Stats */}
+                        <div className="flex items-center gap-4 text-sm text-gray-500 mt-3">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            Member since {new Date(membership.joined_at).toLocaleDateString()}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(group.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        
+                        <div className="flex gap-2 mt-3">
+                          <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                            <MessageCircle className="w-4 h-4 mr-1" />
+                            Group Chat
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Mock Groups List */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900">Discover Groups</h3>
+        <div className="grid gap-4">
+          {filteredGroups.map((group) => (
           <Card key={group.id} className="bg-white shadow-sm border-0 rounded-xl">
             <CardContent className="p-4">
               <div className="flex gap-4">
@@ -330,7 +415,8 @@ export const ReadingGroups = () => {
               </div>
             </CardContent>
           </Card>
-        ))}
+          ))}
+        </div>
       </div>
 
       {filteredGroups.length === 0 && (

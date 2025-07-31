@@ -147,7 +147,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
       const avatarDataUrl = 'data:image/svg+xml;base64,' + btoa(avatarSvg);
       
       await updateAvatarMutation.mutateAsync({
-        avatar_json: features,
+        avatar_json: features as any,
         avatar_img_url: avatarDataUrl,
       });
 
