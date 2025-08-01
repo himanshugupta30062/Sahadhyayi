@@ -1,9 +1,8 @@
 
 import React, { createContext, useContext } from 'react';
 
-interface QuotesContextType {
-  // Add any quotes-related functionality here if needed
-}
+// Placeholder type for future quote-related values
+type QuotesContextType = Record<string, never>;
 
 const QuotesContext = createContext<QuotesContextType | undefined>(undefined);
 
