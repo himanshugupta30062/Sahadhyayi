@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
+import Navigation from "@/components/Navigation";
+import GlobalFooter from "@/components/GlobalFooter";
 import Index from "./pages/Index";
 import BookLibrary from "./pages/BookLibrary";
 import SignUp from "./pages/SignUp";
@@ -36,6 +38,7 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <BrowserRouter>
+              <Navigation />
               <div className="min-h-screen bg-background text-foreground">
                 <main className="flex-1">
                   <Routes>
@@ -55,6 +58,7 @@ function App() {
                   </Routes>
                 </main>
               </div>
+              <GlobalFooter />
               <Toaster />
               <Sonner />
             </BrowserRouter>
