@@ -13,15 +13,16 @@ function App() {
     <ErrorBoundary>
       <HelmetProvider>
         <BrowserRouter>
-          <ScrollToTop />
           <div className="min-h-screen bg-background text-foreground">
             <main className="flex-1">
               <Routes>
-                <Route path="/" element={<div>Home Page Works</div>} />
-                <Route path="/library" element={<div>Library Page Works</div>} />
+                <Route path="/" element={<Index />} />
+                <Route path="/library" element={<BookLibrary />} />
               </Routes>
             </main>
           </div>
+          <Toaster />
+          <Sonner />
         </BrowserRouter>
       </HelmetProvider>
     </ErrorBoundary>
