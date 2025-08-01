@@ -6,8 +6,19 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import BookLibrary from "./pages/BookLibrary";
+import SignUp from "./pages/SignUp";
+import SignIn from "./pages/SignIn";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import SocialMedia from "./pages/SocialMedia";
+import Authors from "./pages/Authors";
+import ReadingGroups from "./pages/ReadingGroups";
+import Map from "./pages/Map";
+import About from "./pages/About";
+import Blog from "./pages/Blog";
+import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";;
+import { Toaster as Sonner } from "@/components/ui/sonner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,7 +41,17 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/library" element={<BookLibrary />} />
-                    <Route path="/*" element={<Index />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/signin" element={<SignIn />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/social" element={<SocialMedia />} />
+                    <Route path="/authors" element={<Authors />} />
+                    <Route path="/groups" element={<ReadingGroups />} />
+                    <Route path="/map" element={<Map />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/blog" element={<Blog />} />
+                    <Route path="/*" element={<NotFound />} />
                   </Routes>
                 </main>
               </div>
