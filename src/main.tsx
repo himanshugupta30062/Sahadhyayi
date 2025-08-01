@@ -1,4 +1,5 @@
-import React from 'react';
+
+import { StrictMode } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -15,11 +16,11 @@ if (!container) {
 
 const root = createRoot(container);
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <HelmetProvider>
       <App />
     </HelmetProvider>
-  </React.StrictMode>
+  </StrictMode>
 );
 
 if ('serviceWorker' in navigator) {
