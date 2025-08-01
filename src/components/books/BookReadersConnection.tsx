@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import SignInLink from '@/components/SignInLink';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -193,7 +194,9 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
       ) : (
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-blue-200 shadow-sm text-center">
           <p className="text-gray-600 mb-4">Sign in to connect with fellow readers and share your thoughts</p>
-          <Button variant="outline">Sign In</Button>
+          <Button variant="outline" asChild>
+            <SignInLink>Sign In</SignInLink>
+          </Button>
         </div>
       )}
 
