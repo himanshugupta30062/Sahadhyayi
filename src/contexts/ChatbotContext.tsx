@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
 import { getWebsiteContext, generateEnhancedPrompt, searchRelevantBooks, getBookSummaries, BookData } from '@/utils/enhancedChatbotKnowledge';
@@ -23,14 +23,14 @@ interface ChatbotContextType {
   trainingDataCount: number;
 }
 
-const ChatbotContext = React.createContext<ChatbotContextType | undefined>(undefined);
+const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
 
 export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [messages, setMessages] = React.useState<Message[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isInitialized, setIsInitialized] = React.useState(false);
-  const [trainingDataCount, setTrainingDataCount] = React.useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [trainingDataCount, setTrainingDataCount] = useState(0);
   
   const { 
     initializeWebsiteKnowledge, 
@@ -40,7 +40,7 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
   } = useEnhancedGeminiTraining();
 
   // Initialize knowledge base and get stats
-  React.useEffect(() => {
+  useEffect(() => {
     const initializeKnowledge = async () => {
       if (!isInitialized) {
         try {
@@ -57,15 +57,15 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
     initializeKnowledge();
   }, [initializeWebsiteKnowledge, isInitialized, getTrainingDataStats]);
 
-  const toggleChat = React.useCallback(() => {
+  const toggleChat = useCallback(() => {
     setIsOpen(prev => !prev);
   }, []);
 
-  const closeChat = React.useCallback(() => {
+  const closeChat = useCallback(() => {
     setIsOpen(false);
   }, []);
 
-  const sendMessage = React.useCallback(async (userMessage: string) => {
+  const sendMessage = useCallback(async (userMessage: string) => {
     let relevantBooks: BookData[] = [];
     
     // Add user message
@@ -102,7 +102,6 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
         });
       }
 
-
       // Call Supabase Edge Function for AI response
       const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
         body: { 
@@ -111,7 +110,6 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
           bookContext: relevantBooks.length > 0 ? relevantBooks : undefined
         }
       });
-
 
       let botResponse = "";
 
@@ -199,7 +197,7 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
 };
 
 export const useChatbot = () => {
-  const context = React.useContext(ChatbotContext);
+  const context = useContext(ChatbotContext);
   if (context === undefined) {
     throw new Error('useChatbot must be used within a ChatbotProvider');
   }
