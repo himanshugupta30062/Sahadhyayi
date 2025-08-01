@@ -12,6 +12,7 @@ import GlobalFooter from "@/components/GlobalFooter";
 import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import BookLibrary from "./pages/BookLibrary";
+import BookDetails from "./pages/BookDetails";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import Dashboard from "./pages/Dashboard";
@@ -66,6 +67,8 @@ function App() {
                       <Route path="/map" element={<Map />} />
                       <Route path="/about" element={<About />} />
                       <Route path="/blog" element={<Blog />} />
+                      <Route path="/book/:id" element={<BookDetails />} />
+                      <Route path="/books/:bookId" element={<BookDetails />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
