@@ -1,4 +1,5 @@
-import React from 'react';
+
+import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const COMMUNITY_STATS_URL = import.meta.env.VITE_COMMUNITY_STATS_URL as string | undefined;
