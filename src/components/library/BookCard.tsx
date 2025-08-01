@@ -67,14 +67,26 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
+              e.currentTarget.src = '/default-cover.jpg';
+              e.currentTarget.onerror = null; // Prevent infinite loop
+            }}
+          />
+        ) : (
+          <img
+            src="/default-cover.jpg"
+            alt={book.title}
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              // If default cover also fails, show placeholder
               e.currentTarget.style.display = 'none';
               e.currentTarget.nextElementSibling?.classList.remove('hidden');
             }}
           />
-        ) : null}
+        )}
         
-        {/* Fallback placeholder */}
-        <div className={`w-full h-full flex items-center justify-center text-white p-4 ${book.cover_image_url ? 'hidden' : ''}`}>
+        {/* Fallback placeholder when both cover_url and default-cover.jpg fail */}
+        <div className="hidden w-full h-full flex items-center justify-center text-white p-4">
           <div className="text-center">
             <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
             <div className="text-sm font-medium leading-tight">
@@ -92,11 +104,18 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           {/* Download Button */}
           <button
             onClick={handleDownload}
-            className="flex flex-col items-center gap-2 bg-gray-700/80 backdrop-blur-sm hover:bg-gray-800/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
-            title="Download PDF"
+            disabled={!book.pdf_url}
+            className={`flex flex-col items-center gap-2 backdrop-blur-sm text-white px-3 py-2 rounded-lg transition-all duration-200 ${
+              book.pdf_url 
+                ? 'bg-gray-700/80 hover:bg-gray-800/90 hover:scale-105 cursor-pointer' 
+                : 'bg-gray-500/60 cursor-not-allowed opacity-60'
+            }`}
+            title={book.pdf_url ? "Download PDF" : "PDF not available"}
           >
             <Download className="w-5 h-5" />
-            <span className="text-xs font-medium">Download</span>
+            <span className="text-xs font-medium">
+              {book.pdf_url ? 'Download' : 'No PDF'}
+            </span>
           </button>
 
           {/* Offline Toggle */}

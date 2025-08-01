@@ -8,6 +8,7 @@ export interface ExternalBook {
   size?: string;
   md5: string;
   downloadUrl: string;
+  source?: 'libgen' | 'open_access';
 }
 
 /**

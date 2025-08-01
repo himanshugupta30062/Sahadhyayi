@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import SocialMedia from "./pages/SocialMedia";
 import Authors from "./pages/Authors";
+import AuthorDetails from "./pages/AuthorDetails";
 import ReadingGroups from "./pages/ReadingGroups";
 import Map from "./pages/Map";
 import About from "./pages/About";
@@ -60,6 +61,7 @@ function App() {
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/social" element={<SocialMedia />} />
                       <Route path="/authors" element={<Authors />} />
+                      <Route path="/author/:id" element={<AuthorDetails />} />
                       <Route path="/groups" element={<ReadingGroups />} />
                       <Route path="/map" element={<Map />} />
                       <Route path="/about" element={<About />} />

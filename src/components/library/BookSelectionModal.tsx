@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BookOpen, Download, Plus, Check, User } from 'lucide-react';
 import OpenAccessBookCard from '@/components/books/OpenAccessBookCard';
+import LibgenBookCard from './LibgenBookCard';
 import type { ExternalBook } from '@/utils/searchExternalSources';
 import { Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
@@ -329,9 +330,13 @@ const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], search
               <span>\ud83d\udcda Found on Open Access Sources</span>
             </h3>
             <div className="grid gap-4">
-              {externalBooks.map(book => (
-                <OpenAccessBookCard key={book.id} book={book} />
-              ))}
+              {externalBooks.map(book => {
+                // Check if this is a Libgen book based on source property
+                if (book.source === 'libgen' || book.id.startsWith('libgen-')) {
+                  return <LibgenBookCard key={book.id} book={book as any} />;
+                }
+                return <OpenAccessBookCard key={book.id} book={book} />;
+              })}
             </div>
           </div>
         )}
