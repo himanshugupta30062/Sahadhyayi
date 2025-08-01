@@ -23,24 +23,20 @@ function App() {
   return (
     <ErrorBoundary>
       <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <BrowserRouter>
-              <ScrollToTop />
-              <div className="min-h-screen bg-background text-foreground">
-                <main className="flex-1">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/library" element={<BookLibrary />} />
-                    <Route path="/*" element={<Index />} />
-                  </Routes>
-                </main>
-              </div>
-              <Toaster />
-              <Sonner />
-            </BrowserRouter>
-          </AuthProvider>
-        </QueryClientProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <div className="min-h-screen bg-background text-foreground">
+            <main className="flex-1">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/library" element={<BookLibrary />} />
+                <Route path="/*" element={<Index />} />
+              </Routes>
+            </main>
+          </div>
+          <Toaster />
+          <Sonner />
+        </BrowserRouter>
       </HelmetProvider>
     </ErrorBoundary>
   );
