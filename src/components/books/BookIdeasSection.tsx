@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import SignInLink from '@/components/SignInLink';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -236,7 +237,9 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
         <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-sm">
           <CardContent className="p-6 text-center">
             <p className="text-gray-600 mb-4">Sign in to share your ideas and feedback</p>
-            <Button variant="outline">Sign In</Button>
+            <Button variant="outline" asChild>
+              <SignInLink>Sign In</SignInLink>
+            </Button>
           </CardContent>
         </Card>
       )}
