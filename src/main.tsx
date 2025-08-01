@@ -3,10 +3,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { initializeSecurity } from './utils/security';
 
-// Initialize security measures
-initializeSecurity();
+console.log('Main.tsx loading...');
 
 const container = document.getElementById("root");
 if (!container) {
@@ -15,23 +13,11 @@ if (!container) {
 
 const root = createRoot(container);
 
-// Wrap in a try-catch to handle any initialization errors
-try {
-  root.render(
-    <StrictMode>
-      <App />
-    </StrictMode>
-  );
-} catch (error) {
-  console.error('Failed to render app:', error);
-  // Fallback rendering without StrictMode
-  root.render(<App />);
-}
+console.log('Rendering App...');
+root.render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => {
-      console.error('Service Worker registration failed:', err);
-    });
-  });
-}
+console.log('App rendered successfully');
