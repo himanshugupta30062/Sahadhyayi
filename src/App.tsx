@@ -33,7 +33,11 @@ const queryClient = new QueryClient({
   },
 });
 
+console.log('App component loading...');
+
 function App() {
+  console.log('App component rendering...');
+  
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
