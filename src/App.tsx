@@ -1,41 +1,41 @@
-import React from 'react';
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { HelmetProvider } from 'react-helmet-async';
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+import React, { useState } from 'react';
 
 function App() {
+  // Test if basic React hooks work
+  const [message, setMessage] = useState('React is working!');
+  
   return (
-    <ErrorBoundary>
-      <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <BrowserRouter>
-              <div className="min-h-screen bg-background text-foreground">
-                <main className="flex-1">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/library" element={<div className="p-8"><h1 className="text-2xl font-bold">Library</h1><p>Library page is working!</p></div>} />
-                    <Route path="*" element={<div className="p-8"><h1 className="text-2xl font-bold">Page Not Found</h1><p>404 - The page you're looking for doesn't exist.</p></div>} />
-                  </Routes>
-                </main>
-              </div>
-            </BrowserRouter>
-          </AuthProvider>
-        </QueryClientProvider>
-      </HelmetProvider>
-    </ErrorBoundary>
+    <div style={{ 
+      padding: '20px', 
+      fontFamily: 'Arial, sans-serif',
+      backgroundColor: '#f0f0f0',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column'
+    }}>
+      <h1 style={{ color: '#333', marginBottom: '20px' }}>
+        {message}
+      </h1>
+      <button 
+        onClick={() => setMessage('Button clicked! React hooks are working!')}
+        style={{
+          padding: '10px 20px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '16px'
+        }}
+      >
+        Test useState
+      </button>
+      <p style={{ marginTop: '20px', color: '#666' }}>
+        If you can see this and the button works, React is functioning properly.
+      </p>
+    </div>
   );
 }
 
