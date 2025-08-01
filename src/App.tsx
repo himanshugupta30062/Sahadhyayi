@@ -37,37 +37,37 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <QuotesProvider>
-              <BrowserRouter>
-                <ScrollToTop />
-                <div className="min-h-screen bg-background text-foreground flex flex-col">
-                  <Navigation />
-                  <main className="flex-1 pt-16">
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/library" element={<BookLibrary />} />
-                      <Route path="/signup" element={<SignUp />} />
-                      <Route path="/signin" element={<SignIn />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/social" element={<SocialMedia />} />
-                      <Route path="/authors" element={<Authors />} />
-                      <Route path="/groups" element={<ReadingGroups />} />
-                      <Route path="/map" element={<Map />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/blog" element={<Blog />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </main>
-                  <GlobalFooter />
-                </div>
-                <Toaster />
-                <Sonner />
-              </BrowserRouter>
-            </QuotesProvider>
-          </AuthProvider>
-        </QueryClientProvider>
+        <AuthProvider>
+          <QuotesProvider>
+            <BrowserRouter>
+              <ScrollToTop />
+              <div className="min-h-screen bg-background text-foreground flex flex-col">
+                <Navigation />
+                <main className="flex-1 pt-16">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/library" element={<BookLibrary />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/signin" element={<SignIn />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/social" element={<SocialMedia />} />
+                    <Route path="/authors" element={<Authors />} />
+                    <Route path="/groups" element={<ReadingGroups />} />
+                    <Route path="/map" element={<Map />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/blog" element={<Blog />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+                <GlobalFooter />
+              </div>
+              <Toaster />
+              <Sonner />
+            </BrowserRouter>
+          </QuotesProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }
