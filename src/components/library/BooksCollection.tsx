@@ -456,7 +456,7 @@ const BooksCollection = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-lg z-50">
-                      {[5, 10, 20].map((size) => (
+                      {[10, 20, 40, 100].map((size) => (
                         <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
                       ))}
                     </SelectContent>
@@ -514,7 +514,7 @@ const BooksCollection = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-2 border-gray-200 shadow-lg z-50">
-                        {[5, 10, 20].map((size) => (
+                        {[10, 20, 40, 100].map((size) => (
                           <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
                         ))}
                       </SelectContent>

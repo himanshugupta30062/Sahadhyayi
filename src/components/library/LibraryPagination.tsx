@@ -138,7 +138,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[10, 20, 30, 50].map((size) => (
+              {[10, 20, 40, 100].map((size) => (
                 <SelectItem key={size} value={size.toString()} className="font-medium">
                   {size}
                 </SelectItem>
