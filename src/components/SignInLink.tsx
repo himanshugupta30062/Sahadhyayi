@@ -1,12 +1,12 @@
 
-import { FC, MouseEventHandler } from 'react';
+import React from 'react';
 import { Link, useLocation, type LinkProps } from 'react-router-dom';
 
-const SignInLink: FC<Omit<LinkProps, 'to'>> = ({ children, onClick, ...props }) => {
+const SignInLink: React.FC<Omit<LinkProps, 'to'>> = ({ children, onClick, ...props }) => {
   const location = useLocation();
   const redirect = `${location.pathname}${location.search}${location.hash}`;
 
-  const handleClick: MouseEventHandler<HTMLAnchorElement> = (e) => {
+  const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('redirectScrollY', String(window.scrollY));
     }
