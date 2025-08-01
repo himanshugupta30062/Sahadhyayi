@@ -112,16 +112,23 @@ const BooksCollection = ({
   const handleSearch = async (searchTerm: string) => {
     const results = await searchBooks(searchTerm);
     let external: ExternalBook[] = [];
+    
+    // Only search external sources if enabled (currently disabled due to CORS)
     if (useExternalSources) {
       try {
         external = await searchExternalSources(searchTerm);
-      } catch {
-        // ignore external search errors
+      } catch (error) {
+        console.warn('External search failed:', error);
+        // Continue with internal results only
       }
     }
 
+    // Filter out duplicates between internal and external results
     const uniqueExternal = external.filter(ext => {
-      return !results.some(r => r.title === ext.title && r.author === ext.author);
+      return !results.some(r => 
+        r.title.toLowerCase() === ext.title.toLowerCase() && 
+        r.author?.toLowerCase() === ext.author?.toLowerCase()
+      );
     });
 
     if ((results && results.length > 0) || uniqueExternal.length > 0) {
@@ -129,6 +136,9 @@ const BooksCollection = ({
       setOpenAccessBooks(uniqueExternal);
       setLastSearchTerm(searchTerm);
       setShowSelectionModal(true);
+    } else {
+      // Show message if no results found
+      alert('No books found for your search. Try different keywords or check your spelling.');
     }
   };
 
