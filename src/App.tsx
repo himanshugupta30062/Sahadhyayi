@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { HelmetProvider } from 'react-helmet-async';
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QuotesProvider } from "@/contexts/QuotesContext";
@@ -38,8 +37,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <ErrorBoundary>
-      <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <QuotesProvider>
               <BrowserRouter>
@@ -71,7 +69,6 @@ function App() {
             </QuotesProvider>
           </AuthProvider>
         </QueryClientProvider>
-      </HelmetProvider>
     </ErrorBoundary>
   );
 }
