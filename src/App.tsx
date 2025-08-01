@@ -20,7 +20,6 @@ import Map from "./pages/Map";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import "./App.css";
 
@@ -66,7 +65,6 @@ function App() {
                 </main>
                 <GlobalFooter />
               </div>
-              <Toaster />
               <Sonner />
             </BrowserRouter>
           </QuotesProvider>
