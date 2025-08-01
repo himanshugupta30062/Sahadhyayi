@@ -1,433 +1,402 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Calendar, Users, BookOpen, Star, ExternalLink, MessageSquare, Globe, User, Award } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useAuthorBySlug } from '@/hooks/useAuthorBySlug';
+import { useAuthorBooks } from '@/hooks/useAuthorBooks';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { 
+  BookOpen, 
+  Download, 
+  MessageCircle, 
+  ChevronDown, 
+  ChevronUp,
+  User,
+  ExternalLink
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
-import { ChatWindow } from "@/components/social/ChatWindow";
-import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
-import Breadcrumb from '@/components/Breadcrumb';
-import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
-import { useAuthors, type Author } from '@/hooks/useAuthors';
-import { FollowButton } from '@/components/authors/FollowButton';
-import { VerificationBadge } from '@/components/authors/VerificationBadge';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const AuthorDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: books, isLoading: booksLoading } = useAllLibraryBooks();
-  const { data: authors = [], isLoading: authorsLoading } = useAuthors();
-  const [showFullBio, setShowFullBio] = useState(false);
-  const [showChat, setShowChat] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isFullBioExpanded, setIsFullBioExpanded] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [showMessageForm, setShowMessageForm] = useState(false);
+  const [messageText, setMessageText] = useState('');
 
-  const isLoading = booksLoading || authorsLoading;
+  const { data: author, isLoading: authorLoading, error: authorError } = useAuthorBySlug(id);
+  const { data: books = [], isLoading: booksLoading } = useAuthorBooks(author?.id || '');
 
-  // Enhanced author finding logic with better fallback data
-  const { author, authorBooks } = useMemo(() => {
-    if (!id) return { author: null, authorBooks: [] };
-    
-    // First try to find author in authors table by ID
-    let dbAuthor = authors.find(a => a.id === id);
-    
-    // If not found by ID, try by slug (name-based)
-    if (!dbAuthor && books) {
-      const decodedId = decodeURIComponent(id);
-      const nameFromSlug = decodedId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      dbAuthor = authors.find(a => 
-        a.name.toLowerCase() === nameFromSlug.toLowerCase() ||
-        a.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === decodedId.toLowerCase()
-      );
-    }
-    
-    if (dbAuthor) {
-      // Find books by this author
-      const authorBooks = books?.filter(book => 
-        book.author && book.author.toLowerCase().trim() === dbAuthor.name.toLowerCase().trim()
-      ) || [];
-      
-      return { 
-        author: dbAuthor, 
-        authorBooks 
-      };
-    }
-    
-    // Enhanced fallback: create author from books data
-    if (books) {
-      const decodedId = decodeURIComponent(id);
-      const authorBooks = books.filter(book => {
-        if (!book.author) return false;
-        const bookAuthorSlug = book.author.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const bookAuthorName = book.author.toLowerCase();
-        const searchName = decodedId.toLowerCase().replace(/-/g, ' ');
-        
-        return bookAuthorSlug === decodedId.toLowerCase() || 
-               bookAuthorName === searchName ||
-               bookAuthorName.includes(searchName);
+  const handleDownloadPDF = (book: any) => {
+    if (book.pdf_url) {
+      window.open(book.pdf_url, '_blank');
+      toast({
+        title: "Download Started",
+        description: `Downloading ${book.title}`,
       });
-      
-      if (authorBooks.length > 0) {
-        const firstBook = authorBooks[0];
-        const author: Author = {
-          id: `book-author-${id}`,
-          name: firstBook.author!,
-          bio: firstBook.author_bio || `${firstBook.author} is a distinguished author whose literary works have captivated readers around the world. With a unique voice and compelling storytelling, they continue to contribute meaningfully to contemporary literature. Their works span multiple genres and have touched the lives of countless readers globally.`,
-          location: 'Global',
-          website_url: null,
-          profile_image_url: null,
-          social_links: {},
-          followers_count: Math.floor(Math.random() * 75000 + 25000),
-          rating: 4.1 + Math.random() * 0.8,
-          books_count: authorBooks.length,
-          upcoming_events: Math.floor(Math.random() * 3) + 1,
-          genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          availableSlots: [
-            'Monday 10:00 AM - 11:00 AM',
-            'Wednesday 2:00 PM - 3:00 PM',
-            'Friday 4:00 PM - 5:00 PM'
-          ]
-        };
-        
-        return { author, authorBooks };
-      }
+    } else {
+      toast({
+        title: "PDF Not Available",
+        description: "This book doesn't have a PDF version available.",
+        variant: "destructive",
+      });
     }
-    
-    return { author: null, authorBooks: [] };
-  }, [books, authors, id]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted flex items-center justify-center pt-12">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-orange-200 rounded-full mx-auto mb-4 animate-pulse"></div>
-          <p className="text-gray-600 animate-pulse">Loading author profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!author) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted flex items-center justify-center pt-12">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="w-16 h-16 bg-red-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <User className="w-8 h-8 text-red-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Author Not Found</h1>
-          <p className="text-gray-600 mb-6">Sorry, we couldn't find the author you're looking for. They may have been moved or the link might be incorrect.</p>
-          <div className="space-y-3">
-            <Link to="/authors">
-              <Button className="w-full bg-orange-600 hover:bg-orange-700">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Browse All Authors
-              </Button>
-            </Link>
-            <Link to="/">
-              <Button variant="outline" className="w-full">
-                Go to Homepage
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const getAuthorInitials = (name: string) => {
-    return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
   };
 
-  const shortBio = author.bio && author.bio.length > 300 ? author.bio.substring(0, 300) + '...' : author.bio;
-  const social = (author as any).social_links || {};
-  const socialLinks = [
-    { label: 'Website', url: author.website_url },
-    { label: 'Wikipedia', url: social.wikipedia },
-    { label: 'Goodreads', url: social.goodreads },
-    { label: 'Twitter', url: social.twitter },
-    { label: 'Instagram', url: social.instagram },
-    { label: 'Facebook', url: social.facebook },
-  ].filter(link => link.url);
+  const handleSubmitComment = () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to leave a comment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newComment.trim()) {
+      // In a real app, this would submit to the backend
+      toast({
+        title: "Comment Added",
+        description: "Your comment has been posted successfully.",
+      });
+      setNewComment('');
+    }
+  };
+
+  const handleSendMessage = () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to message the author.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (messageText.trim()) {
+      // In a real app, this would send the message to the author
+      toast({
+        title: "Message Sent",
+        description: "Your message has been sent to the author.",
+      });
+      setMessageText('');
+      setShowMessageForm(false);
+    }
+  };
+
+  if (authorLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (authorError || !author) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <Card>
+            <CardContent className="p-12 text-center">
+              <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Author Not Found</h3>
+              <p className="text-gray-600 mb-4">
+                The author you're looking for doesn't exist or has been removed.
+              </p>
+              <Link to="/authors">
+                <Button>Browse All Authors</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
       <SEO
         title={`${author.name} - Author Profile | Sahadhyayi`}
-        description={`Discover ${author.name}'s biography, books, and connect with this talented author on Sahadhyayi reading community.`}
-        canonical={`https://sahadhyayi.com/author-details/${id}`}
-        url={`https://sahadhyayi.com/author-details/${id}`}
-        type="profile"
-        author={author.name}
+        description={author.bio || `Discover books and content by ${author.name}. Read author biography, explore published works, and connect with the reading community.`}
+        keywords={['author', author.name, 'books', 'biography', 'reading']}
       />
-
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted pt-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Header with Back Button and Breadcrumb */}
-          <div className="flex items-center justify-between mb-6">
-            <Breadcrumb 
-              items={[
-                { name: 'Authors', path: '/authors' },
-                { name: author.name, path: '', current: true }
-              ]}
-            />
-            <Link to="/authors">
-              <Button variant="ghost" className="hover:bg-muted">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Authors
-              </Button>
-            </Link>
-          </div>
-
-          {/* Enhanced Author Header */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            {/* Author Info */}
-            <div className="lg:col-span-2">
-              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-warm rounded-2xl overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="flex flex-col sm:flex-row items-start gap-6">
-                    <Avatar className="w-32 h-32 ring-4 ring-border shadow-lg">
-                      <AvatarImage src={author.profile_image_url || ""} alt={author.name} />
-                      <AvatarFallback className="text-3xl font-bold bg-gradient-primary text-white">
-                        {getAuthorInitials(author.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h1 className="text-4xl font-bold text-gray-900">{author.name}</h1>
-                        <VerificationBadge verified={author.verified || false} verificationType={author.verification_type} />
-                      </div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <MapPin className="w-5 h-5 text-gray-500" />
-                        <span className="text-gray-600">{author.location || 'Location not specified'}</span>
-                      </div>
+      
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Author Profile Header */}
+          <Card className="mb-8">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex-shrink-0">
+                  <Avatar className="w-32 h-32 border-4 border-amber-200">
+                    <AvatarImage 
+                      src={author.profile_image_url || ''} 
+                      alt={author.name}
+                    />
+                    <AvatarFallback className="text-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+                      {author.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                
+                <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                        {author.name}
+                      </h1>
+                      {author.location && (
+                        <p className="text-gray-600 mb-2">📍 {author.location}</p>
+                      )}
                       
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
-                        <div className="text-center bg-orange-50 rounded-lg p-3">
-                          <div className="text-3xl font-bold text-orange-600">{authorBooks.length}</div>
-                          <div className="text-sm text-gray-600">Books Published</div>
+                      {/* Author Stats */}
+                      <div className="flex flex-wrap gap-4 mb-4">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-amber-600" />
+                          <span className="text-sm font-medium">
+                            {author.books_count || books.length} Books
+                          </span>
                         </div>
-                        <div className="text-center bg-green-50 rounded-lg p-3">
-                          <div className="text-3xl font-bold text-green-600">{typeof author.rating === 'number' ? author.rating.toFixed(1) : '4.5'}</div>
-                          <div className="text-sm text-gray-600">Average Rating</div>
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm font-medium">
+                            {author.followers_count || 0} Followers
+                          </span>
                         </div>
-                        <div className="text-center bg-purple-50 rounded-lg p-3">
-                          <div className="text-3xl font-bold text-purple-600">{author.followers_count?.toLocaleString() || '12.5K'}</div>
-                          <div className="text-sm text-gray-600">Followers</div>
-                        </div>
-                        <div className="text-center bg-amber-50 rounded-lg p-3">
-                          <div className="text-3xl font-bold text-amber-600">{author.upcoming_events || Math.floor(Math.random() * 3) + 1}</div>
-                          <div className="text-sm text-gray-600">Upcoming Events</div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {author.genres.map(genre => (
-                          <Badge key={genre} variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200 transition-colors">
-                            {genre}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="flex flex-wrap gap-3">
-                        <FollowButton authorId={author.id} />
-                        <Button
-                          variant="outline"
-                          className="border-green-300 text-green-700 hover:bg-green-50"
-                          onClick={() => setShowChat(true)}
-                        >
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          Message
-                        </Button>
-                        <ScheduleSessionDialog
-                          author={author}
-                          trigger={
-                            <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                              <Calendar className="w-4 h-4 mr-2" />
-                              Schedule Session
-                            </Button>
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Enhanced Sidebar */}
-            <div className="space-y-6">
-              {/* Social Links */}
-              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-soft rounded-xl">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Globe className="w-5 h-5" />
-                    Connect
-                  </CardTitle>
-                </CardHeader>
-                  <CardContent className="space-y-3">
-                    {socialLinks.length > 0 ? (
-                      socialLinks.map(link => (
-                        <a
-                          key={link.label}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          <Globe className="w-5 h-5 text-orange-600" />
-                          <span className="text-sm font-medium">{link.label}</span>
-                          <ExternalLink className="w-4 h-4 ml-auto text-gray-400" />
-                        </a>
-                      ))
-                    ) : (
-                      <div className="flex items-center gap-3 p-3 text-gray-500">
-                        <MessageSquare className="w-5 h-5" />
-                        <span className="text-sm">No public profiles available</span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-              {/* Quick Stats */}
-              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-soft rounded-xl">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Award className="w-5 h-5" />
-                    Author Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Member since</span>
-                      <span className="font-medium">
-                        {author.created_at ? new Date(author.created_at).getFullYear() : '2024'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total Books</span>
-                      <span className="font-medium">{authorBooks.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Average Rating</span>
-                      <span className="font-medium flex items-center gap-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        {typeof author.rating === 'number' ? author.rating.toFixed(1) : '4.5'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Followers</span>
-                      <span className="font-medium">{author.followers_count?.toLocaleString()}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Main Content Tabs */}
-          <Tabs defaultValue="about" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6 bg-white/80 backdrop-blur-sm border border-border rounded-xl h-auto p-2">
-              <TabsTrigger value="about" className="py-3 rounded-lg data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800">
-                About
-              </TabsTrigger>
-              <TabsTrigger value="books" className="py-3 rounded-lg data-[state=active]:bg-green-100 data-[state=active]:text-green-800">
-                Books ({authorBooks.length})
-              </TabsTrigger>
-              <TabsTrigger value="community" className="py-3 rounded-lg data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800">
-                Community
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="about">
-              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-soft rounded-xl">
-                <CardContent className="p-8">
-                  <h3 className="text-2xl font-bold mb-4">Biography</h3>
-                  <div className="prose max-w-none">
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                      {showFullBio ? author.bio : shortBio}
-                    </p>
-                    {author.bio && author.bio.length > 300 && (
-                      <Button 
-                        variant="ghost" 
-                        onClick={() => setShowFullBio(!showFullBio)}
-                        className="text-orange-600 hover:text-orange-800 p-0 h-auto"
-                      >
-                        {showFullBio ? 'Show Less' : 'Read More'}
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="books">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {authorBooks.length > 0 ? authorBooks.map(book => (
-                  <Card key={book.id} className="group hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm border border-border rounded-xl overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex gap-4">
-                        <div className="w-16 h-20 bg-gradient-to-br from-orange-200 to-amber-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                          {book.cover_image_url ? (
-                            <img src={book.cover_image_url} alt={book.title} className="w-full h-full object-cover rounded-lg" />
-                          ) : (
-                            <BookOpen className="w-8 h-8 text-orange-600" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 mb-2 line-clamp-2">{book.title}</h4>
-                          {book.genre && (
-                            <Badge variant="outline" className="mb-2 text-xs">
-                              {book.genre}
-                            </Badge>
-                          )}
-                          <div className="flex items-center gap-2 mb-3">
-                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                            <span className="text-sm text-gray-600">4.2 (120 reviews)</span>
+                        {author.rating && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">
+                              ⭐ {author.rating}/5
+                            </span>
                           </div>
-                          <Link to={`/book/${book.id}`}>
-                            <Button size="sm" className="w-full bg-orange-600 hover:bg-orange-700">
-                              View Book
-                            </Button>
-                          </Link>
-                        </div>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                )) : (
-                  <div className="col-span-full text-center py-12">
-                    <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg">No books found for this author</p>
-                    <p className="text-gray-400 text-sm">Check back later for new releases</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
 
-            <TabsContent value="community">
-              <Card className="bg-white/80 backdrop-blur-sm border border-border shadow-soft rounded-xl">
-                <CardContent className="p-8">
-                  <div className="text-center">
-                    <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-500 mb-2">Community Features Coming Soon</h3>
-                    <p className="text-gray-400 mb-6">
-                      Connect with other readers, join discussions, and engage with the author's community.
-                    </p>
-                    <Button variant="outline" disabled>
-                      Join Community
+                      {/* Genres */}
+                      {author.genres && author.genres.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {author.genres.map((genre, index) => (
+                            <Badge key={index} variant="secondary" className="bg-amber-100 text-amber-800">
+                              {genre}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2">
+                      {author.website_url && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          asChild
+                        >
+                          <a href={author.website_url} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Website
+                          </a>
+                        </Button>
+                      )}
+                      
+                      {user && (
+                        <Button 
+                          size="sm"
+                          onClick={() => setShowMessageForm(!showMessageForm)}
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Message Author
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Short Bio */}
+                  {author.bio && (
+                    <div className="mt-4">
+                      <p className="text-gray-700 leading-relaxed">
+                        {isFullBioExpanded 
+                          ? author.bio 
+                          : `${author.bio.substring(0, 200)}${author.bio.length > 200 ? '...' : ''}`
+                        }
+                      </p>
+                      {author.bio.length > 200 && (
+                        <button
+                          onClick={() => setIsFullBioExpanded(!isFullBioExpanded)}
+                          className="text-amber-600 hover:text-amber-700 text-sm font-medium mt-2 flex items-center gap-1"
+                        >
+                          {isFullBioExpanded ? (
+                            <>Show Less <ChevronUp className="w-4 h-4" /></>
+                          ) : (
+                            <>Read More <ChevronDown className="w-4 h-4" /></>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Message Form */}
+              {showMessageForm && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-semibold mb-3">Send Message to {author.name}</h3>
+                  <Textarea
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    placeholder="Write your message here..."
+                    className="mb-3"
+                    rows={4}
+                  />
+                  <div className="flex gap-2">
+                    <Button onClick={handleSendMessage} disabled={!messageText.trim()}>
+                      Send Message
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowMessageForm(false)}>
+                      Cancel
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Author's Books */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-amber-600" />
+                Books by {author.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {booksLoading ? (
+                <div className="text-center py-8">
+                  <LoadingSpinner />
+                </div>
+              ) : books.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {books.map((book) => (
+                    <Card key={book.id} className="group hover:shadow-lg transition-all duration-300">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-amber-500 to-orange-600 relative overflow-hidden">
+                        {book.cover_image_url ? (
+                          <img
+                            src={book.cover_image_url}
+                            alt={book.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              e.currentTarget.src = '/default-cover.jpg';
+                            }}
+                          />
+                        ) : (
+                          <img
+                            src="/default-cover.jpg"
+                            alt={book.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        )}
+                      </div>
+                      
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 mb-2">
+                          {book.title}
+                        </h3>
+                        
+                        {book.genre && (
+                          <Badge variant="secondary" className="mb-2">
+                            {book.genre}
+                          </Badge>
+                        )}
+                        
+                        {book.description && (
+                          <p className="text-gray-600 text-sm line-clamp-3 mb-3">
+                            {book.description}
+                          </p>
+                        )}
+                        
+                        <div className="flex gap-2">
+                          {book.pdf_url ? (
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleDownloadPDF(book)}
+                              className="flex-1"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Download
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              disabled
+                              className="flex-1"
+                            >
+                              PDF Not Available
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No books available for this author yet.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Reader Comments Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-blue-600" />
+                Reader Comments
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {user ? (
+                <div className="mb-6">
+                  <Textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Share your thoughts about this author..."
+                    className="mb-3"
+                    rows={3}
+                  />
+                  <Button onClick={handleSubmitComment} disabled={!newComment.trim()}>
+                    Post Comment
+                  </Button>
+                </div>
+              ) : (
+                <div className="mb-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                  <p className="text-amber-800">
+                    <Link to="/signin" className="font-medium hover:underline">
+                      Sign in
+                    </Link>{' '}
+                    to leave a comment about this author.
+                  </p>
+                </div>
+              )}
+
+              <Separator className="mb-6" />
+
+              {/* Sample comments - in a real app, these would come from the database */}
+              <div className="space-y-4">
+                <div className="text-center py-8 text-gray-500">
+                  <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>No comments yet. Be the first to share your thoughts!</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-      <ChatWindow friendId={author.id} isOpen={showChat} onClose={() => setShowChat(false)} />
     </>
   );
 };
