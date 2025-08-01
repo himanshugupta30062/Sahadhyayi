@@ -1,72 +1,27 @@
 import React from 'react';
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { HelmetProvider } from 'react-helmet-async';
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Navigation from "@/components/Navigation";
-import GlobalFooter from "@/components/GlobalFooter";
-import Index from "./pages/Index";
-import BookLibrary from "./pages/BookLibrary";
-import SignUp from "./pages/SignUp";
-import SignIn from "./pages/SignIn";
-import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import SocialMedia from "./pages/SocialMedia";
-import Authors from "./pages/Authors";
-import ReadingGroups from "./pages/ReadingGroups";
-import Map from "./pages/Map";
-import About from "./pages/About";
-import Blog from "./pages/Blog";
-import NotFound from "./pages/NotFound";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+// Minimal test component to verify React works
+function SimpleTest() {
+  const [count, setCount] = React.useState(0);
+  
+  React.useEffect(() => {
+    console.log('React hooks working!');
+  }, []);
+  
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+      <h1>React Test</h1>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(c => c + 1)}>
+        Increment
+      </button>
+      <p>If you can see this and click the button, React is working.</p>
+    </div>
+  );
+}
 
 function App() {
-  return (
-    <ErrorBoundary>
-      <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <BrowserRouter>
-              <Navigation />
-              <div className="min-h-screen bg-background text-foreground">
-                <main className="flex-1">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/library" element={<BookLibrary />} />
-                    <Route path="/signup" element={<SignUp />} />
-                    <Route path="/signin" element={<SignIn />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/social" element={<SocialMedia />} />
-                    <Route path="/authors" element={<Authors />} />
-                    <Route path="/groups" element={<ReadingGroups />} />
-                    <Route path="/map" element={<Map />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/blog" element={<Blog />} />
-                    <Route path="/*" element={<NotFound />} />
-                  </Routes>
-                </main>
-              </div>
-              <GlobalFooter />
-              <Toaster />
-              <Sonner />
-            </BrowserRouter>
-          </AuthProvider>
-        </QueryClientProvider>
-      </HelmetProvider>
-    </ErrorBoundary>
-  );
+  return <SimpleTest />;
 }
 
 export default App;
