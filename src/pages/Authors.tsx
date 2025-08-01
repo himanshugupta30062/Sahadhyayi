@@ -1,5 +1,4 @@
-
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, RefreshCw, Star, Users, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -14,6 +13,7 @@ import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialo
 import { useAuth } from '@/contexts/AuthContext';
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/ui/breadcrumb';
+import LibraryPagination from '@/components/library/LibraryPagination';
 import { useAuthors, type Author } from '@/hooks/useAuthors';
 import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { toast } from '@/hooks/use-toast';
@@ -23,9 +23,9 @@ const slugify = (text: string) =>
   text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const Authors = () => {
-  
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(12); // Better for mobile
+  const scrollTargetRef = useRef<HTMLDivElement>(null);
 
   const { data: authors = [], isLoading, error, refetch } = useAuthors();
   const totalAuthors = authors.length;
@@ -35,7 +35,6 @@ const Authors = () => {
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [bookCountFilter, setBookCountFilter] = useState('all');
   const [chatAuthor, setChatAuthor] = useState<string | null>(null);
-
 
   // Map books by author name for quick lookup  
   const booksByAuthor = useMemo(() => {
@@ -85,8 +84,8 @@ const Authors = () => {
         (bookCountFilter === '4-10' && author.books_count >= 4 && author.books_count <= 10) ||
         (bookCountFilter === '10+' && author.books_count > 10);
       
-    return matchesSearch && matchesGenre && matchesBookCount;
-  });
+      return matchesSearch && matchesGenre && matchesBookCount;
+    });
   }, [authors, searchTerm, selectedGenre, bookCountFilter]);
 
   const totalPages = useMemo(() => {
@@ -116,6 +115,15 @@ const Authors = () => {
 
   const handleRetry = () => {
     refetch();
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
   };
 
   // Breadcrumb data
@@ -224,13 +232,15 @@ const Authors = () => {
           'international authors', 'author biographies', 'reading community authors',
           'sahadhyayi authors', 'discover authors', 'author interviews'
         ]}
-        schema={pageSchema}
         breadcrumbs={breadcrumbItems}
         type="website"
       />
 
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <div className="container mx-auto px-4 py-8">
+          {/* Scroll target for pagination */}
+          <div ref={scrollTargetRef} />
+          
           {/* Breadcrumb Navigation */}
           <Breadcrumb items={breadcrumbItems} className="mb-6" />
 
@@ -252,7 +262,7 @@ const Authors = () => {
           </header>
 
           {/* Search and Filters */}
-          <section aria-label="Author search and filters" className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <section aria-label="Author search and filters" className="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search Bar */}
               <div className="lg:col-span-2">
@@ -267,14 +277,6 @@ const Authors = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 pr-10 h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400 rounded-xl"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setPage(1)}
-                    aria-label="Search"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    <Search className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
 
@@ -347,7 +349,7 @@ const Authors = () => {
 
               {/* All Authors Grid */}
               <section aria-labelledby="all-authors" className="mb-8">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                   <h2 id="all-authors" className="text-2xl font-bold text-gray-900">
                     All Authors
                     {filteredAuthors.length > 0 && (
@@ -356,19 +358,6 @@ const Authors = () => {
                       </span>
                     )}
                   </h2>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Page Size:</span>
-                    <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(parseInt(v, 10)); setPage(1); }}>
-                      <SelectTrigger className="w-20 h-8 border border-gray-200">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[10, 20, 50, 100].map(size => (
-                          <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
 
                 {filteredAuthors.length === 0 ? (
@@ -380,35 +369,30 @@ const Authors = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {paginatedAuthors.map(author => (
-                      <AuthorCard
-                        key={author.id}
-                        author={author}
-                        books={booksByAuthor[author.name.toLowerCase().trim()] ?? []}
-                        featured={false}
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+                      {paginatedAuthors.map(author => (
+                        <AuthorCard
+                          key={author.id}
+                          author={author}
+                          books={booksByAuthor[author.name.toLowerCase().trim()] ?? []}
+                          featured={false}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Mobile-friendly Pagination */}
+                    {filteredAuthors.length > 0 && totalPages > 1 && (
+                      <LibraryPagination
+                        totalCount={filteredAuthors.length}
+                        currentPage={page}
+                        pageSize={pageSize}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
+                        scrollTargetRef={scrollTargetRef}
                       />
-                    ))}
-                  </div>
-                )}
-                {filteredAuthors.length > 0 && totalPages > 1 && (
-                  <div className="pagination-controls flex justify-center mt-6 space-x-2">
-                    <Button variant="outline" onClick={() => setPage(prev => Math.max(prev - 1, 1))} disabled={page === 1}>
-                      Previous
-                    </Button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
-                      <Button
-                        key={pageNumber}
-                        variant={pageNumber === page ? 'default' : 'outline'}
-                        onClick={() => setPage(pageNumber)}
-                      >
-                        {pageNumber}
-                      </Button>
-                    ))}
-                    <Button variant="outline" onClick={() => setPage(prev => Math.min(prev + 1, totalPages))} disabled={page === totalPages}>
-                      Next
-                    </Button>
-                  </div>
+                    )}
+                  </>
                 )}
               </section>
             </>
