@@ -8,22 +8,20 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import ScrollToTop from "@/components/ScrollToTop";
 
+function TestComponent() {
+  const [count, setCount] = React.useState(0);
+  return <div>Count: {count} <button onClick={() => setCount(c => c + 1)}>+</button></div>;
+}
+
 function App() {
   return (
     <ErrorBoundary>
       <HelmetProvider>
-        <BrowserRouter>
-          <div className="min-h-screen bg-background text-foreground">
-            <main className="flex-1">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/library" element={<BookLibrary />} />
-              </Routes>
-            </main>
-          </div>
-          <Toaster />
-          <Sonner />
-        </BrowserRouter>
+        <div className="min-h-screen bg-background text-foreground">
+          <main className="flex-1">
+            <TestComponent />
+          </main>
+        </div>
       </HelmetProvider>
     </ErrorBoundary>
   );
