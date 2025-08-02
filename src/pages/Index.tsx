@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
-import SEO from "@/components/SEO";
+import TempSEO from "@/components/TempSEO";
 import AnimatedHeroSection from "@/components/AnimatedHeroSection";
 
 const Index = () => {
@@ -76,11 +76,9 @@ const Index = () => {
 
   return (
     <>
-      <SEO
+      <TempSEO
         title="Sahadhyayi - Digital Reading Community & Book Library | Fellow Readers Platform"
         description="Sahadhyayi means 'fellow reader' in Sanskrit. Join our vibrant digital reading community and book reader social media platform. Discover thousands of books, connect with fellow readers, track your progress, and explore our comprehensive digital library with your study companions."
-        url="https://sahadhyayi.com/"
-        keywords={['Sahadhyayi', 'fellow reader', 'Sanskrit meaning', 'digital reading community', 'book library', 'reading platform', 'study companions', 'book lovers']}
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}

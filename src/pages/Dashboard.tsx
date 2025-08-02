@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, TrendingUp, Users, Target, BookOpen } from 'lucide-react';
-import SEO from '@/components/SEO';
+import TempSEO from '@/components/TempSEO';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
 import CurrentReads from '@/components/dashboard/CurrentReads';
@@ -97,11 +97,9 @@ const Dashboard = () => {
 
   return (
     <>
-      <SEO
+      <TempSEO
         title="My Library - Personal Reading Dashboard | Sahadhyayi"
         description="Manage your personal reading collection, track progress, and discover new books in your customized library."
-        canonical="https://sahadhyayi.com/dashboard"
-        url="https://sahadhyayi.com/dashboard"
       />
       
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
