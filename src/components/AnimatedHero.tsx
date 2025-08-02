@@ -5,59 +5,34 @@ import { BookOpen, Users, Pen } from "lucide-react";
 const AnimatedHero = () => {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-black overflow-hidden">
-      {/* Atomic Model - 50% Arc Rings in separate orbits */}
-      <div className="relative w-[700px] h-[700px] mx-auto">
-        {/* Outer Ring - Separate orbit */}
-        <div className="absolute inset-0 atomic-arc-ring ring-outer"></div>
+      {/* Clean Atomic Rings Container */}
+      <div className="relative w-[600px] h-[600px] mx-auto flex items-center justify-center">
         
-        {/* Middle Ring - Separate orbit */}
-        <div className="absolute inset-[100px] atomic-arc-ring ring-middle"></div>
+        {/* Outer Ring */}
+        <div className="absolute w-[600px] h-[600px] atomic-arc-ring ring-outer"></div>
         
-        {/* Inner Ring - Separate orbit */}
-        <div className="absolute inset-[200px] atomic-arc-ring ring-inner"></div>
-
-        {/* Section Labels on Rings */}
-        <div className="absolute inset-0">
-          <div className="section-label-outer">Library</div>
-        </div>
+        {/* Middle Ring */}
+        <div className="absolute w-[450px] h-[450px] atomic-arc-ring ring-middle"></div>
         
-        <div className="absolute inset-[100px]">
-          <div className="section-label-middle">Social Media</div>
-        </div>
+        {/* Inner Ring */}
+        <div className="absolute w-[300px] h-[300px] atomic-arc-ring ring-inner"></div>
         
-        <div className="absolute inset-[200px]">
-          <div className="section-label-inner">Authors</div>
-        </div>
-
-        {/* Only 3 Floating Icons */}
-        <div className="absolute inset-0">
-          <div className="floating-icon icon-top-left">
-            <BookOpen className="w-6 h-6 text-white" />
-          </div>
-          <div className="floating-icon icon-top-right">
-            <Users className="w-6 h-6 text-white" />
-          </div>
-          <div className="floating-icon icon-bottom">
-            <Pen className="w-6 h-6 text-white" />
-          </div>
-        </div>
-        
-        {/* Center Content */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-[350px]">
-          <h1 className="text-5xl font-bold mb-4 leading-tight">
+        {/* Center Content - Perfectly Centered */}
+        <div className="relative z-10 text-center max-w-[400px] px-6">
+          <h1 className="text-6xl font-bold mb-6 leading-tight">
             <span className="multicolor-text">
               Sahadhyayi
             </span>
           </h1>
-          <p className="text-xl text-white font-medium mb-4">
+          <p className="text-2xl text-white font-medium mb-6">
             The Book Social Media
           </p>
-          <p className="text-base text-gray-300 mb-8 leading-relaxed">
+          <p className="text-lg text-gray-300 mb-10 leading-relaxed">
             Find new books, connect with other readers, and share your love of reading—all in one friendly community.
           </p>
           <Link to="/library" className="inline-block">
-            <button className="px-10 py-4 rounded-full text-base font-semibold bg-white text-black hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-xl">
-              📚 Start your Reading Journey
+            <button className="px-8 py-4 rounded-full text-lg font-semibold bg-white text-black hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-2xl">
+              📚 Explore the Library
             </button>
           </Link>
         </div>
