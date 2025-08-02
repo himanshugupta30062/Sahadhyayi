@@ -1,4 +1,3 @@
-
 import React, { MouseEventHandler } from 'react';
 import { Link, useLocation, type LinkProps } from 'react-router-dom';
 
