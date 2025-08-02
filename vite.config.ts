@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => ({
     include: [
       'react', 
       'react-dom', 
+      'react/jsx-runtime',
       '@radix-ui/react-dialog',
       '@radix-ui/react-toast',
       '@radix-ui/react-tooltip'
