@@ -20,7 +20,7 @@ const ATOM_CONFIG = [
     materialId: "white",
     duration: 20,
     initialAngle: 0,
-    alternateOrbits: [],
+    alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.inner.radius],
     orbitSwitchInterval: 18000,
   },
   {
@@ -30,7 +30,7 @@ const ATOM_CONFIG = [
     materialId: "white",
     duration: 15,
     initialAngle: 120,
-    alternateOrbits: [],
+    alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.inner.radius],
     orbitSwitchInterval: 22000,
   },
   {
@@ -40,7 +40,7 @@ const ATOM_CONFIG = [
     materialId: "white",
     duration: 12,
     initialAngle: 240,
-    alternateOrbits: [],
+    alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.middle.radius],
     orbitSwitchInterval: 25000,
   },
 ];
