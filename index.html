@@ -156,13 +156,36 @@
     
     <!-- Preload critical resources -->
     <link rel="preload" href="/lovable-uploads/sahadhyayi-logo-digital-reading.png" as="image" type="image/png" />
+    <style>
+      #loader {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #f97316;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 9999;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
 
   <body>
-    <header id="static-content" class="sr-only">
+    <div id="loader"></div>
+    <header
+      id="static-content"
+      style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;"
+    >
       <h1>Welcome to Sahadhyayi – Your Digital Book Club &amp; Library</h1>
-      <h2>Digital Reading Community</h2>
-      <h3>Connect with Readers and Track Your Progress</h3>
+      <p>Join our digital reading community, connect with readers, and track your progress.</p>
     </header>
     <div id="root"></div>
     <script>
@@ -171,6 +194,10 @@
         sessionStorage.removeItem('redirectPath');
         history.replaceState(null, '', redirectPath);
       }
+      window.addEventListener('load', () => {
+        const loader = document.getElementById('loader');
+        if (loader) loader.style.display = 'none';
+      });
     </script>
     <!-- Google Search Console verification -->
     <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" /> -->
