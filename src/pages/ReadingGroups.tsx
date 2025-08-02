@@ -10,7 +10,7 @@ import { useGroups, useCreateGroup } from "@/hooks/useGroupManagement";
 import { useUserJoinedGroups } from "@/hooks/useUserGroups";
 import GroupCard from "@/components/groups/GroupCard";
 import GroupMessaging from "@/components/groups/GroupMessaging";
-import SEO from "@/components/SEO";
+import TempSEO from "@/components/TempSEO";
 
 const ReadingGroups = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -68,11 +68,9 @@ const ReadingGroups = () => {
 
   return (
     <>
-      <SEO
+      <TempSEO
         title="Reading Groups - Join Book Discussion Communities | Sahadhyayi"
         description="Join vibrant reading groups and book clubs. Engage in meaningful discussions, share insights, and connect with passionate readers who share your literary interests."
-        canonical="https://sahadhyayi.com/groups"
-        keywords={['reading groups', 'book clubs', 'book discussions', 'reading community', 'literary discussions', 'book lovers']}
       />
       <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">

@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BookCover from '@/components/books/BookCover';
 import BookDescription from '@/components/books/BookDescription';
-import SEO from '@/components/SEO';
+import TempSEO from '@/components/TempSEO';
 import Breadcrumb from '@/components/Breadcrumb';
 import AuthorBio from '@/components/books/AuthorBio';
 import BookReadersConnection from '@/components/books/BookReadersConnection';
@@ -140,16 +140,9 @@ const BookDetails = () => {
 
   return (
     <>
-      <SEO
+      <TempSEO
         title={seoTitle}
         description={seoDescription}
-        canonical={canonicalUrl}
-        url={canonicalUrl}
-        image={book.cover_image_url}
-        type="book"
-        author={book.author}
-        keywords={keywords}
-        schema={combinedSchema}
       />
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         {/* Header */}

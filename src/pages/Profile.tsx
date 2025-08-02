@@ -1,15 +1,13 @@
 
 import React from "react";
 import { ProfileView } from "@/components/profile/ProfileView";
-import SEO from "@/components/SEO";
+import TempSEO from "@/components/TempSEO";
 
 const ProfilePage: React.FC = () => (
   <>
-    <SEO
+    <TempSEO
       title="User Profile - Sahadhyayi"
       description="View and manage your reader profile, update information, and explore your reading activity."
-      canonical="https://sahadhyayi.com/profile"
-      url="https://sahadhyayi.com/profile"
     />
     <ProfileView />
   </>

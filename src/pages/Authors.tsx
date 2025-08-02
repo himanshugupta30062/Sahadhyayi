@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import { useAuth } from '@/contexts/AuthContext';
-import SEO from '@/components/SEO';
+import TempSEO from '@/components/TempSEO';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import LibraryPagination from '@/components/library/LibraryPagination';
 import { useAuthors, type Author } from '@/hooks/useAuthors';
@@ -221,19 +221,9 @@ const Authors = () => {
 
   return (
     <>
-      <SEO
+      <TempSEO
         title="Authors Directory - Meet Talented Writers & Connect"
         description="Discover talented authors on Sahadhyayi reading community. Browse author profiles, read biographies, explore their works, and connect with writers from around the world. Find your next favorite author today."
-        canonical="https://sahadhyayi.com/authors"
-        url="https://sahadhyayi.com/authors"
-        keywords={[
-          'authors directory', 'writers community', 'book authors', 'literary writers',
-          'author profiles', 'connect with authors', 'famous authors', 'new authors',
-          'international authors', 'author biographies', 'reading community authors',
-          'sahadhyayi authors', 'discover authors', 'author interviews'
-        ]}
-        breadcrumbs={breadcrumbItems}
-        type="website"
       />
 
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">

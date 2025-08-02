@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageCircle, MapPin, UsersIcon, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
-import SEO from '@/components/SEO';
+import TempSEO from '@/components/TempSEO';
 import { SocialFeed } from '@/components/social/SocialFeed';
 import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
 import { FriendsLocationMap } from '@/components/social/FriendsLocationMap';
@@ -31,11 +31,9 @@ const SocialMedia = () => {
   if (!user) {
     return (
       <>
-        <SEO
+        <TempSEO
           title="Social Reading Community - Sign In Required | Sahadhyayi"
           description="Join Sahadhyayi's social reading community. Sign in to connect with fellow readers and share your reading journey."
-          canonical="https://sahadhyayi.com/social"
-          url="https://sahadhyayi.com/social"
         />
         
         <Dialog open={showAuthModal} onOpenChange={handleModalClose}>
@@ -70,11 +68,9 @@ const SocialMedia = () => {
 
   return (
     <>
-      <SEO
+      <TempSEO
         title="Social Reading Community | Sahadhyayi"
         description="Connect with fellow readers, share your reading journey, and discover new books through our vibrant social community."
-        canonical="https://sahadhyayi.com/social"
-        url="https://sahadhyayi.com/social"
       />
       
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
