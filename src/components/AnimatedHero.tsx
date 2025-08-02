@@ -5,46 +5,49 @@ import { BookOpen, Users, Pen } from "lucide-react";
 const AnimatedHero = () => {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-black overflow-hidden">
-      {/* Colorful Rotating Arc Rings */}
-      <div className="relative w-[500px] h-[500px] mx-auto">
-        {/* Outer Arc Ring */}
-        <div className="absolute inset-0 arc-outer"></div>
+      {/* Perfect Circular Rings */}
+      <div className="relative w-[600px] h-[600px] mx-auto">
+        {/* Outer Ring */}
+        <div className="absolute inset-0 perfect-ring ring-outer"></div>
         
-        {/* Middle Arc Ring */}
-        <div className="absolute inset-[40px] arc-middle"></div>
+        {/* Middle Ring */}
+        <div className="absolute inset-[60px] perfect-ring ring-middle"></div>
         
-        {/* Inner Arc Ring */}
-        <div className="absolute inset-[80px] arc-inner"></div>
+        {/* Inner Ring */}
+        <div className="absolute inset-[120px] perfect-ring ring-inner"></div>
 
         {/* Section Labels on Rings */}
-        <div className="absolute inset-0 section-outer">
-          <div className="section-label">Library</div>
+        <div className="absolute inset-0">
+          <div className="section-label-outer">Library</div>
         </div>
         
-        <div className="absolute inset-[40px] section-middle">
-          <div className="section-label">Social Media</div>
+        <div className="absolute inset-[60px]">
+          <div className="section-label-middle">Social Media</div>
         </div>
         
-        <div className="absolute inset-[80px] section-inner">
-          <div className="section-label">Authors</div>
+        <div className="absolute inset-[120px]">
+          <div className="section-label-inner">Authors</div>
         </div>
 
-        {/* Floating Logos */}
+        {/* Floating Logos positioned like Quantel */}
         <div className="absolute inset-0">
-          <div className="logo logo-1">
-            <BookOpen className="w-6 h-6 text-white" />
+          <div className="floating-icon icon-top">
+            <BookOpen className="w-5 h-5 text-white" />
           </div>
-          <div className="logo logo-2">
-            <Users className="w-6 h-6 text-white" />
+          <div className="floating-icon icon-left">
+            <Users className="w-5 h-5 text-white" />
           </div>
-          <div className="logo logo-3">
-            <Pen className="w-6 h-6 text-white" />
+          <div className="floating-icon icon-right">
+            <Pen className="w-5 h-5 text-white" />
+          </div>
+          <div className="floating-icon icon-bottom">
+            <BookOpen className="w-5 h-5 text-white" />
           </div>
         </div>
         
         {/* Center Content */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-[300px]">
-          <h1 className="text-4xl font-bold mb-3 leading-tight">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-[350px]">
+          <h1 className="text-5xl font-bold mb-4 leading-tight">
             <span className="multicolor-text">
               <span className="letter-s">S</span>
               <span className="letter-a">a</span>
@@ -58,15 +61,15 @@ const AnimatedHero = () => {
               <span className="letter-i">i</span>
             </span>
           </h1>
-          <p className="text-lg text-white font-medium mb-4">
+          <p className="text-xl text-white font-medium mb-4">
             The Book Social Media
           </p>
-          <p className="text-sm text-gray-300 mb-6 leading-relaxed">
+          <p className="text-base text-gray-300 mb-8 leading-relaxed">
             Find new books, connect with other readers, and share your love of reading—all in one friendly community.
           </p>
           <Link to="/library" className="inline-block">
-            <button className="px-8 py-3 rounded-full text-sm font-semibold bg-white text-black hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg">
-              📚 Explore the Library
+            <button className="px-10 py-4 rounded-full text-base font-semibold bg-white text-black hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-xl">
+              📚 Start your Reading Journey
             </button>
           </Link>
         </div>
@@ -89,118 +92,121 @@ const AnimatedHero = () => {
         .letter-y2 { color: #560bad; }
         .letter-i { color: #480ca8; }
         
-        /* Arc Rings (50% circles) */
-        .arc-outer {
+        /* Perfect Circular Rings like Quantel */
+        .perfect-ring {
           width: 100%;
           height: 100%;
-          border: 4px solid transparent;
           border-radius: 50%;
-          border-top: 4px solid #ff4fd8;
-          border-right: 4px solid #1de3f7;
-          border-bottom: 4px solid transparent;
-          border-left: 4px solid transparent;
-          animation: rotate-clockwise 8s linear infinite;
-          filter: drop-shadow(0 0 20px rgba(255, 79, 216, 0.6));
-        }
-        
-        .arc-middle {
-          width: 100%;
-          height: 100%;
-          border: 4px solid transparent;
-          border-radius: 50%;
-          border-top: 4px solid transparent;
-          border-right: 4px solid transparent;
-          border-bottom: 4px solid #04ff95;
-          border-left: 4px solid #5d5fef;
-          animation: rotate-counter-clockwise 6s linear infinite;
-          filter: drop-shadow(0 0 15px rgba(4, 255, 149, 0.6));
-        }
-        
-        .arc-inner {
-          width: 100%;
-          height: 100%;
-          border: 4px solid transparent;
-          border-radius: 50%;
-          border-top: 4px solid #1de3f7;
-          border-right: 4px solid transparent;
-          border-bottom: 4px solid transparent;
-          border-left: 4px solid #ff4fd8;
-          animation: rotate-clockwise 4s linear infinite;
-          filter: drop-shadow(0 0 10px rgba(29, 227, 247, 0.6));
+          border: 5px solid transparent;
         }
 
-        /* Section Labels */
-        .section-outer, .section-middle, .section-inner {
-          border-radius: 50%;
-          position: relative;
+        .ring-outer {
+          background: linear-gradient(45deg, #ff4fd8, #1de3f7, #5d5fef, #04ff95) border-box;
+          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          animation: rotate-clockwise 10s linear infinite;
+          filter: drop-shadow(0 0 30px rgba(255, 79, 216, 0.4));
+        }
+        
+        .ring-middle {
+          background: linear-gradient(-45deg, #04ff95, #5d5fef, #1de3f7, #ff4fd8) border-box;
+          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          animation: rotate-counter-clockwise 8s linear infinite;
+          filter: drop-shadow(0 0 25px rgba(4, 255, 149, 0.4));
+        }
+        
+        .ring-inner {
+          background: linear-gradient(90deg, #1de3f7, #ff4fd8, #04ff95, #5d5fef) border-box;
+          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          animation: rotate-clockwise 6s linear infinite;
+          filter: drop-shadow(0 0 20px rgba(29, 227, 247, 0.4));
         }
 
-        .section-outer .section-label {
+        /* Section Labels positioned properly */
+        .section-label-outer {
           position: absolute;
-          top: -10px;
+          top: -20px;
           left: 50%;
           transform: translateX(-50%);
           color: #ff4fd8;
           font-weight: bold;
-          font-size: 0.9rem;
+          font-size: 1rem;
+          text-shadow: 0 0 10px rgba(255, 79, 216, 0.6);
           opacity: 0;
           animation: label-appear-outer 30s infinite;
         }
 
-        .section-middle .section-label {
+        .section-label-middle {
           position: absolute;
-          bottom: -10px;
-          left: 50%;
-          transform: translateX(-50%);
+          bottom: -20px;
+          right: -80px;
           color: #04ff95;
           font-weight: bold;
-          font-size: 0.9rem;
+          font-size: 1rem;
+          text-shadow: 0 0 10px rgba(4, 255, 149, 0.6);
           opacity: 0;
           animation: label-appear-middle 30s infinite;
         }
 
-        .section-inner .section-label {
+        .section-label-inner {
           position: absolute;
           top: 50%;
-          left: -60px;
+          left: -80px;
           transform: translateY(-50%);
           color: #1de3f7;
           font-weight: bold;
-          font-size: 0.9rem;
+          font-size: 1rem;
+          text-shadow: 0 0 10px rgba(29, 227, 247, 0.6);
           opacity: 0;
           animation: label-appear-inner 30s infinite;
         }
 
-        /* Floating Logos */
-        .logo {
+        /* Floating Icons positioned like Quantel */
+        .floating-icon {
           position: absolute;
-          width: 40px;
-          height: 40px;
-          background: rgba(255, 255, 255, 0.1);
+          width: 50px;
+          height: 50px;
+          background: rgba(20, 20, 20, 0.8);
+          border: 2px solid rgba(255, 255, 255, 0.1);
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
         }
 
-        .logo-1 {
-          top: 20%;
-          right: 10%;
-          animation: float-glow 6s ease-in-out infinite;
+        .icon-top {
+          top: -25px;
+          left: 50%;
+          transform: translateX(-50%);
+          animation: icon-glow 4s ease-in-out infinite;
         }
 
-        .logo-2 {
-          bottom: 20%;
-          left: 10%;
-          animation: float-glow 6s ease-in-out infinite 2s;
-        }
-
-        .logo-3 {
+        .icon-left {
           top: 50%;
-          right: -5%;
-          animation: float-glow 6s ease-in-out infinite 4s;
+          left: -25px;
+          transform: translateY(-50%);
+          animation: icon-glow 4s ease-in-out infinite 1s;
+        }
+
+        .icon-right {
+          top: 50%;
+          right: -25px;
+          transform: translateY(-50%);
+          animation: icon-glow 4s ease-in-out infinite 2s;
+        }
+
+        .icon-bottom {
+          bottom: -25px;
+          left: 50%;
+          transform: translateX(-50%);
+          animation: icon-glow 4s ease-in-out infinite 3s;
         }
 
         @keyframes rotate-clockwise {
@@ -220,9 +226,9 @@ const AnimatedHero = () => {
         }
 
         @keyframes label-appear-middle {
-          0%, 30% { opacity: 0; transform: translateX(-50%) scale(0.8); }
-          33%, 37% { opacity: 1; transform: translateX(-50%) scale(1); }
-          40%, 100% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+          0%, 30% { opacity: 0; transform: scale(0.8); }
+          33%, 37% { opacity: 1; transform: scale(1); }
+          40%, 100% { opacity: 0; transform: scale(0.8); }
         }
 
         @keyframes label-appear-inner {
@@ -231,29 +237,80 @@ const AnimatedHero = () => {
           70%, 100% { opacity: 0; transform: translateY(-50%) scale(0.8); }
         }
 
-        @keyframes float-glow {
+        @keyframes icon-glow {
           0%, 100% { 
-            transform: translateY(0px) scale(1);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-            opacity: 0.7;
+            opacity: 0.6;
+            transform: translateX(-50%) scale(1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
           }
           50% { 
-            transform: translateY(-10px) scale(1.1);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
             opacity: 1;
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+          }
+        }
+
+        .icon-left {
+          animation-name: icon-glow-left;
+        }
+
+        .icon-right {
+          animation-name: icon-glow-right;
+        }
+
+        .icon-bottom {
+          animation-name: icon-glow-bottom;
+        }
+
+        @keyframes icon-glow-left {
+          0%, 100% { 
+            opacity: 0.6;
+            transform: translateY(-50%) scale(1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+          }
+          50% { 
+            opacity: 1;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+          }
+        }
+
+        @keyframes icon-glow-right {
+          0%, 100% { 
+            opacity: 0.6;
+            transform: translateY(-50%) scale(1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+          }
+          50% { 
+            opacity: 1;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+          }
+        }
+
+        @keyframes icon-glow-bottom {
+          0%, 100% { 
+            opacity: 0.6;
+            transform: translateX(-50%) scale(1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+          }
+          50% { 
+            opacity: 1;
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
           }
         }
         
         @media (max-width: 768px) {
-          .arc-outer, .arc-middle, .arc-inner {
+          .perfect-ring {
             border-width: 3px;
           }
           .multicolor-text {
             font-size: 2.5rem;
           }
-          .logo {
-            width: 30px;
-            height: 30px;
+          .floating-icon {
+            width: 40px;
+            height: 40px;
           }
         }
       `}</style>
