@@ -5,43 +5,40 @@ import { BookOpen, Users, Pen } from "lucide-react";
 const AnimatedHero = () => {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-black overflow-hidden">
-      {/* Perfect Circular Rings */}
+      {/* Thick Arc Rings - 50% rotating circles */}
       <div className="relative w-[600px] h-[600px] mx-auto">
-        {/* Outer Ring */}
-        <div className="absolute inset-0 perfect-ring ring-outer"></div>
+        {/* Outer Ring - Pink/Purple Arc */}
+        <div className="absolute inset-0 thick-arc-ring ring-outer"></div>
         
-        {/* Middle Ring */}
-        <div className="absolute inset-[60px] perfect-ring ring-middle"></div>
+        {/* Middle Ring - Cyan Arc */}
+        <div className="absolute inset-[80px] thick-arc-ring ring-middle"></div>
         
-        {/* Inner Ring */}
-        <div className="absolute inset-[120px] perfect-ring ring-inner"></div>
+        {/* Inner Ring - Blue Arc */}
+        <div className="absolute inset-[160px] thick-arc-ring ring-inner"></div>
 
         {/* Section Labels on Rings */}
         <div className="absolute inset-0">
           <div className="section-label-outer">Library</div>
         </div>
         
-        <div className="absolute inset-[60px]">
+        <div className="absolute inset-[80px]">
           <div className="section-label-middle">Social Media</div>
         </div>
         
-        <div className="absolute inset-[120px]">
+        <div className="absolute inset-[160px]">
           <div className="section-label-inner">Authors</div>
         </div>
 
-        {/* Floating Logos positioned like Quantel */}
+        {/* Only 3 Floating Icons */}
         <div className="absolute inset-0">
-          <div className="floating-icon icon-top">
-            <BookOpen className="w-5 h-5 text-white" />
+          <div className="floating-icon icon-top-left">
+            <BookOpen className="w-6 h-6 text-white" />
           </div>
-          <div className="floating-icon icon-left">
-            <Users className="w-5 h-5 text-white" />
-          </div>
-          <div className="floating-icon icon-right">
-            <Pen className="w-5 h-5 text-white" />
+          <div className="floating-icon icon-top-right">
+            <Users className="w-6 h-6 text-white" />
           </div>
           <div className="floating-icon icon-bottom">
-            <BookOpen className="w-5 h-5 text-white" />
+            <Pen className="w-6 h-6 text-white" />
           </div>
         </div>
         
@@ -49,16 +46,7 @@ const AnimatedHero = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-[350px]">
           <h1 className="text-5xl font-bold mb-4 leading-tight">
             <span className="multicolor-text">
-              <span className="letter-s">S</span>
-              <span className="letter-a">a</span>
-              <span className="letter-h">h</span>
-              <span className="letter-a2">a</span>
-              <span className="letter-d">d</span>
-              <span className="letter-h2">h</span>
-              <span className="letter-y">y</span>
-              <span className="letter-a3">a</span>
-              <span className="letter-y2">y</span>
-              <span className="letter-i">i</span>
+              Sahadhyayi
             </span>
           </h1>
           <p className="text-xl text-white font-medium mb-4">
@@ -76,55 +64,44 @@ const AnimatedHero = () => {
       </div>
       
       <style>{`
-        /* Multi-colored letters */
+        /* Incremental gradient text */
         .multicolor-text {
           font-size: 4rem;
           font-weight: 900;
+          background: linear-gradient(90deg, #ff4fd8, #1de3f7, #5d5fef, #04ff95, #ff6b35, #f72585, #4cc9f0, #7209b7, #560bad, #480ca8);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
-        .letter-s { color: #ff4fd8; }
-        .letter-a { color: #1de3f7; }
-        .letter-h { color: #5d5fef; }
-        .letter-a2 { color: #04ff95; }
-        .letter-d { color: #ff6b35; }
-        .letter-h2 { color: #f72585; }
-        .letter-y { color: #4cc9f0; }
-        .letter-a3 { color: #7209b7; }
-        .letter-y2 { color: #560bad; }
-        .letter-i { color: #480ca8; }
         
-        /* Perfect Circular Rings like Quantel */
-        .perfect-ring {
+        /* Thick Arc Rings - 50% rotating circles */
+        .thick-arc-ring {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 5px solid transparent;
+          border: 12px solid transparent;
+          background: conic-gradient(from 0deg, transparent 0deg, var(--ring-color) 30deg, var(--ring-color) 210deg, transparent 240deg, transparent 360deg);
+          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
         }
 
         .ring-outer {
-          background: linear-gradient(45deg, #ff4fd8, #1de3f7, #5d5fef, #04ff95) border-box;
-          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          animation: rotate-clockwise 10s linear infinite;
-          filter: drop-shadow(0 0 30px rgba(255, 79, 216, 0.4));
+          --ring-color: #ff4fd8;
+          animation: rotate-clockwise 8s linear infinite;
+          filter: drop-shadow(0 0 30px rgba(255, 79, 216, 0.5));
         }
         
         .ring-middle {
-          background: linear-gradient(-45deg, #04ff95, #5d5fef, #1de3f7, #ff4fd8) border-box;
-          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          animation: rotate-counter-clockwise 8s linear infinite;
-          filter: drop-shadow(0 0 25px rgba(4, 255, 149, 0.4));
+          --ring-color: #1de3f7;
+          animation: rotate-counter-clockwise 10s linear infinite;
+          filter: drop-shadow(0 0 25px rgba(29, 227, 247, 0.5));
         }
         
         .ring-inner {
-          background: linear-gradient(90deg, #1de3f7, #ff4fd8, #04ff95, #5d5fef) border-box;
-          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          animation: rotate-clockwise 6s linear infinite;
-          filter: drop-shadow(0 0 20px rgba(29, 227, 247, 0.4));
+          --ring-color: #5d5fef;
+          animation: rotate-clockwise 12s linear infinite;
+          filter: drop-shadow(0 0 20px rgba(93, 95, 239, 0.5));
         }
 
         /* Section Labels positioned properly */
@@ -181,32 +158,23 @@ const AnimatedHero = () => {
           box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
         }
 
-        .icon-top {
-          top: -25px;
-          left: 50%;
-          transform: translateX(-50%);
-          animation: icon-glow 4s ease-in-out infinite;
+        .icon-top-left {
+          top: -50px;
+          left: -50px;
+          animation: icon-fade-cycle 8s ease-in-out infinite;
         }
 
-        .icon-left {
-          top: 50%;
-          left: -25px;
-          transform: translateY(-50%);
-          animation: icon-glow 4s ease-in-out infinite 1s;
-        }
-
-        .icon-right {
-          top: 50%;
-          right: -25px;
-          transform: translateY(-50%);
-          animation: icon-glow 4s ease-in-out infinite 2s;
+        .icon-top-right {
+          top: -50px;
+          right: -50px;
+          animation: icon-fade-cycle 8s ease-in-out infinite 2.5s;
         }
 
         .icon-bottom {
-          bottom: -25px;
+          bottom: -50px;
           left: 50%;
           transform: translateX(-50%);
-          animation: icon-glow 4s ease-in-out infinite 3s;
+          animation: icon-fade-cycle 8s ease-in-out infinite 5s;
         }
 
         @keyframes rotate-clockwise {
@@ -237,67 +205,21 @@ const AnimatedHero = () => {
           70%, 100% { opacity: 0; transform: translateY(-50%) scale(0.8); }
         }
 
-        @keyframes icon-glow {
-          0%, 100% { 
-            opacity: 0.6;
-            transform: translateX(-50%) scale(1);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-          }
-          50% { 
+        @keyframes icon-fade-cycle {
+          0%, 20% { 
             opacity: 1;
-            transform: translateX(-50%) scale(1.1);
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+            transform: scale(1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
           }
-        }
-
-        .icon-left {
-          animation-name: icon-glow-left;
-        }
-
-        .icon-right {
-          animation-name: icon-glow-right;
-        }
-
-        .icon-bottom {
-          animation-name: icon-glow-bottom;
-        }
-
-        @keyframes icon-glow-left {
-          0%, 100% { 
-            opacity: 0.6;
-            transform: translateY(-50%) scale(1);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+          25%, 75% { 
+            opacity: 0;
+            transform: scale(0.8);
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
           }
-          50% { 
+          80%, 100% { 
             opacity: 1;
-            transform: translateY(-50%) scale(1.1);
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
-          }
-        }
-
-        @keyframes icon-glow-right {
-          0%, 100% { 
-            opacity: 0.6;
-            transform: translateY(-50%) scale(1);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-          }
-          50% { 
-            opacity: 1;
-            transform: translateY(-50%) scale(1.1);
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
-          }
-        }
-
-        @keyframes icon-glow-bottom {
-          0%, 100% { 
-            opacity: 0.6;
-            transform: translateX(-50%) scale(1);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-          }
-          50% { 
-            opacity: 1;
-            transform: translateX(-50%) scale(1.1);
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+            transform: scale(1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
           }
         }
         
