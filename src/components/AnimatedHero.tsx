@@ -5,27 +5,27 @@ import { BookOpen, Users, Pen } from "lucide-react";
 const AnimatedHero = () => {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-black overflow-hidden">
-      {/* Thick Arc Rings - 50% rotating circles */}
-      <div className="relative w-[600px] h-[600px] mx-auto">
-        {/* Outer Ring - Pink/Purple Arc */}
-        <div className="absolute inset-0 thick-arc-ring ring-outer"></div>
+      {/* Atomic Model - 50% Arc Rings in separate orbits */}
+      <div className="relative w-[700px] h-[700px] mx-auto">
+        {/* Outer Ring - Separate orbit */}
+        <div className="absolute inset-0 atomic-arc-ring ring-outer"></div>
         
-        {/* Middle Ring - Cyan Arc */}
-        <div className="absolute inset-[80px] thick-arc-ring ring-middle"></div>
+        {/* Middle Ring - Separate orbit */}
+        <div className="absolute inset-[100px] atomic-arc-ring ring-middle"></div>
         
-        {/* Inner Ring - Blue Arc */}
-        <div className="absolute inset-[160px] thick-arc-ring ring-inner"></div>
+        {/* Inner Ring - Separate orbit */}
+        <div className="absolute inset-[200px] atomic-arc-ring ring-inner"></div>
 
         {/* Section Labels on Rings */}
         <div className="absolute inset-0">
           <div className="section-label-outer">Library</div>
         </div>
         
-        <div className="absolute inset-[80px]">
+        <div className="absolute inset-[100px]">
           <div className="section-label-middle">Social Media</div>
         </div>
         
-        <div className="absolute inset-[160px]">
+        <div className="absolute inset-[200px]">
           <div className="section-label-inner">Authors</div>
         </div>
 
@@ -74,13 +74,16 @@ const AnimatedHero = () => {
           background-clip: text;
         }
         
-        /* Atomic Model Rings - Complete circles */
-        .thick-arc-ring {
+        /* Atomic Model - 50% Arc Rings in separate orbits */
+        .atomic-arc-ring {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 8px solid var(--ring-color);
-          background: transparent;
+          border: 8px solid transparent;
+          background: conic-gradient(from 0deg, transparent 0deg, var(--ring-color) 30deg, var(--ring-color) 210deg, transparent 240deg, transparent 360deg);
+          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
           filter: drop-shadow(0 0 20px var(--ring-glow));
         }
 
