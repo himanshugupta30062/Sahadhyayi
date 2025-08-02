@@ -44,38 +44,32 @@ const AnimatedHero = () => {
       </div>
       
       <style>{`
-        /* Clean Quantel-style rings */
+        /* Clean circular rings */
         .quantel-ring {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 12px solid;
-          border-color: var(--ring-color);
-          border-image: var(--ring-gradient) 1;
-          background: transparent;
+          border: 12px solid transparent;
+          background: conic-gradient(from 0deg, transparent 0deg, var(--ring-color) 180deg, transparent 180deg);
+          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
           animation: var(--ring-animation);
-          box-sizing: border-box;
         }
 
         .ring-outer {
           --ring-color: #22c55e;
-          --ring-gradient: linear-gradient(90deg, #22c55e 50%, transparent 50%);
           --ring-animation: rotate-clockwise 20s linear infinite;
-          border-image: conic-gradient(from 0deg, #22c55e 50%, transparent 50%) 1;
         }
         
         .ring-middle {
           --ring-color: #3b82f6;
-          --ring-gradient: linear-gradient(90deg, #3b82f6 50%, transparent 50%);
           --ring-animation: rotate-counter-clockwise 15s linear infinite;
-          border-image: conic-gradient(from 0deg, #3b82f6 50%, transparent 50%) 1;
         }
         
         .ring-inner {
           --ring-color: #ef4444;
-          --ring-gradient: linear-gradient(90deg, #ef4444 50%, transparent 50%);
           --ring-animation: rotate-clockwise 10s linear infinite;
-          border-image: conic-gradient(from 0deg, #ef4444 50%, transparent 50%) 1;
         }
 
         @keyframes rotate-clockwise {
