@@ -22,7 +22,7 @@ const ATOM_CONFIG = [
     initialAngle: 0,
     alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.inner.radius],
     orbitSwitchInterval: 18000,
-    size: 44, // Medium size for outer orbit
+    size: 40, // Same size for all atoms
   },
   {
     orbitRadius: RING_CONFIG.middle.radius,
@@ -30,10 +30,10 @@ const ATOM_CONFIG = [
     label: "Authors",
     materialId: "white",
     duration: 15,
-    initialAngle: 120,
+    initialAngle: 60,
     alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.inner.radius],
     orbitSwitchInterval: 22000,
-    size: 40, // Smaller for middle orbit
+    size: 40, // Same size for all atoms
   },
   {
     orbitRadius: RING_CONFIG.inner.radius,
@@ -41,10 +41,10 @@ const ATOM_CONFIG = [
     label: "Social Media",
     materialId: "white",
     duration: 12,
-    initialAngle: 240,
-    alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.outer.radius], // Only allow switching to larger orbits
+    initialAngle: 120,
+    alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.outer.radius],
     orbitSwitchInterval: 25000,
-    size: 32, // Smallest for inner orbit to avoid text overlap
+    size: 40, // Same size for all atoms
   },
 ];
 

@@ -33,7 +33,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   const material = ATOM_MATERIALS[materialId];
   const orbitSize = currentOrbitRadius * 2;
 
-  // Dynamic orbit switching
+  // Dynamic orbit switching with angle constraint
   useEffect(() => {
     if (alternateOrbits.length === 0) return;
     
@@ -41,7 +41,20 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       const allOrbits = [orbitRadius, ...alternateOrbits];
       const currentIndex = allOrbits.indexOf(currentOrbitRadius);
       const nextIndex = (currentIndex + 1) % allOrbits.length;
-      setCurrentOrbitRadius(allOrbits[nextIndex]);
+      const nextOrbit = allOrbits[nextIndex];
+      
+      // When switching orbits, ensure we stay within the colored arc (0-180 degrees)
+      setCurrentOrbitRadius(nextOrbit);
+      
+      // If current angle is outside the colored arc, move to within the arc
+      setCurrentAngle(prevAngle => {
+        const normalizedAngle = prevAngle % 360;
+        if (normalizedAngle > 180 && normalizedAngle < 360) {
+          // If in the blank space (180-360), move to equivalent position in colored arc (0-180)
+          return normalizedAngle - 180;
+        }
+        return normalizedAngle;
+      });
     }, orbitSwitchInterval);
 
     return () => clearInterval(interval);
@@ -61,7 +74,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       <div
         className="group w-full h-full absolute"
         style={{
-          animation: isHovered ? "none" : `orbit-${duration} ${duration}s linear infinite`,
+          animation: isHovered ? "none" : `constrainedOrbit-${duration} ${duration}s linear infinite`,
           transformOrigin: "50% 50%",
         }}
       >
@@ -83,7 +96,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         >
           <div
             style={{
-              animation: isHovered ? "none" : `counter-rotate-${duration} ${duration}s linear infinite`,
+              animation: isHovered ? "none" : `constrainedCounterRotate-${duration} ${duration}s linear infinite`,
             }}
           >
             <AtomShell
@@ -98,13 +111,17 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       </div>
       
       <style>{`
-        @keyframes orbit-${duration} {
+        @keyframes constrainedOrbit-${duration} {
           0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          50% { transform: rotate(180deg); }
+          50.01% { transform: rotate(0deg); }
+          100% { transform: rotate(180deg); }
         }
-        @keyframes counter-rotate-${duration} {
+        @keyframes constrainedCounterRotate-${duration} {
           0% { transform: rotate(0deg); }
-          100% { transform: rotate(-360deg); }
+          50% { transform: rotate(-180deg); }
+          50.01% { transform: rotate(0deg); }
+          100% { transform: rotate(-180deg); }
         }
       `}</style>
     </div>
