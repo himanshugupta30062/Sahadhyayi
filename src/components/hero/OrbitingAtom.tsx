@@ -48,13 +48,14 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
           }}
         >
           <div 
-            className={`w-12 h-12 rounded-full flex items-center justify-center shadow-2xl font-bold text-lg cursor-pointer transition-all duration-300 hover:scale-110 ${bgColor} ${textColor}`}
+            className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl font-bold text-xl cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-3xl ${bgColor} ${textColor}`}
             style={{ 
-              boxShadow: "0 0 32px 8px rgba(255,255,255,0.1)",
+              boxShadow: "0 0 40px 12px rgba(255,255,255,0.15)",
+              border: "2px solid rgba(255,255,255,0.2)",
             }}
           >
             {letter}
-            <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 bg-white/95 text-black px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-xl z-20 whitespace-nowrap text-sm font-medium backdrop-blur-sm">
+            <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 bg-white/95 text-black px-4 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-xl z-20 whitespace-nowrap text-sm font-medium backdrop-blur-sm border border-gray-200">
               {label}
             </span>
           </div>

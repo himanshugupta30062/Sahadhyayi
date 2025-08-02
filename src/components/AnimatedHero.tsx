@@ -7,9 +7,9 @@ import { HeroContent } from "./hero/HeroContent";
 
 // Configuration constants
 const RING_CONFIG = {
-  outer: { radius: 320, color: "url(#red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 270, color: "#22c55e", rotation: 36, duration: 18 },
-  inner: { radius: 220, color: "#3b82f6", rotation: 64, duration: 14 },
+  outer: { radius: 340, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
+  middle: { radius: 280, color: "#22c55e", rotation: 36, duration: 18 },
+  inner: { radius: 240, color: "#3b82f6", rotation: 64, duration: 14 },
 };
 
 const ATOM_CONFIG = [
@@ -87,8 +87,8 @@ const AnimatedHero: React.FC = () => {
       <div
         className="absolute rounded-full bg-black z-[2]"
         style={{
-          width: 400,
-          height: 400,
+          width: 440,
+          height: 440,
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
