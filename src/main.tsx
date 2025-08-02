@@ -1,14 +1,18 @@
 
-import * as React from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { initializeSecurity } from './utils/security';
 
+// Ensure React is globally available
+(window as any).React = React;
+
 // Initialize security measures
 initializeSecurity();
 
 console.log('Main.tsx loading...');
+console.log('React version:', React.version);
 
 const container = document.getElementById("root");
 if (!container) {
