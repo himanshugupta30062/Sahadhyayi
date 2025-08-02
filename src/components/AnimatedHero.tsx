@@ -8,8 +8,8 @@ import { HeroContent } from "./hero/HeroContent";
 // Configuration constants
 const RING_CONFIG = {
   outer: { radius: 340, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 290, color: "#22c55e", rotation: 36, duration: 18 },
-  inner: { radius: 250, color: "#3b82f6", rotation: 64, duration: 14 },
+  middle: { radius: 290, color: "#22c55e", rotation: 120, duration: 24 },
+  inner: { radius: 250, color: "#3b82f6", rotation: 240, duration: 24 },
 };
 
 const ATOM_CONFIG = [
@@ -18,7 +18,7 @@ const ATOM_CONFIG = [
     letter: "L",
     label: "Library",
     materialId: "white",
-    duration: 20,
+    duration: 24,
     initialAngle: 0,
     alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.inner.radius],
     orbitSwitchInterval: 18000,
@@ -29,8 +29,8 @@ const ATOM_CONFIG = [
     letter: "A",
     label: "Authors",
     materialId: "white",
-    duration: 15,
-    initialAngle: 60,
+    duration: 24,
+    initialAngle: 120,
     alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.inner.radius],
     orbitSwitchInterval: 22000,
     size: 40, // Same size for all atoms
@@ -40,8 +40,8 @@ const ATOM_CONFIG = [
     letter: "S",
     label: "Social Media",
     materialId: "white",
-    duration: 12,
-    initialAngle: 120,
+    duration: 24,
+    initialAngle: 240,
     alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.outer.radius],
     orbitSwitchInterval: 25000,
     size: 40, // Same size for all atoms
