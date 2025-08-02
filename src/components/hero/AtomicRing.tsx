@@ -21,10 +21,10 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
   const center = radius;
   const arcRadius = radius - strokeWidth / 2;
 
-  // Create a 180-degree arc path
+  // Create a 120-degree arc path for perfect circle completion
   const createArcPath = () => {
     const startAngle = 0;
-    const endAngle = 180;
+    const endAngle = 120; // Changed from 180 to 120 for complementary circle
     const startX = center + arcRadius * Math.cos((startAngle - 90) * Math.PI / 180);
     const startY = center + arcRadius * Math.sin((startAngle - 90) * Math.PI / 180);
     const endX = center + arcRadius * Math.cos((endAngle - 90) * Math.PI / 180);

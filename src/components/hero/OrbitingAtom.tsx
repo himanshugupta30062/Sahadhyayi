@@ -84,7 +84,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       <div
         className="group w-full h-full absolute"
         style={{
-          animation: (isHovered || isTransitioning) ? "none" : `coloredArcOrbit-${duration} ${duration}s linear infinite`,
+          animation: (isHovered || isTransitioning) ? "none" : `complementaryOrbit-${duration} ${duration}s linear infinite`,
           transformOrigin: "50% 50%",
         }}
       >
@@ -106,7 +106,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         >
           <div
             style={{
-              animation: (isHovered || isTransitioning) ? "none" : `coloredArcCounterRotate-${duration} ${duration}s linear infinite`,
+              animation: (isHovered || isTransitioning) ? "none" : `complementaryCounterRotate-${duration} ${duration}s linear infinite`,
             }}
           >
             <AtomShell
@@ -121,17 +121,17 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       </div>
       
       <style>{`
-        @keyframes coloredArcOrbit-${duration} {
+        @keyframes complementaryOrbit-${duration} {
           0% { transform: rotate(0deg); }
-          50% { transform: rotate(180deg); }
-          50.01% { transform: rotate(0deg); }
-          100% { transform: rotate(180deg); }
+          33.33% { transform: rotate(120deg); }
+          33.34% { transform: rotate(0deg); }
+          100% { transform: rotate(120deg); }
         }
-        @keyframes coloredArcCounterRotate-${duration} {
+        @keyframes complementaryCounterRotate-${duration} {
           0% { transform: rotate(0deg); }
-          50% { transform: rotate(-180deg); }
-          50.01% { transform: rotate(0deg); }
-          100% { transform: rotate(-180deg); }
+          33.33% { transform: rotate(-120deg); }
+          33.34% { transform: rotate(0deg); }
+          100% { transform: rotate(-120deg); }
         }
       `}</style>
     </div>
