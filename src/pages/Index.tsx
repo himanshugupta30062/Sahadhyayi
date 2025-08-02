@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
+import AnimatedHeroSection from "@/components/AnimatedHeroSection";
 
 const Index = () => {
   const { user } = useAuth();
@@ -22,7 +22,7 @@ const Index = () => {
     },
     {
       icon: Users,
-      title: "Global Reading Groups",
+      title: "Global Reading Groups", 
       description: "Engage in book discussions worldwide."
     },
     {
@@ -85,48 +85,11 @@ const Index = () => {
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
       </script>
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        {/* Hero Section */}
-        <section className="relative py-12 sm:py-16 lg:py-20 px-4 text-center">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex justify-center mb-6 sm:mb-8">
-              <img
-                src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
-                alt="Sahadhyayi logo - Fellow Reader community platform in Sanskrit"
-                loading="lazy"
-                className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24"
-              />
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
-              Rediscover the Joy of
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600"> Deep Reading</span>
-            </h1>
-            <p className="text-lg sm:text-xl lg:text-2xl text-gray-700 mb-2 leading-relaxed px-4">
-              Connect, read, and grow with thousands of fellow readers worldwide.
-            </p>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-2 leading-relaxed px-4">
-              Join <strong>Sahadhyayi</strong>—the digital community bringing meaningful reading back into focus.
-            </p>
-            <p className="text-sm sm:text-base lg:text-lg text-gray-500 mb-6 sm:mb-8 italic px-4">
-              Because reading deeply is reading differently.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-              <Link to="/signup" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-3 text-base sm:text-lg shadow-lg">
-                  <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Join Our Reading Community (Free!)
-                </Button>
-              </Link>
-              <SignInLink className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto border-orange-400 text-orange-600 hover:bg-orange-50 px-6 sm:px-8 py-3 text-base sm:text-lg shadow-lg">
-                  <LogIn className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Sign In
-                </Button>
-              </SignInLink>
-            </div>
-          </div>
-        </section>
+      
+      {/* Animated Hero Section */}
+      <AnimatedHeroSection />
 
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         {/* What Sahadhyayi Means Section */}
         <section className="py-12 sm:py-16 px-4 bg-white/60 backdrop-blur-sm">
           <div className="max-w-6xl mx-auto text-center">
