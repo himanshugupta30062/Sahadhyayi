@@ -8,17 +8,17 @@ const AnimatedHero = () => {
       <div className="relative w-[800px] h-[800px] mx-auto flex items-center justify-center">
         
         {/* Outer Ring - Pink/Magenta */}
-        <div className="absolute w-[700px] h-[700px] rounded-full">
+        <div className="absolute w-[750px] h-[750px] rounded-full">
           <div className="quantel-ring ring-outer"></div>
         </div>
         
         {/* Middle Ring - Blue */}
-        <div className="absolute w-[550px] h-[550px] rounded-full">
+        <div className="absolute w-[600px] h-[600px] rounded-full">
           <div className="quantel-ring ring-middle"></div>
         </div>
         
         {/* Inner Ring - Cyan/Teal */}
-        <div className="absolute w-[400px] h-[400px] rounded-full">
+        <div className="absolute w-[480px] h-[480px] rounded-full">
           <div className="quantel-ring ring-inner"></div>
         </div>
         
@@ -49,7 +49,7 @@ const AnimatedHero = () => {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 6px solid transparent;
+          border: 12px solid transparent;
           background: conic-gradient(from 0deg, transparent 0deg, var(--ring-color) 180deg, transparent 180deg);
           -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
