@@ -45,6 +45,11 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
     >
       <svg width={size} height={size} className="absolute inset-0">
         <defs>
+          <linearGradient id="red-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#dc2626" />
+            <stop offset="50%" stopColor="#ef4444" />
+            <stop offset="100%" stopColor="#f87171" />
+          </linearGradient>
           <filter id={`glow-${radius}`}>
             <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
             <feMerge> 
