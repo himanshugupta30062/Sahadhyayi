@@ -9,6 +9,7 @@ const arcGap = 18;
 const sizeOuter = 600;
 const sizeMiddle = sizeOuter - 2 * (arcWidth + arcGap); // 600 - 2*46 = 508
 const sizeInner = sizeMiddle - 2 * (arcWidth + arcGap); // 508 - 2*46 = 416
+const maskSize = 360; // Bigger mask for nucleus/text
 
 // SVG Arc Helper
 function describeArc(cx, cy, r, startAngle, endAngle) {
@@ -47,7 +48,7 @@ const Arc = ({radius, color, rotate, duration, z=0}) => (
       stroke={color}
       strokeWidth={arcWidth}
       strokeLinecap="round"
-      style={{ filter: `drop-shadow(0 0 12px ${color})` }}
+      style={{ filter: `drop-shadow(0 0 16px ${color})` }}
     />
     <style>{`
       @keyframes orbit { 100% { transform: rotate(${360+rotate}deg); } }
@@ -55,104 +56,125 @@ const Arc = ({radius, color, rotate, duration, z=0}) => (
   </svg>
 );
 
-// Orbiting Atoms with Tooltips
+// Orbiting Atoms (L, S, A) - now truly animated around orbit
 const Atom = ({
-  orbitSize, letter, label, bg, textColor, duration, startAngle
-}) => {
-  // Convert polar to cartesian for atom placement (on half arc)
-  const angleRad = (startAngle-90) * Math.PI / 180;
-  const left = `calc(50% + ${(orbitSize/2) * Math.cos(angleRad)}px)`;
-  const top = `calc(50% + ${(orbitSize/2) * Math.sin(angleRad)}px)`;
-  return (
-    <div style={{
+  orbitSize, letter, label, bg, textColor, duration, initialAngle, zIndex = 5
+}) => (
+  <div
+    style={{
       position: "absolute",
-      left, top,
-      zIndex: 5,
-      animation: `orbit-atom ${duration}s linear infinite`
-    }}>
-      <div className="group relative">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl font-bold text-lg cursor-pointer ${bg} ${textColor}`}>
+      width: orbitSize,
+      height: orbitSize,
+      left: `calc(50% - ${orbitSize/2}px)`,
+      top: `calc(50% - ${orbitSize/2}px)`,
+      pointerEvents: "none",
+      zIndex,
+    }}
+  >
+    <div
+      className="group"
+      style={{
+        width: orbitSize,
+        height: orbitSize,
+        position: "absolute",
+        animation: `atom-orbit ${duration}s linear infinite`,
+        transform: `rotate(${initialAngle}deg)`,
+        transformOrigin: "50% 50%",
+        pointerEvents: "none"
+      }}
+    >
+      <div
+        className={`absolute`}
+        style={{
+          left: "50%",
+          top: "0%",
+          transform: "translate(-50%, -50%)",
+          pointerEvents: "auto"
+        }}
+      >
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-2xl font-bold text-lg cursor-pointer ${bg} ${textColor} relative`}
+          style={{ boxShadow: "0 0 32px 8px rgba(255,255,255,0.09)" }}>
           {letter}
-          <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white text-black px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-20 whitespace-nowrap text-sm">
+          <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white text-black px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-20 whitespace-nowrap text-sm pointer-events-auto">
             {label}
           </span>
         </div>
       </div>
-      <style>{`
-        @keyframes orbit-atom {
-          0% { transform: rotate(0deg) translateY(0px);}
-          100% { transform: rotate(360deg) translateY(0px);}
-        }
-      `}</style>
     </div>
-  );
-};
+    <style>{`
+      @keyframes atom-orbit {
+        0% { transform: rotate(${initialAngle}deg); }
+        100% { transform: rotate(${360+initialAngle}deg); }
+      }
+    `}</style>
+  </div>
+);
 
 const AnimatedHero = () => (
   <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
 
     {/* SVG Arcs - Red, Green, Blue */}
-    <Arc radius={sizeOuter/2} color="#ef4444" rotate={0} duration={24} />   {/* Red */}
-    <Arc radius={sizeMiddle/2} color="#22c55e" rotate={36} duration={18} /> {/* Green */}
-    <Arc radius={sizeInner/2} color="#3b82f6" rotate={64} duration={14} />  {/* Blue */}
+    <Arc radius={sizeOuter/2} color="#ef4444" rotate={0} duration={24} />
+    <Arc radius={sizeMiddle/2} color="#22c55e" rotate={36} duration={18} />
+    <Arc radius={sizeInner/2} color="#3b82f6" rotate={64} duration={14} />
 
-    {/* Black mask: protects center text area */}
+    {/* Black mask: protects nucleus/text */}
     <div
       className="absolute rounded-full bg-black z-[2]"
       style={{
-        width: 320, height: 320,
+        width: maskSize, height: maskSize,
         left: "50%", top: "50%",
         transform: "translate(-50%, -50%)"
       }}
     />
 
-    {/* Atoms on their orbits */}
+    {/* Atoms animated on their orbits */}
     <Atom
-      orbitSize={sizeOuter-arcWidth/2}
+      orbitSize={sizeOuter}
       letter="L"
       label="Library"
       bg="bg-red-500"
       textColor="text-white"
       duration={24}
-      startAngle={0}
+      initialAngle={0}
     />
     <Atom
-      orbitSize={sizeMiddle-arcWidth/2}
-      letter="S"
-      label="Social Media"
-      bg="bg-green-500"
-      textColor="text-white"
-      duration={18}
-      startAngle={180}
-    />
-    <Atom
-      orbitSize={sizeInner-arcWidth/2}
+      orbitSize={sizeMiddle}
       letter="A"
       label="Authors"
       bg="bg-blue-500"
       textColor="text-white"
+      duration={18}
+      initialAngle={120}
+    />
+    <Atom
+      orbitSize={sizeInner}
+      letter="S"
+      label="Social Media"
+      bg="bg-green-500"
+      textColor="text-white"
       duration={14}
-      startAngle={90}
+      initialAngle={240}
     />
 
-    {/* Floating glowing icons */}
-    <div className="absolute w-16 h-16 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl animate-float top-[12%] left-[12%] z-[3]">
+    {/* Floating glowing icons with fade in/out */}
+    <div className="icon-fade absolute w-16 h-16 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl top-[12%] left-[12%] z-[3] fade-1">
       <BookOpen size={32} className="text-cyan-400" />
     </div>
-    <div className="absolute w-16 h-16 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl animate-float top-[12%] right-[12%] z-[3] animation-delay-1000">
+    <div className="icon-fade absolute w-16 h-16 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl top-[12%] right-[12%] z-[3] fade-2">
       <MessageCircle size={32} className="text-pink-400" />
     </div>
-    <div className="absolute w-16 h-16 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl animate-float bottom-[12%] left-[12%] z-[3] animation-delay-2000">
+    <div className="icon-fade absolute w-16 h-16 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl bottom-[12%] left-[12%] z-[3] fade-3">
       <Users size={32} className="text-purple-400" />
     </div>
-    <div className="absolute w-16 h-16 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl animate-float bottom-[12%] right-[12%] z-[3] animation-delay-3000">
+    <div className="icon-fade absolute w-16 h-16 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl bottom-[12%] right-[12%] z-[3] fade-4">
       <TrendingUp size={32} className="text-emerald-400" />
     </div>
 
-    {/* Central content */}
-    <div className="relative z-10 text-center max-w-[300px] px-6 py-8 mx-auto"
+    {/* Central nucleus content */}
+    <div className="relative z-10 text-center max-w-[290px] px-6 py-8 mx-auto"
       style={{
-        minHeight: 250,
+        minHeight: 200,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -179,29 +201,31 @@ const AnimatedHero = () => (
 
     {/* Animations, delays, and responsive tweaks */}
     <style>{`
-      .animate-float {
-        animation: float 6s ease-in-out infinite;
+      .icon-fade {
+        animation: iconFade 4s linear infinite;
+        opacity: 0.80;
       }
-      .animation-delay-1000 { animation-delay: 1s; }
-      .animation-delay-2000 { animation-delay: 2s; }
-      .animation-delay-3000 { animation-delay: 3s; }
+      .fade-1 { animation-delay: 0s; }
+      .fade-2 { animation-delay: 1s; }
+      .fade-3 { animation-delay: 2s; }
+      .fade-4 { animation-delay: 3s; }
+      @keyframes iconFade {
+        0%, 100% { opacity: 0.80; }
+        50% { opacity: 0.2; }
+      }
       .animate-gradient-shift {
         background-size: 200% 200%;
         animation: gradient-shift 3s ease infinite;
-      }
-      @keyframes float {
-        0%, 100% { transform: translateY(0px) scale(1); box-shadow: 0 0 20px rgba(255,255,255,0.1);}
-        50% { transform: translateY(-10px) scale(1.05); box-shadow: 0 0 30px rgba(255,255,255,0.3);}
       }
       @keyframes gradient-shift {
         0%, 100% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
       }
       @media (max-width: 900px) {
-        .max-w-[300px] { max-width: 80vw; }
+        .max-w-[290px] { max-width: 80vw; }
       }
       @media (max-width: 600px) {
-        .max-w-[300px] { max-width: 92vw; }
+        .max-w-[290px] { max-width: 92vw; }
       }
     `}</style>
   </div>
