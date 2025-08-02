@@ -6,94 +6,81 @@ const AnimatedHero = () => {
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
 
-      {/* Rotating Quantel-Style Arcs */}
-      <div className="absolute w-[600px] h-[600px] md:w-[700px] md:h-[700px] flex items-center justify-center">
-        <div className="absolute w-full h-full rounded-full animate-spin-slow quantel-arc-outer" />
-        <div className="absolute w-[80%] h-[80%] rounded-full animate-spin-slower quantel-arc-inner" />
+      <div className="absolute w-[700px] h-[700px] rounded-full animate-spin-slow border-t-[20px] border-[magenta] opacity-90"></div>
+      <div className="absolute w-[560px] h-[560px] rounded-full animate-spin-reverse border-t-[20px] border-cyan-400 opacity-90"></div>
+      <div className="absolute w-[420px] h-[420px] rounded-full animate-spin-slow border-t-[20px] border-indigo-400 opacity-90"></div>
+
+      <div className="absolute w-[700px] h-[700px] animate-spin-slow">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 group">
+          <span className="text-white bg-gray-800 px-3 py-2 rounded-full cursor-pointer relative">L
+            <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white text-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Library</span>
+          </span>
+        </div>
       </div>
 
-      {/* Floating Outlined Icons */}
-      <div className="icon-style top-10 left-10"><BookOpen /></div>
-      <div className="icon-style top-10 right-10"><MessageCircle /></div>
-      <div className="icon-style bottom-10 left-10"><Users /></div>
-      <div className="icon-style bottom-10 right-10"><BarChart /></div>
+      <div className="absolute w-[560px] h-[560px] animate-spin-reverse">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 group">
+          <span className="text-white bg-gray-800 px-3 py-2 rounded-full cursor-pointer relative">S
+            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white text-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Social Media</span>
+          </span>
+        </div>
+      </div>
 
-      {/* Central Hero Content */}
-      <div className="text-center px-4 z-10 animate-fadeIn">
+      <div className="absolute w-[420px] h-[420px] animate-spin-slow">
+        <div className="absolute top-1/2 right-0 -translate-y-1/2 group">
+          <span className="text-white bg-gray-800 px-3 py-2 rounded-full cursor-pointer relative">A
+            <span className="absolute right-full top-1/2 transform -translate-y-1/2 mr-2 bg-white text-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Authors</span>
+          </span>
+        </div>
+      </div>
+
+      <div className="absolute top-[25%] left-[25%] w-10 h-10 text-white animate-pulse-medium"><BookOpen /></div>
+      <div className="absolute top-[25%] right-[25%] w-10 h-10 text-white animate-pulse-medium delay-1000"><MessageCircle /></div>
+      <div className="absolute bottom-[25%] left-[25%] w-10 h-10 text-white animate-pulse-medium delay-2000"><Users /></div>
+      <div className="absolute bottom-[25%] right-[25%] w-10 h-10 text-white animate-pulse-medium delay-3000"><BarChart /></div>
+
+      <div className="relative z-10 text-center max-w-[350px] px-6">
         <h1 className="text-5xl font-bold mb-4">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
+          <span className="text-transparent bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text">
             Sahadhyayi
           </span>
         </h1>
-        <p className="text-xl text-white font-semibold mb-4">The Book Readers Social Media</p>
-        <p className="text-gray-300 mb-8 max-w-xl mx-auto">
+        <h2 className="text-2xl font-bold text-white mb-4">
+          The Book Readers Social Media
+        </h2>
+        <p className="text-gray-300 text-lg mb-6 leading-relaxed">
           Find new books, connect with readers, and share your love of reading—all in one friendly community.
         </p>
         <Link to="/library">
-          <button className="px-8 py-3 bg-white text-black rounded-full hover:scale-105 transition duration-300">
+          <button className="px-8 py-3 bg-white text-black rounded-full font-semibold hover:bg-gray-100 transition-all duration-300">
             📚 Explore the Library
           </button>
         </Link>
       </div>
 
-      {/* Inline CSS */}
       <style>{`
-        .quantel-arc-outer {
-          background: conic-gradient(from 0deg, #f72585 0deg 240deg, transparent 240deg 360deg);
-          mask-image: radial-gradient(circle, transparent 70%, black 70%);
-          animation: spin 40s linear infinite;
-        }
-
-        .quantel-arc-inner {
-          background: conic-gradient(from 180deg, #04ff95 0deg 220deg, transparent 220deg 360deg);
-          mask-image: radial-gradient(circle, transparent 70%, black 70%);
-          animation: spinReverse 60s linear infinite;
-        }
-
-        .icon-style {
-          position: absolute;
-          color: #fff;
-          width: 45px;
-          height: 45px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          backdrop-filter: blur(8px);
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 0 20px rgba(0,0,0,0.2);
-        }
+        .animate-spin-slow { animation: spin 15s linear infinite; }
+        .animate-spin-reverse { animation: spin-reverse 18s linear infinite; }
+        .animate-pulse-medium { animation: pulse-glow 5s ease-in-out infinite; }
+        .delay-1000 { animation-delay: 1s; }
+        .delay-2000 { animation-delay: 2s; }
+        .delay-3000 { animation-delay: 3s; }
 
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-
-        @keyframes spinReverse {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(0deg); }
+        @keyframes spin-reverse {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(-360deg); }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.2; box-shadow: 0 0 6px rgba(255, 255, 255, 0.4); }
+          50% { opacity: 1; box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 1.5s ease-out;
-        }
-
-        @media (max-width:768px) {
-          .quantel-arc-outer, .quantel-arc-inner {
-            width: 350px;
-            height: 350px;
-          }
-
-          .icon-style {
-            width: 35px;
-            height: 35px;
-          }
+        @media (max-width: 768px) {
+          .w-[700px], .w-[560px], .w-[420px] { width: 90vw; height: 90vw; }
         }
       `}</style>
     </div>
