@@ -14,37 +14,31 @@ const RING_CONFIG = {
 
 const ATOM_CONFIG = [
   {
-    orbitRadius: RING_CONFIG.outer.radius,
     letter: "L",
     label: "Library",
     materialId: "white",
-    duration: 24,
+    duration: 30, // Slower, more pleasant movement
     initialAngle: 0,
-    alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.inner.radius],
-    orbitSwitchInterval: 18000,
-    size: 40, // Same size for all atoms
+    orbitSwitchInterval: 20000, // Longer intervals for less chaotic movement
+    size: 40,
   },
   {
-    orbitRadius: RING_CONFIG.middle.radius,
-    letter: "A",
+    letter: "A", 
     label: "Authors",
     materialId: "white",
-    duration: 24,
+    duration: 25,
     initialAngle: 120,
-    alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.inner.radius],
-    orbitSwitchInterval: 22000,
-    size: 40, // Same size for all atoms
+    orbitSwitchInterval: 25000,
+    size: 40,
   },
   {
-    orbitRadius: RING_CONFIG.inner.radius,
     letter: "S",
-    label: "Social Media",
+    label: "Social Media", 
     materialId: "white",
-    duration: 24,
+    duration: 35,
     initialAngle: 240,
-    alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.outer.radius],
-    orbitSwitchInterval: 25000,
-    size: 40, // Same size for all atoms
+    orbitSwitchInterval: 30000,
+    size: 40,
   },
 ];
 
@@ -77,6 +71,28 @@ const FLOATING_ICONS = [
 
 const AnimatedHero: React.FC = () => {
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
+  const [occupiedOrbits, setOccupiedOrbits] = useState<Record<string, number>>({
+    L: RING_CONFIG.outer.radius,
+    A: RING_CONFIG.middle.radius,
+    S: RING_CONFIG.inner.radius,
+  });
+
+  const updateAtomOrbit = (atomLetter: string, newOrbit: number) => {
+    setOccupiedOrbits(prev => ({
+      ...prev,
+      [atomLetter]: newOrbit
+    }));
+  };
+
+  const getAvailableOrbits = (currentAtom: string) => {
+    const allOrbits = [RING_CONFIG.outer.radius, RING_CONFIG.middle.radius, RING_CONFIG.inner.radius];
+    const currentAtomOrbit = occupiedOrbits[currentAtom];
+    
+    return allOrbits.filter(orbit => {
+      // Allow current orbit or unoccupied orbits
+      return orbit === currentAtomOrbit || !Object.values(occupiedOrbits).includes(orbit);
+    });
+  };
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
@@ -107,17 +123,18 @@ const AnimatedHero: React.FC = () => {
       {/* Orbiting Atoms */}
       {ATOM_CONFIG.map((atom, index) => (
         <OrbitingAtom
-          key={index}
-          orbitRadius={atom.orbitRadius}
+          key={atom.letter}
+          orbitRadius={occupiedOrbits[atom.letter]}
           letter={atom.letter}
           label={atom.label}
           materialId={atom.materialId}
           duration={atom.duration}
           initialAngle={atom.initialAngle}
-          alternateOrbits={atom.alternateOrbits}
+          availableOrbits={getAvailableOrbits(atom.letter)}
           orbitSwitchInterval={atom.orbitSwitchInterval}
           size={atom.size}
           onHoverChange={setIsAnyAtomHovered}
+          onOrbitChange={(newOrbit) => updateAtomOrbit(atom.letter, newOrbit)}
         />
       ))}
 

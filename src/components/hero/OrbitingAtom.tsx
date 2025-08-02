@@ -8,10 +8,11 @@ interface OrbitingAtomProps {
   materialId: string;
   duration: number;
   initialAngle: number;
-  alternateOrbits?: number[];
+  availableOrbits: number[];
   orbitSwitchInterval?: number;
   size?: number;
   onHoverChange?: (isHovered: boolean) => void;
+  onOrbitChange?: (newOrbit: number) => void;
 }
 
 export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
@@ -21,44 +22,52 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   materialId,
   duration,
   initialAngle,
-  alternateOrbits = [],
+  availableOrbits,
   orbitSwitchInterval = 15000,
   size = 48,
   onHoverChange,
+  onOrbitChange,
 }) => {
   const [currentOrbitRadius, setCurrentOrbitRadius] = useState(orbitRadius);
   const [isHovered, setIsHovered] = useState(false);
-  const [currentAngle, setCurrentAngle] = useState(initialAngle);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   const material = ATOM_MATERIALS[materialId];
   const orbitSize = currentOrbitRadius * 2;
 
-  // Dynamic orbit switching with angle constraint
+  // Chemistry rule: Switch to unoccupied orbits only
   useEffect(() => {
-    if (alternateOrbits.length === 0) return;
+    if (availableOrbits.length <= 1) return; // No alternatives available
     
     const interval = setInterval(() => {
-      const allOrbits = [orbitRadius, ...alternateOrbits];
-      const currentIndex = allOrbits.indexOf(currentOrbitRadius);
-      const nextIndex = (currentIndex + 1) % allOrbits.length;
-      const nextOrbit = allOrbits[nextIndex];
+      if (isHovered || isTransitioning) return; // Don't switch during hover or transition
       
-      // When switching orbits, ensure we stay within the colored arc (0-180 degrees)
-      setCurrentOrbitRadius(nextOrbit);
-      
-      // If current angle is outside the colored arc, move to within the arc
-      setCurrentAngle(prevAngle => {
-        const normalizedAngle = prevAngle % 360;
-        if (normalizedAngle > 180 && normalizedAngle < 360) {
-          // If in the blank space (180-360), move to equivalent position in colored arc (0-180)
-          return normalizedAngle - 180;
-        }
-        return normalizedAngle;
-      });
+      const otherOrbits = availableOrbits.filter(orbit => orbit !== currentOrbitRadius);
+      if (otherOrbits.length > 0) {
+        setIsTransitioning(true);
+        const nextOrbit = otherOrbits[Math.floor(Math.random() * otherOrbits.length)];
+        
+        // Smooth transition with pleasant timing
+        setTimeout(() => {
+          setCurrentOrbitRadius(nextOrbit);
+          onOrbitChange?.(nextOrbit);
+          
+          setTimeout(() => {
+            setIsTransitioning(false);
+          }, 2000); // Transition duration
+        }, 500); // Small delay for natural feel
+      }
     }, orbitSwitchInterval);
 
     return () => clearInterval(interval);
-  }, [orbitRadius, alternateOrbits, orbitSwitchInterval, currentOrbitRadius]);
+  }, [availableOrbits, currentOrbitRadius, orbitSwitchInterval, isHovered, isTransitioning, onOrbitChange]);
+
+  // Update orbit when prop changes (from parent state management)
+  useEffect(() => {
+    if (orbitRadius !== currentOrbitRadius) {
+      setCurrentOrbitRadius(orbitRadius);
+    }
+  }, [orbitRadius]);
 
   return (
     <div
@@ -68,13 +77,14 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         height: orbitSize,
         left: `calc(50% - ${currentOrbitRadius}px)`,
         top: `calc(50% - ${currentOrbitRadius}px)`,
-        transition: "all 2s cubic-bezier(0.4, 0, 0.2, 1)",
+        transition: "all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)", // Smooth, pleasant easing
+        opacity: isTransitioning ? 0.7 : 1, // Subtle fade during transition
       }}
     >
       <div
         className="group w-full h-full absolute"
         style={{
-          animation: isHovered ? "none" : `constrainedOrbit-${duration} ${duration}s linear infinite`,
+          animation: (isHovered || isTransitioning) ? "none" : `coloredArcOrbit-${duration} ${duration}s linear infinite`,
           transformOrigin: "50% 50%",
         }}
       >
@@ -96,7 +106,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         >
           <div
             style={{
-              animation: isHovered ? "none" : `constrainedCounterRotate-${duration} ${duration}s linear infinite`,
+              animation: (isHovered || isTransitioning) ? "none" : `coloredArcCounterRotate-${duration} ${duration}s linear infinite`,
             }}
           >
             <AtomShell
@@ -111,13 +121,13 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       </div>
       
       <style>{`
-        @keyframes constrainedOrbit-${duration} {
+        @keyframes coloredArcOrbit-${duration} {
           0% { transform: rotate(0deg); }
           50% { transform: rotate(180deg); }
           50.01% { transform: rotate(0deg); }
           100% { transform: rotate(180deg); }
         }
-        @keyframes constrainedCounterRotate-${duration} {
+        @keyframes coloredArcCounterRotate-${duration} {
           0% { transform: rotate(0deg); }
           50% { transform: rotate(-180deg); }
           50.01% { transform: rotate(0deg); }
