@@ -8,8 +8,8 @@ import { HeroContent } from "./hero/HeroContent";
 // Configuration constants
 const RING_CONFIG = {
   outer: { radius: 340, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 280, color: "#22c55e", rotation: 36, duration: 18 },
-  inner: { radius: 240, color: "#3b82f6", rotation: 64, duration: 14 },
+  middle: { radius: 290, color: "#22c55e", rotation: 36, duration: 18 },
+  inner: { radius: 250, color: "#3b82f6", rotation: 64, duration: 14 },
 };
 
 const ATOM_CONFIG = [
@@ -42,7 +42,7 @@ const ATOM_CONFIG = [
     materialId: "white",
     duration: 12,
     initialAngle: 240,
-    alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.middle.radius],
+    alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.outer.radius], // Only allow switching to larger orbits
     orbitSwitchInterval: 25000,
     size: 32, // Smallest for inner orbit to avoid text overlap
   },
@@ -93,8 +93,8 @@ const AnimatedHero: React.FC = () => {
       <div
         className="absolute rounded-full bg-black z-[2]"
         style={{
-          width: 440,
-          height: 440,
+          width: 420,
+          height: 420,
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
