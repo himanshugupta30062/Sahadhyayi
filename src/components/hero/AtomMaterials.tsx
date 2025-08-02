@@ -11,32 +11,14 @@ export interface AtomMaterial {
 }
 
 export const ATOM_MATERIALS: Record<string, AtomMaterial> = {
-  metallic: {
-    id: "metallic",
-    name: "Metallic",
-    background: "linear-gradient(135deg, #d4af37, #ffd700, #b8860b)",
-    textColor: "#1a1a1a",
-    border: "2px solid rgba(255, 215, 0, 0.6)",
-    shadowColor: "rgba(255, 215, 0, 0.4)",
-    glowEffect: "0 0 30px rgba(255, 215, 0, 0.6)",
-  },
-  crystal: {
-    id: "crystal",
-    name: "Crystal",
-    background: "linear-gradient(135deg, #e0f2fe, #b3e5fc, #81d4fa)",
-    textColor: "#0d47a1",
-    border: "2px solid rgba(129, 212, 250, 0.8)",
-    shadowColor: "rgba(129, 212, 250, 0.5)",
-    glowEffect: "0 0 30px rgba(129, 212, 250, 0.7)",
-  },
-  plasma: {
-    id: "plasma",
-    name: "Plasma",
-    background: "linear-gradient(135deg, #1de9b6, #00bcd4, #4dd0e1)",
-    textColor: "#ffffff",
-    border: "2px solid rgba(29, 233, 182, 0.8)",
-    shadowColor: "rgba(29, 233, 182, 0.5)",
-    glowEffect: "0 0 30px rgba(29, 233, 182, 0.8)",
+  white: {
+    id: "white",
+    name: "Standard",
+    background: "#ffffff",
+    textColor: "#000000",
+    border: "2px solid rgba(255, 255, 255, 0.9)",
+    shadowColor: "rgba(255, 255, 255, 0.3)",
+    glowEffect: "0 0 20px rgba(255, 255, 255, 0.5)",
   },
 };
 
@@ -66,11 +48,11 @@ export const AtomShell: React.FC<AtomShellProps> = ({
         transform: isHovered ? "scale(1.15)" : "scale(1)",
       }}
     >
-      {/* Inner glow effect */}
+      {/* Subtle inner highlight */}
       <div
-        className="absolute inset-1 rounded-full opacity-30"
+        className="absolute inset-2 rounded-full opacity-20"
         style={{
-          background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), transparent 50%)`,
+          background: `radial-gradient(circle at 30% 30%, rgba(0,0,0,0.1), transparent 50%)`,
         }}
       />
       
