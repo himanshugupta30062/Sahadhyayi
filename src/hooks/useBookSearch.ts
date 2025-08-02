@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface BookSearchResult {
@@ -41,11 +41,11 @@ interface SaveBooksResponse {
 }
 
 export const useBookSearch = () => {
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [searchResults, setSearchResults] = React.useState<BookSearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<BookSearchResult[]>([]);
 
-  const searchBooks = React.useCallback(async (
+  const searchBooks = useCallback(async (
     searchTerm: string
   ): Promise<BookSearchResult[]> => {
     if (!searchTerm.trim()) {
@@ -93,7 +93,7 @@ export const useBookSearch = () => {
     }
   }, []);
 
-  const saveSelectedBooks = React.useCallback(async (
+  const saveSelectedBooks = useCallback(async (
     selectedBooks: BookSearchResult[]
   ): Promise<{ savedBooks: BookSearchResult[], duplicates: BookSearchResult[], duplicatesFound: number }> => {
     if (!selectedBooks || selectedBooks.length === 0) {
@@ -136,7 +136,7 @@ export const useBookSearch = () => {
     }
   }, []);
 
-  const getAllLibraryBooks = React.useCallback(async (): Promise<void> => {
+  const getAllLibraryBooks = useCallback(async (): Promise<void> => {
     setLoading(true);
     setError(null);
 
@@ -160,7 +160,7 @@ export const useBookSearch = () => {
     }
   }, []);
 
-  const clearResults = React.useCallback(() => {
+  const clearResults = useCallback(() => {
     setSearchResults([]);
     setError(null);
   }, []);

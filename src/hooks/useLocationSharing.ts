@@ -1,10 +1,10 @@
-import * as React from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export const useLocationSharing = () => {
-  const [isSharing, setIsSharing] = React.useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const { user } = useAuth();
 
   const shareLocationForBook = async (bookId: string) => {

@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Eye, Loader2, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +18,7 @@ interface CommunityStatsData {
 }
 
 const CommunityStats = () => {
-  const [stats, setStats] = React.useState<CommunityStatsData>({
+  const [stats, setStats] = useState<CommunityStatsData>({
     registeredMembers: 0,
     totalVisitors: 0,
     loading: {
@@ -112,7 +112,7 @@ const CommunityStats = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     getCommunityUserCount();
     getTotalPageViews();
 
