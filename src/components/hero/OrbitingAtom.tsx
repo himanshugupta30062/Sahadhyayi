@@ -35,7 +35,6 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         className="group w-full h-full absolute"
         style={{
           animation: `orbit-${duration} ${duration}s linear infinite`,
-          transform: `rotate(${initialAngle}deg)`,
           transformOrigin: "50% 50%",
         }}
       >
@@ -52,6 +51,8 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
             style={{ 
               boxShadow: "0 0 40px 12px rgba(255,255,255,0.15)",
               border: "2px solid rgba(255,255,255,0.2)",
+              transform: `rotate(-${360 + initialAngle}deg)`, // Counter-rotate to keep letter upright
+              animation: `counter-rotate-${duration} ${duration}s linear infinite`,
             }}
           >
             {letter}
@@ -63,8 +64,12 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       </div>
       <style>{`
         @keyframes orbit-${duration} {
-          0% { transform: rotate(${initialAngle}deg); }
-          100% { transform: rotate(${360 + initialAngle}deg); }
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes counter-rotate-${duration} {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(-360deg); }
         }
       `}</style>
     </div>
