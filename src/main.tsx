@@ -5,6 +5,9 @@ import App from './App.tsx';
 import './index.css';
 import { initializeSecurity } from './utils/security';
 
+// Ensure React is available globally for libraries
+(window as any).React = React;
+
 // Initialize security measures
 initializeSecurity();
 
@@ -18,6 +21,11 @@ if (!container) {
 const root = createRoot(container);
 
 console.log('Rendering App...');
+
+// Ensure React is fully loaded before rendering
+if (!React || !React.createElement) {
+  throw new Error('React is not properly loaded');
+}
 
 root.render(
   <StrictMode>
