@@ -1,25 +1,47 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { AtomShell, ATOM_MATERIALS, AtomMaterial } from "./AtomMaterials";
 
 interface OrbitingAtomProps {
   orbitRadius: number;
   letter: string;
   label: string;
-  bgColor: string;
-  textColor: string;
+  materialId: string;
   duration: number;
   initialAngle: number;
+  alternateOrbits?: number[];
+  orbitSwitchInterval?: number;
 }
 
 export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   orbitRadius,
   letter,
   label,
-  bgColor,
-  textColor,
+  materialId,
   duration,
   initialAngle,
+  alternateOrbits = [],
+  orbitSwitchInterval = 15000,
 }) => {
-  const orbitSize = orbitRadius * 2;
+  const [currentOrbitRadius, setCurrentOrbitRadius] = useState(orbitRadius);
+  const [isHovered, setIsHovered] = useState(false);
+  const [currentAngle, setCurrentAngle] = useState(initialAngle);
+  
+  const material = ATOM_MATERIALS[materialId];
+  const orbitSize = currentOrbitRadius * 2;
+
+  // Dynamic orbit switching
+  useEffect(() => {
+    if (alternateOrbits.length === 0) return;
+    
+    const interval = setInterval(() => {
+      const allOrbits = [orbitRadius, ...alternateOrbits];
+      const currentIndex = allOrbits.indexOf(currentOrbitRadius);
+      const nextIndex = (currentIndex + 1) % allOrbits.length;
+      setCurrentOrbitRadius(allOrbits[nextIndex]);
+    }, orbitSwitchInterval);
+
+    return () => clearInterval(interval);
+  }, [orbitRadius, alternateOrbits, orbitSwitchInterval, currentOrbitRadius]);
 
   return (
     <div
@@ -27,8 +49,9 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       style={{
         width: orbitSize,
         height: orbitSize,
-        left: `calc(50% - ${orbitRadius}px)`,
-        top: `calc(50% - ${orbitRadius}px)`,
+        left: `calc(50% - ${currentOrbitRadius}px)`,
+        top: `calc(50% - ${currentOrbitRadius}px)`,
+        transition: "all 2s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
       <div
@@ -45,23 +68,24 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
             top: "0%",
             transform: "translate(-50%, -50%)",
           }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
-          <div 
-            className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl font-bold text-xl cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-3xl ${bgColor} ${textColor}`}
-            style={{ 
-              boxShadow: "0 0 40px 12px rgba(255,255,255,0.15)",
-              border: "2px solid rgba(255,255,255,0.2)",
-              transform: `rotate(-${360 + initialAngle}deg)`, // Counter-rotate to keep letter upright
+          <div
+            style={{
               animation: `counter-rotate-${duration} ${duration}s linear infinite`,
             }}
           >
-            {letter}
-            <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 bg-white/95 text-black px-4 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-xl z-20 whitespace-nowrap text-sm font-medium backdrop-blur-sm border border-gray-200">
-              {label}
-            </span>
+            <AtomShell
+              material={material}
+              letter={letter}
+              label={label}
+              isHovered={isHovered}
+            />
           </div>
         </div>
       </div>
+      
       <style>{`
         @keyframes orbit-${duration} {
           0% { transform: rotate(0deg); }

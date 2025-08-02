@@ -17,28 +17,31 @@ const ATOM_CONFIG = [
     orbitRadius: RING_CONFIG.outer.radius,
     letter: "L",
     label: "Library",
-    bgColor: "bg-red-500",
-    textColor: "text-white",
-    duration: 24,
+    materialId: "metallic",
+    duration: 20,
     initialAngle: 0,
+    alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.inner.radius],
+    orbitSwitchInterval: 18000,
   },
   {
     orbitRadius: RING_CONFIG.middle.radius,
     letter: "A",
     label: "Authors",
-    bgColor: "bg-blue-500",
-    textColor: "text-white",
-    duration: 18,
+    materialId: "crystal",
+    duration: 15,
     initialAngle: 120,
+    alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.inner.radius],
+    orbitSwitchInterval: 22000,
   },
   {
     orbitRadius: RING_CONFIG.inner.radius,
     letter: "S",
     label: "Social Media",
-    bgColor: "bg-green-500",
-    textColor: "text-white",
-    duration: 14,
+    materialId: "plasma",
+    duration: 12,
     initialAngle: 240,
+    alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.middle.radius],
+    orbitSwitchInterval: 25000,
   },
 ];
 
@@ -102,10 +105,11 @@ const AnimatedHero: React.FC = () => {
           orbitRadius={atom.orbitRadius}
           letter={atom.letter}
           label={atom.label}
-          bgColor={atom.bgColor}
-          textColor={atom.textColor}
+          materialId={atom.materialId}
           duration={atom.duration}
           initialAngle={atom.initialAngle}
+          alternateOrbits={atom.alternateOrbits}
+          orbitSwitchInterval={atom.orbitSwitchInterval}
         />
       ))}
 
