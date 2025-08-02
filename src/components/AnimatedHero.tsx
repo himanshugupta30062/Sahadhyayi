@@ -58,17 +58,17 @@ const AnimatedHero = () => {
         }
 
         .ring-outer {
-          --ring-color: #e91e63;
+          --ring-color: #22c55e;
           --ring-animation: rotate-clockwise 20s linear infinite;
         }
         
         .ring-middle {
-          --ring-color: #2196f3;
+          --ring-color: #16a34a;
           --ring-animation: rotate-counter-clockwise 15s linear infinite;
         }
         
         .ring-inner {
-          --ring-color: #00bcd4;
+          --ring-color: #15803d;
           --ring-animation: rotate-clockwise 10s linear infinite;
         }
 
