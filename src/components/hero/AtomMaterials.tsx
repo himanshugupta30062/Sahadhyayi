@@ -27,6 +27,7 @@ interface AtomShellProps {
   letter: string;
   label: string;
   isHovered: boolean;
+  size?: number;
 }
 
 export const AtomShell: React.FC<AtomShellProps> = ({
@@ -34,11 +35,15 @@ export const AtomShell: React.FC<AtomShellProps> = ({
   letter,
   label,
   isHovered,
+  size = 48,
 }) => {
   return (
     <div
-      className="w-16 h-16 rounded-full flex items-center justify-center font-bold text-xl cursor-pointer transition-all duration-500 relative overflow-hidden"
+      className="rounded-full flex items-center justify-center font-bold cursor-pointer transition-all duration-500 relative overflow-hidden"
       style={{
+        width: size,
+        height: size,
+        fontSize: size * 0.375, // Responsive font size based on atom size
         background: material.background,
         color: material.textColor,
         border: material.border,
@@ -50,8 +55,9 @@ export const AtomShell: React.FC<AtomShellProps> = ({
     >
       {/* Subtle inner highlight */}
       <div
-        className="absolute inset-2 rounded-full opacity-20"
+        className="absolute rounded-full opacity-20"
         style={{
+          inset: size * 0.125, // Responsive inset based on size
           background: `radial-gradient(circle at 30% 30%, rgba(0,0,0,0.1), transparent 50%)`,
         }}
       />

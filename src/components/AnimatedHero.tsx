@@ -22,6 +22,7 @@ const ATOM_CONFIG = [
     initialAngle: 0,
     alternateOrbits: [RING_CONFIG.middle.radius, RING_CONFIG.inner.radius],
     orbitSwitchInterval: 18000,
+    size: 44, // Medium size for outer orbit
   },
   {
     orbitRadius: RING_CONFIG.middle.radius,
@@ -32,6 +33,7 @@ const ATOM_CONFIG = [
     initialAngle: 120,
     alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.inner.radius],
     orbitSwitchInterval: 22000,
+    size: 40, // Smaller for middle orbit
   },
   {
     orbitRadius: RING_CONFIG.inner.radius,
@@ -42,6 +44,7 @@ const ATOM_CONFIG = [
     initialAngle: 240,
     alternateOrbits: [RING_CONFIG.outer.radius, RING_CONFIG.middle.radius],
     orbitSwitchInterval: 25000,
+    size: 32, // Smallest for inner orbit to avoid text overlap
   },
 ];
 
@@ -110,6 +113,7 @@ const AnimatedHero: React.FC = () => {
           initialAngle={atom.initialAngle}
           alternateOrbits={atom.alternateOrbits}
           orbitSwitchInterval={atom.orbitSwitchInterval}
+          size={atom.size}
         />
       ))}
 

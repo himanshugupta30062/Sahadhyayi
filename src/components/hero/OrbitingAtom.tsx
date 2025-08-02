@@ -10,6 +10,7 @@ interface OrbitingAtomProps {
   initialAngle: number;
   alternateOrbits?: number[];
   orbitSwitchInterval?: number;
+  size?: number;
 }
 
 export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
@@ -21,6 +22,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   initialAngle,
   alternateOrbits = [],
   orbitSwitchInterval = 15000,
+  size = 48,
 }) => {
   const [currentOrbitRadius, setCurrentOrbitRadius] = useState(orbitRadius);
   const [isHovered, setIsHovered] = useState(false);
@@ -81,6 +83,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
               letter={letter}
               label={label}
               isHovered={isHovered}
+              size={size}
             />
           </div>
         </div>
