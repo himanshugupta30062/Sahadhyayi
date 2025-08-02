@@ -59,7 +59,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       <div
         className="group w-full h-full absolute"
         style={{
-          animation: `orbit-${duration} ${duration}s linear infinite`,
+          animation: isHovered ? "none" : `orbit-${duration} ${duration}s linear infinite`,
           transformOrigin: "50% 50%",
         }}
       >
@@ -75,7 +75,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         >
           <div
             style={{
-              animation: `counter-rotate-${duration} ${duration}s linear infinite`,
+              animation: isHovered ? "none" : `counter-rotate-${duration} ${duration}s linear infinite`,
             }}
           >
             <AtomShell
