@@ -18,16 +18,15 @@ const AnimatedHero = () => {
       <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-2xl">
         <h1 className="text-2xl md:text-4xl font-bold mb-3 leading-tight">
           <span className="gradient-text">Sahadhyayi:</span><br/>
-          <span className="text-cyan-300">Your Fellow Reading Journey</span>
+          <span className="text-cyan-300">The Book Social Media</span>
         </h1>
         <p className="text-sm md:text-base text-pink-300 max-w-lg mb-6 leading-relaxed">
-          Connect, read, and grow with fellow readers worldwide.<br/>
-          Join the digital reading community.
+          Find new books, connect with other readers, and share your love of reading—all in one friendly community.
         </p>
         <Link to="/signup" className="inline-block">
           <button className="px-6 py-3 rounded-full text-sm font-semibold bg-white text-black hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-2">
             <UserPlus className="w-4 h-4" />
-            Start Your Journey
+            Explore the Library
           </button>
         </Link>
       </div>
