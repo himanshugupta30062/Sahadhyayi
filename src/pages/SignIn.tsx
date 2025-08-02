@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
-import TempSEO from '@/components/TempSEO';
+import SEO from '@/components/SEO';
 import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation';
 import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
 import { useToast } from '@/hooks/use-toast';
@@ -180,9 +180,11 @@ const SignIn = () => {
 
   return (
     <>
-      <TempSEO
+      <SEO
         title="Sign In - Sahadhyayi"
         description="Access your Sahadhyayi account and continue reading."
+        canonical="https://sahadhyayi.com/signin"
+        url="https://sahadhyayi.com/signin"
       />
       <div className="min-h-screen flex items-center justify-center p-4 pt-16">
         <Card className="w-full max-w-md">

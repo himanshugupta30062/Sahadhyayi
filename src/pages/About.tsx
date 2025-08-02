@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Target, Users, TrendingUp, Heart, Globe, Mail, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import TempSEO from "@/components/TempSEO";
+import SEO from "@/components/SEO";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -161,9 +161,12 @@ const About = () => {
 
   return (
     <>
-      <TempSEO
+      <SEO
         title="About Sahadhyayi - What Sahadhyayi Means | Reviving Reading Culture Worldwide"
         description="Learn about Sahadhyayi's mission to revive deep reading culture. Discover the Sanskrit meaning of Sahadhyayi (fellow reader) and how we connect readers globally through our digital community platform."
+        canonical="https://sahadhyayi.com/about"
+        url="https://sahadhyayi.com/about"
+        keywords={['About Sahadhyayi', 'what is Sahadhyayi', 'Sahadhyayi meaning', 'fellow reader', 'Sanskrit', 'reading community', 'digital library', 'book lovers']}
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}

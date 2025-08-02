@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
 import { Users, Mail, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -10,16 +10,16 @@ import CommunityStats from "@/components/CommunityStats";
 import SignInLink from '@/components/SignInLink';
 
 const GlobalFooter = () => {
-  const [showCount, setShowCount] = useState(false);
-  const [hasJoined, setHasJoined] = useState(false);
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showCount, setShowCount] = React.useState(false);
+  const [hasJoined, setHasJoined] = React.useState(false);
+  const [showSignIn, setShowSignIn] = React.useState(false);
   const { toast } = useToast();
   const { stats, isLoading, fetchStats, joinCommunity } = useCommunityStats(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (user && showSignIn) {
       setShowSignIn(false);
     }
@@ -273,15 +273,16 @@ const GlobalFooter = () => {
         </div>
       </div>
     </footer>
-    {/* Temporarily disabled Dialog to debug React loading issue */}
-    {showSignIn && (
-      <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-xl font-bold text-gray-900 text-center mb-4">
+    <Dialog open={showSignIn} onOpenChange={setShowSignIn}>
+      <DialogContent className="sm:max-w-md mx-4">
+        <DialogHeader>
+          <DialogTitle className="text-center text-xl font-bold text-gray-900">
             Join the Sahadhyayi Community
-          </h2>
-          <p className="text-gray-600 text-center mb-4">Please sign in to join our community.</p>
-          <button
+          </DialogTitle>
+        </DialogHeader>
+        <div className="text-center space-y-4 py-4">
+          <p className="text-gray-600">Please sign in to join our community.</p>
+          <Button
             onClick={() => {
               setShowSignIn(false);
               if (typeof window !== 'undefined') {
@@ -290,19 +291,13 @@ const GlobalFooter = () => {
               const redirect = `${location.pathname}${location.search}${location.hash}`;
               navigate(`/signin?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
             }}
-            className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded"
+            className="w-full bg-orange-600 hover:bg-orange-700"
           >
-            Sign In
-          </button>
-          <button
-            onClick={() => setShowSignIn(false)}
-            className="w-full mt-2 text-gray-500 hover:text-gray-700"
-          >
-            Close
-          </button>
+            <LogIn className="w-4 h-4 mr-2" /> Sign In
+          </Button>
         </div>
-      </div>
-    )}
+      </DialogContent>
+    </Dialog>
     </>
   );
 };
