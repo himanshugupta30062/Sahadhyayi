@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, X, Send, Minimize2, Mic, MicOff, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';

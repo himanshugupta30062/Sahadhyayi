@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar, MessageSquare, Star, Users, BookOpen, Clock, Send, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScheduleSessionDialog } from "./ScheduleSessionDialog";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Author } from "@/hooks/useAuthors";
 
