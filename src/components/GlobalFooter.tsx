@@ -273,16 +273,15 @@ const GlobalFooter = () => {
         </div>
       </div>
     </footer>
-    <Dialog open={showSignIn} onOpenChange={setShowSignIn}>
-      <DialogContent className="sm:max-w-md mx-4">
-        <DialogHeader>
-          <DialogTitle className="text-center text-xl font-bold text-gray-900">
+    {/* Temporarily disabled Dialog to debug React loading issue */}
+    {showSignIn && (
+      <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+          <h2 className="text-xl font-bold text-gray-900 text-center mb-4">
             Join the Sahadhyayi Community
-          </DialogTitle>
-        </DialogHeader>
-        <div className="text-center space-y-4 py-4">
-          <p className="text-gray-600">Please sign in to join our community.</p>
-          <Button
+          </h2>
+          <p className="text-gray-600 text-center mb-4">Please sign in to join our community.</p>
+          <button
             onClick={() => {
               setShowSignIn(false);
               if (typeof window !== 'undefined') {
@@ -291,13 +290,19 @@ const GlobalFooter = () => {
               const redirect = `${location.pathname}${location.search}${location.hash}`;
               navigate(`/signin?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
             }}
-            className="w-full bg-orange-600 hover:bg-orange-700"
+            className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded"
           >
-            <LogIn className="w-4 h-4 mr-2" /> Sign In
-          </Button>
+            Sign In
+          </button>
+          <button
+            onClick={() => setShowSignIn(false)}
+            className="w-full mt-2 text-gray-500 hover:text-gray-700"
+          >
+            Close
+          </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    )}
     </>
   );
 };

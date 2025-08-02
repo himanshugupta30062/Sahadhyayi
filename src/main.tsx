@@ -11,7 +11,7 @@ import { initializeSecurity } from './utils/security';
 // Initialize security measures
 initializeSecurity();
 
-console.log('Main.tsx loading...');
+console.log('Main.tsx loading...', { React: !!React, createElement: !!React.createElement });
 
 const container = document.getElementById("root");
 if (!container) {
