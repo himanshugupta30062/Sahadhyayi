@@ -1,5 +1,5 @@
 
-import { MouseEventHandler } from 'react';
+import React, { MouseEventHandler } from 'react';
 import { Link, useLocation, type LinkProps } from 'react-router-dom';
 
 const SignInLink: React.FC<Omit<LinkProps, 'to'>> = ({ children, onClick, ...props }) => {
