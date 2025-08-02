@@ -24,7 +24,7 @@ const AnimatedHeroSection = () => {
         </button>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .circle-animate {
           width: 450px;
           height: 450px;
