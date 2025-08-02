@@ -5,14 +5,12 @@ import { UserPlus } from "lucide-react";
 const AnimatedHero = () => {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-black overflow-hidden">
-      {/* Animated Circles */}
+      {/* Animated Concentric Rings */}
       <div className="absolute">
-        <div className="circle-base" />
-        <div className="revolving-lines">
-          <div className="line line-1" />
-          <div className="line line-2" />
-          <div className="line line-3" />
-          <div className="line line-4" />
+        <div className="rings-container">
+          <div className="ring ring-1" />
+          <div className="ring ring-2" />
+          <div className="ring ring-3" />
         </div>
       </div>
       
@@ -35,71 +33,87 @@ const AnimatedHero = () => {
       </div>
       
       <style>{`
-        .circle-base {
-          width: 500px;
-          height: 500px;
-          border-radius: 50%;
-          border: 8px solid transparent;
-          background: conic-gradient(
-            from 0deg,
-            #ff4fd8 0%,
-            #1de3f7 25%, 
-            #04ff95 50%,
-            #5d5fef 75%,
-            #ff4fd8 100%
-          );
+        .rings-container {
           position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 600px;
+          height: 600px;
+        }
+        
+        .ring {
+          position: absolute;
+          border-radius: 50%;
+          border: 6px solid transparent;
           left: 50%;
           top: 50%;
           transform: translate(-50%, -50%);
           z-index: 1;
-          box-shadow: 
-            0 0 80px 10px rgba(29, 227, 247, 0.2),
-            0 0 150px 20px rgba(255, 79, 216, 0.1);
         }
         
-        .revolving-lines {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          transform: translate(-50%, -50%);
+        .ring-1 {
+          width: 400px;
+          height: 400px;
+          background: conic-gradient(
+            from 0deg,
+            #ff4fd8 0%,
+            #ff4fd8 25%,
+            transparent 25%,
+            transparent 75%,
+            #ff4fd8 75%,
+            #ff4fd8 100%
+          );
+          animation: spin-ring-1 8s linear infinite;
+        }
+        
+        .ring-2 {
+          width: 480px;
+          height: 480px;
+          background: conic-gradient(
+            from 120deg,
+            #1de3f7 0%,
+            #1de3f7 30%,
+            transparent 30%,
+            transparent 60%,
+            #04ff95 60%,
+            #04ff95 90%,
+            transparent 90%,
+            transparent 100%
+          );
+          animation: spin-ring-2 12s linear infinite reverse;
+        }
+        
+        .ring-3 {
           width: 560px;
           height: 560px;
-          animation: spin 10s linear infinite;
+          background: conic-gradient(
+            from 240deg,
+            #5d5fef 0%,
+            #5d5fef 20%,
+            transparent 20%,
+            transparent 40%,
+            #ff4fd8 40%,
+            #ff4fd8 60%,
+            transparent 60%,
+            transparent 80%,
+            #1de3f7 80%,
+            #1de3f7 100%
+          );
+          animation: spin-ring-3 16s linear infinite;
         }
         
-        .line {
-          position: absolute;
-          width: 4px;
-          height: 60px;
-          border-radius: 2px;
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          transform-origin: 50% 280px;
+        @keyframes spin-ring-1 {
+          0% { transform: translate(-50%, -50%) rotate(0deg); }
+          100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
         
-        .line-1 {
-          background: linear-gradient(180deg, #2a2a2a 0%, #ff4fd8 100%);
-          transform: translateX(-50%) rotate(0deg);
+        @keyframes spin-ring-2 {
+          0% { transform: translate(-50%, -50%) rotate(0deg); }
+          100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
         
-        .line-2 {
-          background: linear-gradient(180deg, #2a2a2a 0%, #1de3f7 100%);
-          transform: translateX(-50%) rotate(90deg);
-        }
-        
-        .line-3 {
-          background: linear-gradient(180deg, #2a2a2a 0%, #04ff95 100%);
-          transform: translateX(-50%) rotate(180deg);
-        }
-        
-        .line-4 {
-          background: linear-gradient(180deg, #2a2a2a 0%, #5d5fef 100%);
-          transform: translateX(-50%) rotate(270deg);
-        }
-        
-        @keyframes spin {
+        @keyframes spin-ring-3 {
           0% { transform: translate(-50%, -50%) rotate(0deg); }
           100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
@@ -127,35 +141,40 @@ const AnimatedHero = () => {
         }
         
         @media (max-width: 768px) {
-          .circle-base {
-            width: 350px;
-            height: 350px;
-            border-width: 6px;
+          .rings-container {
+            width: 450px;
+            height: 450px;
           }
-          .revolving-lines {
-            width: 400px;
-            height: 400px;
+          .ring-1 {
+            width: 300px;
+            height: 300px;
           }
-          .line {
-            height: 45px;
-            transform-origin: 50% 200px;
+          .ring-2 {
+            width: 360px;
+            height: 360px;
+          }
+          .ring-3 {
+            width: 420px;
+            height: 420px;
           }
         }
         
         @media (max-width: 480px) {
-          .circle-base {
+          .rings-container {
+            width: 350px;
+            height: 350px;
+          }
+          .ring-1 {
+            width: 240px;
+            height: 240px;
+          }
+          .ring-2 {
             width: 280px;
             height: 280px;
-            border-width: 4px;
           }
-          .revolving-lines {
+          .ring-3 {
             width: 320px;
             height: 320px;
-          }
-          .line {
-            height: 35px;
-            width: 3px;
-            transform-origin: 50% 160px;
           }
         }
       `}</style>
