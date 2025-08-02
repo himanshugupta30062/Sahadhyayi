@@ -11,6 +11,7 @@ interface OrbitingAtomProps {
   alternateOrbits?: number[];
   orbitSwitchInterval?: number;
   size?: number;
+  onHoverChange?: (isHovered: boolean) => void;
 }
 
 export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
@@ -23,6 +24,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   alternateOrbits = [],
   orbitSwitchInterval = 15000,
   size = 48,
+  onHoverChange,
 }) => {
   const [currentOrbitRadius, setCurrentOrbitRadius] = useState(orbitRadius);
   const [isHovered, setIsHovered] = useState(false);
@@ -70,8 +72,14 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
             top: "0%",
             transform: "translate(-50%, -50%)",
           }}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          onMouseEnter={() => {
+            setIsHovered(true);
+            onHoverChange?.(true);
+          }}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            onHoverChange?.(false);
+          }}
         >
           <div
             style={{

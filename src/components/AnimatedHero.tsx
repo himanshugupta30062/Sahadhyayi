@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BookOpen, MessageCircle, Users, TrendingUp } from "lucide-react";
 import { AtomicRing } from "./hero/AtomicRing";
 import { OrbitingAtom } from "./hero/OrbitingAtom";
@@ -76,6 +76,8 @@ const FLOATING_ICONS = [
 ];
 
 const AnimatedHero: React.FC = () => {
+  const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
+
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
       {/* Atomic Rings */}
@@ -86,6 +88,7 @@ const AnimatedHero: React.FC = () => {
           color={ring.color}
           rotation={ring.rotation}
           duration={ring.duration}
+          isPaused={isAnyAtomHovered}
         />
       ))}
 
@@ -114,6 +117,7 @@ const AnimatedHero: React.FC = () => {
           alternateOrbits={atom.alternateOrbits}
           orbitSwitchInterval={atom.orbitSwitchInterval}
           size={atom.size}
+          onHoverChange={setIsAnyAtomHovered}
         />
       ))}
 

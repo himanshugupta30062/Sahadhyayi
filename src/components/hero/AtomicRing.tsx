@@ -6,6 +6,7 @@ interface AtomicRingProps {
   rotation: number;
   duration: number;
   strokeWidth?: number;
+  isPaused?: boolean;
 }
 
 export const AtomicRing: React.FC<AtomicRingProps> = ({
@@ -13,7 +14,8 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
   color,
   rotation,
   duration,
-  strokeWidth = 28
+  strokeWidth = 28,
+  isPaused = false
 }) => {
   const size = radius * 2;
   const center = radius;
@@ -40,7 +42,7 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
         left: `calc(50% - ${radius}px)`,
         top: `calc(50% - ${radius}px)`,
         transform: `rotate(${rotation}deg)`,
-        animation: `spin-${duration} ${duration}s linear infinite`,
+        animation: isPaused ? "none" : `spin-${duration} ${duration}s linear infinite`,
       }}
     >
       <svg width={size} height={size} className="absolute inset-0">
