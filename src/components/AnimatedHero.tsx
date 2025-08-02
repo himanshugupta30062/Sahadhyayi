@@ -5,16 +5,18 @@ import { BookOpen, Users, Pen } from "lucide-react";
 const AnimatedHero = () => {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-black overflow-hidden">
-      {/* Atomic Model - 50% Arc Rings in separate orbits */}
+      {/* Atomic Model - clean concentric rings */}
       <div className="relative w-[700px] h-[700px] mx-auto">
-        {/* Outer Ring - Separate orbit */}
-        <div className="absolute inset-0 atomic-arc-ring ring-outer"></div>
-        
-        {/* Middle Ring - Separate orbit */}
-        <div className="absolute inset-[100px] atomic-arc-ring ring-middle"></div>
-        
-        {/* Inner Ring - Separate orbit */}
-        <div className="absolute inset-[200px] atomic-arc-ring ring-inner"></div>
+        <div className="absolute inset-0 pointer-events-none -z-10">
+          {/* Outer Ring */}
+          <div className="absolute inset-0 rounded-full border-2 border-[#1de3f7]/60 ring-outer"></div>
+
+          {/* Middle Ring */}
+          <div className="absolute inset-[100px] rounded-full border-2 border-[#04ff95]/60 ring-middle"></div>
+
+          {/* Inner Ring */}
+          <div className="absolute inset-[200px] rounded-full border-2 border-[#ff4fd8]/60 ring-inner"></div>
+        </div>
 
         {/* Section Labels on Rings */}
         <div className="absolute inset-0">
@@ -43,7 +45,7 @@ const AnimatedHero = () => {
         </div>
         
         {/* Center Content */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-[350px]">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-[350px] z-20">
           <h1 className="text-5xl font-bold mb-4 leading-tight">
             <span className="multicolor-text">
               Sahadhyayi
@@ -74,35 +76,27 @@ const AnimatedHero = () => {
           background-clip: text;
         }
         
-        /* Atomic Model - 50% Arc Rings in separate orbits */
-        .atomic-arc-ring {
-          width: 100%;
-          height: 100%;
+        /* Clean concentric rings */
+        .ring-outer,
+        .ring-middle,
+        .ring-inner {
           border-radius: 50%;
-          border: 8px solid transparent;
-          background: conic-gradient(from 0deg, transparent 0deg, var(--ring-color) 30deg, var(--ring-color) 210deg, transparent 240deg, transparent 360deg);
-          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          filter: drop-shadow(0 0 20px var(--ring-glow));
+          box-sizing: border-box;
         }
 
         .ring-outer {
-          --ring-color: #1de3f7;
-          --ring-glow: rgba(29, 227, 247, 0.6);
-          animation: rotate-clockwise 15s linear infinite;
+          box-shadow: 0 0 20px rgba(29, 227, 247, 0.6);
+          animation: spin-clockwise 20s linear infinite;
         }
-        
+
         .ring-middle {
-          --ring-color: #04ff95;
-          --ring-glow: rgba(4, 255, 149, 0.6);
-          animation: rotate-counter-clockwise 12s linear infinite;
+          box-shadow: 0 0 20px rgba(4, 255, 149, 0.6);
+          animation: spin-counter 15s linear infinite;
         }
-        
+
         .ring-inner {
-          --ring-color: #ff4fd8;
-          --ring-glow: rgba(255, 79, 216, 0.6);
-          animation: rotate-clockwise 8s linear infinite;
+          box-shadow: 0 0 20px rgba(255, 79, 216, 0.6);
+          animation: spin-clockwise 10s linear infinite;
         }
 
         /* Section Labels positioned properly */
@@ -178,14 +172,14 @@ const AnimatedHero = () => {
           animation: icon-fade-cycle 8s ease-in-out infinite 5s;
         }
 
-        @keyframes rotate-clockwise {
+        @keyframes spin-clockwise {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-        
-        @keyframes rotate-counter-clockwise {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(-360deg); }
+
+        @keyframes spin-counter {
+          0% { transform: rotate(360deg); }
+          100% { transform: rotate(0deg); }
         }
 
         @keyframes label-appear-outer {
@@ -225,9 +219,6 @@ const AnimatedHero = () => {
         }
         
         @media (max-width: 768px) {
-          .perfect-ring {
-            border-width: 3px;
-          }
           .multicolor-text {
             font-size: 2.5rem;
           }
