@@ -1,6 +1,5 @@
 
-// Temporarily disabled to fix helmet errors
-// import { Helmet } from 'react-helmet-async';
+import React from 'react';
 
 interface SEOProps {
   title: string;

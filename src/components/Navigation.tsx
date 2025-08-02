@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
