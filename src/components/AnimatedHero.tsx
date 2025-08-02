@@ -49,35 +49,51 @@ const AnimatedHero = () => {
           background-clip: text;
         }
         
-        /* Atomic Model - 50% Arc Rings in separate orbits */
+        /* 50% Complete Rotating Rings */
         .atomic-arc-ring {
-          width: 100%;
-          height: 100%;
           border-radius: 50%;
-          border: 8px solid transparent;
-          background: conic-gradient(from 0deg, transparent 0deg, var(--ring-color) 30deg, var(--ring-color) 210deg, transparent 240deg, transparent 360deg);
+          position: relative;
+        }
+
+        .atomic-arc-ring::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          border-radius: 50%;
+          border: 4px solid transparent;
+          background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            var(--ring-color) 0deg,
+            var(--ring-color) 180deg,
+            transparent 180deg,
+            transparent 360deg
+          );
           -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
-          filter: drop-shadow(0 0 20px var(--ring-glow));
+          filter: drop-shadow(0 0 15px var(--ring-glow));
         }
 
         .ring-outer {
           --ring-color: #1de3f7;
           --ring-glow: rgba(29, 227, 247, 0.6);
-          animation: rotate-clockwise 15s linear infinite;
+          animation: rotate-clockwise 20s linear infinite;
         }
         
         .ring-middle {
           --ring-color: #04ff95;
           --ring-glow: rgba(4, 255, 149, 0.6);
-          animation: rotate-counter-clockwise 12s linear infinite;
+          animation: rotate-counter-clockwise 15s linear infinite;
         }
         
         .ring-inner {
           --ring-color: #ff4fd8;
           --ring-glow: rgba(255, 79, 216, 0.6);
-          animation: rotate-clockwise 8s linear infinite;
+          animation: rotate-clockwise 10s linear infinite;
         }
 
         /* Section Labels positioned properly */
