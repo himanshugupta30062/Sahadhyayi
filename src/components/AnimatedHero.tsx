@@ -74,34 +74,32 @@ const AnimatedHero = () => {
           background-clip: text;
         }
         
-        /* Thick Arc Rings - 50% rotating circles */
+        /* Atomic Model Rings - Complete circles */
         .thick-arc-ring {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 12px solid transparent;
-          background: conic-gradient(from 0deg, transparent 0deg, var(--ring-color) 30deg, var(--ring-color) 210deg, transparent 240deg, transparent 360deg);
-          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
+          border: 8px solid var(--ring-color);
+          background: transparent;
+          filter: drop-shadow(0 0 20px var(--ring-glow));
         }
 
         .ring-outer {
-          --ring-color: #ff4fd8;
-          animation: rotate-clockwise 8s linear infinite;
-          filter: drop-shadow(0 0 30px rgba(255, 79, 216, 0.5));
+          --ring-color: #1de3f7;
+          --ring-glow: rgba(29, 227, 247, 0.6);
+          animation: rotate-clockwise 15s linear infinite;
         }
         
         .ring-middle {
-          --ring-color: #1de3f7;
-          animation: rotate-counter-clockwise 10s linear infinite;
-          filter: drop-shadow(0 0 25px rgba(29, 227, 247, 0.5));
+          --ring-color: #04ff95;
+          --ring-glow: rgba(4, 255, 149, 0.6);
+          animation: rotate-counter-clockwise 12s linear infinite;
         }
         
         .ring-inner {
-          --ring-color: #5d5fef;
-          animation: rotate-clockwise 12s linear infinite;
-          filter: drop-shadow(0 0 20px rgba(93, 95, 239, 0.5));
+          --ring-color: #ff4fd8;
+          --ring-glow: rgba(255, 79, 216, 0.6);
+          animation: rotate-clockwise 8s linear infinite;
         }
 
         /* Section Labels positioned properly */
