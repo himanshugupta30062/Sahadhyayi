@@ -8,6 +8,8 @@ import './index.css';
 console.log('Main.tsx: Starting application...');
 console.log('React imported:', !!React);
 console.log('React.version:', React.version);
+console.log('React.StrictMode available:', !!StrictMode);
+console.log('React.createRoot available:', !!createRoot);
 
 const container = document.getElementById("root");
 if (!container) {
@@ -21,9 +23,11 @@ console.log('Root container found, initializing app...');
 function initializeApp() {
   console.log('DOM ready, creating React root...');
   console.log('React available before root creation:', !!React);
+  console.log('React version before root creation:', React.version);
   
   try {
     const root = createRoot(container);
+    console.log('React root created successfully');
     
     root.render(
       <StrictMode>
@@ -35,6 +39,7 @@ function initializeApp() {
   } catch (error) {
     console.error('Failed to render app:', error);
     console.error('React available during error:', !!React);
+    console.error('React version during error:', React.version);
     throw error;
   }
 }

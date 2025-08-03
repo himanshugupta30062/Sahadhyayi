@@ -10,6 +10,7 @@ import { ChatbotProvider } from "./contexts/ChatbotContext";
 
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 // Component imports - using explicit paths
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -40,6 +41,8 @@ import "./App.css";
 
 console.log('App.tsx: Starting app initialization');
 console.log('React version:', React.version);
+console.log('React available:', !!React);
+console.log('React.useState available:', typeof React.useState);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,45 +57,48 @@ console.log('QueryClient created successfully');
 
 function App() {
   console.log('App component rendering...');
+  console.log('React available in App render:', !!React);
   
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <QuotesProvider>
-            <ChatbotProvider>
-              <BrowserRouter>
-                <ScrollToTop />
-                <div className="min-h-screen bg-background text-foreground flex flex-col">
-                  <Navigation />
-                  <main className="flex-1 pt-16">
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/library" element={<BookLibrary />} />
-                      <Route path="/signup" element={<SignUp />} />
-                      <Route path="/signin" element={<SignIn />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/social" element={<SocialMedia />} />
-                      <Route path="/authors" element={<Authors />} />
-                      <Route path="/author/:id" element={<AuthorDetails />} />
-                      <Route path="/groups" element={<ReadingGroups />} />
-                      <Route path="/map" element={<Map />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/blog" element={<Blog />} />
-                      <Route path="/book/:id" element={<BookDetails />} />
-                      <Route path="/books/:bookId" element={<BookDetails />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </main>
-                  <GlobalFooter />
-                </div>
-                <Chatbot />
-                <Toaster />
-              </BrowserRouter>
-            </ChatbotProvider>
-          </QuotesProvider>
-        </AuthProvider>
+        <TooltipProvider>
+          <AuthProvider>
+            <QuotesProvider>
+              <ChatbotProvider>
+                <BrowserRouter>
+                  <ScrollToTop />
+                  <div className="min-h-screen bg-background text-foreground flex flex-col">
+                    <Navigation />
+                    <main className="flex-1 pt-16">
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/library" element={<BookLibrary />} />
+                        <Route path="/signup" element={<SignUp />} />
+                        <Route path="/signin" element={<SignIn />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/social" element={<SocialMedia />} />
+                        <Route path="/authors" element={<Authors />} />
+                        <Route path="/author/:id" element={<AuthorDetails />} />
+                        <Route path="/groups" element={<ReadingGroups />} />
+                        <Route path="/map" element={<Map />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/blog" element={<Blog />} />
+                        <Route path="/book/:id" element={<BookDetails />} />
+                        <Route path="/books/:bookId" element={<BookDetails />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </main>
+                    <GlobalFooter />
+                  </div>
+                  <Chatbot />
+                  <Toaster />
+                </BrowserRouter>
+              </ChatbotProvider>
+            </QuotesProvider>
+          </AuthProvider>
+        </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

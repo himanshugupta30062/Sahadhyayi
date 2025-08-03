@@ -1,5 +1,5 @@
 
-import React from "react";
+import * as React from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import ProfileFormContent from "./ProfileFormContent";
 import { UseFormReturn } from "react-hook-form";
 import { ProfileFormValues } from "./types";
+
+console.log('EditProfileDialog loading, React available:', !!React);
 
 type EditProfileDialogProps = {
   open: boolean;
@@ -34,6 +36,8 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
   upsertProfilePending,
   defaultValues,
 }) => {
+  console.log('EditProfileDialog rendering, React available:', !!React);
+  
   const { user } = useAuth();
 
   const checkUsernameAvailability = async (username: string) => {
