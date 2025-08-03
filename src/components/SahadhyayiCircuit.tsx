@@ -1,202 +1,142 @@
+import React, { useState } from 'react';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
-import React, { useState, useMemo } from 'react';
-import { BookOpen, Users, Globe, MessageCircle, MapPin, Zap } from 'lucide-react';
+/*
+  Global CSS required:
+  @keyframes dashFlow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 100; } }
+*/
 
-/**
- * Right-angle path from center (50%,50%) to node.
- */
-const createCircuitPath = (node: { position: { x: number; y: number } }) => {
-  const cx = 50, cy = 50;
-  const { x: nx, y: ny } = node.position;
-  const offset = 5;
-  const entryY = ny > cy ? ny - offset : ny + offset;
-  const entryX = nx > cx ? nx - offset : nx + offset;
-  return `M ${cx}% ${cy}% L ${cx}% ${entryY}% L ${entryX}% ${entryY}% L ${nx}% ${ny}%`;
+// Question data structure: id, label text, position, and color key
+const questions = [
+  { id: 'design',  label: 'Design your own book version?',                            pos: [50, 5],  color: 'emerald' },
+  { id: 'search',  label: 'Find the desired ebook in library',                        pos: [82, 18], color: 'blue'    },
+  { id: 'nearby',  label: "Who's reading same book nearby?",                         pos: [95, 50], color: 'purple'  },
+  { id: 'comment', label: 'Discuss book insights with fellow readers?',               pos: [82, 82], color: 'red'     },
+  { id: 'chat',    label: 'Chat with book friends online?',                           pos: [50, 95], color: 'orange'  },
+  { id: 'map',     label: 'Explore readers on the map',                              pos: [18, 82], color: 'yellow'  },
+  { id: 'track',   label: 'Track your reading progress?',                            pos: [5, 50],  color: 'cyan'    },
+  { id: 'authors', label: 'Discover authors & works',                                pos: [18, 18], color: 'pink'    }
+];
+
+// Map color keys to Tailwind gradient pairs (safelist these classes in config)
+const gradientClasses: Record<string, string> = {
+  emerald: 'from-emerald-400 to-emerald-600',
+  blue:    'from-blue-400 to-blue-600',
+  purple:  'from-purple-400 to-purple-600',
+  pink:    'from-pink-400   to-pink-600',
+  orange:  'from-orange-400 to-orange-600',
+  yellow:  'from-yellow-400 to-yellow-600',
+  cyan:    'from-cyan-400   to-cyan-600',
+  red:     'from-red-400    to-red-600'
 };
 
-const SahadhyayiCircuit: React.FC = () => {
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+// Renders an animated SVG path (the “current” line) for a single question
+const CurrentLine: React.FC<{
+  id: string; x: number; y: number; hoveredId: string | null;
+}> = ({ id, x, y, hoveredId }) => (
+  <path
+    d={`M50,50 L${x},${y}`}                // straight line from center
+    stroke="url(#grad)"
+    strokeWidth={0.8}
+    strokeDasharray="4 2"
+    style={{ animation: 'dashFlow 2s linear infinite' }} // animate flow
+    className={hoveredId === id ? 'opacity-100' : 'opacity-30'}
+  />
+);
 
-  const nodes = useMemo(() => [
-    { 
-      id: 'designBooks', 
-      title: 'Want to design your own version of a book?', 
-      icon: BookOpen, 
-      position: { x: 50, y: 10 }, 
-      color: 'from-emerald-400 to-teal-500', 
-      hoverColor: 'from-emerald-300 to-teal-400' 
-    },
-    { 
-      id: 'nearbyReaders', 
-      title: 'Who\'s reading the same book nearby and connect?', 
-      icon: Users, 
-      position: { x: 85, y: 30 }, 
-      color: 'from-purple-400 to-indigo-500', 
-      hoverColor: 'from-purple-300 to-indigo-400' 
-    },
-    { 
-      id: 'authorInfo', 
-      title: 'Want to know about authors and the books they published?', 
-      icon: Globe, 
-      position: { x: 85, y: 70 }, 
-      color: 'from-pink-400 to-rose-500', 
-      hoverColor: 'from-pink-300 to-rose-400' 
-    },
-    { 
-      id: 'chatFriends', 
-      title: 'Want to talk to book friends online?', 
-      icon: MessageCircle, 
-      position: { x: 50, y: 90 }, 
-      color: 'from-orange-400 to-amber-500', 
-      hoverColor: 'from-orange-300 to-amber-400' 
-    },
-    { 
-      id: 'readerMap', 
-      title: 'Explore where fellow readers are on the map!', 
-      icon: MapPin, 
-      position: { x: 15, y: 70 }, 
-      color: 'from-yellow-400 to-lime-500', 
-      hoverColor: 'from-yellow-300 to-lime-400' 
-    },
-    { 
-      id: 'trackProgress', 
-      title: 'Want to track your overall reading progress?', 
-      icon: Zap, 
-      position: { x: 15, y: 30 }, 
-      color: 'from-cyan-400 to-blue-500', 
-      hoverColor: 'from-cyan-300 to-blue-400' 
-    }
-  ], []);
+// Renders a question bubble with tooltip and hover handlers
+const QuestionBubble: React.FC<{
+  id: string; x: number; y: number; label: string; color: string;
+  hoveredId: string | null; setHovered: (id: string | null) => void;
+}> = ({ id, x, y, label, color, hoveredId, setHovered }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <div
+        className="absolute cursor-pointer"
+        style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
+        onMouseEnter={() => setHovered(id)}
+        onMouseLeave={() => setHovered(null)}
+      >
+        <div
+          className={`px-3 py-1 rounded-full bg-gradient-to-br ${gradientClasses[color]} text-white text-sm font-medium whitespace-nowrap shadow-lg`}
+        >
+          {label}
+        </div>
+      </div>
+    </TooltipTrigger>
+    <TooltipContent side="top">
+      <span>{label}</span>
+    </TooltipContent>
+  </Tooltip>
+);
+
+/**
+ * Main hero component: left side for headline/CTA, right side for circuit diagram.
+ */
+const SahadhyayiCircuit: React.FC = () => {
+  const [hoveredId, setHovered] = useState<string | null>(null);
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden">
-      <style>
-        {`
-          @keyframes dashFlow {
-            0% { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: -20; }
-          }
-          @keyframes electricSpark {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.1); }
-          }
-          .animate-electricSpark {
-            animation: electricSpark 2s ease-in-out infinite;
-          }
-        `}
-      </style>
-      
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
-        <defs>
-          <pattern id="circuit-grid" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-            <circle cx="40" cy="40" r="2" fill="currentColor" className="text-cyan-600/20" />
-            <line x1="0" y1="40" x2="80" y2="40" stroke="currentColor" strokeWidth="1" className="text-cyan-600/10" />
-            <line x1="40" y1="0" x2="40" y2="80" stroke="currentColor" strokeWidth="1" className="text-cyan-600/10" />
-          </pattern>
-          <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.8" />
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+    <TooltipProvider>
+      <div className="flex w-full h-screen bg-black text-white">
+        <style>{`
+          @keyframes dashFlow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 100; } }
+        `}</style>
 
-        <rect width="100%" height="100%" fill="url(#circuit-grid)" />
-
-        {/* Animated rings around center */}
-        {[35, 45, 55].map((r, i) => (
-          <circle
-            key={i}
-            cx="50%"
-            cy="50%"
-            r={`${r}%`}
-            fill="none"
-            stroke="url(#wireGrad)"
-            strokeWidth="2"
-            filter="url(#glow)"
-            className="opacity-30 transform origin-center animate-spin"
-            style={{ animationDuration: `${60 - i * 20}s` }}
-          />
-        ))}
-
-        {/* Electric spark at center */}
-        <circle
-          cx="50%"
-          cy="50%"
-          r="8%"
-          stroke="#00FFF0"
-          strokeWidth="1"
-          fill="none"
-          filter="url(#glow)"
-          className="opacity-50 animate-electricSpark"
-        />
-
-        {/* Straight lines to nodes */}
-        {nodes.map(node => (
-          <line
-            key={`conn-${node.id}`}
-            x1="50%" y1="50%" x2={`${node.position.x}%`} y2={`${node.position.y}%`} 
-            stroke="url(#wireGrad)" strokeWidth="2" strokeLinecap="round"
-            filter="url(#glow)" strokeDasharray="6 4"
-            className={`transition-opacity ${hoveredNode===node.id ? 'opacity-100' : 'opacity-40'}`} 
-            style={{ animation: 'dashFlow 4s linear infinite' }}
-          />
-        ))}
-
-        {/* Right-angle connections to nodes */}
-        {nodes.map(node => (
-          <path
-            key={node.id}
-            d={createCircuitPath(node)}
-            fill="none"
-            stroke="url(#wireGrad)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            filter="url(#glow)"
-            strokeDasharray="8 6"
-            className={`transition-opacity ${hoveredNode===node.id ? 'opacity-100' : 'opacity-60'}`}
-            style={{ animation: 'dashFlow 4s linear infinite' }}
-          />
-        ))}
-      </svg>
-
-      {/* Central hub */}
-      <div className="absolute inset-0 flex items-center justify-center z-30">
-        <div className="absolute w-56 h-56 rounded-full bg-gradient-to-br from-emerald-500 to-teal-400 blur-2xl opacity-40 animate-pulse" />
-        <div className="absolute w-48 h-48 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 blur-xl opacity-60 animate-pulse" />
-        <img
-          src="/assets/sahadhyayi-symbol.svg"
-          alt="Sahadhyayi Symbol"
-          className="relative w-32 h-32 object-contain z-40"
-        />
-      </div>
-
-      {/* Interactive nodes */}
-      {nodes.map((node, i) => {
-        const Icon = node.icon;
-        return (
-          <div
-            key={node.id}
-            onMouseEnter={() => setHoveredNode(node.id)}
-            onMouseLeave={() => setHoveredNode(null)}
-            className="absolute z-40 cursor-pointer transition-transform duration-200 hover:scale-110"
-            style={{ left: `${node.position.x}%`, top: `${node.position.y}%`, transform: 'translate(-50%, -50%)' }}
-            title={node.title}
+        {/* Left column: headline and call-to-action */}
+        <div className="w-1/2 flex flex-col justify-center px-16 space-y-6">
+          <h1 className="text-4xl md:text-5xl font-bold leading-snug">
+            Want an intellectual friend from reading community?
+          </h1>
+          <p className="text-2xl text-blue-100">Let's Explore Sahadhyayi!</p>
+          <a
+            href="/signup"
+            className="mt-4 inline-block w-44 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white text-lg font-semibold rounded-full shadow-lg transition-transform hover:scale-105"
           >
-            <div className={`p-3 rounded-xl bg-gradient-to-br ${hoveredNode===node.id? node.hoverColor : node.color} text-white shadow-lg flex items-center space-x-2`}>
-              <Icon className="w-6 h-6" />
-              <span className="whitespace-nowrap text-sm">{node.title}</span>
+            Join the Reading Circle
+          </a>
+        </div>
+
+        {/* Right column: circuit diagram with animated lines and bubbles */}
+        <div className="w-1/2 relative">
+          {/* SVG definitions and animated lines */}
+          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none">
+            <defs>
+              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#22d3ee" />
+                <stop offset="100%" stopColor="#3b82f6" />
+              </linearGradient>
+            </defs>
+            {questions.map(q => (
+              <CurrentLine
+                key={q.id}
+                id={q.id} x={q.pos[0]} y={q.pos[1]}
+                hoveredId={hoveredId}
+              />
+            ))}
+          </svg>
+
+          {/* Central hub circle with brand name */}
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-600 to-teal-400 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+              Sahadhyayi
             </div>
           </div>
-        );
-      })}
-    </div>
+
+          {/* Render each question bubble */}
+          {questions.map(q => (
+            <QuestionBubble
+              key={q.id}
+              id={q.id} x={q.pos[0]} y={q.pos[1]}
+              label={q.label} color={q.color}
+              hoveredId={hoveredId} setHovered={setHovered}
+            />
+          ))}
+        </div>
+      </div>
+    </TooltipProvider>
   );
 };
 
 export default SahadhyayiCircuit;
+
