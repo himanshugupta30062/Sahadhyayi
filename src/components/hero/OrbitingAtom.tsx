@@ -97,7 +97,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       </svg>
       
       <div
-        className="absolute pointer-events-auto"
+        className="absolute pointer-events-auto cursor-pointer"
         style={{
           offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
           offsetRotate: "0deg", // Keep atoms upright
