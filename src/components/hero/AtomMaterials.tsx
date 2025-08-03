@@ -87,7 +87,7 @@ export const AtomShell: React.FC<AtomShellProps> = ({
       
       {/* Enhanced Tooltip */}
       <div
-        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-4 rounded-xl transition-all duration-500 shadow-2xl z-50 whitespace-nowrap text-base font-semibold pointer-events-none"
+        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-6 rounded-xl transition-all duration-500 shadow-2xl z-[100] whitespace-nowrap text-base font-semibold pointer-events-none"
         style={{
           opacity: isHovered ? 1 : 0,
           transform: isHovered ?

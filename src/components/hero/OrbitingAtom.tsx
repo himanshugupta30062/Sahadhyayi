@@ -113,6 +113,14 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
           setIsHovered(false);
           onHoverChange?.(false);
         }}
+        onTouchStart={() => {
+          setIsHovered(true);
+          onHoverChange?.(true);
+        }}
+        onTouchEnd={() => {
+          setIsHovered(false);
+          onHoverChange?.(false);
+        }}
       >
         <AtomShell
           material={material}

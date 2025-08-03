@@ -73,11 +73,11 @@ const DESKTOP_FLOATING_ICONS = [
   },
 ];
 
-// Mobile configuration
+// Mobile configuration (scaled-down desktop)
 const MOBILE_RING_CONFIG = {
-  outer: { radius: 310, color: "url(#dark-red-gradient)", rotation: 0, duration: 12 },
-  middle: { radius: 260, color: "#22c55e", rotation: 120, duration: 10 },
-  inner: { radius: 220, color: "#3b82f6", rotation: 240, duration: 8 },
+  outer: { radius: 200, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
+  middle: { radius: 170, color: "#22c55e", rotation: 120, duration: 20 },
+  inner: { radius: 140, color: "#3b82f6", rotation: 240, duration: 16 },
 };
 
 const MOBILE_ATOM_CONFIG = [
@@ -146,8 +146,8 @@ const AnimatedHero: React.FC = () => {
   const ringConfig = isMobile ? MOBILE_RING_CONFIG : DESKTOP_RING_CONFIG;
   const atomConfig = isMobile ? MOBILE_ATOM_CONFIG : DESKTOP_ATOM_CONFIG;
   const floatingIcons = isMobile ? MOBILE_FLOATING_ICONS : DESKTOP_FLOATING_ICONS;
-  const ringStroke = isMobile ? 16 : 28;
-  const maskSize = ringConfig.inner.radius * 2 - 80;
+  const ringStroke = isMobile ? 12 : 28; // Thinner rings for mobile
+  const maskSize = ringConfig.inner.radius * 2 - (isMobile ? 40 : 80); // Smaller mask for mobile
 
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
   const [occupiedOrbits, setOccupiedOrbits] = useState<Record<string, number>>({
