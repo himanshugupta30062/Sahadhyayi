@@ -43,10 +43,29 @@ function App() {
   console.log('App component rendering...');
   console.log('React in App component:', React);
   
-  // Safety check for React
+  // Critical safety check for React - if React is not available, show loading
   if (!React || typeof React.createElement !== 'function') {
     console.error('React not properly initialized in App component');
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Verify React hooks are available
+  if (!React.useState || !React.useEffect || !React.useContext) {
+    console.error('React hooks not available in App component');
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Application initialization error. Please refresh the page.</p>
+        </div>
+      </div>
+    );
   }
   
   return (

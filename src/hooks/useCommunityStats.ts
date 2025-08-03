@@ -12,6 +12,24 @@ interface CommunityStats {
 }
 
 export const useCommunityStats = (autoFetch: boolean = true) => {
+  console.log('useCommunityStats hook called...');
+  
+  // Add safety check for React hooks
+  if (!React || typeof React.useState !== 'function') {
+    console.error('React hooks not available in useCommunityStats');
+    return {
+      stats: {
+        totalSignups: 0,
+        totalVisits: 0,
+        lastUpdated: new Date().toISOString(),
+      },
+      isLoading: false,
+      error: null,
+      fetchStats: () => Promise.resolve(),
+      joinCommunity: () => Promise.resolve(false),
+    };
+  }
+
   const safeGetItem = React.useCallback((key: string): string | null => {
     try {
       return typeof window !== 'undefined' ? localStorage.getItem(key) : null;
