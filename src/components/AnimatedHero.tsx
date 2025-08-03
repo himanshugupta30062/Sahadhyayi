@@ -73,11 +73,11 @@ const DESKTOP_FLOATING_ICONS = [
   },
 ];
 
-// Mobile configuration (scaled-down desktop)
+// Mobile configuration (adjusted to keep text clear of the rings)
 const MOBILE_RING_CONFIG = {
-  outer: { radius: 160, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 130, color: "#22c55e", rotation: 120, duration: 20 },
-  inner: { radius: 100, color: "#3b82f6", rotation: 240, duration: 16 },
+  outer: { radius: 280, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
+  middle: { radius: 230, color: "#22c55e", rotation: 120, duration: 20 },
+  inner: { radius: 180, color: "#3b82f6", rotation: 240, duration: 16 },
 };
 
 const MOBILE_ATOM_CONFIG = [
@@ -147,7 +147,8 @@ const AnimatedHero: React.FC = () => {
   const atomConfig = isMobile ? MOBILE_ATOM_CONFIG : DESKTOP_ATOM_CONFIG;
   const floatingIcons = isMobile ? MOBILE_FLOATING_ICONS : DESKTOP_FLOATING_ICONS;
   const ringStroke = isMobile ? 10 : 28; // Thinner rings for mobile
-  const maskSize = ringConfig.inner.radius * 2 - (isMobile ? 40 : 80); // Smaller mask for mobile
+  // Maintain consistent spacing between the inner ring and the central content mask
+  const maskSize = 2 * (ringConfig.inner.radius - ringStroke / 2 - 26);
 
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
   // Align atoms with ring stroke by using the ring radius minus half the stroke width
