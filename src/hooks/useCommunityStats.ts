@@ -12,15 +12,15 @@ interface CommunityStats {
 }
 
 export const useCommunityStats = (autoFetch: boolean = true) => {
-  const safeGetItem = (key: string): string | null => {
+  const safeGetItem = React.useCallback((key: string): string | null => {
     try {
       return typeof window !== 'undefined' ? localStorage.getItem(key) : null;
     } catch {
       return null;
     }
-  };
+  }, []);
 
-  const safeSetItem = (key: string, value: string) => {
+  const safeSetItem = React.useCallback((key: string, value: string) => {
     try {
       if (typeof window !== 'undefined') {
         localStorage.setItem(key, value);
@@ -28,9 +28,9 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     } catch {
       // Ignore write errors (e.g. private mode)
     }
-  };
+  }, []);
 
-  const getCachedStats = (): CommunityStats | null => {
+  const getCachedStats = React.useCallback((): CommunityStats | null => {
     const cached = safeGetItem(LOCAL_STORAGE_KEY);
     if (!cached) return null;
     try {
@@ -38,7 +38,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     } catch {
       return null;
     }
-  };
+  }, [safeGetItem]);
 
   const [stats, setStats] = React.useState<CommunityStats>(() => {
     const cached = getCachedStats();
@@ -53,7 +53,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
   const [isLoading, setIsLoading] = React.useState(autoFetch);
   const [error, setError] = React.useState<string | null>(null);
 
-  const fetchStats = async () => {
+  const fetchStats = React.useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -96,7 +96,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getCachedStats, safeSetItem]);
 
   const joinCommunity = async () => {
     try {
@@ -135,11 +135,11 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     }
   };
 
-  React.useEffect(() => {
-    if (autoFetch) {
-      fetchStats();
-    }
-  }, [autoFetch]);
+    React.useEffect(() => {
+      if (autoFetch) {
+        fetchStats();
+      }
+    }, [autoFetch, fetchStats]);
 
   return {
     stats,
