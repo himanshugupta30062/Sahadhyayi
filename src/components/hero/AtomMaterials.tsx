@@ -11,14 +11,32 @@ export interface AtomMaterial {
 }
 
 export const ATOM_MATERIALS: Record<string, AtomMaterial> = {
-  white: {
-    id: "white",
-    name: "Standard",
-    background: "#ffffff",
+  library: {
+    id: "library",
+    name: "Library",
+    background: "linear-gradient(135deg, #ffedd5, #fbbf24)",
     textColor: "#000000",
-    border: "2px solid rgba(255, 255, 255, 0.9)",
-    shadowColor: "rgba(255, 255, 255, 0.3)",
-    glowEffect: "0 0 20px rgba(255, 255, 255, 0.5)",
+    border: "2px solid rgba(251, 191, 36, 0.9)",
+    shadowColor: "rgba(251, 191, 36, 0.3)",
+    glowEffect: "0 0 20px rgba(251, 191, 36, 0.5)",
+  },
+  author: {
+    id: "author",
+    name: "Authors",
+    background: "linear-gradient(135deg, #dcfce7, #22c55e)",
+    textColor: "#000000",
+    border: "2px solid rgba(34, 197, 94, 0.9)",
+    shadowColor: "rgba(34, 197, 94, 0.3)",
+    glowEffect: "0 0 20px rgba(34, 197, 94, 0.5)",
+  },
+  social: {
+    id: "social",
+    name: "Social Media",
+    background: "linear-gradient(135deg, #e0f2fe, #3b82f6)",
+    textColor: "#000000",
+    border: "2px solid rgba(59, 130, 246, 0.9)",
+    shadowColor: "rgba(59, 130, 246, 0.3)",
+    glowEffect: "0 0 20px rgba(59, 130, 246, 0.5)",
   },
 };
 
@@ -68,20 +86,25 @@ export const AtomShell: React.FC<AtomShellProps> = ({
       </span>
       
       {/* Tooltip */}
-      <span 
-        className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 bg-black/90 text-white px-4 py-2 rounded-lg transition-all duration-300 shadow-2xl z-20 whitespace-nowrap text-sm font-medium backdrop-blur-sm border border-white/20 pointer-events-none"
+      <span
+        className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 rounded-lg transition-all duration-300 shadow-2xl z-20 whitespace-nowrap text-sm font-medium pointer-events-none"
         style={{
           opacity: isHovered ? 1 : 0,
-          transform: isHovered ? 
-            "translate(-50%, 0) scale(1)" : 
+          transform: isHovered ?
+            "translate(-50%, 0) scale(1)" :
             "translate(-50%, -10px) scale(0.9)",
           visibility: isHovered ? "visible" : "hidden",
+          background: material.background,
+          color: material.textColor,
+          border: material.border,
+          padding: "0.5rem 1rem",
+          backdropFilter: "blur(4px)",
         }}
       >
         {label}
-        <div 
-          className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-black/90 rotate-45"
-          style={{ marginBottom: "-4px" }}
+        <div
+          className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-2 h-2 rotate-45"
+          style={{ marginBottom: "-4px", background: material.background, border: material.border }}
         />
       </span>
     </div>
