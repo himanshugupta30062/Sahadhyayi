@@ -14,29 +14,50 @@ console.log('React object before init:', React);
 // 1. Store the original React reference
 const originalReact = React;
 
-// 2. Ensure React is available on window (for browser environment)
+// 2. Safely set React on window if possible
 if (typeof window !== 'undefined') {
-  (window as any).React = originalReact;
-  console.log('React set on window:', (window as any).React);
+  try {
+    // Check if React property already exists and is configurable
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'React');
+    if (!descriptor || descriptor.configurable !== false) {
+      (window as any).React = originalReact;
+      console.log('React set on window:', (window as any).React);
+    } else {
+      console.warn('React property on window is not configurable');
+    }
+  } catch (error) {
+    console.warn('Could not set React on window:', error);
+    // Fallback: try to define it differently
+    try {
+      Object.defineProperty(window, 'ReactFallback', {
+        value: originalReact,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+    } catch (fallbackError) {
+      console.warn('Fallback React assignment also failed:', fallbackError);
+    }
+  }
 }
 
-// 3. Ensure React is available on globalThis (cross-platform)
-(globalThis as any).React = originalReact;
+// 3. Ensure React is available on globalThis
+try {
+  (globalThis as any).React = originalReact;
+} catch (error) {
+  console.warn('Could not set React on globalThis:', error);
+}
 
-// 4. Ensure React is available on global (Node.js style, some dependencies might expect this)
+// 4. Ensure React is available on global (Node.js style)
 if (typeof global !== 'undefined') {
-  (global as any).React = originalReact;
+  try {
+    (global as any).React = originalReact;
+  } catch (error) {
+    console.warn('Could not set React on global:', error);
+  }
 }
 
-// 5. Override any potential undefined access to React
-Object.defineProperty(globalThis, 'React', {
-  value: originalReact,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-// 6. Set up a React hooks proxy that always points to the original React hooks
+// 5. Create a comprehensive React hooks proxy
 const createHooksProxy = () => ({
   useState: originalReact.useState,
   useEffect: originalReact.useEffect,
@@ -50,51 +71,82 @@ const createHooksProxy = () => ({
   useDebugValue: originalReact.useDebugValue,
 });
 
-// 7. Make hooks available globally through multiple access patterns
+// 6. Make hooks available globally through multiple access patterns
 const hooksProxy = createHooksProxy();
 
-// Set hooks on window
+// Set hooks on window safely
 if (typeof window !== 'undefined') {
-  (window as any).ReactHooks = hooksProxy;
-  // Also set individual hooks directly on window for maximum compatibility
-  Object.keys(hooksProxy).forEach(hookName => {
-    (window as any)[hookName] = (hooksProxy as any)[hookName];
-  });
+  try {
+    (window as any).ReactHooks = hooksProxy;
+    // Also set individual hooks directly on window for maximum compatibility
+    Object.keys(hooksProxy).forEach(hookName => {
+      try {
+        (window as any)[hookName] = (hooksProxy as any)[hookName];
+      } catch (error) {
+        console.warn(`Could not set ${hookName} on window:`, error);
+      }
+    });
+  } catch (error) {
+    console.warn('Could not set React hooks on window:', error);
+  }
 }
 
 // Set hooks on globalThis
-(globalThis as any).ReactHooks = hooksProxy;
+try {
+  (globalThis as any).ReactHooks = hooksProxy;
+  // Set individual hooks on globalThis
+  Object.keys(hooksProxy).forEach(hookName => {
+    try {
+      (globalThis as any)[hookName] = (hooksProxy as any)[hookName];
+    } catch (error) {
+      console.warn(`Could not set ${hookName} on globalThis:`, error);
+    }
+  });
+} catch (error) {
+  console.warn('Could not set React hooks on globalThis:', error);
+}
 
-// Set individual hooks on globalThis
-Object.keys(hooksProxy).forEach(hookName => {
-  (globalThis as any)[hookName] = (hooksProxy as any)[hookName];
-});
-
-// 8. Create a comprehensive React object that includes everything
+// 7. Create a comprehensive React object that includes everything
 const comprehensiveReact = {
   ...originalReact,
   ...hooksProxy,
 };
 
-// 9. Override common access patterns
+// 8. Override common access patterns safely
 if (typeof window !== 'undefined') {
-  (window as any).React = comprehensiveReact;
+  try {
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'React');
+    if (!descriptor || descriptor.configurable !== false) {
+      (window as any).React = comprehensiveReact;
+    }
+  } catch (error) {
+    console.warn('Could not set comprehensive React on window:', error);
+  }
 }
-(globalThis as any).React = comprehensiveReact;
 
-// 10. Patch any potential module access patterns
+try {
+  (globalThis as any).React = comprehensiveReact;
+} catch (error) {
+  console.warn('Could not set comprehensive React on globalThis:', error);
+}
+
+// 9. Set up module-style exports
 const moduleExports = {
   React: comprehensiveReact,
   default: comprehensiveReact,
   ...hooksProxy
 };
 
-// Set up module-style exports
+// Set up module-style exports safely
 if (typeof module !== 'undefined' && module.exports) {
-  Object.assign(module.exports, moduleExports);
+  try {
+    Object.assign(module.exports, moduleExports);
+  } catch (error) {
+    console.warn('Could not assign module exports:', error);
+  }
 }
 
-// 11. Final verification
+// 10. Final verification
 console.log('React initialization verification:', {
   React: !!originalReact,
   ReactOnWindow: !!(typeof window !== 'undefined' && (window as any).React),

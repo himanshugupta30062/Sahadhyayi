@@ -184,8 +184,8 @@ function useToast() {
   }
 
   try {
-    // Use the verified React instance
-    const [state, setState] = reactInstance.useState<State>(memoryState)
+    // Use the verified React instance - fix TypeScript error by removing type argument
+    const [state, setState] = reactInstance.useState(memoryState)
 
     reactInstance.useEffect(() => {
       listeners.push(setState)
