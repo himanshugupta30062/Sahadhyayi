@@ -10,6 +10,7 @@ import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
 import AnimatedHero from "@/components/AnimatedHero";
 import SahadhyayiCircuit from "@/components/SahadhyayiCircuit";
+import SahadhyayiCapabilities from "@/components/SahadhyayiCapabilities";
 
 const Index = () => {
   const { user } = useAuth();
@@ -91,6 +92,8 @@ const Index = () => {
       <AnimatedHero />
       
       <SahadhyayiCircuit />
+      
+      <SahadhyayiCapabilities />
       
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
 
