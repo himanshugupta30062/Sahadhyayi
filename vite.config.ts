@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => ({
       '@radix-ui/react-tooltip'
     ],
     force: true,
+    exclude: ['@supabase/supabase-js']
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(mode),
@@ -45,7 +46,7 @@ export default defineConfig(({ mode }) => ({
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
-    dedupe: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
   },
   build: {
     assetsDir: 'assets',
