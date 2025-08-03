@@ -17,16 +17,16 @@ const DESKTOP_ATOM_CONFIG = [
     letter: "L",
     label: "Library",
     materialId: "library",
-    duration: 24, // Match outer ring speed
+    duration: 8, // Faster speed
     initialAngle: 0,
     orbitSwitchInterval: 20000,
-    size: 44, // Slightly larger for better visibility
+    size: 44,
   },
   {
     letter: "A",
     label: "Authors",
     materialId: "author",
-    duration: 20, // Match middle ring speed
+    duration: 6, // Faster speed
     initialAngle: 120,
     orbitSwitchInterval: 25000,
     size: 44,
@@ -35,7 +35,7 @@ const DESKTOP_ATOM_CONFIG = [
     letter: "S",
     label: "Social Media",
     materialId: "social",
-    duration: 16, // Match inner ring speed
+    duration: 5, // Fastest speed
     initialAngle: 240,
     orbitSwitchInterval: 30000,
     size: 44,
@@ -85,16 +85,16 @@ const MOBILE_ATOM_CONFIG = [
     letter: "L",
     label: "Library",
     materialId: "library",
-    duration: 24, // Match outer ring speed
+    duration: 8, // Faster speed
     initialAngle: 0,
     orbitSwitchInterval: 20000,
-    size: 32, // Larger for mobile
+    size: 32,
   },
   {
     letter: "A",
     label: "Authors",
     materialId: "author",
-    duration: 20, // Match middle ring speed
+    duration: 6, // Faster speed
     initialAngle: 120,
     orbitSwitchInterval: 25000,
     size: 32,
@@ -103,7 +103,7 @@ const MOBILE_ATOM_CONFIG = [
     letter: "S",
     label: "Social Media",
     materialId: "social",
-    duration: 16, // Match inner ring speed
+    duration: 5, // Fastest speed
     initialAngle: 240,
     orbitSwitchInterval: 30000,
     size: 32,

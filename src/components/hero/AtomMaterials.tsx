@@ -87,12 +87,12 @@ export const AtomShell: React.FC<AtomShellProps> = ({
       
       {/* Enhanced Tooltip */}
       <div
-        className="absolute top-full left-1/2 transform -translate-x-1/2 mt-6 rounded-xl transition-all duration-500 shadow-2xl z-20 whitespace-nowrap text-base font-semibold pointer-events-none"
+        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-4 rounded-xl transition-all duration-500 shadow-2xl z-50 whitespace-nowrap text-base font-semibold pointer-events-none"
         style={{
           opacity: isHovered ? 1 : 0,
           transform: isHovered ?
             "translate(-50%, 0) scale(1)" :
-            "translate(-50%, -15px) scale(0.8)",
+            "translate(-50%, 15px) scale(0.8)",
           visibility: isHovered ? "visible" : "hidden",
           background: `linear-gradient(135deg, rgba(0,0,0,0.95), rgba(0,0,0,0.85))`,
           color: "#ffffff",
@@ -100,17 +100,19 @@ export const AtomShell: React.FC<AtomShellProps> = ({
           padding: "0.75rem 1.25rem",
           backdropFilter: "blur(8px)",
           boxShadow: material.glowEffect + ", 0 8px 32px rgba(0,0,0,0.3)",
+          minWidth: "120px",
+          textAlign: "center" as const,
         }}
       >
         {letter} - {label}
         <div
-          className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45"
+          className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45"
           style={{ 
-            marginBottom: "-6px", 
+            marginTop: "-6px", 
             background: "linear-gradient(135deg, rgba(0,0,0,0.95), rgba(0,0,0,0.85))",
             border: `2px solid ${material.border.match(/rgba\([^)]+\)/)?.[0] || material.border}`,
-            borderBottom: "none",
-            borderRight: "none"
+            borderTop: "none",
+            borderLeft: "none"
           }}
         />
       </div>
