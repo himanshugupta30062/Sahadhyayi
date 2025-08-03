@@ -5,16 +5,23 @@ import App from './App.tsx';
 import './index.css';
 import { initializeSecurity } from './utils/security';
 
-// Initialize security measures
-initializeSecurity();
+console.log('Main.tsx starting...');
+console.log('React object before init:', React);
 
-console.log('Main.tsx loading...');
-console.log('React object:', React);
-
-// Ensure React is available globally
+// Ensure React is available globally BEFORE anything else
 if (typeof window !== 'undefined') {
   (window as any).React = React;
+  console.log('React set on window:', (window as any).React);
 }
+
+// Verify React is properly initialized
+if (!React || typeof React.createElement !== 'function') {
+  console.error('React is not properly initialized!');
+  throw new Error('React initialization failed');
+}
+
+// Initialize security measures
+initializeSecurity();
 
 const container = document.getElementById("root");
 if (!container) {
@@ -23,16 +30,24 @@ if (!container) {
 
 const root = createRoot(container);
 
-console.log('Rendering App...');
+console.log('Rendering App with React:', !!React);
 
-// Ensure React is properly initialized before rendering
-root.render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+// Add a small delay to ensure React is fully ready
+const renderApp = () => {
+  try {
+    root.render(
+      <StrictMode>
+        <App />
+      </StrictMode>
+    );
+    console.log('App rendered successfully');
+  } catch (error) {
+    console.error('Error rendering app:', error);
+  }
+};
 
-console.log('App rendered successfully');
+// Render immediately since React should be ready
+renderApp();
 
 if ('serviceWorker' in navigator && window.isSecureContext) {
   window.addEventListener('load', () => {

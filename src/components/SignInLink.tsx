@@ -3,28 +3,50 @@ import React, { FC, MouseEventHandler } from 'react';
 import { Link, useLocation, type LinkProps } from 'react-router-dom';
 
 const SignInLink: FC<Omit<LinkProps, 'to'>> = ({ children, onClick, ...props }) => {
-  const location = useLocation();
-  const redirect = `${location.pathname}${location.search}${location.hash}`;
+  console.log('SignInLink rendering...');
+  
+  // Add safety check for React hooks
+  if (!React || typeof React.useContext !== 'function') {
+    console.error('React hooks not available in SignInLink');
+    return (
+      <a href="/signin" onClick={onClick} {...props}>
+        {children}
+      </a>
+    );
+  }
 
-  const handleClick: MouseEventHandler<HTMLAnchorElement> = (e) => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('redirectScrollY', String(window.scrollY));
-    }
-    if (onClick) {
-      onClick(e);
-    }
-  };
+  try {
+    const location = useLocation();
+    const redirect = `${location.pathname}${location.search}${location.hash}`;
 
-  return (
-    <Link
-      {...props}
-      to={`/signin?redirect=${encodeURIComponent(redirect)}`}
-      state={{ from: redirect }}
-      onClick={handleClick}
-    >
-      {children}
-    </Link>
-  );
+    const handleClick: MouseEventHandler<HTMLAnchorElement> = (e) => {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('redirectScrollY', String(window.scrollY));
+      }
+      if (onClick) {
+        onClick(e);
+      }
+    };
+
+    return (
+      <Link
+        {...props}
+        to={`/signin?redirect=${encodeURIComponent(redirect)}`}
+        state={{ from: redirect }}
+        onClick={handleClick}
+      >
+        {children}
+      </Link>
+    );
+  } catch (error) {
+    console.error('Error in SignInLink:', error);
+    // Fallback to regular anchor tag
+    return (
+      <a href="/signin" onClick={onClick} {...props}>
+        {children}
+      </a>
+    );
+  }
 };
 
 export default SignInLink;

@@ -41,6 +41,13 @@ console.log('App component loading...');
 
 function App() {
   console.log('App component rendering...');
+  console.log('React in App component:', React);
+  
+  // Safety check for React
+  if (!React || typeof React.createElement !== 'function') {
+    console.error('React not properly initialized in App component');
+    return <div>Loading...</div>;
+  }
   
   return (
     <ErrorBoundary>
