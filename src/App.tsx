@@ -5,8 +5,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QuotesProvider } from "@/contexts/QuotesProvider";
-// Temporarily commenting out ChatbotProvider to debug
-// import { ChatbotProvider } from "@/contexts/ChatbotContext";
+import { ChatbotProvider } from "@/contexts/ChatbotContext";
+import Chatbot from "@/components/chatbot/Chatbot";
 import Navigation from "@/components/Navigation";
 import GlobalFooter from "@/components/GlobalFooter";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -47,7 +47,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <QuotesProvider>
-            {/* <ChatbotProvider> */}
+            <ChatbotProvider>
               <BrowserRouter>
                 <ScrollToTop />
                 <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -74,9 +74,10 @@ function App() {
                   </main>
                   <GlobalFooter />
                 </div>
+                <Chatbot />
                 <Toaster />
               </BrowserRouter>
-            {/* </ChatbotProvider> */}
+            </ChatbotProvider>
           </QuotesProvider>
         </AuthProvider>
       </QueryClientProvider>
