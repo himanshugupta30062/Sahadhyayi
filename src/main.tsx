@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -19,10 +19,11 @@ const root = createRoot(container);
 
 console.log('Rendering App...');
 
+// Ensure React is properly initialized before rendering
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <App />
-  </React.StrictMode>
+  </StrictMode>
 );
 
 console.log('App rendered successfully');
