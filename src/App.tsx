@@ -6,7 +6,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QuotesProvider } from "@/contexts/QuotesProvider";
 import { ChatbotProvider } from "@/contexts/ChatbotContext";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 import Chatbot from "@/components/chatbot/Chatbot";
 import Navigation from "@/components/Navigation";
 import GlobalFooter from "@/components/GlobalFooter";
