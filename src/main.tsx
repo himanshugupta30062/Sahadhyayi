@@ -1,5 +1,5 @@
 
-import { StrictMode } from 'react';
+import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -9,6 +9,12 @@ import { initializeSecurity } from './utils/security';
 initializeSecurity();
 
 console.log('Main.tsx loading...');
+console.log('React object:', React);
+
+// Ensure React is available globally
+if (typeof window !== 'undefined') {
+  (window as any).React = React;
+}
 
 const container = document.getElementById("root");
 if (!container) {
