@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, RefreshCw, Star, Users, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';

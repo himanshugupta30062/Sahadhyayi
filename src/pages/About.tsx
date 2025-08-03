@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Target, Users, TrendingUp, Heart, Globe, Mail, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
