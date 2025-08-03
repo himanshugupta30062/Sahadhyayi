@@ -3,21 +3,21 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// Context imports
-import { AuthProvider } from "@/contexts/AuthContext";
-import { QuotesProvider } from "@/contexts/QuotesContext";
-import { ChatbotProvider } from "@/contexts/ChatbotContext";
+// Context imports - using explicit paths to avoid circular deps
+import { AuthProvider } from "./contexts/AuthContext";
+import { QuotesProvider } from "./contexts/QuotesContext";
+import { ChatbotProvider } from "./contexts/ChatbotContext";
 
 // UI component imports
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "./components/ui/tooltip";
+import { Toaster } from "./components/ui/toaster";
 
-// Component imports
-import ErrorBoundary from "@/components/ErrorBoundary";
-import Chatbot from "@/components/chatbot/Chatbot";
-import Navigation from "@/components/Navigation";
-import GlobalFooter from "@/components/GlobalFooter";
-import ScrollToTop from "@/components/ScrollToTop";
+// Component imports - using explicit paths
+import ErrorBoundary from "./components/ErrorBoundary";
+import Chatbot from "./components/chatbot/Chatbot";
+import Navigation from "./components/Navigation";
+import GlobalFooter from "./components/GlobalFooter";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Page imports
 import Index from "./pages/Index";
@@ -39,8 +39,8 @@ import NotFound from "./pages/NotFound";
 // CSS import
 import "./App.css";
 
-console.log('App.tsx: All imports loaded successfully');
-console.log('React version check:', React.version);
+console.log('App.tsx: Starting app initialization');
+console.log('React version:', React.version);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,12 +51,10 @@ const queryClient = new QueryClient({
   },
 });
 
-console.log('App component loading...');
+console.log('QueryClient created successfully');
 
 function App() {
   console.log('App component rendering...');
-  console.log('React in App:', !!React);
-  console.log('React hooks available:', !!React.useState);
   
   return (
     <ErrorBoundary>
