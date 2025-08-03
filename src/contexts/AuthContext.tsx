@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,15 +24,8 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   console.log('AuthProvider initializing...');
-  console.log('React object in AuthProvider:', React);
   
-  // Add safety check for React hooks
-  if (!React || typeof React.useState !== 'function') {
-    console.error('React hooks not available in AuthProvider');
-    return <div>Loading...</div>;
-  }
-  
-  // Initialize state with proper error handling
+  // Initialize state
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
