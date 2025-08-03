@@ -242,7 +242,7 @@ const SahadhyayiCircuit: React.FC = () => {
 
       {/* Right column: enhanced circuit diagram with all 8 lines visible */}
       <div className="w-full lg:w-3/5 relative min-h-[600px] lg:min-h-screen overflow-visible px-6 md:px-8 lg:px-12 py-8">
-        <div className="absolute inset-0" style={{ transform: 'translateX(-10%)' }}>
+        <div className="absolute inset-0 transform lg:-translate-x-[10%]">
           {/* Enhanced SVG with better gradients and all 8 lines */}
           <svg
             viewBox="0 0 100 100"
