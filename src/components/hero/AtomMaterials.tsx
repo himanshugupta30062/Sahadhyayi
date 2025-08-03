@@ -85,37 +85,32 @@ export const AtomShell: React.FC<AtomShellProps> = ({
         {letter}
       </span>
       
-      {/* Enhanced Tooltip */}
-      <div
-        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-6 rounded-xl transition-all duration-500 shadow-2xl z-[200] whitespace-nowrap text-base font-semibold pointer-events-none"
-        style={{
-          opacity: isHovered ? 1 : 0,
-          transform: isHovered ?
-            "translate(-50%, 0) scale(1)" :
-            "translate(-50%, 15px) scale(0.8)",
-          visibility: isHovered ? "visible" : "hidden",
-          background: `linear-gradient(135deg, rgba(0,0,0,0.95), rgba(0,0,0,0.85))`,
-          color: "#ffffff",
-          border: `2px solid ${material.border.match(/rgba\([^)]+\)/)?.[0] || material.border}`,
-          padding: "0.75rem 1.25rem",
-          backdropFilter: "blur(8px)",
-          boxShadow: material.glowEffect + ", 0 8px 32px rgba(0,0,0,0.3)",
-          minWidth: "120px",
-          textAlign: "center" as const,
-        }}
-      >
-        {letter} - {label}
+      {/* Enhanced Tooltip - Fixed positioning */}
+      {isHovered && (
         <div
-          className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45"
-          style={{ 
-            marginTop: "-6px", 
-            background: "linear-gradient(135deg, rgba(0,0,0,0.95), rgba(0,0,0,0.85))",
-            border: `2px solid ${material.border.match(/rgba\([^)]+\)/)?.[0] || material.border}`,
-            borderTop: "none",
-            borderLeft: "none"
+          className="fixed rounded-xl shadow-2xl whitespace-nowrap text-base font-semibold pointer-events-none z-[9999] animate-fade-in"
+          style={{
+            left: "50%",
+            top: "20%",
+            transform: "translate(-50%, -50%)",
+            background: "rgba(0, 0, 0, 0.95)",
+            color: "#ffffff",
+            border: `2px solid ${material.border.match(/rgba\([^)]+\)/)?.[0] || "#ffffff"}`,
+            padding: "0.75rem 1.25rem",
+            backdropFilter: "blur(12px)",
+            boxShadow: `${material.glowEffect}, 0 8px 32px rgba(0,0,0,0.5)`,
+            minWidth: "140px",
+            textAlign: "center" as const,
+            borderRadius: "12px",
           }}
-        />
-      </div>
+        >
+          <div className="flex items-center justify-center gap-2">
+            <span className="font-bold text-lg">{letter}</span>
+            <span className="text-gray-300">–</span>
+            <span className="font-semibold">{label}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
