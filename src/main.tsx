@@ -27,10 +27,12 @@ root.render(
 
 console.log('App rendered successfully');
 
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && window.isSecureContext) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(err => {
       console.error('Service Worker registration failed:', err);
     });
   });
+} else {
+  console.warn('Service Worker not registered: insecure context or unsupported browser');
 }
