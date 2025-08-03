@@ -113,6 +113,8 @@
     @apply bg-background text-foreground;
     padding-top: 0;
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Apply grayscale filter for a black and white theme */
+    filter: grayscale(100%);
   }
   
   /* Better scrollbar styling */
