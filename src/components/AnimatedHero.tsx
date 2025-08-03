@@ -1,29 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BookOpen, MessageCircle, Users, TrendingUp } from "lucide-react";
 import { AtomicRing } from "./hero/AtomicRing";
 import { OrbitingAtom } from "./hero/OrbitingAtom";
 import { FloatingIcon } from "./hero/FloatingIcon";
 import { HeroContent } from "./hero/HeroContent";
 
-// Configuration constants
-const RING_CONFIG = {
+// Desktop configuration
+const DESKTOP_RING_CONFIG = {
   outer: { radius: 340, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
   middle: { radius: 290, color: "#22c55e", rotation: 120, duration: 24 },
   inner: { radius: 250, color: "#3b82f6", rotation: 240, duration: 24 },
 };
 
-const ATOM_CONFIG = [
+const DESKTOP_ATOM_CONFIG = [
   {
     letter: "L",
     label: "Library",
     materialId: "white",
-    duration: 30, // Slower, more pleasant movement
+    duration: 30,
     initialAngle: 0,
-    orbitSwitchInterval: 20000, // Longer intervals for less chaotic movement
+    orbitSwitchInterval: 20000,
     size: 40,
   },
   {
-    letter: "A", 
+    letter: "A",
     label: "Authors",
     materialId: "white",
     duration: 25,
@@ -33,7 +33,7 @@ const ATOM_CONFIG = [
   },
   {
     letter: "S",
-    label: "Social Media", 
+    label: "Social Media",
     materialId: "white",
     duration: 35,
     initialAngle: 240,
@@ -42,40 +42,134 @@ const ATOM_CONFIG = [
   },
 ];
 
-const FLOATING_ICONS = [
+const DESKTOP_FLOATING_ICONS = [
   {
     Icon: BookOpen,
     position: { top: "12%", left: "12%" },
     color: "text-cyan-400",
     delay: 0,
+    size: 64,
   },
   {
     Icon: MessageCircle,
     position: { top: "12%", right: "12%" },
     color: "text-pink-400",
     delay: 1,
+    size: 64,
   },
   {
     Icon: Users,
     position: { bottom: "12%", left: "12%" },
     color: "text-purple-400",
     delay: 2,
+    size: 64,
   },
   {
     Icon: TrendingUp,
     position: { bottom: "12%", right: "12%" },
     color: "text-emerald-400",
     delay: 3,
+    size: 64,
+  },
+];
+
+// Mobile configuration
+const MOBILE_RING_CONFIG = {
+  outer: { radius: 180, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
+  middle: { radius: 150, color: "#22c55e", rotation: 120, duration: 24 },
+  inner: { radius: 120, color: "#3b82f6", rotation: 240, duration: 24 },
+};
+
+const MOBILE_ATOM_CONFIG = [
+  {
+    letter: "L",
+    label: "Library",
+    materialId: "white",
+    duration: 30,
+    initialAngle: 0,
+    orbitSwitchInterval: 20000,
+    size: 30,
+  },
+  {
+    letter: "A",
+    label: "Authors",
+    materialId: "white",
+    duration: 25,
+    initialAngle: 120,
+    orbitSwitchInterval: 25000,
+    size: 30,
+  },
+  {
+    letter: "S",
+    label: "Social Media",
+    materialId: "white",
+    duration: 35,
+    initialAngle: 240,
+    orbitSwitchInterval: 30000,
+    size: 30,
+  },
+];
+
+const MOBILE_FLOATING_ICONS = [
+  {
+    Icon: BookOpen,
+    position: { top: "8%", left: "8%" },
+    color: "text-cyan-400",
+    delay: 0,
+    size: 48,
+  },
+  {
+    Icon: MessageCircle,
+    position: { top: "8%", right: "8%" },
+    color: "text-pink-400",
+    delay: 1,
+    size: 48,
+  },
+  {
+    Icon: Users,
+    position: { bottom: "8%", left: "8%" },
+    color: "text-purple-400",
+    delay: 2,
+    size: 48,
+  },
+  {
+    Icon: TrendingUp,
+    position: { bottom: "8%", right: "8%" },
+    color: "text-emerald-400",
+    delay: 3,
+    size: 48,
   },
 ];
 
 const AnimatedHero: React.FC = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const ringConfig = isMobile ? MOBILE_RING_CONFIG : DESKTOP_RING_CONFIG;
+  const atomConfig = isMobile ? MOBILE_ATOM_CONFIG : DESKTOP_ATOM_CONFIG;
+  const floatingIcons = isMobile ? MOBILE_FLOATING_ICONS : DESKTOP_FLOATING_ICONS;
+  const maskSize = isMobile ? 260 : 420;
+  const ringStroke = isMobile ? 20 : 28;
+
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
   const [occupiedOrbits, setOccupiedOrbits] = useState<Record<string, number>>({
-    L: RING_CONFIG.outer.radius,
-    A: RING_CONFIG.middle.radius,
-    S: RING_CONFIG.inner.radius,
+    L: ringConfig.outer.radius,
+    A: ringConfig.middle.radius,
+    S: ringConfig.inner.radius,
   });
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    setOccupiedOrbits({
+      L: ringConfig.outer.radius,
+      A: ringConfig.middle.radius,
+      S: ringConfig.inner.radius,
+    });
+  }, [ringConfig]);
 
   const updateAtomOrbit = (atomLetter: string, newOrbit: number) => {
     setOccupiedOrbits(prev => ({
@@ -85,7 +179,7 @@ const AnimatedHero: React.FC = () => {
   };
 
   const getAvailableOrbits = (currentAtom: string) => {
-    const allOrbits = [RING_CONFIG.outer.radius, RING_CONFIG.middle.radius, RING_CONFIG.inner.radius];
+    const allOrbits = [ringConfig.outer.radius, ringConfig.middle.radius, ringConfig.inner.radius];
     const currentAtomOrbit = occupiedOrbits[currentAtom];
     
     return allOrbits.filter(orbit => {
@@ -97,13 +191,14 @@ const AnimatedHero: React.FC = () => {
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
       {/* Atomic Rings */}
-      {Object.values(RING_CONFIG).map((ring, index) => (
+      {Object.values(ringConfig).map((ring, index) => (
         <AtomicRing
           key={index}
           radius={ring.radius}
           color={ring.color}
           rotation={ring.rotation}
           duration={ring.duration}
+          strokeWidth={ringStroke}
           isPaused={isAnyAtomHovered}
         />
       ))}
@@ -112,8 +207,8 @@ const AnimatedHero: React.FC = () => {
       <div
         className="absolute rounded-full bg-black z-[2]"
         style={{
-          width: 420,
-          height: 420,
+          width: maskSize,
+          height: maskSize,
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
@@ -121,7 +216,7 @@ const AnimatedHero: React.FC = () => {
       />
 
       {/* Orbiting Atoms */}
-      {ATOM_CONFIG.map((atom, index) => (
+      {atomConfig.map((atom) => (
         <OrbitingAtom
           key={atom.letter}
           orbitRadius={occupiedOrbits[atom.letter]}
@@ -139,13 +234,14 @@ const AnimatedHero: React.FC = () => {
       ))}
 
       {/* Floating Icons */}
-      {FLOATING_ICONS.map((icon, index) => (
+      {floatingIcons.map((icon, index) => (
         <FloatingIcon
           key={index}
           Icon={icon.Icon}
           position={icon.position}
           color={icon.color}
           delay={icon.delay}
+          size={icon.size}
         />
       ))}
 
