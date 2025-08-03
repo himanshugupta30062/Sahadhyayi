@@ -1,7 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { BookOpen, Users, Globe, MessageCircle, MapPin, Zap } from 'lucide-react';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 /**
  * Right-angle path from center (50%,50%) to node.
@@ -181,24 +180,19 @@ const SahadhyayiCircuit: React.FC = () => {
       {nodes.map((node, i) => {
         const Icon = node.icon;
         return (
-          <Tooltip key={node.id}>
-            <TooltipTrigger asChild>
-              <div
-                onMouseEnter={() => setHoveredNode(node.id)}
-                onMouseLeave={() => setHoveredNode(null)}
-                className="absolute z-40 cursor-pointer transition-transform duration-200 hover:scale-110"
-                style={{ left: `${node.position.x}%`, top: `${node.position.y}%`, transform: 'translate(-50%, -50%)' }}
-              >
-                <div className={`p-3 rounded-xl bg-gradient-to-br ${hoveredNode===node.id? node.hoverColor : node.color} text-white shadow-lg flex items-center space-x-2`}>
-                  <Icon className="w-6 h-6" />
-                  <span className="whitespace-nowrap text-sm">{node.title}</span>
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <p className="max-w-xs text-center">{node.title}</p>
-            </TooltipContent>
-          </Tooltip>
+          <div
+            key={node.id}
+            onMouseEnter={() => setHoveredNode(node.id)}
+            onMouseLeave={() => setHoveredNode(null)}
+            className="absolute z-40 cursor-pointer transition-transform duration-200 hover:scale-110"
+            style={{ left: `${node.position.x}%`, top: `${node.position.y}%`, transform: 'translate(-50%, -50%)' }}
+            title={node.title}
+          >
+            <div className={`p-3 rounded-xl bg-gradient-to-br ${hoveredNode===node.id? node.hoverColor : node.color} text-white shadow-lg flex items-center space-x-2`}>
+              <Icon className="w-6 h-6" />
+              <span className="whitespace-nowrap text-sm">{node.title}</span>
+            </div>
+          </div>
         );
       })}
     </div>
