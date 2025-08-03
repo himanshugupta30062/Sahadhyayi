@@ -194,10 +194,23 @@
         sessionStorage.removeItem('redirectPath');
         history.replaceState(null, '', redirectPath);
       }
-      window.addEventListener('load', () => {
+
+      // Hide the loader as soon as the DOM is ready
+      const hideLoader = () => {
         const loader = document.getElementById('loader');
-        if (loader) loader.style.display = 'none';
-      });
+        if (loader) {
+          loader.style.display = 'none';
+        }
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideLoader);
+      } else {
+        hideLoader();
+      }
+
+      // Fallback in case DOMContentLoaded doesn't fire
+      window.addEventListener('load', hideLoader);
     </script>
     <!-- Google Search Console verification -->
     <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" /> -->
