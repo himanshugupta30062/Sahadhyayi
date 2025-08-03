@@ -75,9 +75,9 @@ const DESKTOP_FLOATING_ICONS = [
 
 // Mobile configuration (scaled-down desktop)
 const MOBILE_RING_CONFIG = {
-  outer: { radius: 200, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 170, color: "#22c55e", rotation: 120, duration: 20 },
-  inner: { radius: 140, color: "#3b82f6", rotation: 240, duration: 16 },
+  outer: { radius: 160, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
+  middle: { radius: 130, color: "#22c55e", rotation: 120, duration: 20 },
+  inner: { radius: 100, color: "#3b82f6", rotation: 240, duration: 16 },
 };
 
 const MOBILE_ATOM_CONFIG = [
@@ -88,7 +88,7 @@ const MOBILE_ATOM_CONFIG = [
     duration: 8, // Faster speed
     initialAngle: 0,
     orbitSwitchInterval: 20000,
-    size: 32,
+    size: 28,
   },
   {
     letter: "A",
@@ -97,7 +97,7 @@ const MOBILE_ATOM_CONFIG = [
     duration: 6, // Faster speed
     initialAngle: 120,
     orbitSwitchInterval: 25000,
-    size: 32,
+    size: 28,
   },
   {
     letter: "S",
@@ -106,38 +106,38 @@ const MOBILE_ATOM_CONFIG = [
     duration: 5, // Fastest speed
     initialAngle: 240,
     orbitSwitchInterval: 30000,
-    size: 32,
+    size: 28,
   },
 ];
 
 const MOBILE_FLOATING_ICONS = [
   {
     Icon: BookOpen,
-    position: { top: "8%", left: "8%" },
+    position: { top: "6%", left: "6%" },
     color: "text-cyan-400",
     delay: 0,
-    size: 48,
+    size: 40,
   },
   {
     Icon: MessageCircle,
-    position: { top: "8%", right: "8%" },
+    position: { top: "6%", right: "6%" },
     color: "text-pink-400",
     delay: 1,
-    size: 48,
+    size: 40,
   },
   {
     Icon: Users,
-    position: { bottom: "8%", left: "8%" },
+    position: { bottom: "6%", left: "6%" },
     color: "text-purple-400",
     delay: 2,
-    size: 48,
+    size: 40,
   },
   {
     Icon: TrendingUp,
-    position: { bottom: "8%", right: "8%" },
+    position: { bottom: "6%", right: "6%" },
     color: "text-emerald-400",
     delay: 3,
-    size: 48,
+    size: 40,
   },
 ];
 
@@ -146,7 +146,7 @@ const AnimatedHero: React.FC = () => {
   const ringConfig = isMobile ? MOBILE_RING_CONFIG : DESKTOP_RING_CONFIG;
   const atomConfig = isMobile ? MOBILE_ATOM_CONFIG : DESKTOP_ATOM_CONFIG;
   const floatingIcons = isMobile ? MOBILE_FLOATING_ICONS : DESKTOP_FLOATING_ICONS;
-  const ringStroke = isMobile ? 12 : 28; // Thinner rings for mobile
+  const ringStroke = isMobile ? 10 : 28; // Thinner rings for mobile
   const maskSize = ringConfig.inner.radius * 2 - (isMobile ? 40 : 80); // Smaller mask for mobile
 
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
