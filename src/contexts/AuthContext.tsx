@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,29 +25,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   console.log('AuthProvider initializing...');
-  console.log('React available in AuthProvider:', !!React);
-  console.log('useState available:', !!React?.useState);
   
-  // Add defensive check for React hooks availability
-  if (!React || typeof React.useState !== 'function') {
-    console.error('React hooks not available in AuthProvider');
-    return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        fontFamily: 'system-ui, sans-serif'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <h1>Loading...</h1>
-          <p>Initializing authentication...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // Initialize state
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
