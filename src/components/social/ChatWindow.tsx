@@ -4,8 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, X } from 'lucide-react';
-import { usePrivateMessages, useSendPrivateMessage } from '@/hooks/useMessages';
+import { Send, X, Check, CheckCheck } from 'lucide-react';
+import { usePrivateMessages, useSendPrivateMessage, useMarkMessagesAsRead } from '@/hooks/useMessages';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +25,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
   
   const { data: messages = [], refetch } = usePrivateMessages(friendId);
   const sendMessage = useSendPrivateMessage();
+  const markMessagesAsRead = useMarkMessagesAsRead();
 
   const { data: friendProfile } = useQuery({
     queryKey: ['friend-profile', friendId],
@@ -48,6 +49,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const markRead = async () => {
+      if (isOpen && friendId) {
+        const hasUnread = messages.some(m => m.sender_id === friendId && !m.is_read);
+        if (hasUnread) {
+          await markMessagesAsRead.mutateAsync(friendId);
+          await refetch();
+        }
+      }
+    };
+    markRead();
+  }, [messages, isOpen, friendId, markMessagesAsRead, refetch]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,8 +153,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
                   >
                     <p className="text-sm break-words">{msg.content}</p>
                   </div>
-                  <p className={`text-xs text-gray-500 mt-1 ${msg.sender_id === user?.id ? 'text-right' : 'text-left'}`}>
+                  <p
+                    className={`text-xs text-gray-500 mt-1 flex items-center ${
+                      msg.sender_id === user?.id ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
                     {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                    {msg.sender_id === user?.id && (
+                      msg.is_read ? (
+                        <CheckCheck className="w-3 h-3 ml-1 text-blue-500" />
+                      ) : (
+                        <Check className="w-3 h-3 ml-1 text-gray-400" />
+                      )
+                    )}
                   </p>
                 </div>
               </div>

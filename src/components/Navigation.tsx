@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { MessageDropdown } from "@/components/messages/MessageDropdown";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -125,6 +126,7 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 {user ? (
                   <>
+                    <MessageDropdown />
                     <NotificationDropdown />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -180,7 +182,12 @@ const Navigation = () => {
           {/* Mobile menu button */}
           {isMobile && (
             <div className="flex items-center space-x-2">
-              {user && <NotificationDropdown />}
+              {user && (
+                <>
+                  <MessageDropdown />
+                  <NotificationDropdown />
+                </>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
