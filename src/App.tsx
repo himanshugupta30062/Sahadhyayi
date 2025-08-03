@@ -11,6 +11,7 @@ import Chatbot from "@/components/chatbot/Chatbot";
 import Navigation from "@/components/Navigation";
 import GlobalFooter from "@/components/GlobalFooter";
 import ScrollToTop from "@/components/ScrollToTop";
+import { Toaster } from "@/components/ui/toaster";
 import Index from "./pages/Index";
 import BookLibrary from "./pages/BookLibrary";
 import BookDetails from "./pages/BookDetails";
@@ -26,7 +27,6 @@ import Map from "./pages/Map";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
-import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
 
 const queryClient = new QueryClient({
