@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback, memo } from 'react';
 
 // TypeScript interfaces for type safety
@@ -77,13 +78,16 @@ interface QuestionBubbleProps {
   setFocused: (id: string | null) => void;
 }
 
-// Enhanced CurrentLine component with animated gradients
+// Enhanced CurrentLine component with animated gradients - ensuring all lines are visible
 const CurrentLine = memo<CurrentLineProps>(({ id, x, y, hoveredId, color }) => (
-  <path
-    d={`M50,50 L${x},${y}`}
+  <line
+    x1="50"
+    y1="50"
+    x2={x}
+    y2={y}
     stroke={`url(#grad-${id})`}
-    strokeWidth={hoveredId === id ? 2.5 : 1.5}
-    className={`transition-all duration-300 ${hoveredId === id ? 'opacity-100 drop-shadow-lg' : 'opacity-60'}`}
+    strokeWidth={hoveredId === id ? 3 : 2}
+    className={`transition-all duration-300 ${hoveredId === id ? 'opacity-100' : 'opacity-70'}`}
     style={{
       filter: hoveredId === id ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))' : 'none'
     }}
@@ -106,7 +110,7 @@ const QuestionBubble = memo<QuestionBubbleProps>(({ id, x, y, label, color, hove
   return (
     <>
       <div
-        className="absolute cursor-pointer transform transition-all duration-300"
+        className="absolute cursor-pointer transform transition-all duration-300 z-10"
         style={{ 
           left: `${x}%`, 
           top: `${y}%`, 
@@ -156,7 +160,7 @@ const SahadhyayiCircuit: React.FC = () => {
     setFocused(id);
   }, []);
 
-  // Create gradient definitions for each line
+  // Create gradient definitions for each line - ensuring all 8 gradients are created
   const gradientDefs = useMemo(() => {
     return questions.map((q) => {
       const colors = {
@@ -179,7 +183,7 @@ const SahadhyayiCircuit: React.FC = () => {
     });
   }, []);
 
-  // Memoize lines with individual gradients
+  // Memoize lines - ensuring all 8 lines are rendered
   const lines = useMemo(() => {
     return questions.map((q) => (
       <CurrentLine
@@ -216,7 +220,7 @@ const SahadhyayiCircuit: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 opacity-50"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1)_0%,transparent_70%)]"></div>
       
-      {/* Left column: enhanced headline and call-to-action - made narrower */}
+      {/* Left column: enhanced headline and call-to-action */}
       <div className="w-full lg:w-2/5 flex flex-col justify-center px-6 md:px-8 lg:px-12 py-12 lg:py-0 space-y-8 z-10 relative">
         <div className="space-y-6">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
@@ -236,14 +240,15 @@ const SahadhyayiCircuit: React.FC = () => {
         </a>
       </div>
 
-      {/* Right column: enhanced circuit diagram - made wider with proper padding */}
-      <div className="w-full lg:w-3/5 relative min-h-[600px] lg:min-h-screen overflow-visible px-4 md:px-8 lg:px-12 py-8">
-        {/* Enhanced SVG with better gradients and filters */}
+      {/* Right column: enhanced circuit diagram with all 8 lines visible */}
+      <div className="w-full lg:w-3/5 relative min-h-[600px] lg:min-h-screen overflow-visible px-6 md:px-8 lg:px-16 py-8">
+        {/* Enhanced SVG with better gradients and all 8 lines */}
         <svg 
           viewBox="0 0 100 100" 
-          className="absolute inset-4 md:inset-8 w-[calc(100%-2rem)] md:w-[calc(100%-4rem)] h-[calc(100%-2rem)] md:h-[calc(100%-4rem)] pointer-events-none"
+          className="absolute inset-0 w-full h-full pointer-events-none z-0"
           aria-hidden="true"
           preserveAspectRatio="xMidYMid meet"
+          style={{ overflow: 'visible' }}
         >
           <defs>
             {gradientDefs}
@@ -255,17 +260,19 @@ const SahadhyayiCircuit: React.FC = () => {
               </feMerge>
             </filter>
           </defs>
-          {lines}
+          <g className="lines-group">
+            {lines}
+          </g>
         </svg>
 
         {/* Enhanced central hub with pulsing animation */}
-        <div className="absolute inset-4 md:inset-8 flex items-center justify-center z-10">
+        <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="relative">
             {/* Pulsing outer ring */}
             <div className="absolute inset-0 w-28 h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-30 animate-ping"></div>
             
             {/* Main hub */}
-            <div className="relative w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white text-base md:text-lg lg:text-xl font-bold shadow-2xl border-4 border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 cursor-default">
+            <div className="relative w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white text-base md:text-lg lg:text-xl font-bold shadow-2xl border-4 border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 cursor-default z-20">
               <span className="text-center leading-tight">Sahadhyayi</span>
               
               {/* Inner glow effect */}
@@ -274,13 +281,15 @@ const SahadhyayiCircuit: React.FC = () => {
           </div>
         </div>
 
-        {/* Enhanced question bubbles with proper positioning */}
-        <div className="absolute inset-4 md:inset-8 pointer-events-none">
-          {bubbles}
+        {/* Enhanced question bubbles with proper positioning - all 8 bubbles */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="relative w-full h-full">
+            {bubbles}
+          </div>
         </div>
         
         {/* Floating particles for extra visual appeal */}
-        <div className="absolute inset-4 md:inset-8 pointer-events-none">
+        <div className="absolute inset-0 pointer-events-none">
           {[...Array(12)].map((_, i) => (
             <div
               key={i}
