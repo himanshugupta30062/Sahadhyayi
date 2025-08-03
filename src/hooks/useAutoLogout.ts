@@ -59,7 +59,15 @@ export const useAutoLogout = () => {
     } catch (error) {
       console.error('[AUTO-LOGOUT] Error during auto logout:', error);
     }
-  }, [user, signOut, navigate, isProtectedRoute]);
+  }, [
+    user,
+    signOut,
+    navigate,
+    isProtectedRoute,
+    location.pathname,
+    location.search,
+    location.hash
+  ]);
 
   // Handle logout due to session timeout
   const handleSessionTimeout = React.useCallback(async () => {
@@ -87,7 +95,15 @@ export const useAutoLogout = () => {
     } catch (error) {
       console.error('[AUTO-LOGOUT] Error during session timeout:', error);
     }
-  }, [user, signOut, navigate, isProtectedRoute]);
+  }, [
+    user,
+    signOut,
+    navigate,
+    isProtectedRoute,
+    location.pathname,
+    location.search,
+    location.hash
+  ]);
 
   // Check if browser session is valid
   const checkBrowserSession = React.useCallback(() => {

@@ -126,7 +126,7 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
       console.error('Error in fetchPaginatedBooks:', error);
       throw error;
     }
-  }, [page, pageSize, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
+  }, [page, pageSize, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage]);
 
   const query = useQuery({
     queryKey: ['paginated-library-books', page, pageSize, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange],
