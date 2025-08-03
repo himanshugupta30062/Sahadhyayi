@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import UserDropdownMenu from "./UserDropdownMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
+import { MessageDropdown } from '@/components/messages/MessageDropdown';
 import { Button } from "@/components/ui/button";
 import { LogIn, UserPlus } from "lucide-react";
 
@@ -25,6 +26,7 @@ const AuthSection = () => {
 
   return user ? (
     <div className="flex items-center gap-2">
+      <MessageDropdown />
       <NotificationDropdown />
       <UserDropdownMenu />
     </div>

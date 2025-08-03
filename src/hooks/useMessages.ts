@@ -81,6 +81,102 @@ export const useSendPrivateMessage = () => {
   });
 };
 
+export const useUnreadMessagesCount = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['unread-messages-count', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+
+      const { count, error } = await supabase
+        .from('private_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', user.id)
+        .eq('is_read', false);
+
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+};
+
+export const useUnreadMessages = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['unread-messages', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('private_messages')
+        .select(`
+          *,
+          sender_profile:profiles!sender_id(id, full_name, profile_photo_url)
+        `)
+        .eq('receiver_id', user.id)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+};
+
+export const useMarkMessagesAsRead = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (senderId: string) => {
+      if (!user?.id) return;
+      const { error } = await supabase
+        .from('private_messages')
+        .update({ is_read: true })
+        .eq('sender_id', senderId)
+        .eq('receiver_id', user.id)
+        .eq('is_read', false);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['unread-messages', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['unread-messages-count', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['private-messages'] });
+    },
+  });
+};
+
+export const useMarkAllMessagesAsRead = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!user?.id) return;
+      const { error } = await supabase
+        .from('private_messages')
+        .update({ is_read: true })
+        .eq('receiver_id', user.id)
+        .eq('is_read', false);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['unread-messages', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['unread-messages-count', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['private-messages'] });
+    },
+  });
+};
+
 export const useGroupMessages = (groupId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
