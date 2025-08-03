@@ -8,8 +8,8 @@ import { HeroContent } from "./hero/HeroContent";
 // Desktop configuration
 const DESKTOP_RING_CONFIG = {
   outer: { radius: 340, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 290, color: "#22c55e", rotation: 120, duration: 24 },
-  inner: { radius: 250, color: "#3b82f6", rotation: 240, duration: 24 },
+  middle: { radius: 290, color: "#22c55e", rotation: 120, duration: 20 },
+  inner: { radius: 250, color: "#3b82f6", rotation: 240, duration: 16 },
 };
 
 const DESKTOP_ATOM_CONFIG = [
@@ -17,7 +17,7 @@ const DESKTOP_ATOM_CONFIG = [
     letter: "L",
     label: "Library",
     materialId: "white",
-    duration: 30,
+    duration: 24,
     initialAngle: 0,
     orbitSwitchInterval: 20000,
     size: 40,
@@ -26,7 +26,7 @@ const DESKTOP_ATOM_CONFIG = [
     letter: "A",
     label: "Authors",
     materialId: "white",
-    duration: 25,
+    duration: 20,
     initialAngle: 120,
     orbitSwitchInterval: 25000,
     size: 40,
@@ -35,7 +35,7 @@ const DESKTOP_ATOM_CONFIG = [
     letter: "S",
     label: "Social Media",
     materialId: "white",
-    duration: 35,
+    duration: 16,
     initialAngle: 240,
     orbitSwitchInterval: 30000,
     size: 40,
@@ -75,9 +75,9 @@ const DESKTOP_FLOATING_ICONS = [
 
 // Mobile configuration
 const MOBILE_RING_CONFIG = {
-  outer: { radius: 180, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 150, color: "#22c55e", rotation: 120, duration: 24 },
-  inner: { radius: 120, color: "#3b82f6", rotation: 240, duration: 24 },
+  outer: { radius: 160, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
+  middle: { radius: 130, color: "#22c55e", rotation: 120, duration: 20 },
+  inner: { radius: 100, color: "#3b82f6", rotation: 240, duration: 16 },
 };
 
 const MOBILE_ATOM_CONFIG = [
@@ -85,28 +85,28 @@ const MOBILE_ATOM_CONFIG = [
     letter: "L",
     label: "Library",
     materialId: "white",
-    duration: 30,
+    duration: 24,
     initialAngle: 0,
     orbitSwitchInterval: 20000,
-    size: 30,
+    size: 24,
   },
   {
     letter: "A",
     label: "Authors",
     materialId: "white",
-    duration: 25,
+    duration: 20,
     initialAngle: 120,
     orbitSwitchInterval: 25000,
-    size: 30,
+    size: 24,
   },
   {
     letter: "S",
     label: "Social Media",
     materialId: "white",
-    duration: 35,
+    duration: 16,
     initialAngle: 240,
     orbitSwitchInterval: 30000,
-    size: 30,
+    size: 24,
   },
 ];
 
@@ -146,8 +146,8 @@ const AnimatedHero: React.FC = () => {
   const ringConfig = isMobile ? MOBILE_RING_CONFIG : DESKTOP_RING_CONFIG;
   const atomConfig = isMobile ? MOBILE_ATOM_CONFIG : DESKTOP_ATOM_CONFIG;
   const floatingIcons = isMobile ? MOBILE_FLOATING_ICONS : DESKTOP_FLOATING_ICONS;
-  const maskSize = isMobile ? 260 : 420;
-  const ringStroke = isMobile ? 20 : 28;
+  const maskSize = isMobile ? 200 : 420;
+  const ringStroke = isMobile ? 16 : 28;
 
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
   const [occupiedOrbits, setOccupiedOrbits] = useState<Record<string, number>>({
