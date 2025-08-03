@@ -5,6 +5,13 @@ import App from './App.tsx';
 import './index.css';
 
 console.log('Main.tsx starting...');
+console.log('React available:', !!React);
+console.log('React.useState:', !!React.useState);
+
+// Ensure React hooks are available globally
+if (!window.React) {
+  window.React = React;
+}
 
 const container = document.getElementById("root");
 if (!container) {
@@ -13,9 +20,8 @@ if (!container) {
 
 const root = createRoot(container);
 
-console.log('Creating root with React:', !!React);
-
 const renderApp = () => {
+  console.log('Rendering app...');
   try {
     root.render(
       <StrictMode>
@@ -25,7 +31,7 @@ const renderApp = () => {
     console.log('App rendered successfully');
   } catch (error) {
     console.error('Error rendering app:', error);
-    // Simple fallback
+    // Simple fallback without StrictMode
     try {
       root.render(<App />);
       console.log('App rendered successfully (fallback)');
@@ -69,13 +75,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', renderApp);
 } else {
   renderApp();
-}
-
-// Service Worker registration (non-blocking)
-if ('serviceWorker' in navigator && window.isSecureContext) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => {
-      console.error('Service Worker registration failed:', err);
-    });
-  });
 }
