@@ -156,15 +156,19 @@ const SahadhyayiCapabilities: React.FC = () => {
   const [windowCount, setWindowCount] = useState(3);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [gap, setGap] = useState(1.5); // gap size in rems
 
   const updateWindowCount = useCallback(() => {
     const width = window.innerWidth;
     if (width < 640) {
       setWindowCount(1);
+      setGap(1); // smaller gap on mobile
     } else if (width < 1024) {
       setWindowCount(2);
+      setGap(1.5);
     } else {
       setWindowCount(3);
+      setGap(1.5);
     }
   }, []);
 
@@ -208,17 +212,17 @@ const SahadhyayiCapabilities: React.FC = () => {
 
   return (
     <section
-      className="py-16 px-4 bg-black text-white overflow-hidden"
+      className="py-12 sm:py-16 px-4 bg-black text-white overflow-hidden"
       aria-label="Sahadhyayi capabilities carousel"
       role="region"
     >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
             Explore Sahadhyayi's <span className="text-teal-400">Capabilities</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-4xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-300 max-w-4xl mx-auto">
             Discover how Sahadhyayi transforms reading into community, insight, and influence—bringing books, people, and ideas together in one intelligent ecosystem.
           </p>
         </div>
@@ -231,8 +235,8 @@ const SahadhyayiCapabilities: React.FC = () => {
         >
           <div className="overflow-hidden">
             <div
-              className="flex gap-6 transition-transform duration-700"
-              style={{ transform: `translateX(-${(currentIndex * 100) / windowCount}%)` }}
+              className="flex gap-4 sm:gap-6 transition-transform duration-700"
+              style={{ transform: `translateX(calc(-${(currentIndex * 100) / windowCount}% - ${currentIndex * gap}rem))` }}
             >
               {capabilities.map((capability, index) => {
                 const Icon = capability.icon;
