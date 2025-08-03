@@ -2,16 +2,16 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ErrorBoundary from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QuotesProvider } from "@/contexts/QuotesContext";
 import { ChatbotProvider } from "@/contexts/ChatbotContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Chatbot from "@/components/chatbot/Chatbot";
 import Navigation from "@/components/Navigation";
 import GlobalFooter from "@/components/GlobalFooter";
 import ScrollToTop from "@/components/ScrollToTop";
-import { Toaster } from "@/components/ui/toaster";
 import Index from "./pages/Index";
 import BookLibrary from "./pages/BookLibrary";
 import BookDetails from "./pages/BookDetails";
