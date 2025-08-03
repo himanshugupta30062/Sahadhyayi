@@ -26,7 +26,13 @@ console.log('Root container found');
 
 function initializeApp() {
   console.log('Initializing app with ReactLoader...');
-  
+
+  // Ensure any initial loader is removed once React starts initializing
+  const initialLoader = document.getElementById('loader');
+  if (initialLoader) {
+    initialLoader.style.display = 'none';
+  }
+
   try {
     const root = createRoot(container);
     console.log('React root created successfully');
