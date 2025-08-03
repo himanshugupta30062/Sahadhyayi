@@ -11,6 +11,7 @@ interface FloatingIconProps {
   };
   color: string;
   delay: number;
+  size?: number;
 }
 
 export const FloatingIcon: React.FC<FloatingIconProps> = ({
@@ -18,21 +19,24 @@ export const FloatingIcon: React.FC<FloatingIconProps> = ({
   position,
   color,
   delay,
+  size = 64,
 }) => {
   return (
     <div
-      className="absolute w-16 h-16 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl transition-all duration-500 hover:scale-110 z-[3]"
+      className="absolute flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm shadow-2xl transition-all duration-500 hover:scale-110 z-[3]"
       style={{
         ...position,
+        width: size,
+        height: size,
         animation: `iconPulse 4s ease-in-out infinite`,
         animationDelay: `${delay}s`,
       }}
     >
-      <Icon size={32} className={color} />
+      <Icon size={size / 2} className={color} />
       <style>{`
         @keyframes iconPulse {
-          0%, 100% { 
-            opacity: 0.8; 
+          0%, 100% {
+            opacity: 0.8;
             transform: scale(1);
           }
           50% { 
