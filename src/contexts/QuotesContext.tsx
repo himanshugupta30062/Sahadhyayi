@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import * as React from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 export interface Quote {
   id: number;
@@ -24,7 +25,7 @@ export const useQuotes = () => {
   return context;
 };
 
-export const QuotesProvider = ({ children }: { children: ReactNode }) => {
+export const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
 
   useEffect(() => {
