@@ -77,61 +77,54 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         height: orbitSize,
         left: `calc(50% - ${currentOrbitRadius}px)`,
         top: `calc(50% - ${currentOrbitRadius}px)`,
-        transition: "all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)", // Smooth, pleasant easing
-        opacity: isTransitioning ? 0.7 : 1, // Subtle fade during transition
+        transition: "all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        opacity: isTransitioning ? 0.7 : 1,
       }}
     >
+      {/* SVG path for offset-path animation */}
+      <svg
+        width={orbitSize}
+        height={orbitSize}
+        className="absolute inset-0 pointer-events-none"
+        style={{ overflow: "visible" }}
+      >
+        <defs>
+          <path
+            id={`half-circle-path-${currentOrbitRadius}`}
+            d={`M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}`}
+          />
+        </defs>
+      </svg>
+      
       <div
-        className="group w-full h-full absolute"
+        className="absolute pointer-events-auto"
         style={{
-          animation: (isHovered || isTransitioning) ? "none" : `complementaryOrbit-${duration} ${duration}s linear infinite`,
-          transformOrigin: "50% 50%",
+          offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
+          offsetRotate: "auto",
+          animation: (isHovered || isTransitioning) ? "none" : `moveAtom-${duration} ${duration}s linear infinite`,
+        }}
+        onMouseEnter={() => {
+          setIsHovered(true);
+          onHoverChange?.(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          onHoverChange?.(false);
         }}
       >
-        <div
-          className="absolute pointer-events-auto"
-          style={{
-            left: "50%",
-            top: "0%",
-            transform: "translate(-50%, -50%)",
-          }}
-          onMouseEnter={() => {
-            setIsHovered(true);
-            onHoverChange?.(true);
-          }}
-          onMouseLeave={() => {
-            setIsHovered(false);
-            onHoverChange?.(false);
-          }}
-        >
-          <div
-            style={{
-              animation: (isHovered || isTransitioning) ? "none" : `complementaryCounterRotate-${duration} ${duration}s linear infinite`,
-            }}
-          >
-            <AtomShell
-              material={material}
-              letter={letter}
-              label={label}
-              isHovered={isHovered}
-              size={size}
-            />
-          </div>
-        </div>
+        <AtomShell
+          material={material}
+          letter={letter}
+          label={label}
+          isHovered={isHovered}
+          size={size}
+        />
       </div>
       
       <style>{`
-        @keyframes complementaryOrbit-${duration} {
-          0% { transform: rotate(0deg); }
-          33.33% { transform: rotate(120deg); }
-          33.34% { transform: rotate(0deg); }
-          100% { transform: rotate(120deg); }
-        }
-        @keyframes complementaryCounterRotate-${duration} {
-          0% { transform: rotate(0deg); }
-          33.33% { transform: rotate(-120deg); }
-          33.34% { transform: rotate(0deg); }
-          100% { transform: rotate(-120deg); }
+        @keyframes moveAtom-${duration} {
+          0% { offset-distance: 0%; }
+          100% { offset-distance: 100%; }
         }
       `}</style>
     </div>
