@@ -9,6 +9,8 @@ interface UseSpeechToTextOptions {
 
 export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOptions) => {
   console.log('useSpeechToText hook called...');
+  console.log('React available in useSpeechToText:', !!React);
+  console.log('React.useState available:', typeof React.useState);
   
   // Add safety check for React hooks
   if (!React || typeof React.useState !== 'function') {

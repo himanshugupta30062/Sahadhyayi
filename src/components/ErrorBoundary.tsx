@@ -1,29 +1,34 @@
 
-import React, { Component, ReactNode, ErrorInfo } from 'react';
+import * as React from 'react';
 
 interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
 }
 
-class ErrorBoundary extends Component<
-  { children: ReactNode },
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
   ErrorBoundaryState
 > {
-  constructor(props: { children: ReactNode }) {
+  constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
+    console.log('ErrorBoundary constructor, React available:', !!React);
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    console.log('ErrorBoundary getDerivedStateFromError, React available:', !!React);
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error boundary caught an error:', error, errorInfo);
+    console.log('ErrorBoundary componentDidCatch, React available:', !!React);
   }
 
   render() {
+    console.log('ErrorBoundary render, React available:', !!React);
+    
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
