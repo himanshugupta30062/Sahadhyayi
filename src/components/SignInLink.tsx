@@ -5,17 +5,6 @@ import { Link, useLocation, type LinkProps } from 'react-router-dom';
 const SignInLink: FC<Omit<LinkProps, 'to'>> = ({ children, onClick, ...props }) => {
   console.log('SignInLink rendering...');
   
-  // Add safety check for React hooks - use the global React reference
-  const globalReact = (globalThis as any).React || React;
-  if (!globalReact || typeof globalReact.useContext !== 'function') {
-    console.error('React hooks not available in SignInLink');
-    return (
-      <a href="/signin" onClick={onClick} {...props}>
-        {children}
-      </a>
-    );
-  }
-
   try {
     const location = useLocation();
     const redirect = `${location.pathname}${location.search}${location.hash}`;

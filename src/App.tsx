@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -41,40 +40,6 @@ console.log('App component loading...');
 
 function App() {
   console.log('App component rendering...');
-  console.log('React in App component:', !!React);
-  
-  // Enhanced React availability check
-  const reactInstance = React || (globalThis as any).React || (typeof window !== 'undefined' ? (window as any).React : null);
-  
-  if (!reactInstance || typeof reactInstance.createElement !== 'function') {
-    console.error('React not properly initialized in App component');
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Verify React hooks are available
-  if (!reactInstance.useState || !reactInstance.useEffect || !reactInstance.useContext) {
-    console.error('React hooks not available in App component');
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">Application initialization error. Please refresh the page.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
-          >
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    );
-  }
   
   return (
     <ErrorBoundary>
