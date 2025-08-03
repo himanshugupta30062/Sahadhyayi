@@ -1,222 +1,275 @@
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
 import { 
   Book, 
   Users, 
   MessageCircle, 
   MapPin, 
-  Star, 
-  BookOpen, 
-  UserPlus, 
-  Search,
   Zap,
-  Heart,
+  Star,
+  BookOpen,
+  Search,
+  UserPlus,
   Share2,
+  Heart,
   Globe
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const SahadhyayiCircuit: React.FC = () => {
-  const features = [
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+
+  const nodes = [
     {
       id: 'library',
       title: 'Digital Library',
-      description: 'Access thousands of books',
       icon: Book,
-      position: { top: '20%', left: '10%' },
-      connections: ['hub'],
-      subFeatures: [
-        { name: 'Book Reviews', icon: Star },
-        { name: 'Reading Progress', icon: BookOpen },
-        { name: 'Book Search', icon: Search }
+      position: { top: '15%', left: '20%' },
+      color: 'from-emerald-400 to-teal-500',
+      hoverColor: 'from-emerald-300 to-teal-400',
+      features: [
+        { name: 'Book Reviews & Ratings', icon: Star },
+        { name: 'Reading Progress Tracker', icon: BookOpen },
+        { name: 'Advanced Search & Filters', icon: Search },
+        { name: '10K+ Books Available', icon: Book }
       ]
     },
     {
       id: 'authors',
       title: 'Authors Connect',
-      description: 'Connect with your favorite authors',
       icon: Users,
-      position: { top: '20%', right: '10%' },
-      connections: ['hub'],
-      subFeatures: [
-        { name: 'Author Chat', icon: MessageCircle },
-        { name: 'Live Events', icon: Zap },
-        { name: 'Follow Authors', icon: UserPlus }
+      position: { top: '15%', right: '20%' },
+      color: 'from-purple-400 to-indigo-500',
+      hoverColor: 'from-purple-300 to-indigo-400',
+      features: [
+        { name: 'Live Author Sessions', icon: MessageCircle },
+        { name: 'Q&A with Writers', icon: Users },
+        { name: 'Follow Your Favorites', icon: UserPlus },
+        { name: '100+ Featured Authors', icon: Users }
       ]
     },
     {
       id: 'social',
       title: 'Social Community',
-      description: 'Connect with fellow readers',
       icon: MessageCircle,
-      position: { bottom: '20%', left: '10%' },
-      connections: ['hub'],
-      subFeatures: [
-        { name: 'Reading Feed', icon: Share2 },
-        { name: 'Friends Chat', icon: MessageCircle },
-        { name: 'Like & Share', icon: Heart }
+      position: { bottom: '15%', left: '20%' },
+      color: 'from-pink-400 to-rose-500',
+      hoverColor: 'from-pink-300 to-rose-400',
+      features: [
+        { name: 'Reading Feed & Updates', icon: Share2 },
+        { name: 'Friends Chat & Groups', icon: MessageCircle },
+        { name: 'Like, Share & Comment', icon: Heart },
+        { name: '5K+ Active Readers', icon: Users }
       ]
     },
     {
       id: 'map',
       title: 'Reader Map',
-      description: 'Discover readers worldwide',
       icon: MapPin,
-      position: { bottom: '20%', right: '10%' },
-      connections: ['hub'],
-      subFeatures: [
-        { name: 'Global Map', icon: Globe },
-        { name: 'Local Readers', icon: MapPin },
-        { name: 'Reading Groups', icon: Users }
+      position: { bottom: '15%', right: '20%' },
+      color: 'from-orange-400 to-amber-500',
+      hoverColor: 'from-orange-300 to-amber-400',
+      features: [
+        { name: 'Global Reader Network', icon: Globe },
+        { name: 'Find Local Book Clubs', icon: MapPin },
+        { name: 'Reading Groups Nearby', icon: Users },
+        { name: '50+ Countries Connected', icon: Globe }
       ]
     }
   ];
 
-  const hubPosition = { top: '50%', left: '50%' };
+  const createCurvedPath = (node: typeof nodes[0]) => {
+    const centerX = 50;
+    const centerY = 50;
+    
+    let nodeX, nodeY;
+    if (node.position.left) {
+      nodeX = parseFloat(node.position.left);
+      nodeY = node.position.top ? parseFloat(node.position.top) : (100 - parseFloat(node.position.bottom!));
+    } else {
+      nodeX = 100 - parseFloat(node.position.right!);
+      nodeY = node.position.top ? parseFloat(node.position.top) : (100 - parseFloat(node.position.bottom!));
+    }
+
+    // Add some curve to the path
+    const controlX = (centerX + nodeX) / 2 + (Math.random() - 0.5) * 10;
+    const controlY = (centerY + nodeY) / 2 + (Math.random() - 0.5) * 10;
+
+    return `M ${centerX}% ${centerY}% Q ${controlX}% ${controlY}% ${nodeX}% ${nodeY}%`;
+  };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 relative overflow-hidden">
-      {/* Background Circuit Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <svg width="100%" height="100%" viewBox="0 0 1000 1000" className="w-full h-full">
-          <defs>
-            <pattern id="circuit" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-              <circle cx="50" cy="50" r="2" fill="currentColor"/>
-              <line x1="0" y1="50" x2="100" y2="50" stroke="currentColor" strokeWidth="1"/>
-              <line x1="50" y1="0" x2="50" y2="100" stroke="currentColor" strokeWidth="1"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#circuit)"/>
-        </svg>
-      </div>
-
-      <div className="relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Sahadhyayi Circuit</h2>
-          <p className="text-xl text-gray-600">Your interconnected reading ecosystem</p>
+    <TooltipProvider>
+      <div className="w-full min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+        {/* Animated Circuit Background */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 to-blue-600/10"></div>
+          <svg width="100%" height="100%" className="absolute inset-0">
+            <defs>
+              <pattern id="circuit-grid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+                <circle cx="30" cy="30" r="1" fill="currentColor" className="text-cyan-400/30"/>
+                <line x1="0" y1="30" x2="60" y2="30" stroke="currentColor" strokeWidth="0.5" className="text-cyan-400/20"/>
+                <line x1="30" y1="0" x2="30" y2="60" stroke="currentColor" strokeWidth="0.5" className="text-cyan-400/20"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#circuit-grid)"/>
+          </svg>
         </div>
 
-        <div className="relative w-full h-[800px]">
-          {/* Connection Lines */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
-            {features.map((feature) => (
-              <g key={`connection-${feature.id}`}>
-                <line
-                  x1="50%"
-                  y1="50%"
-                  x2={feature.position.left ? `${parseFloat(feature.position.left) + 15}%` : `${100 - parseFloat(feature.position.right!) - 15}%`}
-                  y2={feature.position.top ? `${parseFloat(feature.position.top) + 10}%` : `${100 - parseFloat(feature.position.bottom!) - 10}%`}
-                  stroke="#3B82F6"
-                  strokeWidth="3"
-                  strokeDasharray="10,5"
-                  className="animate-pulse"
-                />
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="4"
-                  fill="#3B82F6"
-                  className="animate-ping"
-                />
-              </g>
-            ))}
-          </svg>
-
-          {/* Central Hub */}
-          <div 
-            className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"
-            style={{ 
-              top: hubPosition.top, 
-              left: hubPosition.left 
-            }}
-          >
-            <Card className="w-64 h-64 border-4 border-blue-500 shadow-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white hover:scale-105 transition-transform duration-300">
-              <CardContent className="flex flex-col items-center justify-center h-full p-6">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-                  <Zap className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-center mb-2">Sahadhyayi Hub</h3>
-                <p className="text-center text-blue-100">Central Connection Point</p>
-              </CardContent>
-            </Card>
+        <div className="relative z-10 py-16 px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold text-white mb-6 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              Sahadhyayi Circuit
+            </h2>
+            <p className="text-xl text-blue-200 max-w-2xl mx-auto">
+              Your interconnected digital reading ecosystem where every connection enhances your literary journey
+            </p>
           </div>
 
-          {/* Feature Cards */}
-          {features.map((feature) => {
-            const IconComponent = feature.icon;
-            return (
-              <div
-                key={feature.id}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
-                style={{
-                  top: feature.position.top || 'auto',
-                  bottom: feature.position.bottom || 'auto',
-                  left: feature.position.left || 'auto',
-                  right: feature.position.right || 'auto',
-                }}
-              >
-                <Card className="w-80 border-2 border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-white">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <IconComponent className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{feature.title}</CardTitle>
-                        <CardDescription>{feature.description}</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-sm text-gray-700 mb-2">Key Features:</h4>
-                      {feature.subFeatures.map((subFeature, index) => {
-                        const SubIcon = subFeature.icon;
-                        return (
-                          <div key={index} className="flex items-center space-x-2">
-                            <SubIcon className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm text-gray-600">{subFeature.name}</span>
-                          </div>
-                        );
-                      })}
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full mt-3 hover:bg-blue-50"
-                      >
-                        Explore {feature.title}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+          <div className="relative w-full h-[600px] max-w-6xl mx-auto">
+            {/* Connection Lines */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
+              <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge> 
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              {nodes.map((node) => (
+                <g key={`connection-${node.id}`}>
+                  <path
+                    d={createCurvedPath(node)}
+                    fill="none"
+                    stroke="url(#connectionGradient)"
+                    strokeWidth="2"
+                    filter="url(#glow)"
+                    className={`transition-all duration-500 ${
+                      hoveredNode === node.id ? 'opacity-100' : 'opacity-60'
+                    }`}
+                    style={{
+                      animation: 'dashFlow 3s linear infinite'
+                    }}
+                    strokeDasharray="8,4"
+                  />
+                </g>
+              ))}
+              <defs>
+                <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#22d3ee" />
+                  <stop offset="50%" stopColor="#3b82f6" />
+                  <stop offset="100%" stopColor="#6366f1" />
+                </linearGradient>
+              </defs>
+            </svg>
+
+            {/* Central Glowing Hub */}
+            <div 
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"
+              style={{ 
+                top: '50%', 
+                left: '50%' 
+              }}
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full blur-xl opacity-60 animate-pulse"></div>
+                <div className="relative bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 rounded-full w-32 h-32 flex items-center justify-center shadow-2xl border border-cyan-300/30">
+                  <Zap className="w-16 h-16 text-white drop-shadow-lg animate-pulse" />
+                </div>
+                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                  <h3 className="text-xl font-bold text-white text-center bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                    Sahadhyayi Hub
+                  </h3>
+                </div>
               </div>
-            );
-          })}
+            </div>
+
+            {/* Floating Feature Nodes */}
+            {nodes.map((node) => {
+              const IconComponent = node.icon;
+              const isHovered = hoveredNode === node.id;
+              
+              return (
+                <Tooltip key={node.id}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer"
+                      style={{
+                        top: node.position.top || 'auto',
+                        bottom: node.position.bottom || 'auto',
+                        left: node.position.left || 'auto',
+                        right: node.position.right || 'auto',
+                      }}
+                      onMouseEnter={() => setHoveredNode(node.id)}
+                      onMouseLeave={() => setHoveredNode(null)}
+                    >
+                      <div className={`relative transition-all duration-300 ${
+                        isHovered ? 'scale-110' : 'scale-100'
+                      }`}>
+                        {/* Glow Effect */}
+                        <div className={`absolute inset-0 bg-gradient-to-br ${node.color} rounded-2xl blur-lg opacity-40 transition-opacity duration-300 ${
+                          isHovered ? 'opacity-70' : 'opacity-40'
+                        }`}></div>
+                        
+                        {/* Node Content */}
+                        <div className={`relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 transition-all duration-300 ${
+                          isHovered ? 'bg-white/95 shadow-2xl' : ''
+                        }`}>
+                          <div className="flex flex-col items-center text-center space-y-3">
+                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${isHovered ? node.hoverColor : node.color} flex items-center justify-center shadow-lg transition-all duration-300`}>
+                              <IconComponent className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-gray-800 text-sm leading-tight">{node.title}</h3>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs p-4 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl">
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                        <IconComponent className="w-4 h-4" />
+                        {node.title}
+                      </h4>
+                      <div className="space-y-2">
+                        {node.features.map((feature, index) => {
+                          const FeatureIcon = feature.icon;
+                          return (
+                            <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
+                              <FeatureIcon className="w-3 h-3 text-gray-400" />
+                              <span>{feature.name}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center mt-16">
+            <div className="inline-flex items-center justify-center px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <Zap className="w-5 h-5 mr-2" />
+              Explore the Circuit
+            </div>
+          </div>
         </div>
 
-        {/* Bottom Stats */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="text-center p-6">
-            <h3 className="text-2xl font-bold text-blue-600">10K+</h3>
-            <p className="text-gray-600">Books Available</p>
-          </Card>
-          <Card className="text-center p-6">
-            <h3 className="text-2xl font-bold text-green-600">5K+</h3>
-            <p className="text-gray-600">Active Readers</p>
-          </Card>
-          <Card className="text-center p-6">
-            <h3 className="text-2xl font-bold text-purple-600">100+</h3>
-            <p className="text-gray-600">Featured Authors</p>
-          </Card>
-          <Card className="text-center p-6">
-            <h3 className="text-2xl font-bold text-orange-600">50+</h3>
-            <p className="text-gray-600">Countries</p>
-          </Card>
-        </div>
+        <style jsx>{`
+          @keyframes dashFlow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -24; }
+          }
+        `}</style>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
