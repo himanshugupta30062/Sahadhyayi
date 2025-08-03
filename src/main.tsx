@@ -8,66 +8,112 @@ import { initializeSecurity } from './utils/security';
 console.log('Main.tsx starting...');
 console.log('React object before init:', React);
 
-// CRITICAL: Ensure React is available globally BEFORE anything else initializes
-// This must happen synchronously before any component or hook is loaded
-const globalReact = React;
+// CRITICAL: Complete React initialization strategy
+// We need to ensure React is available through ALL possible access patterns
 
-// Set React on window object immediately
+// 1. Store the original React reference
+const originalReact = React;
+
+// 2. Ensure React is available on window (for browser environment)
 if (typeof window !== 'undefined') {
-  (window as any).React = globalReact;
+  (window as any).React = originalReact;
   console.log('React set on window:', (window as any).React);
-  
-  // Also ensure React hooks are directly available on window
-  (window as any).ReactHooks = {
-    useState: globalReact.useState,
-    useEffect: globalReact.useEffect,
-    useContext: globalReact.useContext,
-    useCallback: globalReact.useCallback,
-    useMemo: globalReact.useMemo,
-    useRef: globalReact.useRef,
-    useReducer: globalReact.useReducer,
-  };
 }
 
-// Make React hooks available globally to prevent null reference errors
-Object.assign(globalThis, {
-  React: globalReact,
-  ReactHooks: {
-    useState: globalReact.useState,
-    useEffect: globalReact.useEffect,
-    useContext: globalReact.useContext,
-    useCallback: globalReact.useCallback,
-    useMemo: globalReact.useMemo,
-    useRef: globalReact.useRef,
-    useReducer: globalReact.useReducer,
-  }
-});
+// 3. Ensure React is available on globalThis (cross-platform)
+(globalThis as any).React = originalReact;
 
-// Ensure React doesn't get garbage collected or overwritten
+// 4. Ensure React is available on global (Node.js style, some dependencies might expect this)
+if (typeof global !== 'undefined') {
+  (global as any).React = originalReact;
+}
+
+// 5. Override any potential undefined access to React
 Object.defineProperty(globalThis, 'React', {
-  value: globalReact,
+  value: originalReact,
   writable: false,
   enumerable: true,
   configurable: false
 });
 
+// 6. Set up a React hooks proxy that always points to the original React hooks
+const createHooksProxy = () => ({
+  useState: originalReact.useState,
+  useEffect: originalReact.useEffect,
+  useContext: originalReact.useContext,
+  useCallback: originalReact.useCallback,
+  useMemo: originalReact.useMemo,
+  useRef: originalReact.useRef,
+  useReducer: originalReact.useReducer,
+  useLayoutEffect: originalReact.useLayoutEffect,
+  useImperativeHandle: originalReact.useImperativeHandle,
+  useDebugValue: originalReact.useDebugValue,
+});
+
+// 7. Make hooks available globally through multiple access patterns
+const hooksProxy = createHooksProxy();
+
+// Set hooks on window
+if (typeof window !== 'undefined') {
+  (window as any).ReactHooks = hooksProxy;
+  // Also set individual hooks directly on window for maximum compatibility
+  Object.keys(hooksProxy).forEach(hookName => {
+    (window as any)[hookName] = (hooksProxy as any)[hookName];
+  });
+}
+
+// Set hooks on globalThis
+(globalThis as any).ReactHooks = hooksProxy;
+
+// Set individual hooks on globalThis
+Object.keys(hooksProxy).forEach(hookName => {
+  (globalThis as any)[hookName] = (hooksProxy as any)[hookName];
+});
+
+// 8. Create a comprehensive React object that includes everything
+const comprehensiveReact = {
+  ...originalReact,
+  ...hooksProxy,
+};
+
+// 9. Override common access patterns
+if (typeof window !== 'undefined') {
+  (window as any).React = comprehensiveReact;
+}
+(globalThis as any).React = comprehensiveReact;
+
+// 10. Patch any potential module access patterns
+const moduleExports = {
+  React: comprehensiveReact,
+  default: comprehensiveReact,
+  ...hooksProxy
+};
+
+// Set up module-style exports
+if (typeof module !== 'undefined' && module.exports) {
+  Object.assign(module.exports, moduleExports);
+}
+
+// 11. Final verification
+console.log('React initialization verification:', {
+  React: !!originalReact,
+  ReactOnWindow: !!(typeof window !== 'undefined' && (window as any).React),
+  ReactOnGlobalThis: !!(globalThis as any).React,
+  useStateAvailable: !!originalReact.useState,
+  useContextAvailable: !!originalReact.useContext,
+  useRefAvailable: !!originalReact.useRef,
+});
+
 // Strict verification that React is properly initialized
-if (!globalReact || typeof globalReact.createElement !== 'function') {
+if (!originalReact || typeof originalReact.createElement !== 'function') {
   console.error('React is not properly initialized!');
   throw new Error('React initialization failed - cannot proceed');
 }
 
-if (!globalReact.useState || !globalReact.useEffect || !globalReact.useContext) {
+if (!originalReact.useState || !originalReact.useEffect || !originalReact.useContext) {
   console.error('React hooks are not properly initialized!');
   throw new Error('React hooks initialization failed - cannot proceed');
 }
-
-console.log('React hooks verified:', {
-  useState: !!globalReact.useState,
-  useEffect: !!globalReact.useEffect,
-  useContext: !!globalReact.useContext,
-  useRef: !!globalReact.useRef,
-});
 
 // Initialize security measures after React is ready
 initializeSecurity();
@@ -79,13 +125,13 @@ if (!container) {
 
 const root = createRoot(container);
 
-console.log('Creating root with React:', !!globalReact);
+console.log('Creating root with React:', !!originalReact);
 
-// Simple, direct render
+// Simple, direct render with additional safety checks
 const renderApp = () => {
   try {
     // Final verification React is still available at render time
-    if (!globalReact || !globalReact.createElement || !globalReact.useState) {
+    if (!originalReact || !originalReact.createElement || !originalReact.useState) {
       console.error('React became unavailable before render');
       window.location.reload();
       return;
@@ -105,8 +151,35 @@ const renderApp = () => {
       console.log('App rendered successfully (fallback)');
     } catch (fallbackError) {
       console.error('Fallback render also failed:', fallbackError);
-      // Final fallback - reload page
-      window.location.reload();
+      // Final fallback - show error message
+      root.render(
+        <div style={{ 
+          minHeight: '100vh', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          fontFamily: 'system-ui, sans-serif'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <h1>Application Error</h1>
+            <p>Please refresh the page to try again.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              style={{ 
+                marginTop: '20px', 
+                padding: '10px 20px', 
+                background: '#007bff', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
     }
   }
 };

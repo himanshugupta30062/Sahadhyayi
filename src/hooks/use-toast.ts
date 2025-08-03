@@ -171,8 +171,10 @@ function toast({ ...props }: Toast) {
 function useToast() {
   console.log('useToast hook called...');
   
-  // Add safety check for React hooks
-  if (!React || typeof React.useState !== 'function') {
+  // Enhanced safety check for React hooks with multiple fallback strategies
+  const reactInstance = React || (globalThis as any).React || (typeof window !== 'undefined' ? (window as any).React : null);
+  
+  if (!reactInstance || typeof reactInstance.useState !== 'function') {
     console.error('React hooks not available in useToast');
     return {
       toasts: [],
@@ -182,9 +184,10 @@ function useToast() {
   }
 
   try {
-    const [state, setState] = useState<State>(memoryState)
+    // Use the verified React instance
+    const [state, setState] = reactInstance.useState<State>(memoryState)
 
-    useEffect(() => {
+    reactInstance.useEffect(() => {
       listeners.push(setState)
       return () => {
         const index = listeners.indexOf(setState)
