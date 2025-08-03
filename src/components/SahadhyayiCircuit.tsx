@@ -6,16 +6,16 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/comp
   @keyframes dashFlow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 100; } }
 */
 
-// Question data structure: id, label text, position, and color key
+// Question data structure: id, label text, grid row/column, and color key
 const questions = [
-  { id: 'design',  label: 'Design your own book version?',                            pos: [50, 5],  color: 'emerald' },
-  { id: 'search',  label: 'Find the desired ebook in library',                        pos: [82, 18], color: 'blue'    },
-  { id: 'nearby',  label: "Who's reading same book nearby?",                         pos: [95, 50], color: 'purple'  },
-  { id: 'comment', label: 'Discuss book insights with fellow readers?',               pos: [82, 82], color: 'red'     },
-  { id: 'chat',    label: 'Chat with book friends online?',                           pos: [50, 95], color: 'orange'  },
-  { id: 'map',     label: 'Explore readers on the map',                              pos: [18, 82], color: 'yellow'  },
-  { id: 'track',   label: 'Track your reading progress?',                            pos: [5, 50],  color: 'cyan'    },
-  { id: 'authors', label: 'Discover authors & works',                                pos: [18, 18], color: 'pink'    }
+  { id: 'design',  label: 'Design your own book version?',                 row: 1, col: 1, color: 'emerald' },
+  { id: 'search',  label: 'Find the desired ebook in library',             row: 1, col: 2, color: 'blue'    },
+  { id: 'nearby',  label: "Who's reading same book nearby?",              row: 1, col: 3, color: 'purple'  },
+  { id: 'comment', label: 'Discuss book insights with fellow readers?',    row: 2, col: 3, color: 'red'     },
+  { id: 'chat',    label: 'Chat with book friends online?',                row: 3, col: 3, color: 'orange'  },
+  { id: 'map',     label: 'Explore readers on the map',                    row: 3, col: 2, color: 'yellow'  },
+  { id: 'track',   label: 'Track your reading progress?',                  row: 3, col: 1, color: 'cyan'    },
+  { id: 'authors', label: 'Discover authors & works',                      row: 2, col: 1, color: 'pink'    }
 ];
 
 // Map color keys to Tailwind gradient pairs (safelist these classes in config)
@@ -35,25 +35,25 @@ const CurrentLine: React.FC<{
   id: string; x: number; y: number; hoveredId: string | null;
 }> = ({ id, x, y, hoveredId }) => (
   <path
-    d={`M50,50 L${x},${y}`}                // straight line from center
+    d={`M50,50 L${x},${y}`} // straight line from center
     stroke="url(#grad)"
     strokeWidth={0.8}
     strokeDasharray="4 2"
-    style={{ animation: 'dashFlow 2s linear infinite' }} // animate flow
+    style={{ animation: 'dashFlow 2s linear infinite' }}
     className={hoveredId === id ? 'opacity-100' : 'opacity-30'}
   />
 );
 
-// Renders a question bubble with tooltip and hover handlers
+// Renders a question bubble within a grid cell
 const QuestionBubble: React.FC<{
-  id: string; x: number; y: number; label: string; color: string;
+  id: string; row: number; col: number; label: string; color: string;
   hoveredId: string | null; setHovered: (id: string | null) => void;
-}> = ({ id, x, y, label, color, hoveredId, setHovered }) => (
+}> = ({ id, row, col, label, color, hoveredId, setHovered }) => (
   <Tooltip>
     <TooltipTrigger asChild>
       <div
-        className="absolute cursor-pointer"
-        style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
+        className="flex items-center justify-center cursor-pointer"
+        style={{ gridColumn: col, gridRow: row }}
         onMouseEnter={() => setHovered(id)}
         onMouseLeave={() => setHovered(null)}
       >
@@ -76,6 +76,39 @@ const QuestionBubble: React.FC<{
 const SahadhyayiCircuit: React.FC = () => {
   const [hoveredId, setHovered] = useState<string | null>(null);
 
+  // Convert grid row/column into percentage coordinates for SVG lines
+  const coord = (i: number) => (i - 0.5) * (100 / 3);
+
+  // Prepare SVG lines and bubble components so every question gets
+  // a connection from the center hub.
+  const lines: JSX.Element[] = [];
+  const bubbles: JSX.Element[] = [];
+  questions.forEach((q) => {
+    const x = coord(q.col);
+    const y = coord(q.row);
+    lines.push(
+      <CurrentLine
+        key={`line-${q.id}`}
+        id={q.id}
+        x={x}
+        y={y}
+        hoveredId={hoveredId}
+      />
+    );
+    bubbles.push(
+      <QuestionBubble
+        key={`bubble-${q.id}`}
+        id={q.id}
+        row={q.row}
+        col={q.col}
+        label={q.label}
+        color={q.color}
+        hoveredId={hoveredId}
+        setHovered={setHovered}
+      />
+    );
+  });
+
   return (
     <TooltipProvider>
       <div className="flex w-full h-screen bg-black text-white">
@@ -97,9 +130,9 @@ const SahadhyayiCircuit: React.FC = () => {
           </a>
         </div>
 
-        {/* Right column: circuit diagram with animated lines and bubbles */}
+        {/* Right column: grid with connector lines */}
         <div className="w-1/2 relative">
-          {/* SVG definitions and animated lines */}
+          {/* SVG lines overlay */}
           <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none">
             <defs>
               <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -107,31 +140,21 @@ const SahadhyayiCircuit: React.FC = () => {
                 <stop offset="100%" stopColor="#3b82f6" />
               </linearGradient>
             </defs>
-            {questions.map(q => (
-              <CurrentLine
-                key={q.id}
-                id={q.id} x={q.pos[0]} y={q.pos[1]}
-                hoveredId={hoveredId}
-              />
-            ))}
+            {lines}
           </svg>
 
-          {/* Central hub circle with brand name */}
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-600 to-teal-400 flex items-center justify-center text-white text-xl font-bold shadow-lg">
-              Sahadhyayi
+          {/* Grid positions for hub and bubbles */}
+          <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
+            <div
+              className="flex items-center justify-center"
+              style={{ gridColumn: 2, gridRow: 2 }}
+            >
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-600 to-teal-400 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                Sahadhyayi
+              </div>
             </div>
+            {bubbles}
           </div>
-
-          {/* Render each question bubble */}
-          {questions.map(q => (
-            <QuestionBubble
-              key={q.id}
-              id={q.id} x={q.pos[0]} y={q.pos[1]}
-              label={q.label} color={q.color}
-              hoveredId={hoveredId} setHovered={setHovered}
-            />
-          ))}
         </div>
       </div>
     </TooltipProvider>
