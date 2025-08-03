@@ -41,10 +41,12 @@ console.log('App component loading...');
 
 function App() {
   console.log('App component rendering...');
-  console.log('React in App component:', React);
+  console.log('React in App component:', !!React);
   
-  // Critical safety check for React - if React is not available, show loading
-  if (!React || typeof React.createElement !== 'function') {
+  // Enhanced React availability check
+  const reactInstance = React || (globalThis as any).React || (typeof window !== 'undefined' ? (window as any).React : null);
+  
+  if (!reactInstance || typeof reactInstance.createElement !== 'function') {
     console.error('React not properly initialized in App component');
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
@@ -57,12 +59,18 @@ function App() {
   }
 
   // Verify React hooks are available
-  if (!React.useState || !React.useEffect || !React.useContext) {
+  if (!reactInstance.useState || !reactInstance.useEffect || !reactInstance.useContext) {
     console.error('React hooks not available in App component');
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600">Application initialization error. Please refresh the page.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     );
