@@ -11,45 +11,48 @@ interface Question {
 
 type ColorKey = 'emerald' | 'blue' | 'purple' | 'red' | 'orange' | 'yellow' | 'cyan' | 'pink';
 
-// Question data structure
+// Question data structure - exactly 8 questions for 8 lines
 const questions: Question[] = [
-  { id: 'design',  label: 'Design your own book version?',                            pos: [50, 14], color: 'emerald' },
-  { id: 'search',  label: 'Find the desired ebook in library',                        pos: [76, 24], color: 'blue'    },
-  { id: 'nearby',  label: "Who's reading same book nearby?",                         pos: [86, 50], color: 'purple'  },
-  { id: 'comment', label: 'Discuss book insights with fellow readers?',               pos: [76, 76], color: 'red'     },
-  { id: 'chat',    label: 'Chat with book friends online?',                           pos: [50, 86], color: 'orange'  },
-  { id: 'map',     label: 'Explore readers on the map',                              pos: [24, 76], color: 'yellow'  },
-  { id: 'track',   label: 'Track your reading progress?',                            pos: [14, 50], color: 'cyan'    },
-  { id: 'authors', label: 'Discover authors & works',                                pos: [24, 24], color: 'pink'    }
+  { id: 'design',  label: 'Design your own book version?',                            pos: [50, 12], color: 'emerald' },
+  { id: 'search',  label: 'Find the desired ebook in library',                        pos: [78, 20], color: 'blue'    },
+  { id: 'nearby',  label: "Who's reading the same book nearby?",                      pos: [88, 50], color: 'purple'  },
+  { id: 'comment', label: 'Discuss book insights with fellow readers?',               pos: [78, 80], color: 'red'     },
+  { id: 'chat',    label: 'Chat with book friends online?',                           pos: [50, 88], color: 'orange'  },
+  { id: 'map',     label: 'Explore readers on the map',                               pos: [22, 80], color: 'yellow'  },
+  { id: 'track',   label: 'Track your reading progress?',                             pos: [12, 50], color: 'cyan'    },
+  { id: 'authors', label: 'Discover authors & works',                                 pos: [22, 20], color: 'pink'    }
 ];
 
-// Map color keys to Tailwind gradient pairs
+// Enhanced gradient classes with more vibrant colors
 const gradientClasses: Record<ColorKey, string> = {
-  emerald: 'from-emerald-400 to-emerald-600',
-  blue:    'from-blue-400 to-blue-600',
-  purple:  'from-purple-400 to-purple-600',
-  pink:    'from-pink-400 to-pink-600',
-  orange:  'from-orange-400 to-orange-600',
-  yellow:  'from-yellow-400 to-yellow-600',
-  cyan:    'from-cyan-400 to-cyan-600',
-  red:     'from-red-400 to-red-600'
+  emerald: 'from-emerald-400 via-emerald-500 to-emerald-600',
+  blue:    'from-blue-400 via-blue-500 to-blue-600',
+  purple:  'from-purple-400 via-purple-500 to-purple-600',
+  pink:    'from-pink-400 via-pink-500 to-pink-600',
+  orange:  'from-orange-400 via-orange-500 to-orange-600',
+  yellow:  'from-yellow-400 via-yellow-500 to-yellow-600',
+  cyan:    'from-cyan-400 via-cyan-500 to-cyan-600',
+  red:     'from-red-400 via-red-500 to-red-600'
 };
 
-// Tooltip component for better accessibility
+// Enhanced tooltip component with better styling
 const Tooltip: React.FC<{ text: string; visible: boolean; x: number; y: number }> = ({ text, visible, x, y }) => {
   if (!visible) return null;
   
   return (
     <div
-      className="absolute z-20 px-3 py-2 bg-gray-900 text-white text-sm rounded-md shadow-lg max-w-xs transition-opacity duration-200"
+      className="absolute z-20 px-4 py-3 bg-gray-900 text-white text-sm rounded-xl shadow-2xl max-w-xs transition-all duration-300 transform"
       style={{
         left: `${x}%`,
         top: `${y + 5}%`,
-        transform: 'translateX(-50%)'
+        transform: 'translateX(-50%) translateY(-5px)'
       }}
       role="tooltip"
     >
-      {text}
+      <div className="relative">
+        {text}
+        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+      </div>
     </div>
   );
 };
@@ -60,6 +63,7 @@ interface CurrentLineProps {
   x: number;
   y: number;
   hoveredId: string | null;
+  color: ColorKey;
 }
 
 interface QuestionBubbleProps {
@@ -74,19 +78,22 @@ interface QuestionBubbleProps {
   setFocused: (id: string | null) => void;
 }
 
-// Memoized CurrentLine component to prevent unnecessary re-renders
-const CurrentLine = memo<CurrentLineProps>(({ id, x, y, hoveredId }) => (
+// Enhanced CurrentLine component with animated gradients
+const CurrentLine = memo<CurrentLineProps>(({ id, x, y, hoveredId, color }) => (
   <path
     d={`M50,50 L${x},${y}`}
-    stroke="url(#grad)"
-    strokeWidth={1.2}
-    className={hoveredId === id ? 'opacity-100' : 'opacity-50'}
+    stroke={`url(#grad-${id})`}
+    strokeWidth={hoveredId === id ? 2.5 : 1.5}
+    className={`transition-all duration-300 ${hoveredId === id ? 'opacity-100 drop-shadow-lg' : 'opacity-60'}`}
+    style={{
+      filter: hoveredId === id ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))' : 'none'
+    }}
   />
 ));
 
 CurrentLine.displayName = 'CurrentLine';
 
-// Memoized QuestionBubble component with keyboard navigation support
+// Enhanced QuestionBubble component with better animations
 const QuestionBubble = memo<QuestionBubbleProps>(({ id, x, y, label, color, hoveredId, focusedId, setHovered, setFocused }) => {
   const isHovered = hoveredId === id;
   const isFocused = focusedId === id;
@@ -94,15 +101,18 @@ const QuestionBubble = memo<QuestionBubbleProps>(({ id, x, y, label, color, hove
   const handleKeyPress = useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      // Could add click handler here if needed
     }
   }, []);
   
   return (
     <>
       <div
-        className="absolute cursor-pointer"
-        style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
+        className="absolute cursor-pointer transform transition-all duration-300"
+        style={{ 
+          left: `${x}%`, 
+          top: `${y}%`, 
+          transform: `translate(-50%, -50%) ${isHovered || isFocused ? 'scale(1.05)' : 'scale(1)'}` 
+        }}
         onMouseEnter={() => setHovered(id)}
         onMouseLeave={() => setHovered(null)}
         onFocus={() => setFocused(id)}
@@ -114,7 +124,14 @@ const QuestionBubble = memo<QuestionBubbleProps>(({ id, x, y, label, color, hove
         aria-describedby={`tooltip-${id}`}
       >
         <div
-          className={`px-3 py-1 rounded-full bg-gradient-to-br ${gradientClasses[color]} text-white text-sm font-medium whitespace-nowrap shadow-lg transition-all duration-300 ${isHovered || isFocused ? 'scale-105 ring-2 ring-white ring-opacity-50' : ''}`}
+          className={`px-4 py-2 rounded-full bg-gradient-to-r ${gradientClasses[color]} text-white text-sm font-semibold whitespace-nowrap shadow-xl transition-all duration-300 border-2 border-white/20 backdrop-blur-sm ${
+            isHovered || isFocused 
+              ? 'ring-4 ring-white/30 shadow-2xl' 
+              : ''
+          }`}
+          style={{
+            filter: isHovered || isFocused ? 'brightness(1.1)' : 'brightness(1)',
+          }}
         >
           {label}
         </div>
@@ -126,7 +143,7 @@ const QuestionBubble = memo<QuestionBubbleProps>(({ id, x, y, label, color, hove
 
 QuestionBubble.displayName = 'QuestionBubble';
 
-// Main hero component with improved performance and accessibility
+// Main enhanced component
 const SahadhyayiCircuit: React.FC = () => {
   const [hoveredId, setHovered] = useState<string | null>(null);
   const [focusedId, setFocused] = useState<string | null>(null);
@@ -140,7 +157,30 @@ const SahadhyayiCircuit: React.FC = () => {
     setFocused(id);
   }, []);
 
-  // Memoize lines and bubbles to prevent unnecessary re-renders
+  // Create gradient definitions for each line
+  const gradientDefs = useMemo(() => {
+    return questions.map((q) => {
+      const colors = {
+        emerald: ['#34d399', '#059669'],
+        blue: ['#60a5fa', '#2563eb'],
+        purple: ['#a78bfa', '#7c3aed'],
+        pink: ['#f472b6', '#ec4899'],
+        orange: ['#fb923c', '#ea580c'],
+        yellow: ['#fbbf24', '#d97706'],
+        cyan: ['#22d3ee', '#0891b2'],
+        red: ['#f87171', '#dc2626']
+      };
+      
+      return (
+        <linearGradient key={`grad-${q.id}`} id={`grad-${q.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={colors[q.color][0]} />
+          <stop offset="100%" stopColor={colors[q.color][1]} />
+        </linearGradient>
+      );
+    });
+  }, []);
+
+  // Memoize lines with individual gradients
   const lines = useMemo(() => {
     return questions.map((q) => (
       <CurrentLine
@@ -149,6 +189,7 @@ const SahadhyayiCircuit: React.FC = () => {
         x={q.pos[0]}
         y={q.pos[1]}
         hoveredId={hoveredId}
+        color={q.color}
       />
     ));
   }, [hoveredId]);
@@ -171,49 +212,86 @@ const SahadhyayiCircuit: React.FC = () => {
   }, [hoveredId, focusedId, handleSetHovered, handleSetFocused]);
 
   return (
-    <div className="flex flex-col lg:flex-row w-full min-h-screen bg-black text-white overflow-hidden">
-
-      {/* Left column: headline and call-to-action */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 md:px-12 lg:px-16 py-12 lg:py-0 space-y-6 z-10">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-          Want an intellectual friend from reading community?
-        </h1>
-        <p className="text-xl md:text-2xl text-blue-100">Let's Explore Sahadhyayi!</p>
+    <div className="flex flex-col lg:flex-row w-full min-h-screen bg-black text-white overflow-hidden relative">
+      {/* Enhanced background with animated gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 opacity-50"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1)_0%,transparent_70%)]"></div>
+      
+      {/* Left column: enhanced headline and call-to-action */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 md:px-12 lg:px-16 py-12 lg:py-0 space-y-8 z-10 relative">
+        <div className="space-y-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+            Want an intellectual friend from reading community?
+          </h1>
+          <p className="text-xl md:text-2xl text-blue-100 font-medium">
+            Let's Explore Sahadhyayi!
+          </p>
+        </div>
+        
         <a
           href="/signup"
-          className="mt-4 inline-block w-auto max-w-xs px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-opacity-50 text-center"
+          className="mt-6 inline-block w-auto max-w-sm px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-lg font-bold rounded-full shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-cyan-500/25 focus:outline-none focus:ring-4 focus:ring-cyan-400/50 text-center transform hover:-translate-y-1"
           aria-label="Join the Reading Circle - Sign up for Sahadhyayi"
         >
-          Join the Reading Circle
+          <span className="relative z-10">Join the Reading Circle</span>
         </a>
       </div>
 
-      {/* Right column: circuit diagram with animated lines and bubbles */}
-      <div className="w-full lg:w-1/2 relative min-h-[500px] lg:min-h-screen">
-        {/* SVG definitions and animated lines */}
+      {/* Right column: enhanced circuit diagram */}
+      <div className="w-full lg:w-1/2 relative min-h-[600px] lg:min-h-screen overflow-hidden">
+        {/* Enhanced SVG with better gradients and filters */}
         <svg 
           viewBox="0 0 100 100" 
           className="absolute inset-0 w-full h-full pointer-events-none"
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#22d3ee" />
-              <stop offset="100%" stopColor="#3b82f6" />
-            </linearGradient>
+            {gradientDefs}
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
           </defs>
           {lines}
         </svg>
 
-        {/* Central hub circle with brand name */}
+        {/* Enhanced central hub with pulsing animation */}
         <div className="absolute inset-0 flex items-center justify-center z-10">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-emerald-600 to-teal-400 flex items-center justify-center text-white text-base sm:text-lg md:text-xl font-bold shadow-xl transition-all duration-300 hover:scale-105 cursor-default">
-            Sahadhyayi
+          <div className="relative">
+            {/* Pulsing outer ring */}
+            <div className="absolute inset-0 w-32 h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-30 animate-ping"></div>
+            
+            {/* Main hub */}
+            <div className="relative w-28 h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white text-lg md:text-xl lg:text-2xl font-bold shadow-2xl border-4 border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 cursor-default">
+              <span className="text-center leading-tight">Sahadhyayi</span>
+              
+              {/* Inner glow effect */}
+              <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/20 to-transparent pointer-events-none"></div>
+            </div>
           </div>
         </div>
 
-        {/* Render each question bubbles */}
+        {/* Enhanced question bubbles */}
         {bubbles}
+        
+        {/* Floating particles for extra visual appeal */}
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-pulse opacity-60"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 2}s`,
+              }}
+            ></div>
+          ))}
+        </div>
       </div>
     </div>
   );
