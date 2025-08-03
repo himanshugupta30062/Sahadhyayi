@@ -2,16 +2,24 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// Context imports
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QuotesProvider } from "@/contexts/QuotesContext";
 import { ChatbotProvider } from "@/contexts/ChatbotContext";
+
+// UI component imports
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
+
+// Component imports
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Chatbot from "@/components/chatbot/Chatbot";
 import Navigation from "@/components/Navigation";
 import GlobalFooter from "@/components/GlobalFooter";
 import ScrollToTop from "@/components/ScrollToTop";
+
+// Page imports
 import Index from "./pages/Index";
 import BookLibrary from "./pages/BookLibrary";
 import BookDetails from "./pages/BookDetails";
@@ -27,7 +35,12 @@ import Map from "./pages/Map";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
+
+// CSS import
 import "./App.css";
+
+console.log('App.tsx: All imports loaded successfully');
+console.log('React version check:', React.version);
 
 const queryClient = new QueryClient({
   defaultOptions: {
