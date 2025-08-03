@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
 import AnimatedHero from "@/components/AnimatedHero";
-import CircuitFlowchart from "@/components/CircuitFlowchart";
+// import SahadhyayiFlowchart from "@/components/SahadhyayiFlowchart";
 
 const Index = () => {
   const { user } = useAuth();
@@ -90,8 +90,35 @@ const Index = () => {
       {/* Animated Hero Section */}
       <AnimatedHero />
       
-      {/* Circuit Architecture Flowchart */}
-      <CircuitFlowchart />
+      {/* Temporary Flowchart Placeholder */}
+      <section className="py-16 bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+            Sahadhyayi Platform Features
+          </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            Interactive flowchart coming soon - exploring all our interconnected features
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="bg-gray-800 p-6 rounded-lg">
+              <BookOpen className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+              <h3 className="text-white font-semibold">Library</h3>
+            </div>
+            <div className="bg-gray-800 p-6 rounded-lg">
+              <Users className="w-8 h-8 text-green-400 mx-auto mb-2" />
+              <h3 className="text-white font-semibold">Authors</h3>
+            </div>
+            <div className="bg-gray-800 p-6 rounded-lg">
+              <Map className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+              <h3 className="text-white font-semibold">Community</h3>
+            </div>
+            <div className="bg-gray-800 p-6 rounded-lg">
+              <Calendar className="w-8 h-8 text-orange-400 mx-auto mb-2" />
+              <h3 className="text-white font-semibold">Features</h3>
+            </div>
+          </div>
+        </div>
+      </section>
       
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
 
