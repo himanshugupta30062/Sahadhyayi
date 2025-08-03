@@ -7,17 +7,17 @@ import { HeroContent } from "./hero/HeroContent";
 
 // Desktop configuration
 const DESKTOP_RING_CONFIG = {
-  outer: { radius: 340, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 290, color: "#22c55e", rotation: 120, duration: 20 },
-  inner: { radius: 250, color: "#3b82f6", rotation: 240, duration: 16 },
+  outer: { radius: 340, color: "url(#dark-red-gradient)", rotation: 0, duration: 12 },
+  middle: { radius: 290, color: "#22c55e", rotation: 120, duration: 10 },
+  inner: { radius: 250, color: "#3b82f6", rotation: 240, duration: 8 },
 };
 
 const DESKTOP_ATOM_CONFIG = [
   {
     letter: "L",
     label: "Library",
-    materialId: "white",
-    duration: 24,
+    materialId: "library",
+    duration: 12,
     initialAngle: 0,
     orbitSwitchInterval: 20000,
     size: 40,
@@ -25,8 +25,8 @@ const DESKTOP_ATOM_CONFIG = [
   {
     letter: "A",
     label: "Authors",
-    materialId: "white",
-    duration: 20,
+    materialId: "author",
+    duration: 10,
     initialAngle: 120,
     orbitSwitchInterval: 25000,
     size: 40,
@@ -34,8 +34,8 @@ const DESKTOP_ATOM_CONFIG = [
   {
     letter: "S",
     label: "Social Media",
-    materialId: "white",
-    duration: 16,
+    materialId: "social",
+    duration: 8,
     initialAngle: 240,
     orbitSwitchInterval: 30000,
     size: 40,
@@ -75,17 +75,17 @@ const DESKTOP_FLOATING_ICONS = [
 
 // Mobile configuration
 const MOBILE_RING_CONFIG = {
-  outer: { radius: 310, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 260, color: "#22c55e", rotation: 120, duration: 20 },
-  inner: { radius: 220, color: "#3b82f6", rotation: 240, duration: 16 },
+  outer: { radius: 310, color: "url(#dark-red-gradient)", rotation: 0, duration: 12 },
+  middle: { radius: 260, color: "#22c55e", rotation: 120, duration: 10 },
+  inner: { radius: 220, color: "#3b82f6", rotation: 240, duration: 8 },
 };
 
 const MOBILE_ATOM_CONFIG = [
   {
     letter: "L",
     label: "Library",
-    materialId: "white",
-    duration: 24,
+    materialId: "library",
+    duration: 12,
     initialAngle: 0,
     orbitSwitchInterval: 20000,
     size: 24,
@@ -93,8 +93,8 @@ const MOBILE_ATOM_CONFIG = [
   {
     letter: "A",
     label: "Authors",
-    materialId: "white",
-    duration: 20,
+    materialId: "author",
+    duration: 10,
     initialAngle: 120,
     orbitSwitchInterval: 25000,
     size: 24,
@@ -102,8 +102,8 @@ const MOBILE_ATOM_CONFIG = [
   {
     letter: "S",
     label: "Social Media",
-    materialId: "white",
-    duration: 16,
+    materialId: "social",
+    duration: 8,
     initialAngle: 240,
     orbitSwitchInterval: 30000,
     size: 24,
