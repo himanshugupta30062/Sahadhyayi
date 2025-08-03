@@ -76,6 +76,34 @@ const QuestionBubble: React.FC<{
 const SahadhyayiCircuit: React.FC = () => {
   const [hoveredId, setHovered] = useState<string | null>(null);
 
+  // Prepare SVG lines and bubble components so every question gets
+  // a radial connection from the center hub.
+  const lines: JSX.Element[] = [];
+  const bubbles: JSX.Element[] = [];
+  questions.forEach((q) => {
+    lines.push(
+      <CurrentLine
+        key={`line-${q.id}`}
+        id={q.id}
+        x={q.pos[0]}
+        y={q.pos[1]}
+        hoveredId={hoveredId}
+      />
+    );
+    bubbles.push(
+      <QuestionBubble
+        key={`bubble-${q.id}`}
+        id={q.id}
+        x={q.pos[0]}
+        y={q.pos[1]}
+        label={q.label}
+        color={q.color}
+        hoveredId={hoveredId}
+        setHovered={setHovered}
+      />
+    );
+  });
+
   return (
     <TooltipProvider>
       <div className="flex w-full h-screen bg-black text-white">
@@ -107,13 +135,7 @@ const SahadhyayiCircuit: React.FC = () => {
                 <stop offset="100%" stopColor="#3b82f6" />
               </linearGradient>
             </defs>
-            {questions.map(q => (
-              <CurrentLine
-                key={q.id}
-                id={q.id} x={q.pos[0]} y={q.pos[1]}
-                hoveredId={hoveredId}
-              />
-            ))}
+            {lines}
           </svg>
 
           {/* Central hub circle with brand name */}
@@ -124,14 +146,7 @@ const SahadhyayiCircuit: React.FC = () => {
           </div>
 
           {/* Render each question bubble */}
-          {questions.map(q => (
-            <QuestionBubble
-              key={q.id}
-              id={q.id} x={q.pos[0]} y={q.pos[1]}
-              label={q.label} color={q.color}
-              hoveredId={hoveredId} setHovered={setHovered}
-            />
-          ))}
+          {bubbles}
         </div>
       </div>
     </TooltipProvider>
