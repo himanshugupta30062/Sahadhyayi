@@ -13,14 +13,14 @@ type ColorKey = 'emerald' | 'blue' | 'purple' | 'red' | 'orange' | 'yellow' | 'c
 
 // Question data structure
 const questions: Question[] = [
-  { id: 'design',  label: 'Design your own book version?',                            pos: [50, 5],  color: 'emerald' },
-  { id: 'search',  label: 'Find the desired ebook in library',                        pos: [82, 18], color: 'blue'    },
-  { id: 'nearby',  label: "Who's reading same book nearby?",                         pos: [95, 50], color: 'purple'  },
-  { id: 'comment', label: 'Discuss book insights with fellow readers?',               pos: [82, 82], color: 'red'     },
-  { id: 'chat',    label: 'Chat with book friends online?',                           pos: [50, 95], color: 'orange'  },
-  { id: 'map',     label: 'Explore readers on the map',                              pos: [18, 82], color: 'yellow'  },
-  { id: 'track',   label: 'Track your reading progress?',                            pos: [5, 50],  color: 'cyan'    },
-  { id: 'authors', label: 'Discover authors & works',                                pos: [18, 18], color: 'pink'    }
+  { id: 'design',  label: 'Design your own book version?',                            pos: [50, 14], color: 'emerald' },
+  { id: 'search',  label: 'Find the desired ebook in library',                        pos: [76, 24], color: 'blue'    },
+  { id: 'nearby',  label: "Who's reading same book nearby?",                         pos: [86, 50], color: 'purple'  },
+  { id: 'comment', label: 'Discuss book insights with fellow readers?',               pos: [76, 76], color: 'red'     },
+  { id: 'chat',    label: 'Chat with book friends online?',                           pos: [50, 86], color: 'orange'  },
+  { id: 'map',     label: 'Explore readers on the map',                              pos: [24, 76], color: 'yellow'  },
+  { id: 'track',   label: 'Track your reading progress?',                            pos: [14, 50], color: 'cyan'    },
+  { id: 'authors', label: 'Discover authors & works',                                pos: [24, 24], color: 'pink'    }
 ];
 
 // Map color keys to Tailwind gradient pairs
@@ -79,10 +79,8 @@ const CurrentLine = memo<CurrentLineProps>(({ id, x, y, hoveredId }) => (
   <path
     d={`M50,50 L${x},${y}`}
     stroke="url(#grad)"
-    strokeWidth={0.8}
-    strokeDasharray="4 2"
-    style={{ animation: 'dashFlow 2s linear infinite' }}
-    className={hoveredId === id ? 'opacity-100' : 'opacity-30'}
+    strokeWidth={1.2}
+    className={hoveredId === id ? 'opacity-100' : 'opacity-50'}
   />
 ));
 
@@ -174,12 +172,6 @@ const SahadhyayiCircuit: React.FC = () => {
 
   return (
     <div className="flex flex-col lg:flex-row w-full min-h-screen bg-black text-white overflow-hidden">
-      <style>{`
-        @keyframes dashFlow {
-          from { stroke-dashoffset: 0; }
-          to { stroke-dashoffset: 100; }
-        }
-      `}</style>
 
       {/* Left column: headline and call-to-action */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 md:px-12 lg:px-16 py-12 lg:py-0 space-y-6 z-10">
