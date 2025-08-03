@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
 import AnimatedHero from "@/components/AnimatedHero";
+import SahadhyayiFlowchart from "@/components/SahadhyayiFlowchart";
 
 const Index = () => {
   const { user } = useAuth();
@@ -88,6 +89,9 @@ const Index = () => {
       </script>
       {/* Animated Hero Section */}
       <AnimatedHero />
+      
+      {/* Sahadhyayi Features Flowchart */}
+      <SahadhyayiFlowchart />
       
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
 
