@@ -1,6 +1,6 @@
+
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Verified } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CheckCircle } from 'lucide-react';
 
 interface VerificationBadgeProps {
   verified: boolean;
@@ -21,18 +21,13 @@ export const VerificationBadge = ({ verified, verificationType, className }: Ver
   };
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <Badge variant="secondary" className={`bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 ${className}`}>
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Verified
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{getVerificationText()}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Badge 
+      variant="secondary" 
+      className={`bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 cursor-help ${className}`}
+      title={getVerificationText()}
+    >
+      <CheckCircle className="w-3 h-3 mr-1" />
+      Verified
+    </Badge>
   );
 };
