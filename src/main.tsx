@@ -10,53 +10,63 @@ console.log('React object before init:', React);
 
 // CRITICAL: Ensure React is available globally BEFORE anything else initializes
 // This must happen synchronously before any component or hook is loaded
+const globalReact = React;
+
+// Set React on window object immediately
 if (typeof window !== 'undefined') {
-  // Set React on window object
-  (window as any).React = React;
+  (window as any).React = globalReact;
   console.log('React set on window:', (window as any).React);
   
   // Also ensure React hooks are directly available on window
   (window as any).ReactHooks = {
-    useState: React.useState,
-    useEffect: React.useEffect,
-    useContext: React.useContext,
-    useCallback: React.useCallback,
-    useMemo: React.useMemo,
-    useRef: React.useRef,
-    useReducer: React.useReducer,
+    useState: globalReact.useState,
+    useEffect: globalReact.useEffect,
+    useContext: globalReact.useContext,
+    useCallback: globalReact.useCallback,
+    useMemo: globalReact.useMemo,
+    useRef: globalReact.useRef,
+    useReducer: globalReact.useReducer,
   };
 }
 
 // Make React hooks available globally to prevent null reference errors
 Object.assign(globalThis, {
-  React,
+  React: globalReact,
   ReactHooks: {
-    useState: React.useState,
-    useEffect: React.useEffect,
-    useContext: React.useContext,
-    useCallback: React.useCallback,
-    useMemo: React.useMemo,
-    useRef: React.useRef,
-    useReducer: React.useReducer,
+    useState: globalReact.useState,
+    useEffect: globalReact.useEffect,
+    useContext: globalReact.useContext,
+    useCallback: globalReact.useCallback,
+    useMemo: globalReact.useMemo,
+    useRef: globalReact.useRef,
+    useReducer: globalReact.useReducer,
   }
 });
 
+// Ensure React doesn't get garbage collected or overwritten
+Object.defineProperty(globalThis, 'React', {
+  value: globalReact,
+  writable: false,
+  enumerable: true,
+  configurable: false
+});
+
 // Strict verification that React is properly initialized
-if (!React || typeof React.createElement !== 'function') {
+if (!globalReact || typeof globalReact.createElement !== 'function') {
   console.error('React is not properly initialized!');
   throw new Error('React initialization failed - cannot proceed');
 }
 
-if (!React.useState || !React.useEffect || !React.useContext) {
+if (!globalReact.useState || !globalReact.useEffect || !globalReact.useContext) {
   console.error('React hooks are not properly initialized!');
   throw new Error('React hooks initialization failed - cannot proceed');
 }
 
 console.log('React hooks verified:', {
-  useState: !!React.useState,
-  useEffect: !!React.useEffect,
-  useContext: !!React.useContext,
-  useRef: !!React.useRef,
+  useState: !!globalReact.useState,
+  useEffect: !!globalReact.useEffect,
+  useContext: !!globalReact.useContext,
+  useRef: !!globalReact.useRef,
 });
 
 // Initialize security measures after React is ready
@@ -69,15 +79,14 @@ if (!container) {
 
 const root = createRoot(container);
 
-console.log('Creating root with React:', !!React);
+console.log('Creating root with React:', !!globalReact);
 
-// Simple, direct render without complex fallbacks that might cause issues
+// Simple, direct render
 const renderApp = () => {
   try {
     // Final verification React is still available at render time
-    if (!React || !React.createElement || !React.useState) {
+    if (!globalReact || !globalReact.createElement || !globalReact.useState) {
       console.error('React became unavailable before render');
-      // Simple reload if React is not available
       window.location.reload();
       return;
     }
