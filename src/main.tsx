@@ -4,6 +4,20 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
+// Declare the ReactHooks property on Window interface
+declare global {
+  interface Window {
+    React?: typeof React;
+    ReactHooks?: {
+      useState: typeof React.useState;
+      useEffect: typeof React.useEffect;
+      useContext: typeof React.useContext;
+      useCallback: typeof React.useCallback;
+      useMemo: typeof React.useMemo;
+    };
+  }
+}
+
 console.log('Main.tsx starting...');
 console.log('React available:', !!React);
 console.log('React.useState:', !!React.useState);
