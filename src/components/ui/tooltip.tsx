@@ -20,6 +20,12 @@ const TooltipContent = React.forwardRef<
 >(({ className, sideOffset = 4, ...props }, ref) => {
   console.log('TooltipContent rendering, React available:', !!React);
   
+  // Add safety check for React
+  if (!React || !React.forwardRef) {
+    console.warn('React not available in TooltipContent, returning null');
+    return null;
+  }
+  
   return (
     <TooltipPrimitive.Content
       ref={ref}

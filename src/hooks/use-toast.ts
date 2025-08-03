@@ -1,11 +1,13 @@
 
 import { useState, useEffect, ReactNode } from "react"
-import React from "react"
+import * as React from "react"
 
 import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
+
+console.log('use-toast loading, React available:', !!React);
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -170,9 +172,10 @@ function toast({ ...props }: Toast) {
 
 function useToast() {
   console.log('useToast hook called...');
+  console.log('React available in useToast:', !!React);
   
-  // Add safety check for React hooks availability
-  if (!React || typeof useState !== 'function') {
+  // Add comprehensive safety check for React hooks availability
+  if (!React || !React.useState || typeof useState !== 'function') {
     console.warn('React hooks not available, returning fallback');
     return {
       toasts: [],

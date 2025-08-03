@@ -5,6 +5,8 @@ import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 
+console.log('AuthContext loading, React available:', !!React);
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -26,6 +28,13 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   console.log('AuthProvider initializing...');
+  console.log('React available in AuthProvider:', !!React);
+  
+  // Add safety check for React hooks
+  if (!React || typeof useState !== 'function') {
+    console.error('React hooks not available in AuthProvider');
+    return React.createElement('div', { children });
+  }
   
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -263,5 +272,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   console.log('AuthProvider rendering with value:', { user: !!user, session: !!session, loading });
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return React.createElement(AuthContext.Provider, { value }, children);
 };

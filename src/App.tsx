@@ -3,6 +3,16 @@ import * as React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+// Ensure React is available globally
+if (typeof window !== 'undefined') {
+  (window as any).React = React;
+}
+
+console.log('App.tsx: Starting app initialization');
+console.log('React version:', React.version);
+console.log('React available:', !!React);
+console.log('React.useState available:', typeof React.useState);
+
 // Context imports - using explicit paths to avoid circular deps
 import { AuthProvider } from "./contexts/AuthContext";
 import { QuotesProvider } from "./contexts/QuotesContext";
@@ -39,11 +49,6 @@ import NotFound from "./pages/NotFound";
 // CSS import
 import "./App.css";
 
-console.log('App.tsx: Starting app initialization');
-console.log('React version:', React.version);
-console.log('React available:', !!React);
-console.log('React.useState available:', typeof React.useState);
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -58,6 +63,20 @@ console.log('QueryClient created successfully');
 function App() {
   console.log('App component rendering...');
   console.log('React available in App render:', !!React);
+  
+  // Add safety check for React
+  if (!React || !React.createElement) {
+    console.error('React is not available in App component');
+    return React.createElement('div', { 
+      style: { 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontFamily: 'sans-serif'
+      } 
+    }, 'Loading...');
+  }
   
   return (
     <ErrorBoundary>
