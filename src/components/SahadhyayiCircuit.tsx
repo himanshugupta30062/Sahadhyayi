@@ -1,146 +1,222 @@
 
-import React from "react";
-import { BookOpen, Users, Map, Calendar, MessageCircle, Star, Heart, UserPlus } from "lucide-react";
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { 
+  Book, 
+  Users, 
+  MessageCircle, 
+  MapPin, 
+  Star, 
+  BookOpen, 
+  UserPlus, 
+  Search,
+  Zap,
+  Heart,
+  Share2,
+  Globe
+} from "lucide-react";
 
-const SahadhyayiCircuit = () => {
+const SahadhyayiCircuit: React.FC = () => {
+  const features = [
+    {
+      id: 'library',
+      title: 'Digital Library',
+      description: 'Access thousands of books',
+      icon: Book,
+      position: { top: '20%', left: '10%' },
+      connections: ['hub'],
+      subFeatures: [
+        { name: 'Book Reviews', icon: Star },
+        { name: 'Reading Progress', icon: BookOpen },
+        { name: 'Book Search', icon: Search }
+      ]
+    },
+    {
+      id: 'authors',
+      title: 'Authors Connect',
+      description: 'Connect with your favorite authors',
+      icon: Users,
+      position: { top: '20%', right: '10%' },
+      connections: ['hub'],
+      subFeatures: [
+        { name: 'Author Chat', icon: MessageCircle },
+        { name: 'Live Events', icon: Zap },
+        { name: 'Follow Authors', icon: UserPlus }
+      ]
+    },
+    {
+      id: 'social',
+      title: 'Social Community',
+      description: 'Connect with fellow readers',
+      icon: MessageCircle,
+      position: { bottom: '20%', left: '10%' },
+      connections: ['hub'],
+      subFeatures: [
+        { name: 'Reading Feed', icon: Share2 },
+        { name: 'Friends Chat', icon: MessageCircle },
+        { name: 'Like & Share', icon: Heart }
+      ]
+    },
+    {
+      id: 'map',
+      title: 'Reader Map',
+      description: 'Discover readers worldwide',
+      icon: MapPin,
+      position: { bottom: '20%', right: '10%' },
+      connections: ['hub'],
+      subFeatures: [
+        { name: 'Global Map', icon: Globe },
+        { name: 'Local Readers', icon: MapPin },
+        { name: 'Reading Groups', icon: Users }
+      ]
+    }
+  ];
+
+  const hubPosition = { top: '50%', left: '50%' };
+
   return (
-    <section className="py-16 bg-gray-900 relative overflow-hidden">
-      <div className="max-w-6xl mx-auto px-4 text-center relative">
-        <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-          Sahadhyayi Platform Features
-        </h2>
-        <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
-          A connected ecosystem of tools for every reader
-        </p>
-        
-        {/* Interactive Circuit Diagram */}
-        <div className="relative mx-auto w-full max-w-4xl h-96 mb-8">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 relative overflow-hidden">
+      {/* Background Circuit Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <svg width="100%" height="100%" viewBox="0 0 1000 1000" className="w-full h-full">
+          <defs>
+            <pattern id="circuit" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+              <circle cx="50" cy="50" r="2" fill="currentColor"/>
+              <line x1="0" y1="50" x2="100" y2="50" stroke="currentColor" strokeWidth="1"/>
+              <line x1="50" y1="0" x2="50" y2="100" stroke="currentColor" strokeWidth="1"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#circuit)"/>
+        </svg>
+      </div>
+
+      <div className="relative z-10">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Sahadhyayi Circuit</h2>
+          <p className="text-xl text-gray-600">Your interconnected reading ecosystem</p>
+        </div>
+
+        <div className="relative w-full h-[800px]">
           {/* Connection Lines */}
-          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            {/* Central hub connections */}
-            <line x1="50%" y1="50%" x2="20%" y2="25%" stroke="#3b82f6" strokeWidth="2" className="animate-pulse" />
-            <line x1="50%" y1="50%" x2="80%" y2="25%" stroke="#22c55e" strokeWidth="2" className="animate-pulse" />
-            <line x1="50%" y1="50%" x2="15%" y2="75%" stroke="#a855f7" strokeWidth="2" className="animate-pulse" />
-            <line x1="50%" y1="50%" x2="85%" y2="75%" stroke="#f59e0b" strokeWidth="2" className="animate-pulse" />
-            
-            {/* Inter-feature connections */}
-            <line x1="20%" y1="25%" x2="80%" y2="25%" stroke="#6366f1" strokeWidth="1" strokeDasharray="5,5" className="animate-pulse" />
-            <line x1="15%" y1="75%" x2="85%" y2="75%" stroke="#ec4899" strokeWidth="1" strokeDasharray="5,5" className="animate-pulse" />
-            <line x1="20%" y1="25%" x2="15%" y2="75%" stroke="#10b981" strokeWidth="1" strokeDasharray="5,5" className="animate-pulse" />
-            <line x1="80%" y1="25%" x2="85%" y2="75%" stroke="#f97316" strokeWidth="1" strokeDasharray="5,5" className="animate-pulse" />
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
+            {features.map((feature) => (
+              <g key={`connection-${feature.id}`}>
+                <line
+                  x1="50%"
+                  y1="50%"
+                  x2={feature.position.left ? `${parseFloat(feature.position.left) + 15}%` : `${100 - parseFloat(feature.position.right!) - 15}%`}
+                  y2={feature.position.top ? `${parseFloat(feature.position.top) + 10}%` : `${100 - parseFloat(feature.position.bottom!) - 10}%`}
+                  stroke="#3B82F6"
+                  strokeWidth="3"
+                  strokeDasharray="10,5"
+                  className="animate-pulse"
+                />
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r="4"
+                  fill="#3B82F6"
+                  className="animate-ping"
+                />
+              </g>
+            ))}
           </svg>
 
           {/* Central Hub */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-r from-orange-600 to-red-600 flex items-center justify-center text-white font-bold text-lg shadow-2xl border-4 border-white/20 backdrop-blur-sm">
-              Sahadhyayi<br/>Hub
-            </div>
+          <div 
+            className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"
+            style={{ 
+              top: hubPosition.top, 
+              left: hubPosition.left 
+            }}
+          >
+            <Card className="w-64 h-64 border-4 border-blue-500 shadow-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white hover:scale-105 transition-transform duration-300">
+              <CardContent className="flex flex-col items-center justify-center h-full p-6">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
+                  <Zap className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-center mb-2">Sahadhyayi Hub</h3>
+                <p className="text-center text-blue-100">Central Connection Point</p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Library Feature - Top Left */}
-          <div
-            className="absolute flex flex-col items-center -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-            style={{ left: "20%", top: "25%" }}
-          >
-            <div className="bg-blue-600 p-4 rounded-2xl shadow-2xl border-2 border-blue-400/50 backdrop-blur-sm hover:scale-110 transition-all duration-300 group-hover:shadow-blue-500/50">
-              <BookOpen className="w-8 h-8 text-white" />
-            </div>
-            <div className="mt-2 text-center">
-              <h3 className="text-white font-semibold text-sm">Digital Library</h3>
-              <div className="flex gap-1 mt-1">
-                <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">Browse</span>
-                <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs flex items-center gap-1">
-                  <Star className="w-3 h-3" />
-                  Review
-                </span>
+          {/* Feature Cards */}
+          {features.map((feature) => {
+            const IconComponent = feature.icon;
+            return (
+              <div
+                key={feature.id}
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
+                style={{
+                  top: feature.position.top || 'auto',
+                  bottom: feature.position.bottom || 'auto',
+                  left: feature.position.left || 'auto',
+                  right: feature.position.right || 'auto',
+                }}
+              >
+                <Card className="w-80 border-2 border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <IconComponent className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{feature.title}</CardTitle>
+                        <CardDescription>{feature.description}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm text-gray-700 mb-2">Key Features:</h4>
+                      {feature.subFeatures.map((subFeature, index) => {
+                        const SubIcon = subFeature.icon;
+                        return (
+                          <div key={index} className="flex items-center space-x-2">
+                            <SubIcon className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm text-gray-600">{subFeature.name}</span>
+                          </div>
+                        );
+                      })}
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full mt-3 hover:bg-blue-50"
+                      >
+                        Explore {feature.title}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </div>
-          </div>
-
-          {/* Authors Feature - Top Right */}
-          <div
-            className="absolute flex flex-col items-center -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-            style={{ left: "80%", top: "25%" }}
-          >
-            <div className="bg-green-600 p-4 rounded-2xl shadow-2xl border-2 border-green-400/50 backdrop-blur-sm hover:scale-110 transition-all duration-300 group-hover:shadow-green-500/50">
-              <Users className="w-8 h-8 text-white" />
-            </div>
-            <div className="mt-2 text-center">
-              <h3 className="text-white font-semibold text-sm">Authors</h3>
-              <div className="flex gap-1 mt-1">
-                <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs">Connect</span>
-                <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs">Q&A</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Social Media Feature - Bottom Left */}
-          <div
-            className="absolute flex flex-col items-center -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-            style={{ left: "15%", top: "75%" }}
-          >
-            <div className="bg-purple-600 p-4 rounded-2xl shadow-2xl border-2 border-purple-400/50 backdrop-blur-sm hover:scale-110 transition-all duration-300 group-hover:shadow-purple-500/50">
-              <MessageCircle className="w-8 h-8 text-white" />
-            </div>
-            <div className="mt-2 text-center">
-              <h3 className="text-white font-semibold text-sm">Social Community</h3>
-              <div className="flex gap-1 mt-1 flex-wrap justify-center">
-                <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">Feed</span>
-                <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs flex items-center gap-1">
-                  <UserPlus className="w-3 h-3" />
-                  Friends
-                </span>
-                <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">Chat</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Map Feature - Bottom Right */}
-          <div
-            className="absolute flex flex-col items-center -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-            style={{ left: "85%", top: "75%" }}
-          >
-            <div className="bg-amber-600 p-4 rounded-2xl shadow-2xl border-2 border-amber-400/50 backdrop-blur-sm hover:scale-110 transition-all duration-300 group-hover:shadow-amber-500/50">
-              <Map className="w-8 h-8 text-white" />
-            </div>
-            <div className="mt-2 text-center">
-              <h3 className="text-white font-semibold text-sm">Reader Map</h3>
-              <div className="flex gap-1 mt-1">
-                <span className="px-2 py-1 bg-amber-500/20 text-amber-300 rounded-full text-xs">Location</span>
-                <span className="px-2 py-1 bg-amber-500/20 text-amber-300 rounded-full text-xs">Groups</span>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-        {/* Feature Highlight Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          <div className="bg-blue-900/30 backdrop-blur-sm border border-blue-500/30 rounded-xl p-6 text-center hover:bg-blue-900/50 transition-all duration-300">
-            <BookOpen className="w-12 h-12 text-blue-400 mx-auto mb-3" />
-            <h3 className="text-white font-semibold mb-2">Library Access</h3>
-            <p className="text-gray-300 text-sm">Browse thousands of books, write reviews, and track your reading progress</p>
-          </div>
-          
-          <div className="bg-green-900/30 backdrop-blur-sm border border-green-500/30 rounded-xl p-6 text-center hover:bg-green-900/50 transition-all duration-300">
-            <Users className="w-12 h-12 text-green-400 mx-auto mb-3" />
-            <h3 className="text-white font-semibold mb-2">Author Connect</h3>
-            <p className="text-gray-300 text-sm">Engage with authors through live sessions, Q&As, and exclusive content</p>
-          </div>
-          
-          <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl p-6 text-center hover:bg-purple-900/50 transition-all duration-300">
-            <MessageCircle className="w-12 h-12 text-purple-400 mx-auto mb-3" />
-            <h3 className="text-white font-semibold mb-2">Social Features</h3>
-            <p className="text-gray-300 text-sm">Share updates, connect with friends, and join reading discussions</p>
-          </div>
-          
-          <div className="bg-amber-900/30 backdrop-blur-sm border border-amber-500/30 rounded-xl p-6 text-center hover:bg-amber-900/50 transition-all duration-300">
-            <Map className="w-12 h-12 text-amber-400 mx-auto mb-3" />
-            <h3 className="text-white font-semibold mb-2">Global Community</h3>
-            <p className="text-gray-300 text-sm">Find readers nearby and join local reading groups on the map</p>
-          </div>
+        {/* Bottom Stats */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="text-center p-6">
+            <h3 className="text-2xl font-bold text-blue-600">10K+</h3>
+            <p className="text-gray-600">Books Available</p>
+          </Card>
+          <Card className="text-center p-6">
+            <h3 className="text-2xl font-bold text-green-600">5K+</h3>
+            <p className="text-gray-600">Active Readers</p>
+          </Card>
+          <Card className="text-center p-6">
+            <h3 className="text-2xl font-bold text-purple-600">100+</h3>
+            <p className="text-gray-600">Featured Authors</p>
+          </Card>
+          <Card className="text-center p-6">
+            <h3 className="text-2xl font-bold text-orange-600">50+</h3>
+            <p className="text-gray-600">Countries</p>
+          </Card>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
