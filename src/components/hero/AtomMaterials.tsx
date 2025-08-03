@@ -43,7 +43,6 @@ export const ATOM_MATERIALS: Record<string, AtomMaterial> = {
 interface AtomShellProps {
   material: AtomMaterial;
   letter: string;
-  label: string;
   isHovered: boolean;
   size?: number;
 }
@@ -51,7 +50,6 @@ interface AtomShellProps {
 export const AtomShell: React.FC<AtomShellProps> = ({
   material,
   letter,
-  label,
   isHovered,
   size = 48,
 }) => {
@@ -84,33 +82,6 @@ export const AtomShell: React.FC<AtomShellProps> = ({
       <span className="relative z-10 font-extrabold tracking-wider">
         {letter}
       </span>
-      
-      {/* Enhanced Tooltip - Fixed positioning */}
-      {isHovered && (
-        <div
-          className="fixed rounded-xl shadow-2xl whitespace-nowrap text-base font-semibold pointer-events-none z-[9999] animate-fade-in"
-          style={{
-            left: "50%",
-            top: "20%",
-            transform: "translate(-50%, -50%)",
-            background: "rgba(0, 0, 0, 0.95)",
-            color: "#ffffff",
-            border: `2px solid ${material.border.match(/rgba\([^)]+\)/)?.[0] || "#ffffff"}`,
-            padding: "0.75rem 1.25rem",
-            backdropFilter: "blur(12px)",
-            boxShadow: `${material.glowEffect}, 0 8px 32px rgba(0,0,0,0.5)`,
-            minWidth: "140px",
-            textAlign: "center" as const,
-            borderRadius: "12px",
-          }}
-        >
-          <div className="flex items-center justify-center gap-2">
-            <span className="font-bold text-lg">{letter}</span>
-            <span className="text-gray-300">–</span>
-            <span className="font-semibold">{label}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

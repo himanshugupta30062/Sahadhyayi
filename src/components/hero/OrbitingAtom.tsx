@@ -97,7 +97,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       </svg>
       
       <div
-        className="absolute pointer-events-auto cursor-pointer"
+        className="absolute pointer-events-auto cursor-pointer flex flex-col items-center"
         style={{
           offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
           offsetRotate: "0deg", // Keep atoms upright
@@ -125,10 +125,15 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         <AtomShell
           material={material}
           letter={letter}
-          label={label}
           isHovered={isHovered}
           size={size}
         />
+        {/* Always-visible label for accessibility */}
+        <div
+          className="mt-1 px-2 py-0.5 rounded-full text-xs font-medium text-white bg-black/80 pointer-events-none whitespace-nowrap"
+        >
+          {label}
+        </div>
       </div>
       
       <style>{`
