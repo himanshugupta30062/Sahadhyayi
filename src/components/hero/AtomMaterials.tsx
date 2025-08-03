@@ -14,11 +14,11 @@ export const ATOM_MATERIALS: Record<string, AtomMaterial> = {
   library: {
     id: "library",
     name: "Library",
-    background: "linear-gradient(135deg, #fef3c7, #f59e0b, #d97706)",
+    background: "linear-gradient(135deg, #fee2e2, #dc2626, #991b1b)",
     textColor: "#ffffff",
-    border: "3px solid rgba(245, 158, 11, 0.8)",
-    shadowColor: "rgba(245, 158, 11, 0.4)",
-    glowEffect: "0 0 30px rgba(245, 158, 11, 0.6), 0 0 60px rgba(245, 158, 11, 0.3)",
+    border: "3px solid rgba(220, 38, 38, 0.8)",
+    shadowColor: "rgba(220, 38, 38, 0.4)",
+    glowEffect: "0 0 30px rgba(220, 38, 38, 0.6), 0 0 60px rgba(220, 38, 38, 0.3)",
   },
   author: {
     id: "author",
@@ -102,7 +102,7 @@ export const AtomShell: React.FC<AtomShellProps> = ({
           boxShadow: material.glowEffect + ", 0 8px 32px rgba(0,0,0,0.3)",
         }}
       >
-        {label}
+        {letter} - {label}
         <div
           className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45"
           style={{ 

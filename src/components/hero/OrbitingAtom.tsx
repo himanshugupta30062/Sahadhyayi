@@ -100,9 +100,10 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         className="absolute pointer-events-auto"
         style={{
           offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
-          offsetRotate: "auto",
+          offsetRotate: "0deg", // Keep atoms upright
           animation: (isHovered || isTransitioning) ? "none" : `moveAtom-${duration} ${duration}s linear infinite`,
-          transform: `translate(-${size/2}px, -${size/2}px)`, // Center atom perfectly on path
+          left: 0,
+          top: `-${size/2}px`, // Center atom vertically on the path
         }}
         onMouseEnter={() => {
           setIsHovered(true);
