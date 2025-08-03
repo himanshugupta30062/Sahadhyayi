@@ -13,6 +13,8 @@ interface CommunityStats {
 
 export const useCommunityStats = (autoFetch: boolean = true) => {
   console.log('useCommunityStats hook called...');
+  console.log('React available in useCommunityStats:', !!React);
+  console.log('React.useState available:', typeof React.useState);
   
   // Add safety check for React hooks
   if (!React || typeof React.useState !== 'function') {
