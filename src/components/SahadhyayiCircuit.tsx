@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback, memo } from 'react';
 
 // TypeScript interfaces for type safety
@@ -11,16 +10,16 @@ interface Question {
 
 type ColorKey = 'emerald' | 'blue' | 'purple' | 'red' | 'orange' | 'yellow' | 'cyan' | 'pink';
 
-// Question data structure - exactly 8 questions for 8 lines
+// Question data structure - exactly 8 questions for 8 lines with adjusted positioning
 const questions: Question[] = [
   { id: 'design',  label: 'Design your own book version?',                            pos: [50, 12], color: 'emerald' },
-  { id: 'search',  label: 'Find the desired ebook in library',                        pos: [78, 20], color: 'blue'    },
-  { id: 'nearby',  label: "Who's reading the same book nearby?",                      pos: [88, 50], color: 'purple'  },
-  { id: 'comment', label: 'Discuss book insights with fellow readers?',               pos: [78, 80], color: 'red'     },
+  { id: 'search',  label: 'Find the desired ebook in library',                        pos: [75, 25], color: 'blue'    },
+  { id: 'nearby',  label: "Who's reading the same book nearby?",                      pos: [85, 50], color: 'purple'  },
+  { id: 'comment', label: 'Discuss book insights with fellow readers?',               pos: [75, 75], color: 'red'     },
   { id: 'chat',    label: 'Chat with book friends online?',                           pos: [50, 88], color: 'orange'  },
-  { id: 'map',     label: 'Explore readers on the map',                               pos: [22, 80], color: 'yellow'  },
-  { id: 'track',   label: 'Track your reading progress?',                             pos: [12, 50], color: 'cyan'    },
-  { id: 'authors', label: 'Discover authors & works',                                 pos: [22, 20], color: 'pink'    }
+  { id: 'map',     label: 'Explore readers on the map',                               pos: [25, 75], color: 'yellow'  },
+  { id: 'track',   label: 'Track your reading progress?',                             pos: [15, 50], color: 'cyan'    },
+  { id: 'authors', label: 'Discover authors & works',                                 pos: [25, 25], color: 'pink'    }
 ];
 
 // Enhanced gradient classes with more vibrant colors
@@ -217,13 +216,13 @@ const SahadhyayiCircuit: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 opacity-50"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1)_0%,transparent_70%)]"></div>
       
-      {/* Left column: enhanced headline and call-to-action */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 md:px-12 lg:px-16 py-12 lg:py-0 space-y-8 z-10 relative">
+      {/* Left column: enhanced headline and call-to-action - made narrower */}
+      <div className="w-full lg:w-2/5 flex flex-col justify-center px-6 md:px-8 lg:px-12 py-12 lg:py-0 space-y-8 z-10 relative">
         <div className="space-y-6">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
             Want an intellectual friend from reading community?
           </h1>
-          <p className="text-xl md:text-2xl text-blue-100 font-medium">
+          <p className="text-lg md:text-xl text-blue-100 font-medium">
             Let's Explore Sahadhyayi!
           </p>
         </div>
@@ -237,13 +236,14 @@ const SahadhyayiCircuit: React.FC = () => {
         </a>
       </div>
 
-      {/* Right column: enhanced circuit diagram */}
-      <div className="w-full lg:w-1/2 relative min-h-[600px] lg:min-h-screen overflow-hidden">
+      {/* Right column: enhanced circuit diagram - made wider with proper padding */}
+      <div className="w-full lg:w-3/5 relative min-h-[600px] lg:min-h-screen overflow-visible px-4 md:px-8 lg:px-12 py-8">
         {/* Enhanced SVG with better gradients and filters */}
         <svg 
           viewBox="0 0 100 100" 
-          className="absolute inset-0 w-full h-full pointer-events-none"
+          className="absolute inset-4 md:inset-8 w-[calc(100%-2rem)] md:w-[calc(100%-4rem)] h-[calc(100%-2rem)] md:h-[calc(100%-4rem)] pointer-events-none"
           aria-hidden="true"
+          preserveAspectRatio="xMidYMid meet"
         >
           <defs>
             {gradientDefs}
@@ -259,13 +259,13 @@ const SahadhyayiCircuit: React.FC = () => {
         </svg>
 
         {/* Enhanced central hub with pulsing animation */}
-        <div className="absolute inset-0 flex items-center justify-center z-10">
+        <div className="absolute inset-4 md:inset-8 flex items-center justify-center z-10">
           <div className="relative">
             {/* Pulsing outer ring */}
-            <div className="absolute inset-0 w-32 h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-30 animate-ping"></div>
+            <div className="absolute inset-0 w-28 h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-30 animate-ping"></div>
             
             {/* Main hub */}
-            <div className="relative w-28 h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white text-lg md:text-xl lg:text-2xl font-bold shadow-2xl border-4 border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 cursor-default">
+            <div className="relative w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white text-base md:text-lg lg:text-xl font-bold shadow-2xl border-4 border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 cursor-default">
               <span className="text-center leading-tight">Sahadhyayi</span>
               
               {/* Inner glow effect */}
@@ -274,11 +274,13 @@ const SahadhyayiCircuit: React.FC = () => {
           </div>
         </div>
 
-        {/* Enhanced question bubbles */}
-        {bubbles}
+        {/* Enhanced question bubbles with proper positioning */}
+        <div className="absolute inset-4 md:inset-8 pointer-events-none">
+          {bubbles}
+        </div>
         
         {/* Floating particles for extra visual appeal */}
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-4 md:inset-8 pointer-events-none">
           {[...Array(12)].map((_, i) => (
             <div
               key={i}
