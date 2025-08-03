@@ -136,6 +136,36 @@
   }
 }
 
+/* Ensure spin animation works properly */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Ensure pulse animation works properly */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Custom spin animation for better performance */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Custom pulse animation */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 /* Utility classes */
 .line-clamp-2 {
   overflow: hidden;
@@ -226,11 +256,6 @@ mark.search-highlight {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
 /* Error states */
 .error-shake {
   animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
@@ -270,12 +295,17 @@ mark.search-highlight {
   }
 }
 
-/* Reduced motion support */
+/* Reduced motion support - respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  
+  /* Override for critical loading animations */
+  .animate-spin {
+    animation: spin 1s linear infinite !important;
   }
 }
 
