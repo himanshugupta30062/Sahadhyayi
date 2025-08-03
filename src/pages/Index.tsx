@@ -13,7 +13,7 @@ const Index = () => {
       <SEO 
         title="Sahadhyayi - Your Reading Community Platform"
         description="Join Sahadhyayi to connect with fellow readers, discover new books, and share your reading journey with a vibrant community."
-        keywords="reading community, book discovery, social reading, book recommendations, reading circles"
+        keywords={["reading community", "book discovery", "social reading", "book recommendations", "reading circles"]}
       />
       <Helmet>
         <title>Sahadhyayi - Your Reading Community Platform</title>
