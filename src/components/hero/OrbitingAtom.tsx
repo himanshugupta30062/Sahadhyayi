@@ -102,6 +102,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
           offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
           offsetRotate: "auto",
           animation: (isHovered || isTransitioning) ? "none" : `moveAtom-${duration} ${duration}s linear infinite`,
+          transform: `translate(-${size/2}px, -${size/2}px)`, // Center atom perfectly on path
         }}
         onMouseEnter={() => {
           setIsHovered(true);

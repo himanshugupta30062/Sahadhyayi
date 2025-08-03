@@ -14,29 +14,29 @@ export const ATOM_MATERIALS: Record<string, AtomMaterial> = {
   library: {
     id: "library",
     name: "Library",
-    background: "linear-gradient(135deg, #ffedd5, #fbbf24)",
-    textColor: "#000000",
-    border: "2px solid rgba(251, 191, 36, 0.9)",
-    shadowColor: "rgba(251, 191, 36, 0.3)",
-    glowEffect: "0 0 20px rgba(251, 191, 36, 0.5)",
+    background: "linear-gradient(135deg, #fef3c7, #f59e0b, #d97706)",
+    textColor: "#ffffff",
+    border: "3px solid rgba(245, 158, 11, 0.8)",
+    shadowColor: "rgba(245, 158, 11, 0.4)",
+    glowEffect: "0 0 30px rgba(245, 158, 11, 0.6), 0 0 60px rgba(245, 158, 11, 0.3)",
   },
   author: {
     id: "author",
     name: "Authors",
-    background: "linear-gradient(135deg, #dcfce7, #22c55e)",
-    textColor: "#000000",
-    border: "2px solid rgba(34, 197, 94, 0.9)",
-    shadowColor: "rgba(34, 197, 94, 0.3)",
-    glowEffect: "0 0 20px rgba(34, 197, 94, 0.5)",
+    background: "linear-gradient(135deg, #d1fae5, #10b981, #059669)",
+    textColor: "#ffffff",
+    border: "3px solid rgba(16, 185, 129, 0.8)",
+    shadowColor: "rgba(16, 185, 129, 0.4)",
+    glowEffect: "0 0 30px rgba(16, 185, 129, 0.6), 0 0 60px rgba(16, 185, 129, 0.3)",
   },
   social: {
     id: "social",
     name: "Social Media",
-    background: "linear-gradient(135deg, #e0f2fe, #3b82f6)",
-    textColor: "#000000",
-    border: "2px solid rgba(59, 130, 246, 0.9)",
-    shadowColor: "rgba(59, 130, 246, 0.3)",
-    glowEffect: "0 0 20px rgba(59, 130, 246, 0.5)",
+    background: "linear-gradient(135deg, #dbeafe, #3b82f6, #1d4ed8)",
+    textColor: "#ffffff",
+    border: "3px solid rgba(59, 130, 246, 0.8)",
+    shadowColor: "rgba(59, 130, 246, 0.4)",
+    glowEffect: "0 0 30px rgba(59, 130, 246, 0.6), 0 0 60px rgba(59, 130, 246, 0.3)",
   },
 };
 
@@ -85,28 +85,35 @@ export const AtomShell: React.FC<AtomShellProps> = ({
         {letter}
       </span>
       
-      {/* Tooltip */}
-      <span
-        className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 rounded-lg transition-all duration-300 shadow-2xl z-20 whitespace-nowrap text-sm font-medium pointer-events-none"
+      {/* Enhanced Tooltip */}
+      <div
+        className="absolute top-full left-1/2 transform -translate-x-1/2 mt-6 rounded-xl transition-all duration-500 shadow-2xl z-20 whitespace-nowrap text-base font-semibold pointer-events-none"
         style={{
           opacity: isHovered ? 1 : 0,
           transform: isHovered ?
             "translate(-50%, 0) scale(1)" :
-            "translate(-50%, -10px) scale(0.9)",
+            "translate(-50%, -15px) scale(0.8)",
           visibility: isHovered ? "visible" : "hidden",
-          background: material.background,
-          color: material.textColor,
-          border: material.border,
-          padding: "0.5rem 1rem",
-          backdropFilter: "blur(4px)",
+          background: `linear-gradient(135deg, rgba(0,0,0,0.95), rgba(0,0,0,0.85))`,
+          color: "#ffffff",
+          border: `2px solid ${material.border.match(/rgba\([^)]+\)/)?.[0] || material.border}`,
+          padding: "0.75rem 1.25rem",
+          backdropFilter: "blur(8px)",
+          boxShadow: material.glowEffect + ", 0 8px 32px rgba(0,0,0,0.3)",
         }}
       >
         {label}
         <div
-          className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-2 h-2 rotate-45"
-          style={{ marginBottom: "-4px", background: material.background, border: material.border }}
+          className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45"
+          style={{ 
+            marginBottom: "-6px", 
+            background: "linear-gradient(135deg, rgba(0,0,0,0.95), rgba(0,0,0,0.85))",
+            border: `2px solid ${material.border.match(/rgba\([^)]+\)/)?.[0] || material.border}`,
+            borderBottom: "none",
+            borderRight: "none"
+          }}
         />
-      </span>
+      </div>
     </div>
   );
 };
