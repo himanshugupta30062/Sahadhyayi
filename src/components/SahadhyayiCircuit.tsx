@@ -54,10 +54,28 @@ const Tooltip: React.FC<{ text: string; visible: boolean; x: number; y: number }
   );
 };
 
+// Props interfaces for better type safety
+interface CurrentLineProps {
+  id: string;
+  x: number;
+  y: number;
+  hoveredId: string | null;
+}
+
+interface QuestionBubbleProps {
+  id: string;
+  x: number;
+  y: number;
+  label: string;
+  color: ColorKey;
+  hoveredId: string | null;
+  focusedId: string | null;
+  setHovered: (id: string | null) => void;
+  setFocused: (id: string | null) => void;
+}
+
 // Memoized CurrentLine component to prevent unnecessary re-renders
-const CurrentLine = memo<React.FC<{
-  id: string; x: number; y: number; hoveredId: string | null;
-}>>(({ id, x, y, hoveredId }) => (
+const CurrentLine = memo<CurrentLineProps>(({ id, x, y, hoveredId }) => (
   <path
     d={`M50,50 L${x},${y}`}
     stroke="url(#grad)"
@@ -71,12 +89,7 @@ const CurrentLine = memo<React.FC<{
 CurrentLine.displayName = 'CurrentLine';
 
 // Memoized QuestionBubble component with keyboard navigation support
-const QuestionBubble = memo<React.FC<{
-  id: string; x: number; y: number; label: string; color: ColorKey;
-  hoveredId: string | null; focusedId: string | null;
-  setHovered: (id: string | null) => void;
-  setFocused: (id: string | null) => void;
-}>>(({ id, x, y, label, color, hoveredId, focusedId, setHovered, setFocused }) => {
+const QuestionBubble = memo<QuestionBubbleProps>(({ id, x, y, label, color, hoveredId, focusedId, setHovered, setFocused }) => {
   const isHovered = hoveredId === id;
   const isFocused = focusedId === id;
 
@@ -207,7 +220,7 @@ const SahadhyayiCircuit: React.FC = () => {
           </div>
         </div>
 
-        {/* Render each question bubble */}
+        {/* Render each question bubbles */}
         {bubbles}
       </div>
     </div>
