@@ -19,16 +19,74 @@ const SahadhyayiCircuit: React.FC = () => {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
   const nodes = useMemo(() => [
-    { id: 'designBooks', title: 'Want to design your own version of a book?', icon: BookOpen, position: { x: 50, y: 10 }, color: 'from-emerald-400 to-teal-500', hoverColor: 'from-emerald-300 to-teal-400' },
-    { id: 'nearbyReaders', title: 'Who's reading the same book nearby and connect?', icon: Users, position: { x: 85, y: 30 }, color: 'from-purple-400 to-indigo-500', hoverColor: 'from-purple-300 to-indigo-400' },
-    { id: 'authorInfo', title: 'Want to know about authors and the books they published?', icon: Globe, position: { x: 85, y: 70 }, color: 'from-pink-400 to-rose-500', hoverColor: 'from-pink-300 to-rose-400' },
-    { id: 'chatFriends', title: 'Want to talk to book friends online?', icon: MessageCircle, position: { x: 50, y: 90 }, color: 'from-orange-400 to-amber-500', hoverColor: 'from-orange-300 to-amber-400' },
-    { id: 'readerMap', title: 'Explore where fellow readers are on the map!', icon: MapPin, position: { x: 15, y: 70 }, color: 'from-yellow-400 to-lime-500', hoverColor: 'from-yellow-300 to-lime-400' },
-    { id: 'trackProgress', title: 'Want to track your overall reading progress?', icon: Zap, position: { x: 15, y: 30 }, color: 'from-cyan-400 to-blue-500', hoverColor: 'from-cyan-300 to-blue-400' }
+    { 
+      id: 'designBooks', 
+      title: 'Want to design your own version of a book?', 
+      icon: BookOpen, 
+      position: { x: 50, y: 10 }, 
+      color: 'from-emerald-400 to-teal-500', 
+      hoverColor: 'from-emerald-300 to-teal-400' 
+    },
+    { 
+      id: 'nearbyReaders', 
+      title: 'Who\'s reading the same book nearby and connect?', 
+      icon: Users, 
+      position: { x: 85, y: 30 }, 
+      color: 'from-purple-400 to-indigo-500', 
+      hoverColor: 'from-purple-300 to-indigo-400' 
+    },
+    { 
+      id: 'authorInfo', 
+      title: 'Want to know about authors and the books they published?', 
+      icon: Globe, 
+      position: { x: 85, y: 70 }, 
+      color: 'from-pink-400 to-rose-500', 
+      hoverColor: 'from-pink-300 to-rose-400' 
+    },
+    { 
+      id: 'chatFriends', 
+      title: 'Want to talk to book friends online?', 
+      icon: MessageCircle, 
+      position: { x: 50, y: 90 }, 
+      color: 'from-orange-400 to-amber-500', 
+      hoverColor: 'from-orange-300 to-amber-400' 
+    },
+    { 
+      id: 'readerMap', 
+      title: 'Explore where fellow readers are on the map!', 
+      icon: MapPin, 
+      position: { x: 15, y: 70 }, 
+      color: 'from-yellow-400 to-lime-500', 
+      hoverColor: 'from-yellow-300 to-lime-400' 
+    },
+    { 
+      id: 'trackProgress', 
+      title: 'Want to track your overall reading progress?', 
+      icon: Zap, 
+      position: { x: 15, y: 30 }, 
+      color: 'from-cyan-400 to-blue-500', 
+      hoverColor: 'from-cyan-300 to-blue-400' 
+    }
   ], []);
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden">
+      <style>
+        {`
+          @keyframes dashFlow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -20; }
+          }
+          @keyframes electricSpark {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+          }
+          .animate-electricSpark {
+            animation: electricSpark 2s ease-in-out infinite;
+          }
+        `}
+      </style>
+      
       <svg className="absolute inset-0 w-full h-full pointer-events-none">
         <defs>
           <pattern id="circuit-grid" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
@@ -119,7 +177,7 @@ const SahadhyayiCircuit: React.FC = () => {
         />
       </div>
 
-      {/* Interactive nodes (motion removed) */}
+      {/* Interactive nodes */}
       {nodes.map((node, i) => {
         const Icon = node.icon;
         return (
