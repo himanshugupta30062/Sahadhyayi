@@ -17,9 +17,10 @@ interface Book {
 
 interface BookCardProps {
   book: Book;
+  onAdded?: () => void;
 }
 
-const BookCard: React.FC<BookCardProps> = ({ book }) => {
+const BookCard: React.FC<BookCardProps> = ({ book, onAdded }) => {
   const { user } = useAuth();
   const { data: bookshelf = [] } = useUserBookshelf();
   const addToBookshelf = useAddToBookshelf();
@@ -28,7 +29,15 @@ const BookCard: React.FC<BookCardProps> = ({ book }) => {
 
   const handleAddToShelf = () => {
     if (!user) return;
-    addToBookshelf.mutate({ bookId: book.id });
+    addToBookshelf.mutate(
+      { bookId: book.id },
+      {
+        onSuccess: () => {
+          onAdded?.();
+          window.dispatchEvent(new Event('shelfUpdated'));
+        },
+      }
+    );
   };
 
   return (

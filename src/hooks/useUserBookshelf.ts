@@ -74,6 +74,7 @@ export const useAddToBookshelf = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
+      window.dispatchEvent(new Event('shelfUpdated'));
       toast({ title: 'Success', description: 'Book added to your shelf!' });
     },
     onError: (error: any) => {
