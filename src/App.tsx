@@ -74,14 +74,15 @@ function App() {
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/social" element={<SocialMedia />} />
                         <Route path="/authors" element={<Authors />} />
+                        {/* Main author profile page accessed via slug */}
                         <Route path="/authors/:slug" element={<AuthorSlugPage />} />
-                        <Route path="/author/:id" element={<AuthorDetails />} />
+                        {/* Legacy author page accessed via /author/:slug */}
+                        <Route path="/author/:slug" element={<AuthorDetails />} />
                         <Route path="/groups" element={<ReadingGroups />} />
                         <Route path="/map" element={<Map />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/blog" element={<Blog />} />
                         <Route path="/book/:id" element={<BookDetails />} />
-                        <Route path="/books/:bookId" element={<BookDetails />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>

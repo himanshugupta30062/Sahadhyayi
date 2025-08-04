@@ -22,8 +22,9 @@ import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
+// Legacy author details page accessed via /author/:slug
 const AuthorDetails = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isFullBioExpanded, setIsFullBioExpanded] = useState(false);
@@ -31,7 +32,7 @@ const AuthorDetails = () => {
   const [showMessageForm, setShowMessageForm] = useState(false);
   const [messageText, setMessageText] = useState('');
 
-  const { data: author, isLoading: authorLoading, error: authorError } = useAuthorBySlug(id);
+  const { data: author, isLoading: authorLoading, error: authorError } = useAuthorBySlug(slug);
   const { data: books = [], isLoading: booksLoading } = useAuthorBooks(author?.id || '');
 
   const handleDownloadPDF = (book: any) => {
