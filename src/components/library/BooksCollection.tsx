@@ -2,7 +2,8 @@
 import * as React from 'react';
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { Library, Search, Trash2 } from 'lucide-react';
-import { usePersonalLibrary, useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
+import { useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
+import MyLibrary from '@/components/MyLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { usePaginatedLibraryBooks } from '@/hooks/usePaginatedLibraryBooks';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -65,8 +66,6 @@ const BooksCollection = ({
     selectedLanguage,
   });
   
-  // Personal library (user-specific)
-  const { data: personalLibrary = [], isLoading: isLoadingPersonal, refetch: refetchPersonal } = usePersonalLibrary();
   const cleanupMutation = useCleanupUnusedBooks();
   
   // Book search functionality
@@ -83,32 +82,7 @@ const BooksCollection = ({
   const [lastSearchTerm, setLastSearchTerm] = useState('');
   const [useExternalSources, setUseExternalSources] = useState(true);
 
-  // Pagination state for personal library only
-  const [pageSizePersonal, setPageSizePersonal] = useState(10);
-  const [currentPagePersonal, setCurrentPagePersonal] = useState(1);
   const allGridRef = useRef<HTMLDivElement>(null);
-  const personalGridRef = useRef<HTMLDivElement>(null);
-
-  // Convert personal library to Book format for compatibility
-  const personalBooks: Book[] = useMemo(() => {
-    return personalLibrary.map(item => ({
-      id: item.books_library.id,
-      title: item.books_library.title,
-      author: item.books_library.author || 'Unknown Author',
-      genre: item.books_library.genre,
-      cover_image_url: item.books_library.cover_image_url,
-      description: item.books_library.description,
-      publication_year: item.books_library.publication_year,
-      language: item.books_library.language || 'English',
-      pdf_url: item.books_library.pdf_url,
-      created_at: item.added_at,
-      price: 0,
-      rating: 0,
-      isbn: null,
-      pages: null,
-      author_bio: null
-    }));
-  }, [personalLibrary]);
 
   const handleSearch = async (searchTerm: string) => {
     const results = await searchBooks(searchTerm);
@@ -190,10 +164,8 @@ const BooksCollection = ({
 
   const handleBooksAdded = () => {
     // Refresh all library data when books are added
-    refetchAll();
-    if (user) {
-      refetchPersonal();
-    }
+      refetchAll();
+      window.dispatchEvent(new Event('shelfUpdated'));
   };
 
   const handleCleanup = async () => {
@@ -294,35 +266,7 @@ const BooksCollection = ({
     () => getFilteredBooks(paginatedData?.books ?? []),
     [paginatedData, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]
   );
-  const filteredPersonalBooks = useMemo(
-    () => getFilteredBooks(personalBooks),
-    [personalBooks, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]
-  );
-
-  // Reset page when filters change handled inside hook
-
-  const paginatedPersonalBooks = useMemo(
-    () =>
-      filteredPersonalBooks.slice(
-        (currentPagePersonal - 1) * pageSizePersonal,
-        currentPagePersonal * pageSizePersonal
-      ),
-    [filteredPersonalBooks, currentPagePersonal, pageSizePersonal]
-  );
-
-  useEffect(() => {
-    setCurrentPagePersonal(1);
-  }, [filteredPersonalBooks, pageSizePersonal]);
-
-
-  const startPersonal =
-    filteredPersonalBooks.length === 0
-      ? 0
-      : (currentPagePersonal - 1) * pageSizePersonal + 1;
-  const endPersonal = Math.min(
-    currentPagePersonal * pageSizePersonal,
-    filteredPersonalBooks.length
-  );
+  
 
   if (isLoadingAll) {
     return <LoadingGrid />;
@@ -357,7 +301,7 @@ const BooksCollection = ({
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => { refetchAll(); refetchPersonal(); }}
+                onClick={() => { refetchAll(); window.dispatchEvent(new Event('shelfUpdated')); }}
                 disabled={searchLoading}
                 className="flex items-center gap-2"
               >
@@ -418,7 +362,7 @@ const BooksCollection = ({
               <div className="p-1 bg-gradient-to-br from-amber-500 to-orange-600 rounded">
                 <Library className="w-3 h-3 text-white" />
               </div>
-              My Personal Library ({filteredPersonalBooks.length})
+                My Personal Library
             </TabsTrigger>
           )}
         </TabsList>
@@ -486,64 +430,21 @@ const BooksCollection = ({
           </div>
         </TabsContent>
 
-        {user && (
-          <TabsContent value="my-library" className="space-y-6">
-            {/* Enhanced Personal Library Header */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6 shadow-sm">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          {user && (
+            <TabsContent value="my-library" className="space-y-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6 shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
                     <Library className="w-6 h-6 text-white" />
                   </div>
-                  <div>
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-2">
-                      My Personal Library
-                    </h2>
-                    <div className="h-1 w-16 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full"></div>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                  <div className="text-sm text-gray-600 font-medium">
-                    Showing {startPersonal}-{endPersonal} of {filteredPersonalBooks.length} books
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-700">Books per page:</span>
-                    <Select value={String(pageSizePersonal)} onValueChange={(value) => setPageSizePersonal(parseInt(value, 10))}>
-                      <SelectTrigger className="w-20 h-9 border-2 border-gray-200 hover:border-amber-300 transition-colors">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-2 border-gray-200 shadow-lg z-50">
-                        {[10, 20, 40, 100].map((size) => (
-                          <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                    My Personal Library
+                  </h2>
                 </div>
               </div>
-            </div>
-            
-            {isLoadingPersonal ? (
-              <LoadingGrid />
-            ) : (
-              <div ref={personalGridRef} className="space-y-6">
-                <BooksGrid
-                  books={paginatedPersonalBooks}
-                  onDownloadPDF={handleDownloadPDF}
-                />
-                <LibraryPagination
-                  totalCount={filteredPersonalBooks.length}
-                  currentPage={currentPagePersonal}
-                  pageSize={pageSizePersonal}
-                  onPageChange={setCurrentPagePersonal}
-                  onPageSizeChange={setPageSizePersonal}
-                  scrollTargetRef={personalGridRef}
-                />
-              </div>
-            )}
-          </TabsContent>
-        )}
+              <MyLibrary />
+            </TabsContent>
+          )}
       </Tabs>
 
       {/* Book Selection Modal */}
