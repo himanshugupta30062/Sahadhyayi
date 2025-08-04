@@ -55,12 +55,12 @@ function App() {
   
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <QuotesProvider>
-              <ChatbotProvider>
-                <BrowserRouter>
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <AuthProvider>
+              <QuotesProvider>
+                <ChatbotProvider>
                   <ScrollToTop />
                   <div className="min-h-screen bg-background text-foreground flex flex-col">
                     <Navigation />
@@ -89,12 +89,12 @@ function App() {
                   </div>
                   <Chatbot />
                   <Toaster />
-                </BrowserRouter>
-              </ChatbotProvider>
-            </QuotesProvider>
-          </AuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
+                </ChatbotProvider>
+              </QuotesProvider>
+            </AuthProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </BrowserRouter>
     </ErrorBoundary>
   );
 }
