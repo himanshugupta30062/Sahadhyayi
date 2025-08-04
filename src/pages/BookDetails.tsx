@@ -19,11 +19,10 @@ import { useBookById } from '@/hooks/useBookById';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 
 const BookDetails = () => {
-  const { id, bookId } = useParams<{ id?: string; bookId?: string }>();
-  const actualId = id || bookId; // Handle both /book/:id and /books/:bookId routes
-  const { data: book, isLoading, error } = useBookById(actualId);
+  const { id } = useParams<{ id: string }>();
+  const { data: book, isLoading, error } = useBookById(id);
 
-  console.log('BookDetails - Route params:', { id, bookId, actualId });
+  console.log('BookDetails - Route params:', { id });
   console.log('BookDetails - Book data:', book);
   console.log('BookDetails - Loading state:', isLoading);
   console.log('BookDetails - Error state:', error);
@@ -70,7 +69,7 @@ const BookDetails = () => {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Book Not Found</h1>
           <p className="text-gray-600 mb-4">Sorry, we couldn't find the book you're looking for.</p>
-          <p className="text-sm text-gray-500 mb-4">Book ID: {actualId}</p>
+          <p className="text-sm text-gray-500 mb-4">Book ID: {id}</p>
           <Link to="/library">
             <Button variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -84,7 +83,7 @@ const BookDetails = () => {
 
   const rating = book.rating || 4.2;
   const ratingCount = Math.floor(Math.random() * 500 + 100);
-  const canonicalUrl = `https://sahadhyayi.com/books/${actualId}`;
+  const canonicalUrl = `https://sahadhyayi.com/book/${id}`;
   
   const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} - Read Online`;
   const seoDescription = book.description 
@@ -106,7 +105,7 @@ const BookDetails = () => {
   const breadcrumbItems = [
     { name: 'Explore', path: '/library' },
     ...(book.genre ? [{ name: book.genre, path: `/library?genre=${encodeURIComponent(book.genre)}` }] : []),
-    { name: book.title, path: `/books/${actualId}`, current: true }
+    { name: book.title, path: `/book/${id}`, current: true }
   ];
 
   const bookSchema = generateBookSchema({

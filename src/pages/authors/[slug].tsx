@@ -26,6 +26,7 @@ import Breadcrumb from '@/components/ui/breadcrumb';
 import { slugify } from '@/utils/slugify';
 import SocialShare from '@/components/SocialShare';
 
+// Comprehensive author profile page accessed via /authors/:slug
 const AuthorSlugPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
