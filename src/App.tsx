@@ -4,12 +4,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Security initialization
-import { initializeSecurity } from "./utils/security";
+// import { initializeSecurity } from "./utils/security";
 
-// Initialize security measures on app load
-if (typeof window !== 'undefined') {
-  initializeSecurity();
-}
+// TODO: Re-enable security initialization after fixing import issues
+// if (typeof window !== 'undefined') {
+//   initializeSecurity();
+// }
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";

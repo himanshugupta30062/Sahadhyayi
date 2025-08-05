@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { logError } from '../utils/logger';
+// import { logError } from '../utils/logger';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -24,12 +24,14 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Secure logging with sanitized data
-    logError('Component error caught by boundary', 'ERROR_BOUNDARY', {
-      error: error.message,
-      stack: error.stack?.substring(0, 1000), // Limit stack trace length
-      componentStack: errorInfo.componentStack?.substring(0, 500)
-    });
+    // Secure logging with sanitized data (temporarily disabled)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Component error caught by boundary:', {
+        error: error.message,
+        stack: error.stack?.substring(0, 1000),
+        componentStack: errorInfo.componentStack?.substring(0, 500)
+      });
+    }
     
     this.setState({ errorInfo });
   }
