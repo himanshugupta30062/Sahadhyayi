@@ -5,8 +5,6 @@ import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 
-console.log('AuthContext loading, React available:', !!React);
-
 interface AuthContextType {
   user: User | null;
   session: Session | null;
