@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React from 'react';
 
 interface SEOProps {
   title: string;
@@ -38,7 +38,7 @@ const SEO = ({
   alternateUrls = [],
   breadcrumbs = []
 }: SEOProps) => {
-  console.log('SEO component rendering, React available:', !!React);
+  
   
   // Temporarily disabled - just set document title
   const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;

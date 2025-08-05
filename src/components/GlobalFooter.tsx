@@ -1,5 +1,5 @@
 
-import * as React from "react";
+import React from "react";
 import { Users, Mail, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,7 +11,7 @@ import CommunityStats from "@/components/CommunityStats";
 import SignInLink from '@/components/SignInLink';
 
 const GlobalFooter = () => {
-  console.log('GlobalFooter rendering, React available:', !!React);
+  
   
   const [showCount, setShowCount] = React.useState(false);
   const [hasJoined, setHasJoined] = React.useState(false);

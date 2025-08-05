@@ -1,8 +1,8 @@
 
-import * as React from 'react';
+import React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-console.log('QuotesContext loading, React available:', !!React);
+
 
 export interface Quote {
   id: number;
@@ -28,11 +28,8 @@ export const useQuotes = () => {
 };
 
 export const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
-  console.log('QuotesProvider initializing, React available:', !!React);
-  
   // Add safety check for React hooks
   if (!React || typeof useState !== 'function') {
-    console.error('React hooks not available in QuotesProvider');
     return React.createElement('div', { children });
   }
 

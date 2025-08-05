@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React from 'react';
 
 // Temporary SEO component to prevent errors while we fix the helmet issue
 interface TempSEOProps {
@@ -9,7 +9,7 @@ interface TempSEOProps {
 }
 
 const TempSEO = ({ title, description, ...props }: TempSEOProps) => {
-  console.log('TempSEO component rendering, React available:', !!React);
+  
   
   // Set document title directly without helmet
   if (typeof document !== 'undefined') {
