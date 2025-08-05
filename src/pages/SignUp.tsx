@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserPlus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { PasswordStrength } from '@/components/ui/password-strength';
 import { validateEmail, validatePassword, sanitizeInput, validateUsername, isRateLimited } from '@/utils/validation';
-import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
+// import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 
@@ -110,13 +110,6 @@ const SignUp = () => {
       );
 
       if (error) {
-        // Log failed signup attempt
-        logSecurityEvent('SIGNUP_FAILED', { 
-          email: sanitizedEmail,
-          error: error.message,
-          timestamp: new Date().toISOString()
-        });
-
         // Enhanced error handling with user-friendly messages
         let errorMessage = error.message;
         
@@ -131,12 +124,6 @@ const SignUp = () => {
         } else if (error.message.includes('email') && error.message.includes('confirm')) {
           errorMessage = 'A verification email has been sent to your email.';
           setSuccess(errorMessage);
-          
-          // Log successful signup
-          logSecurityEvent('SIGNUP_SUCCESS', { 
-            email: sanitizedEmail,
-            timestamp: new Date().toISOString()
-          });
           
           // Clear form on success
           setFormData({
@@ -163,11 +150,6 @@ const SignUp = () => {
       }
 
       // Success case
-      logSecurityEvent('SIGNUP_SUCCESS', { 
-        email: sanitizedEmail,
-        timestamp: new Date().toISOString()
-      });
-
       setSuccess('A verification email has been sent to your email.');
       
       // Clear form on success
@@ -185,10 +167,6 @@ const SignUp = () => {
       
     } catch (error: unknown) {
       console.error('Signup error:', error);
-      logSecurityEvent('SIGNUP_ERROR', { 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
-      });
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);

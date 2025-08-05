@@ -11,7 +11,7 @@ import { LogIn, Mail, Lock } from 'lucide-react';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
 import SEO from '@/components/SEO';
 import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation';
-import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
+// import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
 import { useToast } from '@/hooks/use-toast';
 
 const SignIn = () => {
@@ -107,13 +107,6 @@ const SignIn = () => {
       const { error } = await signIn(sanitizedEmail, formData.password);
 
       if (error) {
-        // Log failed login attempt
-        logSecurityEvent('LOGIN_FAILED', { 
-          email: sanitizedEmail,
-          error: error.message,
-          timestamp: new Date().toISOString()
-        });
-
         // Enhanced error handling with user-friendly messages
         let errorMessage = error.message;
         
@@ -133,21 +126,9 @@ const SignIn = () => {
         return;
       }
 
-      // Success - initialize secure session
-      initializeSecureSession();
-      
-      logSecurityEvent('LOGIN_SUCCESS', { 
-        email: sanitizedEmail,
-        timestamp: new Date().toISOString()
-      });
-
       // Success will be handled by the useEffect above
     } catch (error: unknown) {
       console.error('Signin error:', error);
-      logSecurityEvent('LOGIN_ERROR', { 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
-      });
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
