@@ -6,28 +6,18 @@ import ReactLoader from './components/ReactLoader';
 import App from './App';
 import './index.css';
 
-console.log('Main.tsx: Starting application...');
-console.log('React imported:', !!React);
-console.log('React.version:', React.version);
-
-// Ensure React is globally available
-if (typeof window !== 'undefined') {
+// Security: Remove React from global scope in production
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as any).React = React;
-  console.log('React attached to window');
 }
 
 const container = document.getElementById("root");
 if (!container) {
-  console.error('Root element not found!');
   throw new Error("Root element not found");
 }
 
-console.log('Root container found');
-
 function initializeApp() {
-  console.log('Initializing app with ReactLoader...');
-
-  // Ensure any initial loader is removed once React starts initializing
+  // Security: Remove any initial loader
   const initialLoader = document.getElementById('loader');
   if (initialLoader) {
     initialLoader.style.display = 'none';
@@ -35,7 +25,6 @@ function initializeApp() {
 
   try {
     const root = createRoot(container);
-    console.log('React root created successfully');
     
     root.render(
       <StrictMode>
@@ -44,10 +33,10 @@ function initializeApp() {
         </ReactLoader>
       </StrictMode>
     );
-
-    console.log('App with ReactLoader rendered successfully');
   } catch (error) {
-    console.error('Failed to render app:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Failed to render app:', error);
+    }
     
     // Show error message
     container.innerHTML = `
@@ -77,11 +66,9 @@ function initializeApp() {
   }
 }
 
-// Initialize immediately if DOM is ready
+// Initialize app when DOM is ready
 if (document.readyState === 'loading') {
-  console.log('DOM still loading, waiting...');
   document.addEventListener('DOMContentLoaded', initializeApp);
 } else {
-  console.log('DOM already ready, initializing...');
   initializeApp();
 }

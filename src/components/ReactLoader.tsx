@@ -23,7 +23,6 @@ class ReactLoader extends React.Component<ReactLoaderProps, ReactLoaderState> {
   }
 
   componentDidMount() {
-    console.log('ReactLoader mounted, checking React availability...');
     this.checkReactAvailability();
   }
 
@@ -34,13 +33,6 @@ class ReactLoader extends React.Component<ReactLoaderProps, ReactLoaderState> {
   }
 
   checkReactAvailability = () => {
-    console.log('Checking React availability, attempt:', this.state.retryCount + 1);
-    console.log('React available:', !!React);
-    console.log('React.useState available:', typeof React.useState);
-    console.log('React.useEffect available:', typeof React.useEffect);
-    console.log('React.useContext available:', typeof React.useContext);
-    console.log('React.useRef available:', typeof React.useRef);
-
     // Check if React and all essential hooks are available
     const isReactReady = !!(
       React && 
@@ -56,13 +48,9 @@ class ReactLoader extends React.Component<ReactLoaderProps, ReactLoaderState> {
       typeof React.useRef === 'function'
     );
 
-    console.log('React readiness check result:', isReactReady);
-
     if (isReactReady) {
-      console.log('React is ready, rendering children');
       this.setState({ isReactReady: true });
     } else if (this.state.retryCount < this.maxRetries) {
-      console.log('React not ready, retrying in 100ms...');
       this.retryInterval = setTimeout(() => {
         this.setState(
           { retryCount: this.state.retryCount + 1 },
@@ -70,14 +58,12 @@ class ReactLoader extends React.Component<ReactLoaderProps, ReactLoaderState> {
         );
       }, 100);
     } else {
-      console.error('Max retries reached, React could not be initialized properly');
       // Force render anyway to show error boundary
       this.setState({ isReactReady: true });
     }
   };
 
   render() {
-    console.log('ReactLoader rendering, isReactReady:', this.state.isReactReady);
     
     if (!this.state.isReactReady) {
       return (

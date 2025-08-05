@@ -3,7 +3,13 @@ import * as React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-console.log('App.tsx: Starting app initialization');
+// Security initialization
+import { initializeSecurity } from "./utils/security";
+
+// Initialize security measures on app load
+if (typeof window !== 'undefined') {
+  initializeSecurity();
+}
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
@@ -51,8 +57,6 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  console.log('App component rendering...');
-  
   return (
     <ErrorBoundary>
       <BrowserRouter>
