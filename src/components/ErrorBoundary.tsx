@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React from 'react';
 // import { logError } from '../utils/logger';
 
 interface ErrorBoundaryProps {
