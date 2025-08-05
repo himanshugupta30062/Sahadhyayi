@@ -25,12 +25,9 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  console.log('AuthProvider initializing...');
-  console.log('React available in AuthProvider:', !!React);
   
   // Add safety check for React hooks
   if (!React || typeof useState !== 'function') {
-    console.error('React hooks not available in AuthProvider');
     return React.createElement('div', { children });
   }
   
@@ -40,7 +37,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    console.log('AuthProvider useEffect running...');
     let mounted = true;
 
     // Set up auth state listener
@@ -267,8 +263,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signUp,
     signIn,
   };
-
-  console.log('AuthProvider rendering with value:', { user: !!user, session: !!session, loading });
 
   return React.createElement(AuthContext.Provider, { value }, children);
 };
