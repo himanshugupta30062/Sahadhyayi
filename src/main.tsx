@@ -3,6 +3,7 @@ import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import ReactLoader from './components/ReactLoader';
 import App from './App';
+import { errorHandler } from './utils/errorHandler';
 import './index.css';
 
 // Security: Remove React from global scope in production
@@ -14,6 +15,9 @@ if (!container) {
 }
 
 function initializeApp() {
+  // Initialize error handling first
+  errorHandler.initialize();
+
   // Security: Remove any initial loader
   const initialLoader = document.getElementById('loader');
   if (initialLoader) {
