@@ -21,6 +21,42 @@ export interface Book {
   author_bio?: string;
 }
 
+// Function to calculate book completeness score (higher score = better book)
+const getBookCompletenessScore = (book: any): number => {
+  let score = 0;
+  
+  // PDF availability (highest priority)
+  if (book.pdf_url) score += 100;
+  
+  // Cover image availability
+  if (book.cover_image_url) score += 50;
+  
+  // Complete details
+  if (book.description) score += 20;
+  if (book.author_bio) score += 15;
+  if (book.genre) score += 10;
+  if (book.publication_year) score += 8;
+  if (book.pages) score += 7;
+  if (book.isbn) score += 5;
+  if (book.language && book.language !== 'English') score += 3; // Bonus for non-English books
+  
+  return score;
+};
+
+// Default sorting function for books by completeness
+const sortBooksByCompleteness = (books: any[]): any[] => {
+  return books.sort((a, b) => {
+    const scoreA = getBookCompletenessScore(a);
+    const scoreB = getBookCompletenessScore(b);
+    
+    // Sort by completeness score (descending), then by creation date (newest first)
+    if (scoreA !== scoreB) {
+      return scoreB - scoreA;
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+};
+
 export interface Genre {
   id: string;
   name: string;
@@ -33,14 +69,13 @@ export const useAllLibraryBooks = () => {
       try {
         const { data, error } = await supabase
           .from('books_library')
-          .select('*')
-          .order('created_at', { ascending: true });
+          .select('*');
 
         if (error || !data) {
           throw error;
         }
 
-        return data.map(book => ({
+        const mappedBooks = data.map(book => ({
           id: book.id,
           title: book.title,
           author: book.author || 'Unknown Author',
@@ -57,9 +92,12 @@ export const useAllLibraryBooks = () => {
           pages: book.pages,
           author_bio: book.author_bio
         }));
+
+        // Sort by completeness by default
+        return sortBooksByCompleteness(mappedBooks);
       } catch (error) {
         console.error('Falling back to sample books due to error:', error);
-        return sampleBooks;
+        return sortBooksByCompleteness(sampleBooks);
       }
     },
   });
@@ -71,8 +109,7 @@ export const useLibraryBooks = (searchQuery?: string) => {
     queryFn: async (): Promise<Book[]> => {
       let query = supabase
         .from('books_library')
-        .select('*')
-        .order('created_at', { ascending: true });
+        .select('*');
 
       if (searchQuery && searchQuery.trim()) {
         query = query.or(
@@ -87,7 +124,7 @@ export const useLibraryBooks = (searchQuery?: string) => {
         throw error;
       }
 
-      return (data || []).map(book => ({
+      const mappedBooks = (data || []).map(book => ({
         id: book.id,
         title: book.title,
         author: book.author || 'Unknown Author',
@@ -104,6 +141,9 @@ export const useLibraryBooks = (searchQuery?: string) => {
         pages: book.pages,
         author_bio: book.author_bio
       }));
+
+      // Sort by completeness by default
+      return sortBooksByCompleteness(mappedBooks);
     },
   });
 };
@@ -114,8 +154,7 @@ export const useBooksByGenre = (genre: string) => {
     queryFn: async (): Promise<Book[]> => {
       let query = supabase
         .from('books_library')
-        .select('*')
-        .order('created_at', { ascending: true });
+        .select('*');
 
       if (genre !== 'All') {
         if (genre === 'Hindi') {
@@ -132,7 +171,7 @@ export const useBooksByGenre = (genre: string) => {
         throw error;
       }
 
-      return (data || []).map(book => ({
+      const mappedBooks = (data || []).map(book => ({
         id: book.id,
         title: book.title,
         author: book.author || 'Unknown Author',
@@ -149,6 +188,9 @@ export const useBooksByGenre = (genre: string) => {
         pages: book.pages,
         author_bio: book.author_bio
       }));
+
+      // Sort by completeness by default
+      return sortBooksByCompleteness(mappedBooks);
     },
   });
 };

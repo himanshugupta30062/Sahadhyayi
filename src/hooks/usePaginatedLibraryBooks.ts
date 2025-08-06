@@ -43,11 +43,10 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
 
   const fetchPaginatedBooks = React.useCallback(async (): Promise<PaginatedBooksResponse> => {
     try {
-      // Start building the query
+      // Start building the query - remove the order clause to apply custom sorting later
       let query = supabase
         .from('books_library')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' });
 
       // Apply search filter
       if (searchQuery && searchQuery.trim()) {
@@ -80,10 +79,6 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
         query = query.eq('language', selectedLanguage);
       }
 
-      // Apply pagination
-      const startIndex = (page - 1) * pageSize;
-      query = query.range(startIndex, startIndex + pageSize - 1);
-
       const { data, error, count } = await query;
 
       if (error) {
@@ -95,7 +90,8 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
       const calculatedTotalPages = Math.ceil(totalCount / pageSize);
       setTotalPages(calculatedTotalPages);
 
-      const books: Book[] = (data || []).map(book => ({
+      // Map and sort books by completeness before pagination
+      const allMappedBooks: Book[] = (data || []).map(book => ({
         id: book.id,
         title: book.title,
         author: book.author || 'Unknown Author',
@@ -112,6 +108,44 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
         pages: book.pages,
         author_bio: book.author_bio
       }));
+
+      // Sort by completeness
+      const sortedBooks = allMappedBooks.sort((a, b) => {
+        let scoreA = 0;
+        let scoreB = 0;
+        
+        // PDF availability (highest priority)
+        if (a.pdf_url) scoreA += 100;
+        if (b.pdf_url) scoreB += 100;
+        
+        // Cover image availability
+        if (a.cover_image_url) scoreA += 50;
+        if (b.cover_image_url) scoreB += 50;
+        
+        // Complete details
+        if (a.description) scoreA += 20;
+        if (b.description) scoreB += 20;
+        if (a.author_bio) scoreA += 15;
+        if (b.author_bio) scoreB += 15;
+        if (a.genre) scoreA += 10;
+        if (b.genre) scoreB += 10;
+        if (a.publication_year) scoreA += 8;
+        if (b.publication_year) scoreB += 8;
+        if (a.pages) scoreA += 7;
+        if (b.pages) scoreB += 7;
+        if (a.isbn) scoreA += 5;
+        if (b.isbn) scoreB += 5;
+        
+        // Sort by completeness score (descending), then by creation date (newest first)
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
+      // Apply pagination to sorted books
+      const startIndex = (page - 1) * pageSize;
+      const books = sortedBooks.slice(startIndex, startIndex + pageSize);
 
       return {
         books,
