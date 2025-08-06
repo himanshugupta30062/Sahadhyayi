@@ -14,43 +14,11 @@ interface BookCardProps {
 
 const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isOffline, setIsOffline] = useState(() => {
-    const stored = localStorage.getItem('offlineBooks');
-    if (!stored) return false;
-    try {
-      return JSON.parse(stored).includes(book.id);
-    } catch {
-      return false;
-    }
-  });
 
   const handleDownload = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onDownloadPDF(book);
-  };
-
-  const handleToggleOffline = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const cache = await caches.open('sahadhyayi-cache-v1');
-    let offline = [] as string[];
-    try {
-      offline = JSON.parse(localStorage.getItem('offlineBooks') || '[]');
-    } catch {
-      offline = [];
-    }
-    if (isOffline) {
-      offline = offline.filter(id => id !== book.id);
-      localStorage.setItem('offlineBooks', JSON.stringify(offline));
-      if (book.pdf_url) await cache.delete(book.pdf_url);
-      setIsOffline(false);
-    } else {
-      if (book.pdf_url) await cache.add(book.pdf_url);
-      offline.push(book.id);
-      localStorage.setItem('offlineBooks', JSON.stringify(offline));
-      setIsOffline(true);
-    }
   };
 
   return (
@@ -97,7 +65,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
 
         {/* Hover Overlay with Download and Details Buttons */}
         <div
-          className={`absolute inset-0 bg-black/60 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 transition-all duration-300 ${
+          className={`absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center gap-4 transition-all duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`}
         >
@@ -105,37 +73,27 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           <button
             onClick={handleDownload}
             disabled={!book.pdf_url}
-            className={`flex flex-col items-center gap-2 backdrop-blur-sm text-white px-3 py-2 rounded-lg transition-all duration-200 ${
+            className={`flex flex-col items-center gap-2 text-white px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-110 ${
               book.pdf_url 
-                ? 'bg-gray-700/80 hover:bg-gray-800/90 hover:scale-105 cursor-pointer' 
-                : 'bg-gray-500/60 cursor-not-allowed opacity-60'
+                ? 'bg-primary/90 hover:bg-primary shadow-lg hover:shadow-xl' 
+                : 'bg-muted/60 cursor-not-allowed opacity-60'
             }`}
             title={book.pdf_url ? "Download PDF" : "PDF not available"}
           >
-            <Download className="w-5 h-5" />
-            <span className="text-xs font-medium">
+            <Download className="w-6 h-6" />
+            <span className="text-sm font-semibold">
               {book.pdf_url ? 'Download' : 'No PDF'}
             </span>
-          </button>
-
-          {/* Offline Toggle */}
-          <button
-            onClick={handleToggleOffline}
-            className="flex flex-col items-center gap-2 bg-gray-700/80 backdrop-blur-sm hover:bg-gray-800/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
-            title="Download for Offline"
-          >
-            <Download className="w-5 h-5" />
-            <span className="text-xs font-medium">{isOffline ? 'Remove' : 'Offline'}</span>
           </button>
           
           {/* Details Button */}
           <Link
             to={`/book/${book.id}`}
-            className="flex flex-col items-center gap-2 bg-gray-500/80 backdrop-blur-sm hover:bg-gray-600/90 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105"
+            className="flex flex-col items-center gap-2 bg-secondary/90 hover:bg-secondary text-secondary-foreground px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-110 shadow-lg hover:shadow-xl"
             title="View Details"
           >
-            <Info className="w-5 h-5" />
-            <span className="text-xs font-medium">Details</span>
+            <Info className="w-6 h-6" />
+            <span className="text-sm font-semibold">Details</span>
           </Link>
         </div>
       </div>
