@@ -109,6 +109,38 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     }
   }, [isEpub, bookUrl]);
 
+  // Load PDF.js when reading PDFs to determine total pages
+  useEffect(() => {
+    if (isPdf && bookUrl) {
+      const loadPdfjs = () => {
+        const fetchPages = () => {
+          try {
+            const pdfjsLib = (window as any).pdfjsLib;
+            pdfjsLib.GlobalWorkerOptions.workerSrc =
+              'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            pdfjsLib
+              .getDocument(bookUrl)
+              .promise.then((pdf: any) => setTotalPages(pdf.numPages))
+              .catch((err: any) => console.error('Error loading PDF:', err));
+          } catch (err) {
+            console.error('PDF.js not available', err);
+          }
+        };
+
+        if (!(window as any).pdfjsLib) {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          script.onload = fetchPages;
+          document.head.appendChild(script);
+        } else {
+          fetchPages();
+        }
+      };
+
+      loadPdfjs();
+    }
+  }, [isPdf, bookUrl]);
+
   useEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer) return;
@@ -353,6 +385,14 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     }
   };
 
+  const navigatePdfNext = () => {
+    setCurrentPage(prev => (totalPages ? Math.min(totalPages, prev + 1) : prev + 1));
+  };
+
+  const navigatePdfPrevious = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1));
+  };
+
   const goToChapter = (href: string) => {
     if (renditionRef.current) {
       renditionRef.current.display(href);
@@ -510,6 +550,19 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 >
                   <List className="w-4 h-4" />
                   TOC
+                </Button>
+              )}
+
+              {/* Open PDF in new tab */}
+              {isPdf && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(pdfUrl, '_blank')}
+                  className="flex items-center gap-1"
+                >
+                  <Download className="w-4 h-4" />
+                  Open
                 </Button>
               )}
               
@@ -698,13 +751,14 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
             ) : isPdf ? (
               <div className="relative">
                 <object
+                  key={currentPage}
                   data={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&page=${currentPage}`}
                   type="application/pdf"
                   className={`w-full border rounded-lg ${isFullscreen ? 'h-screen' : 'h-[600px]'}`}
                   style={{ width: '100%', height: '100%' }}
                 >
                   <p className="p-4 text-center text-gray-500">
-                    Unable to display PDF.{' '}
+                    Unable to display PDF.{" "}
                     <a
                       href={pdfUrl}
                       target="_blank"
@@ -712,13 +766,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                       className="underline"
                     >
                       Download
-                    </a>{' '}
+                    </a>{" "}
                     instead.
                   </p>
                 </object>
                 {/* PDF Navigation Helper */}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
-                  Use PDF controls to navigate • Page {currentPage}
+                  Page {currentPage}{totalPages ? ` of ${totalPages}` : ''}
                 </div>
               </div>
             ) : (
@@ -757,6 +811,36 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 )}
               </>
             )}
+
+            {/* Navigation controls for PDF */}
+            {isPdf && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
+                  onClick={navigatePdfPrevious}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
+                  onClick={navigatePdfNext}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+
+                {totalPages > 0 && (
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
+                    Page {currentPage} of {totalPages} • {Math.round(progressPercentage)}%
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {/* Enhanced Reader Instructions */}
@@ -768,7 +852,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
               </div>
             ) : (
               <div>
-                <p>Use the built-in PDF controls to navigate through the book.</p>
+                <p>Use the navigation buttons or built-in PDF controls to move through the book.</p>
                 <p className="text-xs">Zoom, search, and download features are available in the PDF toolbar.</p>
               </div>
             )}
