@@ -28,16 +28,53 @@
     <meta name="color-scheme" content="light" />
     <link rel="icon" type="image/png" href="/lovable-uploads/sahadhyayi-logo-digital-reading.png" />
     
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+      }
+      #fallback {
+        max-width: 600px;
+        display: none;
+      }
+      #fallback a {
+        color: #2563eb;
+        text-decoration: underline;
+      }
+    </style>
     <script>
-      // Preserve the requested path for client-side routing on GitHub Pages
-      sessionStorage.redirectPath =
-        window.location.pathname + window.location.search + window.location.hash;
-      window.location.href = '/';
+      function showFallback() {
+        const el = document.getElementById('fallback');
+        if (el) el.style.display = 'block';
+      }
+      // Preserve the requested path for client-side routing
+      try {
+        sessionStorage.redirectPath =
+          window.location.pathname + window.location.search + window.location.hash;
+        // Attempt to redirect to the SPA entry point
+        window.location.replace('/');
+        // If the redirect hasn't happened after a short delay, show the fallback
+        setTimeout(showFallback, 4000);
+      } catch (e) {
+        // If anything fails (e.g. sessionStorage unavailable), show the fallback immediately
+        showFallback();
+      }
     </script>
   </head>
 
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="fallback">
+      <h1>Page not found</h1>
+      <p>
+        The page you're looking for doesn't exist or the application failed to load.
+        You can try refreshing the page or return to the
+        <a href="/">homepage</a>.
+      </p>
+    </div>
   </body>
 </html>
