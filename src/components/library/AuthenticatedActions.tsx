@@ -1,10 +1,11 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Check, Download } from 'lucide-react';
+import { Plus, Check, Download, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
+import { toast } from '@/hooks/use-toast';
 import type { Book } from '@/hooks/useLibraryBooks';
 
 interface AuthenticatedActionsProps {
@@ -21,7 +22,18 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
 
   const handleAddToShelf = () => {
     if (!user) return;
-    addToBookshelf.mutate({ bookId: book.id, status: 'reading' });
+    addToBookshelf.mutate(
+      { bookId: book.id, status: 'reading' },
+      {
+        onError: (error: any) => {
+          toast({
+            title: 'Error',
+            description: error.message || 'Failed to add book to shelf',
+            variant: 'destructive',
+          });
+        },
+      }
+    );
   };
 
   if (!user) {
@@ -32,6 +44,7 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
             variant="outline"
             size="sm"
             className="w-full whitespace-normal"
+            aria-label="Sign in to add book to shelf"
           >
             Sign in to Add to Shelf
           </Button>
@@ -42,6 +55,7 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
             size="sm"
             onClick={() => onDownloadPDF(book)}
             className="sm:w-auto"
+            aria-label={`Download PDF of ${book.title}`}
           >
             <Download className="w-4 h-4 mr-1" />
             PDF
@@ -58,8 +72,14 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
         disabled={isInShelf || addToBookshelf.isPending}
         className="flex-1 bg-amber-600 hover:bg-amber-700"
         size="sm"
+        aria-label={isInShelf ? `${book.title} is already in your shelf` : `Add ${book.title} to your shelf`}
       >
-        {isInShelf ? (
+        {addToBookshelf.isPending ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            Adding...
+          </>
+        ) : isInShelf ? (
           <>
             <Check className="w-4 h-4 mr-1" />
             Added
@@ -77,6 +97,7 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
           size="sm"
           onClick={() => onDownloadPDF(book)}
           className="sm:w-auto"
+          aria-label={`Download PDF of ${book.title}`}
         >
           <Download className="w-4 h-4 mr-1" />
           PDF
