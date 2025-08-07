@@ -63,61 +63,69 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           </div>
         </div>
 
-        {/* Enhanced Action Buttons Overlay - Desktop & Mobile Optimized */}
+        {/* Enhanced Action Buttons Overlay - Icon Only with Hover Text */}
         <div
           className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 ${
-            isHovered ? 'opacity-100' : 'opacity-0 md:opacity-0'
+            isHovered ? 'opacity-100' : 'opacity-0'
           } 
-          flex flex-col justify-end p-3 md:flex-row md:items-center md:justify-center md:gap-3`}
+          flex items-center justify-center gap-4`}
         >
-          {/* Download Button - Enhanced Design */}
+          {/* Download Button - Icon Only */}
           <button
             onClick={handleDownload}
             disabled={!book.pdf_url}
             className={`
-              flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
-              transition-all duration-300 transform hover:scale-105 active:scale-95
+              group/btn relative flex items-center justify-center w-12 h-12 rounded-full
+              transition-all duration-300 transform hover:scale-110 active:scale-95
               shadow-lg hover:shadow-xl backdrop-blur-sm
-              mb-2 md:mb-0 md:flex-col md:px-6 md:py-3 md:rounded-xl
               ${
                 book.pdf_url 
-                  ? 'bg-sahadhyayi-orange text-white hover:bg-sahadhyayi-orange/90 shadow-orange-500/25' 
+                  ? 'bg-sahadhyayi-orange text-white hover:bg-sahadhyayi-orange/90' 
                   : 'bg-muted/80 text-muted-foreground cursor-not-allowed opacity-60'
               }
             `}
             title={book.pdf_url ? "Download PDF" : "PDF not available"}
           >
-            <Download className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="md:text-xs md:font-semibold">
-              {book.pdf_url ? 'Download' : 'No PDF'}
-            </span>
+            <Download className="w-5 h-5" />
+            
+            {/* Hover Text Tooltip */}
+            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                {book.pdf_url ? 'Download' : 'No PDF'}
+              </div>
+            </div>
           </button>
           
-          {/* Details Button - Enhanced Design */}
+          {/* Details Button - Icon Only */}
           <Link
             to={`/book/${book.id}`}
             className="
-              flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
-              bg-card/90 hover:bg-card text-card-foreground border border-border/50
-              transition-all duration-300 transform hover:scale-105 active:scale-95
+              group/btn relative flex items-center justify-center w-12 h-12 rounded-full
+              bg-white/10 hover:bg-white/20 text-white border border-white/20
+              transition-all duration-300 transform hover:scale-110 active:scale-95
               shadow-lg hover:shadow-xl backdrop-blur-sm
-              md:flex-col md:px-6 md:py-3 md:rounded-xl md:border-white/20 md:bg-white/10 md:text-white md:hover:bg-white/20
             "
             title="View Details"
           >
-            <Info className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="md:text-xs md:font-semibold">Details</span>
+            <Info className="w-5 h-5" />
+            
+            {/* Hover Text Tooltip */}
+            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                Details
+              </div>
+            </div>
           </Link>
         </div>
 
-        {/* Mobile-Only Quick Actions Bar */}
+        {/* Mobile Quick Actions - Simplified */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 md:hidden">
-          <div className="flex gap-2">
+          <div className="flex gap-3 justify-center">
             <button
               onClick={handleDownload}
               disabled={!book.pdf_url}
               className={`
-                flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium
+                flex items-center justify-center w-10 h-10 rounded-full
                 transition-all duration-200 backdrop-blur-sm
                 ${
                   book.pdf_url 
@@ -125,21 +133,21 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
                     : 'bg-muted/60 text-muted-foreground cursor-not-allowed opacity-60'
                 }
               `}
+              title={book.pdf_url ? "Download PDF" : "PDF not available"}
             >
-              <Download className="w-3.5 h-3.5" />
-              {book.pdf_url ? 'Get PDF' : 'No PDF'}
+              <Download className="w-4 h-4" />
             </button>
             
             <Link
               to={`/book/${book.id}`}
               className="
-                flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium
+                flex items-center justify-center w-10 h-10 rounded-full
                 bg-white/10 text-white hover:bg-white/20 border border-white/20
                 transition-all duration-200 backdrop-blur-sm
               "
+              title="View Details"
             >
-              <Info className="w-3.5 h-3.5" />
-              View
+              <Info className="w-4 h-4" />
             </Link>
           </div>
         </div>
