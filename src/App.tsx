@@ -2,6 +2,9 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ErrorBoundary } from '@sentry/react';
+import './sentry';
+import './webVitals';
 
 // Security initialization
 // import { initializeSecurity } from "./utils/security";
@@ -18,9 +21,6 @@ import { QuotesProvider } from "./contexts/QuotesContext";
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
-
-// Component imports
-import ErrorBoundary from "./components/ErrorBoundary";
 import ChatbotContainer from "./components/chatbot/ChatbotContainer";
 import Navigation from "./components/Navigation";
 import GlobalFooter from "./components/GlobalFooter";
@@ -58,7 +58,7 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
