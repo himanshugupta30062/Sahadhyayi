@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react';
 
-export function useColorCycle(colors: string[], intervalMs: number) {
+export function useColorCycle(classes: string[], intervalMs = 10000) {
   const [idx, setIdx] = useState(0);
-
   useEffect(() => {
-    const id = setInterval(() => {
-      setIdx((i) => (i + 1) % colors.length);
-    }, intervalMs);
+    const id = setInterval(() => setIdx(i => (i + 1) % classes.length), intervalMs);
     return () => clearInterval(id);
-  }, [colors, intervalMs]);
-
-  return colors[idx];
+  }, [classes, intervalMs]);
+  return classes[idx] || '';
 }
