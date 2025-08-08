@@ -75,23 +75,23 @@ This project is built with:
 
 ## Environment variables
 
-Create a `.env` file based on `.env.example` and add your Supabase credentials
-along with the Gemini API key:
+Create a `.env` file based on `.env.example` and set the following variables:
 
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-VITE_SPEECH_TO_TEXT_KEY=your_speech_to_text_key
-VITE_GEMINI_API_KEY=your_key_here
-# Optional URL for community statistics
-VITE_COMMUNITY_STATS_URL=https://your-project.supabase.co/functions/v1/community-stats
-VITE_RECOMMENDATIONS_URL=https://your-project.supabase.co/functions/v1/recommendations
-```
-These values are required for the application to connect to Supabase and for the
-chatbot to fetch responses from the Gemini API. The application will throw an error if any of them are missing.
-Ensure `VITE_SUPABASE_URL` points to the Supabase project hosting the community stats function (e.g. `https://your-project.supabase.co`).
-Set `VITE_COMMUNITY_STATS_URL` to an empty string if the API is unavailable.
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SENTRY_DSN`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `GOODREADS_KEY`
+- `GOODREADS_SECRET`
+- `GOODREADS_CALLBACK_URL`
+- `SUPABASE_EDGE_STT_KEY` (optional)
+- `PORT`
+
+## Security
+
+No secrets in client code; tokens are proxied via `/api/stt`.
 
 ## Previewing the production build
 

@@ -1,6 +1,5 @@
 
 import * as React from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface UseSpeechToTextOptions {
   onTranscript: (text: string) => void;
@@ -39,14 +38,16 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
             const formData = new FormData();
             formData.append('audio', audioBlob, 'recording.webm');
 
-            // Invoke Supabase Edge Function with form data
-            const { data, error } = await supabase.functions.invoke('speech-to-text', {
+            const response = await fetch('/api/stt', {
+              method: 'POST',
               body: formData,
+              credentials: 'include',
             });
 
-            if (error) {
-              throw error;
+            if (!response.ok) {
+              throw new Error('STT request failed');
             }
+            const data = await response.json();
 
             if (data?.transcription) {
               onTranscript(data.transcription);
