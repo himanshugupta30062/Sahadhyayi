@@ -38,14 +38,15 @@ app.use((req, res, next) => {
 
 const sessions = new Map();
 
-function createSession(res) {
-  const sessionId = crypto.randomBytes(16).toString('hex');
+function createSession(res, sessionId) {
+  const sid = sessionId || crypto.randomBytes(16).toString('hex');
   const csrfToken = crypto.randomBytes(32).toString('hex');
-  sessions.set(sessionId, { createdAt: Date.now(), csrfToken });
-  res.cookie('sessionId', sessionId, {
+  sessions.set(sid, { createdAt: Date.now(), csrfToken });
+  res.cookie('sessionId', sid, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
+    path: '/',
     maxAge: 24 * 60 * 60 * 1000,
   });
   return csrfToken;
@@ -67,6 +68,14 @@ function checkSession(req, res, next) {
   if (!validateSessionIntegrity(req)) return res.status(401).send('Session expired');
   const token = req.get('x-csrf-token');
   if (!token || token !== getCSRFToken(req)) return res.status(403).send('Invalid CSRF token');
+  next();
+}
+
+function requireSession(req, res, next) {
+  if (!validateSessionIntegrity(req)) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  req.userId = req.cookies.sessionId;
   next();
 }
 
@@ -208,11 +217,11 @@ app.get('/goodreads/callback', async (req, res) => {
   }
 });
 
-app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
+app.get('/goodreads/bookshelf', requireSession, async (req, res) => {
   if (!goodreadsClient) {
     return res.status(503).json({ error: 'Goodreads integration not configured' });
   }
-  const userId = connectedGoodreadsUsers.get(req.user.id);
+  const userId = connectedGoodreadsUsers.get(req.userId);
   if (!userId) return res.status(401).json({ error: 'Not authenticated with Goodreads' });
   try {
     const books = await goodreadsClient.getBooksOnUserShelf(String(userId), 'read', {
@@ -224,8 +233,15 @@ app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
   }
 });
 
-app.post('/api/login', (req, res) => {
-  const csrfToken = createSession(res);
+app.post('/api/session', async (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Authentication required' });
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+  if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+  const csrfToken = createSession(res, user.id);
   res.json({ csrfToken });
 });
 
@@ -234,11 +250,21 @@ app.post('/api/logout', (req, res) => {
   if (sessionId) {
     sessions.delete(sessionId);
   }
-  res.clearCookie('sessionId');
-  res.status(204).send();
+  res.cookie('sessionId', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    path: '/',
+    maxAge: 0,
+  });
+  return res.json({ ok: true });
 });
 
-app.post('/api/stt', (req, res) => {
+app.get('/api/me', requireSession, (req, res) => {
+  res.json({ id: req.userId });
+});
+
+app.post('/api/stt', requireSession, checkSession, (req, res) => {
   const bb = busboy({ headers: req.headers });
   let audioBuffer = Buffer.alloc(0);
   let filename = 'recording.webm';
