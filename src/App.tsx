@@ -12,6 +12,7 @@ import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRF
 // Context imports
 import AuthProvider from "./contexts/AuthContext";
 import QuotesProvider from "./contexts/QuotesContext";
+import ChatbotProvider from "./contexts/ChatbotContext";
 
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
@@ -82,6 +83,7 @@ function App() {
           <TooltipProvider>
             <AuthProvider>
               <QuotesProvider>
+                <ChatbotProvider>
                 <ScrollToTop />
                 <div className="min-h-screen bg-background text-foreground flex flex-col">
                   <a
@@ -141,6 +143,7 @@ function App() {
                   <Chatbot />
                 </Suspense>
                 <Toaster />
+                </ChatbotProvider>
               </QuotesProvider>
             </AuthProvider>
           </TooltipProvider>
