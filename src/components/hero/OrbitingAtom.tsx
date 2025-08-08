@@ -101,7 +101,8 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         style={{
           offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
           offsetRotate: "0deg", // Keep atoms upright
-          animation: (isHovered || isTransitioning) ? "none" : `moveAtom-${duration} ${duration}s linear infinite`,
+          animation: `moveAtom-${duration} ${duration}s linear infinite`,
+          animationPlayState: (isHovered || isTransitioning) ? "paused" : "running",
           left: 0,
           top: `-${size/2}px`, // Center atom vertically on the path
         }}
