@@ -16,7 +16,11 @@ import busboy from 'busboy';
 
 dotenv.config();
 
-Sentry.init({ dsn: process.env.SENTRY_DSN });
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || '',
+  tracesSampleRate: 0.2,
+  environment: process.env.NODE_ENV
+});
 
 const app = express();
 app.use(Sentry.Handlers.requestHandler());
@@ -28,12 +32,27 @@ app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    Sentry.captureMessage('HTTP Request', {
+    const payload = {
       level: 'info',
-      extra: { path: req.path, duration, status: res.statusCode },
-    });
+      event: 'http_request',
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      duration_ms: duration
+    };
+    console.log(JSON.stringify(payload));
+    Sentry.addBreadcrumb({ category: 'http', message: `${req.method} ${req.path}`, level: 'info', data: payload });
   });
   next();
+});
+
+app.get('/healthz', (_req, res) => res.status(200).json({ ok: true, ts: Date.now() }));
+
+app.post('/observability/vitals', express.json(), (req, res) => {
+  try {
+    console.log(JSON.stringify({ level: 'info', event: 'web_vitals', ...req.body }));
+  } catch {}
+  res.status(204).end();
 });
 
 const sessions = new Map();
@@ -300,11 +319,29 @@ app.post('/goodreads/export', authenticate, async (req, res) => {
   }
 });
 
-app.use(Sentry.Handlers.errorHandler());
-
 // Handle client-side routing by returning the main index.html for other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+app.use(Sentry.Handlers.errorHandler());
+
+app.use((err, req, res, _next) => {
+  const status = err.status || 500;
+  const code = err.code || (status >= 500 ? 'SERVER_ERROR' : 'REQUEST_ERROR');
+  const msg = err.message || 'Unexpected error';
+  console.error(
+    JSON.stringify({
+      level: 'error',
+      event: 'api_error',
+      path: req.path,
+      status,
+      code,
+      msg,
+      details: err.details,
+    })
+  );
+  res.status(status).json({ error: msg, code, details: err.details });
 });
 
 const PORT = process.env.PORT || 4000;
