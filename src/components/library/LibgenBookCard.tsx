@@ -2,17 +2,17 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Download } from 'lucide-react';
-import type { LibgenBook } from '@/utils/libgenApi';
+import { ExternalLink } from 'lucide-react';
+import type { ExternalBook } from '@/utils/searchExternalSources';
 
 interface LibgenBookCardProps {
-  book: LibgenBook;
+  book: ExternalBook;
 }
 
 const LibgenBookCard: React.FC<LibgenBookCardProps> = ({ book }) => {
   const handleDownload = () => {
-    if (book.mirrorLink) {
-      window.open(book.mirrorLink, '_blank', 'noopener,noreferrer');
+    if (book.downloadUrl) {
+      window.open(book.downloadUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -44,9 +44,9 @@ const LibgenBookCard: React.FC<LibgenBookCardProps> = ({ book }) => {
               {book.year}
             </span>
           )}
-          {book.format && (
+          {book.extension && (
             <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
-              {book.format}
+              {book.extension}
             </span>
           )}
           {book.size && (
@@ -60,7 +60,7 @@ const LibgenBookCard: React.FC<LibgenBookCardProps> = ({ book }) => {
           <Button 
             size="sm" 
             onClick={handleDownload}
-            disabled={!book.mirrorLink}
+            disabled={!book.downloadUrl}
             className="flex-1 bg-purple-600 hover:bg-purple-700"
           >
             <ExternalLink className="w-4 h-4 mr-2" />

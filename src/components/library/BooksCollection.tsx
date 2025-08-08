@@ -20,7 +20,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import LibraryPagination from './LibraryPagination';
 import { searchExternalSources, type ExternalBook } from '@/utils/searchExternalSources';
-import { searchLibgen, type LibgenBook } from '@/utils/libgenApi';
 import {
   Select,
   SelectContent,
@@ -87,61 +86,16 @@ const BooksCollection = ({
   const handleSearch = async (searchTerm: string) => {
     const results = await searchBooks(searchTerm);
     let external: ExternalBook[] = [];
-    let libgenBooks: LibgenBook[] = [];
-    
-    // Search external sources in parallel
-    const searchPromises = [];
-    
-    if (useExternalSources) {
-      // Search existing external sources
-      searchPromises.push(
-        searchExternalSources(searchTerm).catch(error => {
-          console.warn('External search failed:', error);
-          return [];
-        })
-      );
-      
-      // Search Libgen
-      searchPromises.push(
-        searchLibgen(searchTerm).then(response => {
-          if (response.success) {
-            return response.books;
-          }
-          console.warn('Libgen search failed:', response.error);
-          return [];
-        }).catch(error => {
-          console.warn('Libgen search error:', error);
-          return [];
-        })
-      );
-    }
 
-    if (searchPromises.length > 0) {
+    if (useExternalSources) {
       try {
-        const [externalResults, libgenResults] = await Promise.all(searchPromises);
-        external = externalResults || [];
-        libgenBooks = libgenResults || [];
+        external = await searchExternalSources(searchTerm);
       } catch (error) {
-        console.warn('Parallel search failed:', error);
+        console.warn('External search failed:', error);
       }
     }
 
-    // Convert Libgen books to ExternalBook format for display
-    const libgenExternalBooks: ExternalBook[] = libgenBooks.map(book => ({
-      id: book.id,
-      title: book.title,
-      author: book.author,
-      year: book.year || '',
-      language: '',
-      extension: book.format || '',
-      size: book.size || '',
-      md5: book.id,
-      downloadUrl: book.mirrorLink,
-      source: 'libgen' as any
-    }));
-
-    // Combine all external sources
-    const allExternalBooks = [...external, ...libgenExternalBooks];
+    const allExternalBooks = external;
 
     // Filter out duplicates between internal and external results
     const uniqueExternal = allExternalBooks.filter(ext => {

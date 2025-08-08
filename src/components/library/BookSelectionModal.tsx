@@ -331,9 +331,8 @@ const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], search
             </h3>
             <div className="grid gap-4">
               {externalBooks.map(book => {
-                // Check if this is a Libgen book based on source property
                 if (book.source === 'libgen' || book.id.startsWith('libgen-')) {
-                  return <LibgenBookCard key={book.id} book={book as any} />;
+                  return <LibgenBookCard key={book.id} book={book} />;
                 }
                 return <OpenAccessBookCard key={book.id} book={book} />;
               })}
