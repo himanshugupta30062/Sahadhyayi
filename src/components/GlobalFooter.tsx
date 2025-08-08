@@ -240,15 +240,17 @@ const GlobalFooter = () => {
             © 2024 Sahadhyayi. All rights reserved. Building a global reading community.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <button 
-              onClick={() => handleSocialClick('Facebook')}
+            <a
+              href="https://www.facebook.com/profile.php?id=61578920175928"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="Facebook"
             >
               <span className="sr-only">Facebook</span>
               📘
-            </button>
-            <button 
+            </a>
+            <button
               onClick={() => handleSocialClick('Twitter')}
               className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="Twitter"
