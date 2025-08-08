@@ -9,6 +9,10 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import * as Sentry from '@sentry/node';
+import fetch from 'node-fetch';
+import FormData from 'form-data';
+import cors from 'cors';
+import busboy from 'busboy';
 
 dotenv.config();
 
@@ -18,6 +22,7 @@ const app = express();
 app.use(Sentry.Handlers.requestHandler());
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({ origin: true, credentials: true }));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -80,9 +85,9 @@ const io = new Server(httpServer, {
   },
 });
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
+const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   throw new Error('Missing Supabase configuration');
@@ -231,6 +236,45 @@ app.post('/api/logout', (req, res) => {
   }
   res.clearCookie('sessionId');
   res.status(204).send();
+});
+
+app.post('/api/stt', (req, res) => {
+  const bb = busboy({ headers: req.headers });
+  let audioBuffer = Buffer.alloc(0);
+  let filename = 'recording.webm';
+
+  bb.on('file', (_name, file, info) => {
+    if (info?.filename) filename = info.filename;
+    file.on('data', (data) => {
+      audioBuffer = Buffer.concat([audioBuffer, data]);
+    });
+  });
+
+  bb.on('finish', async () => {
+    try {
+      const form = new FormData();
+      form.append('audio', audioBuffer, { filename, contentType: 'audio/webm' });
+
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const edgeKey = process.env.SUPABASE_EDGE_STT_KEY || process.env.SUPABASE_ANON_KEY;
+      if (!supabaseUrl || !edgeKey) throw new Error('Missing SUPABASE_URL or function key');
+
+      const resp = await fetch(`${supabaseUrl}/functions/v1/speech-to-text`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${edgeKey}` },
+        body: form,
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) return res.status(resp.status).json({ error: data?.error || 'STT failed' });
+      return res.json(data);
+    } catch (err) {
+      console.error('STT proxy error:', err);
+      return res.status(500).json({ error: 'Server STT proxy error' });
+    }
+  });
+
+  req.pipe(bb);
 });
 
 app.post('/api/data', checkSession, (req, res) => {
