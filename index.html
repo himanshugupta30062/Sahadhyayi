@@ -71,6 +71,9 @@
     <!-- Referrer policy for security -->
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
+    <!-- CSP is normally set via HTTP headers in server.js. Meta is a fallback for static preview only. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss:;" />
+
     <!-- Enhanced Structured Data -->
     <script type="application/ld+json">
     {
