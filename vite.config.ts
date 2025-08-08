@@ -57,4 +57,9 @@ export default defineConfig(({ mode }) => ({
     },
   },
   assetsInclude: ['**/*.webp', '**/*.avif'],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.ts'],
+  },
 }));

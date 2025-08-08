@@ -23,9 +23,8 @@ import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { data: book, isLoading, error } = useBookById(id);
-  const { data: ratingData } = useBookRatings(id!);
-  const { mutate: rateBook } = useRateBook(id!);
-  const [userRating, setUserRating] = useState(0);
+  const { data: ratingData, isLoading: ratingLoading } = useBookRatings(id);
+  const rateMutation = useRateBook(id);
 
   console.log('BookDetails - Route params:', { id });
   console.log('BookDetails - Book data:', book);
@@ -86,8 +85,9 @@ const BookDetails = () => {
     );
   }
 
-  const averageRating = ratingData?.average || 0;
-  const ratingCount = ratingData?.count || 0;
+  const averageRating = ratingData?.average ?? 0;
+  const ratingCount = ratingData?.count ?? 0;
+  const userRating = ratingData?.userRating ?? 0;
   const canonicalUrl = `https://sahadhyayi.com/book/${id}`;
   
   const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} - Read Online`;
@@ -218,20 +218,22 @@ const BookDetails = () => {
                   )}
 
                   <div className="flex items-center gap-1">
-                    <StarRating value={averageRating} readOnly />
+                  <StarRating value={averageRating} readOnly />
                     <span className="text-lg font-semibold text-gray-900">{averageRating.toFixed(1)}</span>
                     <span className="text-gray-500">({ratingCount} reviews)</span>
                   </div>
                 </div>
                 <div className="mb-6">
                   <p className="text-sm text-gray-600 mb-1">Rate this book:</p>
-                  <StarRating
-                    value={userRating}
-                    onChange={(val) => {
-                      setUserRating(val);
-                      rateBook(val);
-                    }}
-                  />
+                  {ratingLoading ? (
+                    <div className="text-sm text-gray-500">Loading…</div>
+                  ) : (
+                    <StarRating
+                      value={userRating || 0}
+                      onChange={(val) => rateMutation.mutate(val)}
+                      readOnly={rateMutation.isPending}
+                    />
+                  )}
                 </div>
 
                 {/* Metadata Cards */}

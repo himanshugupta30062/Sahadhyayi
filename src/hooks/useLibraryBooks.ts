@@ -87,7 +87,6 @@ export const useAllLibraryBooks = () => {
           pdf_url: book.pdf_url,
           created_at: book.created_at,
           price: 0, // Not applicable for library books
-          rating: 0, // Could be added later
           isbn: book.isbn,
           pages: book.pages,
           author_bio: book.author_bio
@@ -136,7 +135,6 @@ export const useLibraryBooks = (searchQuery?: string) => {
         pdf_url: book.pdf_url,
         created_at: book.created_at,
         price: 0,
-        rating: 0,
         isbn: book.isbn,
         pages: book.pages,
         author_bio: book.author_bio
@@ -183,7 +181,6 @@ export const useBooksByGenre = (genre: string) => {
         pdf_url: book.pdf_url,
         created_at: book.created_at,
         price: 0,
-        rating: 0,
         isbn: book.isbn,
         pages: book.pages,
         author_bio: book.author_bio

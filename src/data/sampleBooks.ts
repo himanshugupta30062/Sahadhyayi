@@ -13,7 +13,6 @@ export const sampleBooks: Book[] = [
     pdf_url: 'https://example.com/brief-history.pdf',
     created_at: new Date().toISOString(),
     price: 0,
-    rating: 0,
     isbn: '9780553380163',
     pages: 256,
     author_bio: 'Stephen Hawking was a renowned theoretical physicist.'
@@ -30,7 +29,6 @@ export const sampleBooks: Book[] = [
     pdf_url: 'https://example.com/godan.pdf',
     created_at: new Date().toISOString(),
     price: 0,
-    rating: 0,
     isbn: 'NA',
     pages: 384,
     author_bio: 'मुंशी प्रेमचंद was a leading figure of modern Hindi literature.'
@@ -47,7 +45,6 @@ export const sampleBooks: Book[] = [
     pdf_url: 'https://example.com/pride-prejudice.pdf',
     created_at: new Date().toISOString(),
     price: 0,
-    rating: 0,
     isbn: '9780141439518',
     pages: 279,
     author_bio: 'Jane Austen was an English novelist known for her realism.'
@@ -64,7 +61,6 @@ export const sampleBooks: Book[] = [
     pdf_url: 'https://example.com/sapiens.pdf',
     created_at: new Date().toISOString(),
     price: 0,
-    rating: 0,
     isbn: '9780062316097',
     pages: 498,
     author_bio: 'Yuval Noah Harari is an Israeli public intellectual and historian.'
@@ -81,7 +77,6 @@ export const sampleBooks: Book[] = [
     pdf_url: 'https://example.com/gunahon-ka-devta.pdf',
     created_at: new Date().toISOString(),
     price: 0,
-    rating: 0,
     isbn: 'NA',
     pages: 248,
     author_bio: 'धर्मवीर भारती was a renowned Hindi writer and poet.'

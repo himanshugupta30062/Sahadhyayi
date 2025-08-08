@@ -403,24 +403,27 @@ export type Database = {
       book_ratings: {
         Row: {
           id: string
-          book_id: string | null
-          user_id: string | null
-          rating: number | null
-          created_at: string | null
+          book_id: string
+          user_id: string
+          rating: number
+          created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
-          book_id?: string | null
-          user_id?: string | null
-          rating?: number | null
-          created_at?: string | null
+          book_id: string
+          user_id: string
+          rating: number
+          created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
-          book_id?: string | null
-          user_id?: string | null
-          rating?: number | null
-          created_at?: string | null
+          book_id?: string
+          user_id?: string
+          rating?: number
+          created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -2213,7 +2216,14 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      book_ratings_agg: {
+        Row: {
+          book_id: string | null
+          avg_rating: number | null
+          rating_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_unused_books: {
