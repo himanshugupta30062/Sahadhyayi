@@ -8,22 +8,6 @@ interface UseSpeechToTextOptions {
 }
 
 export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOptions) => {
-  console.log('useSpeechToText hook called...');
-  console.log('React available in useSpeechToText:', !!React);
-  console.log('React.useState available:', typeof React.useState);
-  
-  // Add safety check for React hooks
-  if (!React || typeof React.useState !== 'function') {
-    console.error('React hooks not available in useSpeechToText');
-    return {
-      isRecording: false,
-      isProcessing: false,
-      startRecording: async () => {},
-      stopRecording: () => {},
-      toggleRecording: () => {},
-    };
-  }
-
   const [isRecording, setIsRecording] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
@@ -51,27 +35,19 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
           const formData = new FormData();
           formData.append('audio', audioBlob, 'recording.webm');
 
-          // Use direct fetch for FormData to Supabase edge function
-          const response = await fetch(`https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/speech-to-text`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U`,
-            },
+          // Invoke the Supabase Edge Function using the configured client
+          const { data, error } = await supabase.functions.invoke('speech-to-text', {
             body: formData,
           });
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          if (error) {
+            throw new Error(error.message);
           }
 
-          const data = await response.json();
-          
-          if (data.error) {
-            throw new Error(data.error);
-          }
+          const transcription = (data as any)?.transcription as string | undefined;
 
-          if (data.transcription) {
-            onTranscript(data.transcription);
+          if (transcription) {
+            onTranscript(transcription);
           } else {
             onError('No transcription received');
           }

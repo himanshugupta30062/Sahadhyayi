@@ -20,8 +20,7 @@ async function upsertBook() {
         {
           title: 'A Brief History of Time',
           author: 'Stephen Hawking',
-          cover_url:
-            'https://rknxtatvlzunatpyqxro.supabase.co/storage/v1/object/public/book-covers/9780857501004-jacket-large.webp',
+          cover_url: `${SUPABASE_URL}/storage/v1/object/public/book-covers/9780857501004-jacket-large.webp`,
         },
         { onConflict: 'title' }
       )

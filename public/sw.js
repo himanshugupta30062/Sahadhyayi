@@ -8,8 +8,8 @@ const STATIC_ASSETS = [
   '/favicon.ico'
 ];
 
-// Supabase domain for API request identification
-const SUPABASE_DOMAIN = 'rknxtatvlzunatpyqxro.supabase.co';
+// Match any Supabase domain for API request identification
+const SUPABASE_DOMAIN_SUFFIX = '.supabase.co';
 
 self.addEventListener('install', event => {
   console.log('[ServiceWorker] Installing...');
@@ -29,7 +29,7 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
 
   // 1. Handle API requests (Supabase or local API) - Network-first, never fallback to HTML
-  if (url.hostname === SUPABASE_DOMAIN || url.pathname.startsWith('/api/')) {
+  if (url.hostname.endsWith(SUPABASE_DOMAIN_SUFFIX) || url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(request)
         .then(response => {
