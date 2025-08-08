@@ -22,6 +22,7 @@ export function getCSRFToken(): string | null {
 }
 
 export function clearCSRFToken() {
+  if (typeof window === 'undefined') return;
   sessionStorage.removeItem('csrfToken');
   document.cookie = `csrfToken=; Path=/; Max-Age=0; SameSite=Strict; Secure`;
 }
