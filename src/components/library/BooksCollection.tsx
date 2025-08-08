@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { Library, Search, Trash2 } from 'lucide-react';
 import { useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
-import MyLibrary from '@/components/MyLibrary';
+import PersonalLibrary from '@/components/PersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { usePaginatedLibraryBooks } from '@/hooks/usePaginatedLibraryBooks';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -442,7 +442,7 @@ const BooksCollection = ({
                   </h2>
                 </div>
               </div>
-              <MyLibrary />
+              <PersonalLibrary />
             </TabsContent>
           )}
       </Tabs>
