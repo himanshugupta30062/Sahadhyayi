@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star, Calendar, BookOpen, Globe, User } from 'lucide-react';
+import { ArrowLeft, Calendar, BookOpen, Globe, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,11 +16,16 @@ import CreateYourVersionSection from '@/components/books/CreateYourVersionSectio
 import BookIdeasSection from '@/components/books/BookIdeasSection';
 import BookReader from '@/components/books/BookReader';
 import { useBookById } from '@/hooks/useBookById';
+import { useBookRatings, useRateBook } from '@/hooks/useBookRatings';
+import StarRating from '@/components/StarRating';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { data: book, isLoading, error } = useBookById(id);
+  const { data: ratingData } = useBookRatings(id!);
+  const { mutate: rateBook } = useRateBook(id!);
+  const [userRating, setUserRating] = useState(0);
 
   console.log('BookDetails - Route params:', { id });
   console.log('BookDetails - Book data:', book);
@@ -81,8 +86,8 @@ const BookDetails = () => {
     );
   }
 
-  const rating = book.rating || 4.2;
-  const ratingCount = Math.floor(Math.random() * 500 + 100);
+  const averageRating = ratingData?.average || 0;
+  const ratingCount = ratingData?.count || 0;
   const canonicalUrl = `https://sahadhyayi.com/book/${id}`;
   
   const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} - Read Online`;
@@ -118,7 +123,7 @@ const BookDetails = () => {
     language: book.language,
     pages: book.pages,
     coverImage: book.cover_image_url,
-    rating: rating,
+    rating: averageRating,
     ratingCount: ratingCount,
     url: canonicalUrl
   });
@@ -203,7 +208,7 @@ const BookDetails = () => {
                   {book.author && (
                     <div className="flex items-center gap-2">
                       <User className="w-5 h-5 text-gray-500" />
-                      <Link 
+                      <Link
                         to={`/author/${book.author.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`}
                         className="text-lg text-blue-600 font-medium hover:text-blue-800 hover:underline"
                       >
@@ -211,12 +216,22 @@ const BookDetails = () => {
                       </Link>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                    <span className="text-lg font-semibold text-gray-900">{rating.toFixed(1)}</span>
+                    <StarRating value={averageRating} readOnly />
+                    <span className="text-lg font-semibold text-gray-900">{averageRating.toFixed(1)}</span>
                     <span className="text-gray-500">({ratingCount} reviews)</span>
                   </div>
+                </div>
+                <div className="mb-6">
+                  <p className="text-sm text-gray-600 mb-1">Rate this book:</p>
+                  <StarRating
+                    value={userRating}
+                    onChange={(val) => {
+                      setUserRating(val);
+                      rateBook(val);
+                    }}
+                  />
                 </div>
 
                 {/* Metadata Cards */}

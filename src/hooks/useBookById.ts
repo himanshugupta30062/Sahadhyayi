@@ -52,7 +52,6 @@ export const useBookById = (id?: string) => {
         publication_year: data.publication_year,
         pages: data.pages,
         language: data.language,
-        rating: Math.random() * 2 + 3.5,
         created_at: data.created_at || new Date().toISOString(),
       } as Book;
     },
