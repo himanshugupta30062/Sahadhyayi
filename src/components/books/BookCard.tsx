@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { BookOpen, Plus, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
+import { LazyImage } from '@/components/ui/LazyImage';
 
 interface Book {
   id: string;
@@ -45,10 +46,12 @@ const BookCard: React.FC<BookCardProps> = ({ book, onAdded }) => {
       <CardHeader className="pb-3">
         <div className="flex space-x-4">
           {book.cover_image_url ? (
-            <img
+            <LazyImage
               src={book.cover_image_url}
               alt={`Cover of ${book.title}`}
               className="w-16 h-24 object-cover rounded-md shadow-sm"
+              width={64}
+              height={96}
             />
           ) : (
             <div className="w-16 h-24 bg-gradient-to-br from-amber-100 to-orange-100 rounded-md flex items-center justify-center">

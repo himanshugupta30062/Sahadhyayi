@@ -5,6 +5,11 @@
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
+:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring, rgba(59,130,246,0.5));
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

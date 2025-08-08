@@ -1,6 +1,8 @@
-import { onCLS, onINP, onLCP } from 'web-vitals';
-import * as Sentry from '@sentry/react';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { getCLS, getFID, getLCP, getTTFB, getFCP } = require('web-vitals');
 
-onCLS(metric => Sentry.captureMessage('CLS', { level: 'info', extra: metric }));
-onINP(metric => Sentry.captureMessage('INP', { level: 'info', extra: metric }));
-onLCP(metric => Sentry.captureMessage('LCP', { level: 'info', extra: metric }));
+function log(metric: { name: string; value: number }) {
+  console.log('[web-vitals]', metric.name, metric.value);
+}
+
+[getCLS, getFID, getLCP, getTTFB, getFCP].forEach((fn: any) => fn(log));

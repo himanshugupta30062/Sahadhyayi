@@ -5,9 +5,18 @@ import ReactLoader from './components/ReactLoader';
 import App from './App';
 import { errorHandler } from './utils/errorHandler';
 import './index.css';
+import './webVitals';
 
 // Security: Remove React from global scope in production
 // Removed React global assignment to prevent conflicts
+
+if (import.meta.env.DEV) {
+  import('@axe-core/react').then(({ default: axe }) => {
+    const React = require('react');
+    const ReactDOM = require('react-dom');
+    axe(React, ReactDOM, 1000);
+  });
+}
 
 const container = document.getElementById("root");
 if (!container) {
