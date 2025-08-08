@@ -1,5 +1,5 @@
 
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft } from "lucide-react";
@@ -71,17 +71,17 @@ const NotFound = () => {
               Looking for something specific?
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <a href="/library" className="text-orange-600 hover:text-orange-800 hover:underline">
+              <Link to="/library" className="text-orange-600 hover:text-orange-800 hover:underline">
                 Library
-              </a>
+              </Link>
               <span className="text-gray-300">•</span>
-              <a href="/authors" className="text-orange-600 hover:text-orange-800 hover:underline">
+              <Link to="/authors" className="text-orange-600 hover:text-orange-800 hover:underline">
                 Authors
-              </a>
+              </Link>
               <span className="text-gray-300">•</span>
-              <a href="/social" className="text-orange-600 hover:text-orange-800 hover:underline">
+              <Link to="/social" className="text-orange-600 hover:text-orange-800 hover:underline">
                 Social Media
-              </a>
+              </Link>
             </div>
           </div>
         </div>

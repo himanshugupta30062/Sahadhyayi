@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, useCallback, memo } from 'react';
+import { Link } from 'react-router-dom';
 
 // TypeScript interfaces for type safety
 interface Question {
@@ -231,13 +232,13 @@ const SahadhyayiCircuit: React.FC = () => {
           </p>
         </div>
         
-        <a
-          href="/signup"
+        <Link
+          to="/signup"
           className="mt-6 inline-block w-auto max-w-sm px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-lg font-bold rounded-full shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-cyan-500/25 focus:outline-none focus:ring-4 focus:ring-cyan-400/50 text-center transform hover:-translate-y-1"
           aria-label="Join the Reading Circle - Sign up for Sahadhyayi"
         >
           <span className="relative z-10">Join the Reading Circle</span>
-        </a>
+        </Link>
       </div>
 
       {/* Right column: enhanced circuit diagram with all 8 lines visible */}

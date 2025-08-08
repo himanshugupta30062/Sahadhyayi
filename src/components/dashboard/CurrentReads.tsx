@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -13,6 +14,7 @@ interface CurrentReadsProps {
 }
 
 const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
+  const navigate = useNavigate();
   const { data: readingProgress = [], isLoading, error } = useReadingProgress();
 
   console.log('Current Reads - Reading Progress Data:', readingProgress);
@@ -99,7 +101,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
             {readingProgress.map((book) => {
               const progressPercent = Math.round((book.current_page / book.total_pages) * 100);
               return (
-                <Card key={book.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = `/book/${book.id}`}>
+                <Card key={book.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/book/${book.id}`)}>
                   <div className="flex space-x-3">
                     {book.cover_image_url ? (
                       <img
@@ -155,7 +157,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                 const progressPercent = Math.round((book.current_page / book.total_pages) * 100);
                 return (
                   <CarouselItem key={book.id} className="md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = `/book/${book.id}`}>
+                    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/book/${book.id}`)}>
                       <CardContent className="p-4">
                         <div className="flex space-x-4">
                           {book.cover_image_url ? (

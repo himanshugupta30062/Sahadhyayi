@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import GroupMessaging from './GroupMessaging';
 import { formatDistanceToNow } from 'date-fns';
 
 const MyGroups: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [selectedGroupName, setSelectedGroupName] = useState<string>('');
   
@@ -41,7 +43,7 @@ const MyGroups: React.FC = () => {
             Join reading groups to start engaging with fellow book lovers!
           </p>
           <Button 
-            onClick={() => window.location.href = '/groups'}
+            onClick={() => navigate('/groups')}
             className="bg-amber-600 hover:bg-amber-700"
           >
             Browse Groups
