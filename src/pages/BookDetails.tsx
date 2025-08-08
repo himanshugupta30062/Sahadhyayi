@@ -303,33 +303,31 @@ const BookDetails = () => {
           {/* Interactive Tabs Section - Mobile Responsive */}
           <div className="w-full">
             <Tabs defaultValue="connect" className="w-full">
-              <TabsList className="w-full mb-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl h-auto p-2">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full">
-                  <TabsTrigger 
-                    value="connect" 
-                    className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
-                  >
-                    Connect with Readers
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="create" 
-                    className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
-                  >
-                    Create Version
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="feedback" 
-                    className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-green-100 data-[state=active]:text-green-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
-                  >
-                    Ideas & Feedback
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="read" 
-                    className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
-                  >
-                    Read Book
-                  </TabsTrigger>
-                </div>
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 mb-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl h-auto p-2">
+                <TabsTrigger
+                  value="connect"
+                  className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
+                >
+                  Connect with Readers
+                </TabsTrigger>
+                <TabsTrigger
+                  value="create"
+                  className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
+                >
+                  Create Version
+                </TabsTrigger>
+                <TabsTrigger
+                  value="feedback"
+                  className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-green-100 data-[state=active]:text-green-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
+                >
+                  Ideas & Feedback
+                </TabsTrigger>
+                <TabsTrigger
+                  value="read"
+                  className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
+                >
+                  Read Book
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="connect" className="mt-0">
