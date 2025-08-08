@@ -9,11 +9,15 @@ import './index.css';
 import './webVitals';
 
 if (import.meta.env.DEV) {
-  import('@axe-core/react').then(async ({ default: axe }) => {
-    const React = await import('react');
-    const ReactDOM = await import('react-dom');
-    axe(React, ReactDOM, 1000);
-  });
+  import('@axe-core/react')
+    .then(async ({ default: axe }) => {
+      const React = await import('react');
+      const ReactDOM = await import('react-dom');
+      axe(React, ReactDOM, 1000);
+    })
+    .catch(() => {
+      // Optional dev-only accessibility audit not installed; skip silently
+    });
 }
 
 // Security: Remove React from global scope in production
