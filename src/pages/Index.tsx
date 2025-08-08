@@ -8,9 +8,6 @@ import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/authHelpers";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
-import AnimatedHero from "@/components/AnimatedHero";
-import SahadhyayiCircuit from "@/components/SahadhyayiCircuit";
-import SahadhyayiCapabilities from "@/components/SahadhyayiCapabilities";
 
 const Index = () => {
   const { user } = useAuth();
@@ -88,12 +85,42 @@ const Index = () => {
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
       </script>
-      {/* Animated Hero Section */}
-      <AnimatedHero />
-      
-      <SahadhyayiCircuit />
-      
-      <SahadhyayiCapabilities />
+      {/* Simple Hero Section */}
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-red-100 py-16">
+        <div className="text-center space-y-8 px-4">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900">
+            Welcome to Sahadhyayi
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto">
+            Your digital reading community where fellow readers connect, share, and grow together.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {user ? (
+              <Link to="/dashboard">
+                <Button size="lg" className="px-8 py-3">
+                  <User className="w-5 h-5 mr-2" />
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/signup">
+                  <Button size="lg" className="px-8 py-3">
+                    <UserPlus className="w-5 h-5 mr-2" />
+                    Join Free
+                  </Button>
+                </Link>
+                <Link to="/signin">
+                  <Button variant="outline" size="lg" className="px-8 py-3">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
       
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
 
