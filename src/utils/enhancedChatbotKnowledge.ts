@@ -62,8 +62,33 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
       recentBooks: []
     };
   }
-};
+  };
 
+
+export const generateEnhancedPrompt = (
+  userMessage: string,
+  context: WebsiteContext,
+): string => {
+  const { totalBooks, genres, features, recentBooks } = context;
+  let prompt =
+    'You are an AI assistant for the Sahadhyayi digital library. Use the website context to answer user questions.\n\n';
+  prompt += `Total books in library: ${totalBooks}.\n`;
+  if (genres.length > 0) {
+    prompt += `Available genres include: ${genres.join(', ')}.\n`;
+  }
+  if (features.length > 0) {
+    prompt += `Key features: ${features.join(', ')}.\n`;
+  }
+  if (recentBooks.length > 0) {
+    prompt += 'Recent books:\n';
+    recentBooks.slice(0, 3).forEach((book) => {
+      prompt += `- "${book.title}" by ${book.author} (${book.genre})\n`;
+    });
+  }
+  prompt += `\nUser query: ${userMessage}\n`;
+  prompt += 'Provide a concise and helpful response referencing the context when relevant.';
+  return prompt;
+};
 
 export const searchRelevantBooks = async (query: string, limit: number = 5): Promise<BookData[]> => {
   try {
