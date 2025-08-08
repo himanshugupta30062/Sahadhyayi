@@ -3,10 +3,11 @@ import React from 'react';
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
-import { generatePrompt } from '@/ai/service';
+import * as ai from '@/ai/service';
 import type { AiContext } from '@/ai/types';
 import { generateContextualResponse } from '@/utils/chatbotKnowledge';
 import { toast } from '@/hooks/use-toast';
+import { isRateLimited } from '@/utils/validation';
 
 interface Message {
   text: string;
@@ -69,95 +70,73 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
 
   const sendMessage = useCallback(async (userMessage: string) => {
     let relevantBooks: AiContext['books'] = [];
-    
-    // Add user message
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const rateKey = `chat_${user?.id || 'anon'}`;
+    if (isRateLimited(rateKey, 5, 60000)) {
+      toast({
+        title: 'Slow down',
+        description: 'Please wait before sending another message',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const userMsg: Message = {
       text: userMessage,
       sender: 'user',
       timestamp: new Date(),
     };
-    
+
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
     try {
-      // Build prompt and context
-      const { prompt: contextualPrompt, ctx } = await generatePrompt(userMessage);
-      relevantBooks = ctx.books;
+      const result = await ai.ask(userMessage);
+      relevantBooks = result.references.map(r => ({
+        id: r.bookId || '',
+        title: r.title || '',
+        author: undefined,
+        snippet: undefined,
+      }));
 
-      // Call Supabase Edge Function for AI response
-      const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
-        body: { 
-          prompt: contextualPrompt,
-          context: 'chatbot_response',
-          bookContext: relevantBooks.length > 0 ? relevantBooks : undefined
-        }
-      });
-
-      let botResponse = "";
-
-      if (error) {
-        console.error('Function call error:', error);
-        // Use contextual fallback with website knowledge
-        botResponse = generateContextualResponse(userMessage);
-        
-        toast({
-          title: "Using Offline Mode",
-          description: "Chatbot is working with local knowledge!",
-          variant: "default",
-        });
-      } else if (data?.response) {
-        botResponse = data.response;
-      } else {
-        botResponse = generateContextualResponse(userMessage);
-      }
-
-      // Add bot response
       const botMsg: Message = {
-        text: botResponse,
+        text: result.reply,
         sender: 'bot',
         timestamp: new Date(),
         books: relevantBooks,
       };
-      
+
       setMessages(prev => [...prev, botMsg]);
 
-      // Save interaction for training
-      await saveChatInteraction(userMessage, botResponse, 'enhanced_chat');
+      await saveChatInteraction(userMessage, result.reply, 'enhanced_chat');
 
-      // Save book-specific interaction if relevant
       if (relevantBooks.length > 0) {
         await saveBookSpecificInteraction(
           relevantBooks[0].id,
           relevantBooks[0].title,
           userMessage,
-          botResponse
+          result.reply
         );
       }
 
-      // Update training data count
       const newCount = await getTrainingDataStats();
       setTrainingDataCount(newCount);
 
     } catch (error) {
       console.error('Chatbot error:', error);
-      
-      // Use contextual fallback
       const fallbackResponse = generateContextualResponse(userMessage);
-      
       const botMsg: Message = {
         text: fallbackResponse,
         sender: 'bot',
         timestamp: new Date(),
         books: relevantBooks,
       };
-      
       setMessages(prev => [...prev, botMsg]);
-      
       toast({
-        title: "Using Offline Mode",
-        description: "Chatbot is working with local knowledge!",
-        variant: "default",
+        title: 'Using Offline Mode',
+        description: 'Chatbot is working with local knowledge!',
+        variant: 'default',
       });
     } finally {
       setIsLoading(false);

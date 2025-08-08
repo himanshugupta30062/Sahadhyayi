@@ -1,61 +1,81 @@
-import { templates } from './templates';
-import { AiAnswer, AiAnswerType } from './schema';
-import type { AiContext, Intent } from './types';
+import { createHash } from './utils/hash';
+import { AiResponseSchema, type AiResponseParsed } from './schema';
+import { TEMPLATES } from './templates';
+import type { Intent, AiContext } from './types';
 import { getWebsiteContext, searchRelevantBooks, getBookSummaries } from '@/utils/enhancedChatbotKnowledge';
+import { supabase } from '@/integrations/supabase/client';
 
-export function parseIntent(question: string): Intent {
-  const q = question.toLowerCase();
-  if (/policy|terms|privacy/.test(q)) return 'policy';
-  if (/help|how do i|\?/.test(q)) return 'help';
-  if (/book|novel|author|read|recommend|library|title|genre/.test(q)) return 'book_query';
+const ACTIVE_VER = (import.meta.env.VITE_AI_PROMPT_VERSION as 'V1' | 'V2') || 'V1';
+
+// naive cache in-memory (frontend runtime). Replace with server cache later.
+const cache = new Map<string, AiResponseParsed>();
+
+function classifyIntent(q: string): Intent {
+  const s = q.toLowerCase();
+  if (/help|how to|what can you do/.test(s)) return 'help';
+  if (/policy|terms|privacy/.test(s)) return 'policy';
+  if (/(book|recommend|read|author|genre|summary)/.test(s)) return 'book_query';
   return 'general';
 }
 
-function trimTokens(text: string, maxTokens: number): string {
-  const words = text.split(/\s+/).slice(0, maxTokens);
-  return words.join(' ');
-}
-
-export async function buildContext(question: string): Promise<AiContext> {
+async function buildContext(question: string): Promise<AiContext> {
   const site = await getWebsiteContext();
-  let books = await searchRelevantBooks(question, 5);
-  books = books.slice(0, 3);
-  const summaries = books.length > 0 ? await getBookSummaries(books.map(b => b.id)) : [];
-  let remaining = 600;
-  const booksWithSnippets = books.map(b => {
-    const summary = summaries.find(s => s.book_id === b.id)?.content as string | undefined;
-    if (summary && remaining > 0) {
-      const snippet = trimTokens(summary, remaining);
-      remaining -= snippet.split(/\s+/).length;
-      return { ...b, snippet };
-    }
-    return b;
+  const candidates = await searchRelevantBooks(question);
+  const top = candidates.slice(0, 3);
+  const summaries = await getBookSummaries(top.map(b => b.id));
+  const summaryMap: Record<string, string> = {};
+  for (const s of summaries) {
+    summaryMap[s.book_id] = s.content;
+  }
+  const books = top.map(b => ({
+    id: b.id,
+    title: b.title,
+    author: b.author,
+    snippet: summaryMap[b.id]?.slice(0, 200)
+  }));
+  return { site: { totalBooks: site.totalBooks, topGenres: site.genres.slice(0, 5) }, books };
+}
+
+async function callModel(prompt: string): Promise<string> {
+  const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
+    body: { prompt, context: 'chatbot_response' }
   });
-  return {
-    site: { totalBooks: site.totalBooks, topGenres: site.genres.slice(0,5) },
-    books: booksWithSnippets,
-  };
+  if (error || !data?.response) {
+    throw new Error(error?.message || 'AI HTTP error');
+  }
+  return data.response;
 }
 
-export async function generatePrompt(question: string) {
-  let intent = parseIntent(question);
+export async function ask(question: string): Promise<AiResponseParsed> {
+  const intent = classifyIntent(question);
   const ctx = await buildContext(question);
-  if (ctx.books.length === 0 && intent === 'book_query') {
-    intent = 'general';
+
+  const key = createHash(JSON.stringify({ question, intent, ctx }));
+  if (cache.has(key)) return cache.get(key)!;
+
+  const tpl = TEMPLATES[ACTIVE_VER];
+  const prompt = tpl({ question, intent, ctx, promptVersion: ACTIVE_VER });
+
+  const t0 = performance.now();
+  const raw = await callModel(prompt);
+  const t1 = performance.now();
+
+  let parsed: AiResponseParsed;
+  try {
+    parsed = AiResponseSchema.parse(JSON.parse(raw));
+  } catch {
+    parsed = { reply: String(raw).slice(0, 1200), references: [] };
   }
-  const version = (import.meta as any).env?.VITE_AI_PROMPT_VERSION || 'V1';
-  const template = templates[version as keyof typeof templates] || templates.V1;
-  const prompt = template({ intent, question, ctx }) + '\n\nRespond as valid JSON with keys: reply, references[], followup.';
-  return { prompt, ctx, intent, version };
+
+  cache.set(key, parsed);
+  console.info('[ai]', {
+    prompt_version: ACTIVE_VER,
+    intent,
+    ctx_sizes: { books: ctx.books.length },
+    latency_ms: Math.round(t1 - t0)
+  });
+
+  return parsed;
 }
 
-export function validateResponse(modelText: string): AiAnswerType {
-  try {
-    const parsed = JSON.parse(modelText);
-    const result = AiAnswer.safeParse(parsed);
-    if (result.success) return result.data;
-  } catch {
-    // ignore
-  }
-  return { reply: modelText, references: [] };
-}
+export { classifyIntent }; // optional export for tests
