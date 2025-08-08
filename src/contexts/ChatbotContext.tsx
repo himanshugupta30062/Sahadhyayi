@@ -3,7 +3,8 @@ import React from 'react';
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
-import { getWebsiteContext, generateEnhancedPrompt, searchRelevantBooks, getBookSummaries, BookData } from '@/utils/enhancedChatbotKnowledge';
+import { generatePrompt } from '@/ai/service';
+import type { AiContext } from '@/ai/types';
 import { generateContextualResponse } from '@/utils/chatbotKnowledge';
 import { toast } from '@/hooks/use-toast';
 
@@ -11,7 +12,7 @@ interface Message {
   text: string;
   sender: 'user' | 'bot';
   timestamp: Date;
-  books?: BookData[];
+  books?: AiContext['books'];
 }
 
 interface ChatbotContextType {
@@ -67,7 +68,7 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
 
   const sendMessage = useCallback(async (userMessage: string) => {
-    let relevantBooks: BookData[] = [];
+    let relevantBooks: AiContext['books'] = [];
     
     // Add user message
     const userMsg: Message = {
@@ -80,28 +81,9 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
     setIsLoading(true);
 
     try {
-      // Get website context
-      const websiteContext = await getWebsiteContext();
-      
-      // Search for relevant books
-      relevantBooks = await searchRelevantBooks(userMessage, 3);
-      
-      // Get book summaries if relevant
-      const bookSummaries = relevantBooks.length > 0 
-        ? await getBookSummaries(relevantBooks.map(b => b.id))
-        : [];
-
-      // Generate enhanced prompt with context
-      const enhancedPrompt = await generateEnhancedPrompt(userMessage, websiteContext);
-      
-      // Add relevant content to prompt if found
-      let contextualPrompt = enhancedPrompt;
-      if (relevantBooks.length > 0) {
-        contextualPrompt += '\n\nRELEVANT BOOKS:\n';
-        relevantBooks.forEach(book => {
-          contextualPrompt += `• "${book.title}" by ${book.author} (${book.genre})\n`;
-        });
-      }
+      // Build prompt and context
+      const { prompt: contextualPrompt, ctx } = await generatePrompt(userMessage);
+      relevantBooks = ctx.books;
 
       // Call Supabase Edge Function for AI response
       const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
