@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import AudioSummaryButton from './AudioSummaryButton';
+import { LazyImage } from '@/components/ui/LazyImage';
 
 interface BookCoverProps {
   title: string;
@@ -49,7 +50,7 @@ const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl }:
     <div className="lg:col-span-2">
       <div className="aspect-[3/4] bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl overflow-hidden shadow-lg mb-6">
         {coverImageUrl ? (
-          <img src={coverImageUrl} alt={title} className="w-full h-full object-cover" loading="lazy" />
+          <LazyImage src={coverImageUrl} alt={`Cover of ${title}`} className="w-full h-full object-cover" />
         ) : (
           <div className="flex items-center justify-center h-full text-white font-bold text-lg p-4 text-center">
             {title}

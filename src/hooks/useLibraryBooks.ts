@@ -182,6 +182,8 @@ export const useBooksByGenre = (genre: string) => {
 export const useGenres = () => {
   return useQuery({
     queryKey: ['genres'],
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
     queryFn: async (): Promise<Genre[]> => {
       const { data, error } = await supabase
         .from('books_library')
