@@ -1,18 +1,12 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from '@sentry/react';
 import './sentry';
 import './webVitals';
 
-// Security initialization
-// import { initializeSecurity } from "./utils/security";
-
-// TODO: Re-enable security initialization after fixing import issues
-// if (typeof window !== 'undefined') {
-//   initializeSecurity();
-// }
+import { initializeSecurity } from '@/utils/security';
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
@@ -57,6 +51,9 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  useEffect(() => {
+    initializeSecurity();
+  }, []);
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <BrowserRouter>
