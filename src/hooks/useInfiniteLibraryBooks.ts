@@ -89,7 +89,6 @@ export const useInfiniteLibraryBooks = ({
         pdf_url: book.pdf_url,
         created_at: book.created_at,
         price: 0,
-        rating: 0,
         isbn: book.isbn,
         pages: book.pages,
         author_bio: book.author_bio,

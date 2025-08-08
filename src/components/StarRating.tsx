@@ -9,15 +9,20 @@ interface StarRatingProps {
 
 const StarRating: React.FC<StarRatingProps> = ({ value, readOnly = false, onChange }) => {
   return (
-    <div className="flex">
-      {Array.from({ length: 5 }, (_, i) => {
-        const filled = i < Math.round(value);
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map(n => {
+        const filled = n <= Math.round(value);
         return (
-          <Star
-            key={i}
-            className={`w-5 h-5 ${filled ? 'text-yellow-500 fill-current' : 'text-gray-300'} ${readOnly ? '' : 'cursor-pointer'}`}
-            onClick={!readOnly && onChange ? () => onChange(i + 1) : undefined}
-          />
+          <button
+            key={n}
+            type="button"
+            aria-label={`Rate ${n} star`}
+            disabled={readOnly}
+            onClick={() => !readOnly && onChange?.(n)}
+            className={`p-0 bg-transparent border-0 ${readOnly ? '' : 'cursor-pointer'}`}
+          >
+            <Star className={`w-5 h-5 ${filled ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} />
+          </button>
         );
       })}
     </div>

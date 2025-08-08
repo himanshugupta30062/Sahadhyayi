@@ -63,8 +63,8 @@ const AuthorProfile = () => {
         instagram: '@authorhandle',
         facebook: 'AuthorPage'
       },
-      followers_count: Math.floor(Math.random() * 50000 + 10000),
-      rating: parseFloat((4.2 + Math.random() * 0.8).toFixed(1)),
+      followers_count: 10000,
+      rating: 4.5,
       books_count: authorBooks.length,
       genres: [...new Set(authorBooks.map(book => book.genre).filter(Boolean))],
       upcoming_events: 3,
