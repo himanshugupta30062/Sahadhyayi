@@ -14,7 +14,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
 import { QuotesProvider } from "./contexts/QuotesContext";
-import { ChatbotProvider } from "./contexts/ChatbotContext";
 
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
@@ -22,7 +21,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 
 // Component imports
 import ErrorBoundary from "./components/ErrorBoundary";
-import Chatbot from "./components/chatbot/Chatbot";
+import ChatbotContainer from "./components/chatbot/ChatbotContainer";
 import Navigation from "./components/Navigation";
 import GlobalFooter from "./components/GlobalFooter";
 import ScrollToTop from "./components/ScrollToTop";
@@ -65,38 +64,36 @@ function App() {
           <TooltipProvider>
             <AuthProvider>
               <QuotesProvider>
-                <ChatbotProvider>
-                  <ScrollToTop />
-                  <div className="min-h-screen bg-background text-foreground flex flex-col">
-                    <Navigation />
-                    <main className="flex-1 pt-16">
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/library" element={<BookLibrary />} />
-                        <Route path="/signup" element={<SignUp />} />
-                        <Route path="/signin" element={<SignIn />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/profile" element={<Profile />} />
-                        <Route path="/social" element={<SocialMedia />} />
-                        <Route path="/authors" element={<Authors />} />
-                        {/* Main author profile page accessed via slug */}
-                        <Route path="/authors/:slug" element={<AuthorSlugPage />} />
-                        {/* Legacy author page accessed via /author/:slug */}
-                        <Route path="/author/:slug" element={<AuthorDetails />} />
-                        <Route path="/groups" element={<ReadingGroups />} />
-                        <Route path="/map" element={<Map />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/blog" element={<Blog />} />
-                        <Route path="/book/:id" element={<BookDetails />} />
-                        <Route path="/bookshelf" element={<Bookshelf />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </main>
-                    <GlobalFooter />
-                  </div>
-                  <Chatbot />
-                  <Toaster />
-                </ChatbotProvider>
+                <ScrollToTop />
+                <div className="min-h-screen bg-background text-foreground flex flex-col">
+                  <Navigation />
+                  <main className="flex-1 pt-16">
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/library" element={<BookLibrary />} />
+                      <Route path="/signup" element={<SignUp />} />
+                      <Route path="/signin" element={<SignIn />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/social" element={<SocialMedia />} />
+                      <Route path="/authors" element={<Authors />} />
+                      {/* Main author profile page accessed via slug */}
+                      <Route path="/authors/:slug" element={<AuthorSlugPage />} />
+                      {/* Legacy author page accessed via /author/:slug */}
+                      <Route path="/author/:slug" element={<AuthorDetails />} />
+                      <Route path="/groups" element={<ReadingGroups />} />
+                      <Route path="/map" element={<Map />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/blog" element={<Blog />} />
+                      <Route path="/book/:id" element={<BookDetails />} />
+                      <Route path="/bookshelf" element={<Bookshelf />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                  <GlobalFooter />
+                </div>
+                <ChatbotContainer />
+                <Toaster />
               </QuotesProvider>
             </AuthProvider>
           </TooltipProvider>
