@@ -1,4 +1,3 @@
-import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
@@ -38,6 +37,11 @@ app.use((req, res, next) => {
 
 const sessions = new Map();
 
+function jsonError(res, status, message, code, details) {
+  return res.status(status).json({ error: message, code, details });
+}
+
+
 function createSession(res) {
   const sessionId = crypto.randomBytes(16).toString('hex');
   const csrfToken = crypto.randomBytes(32).toString('hex');
@@ -64,9 +68,9 @@ function getCSRFToken(req) {
 }
 
 function checkSession(req, res, next) {
-  if (!validateSessionIntegrity(req)) return res.status(401).send('Session expired');
-  const token = req.get('x-csrf-token');
-  if (!token || token !== getCSRFToken(req)) return res.status(403).send('Invalid CSRF token');
+  if (!validateSessionIntegrity(req)) return jsonError(res, 401, "Session expired", "SESSION_EXPIRED");
+  const token = req.get("x-csrf-token");
+  if (!token || token !== getCSRFToken(req)) return jsonError(res, 403, "Invalid CSRF token", "INVALID_CSRF");
   next();
 }
 
@@ -112,12 +116,12 @@ const connectedGoodreadsUsers = new Map();
 
 async function authenticate(req, res, next) {
   const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Authentication required' });
+  if (!token) return jsonError(res, 401, 'Authentication required', 'AUTH_REQUIRED');
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser(token);
-  if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+  if (error || !user) return jsonError(res, 401, 'Invalid token', 'INVALID_TOKEN', error);
   req.user = user;
   next();
 }
@@ -179,7 +183,7 @@ io.on('connection', (socket) => {
 
 app.get('/goodreads/request-token', authenticate, async (req, res) => {
   if (!goodreadsClient) {
-    return res.status(503).json({ error: 'Goodreads integration not configured' });
+    return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }
   try {
     const url = await goodreadsClient.getRequestToken();
@@ -187,13 +191,13 @@ app.get('/goodreads/request-token', authenticate, async (req, res) => {
     urlObj.searchParams.set('state', req.user.id);
     res.json({ url: urlObj.toString() });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
   }
 });
 
 app.get('/goodreads/callback', async (req, res) => {
   if (!goodreadsClient) {
-    return res.status(503).json({ error: 'Goodreads integration not configured' });
+    return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }
   try {
     await goodreadsClient.getAccessToken();
@@ -204,23 +208,23 @@ app.get('/goodreads/callback', async (req, res) => {
     }
     res.send('Goodreads connected. You can close this window.');
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
   }
 });
 
 app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
   if (!goodreadsClient) {
-    return res.status(503).json({ error: 'Goodreads integration not configured' });
+    return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }
   const userId = connectedGoodreadsUsers.get(req.user.id);
-  if (!userId) return res.status(401).json({ error: 'Not authenticated with Goodreads' });
+  if (!userId) return jsonError(res, 401, 'Not authenticated with Goodreads', 'GOODREADS_NOT_AUTH');
   try {
     const books = await goodreadsClient.getBooksOnUserShelf(String(userId), 'read', {
       per_page: 200,
     });
     res.json(books);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
   }
 });
 
@@ -266,28 +270,42 @@ app.post('/api/stt', (req, res) => {
       });
 
       const data = await resp.json();
-      if (!resp.ok) return res.status(resp.status).json({ error: data?.error || 'STT failed' });
+      if (!resp.ok) return jsonError(res, resp.status, data?.error || 'STT failed', 'STT_FAILED', data);
       return res.json(data);
     } catch (err) {
       console.error('STT proxy error:', err);
-      return res.status(500).json({ error: 'Server STT proxy error' });
+      return jsonError(res, 500, 'Server STT proxy error', 'STT_PROXY_ERROR', err);
     }
   });
 
   req.pipe(bb);
 });
 
+app.get('/api/books', async (req, res, next) => {
+  try {
+    const search = typeof req.query.search === 'string' ? req.query.search : '';
+    let query = supabase.from('books_library').select('*');
+    if (search) {
+      query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%`);
+    }
+    const { data, error } = await query;
+    if (error) return next(Object.assign(new Error('DB_ERROR'), { status: 500, code: 'DB_ERROR', details: error }));
+    return res.json(data);
+  } catch (e) {
+    next(e);
+  }
+});
 app.post('/api/data', checkSession, (req, res) => {
   res.json({ secure: true });
 });
 
 app.post('/goodreads/export', authenticate, async (req, res) => {
   if (!goodreadsClient) {
-    return res.status(503).json({ error: 'Goodreads integration not configured' });
+    return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }
   const { books } = req.body;
   const userId = connectedGoodreadsUsers.get(req.user.id);
-  if (!userId) return res.status(401).json({ error: 'Not authenticated with Goodreads' });
+  if (!userId) return jsonError(res, 401, 'Not authenticated with Goodreads', 'GOODREADS_NOT_AUTH');
   try {
     for (const book of books || []) {
       if (book.goodreadsId) {
@@ -296,11 +314,19 @@ app.post('/goodreads/export', authenticate, async (req, res) => {
     }
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
   }
 });
 
 app.use(Sentry.Handlers.errorHandler());
+
+app.use((err, req, res, _next) => {
+  const status = err.status || 500;
+  const code = err.code || (status >= 500 ? 'SERVER_ERROR' : 'REQUEST_ERROR');
+  const msg = err.message || 'Unexpected error';
+  console.error('API error:', { path: req.path, status, code, msg, details: err.details });
+  return jsonError(res, status, msg, code, err.details);
+});
 
 // Handle client-side routing by returning the main index.html for other routes
 app.get('*', (req, res) => {

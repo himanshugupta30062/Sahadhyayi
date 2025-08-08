@@ -3,239 +3,281 @@
     "name": "@google/maps",
     "version": "1.1.3",
     "license": "Apache-2.0",
-    "url": "https://npmjs.com/package/@google/maps",
-    "description": "Node.js client library for Google Maps Platform APIs"
+    "url": "https://github.com/googlemaps/google-maps-services-js",
+    "description": "Node.js client library for Google Maps API Web Services"
   },
   {
     "name": "@hookform/resolvers",
     "version": "3.9.0",
     "license": "MIT",
-    "url": "https://npmjs.com/package/@hookform/resolvers",
-    "description": "Validation resolvers for React Hook Form"
+    "url": "https://react-hook-form.com",
+    "description": "React Hook Form validation resolvers: Yup, Joi, Superstruct, Zod, Vest, Class Validator, io-ts, Nope, computed-types, TypeBox, arktype, Typanion, Effect-TS and VineJS"
+  },
+  {
+    "name": "@lottiefiles/react-lottie-player",
+    "version": "3.6.0",
+    "license": "MIT",
+    "url": "https://github.com/LottieFiles/lottie-react#readme",
+    "description": "Lottie web player wrapper for React"
   },
   {
     "name": "@radix-ui/react-accordion",
     "version": "1.2.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-accordion",
-    "description": "Accessible accordion component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-alert-dialog",
     "version": "1.1.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-alert-dialog",
-    "description": "Accessible alert dialog component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-aspect-ratio",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-aspect-ratio",
-    "description": "Aspect ratio component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-avatar",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-avatar",
-    "description": "Accessible avatar component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-checkbox",
     "version": "1.1.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-checkbox",
-    "description": "Accessible checkbox component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-collapsible",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-collapsible",
-    "description": "Accessible collapsible component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-context-menu",
     "version": "2.2.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-context-menu",
-    "description": "Accessible context menu component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-dialog",
     "version": "1.1.2",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-dialog",
-    "description": "Accessible dialog component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-dropdown-menu",
     "version": "2.1.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-dropdown-menu",
-    "description": "Accessible dropdown menu component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-hover-card",
     "version": "1.1.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-hover-card",
-    "description": "Accessible hover card component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-label",
     "version": "2.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-label",
-    "description": "Accessible label component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-menubar",
     "version": "1.1.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-menubar",
-    "description": "Accessible menubar component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-navigation-menu",
     "version": "1.2.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-navigation-menu",
-    "description": "Accessible navigation menu component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-popover",
     "version": "1.1.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-popover",
-    "description": "Accessible popover component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-progress",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-progress",
-    "description": "Accessible progress component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-radio-group",
     "version": "1.2.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-radio-group",
-    "description": "Accessible radio group component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-scroll-area",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-scroll-area",
-    "description": "Accessible scroll area component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-select",
     "version": "2.1.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-select",
-    "description": "Accessible select component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-separator",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-separator",
-    "description": "Accessible separator component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-slider",
     "version": "1.2.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-slider",
-    "description": "Accessible slider component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-slot",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-slot",
-    "description": "Accessible slot component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-switch",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-switch",
-    "description": "Accessible switch component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-tabs",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-tabs",
-    "description": "Accessible tabs component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-toast",
     "version": "1.2.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-toast",
-    "description": "Accessible toast component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-toggle",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-toggle",
-    "description": "Accessible toggle component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-toggle-group",
     "version": "1.1.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-toggle-group",
-    "description": "Accessible toggle group component for React"
+    "description": "Open source package"
   },
   {
     "name": "@radix-ui/react-tooltip",
     "version": "1.1.4",
     "license": "MIT",
     "url": "https://npmjs.com/package/@radix-ui/react-tooltip",
-    "description": "Accessible tooltip component for React"
+    "description": "Open source package"
+  },
+  {
+    "name": "@sentry/node",
+    "version": "10.2.0",
+    "license": "MIT",
+    "url": "https://github.com/getsentry/sentry-javascript/tree/master/packages/node",
+    "description": "Sentry Node SDK using OpenTelemetry for performance instrumentation"
+  },
+  {
+    "name": "@sentry/react",
+    "version": "10.2.0",
+    "license": "MIT",
+    "url": "https://github.com/getsentry/sentry-javascript/tree/master/packages/react",
+    "description": "Official Sentry SDK for React.js"
+  },
+  {
+    "name": "@sentry/tracing",
+    "version": "7.120.4",
+    "license": "MIT",
+    "url": "https://github.com/getsentry/sentry-javascript/tree/master/packages/tracing",
+    "description": "Sentry Performance Monitoring Package"
   },
   {
     "name": "@supabase/supabase-js",
     "version": "2.50.0",
     "license": "MIT",
-    "url": "https://npmjs.com/package/@supabase/supabase-js",
-    "description": "JavaScript client library for Supabase"
+    "url": "https://github.com/supabase/supabase-js",
+    "description": "Isomorphic Javascript client for Supabase"
   },
   {
     "name": "@tanstack/react-query",
-    "version": "5.56.2",
+    "version": "5.59.16",
     "license": "MIT",
-    "url": "https://npmjs.com/package/@tanstack/react-query",
-    "description": "Powerful data synchronization for React"
+    "url": "https://tanstack.com/query",
+    "description": "Hooks for managing, caching and syncing asynchronous and remote data in React"
+  },
+  {
+    "name": "busboy",
+    "version": "1.6.0",
+    "license": "MIT",
+    "url": "http://github.com/mscdex/busboy.git",
+    "description": "A streaming parser for HTML form data for node.js"
   },
   {
     "name": "class-variance-authority",
     "version": "0.7.1",
     "license": "Apache-2.0",
     "url": "https://npmjs.com/package/class-variance-authority",
-    "description": "Create complex responsive utility classes without the clutter"
+    "description": "Open source package"
   },
   {
     "name": "clsx",
     "version": "2.1.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/clsx",
-    "description": "A tiny utility for constructing className strings conditionally"
+    "description": "Open source package"
   },
   {
     "name": "cmdk",
     "version": "1.0.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/cmdk",
-    "description": "Command menu for React"
+    "description": "Open source package"
+  },
+  {
+    "name": "cookie-parser",
+    "version": "1.4.7",
+    "license": "MIT",
+    "url": "https://npmjs.com/package/cookie-parser",
+    "description": "Parse HTTP request cookies"
   },
   {
     "name": "cors",
@@ -255,175 +297,196 @@
     "name": "dompurify",
     "version": "2.4.4",
     "license": "(MPL-2.0 OR Apache-2.0)",
-    "url": "https://npmjs.com/package/dompurify",
-    "description": "XSS sanitizer for HTML, MathML and SVG"
+    "url": "https://github.com/cure53/DOMPurify",
+    "description": "DOMPurify is a DOM-only, super-fast, uber-tolerant XSS sanitizer for HTML, MathML and SVG. It's written in JavaScript and works in all modern browsers (Safari, Opera (15+), Internet Explorer (10+), Firefox and Chrome - as well as almost anything else using Blink or WebKit). DOMPurify is written by security people who have vast background in web attacks and XSS. Fear not."
   },
   {
     "name": "dotenv",
-    "version": "16.4.5",
+    "version": "16.6.1",
     "license": "BSD-2-Clause",
-    "url": "https://npmjs.com/package/dotenv",
+    "url": "https://github.com/motdotla/dotenv#readme",
     "description": "Loads environment variables from .env file"
   },
   {
     "name": "embla-carousel-react",
     "version": "8.3.0",
     "license": "MIT",
-    "url": "https://npmjs.com/package/embla-carousel-react",
-    "description": "Lightweight carousel library with fluid motion and great swipe precision"
+    "url": "https://www.embla-carousel.com",
+    "description": "A lightweight carousel library with fluid motion and great swipe precision"
   },
   {
     "name": "express",
     "version": "4.21.2",
     "license": "MIT",
-    "url": "https://npmjs.com/package/express",
-    "description": "Fast, unopinionated, minimalist web framework for Node.js"
+    "url": "http://expressjs.com/",
+    "description": "Fast, unopinionated, minimalist web framework"
+  },
+  {
+    "name": "form-data",
+    "version": "4.0.4",
+    "license": "MIT",
+    "url": "git://github.com/form-data/form-data.git",
+    "description": "A library to create readable \"multipart/form-data\" streams. Can be used to submit forms and file uploads to other web applications."
   },
   {
     "name": "goodreads-api-node",
     "version": "0.0.12",
     "license": "MIT",
-    "url": "https://npmjs.com/package/goodreads-api-node",
-    "description": "Node.js wrapper for Goodreads API"
+    "url": "https://github.com/baahrens/goodreads-api-node",
+    "description": "Node.js wrapper for the Goodreads web API"
   },
   {
     "name": "input-otp",
     "version": "1.2.4",
     "license": "MIT",
-    "url": "https://npmjs.com/package/input-otp",
-    "description": "One time password input component for React"
+    "url": "https://input-otp.rodz.dev/",
+    "description": "One-time password input component for React."
   },
   {
     "name": "lucide-react",
     "version": "0.462.0",
     "license": "ISC",
-    "url": "https://npmjs.com/package/lucide-react",
-    "description": "Beautiful & consistent icon toolkit made by the community"
+    "url": "https://lucide.dev",
+    "description": "A Lucide icon library package for React applications"
+  },
+  {
+    "name": "node-fetch",
+    "version": "3.3.2",
+    "license": "MIT",
+    "url": "https://github.com/node-fetch/node-fetch",
+    "description": "A light-weight module that brings Fetch API to node.js"
   },
   {
     "name": "react",
     "version": "18.3.1",
     "license": "MIT",
-    "url": "https://npmjs.com/package/react",
-    "description": "A JavaScript library for building user interfaces"
+    "url": "https://reactjs.org/",
+    "description": "React is a JavaScript library for building user interfaces."
   },
   {
     "name": "react-day-picker",
     "version": "8.10.1",
     "license": "MIT",
-    "url": "https://npmjs.com/package/react-day-picker",
-    "description": "Date picker component for React"
+    "url": "http://react-day-picker.js.org",
+    "description": "Customizable Date Picker for React"
   },
   {
     "name": "react-dom",
     "version": "18.3.1",
     "license": "MIT",
-    "url": "https://npmjs.com/package/react-dom",
-    "description": "React package for working with the DOM"
+    "url": "https://reactjs.org/",
+    "description": "React package for working with the DOM."
   },
   {
     "name": "react-helmet-async",
     "version": "2.0.5",
     "license": "Apache-2.0",
     "url": "https://npmjs.com/package/react-helmet-async",
-    "description": "Async React Helmet for managing document head"
+    "description": "Thread-safe Helmet for React 16+ and friends"
   },
   {
     "name": "react-hook-form",
-    "version": "7.53.0",
+    "version": "7.53.1",
     "license": "MIT",
-    "url": "https://npmjs.com/package/react-hook-form",
-    "description": "Performant, flexible and extensible forms with easy validation"
+    "url": "https://www.react-hook-form.com",
+    "description": "Performant, flexible and extensible forms library for React Hooks"
   },
   {
     "name": "react-resizable-panels",
-    "version": "2.1.3",
+    "version": "2.1.5",
     "license": "MIT",
-    "url": "https://npmjs.com/package/react-resizable-panels",
-    "description": "React components for resizable panel layouts"
+    "url": "git+https://github.com/bvaughn/react-resizable-panels.git",
+    "description": "React components for resizable panel groups/layouts"
   },
   {
     "name": "react-router-dom",
-    "version": "6.26.2",
+    "version": "6.27.0",
     "license": "MIT",
-    "url": "https://npmjs.com/package/react-router-dom",
+    "url": "https://github.com/remix-run/react-router",
     "description": "Declarative routing for React web applications"
   },
   {
     "name": "react-virtualized-auto-sizer",
-    "version": "1.0.7",
+    "version": "1.0.26",
     "license": "MIT",
-    "url": "https://npmjs.com/package/react-virtualized-auto-sizer",
-    "description": "Automatically sized component for react-virtualized"
+    "url": "https://github.com/bvaughn/react-virtualized-auto-sizer.git",
+    "description": "Standalone version of the AutoSizer component from react-virtualized"
   },
   {
     "name": "react-window",
     "version": "1.8.11",
     "license": "MIT",
-    "url": "https://npmjs.com/package/react-window",
-    "description": "React components for efficiently rendering large lists and tabular data"
+    "url": "http://react-window.now.sh/",
+    "description": "React components for efficiently rendering large, scrollable lists and tabular data"
   },
   {
     "name": "recharts",
-    "version": "2.12.7",
+    "version": "2.13.0",
     "license": "MIT",
-    "url": "https://npmjs.com/package/recharts",
-    "description": "Redefined chart library built with React and D3"
+    "url": "https://github.com/recharts/recharts",
+    "description": "React charts"
   },
   {
     "name": "socket.io",
     "version": "4.8.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/socket.io",
-    "description": "Real-time communication library"
+    "description": "Open source package"
   },
   {
     "name": "sonner",
     "version": "1.5.0",
     "license": "MIT",
     "url": "https://npmjs.com/package/sonner",
-    "description": "An opinionated toast component for React"
+    "description": "Open source package"
   },
   {
     "name": "tailwind-merge",
     "version": "2.5.2",
     "license": "MIT",
     "url": "https://npmjs.com/package/tailwind-merge",
-    "description": "Utility function to efficiently merge Tailwind CSS classes"
+    "description": "Open source package"
   },
   {
     "name": "tailwindcss-animate",
     "version": "1.0.7",
     "license": "MIT",
     "url": "https://npmjs.com/package/tailwindcss-animate",
-    "description": "A Tailwind CSS plugin for creating beautiful animations"
+    "description": "A Tailwind CSS plugin for creating beautiful animations."
   },
   {
     "name": "terser",
     "version": "5.43.1",
     "license": "BSD-2-Clause",
-    "url": "https://npmjs.com/package/terser",
-    "description": "JavaScript parser, mangler and compressor toolkit for ES6+"
+    "url": "https://terser.org",
+    "description": "JavaScript parser, mangler/compressor and beautifier toolkit for ES6+"
   },
   {
     "name": "vaul",
     "version": "0.9.3",
     "license": "MIT",
     "url": "https://npmjs.com/package/vaul",
-    "description": "Unstyled drawer component for React"
+    "description": "Open source package"
   },
   {
     "name": "vite-plugin-compression",
     "version": "0.5.1",
     "license": "MIT",
     "url": "https://npmjs.com/package/vite-plugin-compression",
-    "description": "Vite plugin for compression"
+    "description": "Open source package"
+  },
+  {
+    "name": "web-vitals",
+    "version": "5.1.0",
+    "license": "MIT",
+    "url": "https://npmjs.com/package/web-vitals",
+    "description": "Open source package"
   },
   {
     "name": "zod",
     "version": "3.23.8",
     "license": "MIT",
-    "url": "https://npmjs.com/package/zod",
-    "description": "TypeScript-first schema validation with static type inference"
+    "url": "https://zod.dev",
+    "description": "TypeScript-first schema declaration and validation library with static type inference"
   }
 ]

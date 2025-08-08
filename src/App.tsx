@@ -1,18 +1,13 @@
-
 import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ErrorBoundary } from '@sentry/react';
 import './sentry';
 import './webVitals';
 
-// Security initialization
-// import { initializeSecurity } from "./utils/security";
-
-// TODO: Re-enable security initialization after fixing import issues
-// if (typeof window !== 'undefined') {
-//   initializeSecurity();
-// }
+import { toast } from '@/hooks/use-toast';
+import { errorHandler } from '@/utils/errorHandler';
+import type { AppError } from '@/lib/errors';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
@@ -50,15 +45,46 @@ import "./App.css";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,
       retry: 1,
+      refetchOnWindowFocus: false,
+      onError: (err: unknown) => {
+        const e = err as AppError;
+        errorHandler.handleError({
+          message: e.message || 'Query failed',
+          context: { scope: 'react-query', status: e.status, code: e.code },
+          severity: (e.severity as any) || 'high'
+        });
+        if (e.severity === 'critical' || e.severity === 'high' || e.severity === 'network') {
+          toast({
+            title: 'Something went wrong',
+            description: e.message,
+            variant: 'destructive'
+          });
+        }
+      }
     },
-  },
+    mutations: {
+      onError: (err: unknown) => {
+        const e = err as AppError;
+        errorHandler.handleError({
+          message: e.message || 'Action failed',
+          context: { scope: 'react-query-mutation', status: e.status, code: e.code },
+          severity: (e.severity as any) || 'high'
+        });
+        toast({
+          title: 'Action failed',
+          description: e.message,
+          variant: 'destructive'
+        });
+      }
+    }
+  }
 });
 
 function App() {
   return (
-    <ErrorBoundary fallback={<div>Something went wrong</div>}>
+    <ErrorBoundary>
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>

@@ -138,6 +138,8 @@ export const initializeSecureSession = (): void => {
   startCSRFTokenRotation();
 };
 
+let csrfInterval: number | undefined;
+
 export const clearSecureSession = (): void => {
   if (typeof window === 'undefined') return;
 
@@ -208,17 +210,6 @@ export const createSecureHeaders = (includeCSRF: boolean = true): HeadersInit =>
 
   return headers;
 };
-
-export const secureFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const headers = createSecureHeaders(true);
-  options.headers = { ...headers, ...(options.headers || {}) };
-  if (!options.credentials) {
-    options.credentials = 'include';
-  }
-  return fetch(url, options);
-};
-
-let csrfInterval: number | undefined;
 
 export const startCSRFTokenRotation = (intervalMs: number = 30 * 60 * 1000): void => {
   if (typeof window === 'undefined') return;
