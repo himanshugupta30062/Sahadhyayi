@@ -137,7 +137,7 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
     );
   }
 
-  const audioUrl = audioSummary?.audio_url || (createAudioSummary.data && URL.createObjectURL(new Blob()));
+  const audioUrl = audioSummary?.audio_url || createAudioSummary.data?.audio_url;
 
   return (
     <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
