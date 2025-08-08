@@ -64,6 +64,22 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
   }
 };
 
+export const generateEnhancedPrompt = async (
+  userMessage: string,
+  context: WebsiteContext,
+): Promise<string> => {
+  const summary = [
+    `This site hosts ${context.totalBooks} books`,
+    context.genres.length ? `across genres like ${context.genres.join(', ')}` : '',
+    context.features.length ? `with features such as ${context.features.join(', ')}` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return `${userMessage}\n\nWEBSITE CONTEXT:\n${summary}`;
+};
+
+
 
 export const searchRelevantBooks = async (query: string, limit: number = 5): Promise<BookData[]> => {
   try {
