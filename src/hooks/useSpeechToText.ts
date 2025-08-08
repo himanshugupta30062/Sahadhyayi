@@ -24,63 +24,53 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
 
-      mediaRecorder.onstop = async () => {
-        setIsRecording(false);
-        setIsProcessing(true);
+        mediaRecorder.onstop = async () => {
+          setIsRecording(false);
+          setIsProcessing(true);
 
-        try {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          const formData = new FormData();
-          formData.append('audio', audioBlob, 'recording.webm');
+          try {
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
 
-          // Use direct fetch for FormData to Supabase edge function
-          const response = await fetch(`https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/speech-to-text`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U`,
-            },
-            body: formData,
-          });
+            // Invoke Supabase Edge Function with form data
+            const { data, error } = await supabase.functions.invoke('speech-to-text', {
+              body: formData,
+            });
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if (error) {
+              throw error;
+            }
+
+            if (data?.transcription) {
+              onTranscript(data.transcription);
+            } else {
+              onError('No transcription received');
+            }
+          } catch (error) {
+            console.error('Transcription error:', error);
+            onError('Failed to transcribe audio. Please try again.');
+          } finally {
+            setIsProcessing(false);
           }
 
-          const data = await response.json();
-          
-          if (data.error) {
-            throw new Error(data.error);
-          }
+          // Clean up media stream
+          stream.getTracks().forEach(track => track.stop());
+        };
 
-          if (data.transcription) {
-            onTranscript(data.transcription);
-          } else {
-            onError('No transcription received');
-          }
-        } catch (error) {
-          console.error('Transcription error:', error);
-          onError('Failed to transcribe audio. Please try again.');
-        } finally {
-          setIsProcessing(false);
-        }
-
-        // Clean up media stream
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      onError('Could not access microphone. Please check permissions.');
-    }
-  }, [onTranscript, onError]);
+        mediaRecorder.start();
+        setIsRecording(true);
+      } catch (error) {
+        console.error('Error starting recording:', error);
+        onError('Could not access microphone. Please check permissions.');
+      }
+    }, [onTranscript, onError]);
 
   const stopRecording = React.useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
