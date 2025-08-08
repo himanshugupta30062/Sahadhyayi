@@ -4,11 +4,19 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the built frontend
+app.use(express.static(path.join(__dirname, 'dist')));
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
@@ -123,6 +131,11 @@ app.post('/goodreads/export', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// Handle client-side routing by returning the main index.html for other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 4000;
