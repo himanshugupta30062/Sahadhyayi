@@ -97,6 +97,7 @@ const Navigation = () => {
               src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
               alt="Sahadhyayi navigation logo"
               className="w-8 h-8 flex-shrink-0"
+              loading="lazy"
             />
             <span className="whitespace-nowrap leading-none">Sahadhyayi</span>
           </Link>
@@ -110,10 +111,10 @@ const Navigation = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
-                      (location.pathname === item.href || 
-                       (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1' 
+                    className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600 ${
+                      (location.pathname === item.href ||
+                       (item.href === "/" && location.pathname === "/dashboard" && user))
+                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1'
                         : 'text-gray-700'
                     }`}
                   >
@@ -192,7 +193,7 @@ const Navigation = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+                className="p-2 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-600"
                 aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
                 ref={menuButtonRef}
               >
@@ -214,10 +215,10 @@ const Navigation = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                    (location.pathname === item.href || 
-                     (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                      ? 'text-amber-600 bg-amber-50' 
+                  className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600 ${
+                    (location.pathname === item.href ||
+                     (item.href === "/" && location.pathname === "/dashboard" && user))
+                      ? 'text-amber-600 bg-amber-50'
                       : 'text-gray-700 hover:text-amber-600 hover:bg-gray-50'
                   }`}
                 >
@@ -244,7 +245,7 @@ const Navigation = () => {
                   <Link
                     to="/profile"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
                   >
                     <User className="inline mr-2 h-4 w-4" />
                     Profile
@@ -252,14 +253,14 @@ const Navigation = () => {
                   <Link
                     to="/settings"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
                   >
                     <Settings className="inline mr-2 h-4 w-4" />
                     Settings
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="block w-full text-left px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                    className="block w-full text-left px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
                   >
                     <LogOut className="inline mr-2 h-4 w-4" />
                     Sign Out
@@ -268,12 +269,19 @@ const Navigation = () => {
               ) : (
                 <div className="pt-4 space-y-3 border-t border-gray-200">
                   <SignInLink onClick={() => setIsOpen(false)} className="block">
-                    <Button variant="ghost" size="sm" className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-600"
+                    >
                       Sign In
                     </Button>
                   </SignInLink>
                   <Link to="/signup" onClick={() => setIsOpen(false)} className="block">
-                    <Button size="sm" className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
+                    <Button
+                      size="sm"
+                      className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
+                    >
                       Sign Up
                     </Button>
                   </Link>
