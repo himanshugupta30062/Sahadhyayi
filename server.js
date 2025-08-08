@@ -6,11 +6,37 @@ import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as Sentry from '@sentry/node';
 
 dotenv.config();
 
+Sentry.init({ dsn: process.env.SENTRY_DSN });
+
 const app = express();
+app.use(Sentry.Handlers.requestHandler());
 app.use(express.json());
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    Sentry.captureMessage('HTTP Request', {
+      level: 'info',
+      extra: { path: req.path, duration, status: res.statusCode },
+    });
+    console.log(
+      JSON.stringify({
+        level: 'info',
+        event: 'http_request',
+        path: req.path,
+        duration,
+        status: res.statusCode,
+        timestamp: Date.now(),
+      }),
+    );
+  });
+  next();
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -184,6 +210,8 @@ app.post('/goodreads/export', authenticate, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+app.use(Sentry.Handlers.errorHandler());
 
 // Handle client-side routing by returning the main index.html for other routes
 app.get('*', (req, res) => {
