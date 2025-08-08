@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import React, { useState, useEffect } from 'react';
 
 export interface SearchUser {

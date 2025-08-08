@@ -1,10 +1,9 @@
 import { ComponentProps } from "react"
-import { Toaster as Sonner, toast } from "sonner"
+import { Toaster as Sonner } from "sonner"
 
 type ToasterProps = ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
-
   return (
     <Sonner
       theme="light"
@@ -25,4 +24,4 @@ const Toaster = ({ ...props }: ToasterProps) => {
   )
 }
 
-export { Toaster, toast }
+export default Toaster

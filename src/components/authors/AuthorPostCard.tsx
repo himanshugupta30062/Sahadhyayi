@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { AuthorPost, usePostComments, usePostReactions, useAddComment, useToggleReaction } from '@/hooks/useAuthorPosts';
 import { useCommentLikes, useToggleCommentLike } from '@/hooks/useCommentLikes';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { containsInappropriateLanguage } from '@/utils/trustAndSafety';
 import { useBlockUser, useBlockedUsers, useReportContent } from '@/hooks/useTrustAndSafety';

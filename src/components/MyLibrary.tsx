@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useUserBookshelf } from '@/hooks/useUserBookshelf';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';

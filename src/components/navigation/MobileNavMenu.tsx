@@ -11,7 +11,7 @@ import {
 import { Menu } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/authHelpers";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { LogOut, BookOpen, Users, Map, PenTool } from "lucide-react";

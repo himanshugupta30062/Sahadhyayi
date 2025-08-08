@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Send, Users, X } from 'lucide-react';
 import { useGroupMessages, useSendMessage, useGroupMembers } from '@/hooks/useGroupMessaging';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 

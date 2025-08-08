@@ -7,7 +7,7 @@ import { Send } from 'lucide-react';
 import { useGroupMessages, useSendGroupMessage } from '@/hooks/useMessages';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { formatDistanceToNow } from 'date-fns';
 
 interface GroupChatWindowProps {

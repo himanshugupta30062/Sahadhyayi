@@ -13,7 +13,7 @@ import {
   User, Settings, LogOut, Bell, BookOpen, Users, Calendar, Library, Clock
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/authHelpers";
 import { useSessionWarning } from "@/hooks/useSessionWarning";
 import SessionTimeoutWarning from "@/components/SessionTimeoutWarning";
 

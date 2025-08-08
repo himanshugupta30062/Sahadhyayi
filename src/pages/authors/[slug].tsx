@@ -13,7 +13,7 @@ import { FollowButton } from '@/components/authors/FollowButton';
 import { CreatePostForm } from '@/components/authors/CreatePostForm';
 import { AuthorPostCard } from '@/components/authors/AuthorPostCard';
 import { useAuthorPosts } from '@/hooks/useAuthorPosts';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { AskQuestionForm } from '@/components/authors/AskQuestionForm';
 import { QuestionAnswerCard } from '@/components/authors/QuestionAnswerCard';
 import { EventCard } from '@/components/authors/EventCard';

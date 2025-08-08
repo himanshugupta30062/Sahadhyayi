@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import UserContentEditor from '@/components/content/UserContentEditor';
 import UserContentFeed from '@/components/content/UserContentFeed';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { BookOpen, PenTool, Heart } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { Link } from 'react-router-dom';

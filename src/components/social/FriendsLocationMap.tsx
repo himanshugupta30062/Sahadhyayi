@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useFriends } from '@/hooks/useFriends';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';

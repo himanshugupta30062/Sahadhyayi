@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import LibraryPagination from '@/components/library/LibraryPagination';

@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client-universal';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 
 /**
  * Enhanced hook for saving training data with better context and categorization

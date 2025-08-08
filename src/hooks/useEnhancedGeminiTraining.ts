@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client-universal';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import * as React from 'react';
 import { populateInitialTrainingData } from '@/utils/enhancedChatbotKnowledge';
 

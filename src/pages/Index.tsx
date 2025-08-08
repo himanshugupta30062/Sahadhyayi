@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/authHelpers";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
 import AnimatedHero from "@/components/AnimatedHero";

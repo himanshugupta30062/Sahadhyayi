@@ -5,7 +5,7 @@ import { Calendar, MapPin, Users, ExternalLink, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import type { AuthorEvent } from '@/hooks/useAuthorEvents';
 import { useEventAttendance } from '@/hooks/useAuthorEvents';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 
 interface EventCardProps {
   event: AuthorEvent;

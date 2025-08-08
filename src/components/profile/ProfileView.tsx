@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useUserProfile, useUpsertUserProfile, useDeleteUserProfile, uploadProfilePicture, UserProfile } from "@/hooks/useUserProfile";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/authHelpers";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

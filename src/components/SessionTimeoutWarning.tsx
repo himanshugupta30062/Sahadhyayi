@@ -3,7 +3,7 @@ import React, { useState, useEffect, FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Clock } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 
 interface SessionTimeoutWarningProps {
   onExtendSession: () => void;

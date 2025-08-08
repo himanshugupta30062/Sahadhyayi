@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ThumbsUp, ThumbsDown, MessageCircle, Heart } from 'lucide-react';
 import { useUserGeneratedContent, useContentVotes, useVoteContent, UserGeneratedContent } from '@/hooks/useUserGeneratedContent';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 
 interface UserContentFeedProps {
   bookId?: string;

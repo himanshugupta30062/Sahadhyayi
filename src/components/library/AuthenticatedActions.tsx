@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Check, Download, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { toast } from '@/hooks/use-toast';
 import type { Book } from '@/hooks/useLibraryBooks';

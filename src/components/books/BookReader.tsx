@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { useQuotes } from '@/contexts/QuotesContext';
+import { useQuotes } from '@/contexts/quotesHelpers';
 import { 
   BookOpen, 
   ChevronLeft, 
@@ -30,7 +30,7 @@ import {
   Download,
   Share2
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { useReadingProgress, useUpdateReadingProgress } from '@/hooks/useReadingProgress';
 import { useAudioSummary } from '@/hooks/useAudioSummaries';
 import { useChapterProgress, useMarkChapterAsRead } from '@/hooks/useChapterProgress';

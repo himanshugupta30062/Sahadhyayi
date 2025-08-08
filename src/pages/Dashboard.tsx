@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { useProfile } from '@/hooks/useProfile';
 import { useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { Skeleton } from '@/components/ui/skeleton';

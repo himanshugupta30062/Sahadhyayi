@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { BookOpen, Plus, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
 
 interface BookRecommendationsProps {
