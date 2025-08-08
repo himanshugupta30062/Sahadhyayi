@@ -1,6 +1,17 @@
 
 # Welcome to your Lovable project
 
+[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/OWNER/REPO)](https://codecov.io/github/OWNER/REPO)
+
+## Quick Start
+
+- `npm run dev` – start app
+- `npm run sb` – Storybook
+- `npm test` – unit tests
+- `npm run test:e2e` – Playwright
+- Docs: [Architecture](docs/architecture.md) · [AI](docs/ai.md) · [Security](docs/security.md) · [Contributing](docs/contributing.md)
+
 ## Project info
 
 **Repository name:** Sahadhyayi  
