@@ -15,7 +15,7 @@ export const SECURITY_CONFIG = {
     'default-src': ["'self'"],
     'script-src': ["'self'", "https://maps.googleapis.com"],
     'style-src': ["'self'", "https://fonts.googleapis.com"],
-    'img-src': ["'self'", "data:", "blob:"],
+    'img-src': ["'self'", "data:", "blob:", "https:"],
     'font-src': ["'self'", "https://fonts.gstatic.com"],
     'connect-src': ["'self'", "https://*.supabase.co", "wss:"],
     'frame-src': ["'self'"],
