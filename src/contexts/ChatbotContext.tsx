@@ -20,9 +20,11 @@ interface ChatbotContextType {
   messages: Message[];
   toggleChat: () => void;
   closeChat: () => void;
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (message: string) => Promise<string>;
   isLoading: boolean;
   trainingDataCount: number;
+  initializeWebsiteKnowledge?: () => Promise<void>;
+  saveChatInteraction?: (userMessage: string, botResponse: string, context?: string) => Promise<void>;
 }
 
 const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
@@ -69,14 +71,15 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
 
   const sendMessage = useCallback(async (userMessage: string) => {
     let relevantBooks: AiContext['books'] = [];
-    
+    let botResponse = "";
+
     // Add user message
     const userMsg: Message = {
       text: userMessage,
       sender: 'user',
       timestamp: new Date(),
     };
-    
+
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
@@ -93,8 +96,6 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
           bookContext: relevantBooks.length > 0 ? relevantBooks : undefined
         }
       });
-
-      let botResponse = "";
 
       if (error) {
         console.error('Function call error:', error);
@@ -119,7 +120,7 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
         timestamp: new Date(),
         books: relevantBooks,
       };
-      
+
       setMessages(prev => [...prev, botMsg]);
 
       // Save interaction for training
@@ -151,9 +152,10 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
         timestamp: new Date(),
         books: relevantBooks,
       };
-      
+
       setMessages(prev => [...prev, botMsg]);
-      
+      botResponse = fallbackResponse;
+
       toast({
         title: "Using Offline Mode",
         description: "Chatbot is working with local knowledge!",
@@ -162,6 +164,7 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
     } finally {
       setIsLoading(false);
     }
+    return botResponse;
   }, [saveChatInteraction, saveBookSpecificInteraction, getTrainingDataStats]);
 
   return (
@@ -173,6 +176,8 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
       sendMessage,
       isLoading,
       trainingDataCount,
+      initializeWebsiteKnowledge,
+      saveChatInteraction,
     }}>
       {children}
     </ChatbotContext.Provider>

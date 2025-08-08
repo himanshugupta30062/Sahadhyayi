@@ -21,7 +21,7 @@ import { QuotesProvider } from "./contexts/QuotesContext";
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
-import ChatbotContainer from "./components/chatbot/ChatbotContainer";
+import { Chatbot } from "./components/chatbot";
 import Navigation from "./components/Navigation";
 import GlobalFooter from "./components/GlobalFooter";
 import ScrollToTop from "./components/ScrollToTop";
@@ -92,7 +92,7 @@ function App() {
                   </main>
                   <GlobalFooter />
                 </div>
-                <ChatbotContainer />
+                <Chatbot />
                 <Toaster />
               </QuotesProvider>
             </AuthProvider>
