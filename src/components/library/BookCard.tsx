@@ -5,6 +5,7 @@ import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
 import type { Book } from '@/hooks/useLibraryBooks';
+import { LazyImage } from '@/components/ui/LazyImage';
 
 
 interface BookCardProps {
@@ -29,26 +30,25 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
         onMouseLeave={() => setIsHovered(false)}
       >
         {book.cover_image_url ? (
-          <img
+          <LazyImage
             src={book.cover_image_url}
             alt={book.title}
-            loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
-              e.currentTarget.src = '/default-cover.jpg';
-              e.currentTarget.onerror = null; // Prevent infinite loop
+              (e.currentTarget as HTMLImageElement).src = '/default-cover.jpg';
+              (e.currentTarget as HTMLImageElement).onerror = null;
             }}
           />
         ) : (
-          <img
+          <LazyImage
             src="/default-cover.jpg"
             alt={book.title}
-            loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
-              // If default cover also fails, show placeholder
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              const target = e.currentTarget as HTMLImageElement;
+              const pic = target.parentElement as HTMLElement;
+              pic.style.display = 'none';
+              pic.nextElementSibling?.classList.remove('hidden');
             }}
           />
         )}

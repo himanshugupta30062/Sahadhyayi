@@ -5,6 +5,15 @@ import ReactLoader from './components/ReactLoader';
 import App from './App';
 import { errorHandler } from './utils/errorHandler';
 import './index.css';
+import './webVitals';
+
+if (import.meta.env.DEV) {
+  import('@axe-core/react').then(({ default: axe }) => {
+    Promise.all([import('react'), import('react-dom')]).then(([React, ReactDOM]) => {
+      axe(React.default, ReactDOM.default, 1000);
+    });
+  });
+}
 
 // Security: Remove React from global scope in production
 // Removed React global assignment to prevent conflicts

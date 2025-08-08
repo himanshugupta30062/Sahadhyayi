@@ -17,9 +17,14 @@ const GRADIENTS = [
   'bg-gradient-to-r from-pink-500 to-rose-500'
 ];
 
-export default function ChatbotContainer() {
+interface ChatbotContainerProps {
+  initiallyOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function ChatbotContainer({ initiallyOpen = false, onClose }: ChatbotContainerProps) {
   const gradientClass = useColorCycle(GRADIENTS, 10000);
-  const { isOpen, toggleOpen, messages, append, input, setInputText, consumeInput } = useChatHistory(false);
+  const { isOpen, toggleOpen, messages, append, input, setInputText, consumeInput } = useChatHistory(initiallyOpen);
   const { ask, initializeWebsiteKnowledge } = useChatbotAI();
   const [loading, setLoading] = useState(false);
 
@@ -45,11 +50,18 @@ export default function ChatbotContainer() {
     onError: (err) => append('system', `Mic error: ${err}`),
   }) as any;
 
+  const handleToggle = () => {
+    toggleOpen();
+    if (isOpen && onClose) onClose();
+  };
+
   return (
-    <ChatWindow isOpen={isOpen} onToggle={toggleOpen} gradientClass={gradientClass}>
+    <ChatWindow isOpen={isOpen} onToggle={handleToggle} gradientClass={gradientClass}>
       <ChatHeader title="Sahadhyayi Assistant" subtitle="Ask about books, genres & summaries" />
-      <ChatMessages messages={messages} />
-      {loading && <Loader />}
+      <section id="chat-panel" role="region" aria-live="polite" aria-busy={loading}>
+        <ChatMessages messages={messages} />
+        {loading && <Loader />}
+      </section>
       <ChatInput
         value={input}
         onChange={setInputText}
