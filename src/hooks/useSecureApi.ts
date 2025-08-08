@@ -9,6 +9,7 @@ export function useSecureApi() {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || 'Login failed');
     if (data?.csrfToken) setCSRFToken(data.csrfToken);
     return data;
   }, []);

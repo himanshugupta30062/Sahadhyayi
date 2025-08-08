@@ -315,10 +315,6 @@ app.post('/api/stt', (req, res) => {
   req.pipe(bb);
 });
 
-app.post('/api/data', requireSession, (req, res) => {
-  res.json({ secure: true });
-});
-
 app.post('/goodreads/export', authenticate, async (req, res) => {
   if (!goodreadsClient) {
     return res.status(503).json({ error: 'Goodreads integration not configured' });
