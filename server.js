@@ -1,5 +1,6 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import express from 'express';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
@@ -12,16 +13,39 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import cors from 'cors';
 import busboy from 'busboy';
+import { validateFileUpload } from './src/utils/security';
+import { SECURITY_CONFIG } from './src/utils/securityConfig';
+import { sanitizeHTML, sanitizeInput } from './src/utils/validation';
 
 dotenv.config();
 
 Sentry.init({ dsn: process.env.SENTRY_DSN });
+
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' https://maps.googleapis.com",
+  "style-src 'self' https://fonts.googleapis.com",
+  "img-src 'self' data: blob:",
+  "font-src 'self' https://fonts.gstatic.com",
+  "connect-src 'self' https://*.supabase.co wss:",
+  "frame-src 'self'",
+  "report-uri /csp-report"
+].join('; ');
 
 const app = express();
 app.use(Sentry.Handlers.requestHandler());
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
+
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', CSP);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(self)');
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -73,6 +97,18 @@ function checkSession(req, res, next) {
   if (!token || token !== getCSRFToken(req)) return jsonError(res, 403, "Invalid CSRF token", "INVALID_CSRF");
   next();
 }
+
+app.post(
+  '/csp-report',
+  express.json({ type: ['application/csp-report', 'application/json'] }),
+  (req, res) => {
+    try {
+      const report = req.body['csp-report'] || req.body;
+      console.warn('[CSP-REPORT]', JSON.stringify(report));
+    } catch {}
+    res.status(204).end();
+  }
+);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -297,6 +333,40 @@ app.get('/api/books', async (req, res, next) => {
 });
 app.post('/api/data', checkSession, (req, res) => {
   res.json({ secure: true });
+});
+
+app.post('/api/upload', checkSession, async (req, res, next) => {
+  try {
+    const file = req.file || req.files?.file;
+    if (!file) return res.status(400).json({ error: 'No file', code: 'NO_FILE' });
+
+    const { valid, error } = validateFileUpload(
+      file,
+      SECURITY_CONFIG.FILE_UPLOAD.ALLOWED_IMAGE_TYPES,
+      SECURITY_CONFIG.FILE_UPLOAD.MAX_SIZE
+    );
+    if (!valid) return res.status(400).json({ error, code: 'UPLOAD_VALIDATION' });
+
+    return res.json({ ok: true });
+  } catch (e) {
+    next(Object.assign(new Error('UPLOAD_ERROR'), { status: 500, details: e }));
+  }
+});
+
+app.post('/api/comments', checkSession, async (req, res, next) => {
+  try {
+    const body = (req.body?.body ?? '').toString();
+    const title = sanitizeInput(req.body?.title ?? '');
+    const safeHtml = sanitizeHTML(body);
+
+    if (!title || !safeHtml) {
+      return res.status(400).json({ error: 'Invalid input', code: 'VALIDATION_ERROR' });
+    }
+
+    return res.json({ ok: true });
+  } catch (e) {
+    next(Object.assign(new Error('COMMENT_ERROR'), { status: 500, details: e }));
+  }
 });
 
 app.post('/goodreads/export', authenticate, async (req, res) => {

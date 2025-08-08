@@ -13,41 +13,13 @@ export const SECURITY_CONFIG = {
   // Content Security Policy
   CSP: {
     'default-src': ["'self'"],
-    'script-src': [
-      "'self'", 
-      "'unsafe-inline'", // Required for React inline scripts
-      "https://maps.googleapis.com",
-      "https://www.google.com"
-    ],
-    'style-src': [
-      "'self'", 
-      "'unsafe-inline'", // Required for styled-components and CSS-in-JS
-      "https://fonts.googleapis.com"
-    ],
-    'font-src': [
-      "'self'",
-      "https://fonts.gstatic.com"
-    ],
-    'img-src': [
-      "'self'",
-      "data:",
-      "https:",
-      "blob:"
-    ],
-    'connect-src': [
-      "'self'",
-      "https://*.supabase.co",
-      "https://maps.googleapis.com"
-    ],
-    'frame-src': [
-      "'self'",
-      "https://www.google.com"
-    ],
-    'object-src': ["'none'"],
-    'base-uri': ["'self'"],
-    'form-action': ["'self'"],
-    'frame-ancestors': ["'none'"],
-    'upgrade-insecure-requests': []
+    'script-src': ["'self'", "https://maps.googleapis.com"],
+    'style-src': ["'self'", "https://fonts.googleapis.com"],
+    'img-src': ["'self'", "data:", "blob:"],
+    'font-src': ["'self'", "https://fonts.gstatic.com"],
+    'connect-src': ["'self'", "https://*.supabase.co", "wss:"],
+    'frame-src': ["'self'"],
+    'report-uri': ['/csp-report']
   },
 
   // Input validation limits
@@ -64,18 +36,8 @@ export const SECURITY_CONFIG = {
 
   // File upload restrictions
   FILE_UPLOAD: {
-    MAX_SIZE: 10 * 1024 * 1024, // 10MB
-    ALLOWED_IMAGE_TYPES: [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/webp'
-    ],
-    ALLOWED_DOCUMENT_TYPES: [
-      'application/pdf',
-      'text/plain',
-      'application/json'
-    ],
+    ALLOWED_IMAGE_TYPES: ['image/png', 'image/jpeg', 'image/webp'],
+    MAX_SIZE: 5 * 1024 * 1024 // 5MB
   },
 
   // Session security
@@ -87,20 +49,17 @@ export const SECURITY_CONFIG = {
 
   // Trusted domains for external links
   TRUSTED_DOMAINS: [
-    'sahadhyayi.com',
-    'www.sahadhyayi.com',
-    'supabase.com',
-    'github.com',
-    'google.com',
+    'self',
+    '*.supabase.co',
+    'maps.googleapis.com',
     'fonts.googleapis.com',
-    'fonts.gstatic.com',
-    'maps.googleapis.com'
+    'fonts.gstatic.com'
   ],
 
   // Security headers
   SECURITY_HEADERS: {
     'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
+    'X-Frame-Options': 'SAMEORIGIN',
     'X-XSS-Protection': '1; mode=block',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self)',

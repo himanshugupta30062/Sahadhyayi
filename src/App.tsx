@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './sentry';
@@ -8,6 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { errorHandler } from '@/utils/errorHandler';
 import type { AppError } from '@/lib/errors';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { initializeSecurity } from '@/utils/security';
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
@@ -83,6 +84,10 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  useEffect(() => {
+    initializeSecurity();
+  }, []);
+
   return (
     <ErrorBoundary>
       <BrowserRouter>

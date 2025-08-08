@@ -1,5 +1,7 @@
 // Security utilities for comprehensive protection
 
+import { SECURITY_CONFIG } from './securityConfig';
+
 // CSRF Token Generation and Validation
 export const generateCSRFToken = (): string => {
   const array = new Uint8Array(32);
@@ -39,20 +41,10 @@ export const validateCSRFToken = (token: string): boolean => {
 export const setSecurityHeaders = (): void => {
   if (typeof document === 'undefined') return;
 
-  // Content Security Policy
-  const cspContent = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://www.google.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://*.supabase.co https://maps.googleapis.com",
-    "frame-src 'self' https://www.google.com",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'"
-  ].join('; ');
+  // Content Security Policy built from configuration
+  const cspContent = Object.entries(SECURITY_CONFIG.CSP)
+    .map(([directive, values]) => `${directive} ${values.join(' ')}`)
+    .join('; ');
 
   // Create or update CSP meta tag
   let cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
@@ -77,7 +69,7 @@ export const setSecurityHeaders = (): void => {
   if (!xFrameMeta) {
     xFrameMeta = document.createElement('meta');
     xFrameMeta.setAttribute('http-equiv', 'X-Frame-Options');
-    xFrameMeta.setAttribute('content', 'DENY');
+    xFrameMeta.setAttribute('content', 'SAMEORIGIN');
     document.head.appendChild(xFrameMeta);
   }
 
