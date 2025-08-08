@@ -4,14 +4,18 @@ import { ErrorFallback } from '@/components/ErrorFallback';
 
 type Props = { children: React.ReactNode; fallback?: React.ReactNode };
 
-export class ErrorBoundary extends React.Component<Props, { hasError: boolean }> {
-  state = { hasError: false };
+export class ErrorBoundary extends React.Component<Props, { hasError: boolean; error?: Error }> {
+  state = { hasError: false as boolean, error: undefined as Error | undefined };
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error) {
+    if (import.meta.env.DEV) {
+      console.error('🚨 Uncaught in ErrorBoundary:', error);
+    }
+
     errorHandler.reportCustomError(
       error.message,
       { component: 'ErrorBoundary', action: 'componentDidCatch' },
@@ -27,7 +31,13 @@ export class ErrorBoundary extends React.Component<Props, { hasError: boolean }>
 
   render() {
     if (this.state.hasError) {
-      const fallback = this.props.fallback ?? <ErrorFallback />;
+      const defaultFallback = (
+        <ErrorFallback
+          error={this.state.error}
+          resetError={() => this.setState({ hasError: false, error: undefined })}
+        />
+      );
+      const fallback = this.props.fallback ?? defaultFallback;
       return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
           {fallback}
