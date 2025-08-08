@@ -11,18 +11,6 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
   console.log('useSpeechToText hook called...');
   console.log('React available in useSpeechToText:', !!React);
   console.log('React.useState available:', typeof React.useState);
-  
-  // Add safety check for React hooks
-  if (!React || typeof React.useState !== 'function') {
-    console.error('React hooks not available in useSpeechToText');
-    return {
-      isRecording: false,
-      isProcessing: false,
-      startRecording: async () => {},
-      stopRecording: () => {},
-      toggleRecording: () => {},
-    };
-  }
 
   const [isRecording, setIsRecording] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);

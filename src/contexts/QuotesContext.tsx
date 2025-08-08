@@ -28,10 +28,6 @@ export const useQuotes = () => {
 };
 
 export const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
-  // Add safety check for React hooks
-  if (!React || typeof useState !== 'function') {
-    return React.createElement('div', { children });
-  }
 
   const [quotes, setQuotes] = useState<Quote[]>([]);
 
