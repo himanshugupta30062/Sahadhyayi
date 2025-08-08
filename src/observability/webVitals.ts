@@ -1,4 +1,4 @@
-import { getCLS, getFID, getLCP, getTTFB, getFCP } from 'web-vitals';
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 
 function send(metric: any) {
   // Option A: console
@@ -8,4 +8,4 @@ function send(metric: any) {
   // navigator.sendBeacon?.('/observability/vitals', new Blob([JSON.stringify(metric)], { type: 'application/json' }));
 }
 
-[getCLS, getFID, getLCP, getTTFB, getFCP].forEach(fn => fn(send));
+[onCLS, onFCP, onINP, onLCP, onTTFB].forEach((fn) => fn(send));
