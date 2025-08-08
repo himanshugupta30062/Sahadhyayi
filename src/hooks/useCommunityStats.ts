@@ -2,7 +2,6 @@
 import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-const COMMUNITY_STATS_URL = import.meta.env.VITE_COMMUNITY_STATS_URL as string | undefined;
 const LOCAL_STORAGE_KEY = 'community-stats';
 
 interface CommunityStats {
@@ -12,26 +11,6 @@ interface CommunityStats {
 }
 
 export const useCommunityStats = (autoFetch: boolean = true) => {
-  console.log('useCommunityStats hook called...');
-  console.log('React available in useCommunityStats:', !!React);
-  console.log('React.useState available:', typeof React.useState);
-  
-  // Add safety check for React hooks
-  if (!React || typeof React.useState !== 'function') {
-    console.error('React hooks not available in useCommunityStats');
-    return {
-      stats: {
-        totalSignups: 0,
-        totalVisits: 0,
-        lastUpdated: new Date().toISOString(),
-      },
-      isLoading: false,
-      error: null,
-      fetchStats: () => Promise.resolve(),
-      joinCommunity: () => Promise.resolve(false),
-    };
-  }
-
   const safeGetItem = React.useCallback((key: string): string | null => {
     try {
       return typeof window !== 'undefined' ? localStorage.getItem(key) : null;
@@ -118,14 +97,15 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     }
   }, [getCachedStats, safeSetItem]);
 
-  const joinCommunity = async () => {
+  const joinCommunity = React.useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const userId = session?.user?.id;
 
       if (!userId) return false;
 
-      // Check if profile already exists
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('id')
@@ -142,7 +122,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
         setStats(prev => ({
           ...prev,
           totalSignups: prev.totalSignups + 1,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
         }));
       }
 
@@ -153,13 +133,12 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
       console.error('Failed to join community:', err);
       return false;
     }
-  };
+  }, [fetchStats]);
 
-    React.useEffect(() => {
-      if (autoFetch) {
-        fetchStats();
-      }
-    }, [autoFetch, fetchStats]);
+  React.useEffect(() => {
+    if (!autoFetch) return;
+    fetchStats();
+  }, [autoFetch, fetchStats]);
 
   return {
     stats,
