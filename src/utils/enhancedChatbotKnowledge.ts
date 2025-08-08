@@ -97,6 +97,27 @@ export const getBookSummaries = async (bookIds: string[]): Promise<any[]> => {
   }
 };
 
+export const generateEnhancedPrompt = async (
+  userMessage: string,
+  context: WebsiteContext,
+): Promise<string> => {
+  let prompt = userMessage + '\n\nSITE CONTEXT:\n';
+  prompt += `Total Books: ${context.totalBooks}\n`;
+  if (context.genres.length) {
+    prompt += `Genres: ${context.genres.join(', ')}\n`;
+  }
+  if (context.features.length) {
+    prompt += `Features: ${context.features.join(', ')}\n`;
+  }
+  if (context.recentBooks.length) {
+    prompt += 'Recent Books:\n';
+    context.recentBooks.forEach((b) => {
+      prompt += `- ${b.title} by ${b.author} (${b.genre})\n`;
+    });
+  }
+  return prompt;
+};
+
 export const populateInitialTrainingData = async (userId: string) => {
   const trainingData = [
     {

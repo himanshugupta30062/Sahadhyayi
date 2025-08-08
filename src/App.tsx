@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from '@sentry/react';
@@ -22,6 +22,7 @@ import { QuotesProvider } from "./contexts/QuotesContext";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
 import ChatbotContainer from "./components/chatbot/ChatbotContainer";
+import { initializeSecureSession, setCSRFToken, generateCSRFToken } from '@/utils/security';
 import Navigation from "./components/Navigation";
 import GlobalFooter from "./components/GlobalFooter";
 import ScrollToTop from "./components/ScrollToTop";
@@ -57,6 +58,12 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  useEffect(() => {
+    initializeSecureSession();
+    const id = setInterval(() => setCSRFToken(generateCSRFToken()), 30 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <BrowserRouter>

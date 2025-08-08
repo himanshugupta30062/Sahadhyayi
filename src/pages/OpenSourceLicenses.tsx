@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { secureFetch } from '@/lib/secureFetch';
 import { ExternalLink, Package, Heart, Code, Shield, Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,7 @@ const OpenSourceLicenses = () => {
   const [selectedLicense, setSelectedLicense] = useState<string>('all');
 
   useEffect(() => {
-    fetch('/licenses.json')
+    secureFetch('/licenses.json')
       .then(res => res.json())
       .then(data => {
         setLicenses(data);

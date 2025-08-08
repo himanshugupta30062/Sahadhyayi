@@ -38,17 +38,15 @@ app.use((req, res, next) => {
 
 const sessions = new Map();
 
-function createSession(res) {
+function createSession(res, userId) {
   const sessionId = crypto.randomBytes(16).toString('hex');
-  const csrfToken = crypto.randomBytes(32).toString('hex');
-  sessions.set(sessionId, { createdAt: Date.now(), csrfToken });
+  sessions.set(sessionId, { createdAt: Date.now(), userId });
   res.cookie('sessionId', sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
     maxAge: 24 * 60 * 60 * 1000,
   });
-  return csrfToken;
 }
 
 function validateSessionIntegrity(req) {
@@ -58,15 +56,13 @@ function validateSessionIntegrity(req) {
   return Date.now() - session.createdAt < maxAge;
 }
 
-function getCSRFToken(req) {
-  const session = sessions.get(req.cookies?.sessionId);
-  return session?.csrfToken;
-}
-
 function checkSession(req, res, next) {
+  const csrfCookie = req.cookies?.csrfToken;
+  const csrfHeader = req.get('x-csrf-token');
   if (!validateSessionIntegrity(req)) return res.status(401).send('Session expired');
-  const token = req.get('x-csrf-token');
-  if (!token || token !== getCSRFToken(req)) return res.status(403).send('Invalid CSRF token');
+  if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+    return res.status(403).send('Invalid CSRF token');
+  }
   next();
 }
 
@@ -224,9 +220,13 @@ app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
   }
 });
 
-app.post('/api/login', (req, res) => {
-  const csrfToken = createSession(res);
-  res.json({ csrfToken });
+app.post('/api/login', async (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Authentication required' });
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+  createSession(res, user.id);
+  res.status(204).send();
 });
 
 app.post('/api/logout', (req, res) => {
@@ -235,6 +235,7 @@ app.post('/api/logout', (req, res) => {
     sessions.delete(sessionId);
   }
   res.clearCookie('sessionId');
+  res.clearCookie('csrfToken');
   res.status(204).send();
 });
 
