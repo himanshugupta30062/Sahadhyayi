@@ -1,171 +1,32 @@
+# Sahadhyayi
 
-# Welcome to your Lovable project
+Sahadhyayi is a digital library and AI-powered reading companion.
 
-## Project info
-
-**Repository name:** Sahadhyayi  
-**URL**: https://lovable.dev/projects/c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0
-
-## Live Website
-
-This project is deployed using **GitHub Pages**. You can access it at [https://www.sahadhyayi.com](https://www.sahadhyayi.com).
-Changes pushed to the `main` branch will automatically update the site.
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+## Quick start
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
+git clone <REPO_URL>
 cd Sahadhyayi
-
-# Step 3: Install the necessary dependencies. If npm cannot reach the registry,
-# you can use Bun which installs packages from `bun.lockb`.
-bun install
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+npm install
 npm run dev
-# Step 4b: Launch the real-time discussion server.
-npm run start:server
-
-# Step 5: Run the linter to check for code quality issues.
-npm run lint
 ```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
 
 ## Environment variables
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_ANON_KEY
+- VITE_SENTRY_DSN
+- SUPABASE_URL
+- SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+- GOODREADS_KEY
+- GOODREADS_SECRET
+- GOODREADS_CALLBACK_URL
+- SUPABASE_EDGE_STT_KEY
+- PORT
 
-Create a `.env` file based on `.env.example` and set the following variables:
+## How to run
+- `npm run test`
+- `npm run build`
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_SENTRY_DSN`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `GOODREADS_KEY`
-- `GOODREADS_SECRET`
-- `GOODREADS_CALLBACK_URL`
-- `SUPABASE_EDGE_STT_KEY` (optional)
-- `PORT`
-
-## Security
-
-No secrets in client code; tokens are proxied via `/api/stt`.
-
-## Previewing the production build
-
-Run `npm run build` to generate the static assets in the `dist` folder. The build process automatically runs `generate:sitemap` and `prerender` so the output contains a fresh `sitemap.xml` and HTML snapshots for important pages. To test the build locally with history fallback, execute:
-
-```sh
-npm run preview
-```
-
-This serves the `dist` directory with routing support so pages like `/book/123` or `/about` load correctly. If you use another HTTP server, ensure it falls back to `index.html` for unmatched routes.
-
-## Mobile & Offline Support
-
-Sahadhyayi works great on phones and tablets. A service worker caches key pages and any book PDFs you mark for offline use. Tap **Download for Offline** on a book card to save it locally. Remove it again from the same button. Cached books are stored in your browser and listed under `offlineBooks` in `localStorage`.
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
-
-
-## Adding Books to the Library
-
-To display custom books in the Library section you must populate the `books_library` table in Supabase. See [docs/AddBooksToLibrary.md](docs/AddBooksToLibrary.md) for a step-by-step guide on creating the table and uploading covers and PDFs.
-
-## Training Gemini with your chats
-
-Each chat message you send along with the assistant's reply is stored in a new Supabase table called `gemini_training_data`. These prompt/response pairs can be exported for fine‑tuning by running:
-
-```sh
-node scripts/exportGeminiTrainingData.js
-```
-
-The script creates a `gemini_training_data.json` file that can be used with Google's tuning tools or any other model training pipeline.
-
-## Real-time Group Discussions
-
-Run `npm run start:server` to launch a Socket.io server that pushes new group chat messages immediately to connected clients. The endpoint is available at `/discussions` and each discussion thread maps to a Socket.io room. Authentication is required and only members of a group can join its room.
-
-## SonarQube Analysis
-
-This project includes a `sonar-project.properties` configuration file so the code can be analyzed with SonarQube or SonarCloud. Run the scanner locally with:
-
-```sh
-npx sonar-scanner
-```
-
-Ensure you set the appropriate `SONAR_TOKEN` and `SONAR_HOST_URL` environment variables before running the command.
-
-## Resetting Website Visit IDs
-
-To clear existing website visit data and restart the auto-incrementing ID counter, execute the SQL commands in [docs/ResetWebsiteVisitIDs.md](docs/ResetWebsiteVisitIDs.md).
-
-## Generating Sitemap and Pre-rendered Pages
-
-Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs. The script now embeds an image for the homepage and includes additional routes like `/discovery` and `/book-search`. If `VITE_SUPABASE_URL` and a service or anon key are available, book and author data is pulled directly from Supabase before falling back to sample values. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. It uses the same Supabase credentials to pre-render pages for each book and author under `public/prerender` so search engines can index the content on first load.
-
-## Open Source Licenses & Compliance
-
-This project makes use of open-source packages, and we are committed to complying with all their license terms. Below are the steps we take to ensure license compliance:
-
-- **Third-Party License Attribution:** All dependencies and their licenses are listed on our [Open Source Licenses](./open-source-licenses) page.
-- **Permissive-Only Policy:** We avoid GPL or AGPL packages. The CI pipeline fails if a disallowed license is detected.
-- **License Notices:** For MIT or Apache-2.0 libraries, the license text is accessible via the attribution page.
-- **SBOM (Software Bill of Materials):** A `sbom.json` file enumerates all components and their licenses.
-- **Regular Audits:** Scripts are provided to verify license metadata using the deps.dev API.
-
-## External Integrations
-
-Sahadhyayi can connect to Goodreads so you can import your existing bookshelf and export your reading history back to Goodreads. See [docs/ExternalIntegrations.md](docs/ExternalIntegrations.md) for details.
+## Documentation
+- [Guides & Reference](docs/)
+- [Architecture Decisions](docs/adr)
