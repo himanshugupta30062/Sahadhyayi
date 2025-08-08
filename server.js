@@ -6,11 +6,48 @@ import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cookieParser from 'cookie-parser';
+import crypto from 'crypto';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
+
+const sessions = new Map();
+
+function createSession(res) {
+  const sessionId = crypto.randomBytes(16).toString('hex');
+  const csrfToken = crypto.randomBytes(32).toString('hex');
+  sessions.set(sessionId, { createdAt: Date.now(), csrfToken });
+  res.cookie('sessionId', sessionId, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+  return csrfToken;
+}
+
+function validateSessionIntegrity(req) {
+  const session = sessions.get(req.cookies?.sessionId);
+  if (!session) return false;
+  const maxAge = 24 * 60 * 60 * 1000;
+  return Date.now() - session.createdAt < maxAge;
+}
+
+function getCSRFToken(req) {
+  const session = sessions.get(req.cookies?.sessionId);
+  return session?.csrfToken;
+}
+
+function checkSession(req, res, next) {
+  if (!validateSessionIntegrity(req)) return res.status(401).send('Session expired');
+  const token = req.get('x-csrf-token');
+  if (!token || token !== getCSRFToken(req)) return res.status(403).send('Invalid CSRF token');
+  next();
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -164,6 +201,24 @@ app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+app.post('/api/login', (req, res) => {
+  const csrfToken = createSession(res);
+  res.json({ csrfToken });
+});
+
+app.post('/api/logout', (req, res) => {
+  const sessionId = req.cookies?.sessionId;
+  if (sessionId) {
+    sessions.delete(sessionId);
+  }
+  res.clearCookie('sessionId');
+  res.status(204).send();
+});
+
+app.post('/api/data', checkSession, (req, res) => {
+  res.json({ secure: true });
 });
 
 app.post('/goodreads/export', authenticate, async (req, res) => {

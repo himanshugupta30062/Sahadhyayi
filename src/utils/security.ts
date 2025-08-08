@@ -135,6 +135,7 @@ export const initializeSecureSession = (): void => {
   // Generate and set CSRF token
   const csrfToken = generateCSRFToken();
   setCSRFToken(csrfToken);
+  startCSRFTokenRotation();
 };
 
 export const clearSecureSession = (): void => {
@@ -150,6 +151,10 @@ export const clearSecureSession = (): void => {
   const csrfMeta = document.querySelector('meta[name="csrf-token"]');
   if (csrfMeta) {
     csrfMeta.remove();
+  }
+  if (csrfInterval) {
+    clearInterval(csrfInterval);
+    csrfInterval = undefined;
   }
 };
 
@@ -202,6 +207,28 @@ export const createSecureHeaders = (includeCSRF: boolean = true): HeadersInit =>
   }
 
   return headers;
+};
+
+export const secureFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const headers = createSecureHeaders(true);
+  options.headers = { ...headers, ...(options.headers || {}) };
+  if (!options.credentials) {
+    options.credentials = 'include';
+  }
+  return fetch(url, options);
+};
+
+let csrfInterval: number | undefined;
+
+export const startCSRFTokenRotation = (intervalMs: number = 30 * 60 * 1000): void => {
+  if (typeof window === 'undefined') return;
+  if (csrfInterval) {
+    clearInterval(csrfInterval);
+  }
+  csrfInterval = window.setInterval(() => {
+    const newToken = generateCSRFToken();
+    setCSRFToken(newToken);
+  }, intervalMs);
 };
 
 export const isSecureContext = (): boolean => {
