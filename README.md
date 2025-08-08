@@ -93,6 +93,34 @@ Create a `.env` file based on `.env.example` and set the following variables:
 - `GOODREADS_CALLBACK_URL`
 - `SUPABASE_EDGE_STT_KEY` (optional)
 - `PORT`
+- `VITE_FACEBOOK_APP_ID`
+
+## Facebook Like Button
+
+The `FacebookLikeButton` component asynchronously loads the Facebook SDK and renders a like button for the Sahadhyayi page.
+
+1. Add your Facebook App ID to `.env`:
+
+```env
+VITE_FACEBOOK_APP_ID=YOUR_FACEBOOK_APP_ID
+```
+
+2. Ensure your HTML contains the SDK root element, typically in `index.html`:
+
+```html
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+```
+
+The component injects the SDK script automatically. You can use it in your code as follows:
+
+```tsx
+import { FacebookLikeButton } from '@/components/social/FacebookLikeButton';
+
+<FacebookLikeButton width={340} height={200} />
+```
+
+If the SDK fails to load, a simple link to the Facebook page is shown instead.
 
 ## Security
 
