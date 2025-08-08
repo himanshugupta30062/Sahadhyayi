@@ -22,5 +22,6 @@ export const useBookStats = (bookId: string) => {
         ]
       };
     },
+    staleTime: 10 * 60 * 1000,
   });
 };

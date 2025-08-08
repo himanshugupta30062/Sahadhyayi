@@ -100,6 +100,8 @@ export const useAllLibraryBooks = () => {
         return sortBooksByCompleteness(sampleBooks);
       }
     },
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
   });
 };
 

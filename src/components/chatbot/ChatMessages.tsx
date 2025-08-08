@@ -23,7 +23,13 @@ export function ChatMessages({ messages, isLoading, isRecording, isProcessing }:
     new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit' }).format(date);
 
   return (
-    <div className="flex-1 space-y-3 overflow-y-auto bg-gray-50 p-3 text-sm min-h-0">
+    <div
+      id="chat-panel"
+      role="region"
+      aria-live="polite"
+      aria-busy={isLoading || isRecording || isProcessing}
+      className="flex-1 space-y-3 overflow-y-auto bg-gray-50 p-3 text-sm min-h-0"
+    >
       {messages.length === 0 && (
         <div className="text-center py-8">
           <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -21,6 +21,7 @@ export function VoiceButton({ isRecording, onToggle, disabled }: VoiceButtonProp
           ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
           : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
       )}
+      aria-label={isRecording ? 'Stop recording' : 'Start recording'}
     >
       {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
     </Button>

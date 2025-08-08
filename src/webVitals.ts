@@ -1,6 +1,9 @@
-import { onCLS, onINP, onLCP } from 'web-vitals';
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 import * as Sentry from '@sentry/react';
 
-onCLS(metric => Sentry.captureMessage('CLS', { level: 'info', extra: metric }));
-onINP(metric => Sentry.captureMessage('INP', { level: 'info', extra: metric }));
-onLCP(metric => Sentry.captureMessage('LCP', { level: 'info', extra: metric }));
+function report(metric: any) {
+  console.log('[web-vitals]', metric.name, metric.value);
+  Sentry.captureMessage(metric.name, { level: 'info', extra: metric });
+}
+
+[onCLS, onFCP, onINP, onLCP, onTTFB].forEach(fn => fn(report));

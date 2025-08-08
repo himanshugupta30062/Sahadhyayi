@@ -54,6 +54,7 @@ export function ChatInput({
             onClick={onSend}
             disabled={!value.trim() || isLoading || isRecording || isProcessing}
             className="h-8 w-8 p-0 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-sm disabled:opacity-50"
+            aria-label="Send message"
           >
             <Send className="h-4 w-4" />
           </Button>

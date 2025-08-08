@@ -36,31 +36,37 @@ export function ChatWindow({ color, isOpen, onToggle, isMinimized, children }: C
           e.currentTarget.style.transform = 'scale(1)';
         }}
         aria-label="Open chat with Book Expert"
+        aria-expanded={isOpen}
+        aria-controls="chat-panel"
       >
         <BookOpen className="h-7 w-7" />
       </button>
     );
 
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent side="left">
-          <p className="font-medium">Book Expert AI</p>
-          <p className="text-xs text-gray-500">Enhanced with website knowledge!</p>
-        </TooltipContent>
-      </Tooltip>
+      <aside aria-label="Chat window" role="complementary">
+        <Tooltip>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent side="left">
+            <p className="font-medium">Book Expert AI</p>
+            <p className="text-xs text-gray-500">Enhanced with website knowledge!</p>
+          </TooltipContent>
+        </Tooltip>
+      </aside>
     );
   }
 
   return (
-    <div
-      className={cn(
-        'fixed bottom-4 right-4 z-[9999] flex flex-col overflow-hidden rounded-2xl border bg-white shadow-2xl transition-all duration-300',
-        isMinimized ? 'h-14 w-80' : 'h-[36rem] w-80 sm:w-96'
-      )}
-    >
-      {children}
-    </div>
+    <aside aria-label="Chat window" role="complementary">
+      <div
+        className={cn(
+          'fixed bottom-4 right-4 z-[9999] flex flex-col overflow-hidden rounded-2xl border bg-white shadow-2xl transition-all duration-300',
+          isMinimized ? 'h-14 w-80' : 'h-[36rem] w-80 sm:w-96'
+        )}
+      >
+        {children}
+      </div>
+    </aside>
   );
 }
 

@@ -114,7 +114,17 @@
     padding-top: 0;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
+
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    box-shadow: 0 0 0 2px var(--ring, rgba(59,130,246,0.5));
+  }
+
   /* Better scrollbar styling */
   ::-webkit-scrollbar {
     width: 8px;

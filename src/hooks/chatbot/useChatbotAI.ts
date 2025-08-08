@@ -2,7 +2,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
 import {
   getWebsiteContext,
-  generateEnhancedPrompt,
   searchRelevantBooks,
   getBookSummaries,
   BookData,
@@ -29,7 +28,7 @@ export function useChatbotAI() {
       if (relevantBooks.length > 0) {
         await getBookSummaries(relevantBooks.map((b) => b.id));
       }
-      const enhancedPrompt = await generateEnhancedPrompt(userMessage, websiteContext);
+      const enhancedPrompt = userMessage;
       let contextualPrompt = enhancedPrompt;
       if (relevantBooks.length > 0) {
         contextualPrompt += '\n\nRELEVANT BOOKS:\n';

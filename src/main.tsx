@@ -5,6 +5,17 @@ import ReactLoader from './components/ReactLoader';
 import App from './App';
 import { errorHandler } from './utils/errorHandler';
 import './index.css';
+import './webVitals';
+
+if (import.meta.env.DEV) {
+  import('@axe-core/react').then(({ default: axe }) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    const React = require('react');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    const ReactDOM = require('react-dom');
+    axe(React, ReactDOM, 1000);
+  });
+}
 
 // Security: Remove React from global scope in production
 // Removed React global assignment to prevent conflicts

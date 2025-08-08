@@ -25,7 +25,7 @@ export function ChatHeader({ trainingDataCount, onRefresh, onExport, onMinimize,
       <div className="flex items-center space-x-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <button onClick={onRefresh} className="p-1 text-white hover:bg-white/20 rounded transition-colors">
+            <button onClick={onRefresh} className="p-1 text-white hover:bg-white/20 rounded transition-colors" aria-label="Refresh knowledge">
               <RefreshCw className="h-3 w-3" />
             </button>
           </TooltipTrigger>
@@ -35,7 +35,7 @@ export function ChatHeader({ trainingDataCount, onRefresh, onExport, onMinimize,
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button onClick={onExport} className="p-1 text-white hover:bg-white/20 rounded transition-colors">
+            <button onClick={onExport} className="p-1 text-white hover:bg-white/20 rounded transition-colors" aria-label="Export training data">
               <Download className="h-3 w-3" />
             </button>
           </TooltipTrigger>
@@ -43,10 +43,10 @@ export function ChatHeader({ trainingDataCount, onRefresh, onExport, onMinimize,
             <p>Export Training Data ({trainingDataCount})</p>
           </TooltipContent>
         </Tooltip>
-        <button onClick={onMinimize} className="p-1 text-white hover:bg-white/20 rounded transition-colors">
+        <button onClick={onMinimize} className="p-1 text-white hover:bg-white/20 rounded transition-colors" aria-label="Minimize chat">
           <Minimize2 className="h-4 w-4" />
         </button>
-        <button onClick={onClose} className="p-1 text-white hover:bg-white/20 rounded transition-colors">
+        <button onClick={onClose} className="p-1 text-white hover:bg-white/20 rounded transition-colors" aria-label="Close chat">
           <X className="h-4 w-4" />
         </button>
       </div>
