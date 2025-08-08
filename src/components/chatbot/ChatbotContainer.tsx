@@ -46,7 +46,7 @@ export default function ChatbotContainer() {
   }) as any;
 
   return (
-    <ChatWindow isOpen={isOpen} onToggle={toggleOpen} gradientClass={gradientClass}>
+    <ChatWindow isOpen={isOpen} onToggle={toggleOpen} gradientClass={gradientClass} loading={loading}>
       <ChatHeader title="Sahadhyayi Assistant" subtitle="Ask about books, genres & summaries" />
       <ChatMessages messages={messages} />
       {loading && <Loader />}

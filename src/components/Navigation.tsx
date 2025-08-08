@@ -84,7 +84,7 @@ const Navigation = () => {
     >
       {/* Skip to Content accessibility link */}
       <a
-        href="#main-content"
+        href="#main"
         className="sr-only focus:not-sr-only absolute left-2 top-2 bg-white text-gray-800 p-2 rounded"
       >
         Skip to main content

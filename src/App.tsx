@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './sentry';
-import './webVitals';
 
 import { toast } from '@/hooks/use-toast';
 import { errorHandler } from '@/utils/errorHandler';
@@ -17,18 +16,18 @@ import { QuotesProvider } from "./contexts/QuotesContext";
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
-import { Chatbot } from "./components/chatbot";
+const Chatbot = lazy(() => import('./components/chatbot/ChatbotContainer'));
 import Navigation from "./components/Navigation";
 import GlobalFooter from "./components/GlobalFooter";
 import ScrollToTop from "./components/ScrollToTop";
 
 // Page imports
 import Index from "./pages/Index";
-import BookLibrary from "./pages/BookLibrary";
-import BookDetails from "./pages/BookDetails";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
-import Dashboard from "./pages/Dashboard";
+const BookLibrary = lazy(() => import('./pages/BookLibrary'));
+const BookDetails = lazy(() => import('./pages/BookDetails'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 import Profile from "./pages/Profile";
 import SocialMedia from "./pages/SocialMedia";
 import Authors from "./pages/Authors";
@@ -82,14 +81,34 @@ function App() {
               <QuotesProvider>
                 <ScrollToTop />
                 <div className="min-h-screen bg-background text-foreground flex flex-col">
+                  <a
+                    href="#main"
+                    className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 bg-background border rounded px-2 py-1"
+                  >
+                    Skip to content
+                  </a>
                   <Navigation />
-                  <main className="flex-1 pt-16">
+                  <main id="main" tabIndex={-1} className="flex-1 pt-16">
                     <Routes>
                       <Route path="/" element={<Index />} />
-                      <Route path="/library" element={<BookLibrary />} />
+                      <Route
+                        path="/library"
+                        element={
+                          <Suspense fallback={<div>Loading…</div>}>
+                            <BookLibrary />
+                          </Suspense>
+                        }
+                      />
                       <Route path="/signup" element={<SignUp />} />
                       <Route path="/signin" element={<SignIn />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route
+                        path="/dashboard"
+                        element={
+                          <Suspense fallback={<div>Loading…</div>}>
+                            <Dashboard />
+                          </Suspense>
+                        }
+                      />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/social" element={<SocialMedia />} />
                       <Route path="/authors" element={<Authors />} />
@@ -101,14 +120,23 @@ function App() {
                       <Route path="/map" element={<Map />} />
                       <Route path="/about" element={<About />} />
                       <Route path="/blog" element={<Blog />} />
-                      <Route path="/book/:id" element={<BookDetails />} />
+                      <Route
+                        path="/book/:id"
+                        element={
+                          <Suspense fallback={<div>Loading…</div>}>
+                            <BookDetails />
+                          </Suspense>
+                        }
+                      />
                       <Route path="/bookshelf" element={<Bookshelf />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
                   <GlobalFooter />
                 </div>
-                <Chatbot />
+                <Suspense fallback={<div />}>
+                  <Chatbot />
+                </Suspense>
                 <Toaster />
               </QuotesProvider>
             </AuthProvider>
