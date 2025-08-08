@@ -30,8 +30,7 @@ export default defineConfig(({ mode }) => ({
       'react-dom', 
       'react/jsx-runtime',
       '@radix-ui/react-dialog',
-      '@radix-ui/react-toast',
-      '@radix-ui/react-tooltip'
+      '@radix-ui/react-toast'
     ],
     force: true,
     exclude: ['@supabase/supabase-js']
