@@ -750,26 +750,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
               </>
             ) : isPdf ? (
               <div className="relative">
-                <object
+                <iframe
                   key={currentPage}
-                  data={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&page=${currentPage}`}
-                  type="application/pdf"
+                  src={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&page=${currentPage}`}
                   className={`w-full border rounded-lg ${isFullscreen ? 'h-screen' : 'h-[600px]'}`}
                   style={{ width: '100%', height: '100%' }}
-                >
-                  <p className="p-4 text-center text-gray-500">
-                    Unable to display PDF.{" "}
-                    <a
-                      href={pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline"
-                    >
-                      Download
-                    </a>{" "}
-                    instead.
-                  </p>
-                </object>
+                  title={bookTitle}
+                />
                 {/* PDF Navigation Helper */}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
                   Page {currentPage}{totalPages ? ` of ${totalPages}` : ''}
