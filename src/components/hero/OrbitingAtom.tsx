@@ -13,6 +13,7 @@ interface OrbitingAtomProps {
   size?: number;
   onHoverChange?: (isHovered: boolean) => void;
   onOrbitChange?: (newOrbit: number) => void;
+  isPaused?: boolean;
 }
 
 export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
@@ -27,6 +28,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   size = 48,
   onHoverChange,
   onOrbitChange,
+  isPaused = false,
 }) => {
   const [currentOrbitRadius, setCurrentOrbitRadius] = useState(orbitRadius);
   const [isHovered, setIsHovered] = useState(false);
@@ -102,7 +104,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
           offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
           offsetRotate: "0deg", // Keep atoms upright
           animation: `moveAtom-${duration} ${duration}s linear infinite`,
-          animationPlayState: (isHovered || isTransitioning) ? "paused" : "running",
+          animationPlayState: (isHovered || isTransitioning || isPaused) ? "paused" : "running",
           left: 0,
           top: `-${size/2}px`, // Center atom vertically on the path
         }}

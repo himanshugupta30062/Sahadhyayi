@@ -151,6 +151,8 @@ const AnimatedHero: React.FC = () => {
   const maskSize = 2 * (ringConfig.inner.radius - ringStroke / 2 - 26);
 
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
+  const [isReducedMotion, setIsReducedMotion] = useState(false);
+  const [isTabHidden, setIsTabHidden] = useState(false);
   // Align atoms with ring stroke by using the ring radius minus half the stroke width
   const [occupiedOrbits, setOccupiedOrbits] = useState<Record<string, number>>({
     L: ringConfig.outer.radius - ringStroke / 2,
@@ -163,6 +165,24 @@ const AnimatedHero: React.FC = () => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // prefers-reduced-motion (optional)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setIsReducedMotion(mq.matches);
+    onChange();
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
+
+  // pause when tab not visible (optional)
+  useEffect(() => {
+    const onVis = () => setIsTabHidden(document.hidden);
+    onVis();
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
   useEffect(() => {
@@ -194,6 +214,8 @@ const AnimatedHero: React.FC = () => {
     });
   };
 
+  const isPaused = isAnyAtomHovered || isReducedMotion || isTabHidden;
+
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
       {/* Atomic Rings */}
@@ -205,7 +227,7 @@ const AnimatedHero: React.FC = () => {
           rotation={ring.rotation}
           duration={ring.duration}
           strokeWidth={ringStroke}
-          isPaused={isAnyAtomHovered}
+          isPaused={isPaused}
         />
       ))}
 
@@ -236,6 +258,7 @@ const AnimatedHero: React.FC = () => {
           size={atom.size}
           onHoverChange={setIsAnyAtomHovered}
           onOrbitChange={(newOrbit) => updateAtomOrbit(atom.letter, newOrbit)}
+          isPaused={isPaused}
         />
       ))}
 
