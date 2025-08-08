@@ -8,6 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { errorHandler } from '@/utils/errorHandler';
 import type { AppError } from '@/lib/errors';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { useSecureSession } from '@/hooks/useSecureSession';
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
@@ -83,6 +84,7 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  useSecureSession();
   return (
     <ErrorBoundary>
       <BrowserRouter>

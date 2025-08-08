@@ -2,7 +2,11 @@ import { createSecureHeaders } from '@/utils/security';
 import { toAppError, safeJson } from './errors';
 
 export async function secureFetch(input: string, init: RequestInit = {}) {
-  init.headers = { ...(init.headers || {}), ...createSecureHeaders(true) };
+  const headers = createSecureHeaders(true);
+  if (init.body instanceof FormData) {
+    delete (headers as any)['Content-Type'];
+  }
+  init.headers = { ...headers, ...(init.headers || {}) };
   (init as any).credentials = 'include';
 
   try {

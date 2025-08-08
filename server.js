@@ -12,6 +12,7 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import cors from 'cors';
 import busboy from 'busboy';
+import express from 'express';
 
 dotenv.config();
 
@@ -45,12 +46,17 @@ function jsonError(res, status, message, code, details) {
 function createSession(res) {
   const sessionId = crypto.randomBytes(16).toString('hex');
   const csrfToken = crypto.randomBytes(32).toString('hex');
-  sessions.set(sessionId, { createdAt: Date.now(), csrfToken });
+  sessions.set(sessionId, { createdAt: Date.now() });
   res.cookie('sessionId', sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
     maxAge: 24 * 60 * 60 * 1000,
+  });
+  res.cookie('csrfToken', csrfToken, {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    path: '/',
   });
   return csrfToken;
 }
@@ -62,15 +68,13 @@ function validateSessionIntegrity(req) {
   return Date.now() - session.createdAt < maxAge;
 }
 
-function getCSRFToken(req) {
-  const session = sessions.get(req.cookies?.sessionId);
-  return session?.csrfToken;
-}
-
 function checkSession(req, res, next) {
   if (!validateSessionIntegrity(req)) return jsonError(res, 401, "Session expired", "SESSION_EXPIRED");
-  const token = req.get("x-csrf-token");
-  if (!token || token !== getCSRFToken(req)) return jsonError(res, 403, "Invalid CSRF token", "INVALID_CSRF");
+  const headerToken = req.get('x-csrf-token');
+  const cookieToken = req.cookies?.csrfToken;
+  if (!headerToken || !cookieToken || headerToken !== cookieToken) {
+    return jsonError(res, 403, "Invalid CSRF token", "INVALID_CSRF");
+  }
   next();
 }
 
@@ -228,7 +232,14 @@ app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
   }
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
+  const token = req.headers['authorization']?.replace('Bearer ', '');
+  if (!token) return jsonError(res, 401, 'Supabase token required', 'AUTH_REQUIRED');
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+  if (error || !user) return jsonError(res, 401, 'Invalid Supabase token', 'AUTH_INVALID');
   const csrfToken = createSession(res);
   res.json({ csrfToken });
 });
@@ -239,6 +250,7 @@ app.post('/api/logout', (req, res) => {
     sessions.delete(sessionId);
   }
   res.clearCookie('sessionId');
+  res.clearCookie('csrfToken');
   res.status(204).send();
 });
 
