@@ -1,4 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
+import { validateFileUpload } from '@/utils/security';
+import { SECURITY_CONFIG } from '@/utils/securityConfig';
 
 /**
  * Upload a book cover image to the `book-covers` bucket in Supabase Storage.
@@ -11,8 +13,13 @@ export async function uploadBookCover(
   const bucket = 'book-covers';
   const filePath = `${bookId}/${Date.now()}_${file.name}`;
 
-  if (!file.type.startsWith('image/')) {
-    throw new Error('Only image uploads allowed');
+  const { valid, error } = validateFileUpload(
+    file,
+    SECURITY_CONFIG.FILE_UPLOAD.ALLOWED_IMAGE_TYPES,
+    SECURITY_CONFIG.FILE_UPLOAD.MAX_SIZE
+  );
+  if (!valid) {
+    throw new Error(error);
   }
 
   // Create the bucket if it doesn't already exist

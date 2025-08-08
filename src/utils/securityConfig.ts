@@ -14,14 +14,12 @@ export const SECURITY_CONFIG = {
   CSP: {
     'default-src': ["'self'"],
     'script-src': [
-      "'self'", 
-      "'unsafe-inline'", // Required for React inline scripts
+      "'self'",
       "https://maps.googleapis.com",
       "https://www.google.com"
     ],
     'style-src': [
-      "'self'", 
-      "'unsafe-inline'", // Required for styled-components and CSS-in-JS
+      "'self'",
       "https://fonts.googleapis.com"
     ],
     'font-src': [
@@ -47,6 +45,7 @@ export const SECURITY_CONFIG = {
     'base-uri': ["'self'"],
     'form-action': ["'self'"],
     'frame-ancestors': ["'none'"],
+    'report-uri': ['/csp-report-endpoint'],
     'upgrade-insecure-requests': []
   },
 
@@ -89,9 +88,7 @@ export const SECURITY_CONFIG = {
   TRUSTED_DOMAINS: [
     'sahadhyayi.com',
     'www.sahadhyayi.com',
-    'supabase.com',
-    'github.com',
-    'google.com',
+    'supabase.co',
     'fonts.googleapis.com',
     'fonts.gstatic.com',
     'maps.googleapis.com'

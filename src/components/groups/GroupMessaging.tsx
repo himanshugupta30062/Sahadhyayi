@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { sanitizeHTML, sanitizeInput } from '@/utils/validation';
 
 interface GroupMessagingProps {
   groupId: string;
@@ -132,9 +133,10 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
     if (!newMessage.trim() || !user) return;
 
     try {
+      const sanitized = sanitizeInput(newMessage.trim());
       await sendMessage.mutateAsync({
         groupId,
-        content: newMessage.trim()
+        content: sanitized
       });
       setNewMessage('');
       inputRef.current?.focus();
@@ -198,9 +200,9 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
   const renderMessage = (message: Message) => {
     const isOwnMessage = message.sender_id === user?.id;
     const mentions = extractMentions(message.content);
-    
-    // Highlight mentions in message content
-    let displayContent = message.content;
+
+    // Sanitize and highlight mentions in message content
+    let displayContent = sanitizeHTML(message.content);
     mentions.forEach(mention => {
       displayContent = displayContent.replace(
         new RegExp(`@${mention}`, 'g'),

@@ -42,8 +42,8 @@ export const setSecurityHeaders = (): void => {
   // Content Security Policy
   const cspContent = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://www.google.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "script-src 'self' https://maps.googleapis.com https://www.google.com",
+    "style-src 'self' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://*.supabase.co https://maps.googleapis.com",
@@ -51,7 +51,8 @@ export const setSecurityHeaders = (): void => {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'none'"
+    "frame-ancestors 'none'",
+    "report-uri /csp-report-endpoint"
   ].join('; ');
 
   // Create or update CSP meta tag
@@ -273,10 +274,14 @@ export const initializeSecurity = (): void => {
   // Detect developer tools (basic detection)
   if (process.env.NODE_ENV === 'production') {
     setInterval(() => {
-      if (window.outerHeight - window.innerHeight > 200 || 
+      if (window.outerHeight - window.innerHeight > 200 ||
           window.outerWidth - window.innerWidth > 200) {
         logSecurityEvent('DEVTOOLS_DETECTED');
       }
     }, 1000);
   }
 };
+
+export { validateCSP } from './validation';
+
+
