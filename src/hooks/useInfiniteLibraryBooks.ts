@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
 import { sampleBooks } from '@/data/sampleBooks';
 

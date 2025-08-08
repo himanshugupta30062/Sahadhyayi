@@ -3,7 +3,7 @@ import { AiResponseSchema, type AiResponseParsed } from './schema';
 import { TEMPLATES } from './templates';
 import type { AiRequest, Intent, AiContext } from './types';
 import { getWebsiteContext, searchRelevantBooks, getBookSummaries } from '@/utils/enhancedChatbotKnowledge';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 const ACTIVE_VER = (import.meta.env.VITE_AI_PROMPT_VERSION as 'V1' | 'V2') || 'V1';
 

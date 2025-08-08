@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 /**
  * Upload a book cover image to the `book-covers` bucket in Supabase Storage.

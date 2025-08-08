@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import SEO from '@/components/SEO';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { useParams } from 'react-router-dom';
 

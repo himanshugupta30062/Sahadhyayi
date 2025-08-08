@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 interface WhatsAppContact {
   id: string;

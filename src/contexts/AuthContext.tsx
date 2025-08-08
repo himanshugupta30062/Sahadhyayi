@@ -2,7 +2,7 @@
 import React from 'react';
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {

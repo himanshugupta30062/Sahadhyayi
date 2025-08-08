@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { secureFetch } from '@/lib/secureFetch';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { setCSRFToken } from '@/utils/security';
 
 export function useSecureApi() {

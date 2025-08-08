@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/AuthContext';
 import React, { useState, useEffect } from 'react';
 

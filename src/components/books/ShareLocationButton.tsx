@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MapPin, MapPinOff, Loader2 } from 'lucide-react';
 import { useLocationSharing } from '@/hooks/useLocationSharing';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ShareLocationButtonProps {

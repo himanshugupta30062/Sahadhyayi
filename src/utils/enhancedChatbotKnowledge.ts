@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 export interface BookData {
   id: string;

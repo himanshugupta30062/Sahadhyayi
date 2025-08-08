@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AddStoryForm from "./AddStoryForm";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client-universal";
 import { toast } from "@/hooks/use-toast";
 import { errorHandler } from "@/utils/errorHandler";
 import {

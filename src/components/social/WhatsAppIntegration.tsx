@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, Phone, Shield, Users, Send } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { toast } from 'sonner';
 
 interface WhatsAppContact {

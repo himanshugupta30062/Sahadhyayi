@@ -6,7 +6,6 @@ import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import express from 'express';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import * as Sentry from '@sentry/node';
