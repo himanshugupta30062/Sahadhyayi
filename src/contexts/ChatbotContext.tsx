@@ -1,33 +1,12 @@
-import React from 'react';
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
 import * as ai from '@/ai/service';
 import { generateContextualResponse } from '@/utils/chatbotKnowledge';
 import { toast } from '@/hooks/use-toast';
 import { isRateLimited } from '@/utils/validation';
+import { ChatbotContext, type Message } from './chatbotHelpers';
 
-interface Message {
-  text: string;
-  sender: 'user' | 'bot';
-  timestamp: Date;
-  references?: Array<{ bookId?: string; title?: string }>;
-}
-
-interface ChatbotContextType {
-  isOpen: boolean;
-  messages: Message[];
-  toggleChat: () => void;
-  closeChat: () => void;
-  sendMessage: (message: string) => Promise<string>;
-  isLoading: boolean;
-  trainingDataCount: number;
-  initializeWebsiteKnowledge?: () => Promise<void>;
-  saveChatInteraction?: (userMessage: string, botResponse: string, context?: string) => Promise<void>;
-}
-
-const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
-
-export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => {
+const ChatbotProvider = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -161,10 +140,4 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
   );
 };
 
-export const useChatbot = () => {
-  const context = useContext(ChatbotContext);
-  if (context === undefined) {
-    throw new Error('useChatbot must be used within a ChatbotProvider');
-  }
-  return context;
-};
+export default ChatbotProvider;

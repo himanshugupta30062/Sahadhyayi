@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Users, BookOpen, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { LocationPermissionModal } from './LocationPermissionModal';

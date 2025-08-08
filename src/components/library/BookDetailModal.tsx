@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Star, BookOpen, Calendar, Globe, Info, Download } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import type { Book } from '@/hooks/useLibraryBooks';
 import AudioSummaryButton from '@/components/books/AudioSummaryButton';
 import PageSummarySection from '@/components/books/PageSummarySection';

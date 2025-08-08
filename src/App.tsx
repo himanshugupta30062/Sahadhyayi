@@ -10,8 +10,8 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRFToken } from '@/utils/security';
 
 // Context imports
-import { AuthProvider } from "./contexts/AuthContext";
-import { QuotesProvider } from "./contexts/QuotesContext";
+import AuthProvider from "./contexts/AuthContext";
+import QuotesProvider from "./contexts/QuotesContext";
 
 // UI component imports
 import { Toaster } from "./components/ui/toaster";

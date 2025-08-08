@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
 import { toast } from '@/hooks/use-toast';
 

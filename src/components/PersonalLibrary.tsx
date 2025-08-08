@@ -1,6 +1,6 @@
 import React from 'react';
 import { usePersonalLibrary } from '@/hooks/usePersonalLibrary';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';

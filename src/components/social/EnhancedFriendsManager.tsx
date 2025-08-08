@@ -10,7 +10,7 @@ import { Search, UserPlus, MessageCircle, Users, Loader2, Check, X } from 'lucid
 import { useUserSearch, useAllUsers } from '@/hooks/useUserSearch';
 import { useFriends, useSendFriendRequest, useFriendRequests, useRespondToFriendRequest } from '@/hooks/useFriends';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { ChatWindow } from '@/components/social/ChatWindow';
 
 export const EnhancedFriendsManager = () => {

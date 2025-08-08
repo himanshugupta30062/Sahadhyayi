@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
 import { useAddToPersonalLibrary } from '@/hooks/usePersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { toast } from '@/components/ui/use-toast';
 
 interface BookSearchResult {

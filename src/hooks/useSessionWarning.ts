@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 
 const WARNING_TIME = 5 * 60 * 1000; // Show warning 5 minutes before timeout
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes total

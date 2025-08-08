@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { BookOpen, Plus, Check } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
 
 interface Book {

@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useCommunityStats } from "@/hooks/useCommunityStats";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/authHelpers";
 import CommunityStats from "@/components/CommunityStats";
 import SignInLink from '@/components/SignInLink';
 

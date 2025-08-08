@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useChatbot } from '@/contexts/ChatbotContext';
+import { useChatbot } from '@/contexts/chatbotHelpers';
 
 export function useChatbotAI() {
   const { sendMessage: ctxSend, initializeWebsiteKnowledge, saveChatInteraction } = useChatbot();

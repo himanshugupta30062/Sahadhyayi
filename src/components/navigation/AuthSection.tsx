@@ -1,7 +1,7 @@
 
 import { useNavigate, useLocation } from "react-router-dom";
 import UserDropdownMenu from "./UserDropdownMenu";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/authHelpers";
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import { MessageDropdown } from '@/components/messages/MessageDropdown';
 import { Button } from "@/components/ui/button";

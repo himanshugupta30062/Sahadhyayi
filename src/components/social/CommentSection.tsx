@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageCircle, Edit2, Trash2, Reply } from 'lucide-react';
 import { useComments, useAddComment, useUpdateComment, useDeleteComment, Comment } from '@/hooks/useComments';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { formatDistanceToNow } from 'date-fns';
 
 interface CommentSectionProps {

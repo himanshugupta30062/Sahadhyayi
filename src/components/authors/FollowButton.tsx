@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useAuthorFollow } from '@/hooks/useAuthorFollow';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 
 interface FollowButtonProps {
   authorId: string;

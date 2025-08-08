@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import SEO from '@/components/SEO';
 import { useToast } from '@/hooks/use-toast';
-import { useQuotes, Quote } from '@/contexts/QuotesContext';
+import { useQuotes, Quote } from '@/contexts/quotesHelpers';
 
 
 const QuotesPage = () => {

@@ -1,30 +1,11 @@
 
-import React from 'react';
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { useEffect, useState, type ReactNode } from 'react';
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useQueryClient } from '@tanstack/react-query';
+import { AuthContext, type AuthContextType } from './authHelpers';
 
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: AuthError | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -263,3 +244,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return React.createElement(AuthContext.Provider, { value }, children);
 };
+
+export default AuthProvider;

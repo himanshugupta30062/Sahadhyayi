@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/authHelpers";
 import {
   DropdownMenu,
   DropdownMenuContent,

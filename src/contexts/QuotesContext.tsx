@@ -1,33 +1,8 @@
 
-import React from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { QuotesContext, type Quote } from './quotesHelpers';
 
-
-
-export interface Quote {
-  id: number;
-  text: string;
-  source?: string;
-  note?: string;
-}
-
-interface QuotesContextType {
-  quotes: Quote[];
-  addQuote: (text: string, source?: string, note?: string) => void;
-  removeQuote: (id: number) => void;
-}
-
-const QuotesContext = createContext<QuotesContextType | undefined>(undefined);
-
-export const useQuotes = () => {
-  const context = useContext(QuotesContext);
-  if (!context) {
-    throw new Error('useQuotes must be used within a QuotesProvider');
-  }
-  return context;
-};
-
-export const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
+const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [quotes, setQuotes] = useState<Quote[]>([]);
 
@@ -58,3 +33,5 @@ export const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
     </QuotesContext.Provider>
   );
 };
+
+export default QuotesProvider;
