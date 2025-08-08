@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { secureFetch } from '@/lib/secureFetch';
 
 export interface RecommendedBook {
   id: string;
@@ -18,7 +19,7 @@ export const useBookRecommendations = (userId?: string) => {
     queryKey: ['book-recommendations', userId],
     queryFn: async (): Promise<RecommendedBook[]> => {
       if (!userId) return [];
-      const response = await fetch(`${BASE_URL}/${userId}`);
+      const response = await secureFetch(`${BASE_URL}/${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch recommendations');
       }

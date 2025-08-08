@@ -65,18 +65,15 @@ function jsonError(res, status, message, code, details) {
   return res.status(status).json({ error: message, code, details });
 }
 
-
 function createSession(res) {
   const sessionId = crypto.randomBytes(16).toString('hex');
-  const csrfToken = crypto.randomBytes(32).toString('hex');
-  sessions.set(sessionId, { createdAt: Date.now(), csrfToken });
+  sessions.set(sessionId, { createdAt: Date.now() });
   res.cookie('sessionId', sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
     maxAge: 24 * 60 * 60 * 1000,
   });
-  return csrfToken;
 }
 
 function validateSessionIntegrity(req) {
@@ -86,15 +83,13 @@ function validateSessionIntegrity(req) {
   return Date.now() - session.createdAt < maxAge;
 }
 
-function getCSRFToken(req) {
-  const session = sessions.get(req.cookies?.sessionId);
-  return session?.csrfToken;
-}
-
 function checkSession(req, res, next) {
-  if (!validateSessionIntegrity(req)) return jsonError(res, 401, "Session expired", "SESSION_EXPIRED");
-  const token = req.get("x-csrf-token");
-  if (!token || token !== getCSRFToken(req)) return jsonError(res, 403, "Invalid CSRF token", "INVALID_CSRF");
+  if (!validateSessionIntegrity(req)) return jsonError(res, 401, 'Session expired', 'SESSION_EXPIRED');
+  const headerToken = req.get('x-csrf-token');
+  const cookieToken = req.cookies?.csrfToken;
+  if (!headerToken || !cookieToken || headerToken !== cookieToken) {
+    return jsonError(res, 403, 'Invalid CSRF token', 'INVALID_CSRF');
+  }
   next();
 }
 
@@ -217,7 +212,7 @@ io.on('connection', (socket) => {
   });
 });
 
-app.get('/goodreads/request-token', authenticate, async (req, res) => {
+app.get('/goodreads/request-token', authenticate, checkSession, async (req, res) => {
   if (!goodreadsClient) {
     return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }
@@ -248,7 +243,7 @@ app.get('/goodreads/callback', async (req, res) => {
   }
 });
 
-app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
+app.get('/goodreads/bookshelf', authenticate, checkSession, async (req, res) => {
   if (!goodreadsClient) {
     return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }
@@ -264,12 +259,12 @@ app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
   }
 });
 
-app.post('/api/login', (req, res) => {
-  const csrfToken = createSession(res);
-  res.json({ csrfToken });
+app.post('/api/login', authenticate, (req, res) => {
+  createSession(res);
+  res.status(204).send();
 });
 
-app.post('/api/logout', (req, res) => {
+app.post('/api/logout', checkSession, (req, res) => {
   const sessionId = req.cookies?.sessionId;
   if (sessionId) {
     sessions.delete(sessionId);
@@ -278,7 +273,7 @@ app.post('/api/logout', (req, res) => {
   res.status(204).send();
 });
 
-app.post('/api/stt', (req, res) => {
+app.post('/api/stt', checkSession, (req, res) => {
   const bb = busboy({ headers: req.headers });
   let audioBuffer = Buffer.alloc(0);
   let filename = 'recording.webm';
@@ -369,7 +364,7 @@ app.post('/api/comments', checkSession, async (req, res, next) => {
   }
 });
 
-app.post('/goodreads/export', authenticate, async (req, res) => {
+app.post('/goodreads/export', authenticate, checkSession, async (req, res) => {
   if (!goodreadsClient) {
     return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }

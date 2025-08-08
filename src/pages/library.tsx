@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { secureFetch } from '@/lib/secureFetch';
 import { useLocation } from 'react-router-dom';
 
 const useRouter = () => {
@@ -20,7 +21,7 @@ async function fetchBooks({ q, genre }: { q?: string; genre?: string }) {
   const params = new URLSearchParams();
   if (q) params.set('q', q);
   if (genre) params.set('genre', genre);
-  const res = await fetch(`/api/books?${params.toString()}`);
+  const res = await secureFetch(`/api/books?${params.toString()}`);
   if (!res.ok) {
     throw new Error('Failed to fetch books');
   }

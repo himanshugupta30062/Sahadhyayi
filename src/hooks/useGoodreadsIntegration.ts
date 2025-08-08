@@ -1,3 +1,5 @@
+import { secureFetch } from '@/lib/secureFetch';
+
 export interface GoodreadsBook {
   id: string;
   title: string;
@@ -8,7 +10,7 @@ export interface GoodreadsBook {
 
 export const useGoodreadsIntegration = () => {
   const initiateLogin = async () => {
-    const res = await fetch('/goodreads/request-token');
+    const res = await secureFetch('/goodreads/request-token');
     const data = await res.json();
     if (data.url) {
       window.open(data.url, '_blank', 'width=600,height=600');
@@ -18,13 +20,13 @@ export const useGoodreadsIntegration = () => {
   };
 
   const importBooks = async (userId: string) => {
-    const res = await fetch(`/goodreads/bookshelf?userId=${encodeURIComponent(userId)}`);
+    const res = await secureFetch(`/goodreads/bookshelf?userId=${encodeURIComponent(userId)}`);
     if (!res.ok) throw new Error('Failed to fetch bookshelf');
     return res.json();
   };
 
   const exportHistory = async (userId: string, books: GoodreadsBook[]) => {
-    await fetch('/goodreads/export', {
+    await secureFetch('/goodreads/export', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, books }),

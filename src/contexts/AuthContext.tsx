@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { secureFetch } from '@/lib/secureFetch';
+import { clearSecureSession } from '@/utils/security';
 
 interface AuthContextType {
   user: User | null;
@@ -191,6 +193,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!error && data.session && data.user) {
         setSession(data.session);
         setUser(data.user);
+        await secureFetch('/api/login', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${data.session.access_token}` },
+        });
         queryClient.invalidateQueries();
       }
 
@@ -211,7 +217,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
 
-      // Remove any remaining auth tokens from localStorage and sessionStorage
+      // Remove any remaining auth tokens from storage
       if (typeof window !== 'undefined') {
         Object.keys(localStorage).forEach((key) => {
           if (key.startsWith('sb-') || ['lastActivity', 'sessionStart', 'browserSession'].includes(key)) {
@@ -219,20 +225,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         });
 
-        // Clear session storage including auto-logout related data
         Object.keys(sessionStorage).forEach((key) => {
           if (key.startsWith('sb-') || ['lastActivity', 'sessionStart', 'browserSession'].includes(key)) {
             sessionStorage.removeItem(key);
           }
         });
 
-        // Clear cookies
         document.cookie.split(';').forEach((cookie) => {
           const eqPos = cookie.indexOf('=');
           const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
           document.cookie = `${name.trim()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
         });
       }
+
+      clearSecureSession();
+
+      await secureFetch('/api/logout', { method: 'POST' });
 
       // Sign out from Supabase (this will trigger the auth state change)
       const { error } = await supabase.auth.signOut();
