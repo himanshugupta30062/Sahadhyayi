@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 interface BookSearchResult {
   id: string;

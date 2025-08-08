@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Users } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';

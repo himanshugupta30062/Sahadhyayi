@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SEO from '@/components/SEO';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { useFriends } from '@/hooks/useFriends';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { ReadersMap } from '@/components/maps/ReadersMap';

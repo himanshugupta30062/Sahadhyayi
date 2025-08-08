@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client-universal";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileFormContent from "./ProfileFormContent";
 import { UseFormReturn } from "react-hook-form";

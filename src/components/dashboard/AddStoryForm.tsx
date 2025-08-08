@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client-universal";
 import { toast } from "@/components/ui/use-toast";
 
 type AddStoryFormProps = {

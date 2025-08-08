@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client-universal";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Plus, Minus } from "lucide-react";

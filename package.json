@@ -6,6 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:vite": "vite",
+    "dev:next": "next dev apps/web-next",
+    "build:next": "next build apps/web-next",
+    "start:next": "next start apps/web-next",
     "build": "npm run generate:licenses && npm run generate:sbom && npm run generate:sitemap && npm run prerender && vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",

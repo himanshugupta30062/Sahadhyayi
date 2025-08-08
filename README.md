@@ -19,6 +19,11 @@ There are several ways of editing your application.
 
 Simply visit the [Lovable Project](https://lovable.dev/projects/c31baff7-46f5-4cb4-8fc1-fe1c52fc3fe0) and start prompting.
 
+## Running the apps locally
+
+- `npm run dev:vite` – start the existing Vite client
+- `npm run dev:next` – start the new Next.js app
+
 Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**

@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client-universal";
 
 const About = () => {
   const values = [

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 

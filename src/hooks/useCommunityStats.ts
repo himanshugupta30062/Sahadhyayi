@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 const LOCAL_STORAGE_KEY = 'community-stats';
 
