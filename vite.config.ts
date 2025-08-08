@@ -26,9 +26,6 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   optimizeDeps: {
     include: [
-      'react', 
-      'react-dom', 
-      'react/jsx-runtime',
       '@radix-ui/react-dialog',
       '@radix-ui/react-toast'
     ],
