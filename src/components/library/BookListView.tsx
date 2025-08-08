@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import BookReader from './BookReader';
 import type { Book } from '@/hooks/useLibraryBooks';
 
@@ -76,7 +76,17 @@ const BookListView = ({ books }: BookListViewProps) => {
 
               {/* Actions */}
               <div className="flex-shrink-0 w-48 space-y-3">
-                
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleReadBook(book)}
+                  disabled={!book.pdf_url}
+                  aria-label={`Read ${book.title}`}
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Read
+                </Button>
+
                 <Select
                   value={userShelves[book.id] || 'want-to-read'}
                   onValueChange={(value) => handleShelfChange(book.id, value)}
