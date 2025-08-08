@@ -109,7 +109,8 @@ class ErrorHandler {
     };
   }
 
-  private determineSeverity(message: string): ErrorReport['severity'] {
+  private determineSeverity(message?: string): ErrorReport['severity'] {
+    if (!message) return 'medium';
     const criticalKeywords = ['chunk', 'loading', 'network', 'fetch', 'import'];
     const highKeywords = ['undefined', 'null', 'cannot read', 'permission'];
     
