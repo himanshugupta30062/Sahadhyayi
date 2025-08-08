@@ -1,12 +1,10 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import express from 'express';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import express from 'express';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import * as Sentry from '@sentry/node';
@@ -94,10 +92,15 @@ function setSessionCookie(res, userId) {
   });
 }
 
-// Require a valid session cookie
+// Require a valid session and matching CSRF token
 function requireSession(req, res, next) {
   const userId = req.cookies?.sessionId;
   if (!userId) return res.status(401).json({ error: 'Authentication required' });
+  const csrfCookie = req.cookies?.csrfToken;
+  const csrfHeader = req.get('x-csrf-token');
+  if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+    return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
   req.sessionUserId = userId;
   next();
 }
@@ -370,7 +373,7 @@ app.post('/api/data', requireSession, (req, res) => {
   res.json({ secure: true });
 });
 
-app.post('/api/upload', checkSession, async (req, res, next) => {
+app.post('/api/upload', requireSession, async (req, res, next) => {
   try {
     const file = req.file || req.files?.file;
     if (!file) return res.status(400).json({ error: 'No file', code: 'NO_FILE' });
@@ -388,7 +391,7 @@ app.post('/api/upload', checkSession, async (req, res, next) => {
   }
 });
 
-app.post('/api/comments', checkSession, async (req, res, next) => {
+app.post('/api/comments', requireSession, async (req, res, next) => {
   try {
     const body = (req.body?.body ?? '').toString();
     const title = sanitizeInput(req.body?.title ?? '');
