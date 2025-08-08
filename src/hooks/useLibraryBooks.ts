@@ -1,7 +1,7 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { sampleBooks } from '@/data/sampleBooks';
+import { secureFetch } from '@/lib/secureFetch';
 
 export interface Book {
   id: string;
@@ -24,13 +24,13 @@ export interface Book {
 // Function to calculate book completeness score (higher score = better book)
 const getBookCompletenessScore = (book: any): number => {
   let score = 0;
-  
+
   // PDF availability (highest priority)
   if (book.pdf_url) score += 100;
-  
+
   // Cover image availability
   if (book.cover_image_url) score += 50;
-  
+
   // Complete details
   if (book.description) score += 20;
   if (book.author_bio) score += 15;
@@ -39,7 +39,7 @@ const getBookCompletenessScore = (book: any): number => {
   if (book.pages) score += 7;
   if (book.isbn) score += 5;
   if (book.language && book.language !== 'English') score += 3; // Bonus for non-English books
-  
+
   return score;
 };
 
@@ -48,7 +48,7 @@ const sortBooksByCompleteness = (books: any[]): any[] => {
   return books.sort((a, b) => {
     const scoreA = getBookCompletenessScore(a);
     const scoreB = getBookCompletenessScore(b);
-    
+
     // Sort by completeness score (descending), then by creation date (newest first)
     if (scoreA !== scoreB) {
       return scoreB - scoreA;
@@ -107,23 +107,12 @@ export const useLibraryBooks = (searchQuery?: string) => {
   return useQuery({
     queryKey: ['library-books', searchQuery],
     queryFn: async (): Promise<Book[]> => {
-      let query = supabase
-        .from('books_library')
-        .select('*');
-
+      const params = new URLSearchParams();
       if (searchQuery && searchQuery.trim()) {
-        query = query.or(
-          `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%`
-        );
+        params.set('search', searchQuery);
       }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching library books:', error);
-        throw error;
-      }
-
+      const res = await secureFetch(`/api/books${params.toString() ? `?${params.toString()}` : ''}`);
+      const data = await res.json();
       const mappedBooks = (data || []).map(book => ({
         id: book.id,
         title: book.title,
@@ -141,8 +130,6 @@ export const useLibraryBooks = (searchQuery?: string) => {
         pages: book.pages,
         author_bio: book.author_bio
       }));
-
-      // Sort by completeness by default
       return sortBooksByCompleteness(mappedBooks);
     },
   });
