@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import AddStoryForm from "./AddStoryForm";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { errorHandler } from "@/utils/errorHandler";
 import {
   Tooltip,
   TooltipTrigger,
@@ -30,13 +31,37 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
 
   const fetchStories = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("stories")
-      .select("id, title, description, created_at, format")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-    if (!error) setStories(data || []);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from("stories")
+        .select("id, title, description, created_at, format")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setStories(data || []);
+    } catch (err: any) {
+      toast({
+        title: "Load Failed",
+        description: "Could not fetch your stories. Please try again.",
+        variant: "destructive",
+      });
+      errorHandler.handleError({
+        message: err.message,
+        stack: err.stack,
+        type: "custom",
+        context: {
+          timestamp: Date.now(),
+          userAgent: navigator.userAgent,
+          route: window.location.pathname,
+          component: "StoriesSection",
+          action: "fetchStories",
+        },
+        severity: "medium",
+      });
+      setStories([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -45,12 +70,32 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this story?")) return;
-    const { error } = await supabase.from("stories").delete().eq("id", id);
-    if (!error) {
+    try {
+      const { error } = await supabase.from("stories").delete().eq("id", id);
+      if (error) throw error;
       setStories((prev) => prev.filter((s) => s.id !== id));
       toast({ title: "Deleted", description: "The story was deleted." });
       // Security: Log story deletion (you may upgrade this to an audit trail later)
       console.log(`[AUDIT] User ${userId} deleted story ${id} at ${new Date().toISOString()}`);
+    } catch (err: any) {
+      toast({
+        title: "Delete Failed",
+        description: "Could not delete the story. Please try again.",
+        variant: "destructive",
+      });
+      errorHandler.handleError({
+        message: err.message,
+        stack: err.stack,
+        type: "custom",
+        context: {
+          timestamp: Date.now(),
+          userAgent: navigator.userAgent,
+          route: window.location.pathname,
+          component: "StoriesSection",
+          action: "deleteStory",
+        },
+        severity: "medium",
+      });
     }
   };
 
