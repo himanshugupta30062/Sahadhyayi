@@ -5,7 +5,7 @@ import { BookOpen, Download, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
 import type { Book } from '@/hooks/useLibraryBooks';
-import AuthenticatedActions from './AuthenticatedActions';
+
 
 interface BookCardProps {
   book: Book;
@@ -85,6 +85,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
               }
             `}
             title={book.pdf_url ? "Download PDF" : "PDF not available"}
+            aria-label={book.pdf_url ? "Download PDF" : "PDF not available"}
           >
             <Download className="w-5 h-5" />
             
@@ -106,6 +107,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
               shadow-lg hover:shadow-xl backdrop-blur-sm
             "
             title="View Details"
+            aria-label={`View details for ${book.title}`}
           >
             <Info className="w-5 h-5" />
             
@@ -134,6 +136,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
                 }
               `}
               title={book.pdf_url ? "Download PDF" : "PDF not available"}
+              aria-label={book.pdf_url ? "Download PDF" : "PDF not available"}
             >
               <Download className="w-4 h-4" />
             </button>
@@ -146,6 +149,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
                 transition-all duration-200 backdrop-blur-sm
               "
               title="View Details"
+              aria-label={`View details for ${book.title}`}
             >
               <Info className="w-4 h-4" />
             </Link>
@@ -189,8 +193,6 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           )}
         </div>
 
-        {/* Authentication-aware actions */}
-        <AuthenticatedActions book={book} onDownloadPDF={onDownloadPDF} />
       </CardContent>
     </Card>
   );

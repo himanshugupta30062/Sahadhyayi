@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Download, Eye, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import BookDetailModal from './BookDetailModal';
 import BookReader from './BookReader';
 import type { Book } from '@/hooks/useLibraryBooks';
@@ -126,26 +127,35 @@ const BookGridView = ({ books }: BookGridViewProps) => {
             </CardContent>
 
             <CardFooter className="p-4 pt-0 space-y-2">
-              {/* Download PDF Button */}
-              <Button
-                size="sm"
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white"
-                onClick={() => handleDownloadPDF(book)}
-                disabled={!book.pdf_url}
-                aria-label={`Download PDF of ${book.title}`}
-              >
-                <Download className="w-4 h-4 mr-1" />
-                Download PDF
-              </Button>
+              {/* Icon-only Actions */}
+              <div className="flex gap-3 w-full justify-center">
+                {/* Download */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => handleDownloadPDF(book)}
+                      disabled={!book.pdf_url}
+                      aria-label={`Download PDF of ${book.title}`}
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Download</TooltipContent>
+                </Tooltip>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 w-full">
-                <Link to={`/books/${book.id}`} className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <Eye className="w-4 h-4 mr-1" />
-                    Details
-                  </Button>
-                </Link>
+                {/* Details */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to={`/book/${book.id}`} aria-label={`View details of ${book.title}`}>
+                      <Button variant="outline" size="icon">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Details</TooltipContent>
+                </Tooltip>
               </div>
 
               {/* Shelf Selector */}
