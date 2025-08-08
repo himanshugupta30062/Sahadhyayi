@@ -25,7 +25,7 @@ export interface GroupMember {
 export const useUserGroups = () => {
   const { user } = useAuth();
   
-  return useQuery({
+  return useQuery<GroupMember[]>({
     queryKey: ['user-groups', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -51,7 +51,12 @@ export const useUserGroups = () => {
       
       if (error) throw error;
       
-      return data || [];
+      const normalized = (data || []).map((m: any) => ({
+        ...m,
+        groups: Array.isArray(m.groups) ? m.groups[0] : m.groups,
+      }));
+      
+      return normalized as GroupMember[];
     },
     enabled: !!user?.id,
   });

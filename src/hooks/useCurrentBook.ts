@@ -37,12 +37,17 @@ export const useCurrentBook = () => {
         .maybeSingle();
 
       if (bookshelfData?.books_library) {
-        return {
-          id: bookshelfData.books_library.id,
-          title: bookshelfData.books_library.title,
-          author: bookshelfData.books_library.author,
-          cover_image_url: bookshelfData.books_library.cover_image_url,
-        } as CurrentBook;
+        const book = Array.isArray(bookshelfData.books_library)
+          ? bookshelfData.books_library[0]
+          : bookshelfData.books_library;
+        if (book) {
+          return {
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            cover_image_url: book.cover_image_url,
+          } as CurrentBook;
+        }
       }
 
       return null;

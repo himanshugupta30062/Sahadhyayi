@@ -9,11 +9,11 @@ export class ErrorBoundary extends React.Component<Props, { hasError: boolean }>
     return { hasError: true };
   }
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    errorHandler.handleError({
-      message: error.message,
-      context: { componentStack: info.componentStack },
-      severity: 'critical'
-    });
+    errorHandler.reportCustomError(
+      error.message,
+      { component: 'ErrorBoundary', action: 'componentDidCatch' },
+      'critical'
+    );
   }
   render() {
     if (this.state.hasError) {

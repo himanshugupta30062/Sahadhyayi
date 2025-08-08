@@ -6,7 +6,7 @@ import './webVitals';
 
 import { toast } from '@/hooks/use-toast';
 import { errorHandler } from '@/utils/errorHandler';
-import type { AppError } from '@/lib/errors';
+
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initializeSecurity } from '@/utils/security';
 
@@ -49,33 +49,18 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5,
       retry: 1,
       refetchOnWindowFocus: false,
-      onError: (err: unknown) => {
-        const e = err as AppError;
-        errorHandler.handleError({
-          message: e.message || 'Query failed',
-          context: { scope: 'react-query', status: e.status, code: e.code },
-          severity: (e.severity as any) || 'high'
-        });
-        if (e.severity === 'critical' || e.severity === 'high' || e.severity === 'network') {
-          toast({
-            title: 'Something went wrong',
-            description: e.message,
-            variant: 'destructive'
-          });
-        }
-      }
     },
     mutations: {
       onError: (err: unknown) => {
-        const e = err as AppError;
-        errorHandler.handleError({
-          message: e.message || 'Action failed',
-          context: { scope: 'react-query-mutation', status: e.status, code: e.code },
-          severity: (e.severity as any) || 'high'
-        });
+        const message = (err as any)?.message || 'Action failed';
+        errorHandler.reportCustomError(
+          message,
+          { action: 'mutation', component: 'QueryClient', route: typeof window !== 'undefined' ? window.location.pathname : undefined },
+          'high'
+        );
         toast({
           title: 'Action failed',
-          description: e.message,
+          description: message,
           variant: 'destructive'
         });
       }

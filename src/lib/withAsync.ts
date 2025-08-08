@@ -6,7 +6,11 @@ export async function withAsync<T>(fn: () => Promise<T>, ctx?: Record<string, an
     return await fn();
   } catch (e) {
     const appErr = toAppError(e, { severity: 'high', context: ctx });
-    errorHandler.handleError({ message: appErr.message, context: appErr.context, severity: appErr.severity });
+    errorHandler.reportCustomError(
+      appErr.message,
+      ctx ?? {},
+      appErr.severity === 'network' ? 'high' : appErr.severity
+    );
     throw appErr;
   }
 }
