@@ -6,7 +6,6 @@ import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import express from 'express';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import * as Sentry from '@sentry/node';
@@ -370,7 +369,7 @@ app.post('/api/data', requireSession, (req, res) => {
   res.json({ secure: true });
 });
 
-app.post('/api/upload', checkSession, async (req, res, next) => {
+app.post('/api/upload', requireSession, async (req, res, next) => {
   try {
     const file = req.file || req.files?.file;
     if (!file) return res.status(400).json({ error: 'No file', code: 'NO_FILE' });
@@ -388,7 +387,7 @@ app.post('/api/upload', checkSession, async (req, res, next) => {
   }
 });
 
-app.post('/api/comments', checkSession, async (req, res, next) => {
+app.post('/api/comments', requireSession, async (req, res, next) => {
   try {
     const body = (req.body?.body ?? '').toString();
     const title = sanitizeInput(req.body?.title ?? '');
