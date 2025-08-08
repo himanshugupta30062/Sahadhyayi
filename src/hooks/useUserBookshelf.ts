@@ -16,8 +16,12 @@ export interface BookshelfItem {
     id: string;
     title: string;
     author?: string;
+    genre?: string;
     cover_image_url?: string;
     description?: string;
+    publication_year?: number;
+    language?: string;
+    pdf_url?: string;
   };
 }
 
@@ -37,8 +41,12 @@ export const useUserBookshelf = () => {
             id,
             title,
             author,
+            genre,
             cover_image_url,
-            description
+            description,
+            publication_year,
+            language,
+            pdf_url
           )
         `)
         .eq('user_id', user.id)
