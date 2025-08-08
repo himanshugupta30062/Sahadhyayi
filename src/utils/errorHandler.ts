@@ -82,16 +82,16 @@ class ErrorHandler {
     }
 
     // Log in development
-    if (process.env.NODE_ENV === 'development') {
-      console.group(`🚨 Runtime Error [${errorReport.severity}]`);
-      console.error('Message:', errorReport.message);
-      console.error('Type:', errorReport.type);
-      console.error('Context:', errorReport.context);
-      if (errorReport.stack) {
-        console.error('Stack:', errorReport.stack);
+      if (import.meta.env.DEV) {
+        console.group(`🚨 Runtime Error [${errorReport.severity}]`);
+        console.error('Message:', errorReport.message);
+        console.error('Type:', errorReport.type);
+        console.error('Context:', errorReport.context);
+        if (errorReport.stack) {
+          console.error('Stack:', errorReport.stack);
+        }
+        console.groupEnd();
       }
-      console.groupEnd();
-    }
 
     // Show user-friendly notification based on severity
     this.showUserNotification(errorReport);
@@ -160,7 +160,7 @@ class ErrorHandler {
   private reportToService(errorReport: ErrorReport) {
     // In production, implement error reporting service
     // Example: Send to Sentry, LogRocket, etc.
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       // Implement your error reporting service here
       // fetch('/api/errors', { method: 'POST', body: JSON.stringify(errorReport) });
     }

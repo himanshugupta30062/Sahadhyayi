@@ -35,7 +35,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           </Button>
         )}
         
-        {process.env.NODE_ENV === 'development' && error && (
+        {import.meta.env.DEV && error && (
           <details className="mt-4">
             <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
               Error Details (Development Only)

@@ -228,7 +228,7 @@ export const validateImageSrc = (src: string): boolean => {
 
 // Logging and Monitoring
 export const logSecurityEvent = (event: string, details: any = {}): void => {
-  if (process.env.NODE_ENV === 'production') {
+  if (import.meta.env.PROD) {
     console.warn(`[SECURITY] ${event}`, details);
     
     // In a real application, you would send this to your security monitoring service
@@ -248,14 +248,14 @@ export const initializeSecurity = (): void => {
   }
   
   // Prevent right-click in production
-  if (process.env.NODE_ENV === 'production') {
+  if (import.meta.env.PROD) {
     document.addEventListener('contextmenu', (e) => e.preventDefault());
     document.addEventListener('selectstart', (e) => e.preventDefault());
     document.addEventListener('dragstart', (e) => e.preventDefault());
   }
   
   // Detect developer tools (basic detection)
-  if (process.env.NODE_ENV === 'production') {
+  if (import.meta.env.PROD) {
     setInterval(() => {
       if (window.outerHeight - window.innerHeight > 200 || 
           window.outerWidth - window.innerWidth > 200) {

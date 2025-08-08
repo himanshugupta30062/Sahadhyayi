@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import ReactLoader from './components/ReactLoader';
 import App from './App';
 import { errorHandler } from './utils/errorHandler';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 import './webVitals';
 
@@ -38,13 +39,15 @@ function initializeApp() {
     
     root.render(
       <StrictMode>
-        <ReactLoader>
-          <App />
-        </ReactLoader>
+        <ErrorBoundary>
+          <ReactLoader>
+            <App />
+          </ReactLoader>
+        </ErrorBoundary>
       </StrictMode>
     );
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.error('Failed to render app:', error);
     }
     

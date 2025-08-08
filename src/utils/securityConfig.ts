@@ -129,7 +129,7 @@ export class SecurityMiddleware {
     console.warn('[SECURITY]', event);
     
     // In production, send to security monitoring service
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       // Example: sendToSecurityService(event);
     }
   }
