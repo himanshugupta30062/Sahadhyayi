@@ -44,6 +44,7 @@ import Map from "./pages/Map";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
+import Bookshelf from "./pages/Bookshelf";
 
 import "./App.css";
 
@@ -87,6 +88,7 @@ function App() {
                         <Route path="/about" element={<About />} />
                         <Route path="/blog" element={<Blog />} />
                         <Route path="/book/:id" element={<BookDetails />} />
+                        <Route path="/bookshelf" element={<Bookshelf />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
