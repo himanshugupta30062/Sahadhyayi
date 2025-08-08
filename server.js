@@ -20,9 +20,26 @@ Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const app = express();
 app.use(Sentry.Handlers.requestHandler());
-app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
+app.use(
+  cors({
+    origin: [/\.sahadhyayi\.com$/, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+    credentials: true,
+  })
+);
+
+function csrfValidator(req, res, next) {
+  const header = req.get('X-CSRF-Token');
+  const cookie = req.cookies?.csrfToken;
+  const needsCsrf = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+  if (!needsCsrf) return next();
+  if (!header || !cookie || header !== cookie) {
+    return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
+  next();
+}
+app.use(csrfValidator);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -36,37 +53,31 @@ app.use((req, res, next) => {
   next();
 });
 
-const sessions = new Map();
-
-function createSession(res) {
-  const sessionId = crypto.randomBytes(16).toString('hex');
-  const csrfToken = crypto.randomBytes(32).toString('hex');
-  sessions.set(sessionId, { createdAt: Date.now(), csrfToken });
-  res.cookie('sessionId', sessionId, {
+function setSessionCookie(res, userId) {
+  res.cookie('sessionId', userId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
+    path: '/',
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+}
+
+function setCSRFCookie(res) {
+  const csrfToken = crypto.randomBytes(32).toString('hex');
+  res.cookie('csrfToken', csrfToken, {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    path: '/',
     maxAge: 24 * 60 * 60 * 1000,
   });
   return csrfToken;
 }
 
-function validateSessionIntegrity(req) {
-  const session = sessions.get(req.cookies?.sessionId);
-  if (!session) return false;
-  const maxAge = 24 * 60 * 60 * 1000;
-  return Date.now() - session.createdAt < maxAge;
-}
-
-function getCSRFToken(req) {
-  const session = sessions.get(req.cookies?.sessionId);
-  return session?.csrfToken;
-}
-
-function checkSession(req, res, next) {
-  if (!validateSessionIntegrity(req)) return res.status(401).send('Session expired');
-  const token = req.get('x-csrf-token');
-  if (!token || token !== getCSRFToken(req)) return res.status(403).send('Invalid CSRF token');
+function requireSession(req, res, next) {
+  if (!req.cookies?.sessionId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
   next();
 }
 
@@ -224,17 +235,41 @@ app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
   }
 });
 
-app.post('/api/login', (req, res) => {
-  const csrfToken = createSession(res);
-  res.json({ csrfToken });
+app.post('/api/session', async (req, res) => {
+  try {
+    const authHeader = req.get('Authorization') || '';
+    const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const token = bearer || req.body?.access_token;
+    if (!token) return res.status(400).json({ error: 'Missing access token' });
+
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(token);
+    if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    setSessionCookie(res, user.id);
+    const csrfToken = setCSRFCookie(res);
+    return res.json({ ok: true, user: { id: user.id, email: user.email }, csrfToken });
+  } catch (e) {
+    console.error('Session error', e);
+    return res.status(500).json({ error: 'Session initialization failed' });
+  }
 });
 
 app.post('/api/logout', (req, res) => {
-  const sessionId = req.cookies?.sessionId;
-  if (sessionId) {
-    sessions.delete(sessionId);
-  }
-  res.clearCookie('sessionId');
+  res.cookie('sessionId', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    path: '/',
+    expires: new Date(0),
+  });
+  res.cookie('csrfToken', '', {
+    sameSite: 'Strict',
+    path: '/',
+    expires: new Date(0),
+  });
   res.status(204).send();
 });
 
@@ -277,7 +312,7 @@ app.post('/api/stt', (req, res) => {
   req.pipe(bb);
 });
 
-app.post('/api/data', checkSession, (req, res) => {
+app.post('/api/data', requireSession, (req, res) => {
   res.json({ secure: true });
 });
 
