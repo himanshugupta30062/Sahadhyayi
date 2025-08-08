@@ -2,39 +2,31 @@
 
 import { SECURITY_CONFIG } from './securityConfig';
 
-// CSRF Token Generation and Validation
+// CSRF Token Generation and Management
 export const generateCSRFToken = (): string => {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return btoa(String.fromCharCode(...arr)).replace(/=/g, '');
 };
 
 export const setCSRFToken = (token: string): void => {
-  if (typeof window !== 'undefined') {
-    sessionStorage.setItem('csrf_token', token);
-    // Also set in meta tag for forms
-    let metaTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement;
-    if (!metaTag) {
-      metaTag = document.createElement('meta');
-      metaTag.name = 'csrf-token';
-      document.head.appendChild(metaTag);
-    }
-    metaTag.content = token;
-  }
+  if (typeof window === 'undefined') return;
+  sessionStorage.setItem('csrfToken', token);
+  document.cookie = `csrfToken=${token}; Path=/; SameSite=Strict; Secure`;
 };
 
 export const getCSRFToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return sessionStorage.getItem('csrf_token') || 
-           document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
-           null;
-  }
-  return null;
+  if (typeof window === 'undefined') return null;
+  const s = sessionStorage.getItem('csrfToken');
+  if (s) return s;
+  const m = document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
 };
 
-export const validateCSRFToken = (token: string): boolean => {
-  const storedToken = getCSRFToken();
-  return storedToken !== null && storedToken === token;
+export const clearCSRFToken = (): void => {
+  if (typeof window === 'undefined') return;
+  sessionStorage.removeItem('csrfToken');
+  document.cookie = `csrfToken=; Path=/; Max-Age=0; SameSite=Strict; Secure`;
 };
 
 // Security Headers Management
@@ -117,16 +109,7 @@ export const validateSessionIntegrity = (): boolean => {
 
 export const initializeSecureSession = (): void => {
   if (typeof window === 'undefined') return;
-
-  const sessionId = generateCSRFToken();
-  const timestamp = Date.now().toString();
-  
-  localStorage.setItem('sessionStart', timestamp);
-  sessionStorage.setItem('browserSession', sessionId);
-  
-  // Generate and set CSRF token
-  const csrfToken = generateCSRFToken();
-  setCSRFToken(csrfToken);
+  if (!getCSRFToken()) setCSRFToken(generateCSRFToken());
   startCSRFTokenRotation();
 };
 
@@ -134,18 +117,11 @@ let csrfInterval: number | undefined;
 
 export const clearSecureSession = (): void => {
   if (typeof window === 'undefined') return;
-
-  // Clear session-related data
-  ['sessionStart', 'browserSession', 'csrf_token'].forEach(key => {
+  ['sessionStart', 'browserSession'].forEach(key => {
     localStorage.removeItem(key);
     sessionStorage.removeItem(key);
   });
-
-  // Remove CSRF meta tag
-  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-  if (csrfMeta) {
-    csrfMeta.remove();
-  }
+  clearCSRFToken();
   if (csrfInterval) {
     clearInterval(csrfInterval);
     csrfInterval = undefined;
@@ -194,10 +170,8 @@ export const createSecureHeaders = (includeCSRF: boolean = true): HeadersInit =>
   };
 
   if (includeCSRF) {
-    const csrfToken = getCSRFToken();
-    if (csrfToken) {
-      headers['X-CSRF-Token'] = csrfToken;
-    }
+    const token = getCSRFToken();
+    if (token) (headers as any)['X-CSRF-Token'] = token;
   }
 
   return headers;

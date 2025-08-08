@@ -7,7 +7,7 @@ import { toast } from '@/hooks/use-toast';
 import { errorHandler } from '@/utils/errorHandler';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { initializeSecurity } from '@/utils/security';
+import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRFToken } from '@/utils/security';
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
@@ -42,7 +42,7 @@ import Bookshelf from "./pages/Bookshelf";
 
 import "./App.css";
 
-const queryClient = new QueryClient({
+  const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5,
@@ -70,6 +70,9 @@ const queryClient = new QueryClient({
 function App() {
   useEffect(() => {
     initializeSecurity();
+    initializeSecureSession();
+    const id = setInterval(() => setCSRFToken(generateCSRFToken()), 30 * 60 * 1000);
+    return () => clearInterval(id);
   }, []);
 
   return (

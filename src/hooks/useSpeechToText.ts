@@ -1,5 +1,6 @@
 
 import * as React from 'react';
+import { secureFetch } from '@/lib/secureFetch';
 
 interface UseSpeechToTextOptions {
   onTranscript: (text: string) => void;
@@ -38,10 +39,9 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
             const formData = new FormData();
             formData.append('audio', audioBlob, 'recording.webm');
 
-            const response = await fetch('/api/stt', {
+            const response = await secureFetch('/api/stt', {
               method: 'POST',
               body: formData,
-              credentials: 'include',
             });
 
             if (!response.ok) {
