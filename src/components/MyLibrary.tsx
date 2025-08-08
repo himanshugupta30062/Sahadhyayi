@@ -125,10 +125,11 @@ const MyLibrary = () => {
                     flex items-center justify-center w-12 h-12 rounded-full
                     transition-all duration-300 transform hover:scale-110 active:scale-95
                     shadow-lg hover:shadow-xl backdrop-blur-sm
-                    ${book.pdf_url 
-                      ? 'bg-sahadhyayi-orange text-white hover:bg-sahadhyayi-orange/90' 
+                    ${book.pdf_url
+                      ? 'bg-sahadhyayi-orange text-white hover:bg-sahadhyayi-orange/90'
                       : 'bg-muted/80 text-muted-foreground cursor-not-allowed opacity-60'
                     }
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sahadhyayi-orange
                   `}
                   title={book.pdf_url ? "Download PDF" : "PDF not available"}
                   aria-label={book.pdf_url ? "Download PDF" : "PDF not available"}
@@ -144,6 +145,7 @@ const MyLibrary = () => {
                     bg-white/10 hover:bg-white/20 text-white border border-white/20
                     transition-all duration-300 transform hover:scale-110 active:scale-95
                     shadow-lg hover:shadow-xl backdrop-blur-sm
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sahadhyayi-orange
                   "
                   title="View Details"
                   aria-label={`View details for ${book.title}`}
@@ -175,7 +177,7 @@ const MyLibrary = () => {
                 <h3 className="font-semibold text-base md:text-lg text-card-foreground line-clamp-2 group-hover:text-sahadhyayi-orange transition-colors duration-200">
                   <Link
                     to={`/book/${book.id}`}
-                    className="hover:text-sahadhyayi-orange"
+                    className="hover:text-sahadhyayi-orange focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sahadhyayi-orange"
                   >
                     {book.title}
                   </Link>
