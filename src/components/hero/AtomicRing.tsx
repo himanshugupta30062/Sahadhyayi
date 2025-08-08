@@ -41,8 +41,9 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
         height: size,
         left: `calc(50% - ${radius}px)`,
         top: `calc(50% - ${radius}px)`,
-        transform: `rotate(${rotation}deg)`,
-        animation: isPaused ? "none" : `spin-${duration} ${duration}s linear infinite`,
+        animation: `spin-${duration} ${duration}s linear infinite`,
+        animationPlayState: isPaused ? "paused" : "running",
+        transformOrigin: "center",
       }}
     >
       <svg width={size} height={size} className="absolute inset-0">
