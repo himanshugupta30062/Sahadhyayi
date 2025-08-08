@@ -6,28 +6,30 @@ export interface GoodreadsBook {
   goodreadsId?: string;
 }
 
+import { secureFetch } from '@/lib/secureFetch';
+
 export const useGoodreadsIntegration = () => {
-  const initiateLogin = async () => {
-    const res = await fetch('/goodreads/request-token');
-    const data = await res.json();
-    if (data.url) {
-      window.open(data.url, '_blank', 'width=600,height=600');
-    } else {
-      throw new Error('Failed to get Goodreads auth URL');
+  const initiateLogin = () => {
+    window.open('/goodreads/connect', '_blank', 'width=600,height=600');
+  };
+
+  const importBooks = async () => {
+    try {
+      const res = await secureFetch('/goodreads/bookshelf');
+      return res.json();
+    } catch (err: any) {
+      if (err.code === 'GOODREADS_NOT_LINKED') {
+        return { error: 'GOODREADS_NOT_LINKED' } as any;
+      }
+      throw err;
     }
   };
 
-  const importBooks = async (userId: string) => {
-    const res = await fetch(`/goodreads/bookshelf?userId=${encodeURIComponent(userId)}`);
-    if (!res.ok) throw new Error('Failed to fetch bookshelf');
-    return res.json();
-  };
-
-  const exportHistory = async (userId: string, books: GoodreadsBook[]) => {
-    await fetch('/goodreads/export', {
+  const exportHistory = async (books: GoodreadsBook[]) => {
+    await secureFetch('/goodreads/export', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, books }),
+      body: JSON.stringify({ books }),
     });
   };
 
