@@ -64,18 +64,8 @@ export const SECURITY_CONFIG = {
 
   // File upload restrictions
   FILE_UPLOAD: {
-    MAX_SIZE: 10 * 1024 * 1024, // 10MB
-    ALLOWED_IMAGE_TYPES: [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/webp'
-    ],
-    ALLOWED_DOCUMENT_TYPES: [
-      'application/pdf',
-      'text/plain',
-      'application/json'
-    ],
+    ALLOWED_IMAGE_TYPES: ['image/png', 'image/jpeg', 'image/webp'],
+    MAX_SIZE: 5 * 1024 * 1024 // 5MB
   },
 
   // Session security
@@ -87,14 +77,11 @@ export const SECURITY_CONFIG = {
 
   // Trusted domains for external links
   TRUSTED_DOMAINS: [
-    'sahadhyayi.com',
-    'www.sahadhyayi.com',
-    'supabase.com',
-    'github.com',
-    'google.com',
+    'self',
+    '*.supabase.co',
+    'maps.googleapis.com',
     'fonts.googleapis.com',
-    'fonts.gstatic.com',
-    'maps.googleapis.com'
+    'fonts.gstatic.com'
   ],
 
   // Security headers

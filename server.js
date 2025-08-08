@@ -1,5 +1,6 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import express from 'express';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
@@ -12,16 +13,44 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import cors from 'cors';
 import busboy from 'busboy';
+import { validateFileUpload, SECURITY_CONFIG } from './src/utils/security.ts';
+import { sanitizeHTML, sanitizeInput } from './src/utils/validation.ts';
 
 dotenv.config();
 
 Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const app = express();
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' https://maps.googleapis.com",
+  "style-src 'self' https://fonts.googleapis.com",
+  "img-src 'self' data: blob:",
+  "font-src 'self' https://fonts.gstatic.com",
+  "connect-src 'self' https://*.supabase.co wss:",
+  "frame-src 'self'",
+  "report-uri /csp-report"
+].join('; ');
 app.use(Sentry.Handlers.requestHandler());
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', CSP);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(self)');
+  next();
+});
+
+app.post('/csp-report', express.json({ type: ['application/csp-report', 'application/json'] }), (req, res) => {
+  try {
+    const report = req.body['csp-report'] || req.body;
+    console.warn('[CSP-REPORT]', JSON.stringify(report));
+  } catch {}
+  res.status(204).end();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -293,6 +322,46 @@ app.get('/api/books', async (req, res, next) => {
     return res.json(data);
   } catch (e) {
     next(e);
+  }
+});
+
+app.post('/api/upload', checkSession, (req, res, next) => {
+  const bb = busboy({ headers: req.headers });
+  let uploaded;
+
+  bb.on('file', (_name, file, info) => {
+    let size = 0;
+    file.on('data', (data) => {
+      size += data.length;
+    });
+    file.on('end', () => {
+      uploaded = { name: info.filename, type: info.mimeType, size };
+    });
+  });
+
+  bb.on('finish', () => {
+    if (!uploaded) return res.status(400).json({ error: 'No file', code: 'NO_FILE' });
+    const { valid, error } = validateFileUpload(
+      uploaded,
+      SECURITY_CONFIG.FILE_UPLOAD.ALLOWED_IMAGE_TYPES,
+      SECURITY_CONFIG.FILE_UPLOAD.MAX_SIZE
+    );
+    if (!valid) return res.status(400).json({ error, code: 'UPLOAD_VALIDATION' });
+    return res.json({ ok: true });
+  });
+
+  req.pipe(bb);
+});
+
+app.post('/api/comments', checkSession, async (req, res, next) => {
+  try {
+    const body = (req.body?.body ?? '').toString();
+    const title = sanitizeInput(req.body?.title ?? '');
+    const safeHtml = sanitizeHTML(body);
+    if (!title || !safeHtml) return res.status(400).json({ error: 'Invalid input', code: 'VALIDATION_ERROR' });
+    return res.json({ ok: true });
+  } catch (e) {
+    next(Object.assign(new Error('COMMENT_ERROR'), { status: 500, details: e }));
   }
 });
 app.post('/api/data', checkSession, (req, res) => {
