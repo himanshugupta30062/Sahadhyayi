@@ -72,7 +72,18 @@ export async function ask(question: string): Promise<AiResponseParsed> {
   }
 
   cache.set(key, parsed);
-  console.info('[ai]', { prompt_version: ACTIVE_VER, intent, books: ctx.books.length, latency_ms: Math.round(t1 - t0) });
+
+  const tokensIn = Math.round(prompt.length / 4);
+  const tokensOut = Math.round(raw.length / 4);
+  console.info('[ai]', {
+    prompt_version: ACTIVE_VER,
+    intent,
+    ctx_sizes: { books: ctx.books.length, genres: ctx.site.topGenres.length },
+    latency_ms: Math.round(t1 - t0),
+    model: 'enhanced-book-summary',
+    tokens_in: tokensIn,
+    tokens_out: tokensOut
+  });
 
   return parsed;
 }
