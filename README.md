@@ -156,6 +156,10 @@ To clear existing website visit data and restart the auto-incrementing ID counte
 
 Run `npm run generate:sitemap` to rebuild `public/sitemap.xml` with all important URLs. The script now embeds an image for the homepage and includes additional routes like `/discovery` and `/book-search`. If `VITE_SUPABASE_URL` and a service or anon key are available, book and author data is pulled directly from Supabase before falling back to sample values. To create static HTML pages with meta tags for key routes, execute `npm run prerender`. It uses the same Supabase credentials to pre-render pages for each book and author under `public/prerender` so search engines can index the content on first load.
 
+## Observability
+
+Sentry error and performance tracking is wired for both the frontend and backend. Web-Vitals metrics are logged in the browser and can optionally be sent to `/observability/vitals`. Set `VITE_SENTRY_DSN` and `SENTRY_DSN` (and optionally `VITE_APP_RELEASE`) in your environment to enable telemetry.
+
 ## Open Source Licenses & Compliance
 
 This project makes use of open-source packages, and we are committed to complying with all their license terms. Below are the steps we take to ensure license compliance:

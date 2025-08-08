@@ -5,6 +5,10 @@ import ReactLoader from './components/ReactLoader';
 import App from './App';
 import { errorHandler } from './utils/errorHandler';
 import './index.css';
+import { initSentry } from './observability/sentry';
+import './observability/webVitals';
+
+initSentry();
 
 // Security: Remove React from global scope in production
 // Removed React global assignment to prevent conflicts

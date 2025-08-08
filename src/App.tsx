@@ -1,8 +1,6 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import './sentry';
-import './webVitals';
 
 import { toast } from '@/hooks/use-toast';
 import { errorHandler } from '@/utils/errorHandler';

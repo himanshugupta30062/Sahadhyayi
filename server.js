@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
+import express from 'express';
 import * as Sentry from '@sentry/node';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
@@ -15,25 +16,40 @@ import busboy from 'busboy';
 
 dotenv.config();
 
-Sentry.init({ dsn: process.env.SENTRY_DSN });
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || '',
+  tracesSampleRate: 0.2,
+  environment: process.env.NODE_ENV
+});
 
 const app = express();
+
+// Sentry request handler FIRST
 app.use(Sentry.Handlers.requestHandler());
-app.use(express.json());
-app.use(cookieParser());
-app.use(cors({ origin: true, credentials: true }));
 
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    Sentry.captureMessage('HTTP Request', {
+    const payload = {
       level: 'info',
-      extra: { path: req.path, duration, status: res.statusCode },
-    });
+      event: 'http_request',
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      duration_ms: duration
+    };
+    // Structured log
+    console.log(JSON.stringify(payload));
+    // Sentry breadcrumb/transaction enrich (optional)
+    Sentry.addBreadcrumb({ category: 'http', message: `${req.method} ${req.path}`, level: 'info', data: payload });
   });
   next();
 });
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors({ origin: true, credentials: true }));
 
 const sessions = new Map();
 
@@ -318,14 +334,23 @@ app.post('/goodreads/export', authenticate, async (req, res) => {
   }
 });
 
+app.get('/healthz', (_req, res) => res.status(200).json({ ok: true, ts: Date.now() }));
+
+app.post('/observability/vitals', express.json(), (req, res) => {
+  try {
+    console.log(JSON.stringify({ level: 'info', event: 'web_vitals', ...req.body }));
+  } catch {}
+  res.status(204).end();
+});
+
 app.use(Sentry.Handlers.errorHandler());
 
 app.use((err, req, res, _next) => {
   const status = err.status || 500;
   const code = err.code || (status >= 500 ? 'SERVER_ERROR' : 'REQUEST_ERROR');
   const msg = err.message || 'Unexpected error';
-  console.error('API error:', { path: req.path, status, code, msg, details: err.details });
-  return jsonError(res, status, msg, code, err.details);
+  console.error(JSON.stringify({ level: 'error', event: 'api_error', path: req.path, status, code, msg, details: err.details }));
+  res.status(status).json({ error: msg, code, details: err.details });
 });
 
 // Handle client-side routing by returning the main index.html for other routes
