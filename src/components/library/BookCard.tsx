@@ -164,11 +164,16 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
       <CardContent className="p-3 md:p-4 space-y-2 md:space-y-3">
         <div>
           <h3 className="font-semibold text-base md:text-lg text-card-foreground line-clamp-2 group-hover:text-sahadhyayi-orange transition-colors duration-200">
-            {book.title}
+            <Link
+              to={`/book/${book.id}`}
+              className="hover:text-sahadhyayi-orange"
+            >
+              {book.title}
+            </Link>
           </h3>
           {book.author && (
             <p className="text-muted-foreground text-sm mt-1 truncate">
-              <Link 
+              <Link
                 to={`/authors/${slugify(book.author)}`}
                 className="hover:text-sahadhyayi-orange transition-colors duration-200"
               >
