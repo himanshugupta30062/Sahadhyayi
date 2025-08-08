@@ -22,6 +22,7 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const { data: audioSummary } = useAudioSummary(bookId);
@@ -84,26 +85,46 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
       toast({
         title: "Error",
         description: "Book content is required to generate audio summary.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
+    setIsGenerating(true);
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error('timeout')), 30000);
+    });
+
     try {
-      await createAudioSummary.mutateAsync({
-        bookId,
-        content: bookContent
-      });
+      await Promise.race([
+        createAudioSummary.mutateAsync({
+          bookId,
+          content: bookContent,
+        }),
+        timeoutPromise,
+      ]);
       toast({
         title: "Audio Summary Generated",
-        description: "Your 15-minute audio summary is ready!"
+        description: "Your 15-minute audio summary is ready!",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate audio summary. Please try again.",
-        variant: "destructive"
-      });
+      if (error instanceof Error && error.message === 'timeout') {
+        toast({
+          title: "Error",
+          description: "Audio generation timed out. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to generate audio summary. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      clearTimeout(timeoutId);
+      setIsGenerating(false);
     }
   };
 
@@ -124,12 +145,12 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
             <p className="text-blue-700 mb-4">
               Generate an engaging 15-minute audio summary of "{bookTitle}"
             </p>
-            <Button 
+            <Button
               onClick={handleGenerateAudio}
-              disabled={createAudioSummary.isPending}
+              disabled={isGenerating}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              {createAudioSummary.isPending ? 'Generating...' : 'Generate Audio Summary'}
+              {isGenerating ? 'Generating...' : 'Generate Audio Summary'}
             </Button>
           </div>
         </CardContent>
