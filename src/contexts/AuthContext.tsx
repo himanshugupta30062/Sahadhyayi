@@ -108,12 +108,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error('Error getting session:', error);
         }
-        
+
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
-          setLoading(false);
-          
+
           // If there's a session, only check if the Supabase token has expired
           if (session?.user) {
             const expiresAt = session.expires_at ? session.expires_at * 1000 : null;
@@ -125,6 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (error) {
         console.error('Error in getSession:', error);
+      } finally {
         if (mounted) {
           setLoading(false);
         }
@@ -177,11 +177,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string): Promise<{ error: AuthError | null }> => {
+    setLoading(true);
     try {
       if (!email || !password) {
         return { error: { message: 'Email and password are required' } as AuthError };
       }
-      
+
       const emailRegix = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegix.test(email)) {
         return { error: { message: 'Please enter a valid email address' } as AuthError };
@@ -195,7 +196,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!error && data.session && data.user) {
         setSession(data.session);
         setUser(data.user);
-        setLoading(false);
         queryClient.invalidateQueries();
       }
 
@@ -203,6 +203,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Signin error:', error);
       return { error: error as AuthError };
+    } finally {
+      setLoading(false);
     }
   };
 
