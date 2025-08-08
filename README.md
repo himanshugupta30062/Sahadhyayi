@@ -80,14 +80,20 @@ Create a `.env` file based on `.env.example` and set the following variables:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_SENTRY_DSN`
+- `VITE_APP_RELEASE`
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `GOODREADS_KEY`
 - `GOODREADS_SECRET`
 - `GOODREADS_CALLBACK_URL`
+- `SENTRY_DSN`
 - `SUPABASE_EDGE_STT_KEY` (optional)
 - `PORT`
+
+## Observability
+
+Sentry error and performance monitoring and Web‑Vitals logging are built in. Set `VITE_SENTRY_DSN` for the frontend and `SENTRY_DSN` for the backend to enable them. In CI, set `VITE_APP_RELEASE` (e.g. to `${{ github.sha }}`) for release linking.
 
 ## Security
 

@@ -3,8 +3,6 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from '@sentry/react';
-import './sentry';
-import './webVitals';
 
 // Security initialization
 // import { initializeSecurity } from "./utils/security";
