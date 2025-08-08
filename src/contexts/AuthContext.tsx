@@ -26,11 +26,6 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
-  // Add safety check for React hooks
-  if (!React || typeof useState !== 'function') {
-    return React.createElement('div', { children });
-  }
-  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
