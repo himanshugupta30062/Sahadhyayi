@@ -1,18 +1,16 @@
-
 import React from 'react';
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useEnhancedGeminiTraining } from '@/hooks/useEnhancedGeminiTraining';
-import { generatePrompt } from '@/ai/service';
-import type { AiContext } from '@/ai/types';
+import * as ai from '@/ai/service';
 import { generateContextualResponse } from '@/utils/chatbotKnowledge';
 import { toast } from '@/hooks/use-toast';
+import { isRateLimited } from '@/utils/validation';
 
 interface Message {
   text: string;
   sender: 'user' | 'bot';
   timestamp: Date;
-  books?: AiContext['books'];
+  references?: Array<{ bookId?: string; title?: string }>;
 }
 
 interface ChatbotContextType {
@@ -35,10 +33,10 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [trainingDataCount, setTrainingDataCount] = useState(0);
-  
-  const { 
-    initializeWebsiteKnowledge, 
-    saveChatInteraction, 
+
+  const {
+    initializeWebsiteKnowledge,
+    saveChatInteraction,
     saveBookSpecificInteraction,
     getTrainingDataStats
   } = useEnhancedGeminiTraining();
@@ -70,8 +68,8 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
 
   const sendMessage = useCallback(async (userMessage: string) => {
-    let relevantBooks: AiContext['books'] = [];
     let botResponse = "";
+    let references: Array<{ bookId?: string; title?: string }> = [];
 
     // Add user message
     const userMsg: Message = {
@@ -81,76 +79,55 @@ export const ChatbotProvider = ({ children }: { children: React.ReactNode }) => 
     };
 
     setMessages(prev => [...prev, userMsg]);
+
+    if (isRateLimited('chat', 10, 60000)) {
+      toast({
+        title: "Slow down",
+        description: "Please wait before sending more messages.",
+        variant: "destructive",
+      });
+      return "";
+    }
+
     setIsLoading(true);
 
     try {
-      // Build prompt and context
-      const { prompt: contextualPrompt, ctx } = await generatePrompt(userMessage);
-      relevantBooks = ctx.books;
+      const result = await ai.ask(userMessage);
+      botResponse = result.reply;
+      references = result.references;
 
-      // Call Supabase Edge Function for AI response
-      const { data, error } = await supabase.functions.invoke('enhanced-book-summary', {
-        body: { 
-          prompt: contextualPrompt,
-          context: 'chatbot_response',
-          bookContext: relevantBooks.length > 0 ? relevantBooks : undefined
-        }
-      });
-
-      if (error) {
-        console.error('Function call error:', error);
-        // Use contextual fallback with website knowledge
-        botResponse = generateContextualResponse(userMessage);
-        
-        toast({
-          title: "Using Offline Mode",
-          description: "Chatbot is working with local knowledge!",
-          variant: "default",
-        });
-      } else if (data?.response) {
-        botResponse = data.response;
-      } else {
-        botResponse = generateContextualResponse(userMessage);
-      }
-
-      // Add bot response
       const botMsg: Message = {
         text: botResponse,
         sender: 'bot',
         timestamp: new Date(),
-        books: relevantBooks,
+        references,
       };
 
       setMessages(prev => [...prev, botMsg]);
 
-      // Save interaction for training
       await saveChatInteraction(userMessage, botResponse, 'enhanced_chat');
 
-      // Save book-specific interaction if relevant
-      if (relevantBooks.length > 0) {
+      if (references.length > 0 && references[0].bookId) {
         await saveBookSpecificInteraction(
-          relevantBooks[0].id,
-          relevantBooks[0].title,
+          references[0].bookId!,
+          references[0].title || '',
           userMessage,
           botResponse
         );
       }
 
-      // Update training data count
       const newCount = await getTrainingDataStats();
       setTrainingDataCount(newCount);
 
     } catch (error) {
       console.error('Chatbot error:', error);
-      
-      // Use contextual fallback
+
       const fallbackResponse = generateContextualResponse(userMessage);
-      
+
       const botMsg: Message = {
         text: fallbackResponse,
         sender: 'bot',
         timestamp: new Date(),
-        books: relevantBooks,
       };
 
       setMessages(prev => [...prev, botMsg]);
