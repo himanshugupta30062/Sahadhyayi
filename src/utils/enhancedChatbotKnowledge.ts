@@ -64,6 +64,24 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
   }
 };
 
+export const generateEnhancedPrompt = async (
+  userMessage: string,
+  context: WebsiteContext,
+): Promise<string> => {
+  const recent = context.recentBooks
+    .slice(0, 3)
+    .map((b) => `${b.title} by ${b.author}`)
+    .join(', ');
+
+  return (
+    `${userMessage}\n\n` +
+    `SITE INFO:\n` +
+    `Total Books: ${context.totalBooks}\n` +
+    `Genres: ${context.genres.join(', ')}\n` +
+    `Features: ${context.features.join(', ')}\n` +
+    (recent ? `Recent Books: ${recent}` : '')
+  );
+};
 
 export const searchRelevantBooks = async (query: string, limit: number = 5): Promise<BookData[]> => {
   try {
