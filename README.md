@@ -80,14 +80,20 @@ Create a `.env` file based on `.env.example` and set the following variables:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_SENTRY_DSN`
+- `VITE_APP_RELEASE`
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `SENTRY_DSN`
 - `GOODREADS_KEY`
 - `GOODREADS_SECRET`
 - `GOODREADS_CALLBACK_URL`
 - `SUPABASE_EDGE_STT_KEY` (optional)
 - `PORT`
+
+## Observability
+
+Sentry and Web-Vitals are wired up for basic error and performance tracking. Set `VITE_SENTRY_DSN` and `SENTRY_DSN` to enable reporting. Optionally set `VITE_APP_RELEASE` (e.g., commit SHA) for release tagging.
 
 ## Security
 

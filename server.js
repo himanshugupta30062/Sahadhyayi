@@ -6,7 +6,6 @@ import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import express from 'express';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import * as Sentry from '@sentry/node';
@@ -20,7 +19,11 @@ import { sanitizeHTML, sanitizeInput } from './src/utils/validation';
 
 dotenv.config();
 
-Sentry.init({ dsn: process.env.SENTRY_DSN });
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || '',
+  tracesSampleRate: 0.2,
+  environment: process.env.NODE_ENV
+});
 
 const CSP = [
   "default-src 'self'",
@@ -71,12 +74,36 @@ app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    Sentry.captureMessage('HTTP Request', {
+    const payload = {
       level: 'info',
-      extra: { path: req.path, duration, status: res.statusCode },
+      event: 'http_request',
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      duration_ms: duration
+    };
+    console.log(JSON.stringify(payload));
+    Sentry.addBreadcrumb({
+      category: 'http',
+      message: `${req.method} ${req.path}`,
+      level: 'info',
+      data: payload
     });
   });
   next();
+});
+
+app.get('/healthz', (_req, res) =>
+  res.status(200).json({ ok: true, ts: Date.now() })
+);
+
+app.post('/observability/vitals', express.json(), (req, res) => {
+  try {
+    console.log(
+      JSON.stringify({ level: 'info', event: 'web_vitals', ...req.body })
+    );
+  } catch {}
+  res.status(204).end();
 });
 
 function jsonError(res, status, message, code, details) {
@@ -429,8 +456,18 @@ app.use((err, req, res, _next) => {
   const status = err.status || 500;
   const code = err.code || (status >= 500 ? 'SERVER_ERROR' : 'REQUEST_ERROR');
   const msg = err.message || 'Unexpected error';
-  console.error('API error:', { path: req.path, status, code, msg, details: err.details });
-  return jsonError(res, status, msg, code, err.details);
+  console.error(
+    JSON.stringify({
+      level: 'error',
+      event: 'api_error',
+      path: req.path,
+      status,
+      code,
+      msg,
+      details: err.details,
+    })
+  );
+  res.status(status).json({ error: msg, code, details: err.details });
 });
 
 // Handle client-side routing by returning the main index.html for other routes
