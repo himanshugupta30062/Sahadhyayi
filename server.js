@@ -3,13 +3,15 @@ import { Server } from 'socket.io';
 import express from 'express';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
-import goodreads from 'goodreads-api-node';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import * as Sentry from '@sentry/node';
-import fetch from 'node-fetch';
+import fetch, { AbortController } from 'node-fetch';
+import oauth from 'oauth';
+import { parseStringPromise } from 'xml2js';
+import { parseLibgenHtml } from './server/libgenParser.js';
 import FormData from 'form-data';
 import cors from 'cors';
 import busboy from 'busboy';
@@ -137,18 +139,20 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
 const GOODREADS_KEY = process.env.GOODREADS_KEY;
 const GOODREADS_SECRET = process.env.GOODREADS_SECRET;
-let goodreadsClient = null;
+let grOAuth = null;
 if (GOODREADS_KEY && GOODREADS_SECRET) {
-  const grCredentials = { key: GOODREADS_KEY, secret: GOODREADS_SECRET };
-  const grCallback =
-    process.env.GOODREADS_CALLBACK_URL || 'http://localhost:4000/goodreads/callback';
-  goodreadsClient = goodreads(grCredentials);
-  goodreadsClient.initOAuth(grCallback);
+  grOAuth = new oauth.OAuth(
+    'https://www.goodreads.com/oauth/request_token',
+    'https://www.goodreads.com/oauth/access_token',
+    GOODREADS_KEY,
+    GOODREADS_SECRET,
+    '1.0',
+    process.env.GOODREADS_CALLBACK_URL || 'http://localhost:4000/goodreads/callback',
+    'HMAC-SHA1'
+  );
 } else {
   console.warn('Goodreads API credentials not provided; Goodreads features are disabled.');
 }
-
-const connectedGoodreadsUsers = new Map();
 
 async function authenticate(req, res, next) {
   const token = req.headers['authorization']?.replace('Bearer ', '');
@@ -160,6 +164,32 @@ async function authenticate(req, res, next) {
   if (error || !user) return jsonError(res, 401, 'Invalid token', 'INVALID_TOKEN', error);
   req.user = user;
   next();
+}
+
+async function loadGoodreadsTokens(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { data, error } = await supabase
+      .from('user_goodreads')
+      .select('access_token, access_token_secret')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error)
+      return res
+        .status(500)
+        .json({ error: 'DB error', code: 'DB_ERROR', details: error });
+    if (!data)
+      return res
+        .status(401)
+        .json({
+          error: 'Goodreads not linked',
+          code: 'GOODREADS_NOT_LINKED',
+        });
+    req.goodreadsTokens = data;
+    next();
+  } catch (e) {
+    next(Object.assign(new Error('GOODREADS_TOKENS_ERROR'), { status: 500, details: e }));
+  }
 }
 
 io.use(async (socket, next) => {
@@ -217,52 +247,135 @@ io.on('connection', (socket) => {
   });
 });
 
-app.get('/goodreads/request-token', authenticate, async (req, res) => {
-  if (!goodreadsClient) {
-    return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
+app.get('/goodreads/connect', authenticate, async (req, res, next) => {
+  if (!grOAuth) {
+    return jsonError(
+      res,
+      503,
+      'Goodreads integration not configured',
+      'GOODREADS_NOT_CONFIGURED'
+    );
   }
   try {
-    const url = await goodreadsClient.getRequestToken();
-    const urlObj = new URL(url);
-    urlObj.searchParams.set('state', req.user.id);
-    res.json({ url: urlObj.toString() });
-  } catch (error) {
-    return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
-  }
-});
-
-app.get('/goodreads/callback', async (req, res) => {
-  if (!goodreadsClient) {
-    return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
-  }
-  try {
-    await goodreadsClient.getAccessToken();
-    const user = await goodreadsClient.getCurrentUserInfo();
-    const state = typeof req.query.state === 'string' ? req.query.state : undefined;
-    if (state) {
-      connectedGoodreadsUsers.set(state, user.user.id);
-    }
-    res.send('Goodreads connected. You can close this window.');
-  } catch (error) {
-    return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
-  }
-});
-
-app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
-  if (!goodreadsClient) {
-    return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
-  }
-  const userId = connectedGoodreadsUsers.get(req.user.id);
-  if (!userId) return jsonError(res, 401, 'Not authenticated with Goodreads', 'GOODREADS_NOT_AUTH');
-  try {
-    const books = await goodreadsClient.getBooksOnUserShelf(String(userId), 'read', {
-      per_page: 200,
+    grOAuth.getOAuthRequestToken((err, oauthToken, oauthTokenSecret) => {
+      if (err)
+        return next(
+          Object.assign(new Error('GOODREADS_CONNECT_ERROR'), {
+            status: 500,
+            details: err,
+          })
+        );
+      req.app.locals[`gr_${req.user.id}`] = { oauthTokenSecret };
+      const authorizeUrl = `https://www.goodreads.com/oauth/authorize?oauth_token=${oauthToken}&state=${req.user.id}`;
+      res.json({ url: authorizeUrl });
     });
-    res.json(books);
-  } catch (error) {
-    return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
+  } catch (e) {
+    next(
+      Object.assign(new Error('GOODREADS_CONNECT_ERROR'), {
+        status: 500,
+        details: e,
+      })
+    );
   }
 });
+
+app.get('/goodreads/callback', async (req, res, next) => {
+  if (!grOAuth) {
+    return jsonError(
+      res,
+      503,
+      'Goodreads integration not configured',
+      'GOODREADS_NOT_CONFIGURED'
+    );
+  }
+  try {
+    const { oauth_token, oauth_verifier, state } = req.query;
+    const temp = req.app.locals[`gr_${state}`];
+    if (!temp)
+      return res
+        .status(400)
+        .json({ error: 'Missing temp token', code: 'OAUTH_STATE_MISSING' });
+    grOAuth.getOAuthAccessToken(
+      oauth_token,
+      temp.oauthTokenSecret,
+      oauth_verifier,
+      async (err, accessToken, accessTokenSecret) => {
+        if (err)
+          return next(
+            Object.assign(new Error('GOODREADS_CALLBACK_ERROR'), {
+              status: 500,
+              details: err,
+            })
+          );
+        const { error } = await supabase.from('user_goodreads').upsert({
+          id: state,
+          access_token: accessToken,
+          access_token_secret: accessTokenSecret,
+        });
+        if (error)
+          return res
+            .status(500)
+            .json({ error: 'Persist failed', code: 'DB_ERROR', details: error });
+        delete req.app.locals[`gr_${state}`];
+        return res.send('Goodreads connected. You can close this window.');
+      }
+    );
+  } catch (e) {
+    next(
+      Object.assign(new Error('GOODREADS_CALLBACK_ERROR'), {
+        status: 500,
+        details: e,
+      })
+    );
+  }
+});
+
+app.get(
+  '/goodreads/bookshelf',
+  authenticate,
+  loadGoodreadsTokens,
+  async (req, res, next) => {
+    if (!grOAuth) {
+      return jsonError(
+        res,
+        503,
+        'Goodreads integration not configured',
+        'GOODREADS_NOT_CONFIGURED'
+      );
+    }
+    try {
+      const { access_token, access_token_secret } = req.goodreadsTokens;
+      const userXml = await new Promise((resolve, reject) => {
+        grOAuth.get(
+          'https://www.goodreads.com/api/auth_user',
+          access_token,
+          access_token_secret,
+          (err, data) => (err ? reject(err) : resolve(data))
+        );
+      });
+      const user = await parseStringPromise(userXml);
+      const userId = user?.GoodreadsResponse?.user?.[0]?.$.id;
+      const shelfUrl = `https://www.goodreads.com/review/list/${userId}.xml?key=${GOODREADS_KEY}&v=2&shelf=read&per_page=200&format=json`;
+      const shelfJson = await new Promise((resolve, reject) => {
+        grOAuth.get(
+          shelfUrl,
+          access_token,
+          access_token_secret,
+          (err, data) => (err ? reject(err) : resolve(data))
+        );
+      });
+      const shelf = JSON.parse(shelfJson);
+      return res.json({ books: shelf.reviews?.review || [] });
+    } catch (e) {
+      next(
+        Object.assign(new Error('GOODREADS_FETCH_ERROR'), {
+          status: 502,
+          details: e,
+        })
+      );
+    }
+  }
+);
 
 app.post('/api/login', (req, res) => {
   const csrfToken = createSession(res);
@@ -317,6 +430,39 @@ app.post('/api/stt', (req, res) => {
   req.pipe(bb);
 });
 
+app.get('/api/libgen', authenticate, async (req, res, next) => {
+  try {
+    const q = (req.query.q || '').toString().trim();
+    if (!q)
+      return res
+        .status(400)
+        .json({ error: 'Missing q', code: 'VALIDATION_ERROR' });
+    const url = `https://libgen.is/search.php?req=${encodeURIComponent(q)}&res=25&column=title`;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 15000);
+    const resp = await fetch(url, { signal: controller.signal });
+    clearTimeout(id);
+    if (!resp.ok)
+      return res
+        .status(502)
+        .json({
+          error: 'Libgen gateway error',
+          code: 'UPSTREAM_ERROR',
+          details: resp.status,
+        });
+    const html = await resp.text();
+    const books = parseLibgenHtml(html).slice(0, 25);
+    return res.json({ success: true, books });
+  } catch (e) {
+    next(
+      Object.assign(new Error('LIBGEN_PROXY_ERROR'), {
+        status: 500,
+        details: e,
+      })
+    );
+  }
+});
+
 app.get('/api/books', async (req, res, next) => {
   try {
     const search = typeof req.query.search === 'string' ? req.query.search : '';
@@ -369,24 +515,48 @@ app.post('/api/comments', checkSession, async (req, res, next) => {
   }
 });
 
-app.post('/goodreads/export', authenticate, async (req, res) => {
-  if (!goodreadsClient) {
-    return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
-  }
-  const { books } = req.body;
-  const userId = connectedGoodreadsUsers.get(req.user.id);
-  if (!userId) return jsonError(res, 401, 'Not authenticated with Goodreads', 'GOODREADS_NOT_AUTH');
-  try {
-    for (const book of books || []) {
-      if (book.goodreadsId) {
-        await goodreadsClient.addBookToShelf(book.goodreadsId, 'read');
-      }
+app.post(
+  '/goodreads/export',
+  authenticate,
+  checkSession,
+  loadGoodreadsTokens,
+  async (req, res, next) => {
+    if (!grOAuth) {
+      return jsonError(
+        res,
+        503,
+        'Goodreads integration not configured',
+        'GOODREADS_NOT_CONFIGURED'
+      );
     }
-    res.json({ success: true });
-  } catch (error) {
-    return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
+    try {
+      const { books } = req.body;
+      const { access_token, access_token_secret } = req.goodreadsTokens;
+      for (const book of books || []) {
+        if (book.goodreadsId) {
+          await new Promise((resolve, reject) => {
+            grOAuth.post(
+              'https://www.goodreads.com/shelf/add_to_shelf.xml',
+              access_token,
+              access_token_secret,
+              { name: 'read', book_id: book.goodreadsId },
+              '',
+              (err, _data) => (err ? reject(err) : resolve(_data))
+            );
+          });
+        }
+      }
+      return res.json({ success: true });
+    } catch (e) {
+      next(
+        Object.assign(new Error('GOODREADS_EXPORT_ERROR'), {
+          status: 500,
+          details: e,
+        })
+      );
+    }
   }
-});
+);
 
 app.use(Sentry.Handlers.errorHandler());
 
