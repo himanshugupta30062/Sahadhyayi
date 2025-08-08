@@ -121,7 +121,11 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
         </div>
 
         {/* Mobile Quick Actions - Simplified */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 md:hidden">
+        <div
+          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 md:hidden transition-opacity duration-300 ${
+            isHovered ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
           <div className="flex gap-3 justify-center">
             <button
               onClick={handleDownload}
