@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import goodreads from 'goodreads-api-node';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import express from 'express';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import * as Sentry from '@sentry/node';
@@ -19,9 +20,28 @@ Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const app = express();
 app.use(Sentry.Handlers.requestHandler());
-app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
+app.use(
+  cors({
+    origin: [/\.sahadhyayi\.com$/, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+    credentials: true,
+  })
+);
+
+// CSRF: compare X-CSRF-Token header with csrfToken cookie
+function csrfValidator(req, res, next) {
+  const header = req.get('X-CSRF-Token');
+  const cookie = req.cookies?.csrfToken;
+  const needsCsrf = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+  if (!needsCsrf) return next();
+  if (!header || !cookie || header !== cookie) {
+    return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
+  next();
+}
+
+app.use(csrfValidator);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -35,42 +55,26 @@ app.use((req, res, next) => {
   next();
 });
 
-const sessions = new Map();
-
 function jsonError(res, status, message, code, details) {
   return res.status(status).json({ error: message, code, details });
 }
 
-
-function createSession(res) {
-  const sessionId = crypto.randomBytes(16).toString('hex');
-  const csrfToken = crypto.randomBytes(32).toString('hex');
-  sessions.set(sessionId, { createdAt: Date.now(), csrfToken });
-  res.cookie('sessionId', sessionId, {
+// Helper: set a hardened cookie
+function setSessionCookie(res, userId) {
+  res.cookie('sessionId', userId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
+    path: '/',
     maxAge: 24 * 60 * 60 * 1000,
   });
-  return csrfToken;
 }
 
-function validateSessionIntegrity(req) {
-  const session = sessions.get(req.cookies?.sessionId);
-  if (!session) return false;
-  const maxAge = 24 * 60 * 60 * 1000;
-  return Date.now() - session.createdAt < maxAge;
-}
-
-function getCSRFToken(req) {
-  const session = sessions.get(req.cookies?.sessionId);
-  return session?.csrfToken;
-}
-
-function checkSession(req, res, next) {
-  if (!validateSessionIntegrity(req)) return jsonError(res, 401, "Session expired", "SESSION_EXPIRED");
-  const token = req.get("x-csrf-token");
-  if (!token || token !== getCSRFToken(req)) return jsonError(res, 403, "Invalid CSRF token", "INVALID_CSRF");
+// Require a valid session cookie
+function requireSession(req, res, next) {
+  const userId = req.cookies?.sessionId;
+  if (!userId) return res.status(401).json({ error: 'Authentication required' });
+  req.sessionUserId = userId;
   next();
 }
 
@@ -223,26 +227,12 @@ app.get('/goodreads/bookshelf', authenticate, async (req, res) => {
       per_page: 200,
     });
     res.json(books);
-  } catch (error) {
-    return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
-  }
-});
+    } catch (error) {
+      return jsonError(res, 500, error.message, 'GOODREADS_ERROR', error);
+    }
+  });
 
-app.post('/api/login', (req, res) => {
-  const csrfToken = createSession(res);
-  res.json({ csrfToken });
-});
-
-app.post('/api/logout', (req, res) => {
-  const sessionId = req.cookies?.sessionId;
-  if (sessionId) {
-    sessions.delete(sessionId);
-  }
-  res.clearCookie('sessionId');
-  res.status(204).send();
-});
-
-app.post('/api/stt', (req, res) => {
+  app.post('/api/stt', (req, res) => {
   const bb = busboy({ headers: req.headers });
   let audioBuffer = Buffer.alloc(0);
   let filename = 'recording.webm';
@@ -295,7 +285,52 @@ app.get('/api/books', async (req, res, next) => {
     next(e);
   }
 });
-app.post('/api/data', checkSession, (req, res) => {
+
+app.post('/api/session', async (req, res) => {
+  try {
+    const authHeader = req.get('Authorization') || '';
+    const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const token = bearer || req.body?.access_token;
+    if (!token) return res.status(400).json({ error: 'Missing access token' });
+
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+
+    const csrfToken = crypto.randomBytes(32).toString('hex');
+    res.cookie('csrfToken', csrfToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      path: '/',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    setSessionCookie(res, user.id);
+    return res.json({ ok: true, user: { id: user.id, email: user.email }, csrfToken });
+  } catch (e) {
+    console.error('Session error', e);
+    return res.status(500).json({ error: 'Session initialization failed' });
+  }
+});
+
+app.post('/api/logout', requireSession, (req, res) => {
+  res.cookie('sessionId', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    path: '/',
+    maxAge: 0,
+  });
+  res.cookie('csrfToken', '', {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    path: '/',
+    maxAge: 0,
+  });
+  res.json({ ok: true });
+});
+app.post('/api/data', requireSession, (req, res) => {
   res.json({ secure: true });
 });
 
