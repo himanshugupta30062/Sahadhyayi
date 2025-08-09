@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 export interface ChatMessage {
   sender: 'user' | 'bot';
@@ -37,41 +38,16 @@ export const BookExpertProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     setMessages(prev => [...prev, { sender: 'user', text }]);
 
-    try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  try {
+      const { data, error } = await supabase.functions.invoke('book-expert-gemini', {
+        body: { text },
+      });
 
-      if (!apiKey) {
-        setMessages(prev => [
-          ...prev,
-          { sender: 'bot', text: 'Sorry, the Gemini API key is not configured. Please check your environment variables.' },
-        ]);
-        return;
+      if (error) {
+        throw error;
       }
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `You are a helpful AI book expert for Sahadhyayi. Please provide concise responses related to books, reading, and literature. User question: ${text}`
-              }]
-            }]
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      const reply =
-        data.candidates?.[0]?.content?.parts?.[0]?.text ??
-        'Sorry, I could not process your request at the moment.';
-
+      const reply = data?.reply ?? 'Sorry, I could not process your request at the moment.';
       setMessages(prev => [...prev, { sender: 'bot', text: reply }]);
     } catch (error) {
       console.error('BookExpert error:', error);
