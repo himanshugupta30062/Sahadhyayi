@@ -71,6 +71,11 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
     }
   }, [orbitRadius]);
 
+  // Match the AtomicRing's arc path exactly - full circle with stroke compensation
+  const strokeWidth = 28; // Match AtomicRing strokeWidth
+  const pathRadius = currentOrbitRadius - strokeWidth / 2; // Match ring's arc radius
+  const center = currentOrbitRadius;
+  
   return (
     <div
       className="absolute pointer-events-none"
@@ -83,30 +88,14 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         opacity: isTransitioning ? 0.7 : 1,
       }}
     >
-      {/* SVG path for offset-path animation */}
-      <svg
-        width={orbitSize}
-        height={orbitSize}
-        className="absolute inset-0 pointer-events-none"
-        style={{ overflow: "visible" }}
-      >
-        <defs>
-          <path
-            id={`half-circle-path-${currentOrbitRadius}`}
-            d={`M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}`}
-          />
-        </defs>
-      </svg>
-      
       <div
         className="absolute pointer-events-auto cursor-pointer flex flex-col items-center"
         style={{
-          offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
+          offsetPath: `circle(${pathRadius}px at ${center}px ${center}px)`,
           offsetRotate: "0deg", // Keep atoms upright
           animation: `moveAtom-${duration} ${duration}s linear infinite`,
           animationPlayState: (isHovered || isTransitioning || isPaused) ? "paused" : "running",
-          left: 0,
-          top: `-${size/2}px`, // Center atom vertically on the path
+          offsetAnchor: "center",
         }}
         onMouseEnter={() => {
           setIsHovered(true);
