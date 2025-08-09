@@ -34,11 +34,10 @@ const BookExpert = () => {
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={toggleChat}
-          className={`relative group bg-gradient-to-r ${colors[colorIndex]} text-white shadow-2xl hover:shadow-xl transition-all duration-500 hover:scale-105 rounded-full p-3 overflow-hidden`}
+          className={`relative group flex items-center justify-center bg-gradient-to-r ${colors[colorIndex]} text-white shadow-2xl hover:shadow-xl transition-all duration-500 hover:scale-105 w-16 h-16 overflow-hidden [clip-path:polygon(25%_6.7%,75%_6.7%,100%_50%,75%_93.3%,25%_93.3%,0%_50%)]`}
           aria-label="Open Book Expert"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent rounded-full"></div>
-          <div className="absolute left-1 top-1 bottom-1 w-0.5 bg-white/30 rounded-full"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent" />
           <div className="relative flex items-center justify-center">
             <BookOpen className="h-6 w-6" />
           </div>
