@@ -145,6 +145,22 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                   <TooltipContent>Download</TooltipContent>
                 </Tooltip>
 
+                {/* Read */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => handleReadBook(book)}
+                      disabled={!book.pdf_url}
+                      aria-label={`Read ${book.title}`}
+                    >
+                      <BookOpen className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Read</TooltipContent>
+                </Tooltip>
+
                 {/* Details */}
                 <Tooltip>
                   <TooltipTrigger asChild>
