@@ -41,12 +41,9 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
         height: size,
         left: `calc(50% - ${radius}px)`,
         top: `calc(50% - ${radius}px)`,
-        animation: `spin-${duration} ${duration}s linear infinite`,
-        animationPlayState: isPaused ? "paused" : "running",
-        transformOrigin: "center",
       }}
     >
-      <svg width={size} height={size} className="absolute inset-0">
+      <svg width={size} height={size} className="absolute inset-0" style={{ animation: `spin-${duration} ${duration}s linear infinite`, animationPlayState: isPaused ? "paused" : "running", transformBox: "fill-box", transformOrigin: "center" }}>
         <defs>
           <linearGradient id="dark-red-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#7f1d1d" />
