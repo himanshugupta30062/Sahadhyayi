@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { BookOpen, X, Sparkles } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
+import { BookExpertIcon } from './BookExpertIcon';
 import { Button } from '@/components/ui/button';
 import { useBookExpert } from '@/contexts/BookExpertContext';
 import { cn } from '@/lib/utils';
@@ -39,7 +40,7 @@ const BookExpert = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent" />
           <div className="relative flex items-center justify-center">
-            <BookOpen className="h-6 w-6" />
+            <BookExpertIcon size={24} color="text-white" />
           </div>
         </button>
       </div>
@@ -53,7 +54,7 @@ const BookExpert = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
         <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-white/40 rounded-full"></div>
         <div className="relative flex items-center gap-2">
-          <BookOpen className="h-5 w-5" />
+          <BookExpertIcon size={20} color="text-white" />
           <span className="font-bold text-lg">Book Expert</span>
           <Sparkles className="h-4 w-4 animate-pulse" />
         </div>
