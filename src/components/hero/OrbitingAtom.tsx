@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { AtomShell, ATOM_MATERIALS, AtomMaterial } from "./AtomMaterials";
+import React, { useState } from "react";
+import { ATOM_MATERIALS } from "./AtomMaterials";
+import { AtomShell } from "./AtomShell";
 
 interface OrbitingAtomProps {
   orbitRadius: number;
@@ -8,11 +9,8 @@ interface OrbitingAtomProps {
   materialId: string;
   duration: number;
   initialAngle: number;
-  availableOrbits: number[];
-  orbitSwitchInterval?: number;
   size?: number;
   onHoverChange?: (isHovered: boolean) => void;
-  onOrbitChange?: (newOrbit: number) => void;
   isPaused?: boolean;
 }
 
@@ -23,58 +21,19 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   materialId,
   duration,
   initialAngle,
-  availableOrbits,
-  orbitSwitchInterval = 15000,
   size = 48,
   onHoverChange,
-  onOrbitChange,
   isPaused = false,
 }) => {
-  const [currentOrbitRadius, setCurrentOrbitRadius] = useState(orbitRadius);
   const [isHovered, setIsHovered] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const material = ATOM_MATERIALS[materialId];
-  const orbitSize = currentOrbitRadius * 2;
-
-  // Chemistry rule: Switch to unoccupied orbits only
-  useEffect(() => {
-    if (availableOrbits.length <= 1) return; // No alternatives available
-    
-    const interval = setInterval(() => {
-      if (isHovered || isTransitioning || isPaused || document.hidden) return; // Guard against hover, transition, pause, or hidden tab
-
-      const otherOrbits = availableOrbits.filter(orbit => orbit !== currentOrbitRadius);
-      if (otherOrbits.length > 0) {
-        setIsTransitioning(true);
-        const nextOrbit = otherOrbits[Math.floor(Math.random() * otherOrbits.length)];
-
-        // Smooth transition with pleasant timing
-        setTimeout(() => {
-          setCurrentOrbitRadius(nextOrbit);
-          onOrbitChange?.(nextOrbit);
-
-          setTimeout(() => {
-            setIsTransitioning(false);
-          }, 2000); // Transition duration
-        }, 500); // Small delay for natural feel
-      }
-    }, orbitSwitchInterval);
-
-    return () => clearInterval(interval);
-  }, [availableOrbits, currentOrbitRadius, orbitSwitchInterval, isHovered, isTransitioning, isPaused, onOrbitChange]);
-
-  // Update orbit when prop changes (from parent state management)
-  useEffect(() => {
-    if (orbitRadius !== currentOrbitRadius) {
-      setCurrentOrbitRadius(orbitRadius);
-    }
-  }, [orbitRadius]);
+  const orbitSize = orbitRadius * 2;
 
   // Match the AtomicRing's arc path exactly - full circle with stroke compensation
   const strokeWidth = 28; // Match AtomicRing strokeWidth
-  const pathRadius = currentOrbitRadius - strokeWidth / 2; // Match ring's arc radius
-  const center = currentOrbitRadius;
+  const pathRadius = orbitRadius - strokeWidth / 2; // Match ring's arc radius
+  const center = orbitRadius;
   const animationDelay = `-${(initialAngle / 360) * duration}s`;
   
   return (
@@ -83,11 +42,9 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       style={{
         width: orbitSize,
         height: orbitSize,
-        left: `calc(50% - ${currentOrbitRadius}px)`,
-        top: `calc(50% - ${currentOrbitRadius}px)`,
-        transition: "all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-        opacity: isTransitioning ? 0.7 : 1,
-        willChange: "left, top, width, height, opacity",
+        left: `calc(50% - ${orbitRadius}px)`,
+        top: `calc(50% - ${orbitRadius}px)`,
+        willChange: "left, top, width, height",
       }}
     >
       <div
@@ -102,8 +59,8 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
           WebkitAnimation: `orbit-move ${duration}s linear infinite`,
           animationDelay,
           WebkitAnimationDelay: animationDelay,
-          animationPlayState: (isHovered || isTransitioning || isPaused) ? "paused" : "running",
-          WebkitAnimationPlayState: (isHovered || isTransitioning || isPaused) ? "paused" : "running",
+          animationPlayState: (isHovered || isPaused) ? "paused" : "running",
+          WebkitAnimationPlayState: (isHovered || isPaused) ? "paused" : "running",
           willChange: "offset-distance, transform",
         }}
       >

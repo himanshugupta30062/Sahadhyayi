@@ -19,7 +19,6 @@ const DESKTOP_ATOM_CONFIG = [
     materialId: "library",
     duration: 8, // Faster speed
     initialAngle: 0,
-    orbitSwitchInterval: 20000,
     size: 44,
   },
   {
@@ -28,7 +27,6 @@ const DESKTOP_ATOM_CONFIG = [
     materialId: "author",
     duration: 6, // Faster speed
     initialAngle: 120,
-    orbitSwitchInterval: 25000,
     size: 44,
   },
   {
@@ -37,7 +35,6 @@ const DESKTOP_ATOM_CONFIG = [
     materialId: "social",
     duration: 5, // Fastest speed
     initialAngle: 240,
-    orbitSwitchInterval: 30000,
     size: 44,
   },
 ];
@@ -87,7 +84,6 @@ const MOBILE_ATOM_CONFIG = [
     materialId: "library",
     duration: 8, // Faster speed
     initialAngle: 0,
-    orbitSwitchInterval: 20000,
     size: 28,
   },
   {
@@ -96,7 +92,6 @@ const MOBILE_ATOM_CONFIG = [
     materialId: "author",
     duration: 6, // Faster speed
     initialAngle: 120,
-    orbitSwitchInterval: 25000,
     size: 28,
   },
   {
@@ -105,7 +100,6 @@ const MOBILE_ATOM_CONFIG = [
     materialId: "social",
     duration: 5, // Fastest speed
     initialAngle: 240,
-    orbitSwitchInterval: 30000,
     size: 28,
   },
 ];
@@ -153,12 +147,11 @@ const AnimatedHero: React.FC = () => {
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [isTabHidden, setIsTabHidden] = useState(false);
-  // Align atoms with ring stroke by using the ring radius minus half the stroke width
-  const [occupiedOrbits, setOccupiedOrbits] = useState<Record<string, number>>({
+  const orbitRadii = {
     L: ringConfig.outer.radius,
     A: ringConfig.middle.radius,
     S: ringConfig.inner.radius,
-  });
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -185,36 +178,8 @@ const AnimatedHero: React.FC = () => {
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
-  useEffect(() => {
-    setOccupiedOrbits({
-      L: ringConfig.outer.radius,
-      A: ringConfig.middle.radius,
-      S: ringConfig.inner.radius,
-    });
-  }, [ringConfig]);
-
-  const updateAtomOrbit = (atomLetter: string, newOrbit: number) => {
-    setOccupiedOrbits(prev => ({
-      ...prev,
-      [atomLetter]: newOrbit
-    }));
-  };
-
-  const getAvailableOrbits = (currentAtom: string) => {
-    const allOrbits = [
-      ringConfig.outer.radius,
-      ringConfig.middle.radius,
-      ringConfig.inner.radius,
-    ];
-    const currentAtomOrbit = occupiedOrbits[currentAtom];
-    
-    return allOrbits.filter(orbit => {
-      // Allow current orbit or unoccupied orbits
-      return orbit === currentAtomOrbit || !Object.values(occupiedOrbits).includes(orbit);
-    });
-  };
-
   const durationFactor = isReducedMotion ? 1.3 : 1;
+  const ringSpeedBoost = 1.5;
   const pausedRings = isTabHidden;
   const pausedAtoms = isAnyAtomHovered || isTabHidden;
 
@@ -227,7 +192,7 @@ const AnimatedHero: React.FC = () => {
           radius={ring.radius}
           color={ring.color}
           rotation={ring.rotation}
-          duration={ring.duration * durationFactor}
+          duration={Math.max(2, (ring.duration * durationFactor) / ringSpeedBoost)}
           strokeWidth={ringStroke}
           isPaused={pausedRings}
         />
@@ -249,17 +214,14 @@ const AnimatedHero: React.FC = () => {
       {atomConfig.map((atom) => (
         <OrbitingAtom
           key={atom.letter}
-          orbitRadius={occupiedOrbits[atom.letter]}
+          orbitRadius={orbitRadii[atom.letter]}
           letter={atom.letter}
           label={atom.label}
           materialId={atom.materialId}
           duration={atom.duration * durationFactor}
           initialAngle={atom.initialAngle}
-          availableOrbits={getAvailableOrbits(atom.letter)}
-          orbitSwitchInterval={atom.orbitSwitchInterval}
           size={atom.size}
           onHoverChange={setIsAnyAtomHovered}
-          onOrbitChange={(newOrbit) => updateAtomOrbit(atom.letter, newOrbit)}
           isPaused={pausedAtoms}
         />
       ))}
