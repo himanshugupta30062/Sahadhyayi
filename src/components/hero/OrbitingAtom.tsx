@@ -36,6 +36,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   
   const material = ATOM_MATERIALS[materialId];
   const orbitSize = currentOrbitRadius * 2;
+  const initialDelay = -(initialAngle / 360) * duration;
 
   // Chemistry rule: Switch to unoccupied orbits only
   useEffect(() => {
@@ -92,8 +93,8 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       >
         <defs>
           <path
-            id={`half-circle-path-${currentOrbitRadius}`}
-            d={`M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}`}
+            id={`full-circle-path-${currentOrbitRadius}`}
+            d={`M ${currentOrbitRadius} 0 A ${currentOrbitRadius} ${currentOrbitRadius} 0 1 1 ${currentOrbitRadius} ${orbitSize} A ${currentOrbitRadius} ${currentOrbitRadius} 0 1 1 ${currentOrbitRadius} 0`}
           />
         </defs>
       </svg>
@@ -101,9 +102,10 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       <div
         className="absolute pointer-events-auto cursor-pointer flex flex-col items-center"
         style={{
-          offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
+          offsetPath: `path('M ${currentOrbitRadius} 0 A ${currentOrbitRadius} ${currentOrbitRadius} 0 1 1 ${currentOrbitRadius} ${orbitSize} A ${currentOrbitRadius} ${currentOrbitRadius} 0 1 1 ${currentOrbitRadius} 0')`,
           offsetRotate: "0deg", // Keep atoms upright
           animation: `moveAtom-${duration} ${duration}s linear infinite`,
+          animationDelay: `${initialDelay}s`,
           animationPlayState: (isHovered || isTransitioning || isPaused) ? "paused" : "running",
           left: 0,
           top: `-${size/2}px`, // Center atom vertically on the path
