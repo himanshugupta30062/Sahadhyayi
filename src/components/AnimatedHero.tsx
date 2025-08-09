@@ -148,7 +148,7 @@ const AnimatedHero: React.FC = () => {
   const floatingIcons = isMobile ? MOBILE_FLOATING_ICONS : DESKTOP_FLOATING_ICONS;
   const ringStroke = isMobile ? 10 : 28; // Thinner rings for mobile
   // Maintain consistent spacing between the inner ring and the central content mask
-  const maskSize = 2 * (ringConfig.inner.radius - ringStroke / 2 - 26);
+  const maskSize = 2 * (ringConfig.inner.radius - ringStroke / 2 - 36);
 
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
@@ -214,8 +214,9 @@ const AnimatedHero: React.FC = () => {
     });
   };
 
-  const durationFactor = isReducedMotion ? 2 : 1;
-  const isPaused = isAnyAtomHovered || isTabHidden;
+  const durationFactor = isReducedMotion ? 1.3 : 1;
+  const pausedRings = isTabHidden;
+  const pausedAtoms = isAnyAtomHovered || isTabHidden;
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
@@ -228,7 +229,7 @@ const AnimatedHero: React.FC = () => {
           rotation={ring.rotation}
           duration={ring.duration * durationFactor}
           strokeWidth={ringStroke}
-          isPaused={isPaused}
+          isPaused={pausedRings}
         />
       ))}
 
@@ -259,7 +260,7 @@ const AnimatedHero: React.FC = () => {
           size={atom.size}
           onHoverChange={setIsAnyAtomHovered}
           onOrbitChange={(newOrbit) => updateAtomOrbit(atom.letter, newOrbit)}
-          isPaused={isPaused}
+          isPaused={pausedAtoms}
         />
       ))}
 

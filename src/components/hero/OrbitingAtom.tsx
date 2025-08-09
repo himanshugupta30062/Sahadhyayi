@@ -33,7 +33,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   const [currentOrbitRadius, setCurrentOrbitRadius] = useState(orbitRadius);
   const [isHovered, setIsHovered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  
+
   const material = ATOM_MATERIALS[materialId];
   const orbitSize = currentOrbitRadius * 2;
 
@@ -42,18 +42,18 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
     if (availableOrbits.length <= 1) return; // No alternatives available
     
     const interval = setInterval(() => {
-      if (isHovered || isTransitioning) return; // Don't switch during hover or transition
-      
+      if (isHovered || isTransitioning || isPaused || document.hidden) return; // Guard against hover, transition, pause, or hidden tab
+
       const otherOrbits = availableOrbits.filter(orbit => orbit !== currentOrbitRadius);
       if (otherOrbits.length > 0) {
         setIsTransitioning(true);
         const nextOrbit = otherOrbits[Math.floor(Math.random() * otherOrbits.length)];
-        
+
         // Smooth transition with pleasant timing
         setTimeout(() => {
           setCurrentOrbitRadius(nextOrbit);
           onOrbitChange?.(nextOrbit);
-          
+
           setTimeout(() => {
             setIsTransitioning(false);
           }, 2000); // Transition duration
@@ -62,7 +62,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
     }, orbitSwitchInterval);
 
     return () => clearInterval(interval);
-  }, [availableOrbits, currentOrbitRadius, orbitSwitchInterval, isHovered, isTransitioning, onOrbitChange]);
+  }, [availableOrbits, currentOrbitRadius, orbitSwitchInterval, isHovered, isTransitioning, isPaused, onOrbitChange]);
 
   // Update orbit when prop changes (from parent state management)
   useEffect(() => {
@@ -79,7 +79,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   
   return (
     <div
-      className="absolute pointer-events-none"
+      className="absolute pointer-events-none z-[4]"
       style={{
         width: orbitSize,
         height: orbitSize,
@@ -87,16 +87,24 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         top: `calc(50% - ${currentOrbitRadius}px)`,
         transition: "all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
         opacity: isTransitioning ? 0.7 : 1,
+        willChange: "left, top, width, height, opacity",
       }}
     >
       <div
         className="absolute"
         style={{
           offsetPath: `circle(${pathRadius}px at ${center}px ${center}px)`,
+          WebkitOffsetPath: `circle(${pathRadius}px at ${center}px ${center}px)`,
           offsetRotate: "0deg",
-          animation: `moveAtom-${duration} ${duration}s linear infinite`,
+          WebkitOffsetRotate: "0deg",
+
+          animation: `orbit-move ${duration}s linear infinite`,
+          WebkitAnimation: `orbit-move ${duration}s linear infinite`,
           animationDelay,
+          WebkitAnimationDelay: animationDelay,
           animationPlayState: (isHovered || isTransitioning || isPaused) ? "paused" : "running",
+          WebkitAnimationPlayState: (isHovered || isTransitioning || isPaused) ? "paused" : "running",
+          willChange: "offset-distance, transform",
         }}
       >
         <div
@@ -135,9 +143,13 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       </div>
       
       <style>{`
-        @keyframes moveAtom-${duration} {
-          0% { offset-distance: 0%; }
+        @keyframes orbit-move {
+          0%   { offset-distance: 0%; }
           100% { offset-distance: 100%; }
+        }
+        @-webkit-keyframes orbit-move {
+          0%   { -webkit-offset-distance: 0%;   offset-distance: 0%; }
+          100% { -webkit-offset-distance: 100%; offset-distance: 100%; }
         }
       `}</style>
     </div>

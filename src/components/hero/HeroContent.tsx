@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export const HeroContent: React.FC = () => {
   return (
-    <div className="relative z-10 text-center max-w-sm px-4 sm:px-6 py-8 mx-auto">
+    <div className="relative z-10 text-center max-w-sm px-4 sm:px-6 py-8 mx-auto pointer-events-none">
       <h1 className="text-3xl sm:text-5xl font-bold mb-4">
         <span
           className="text-transparent bg-clip-text animate-gradient-shift"
@@ -24,7 +24,7 @@ export const HeroContent: React.FC = () => {
         Find new books, connect with readers, and share your love of reading—all in one friendly community.
       </p>
 
-      <Link to="/library">
+      <Link to="/library" className="pointer-events-auto">
         <button className="group px-4 sm:px-8 py-2 sm:py-4 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 text-white rounded-full font-semibold transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 shadow-xl mx-auto text-sm sm:text-lg hover:shadow-2xl hover:scale-105">
           <span role="img" aria-label="Book" className="group-hover:animate-bounce">📚</span>
           <span>Explore the Library</span>
