@@ -12,12 +12,12 @@ import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRF
 // Context imports
 import AuthProvider from "./contexts/AuthContext";
 import QuotesProvider from "./contexts/QuotesContext";
-import ChatbotProvider from "./contexts/ChatbotContext";
+import BookExpertProvider from "./contexts/BookExpertContext";
 
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
-const Chatbot = lazy(() => import('./components/chatbot/ChatbotContainer'));
+const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
 import Navigation from "./components/Navigation";
 import GlobalFooter from "./components/GlobalFooter";
 import ScrollToTop from "./components/ScrollToTop";
@@ -83,7 +83,7 @@ function App() {
           <TooltipProvider>
             <AuthProvider>
               <QuotesProvider>
-                <ChatbotProvider>
+                <BookExpertProvider>
                 <ScrollToTop />
                 <div className="min-h-screen bg-background text-foreground flex flex-col">
                   <a
@@ -140,10 +140,10 @@ function App() {
                   <GlobalFooter />
                 </div>
                 <Suspense fallback={<div />}>
-                  <Chatbot />
+                  <BookExpert />
                 </Suspense>
                 <Toaster />
-                </ChatbotProvider>
+                </BookExpertProvider>
               </QuotesProvider>
             </AuthProvider>
           </TooltipProvider>
