@@ -41,6 +41,7 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
         height: size,
         left: `calc(50% - ${radius}px)`,
         top: `calc(50% - ${radius}px)`,
+        transformOrigin: "50% 50%",
         animation: `spin-${duration}-${radius} ${duration}s linear infinite`,
         animationPlayState: isPaused ? "paused" : "running",
         willChange: "transform",

@@ -155,9 +155,9 @@ const AnimatedHero: React.FC = () => {
   const [isTabHidden, setIsTabHidden] = useState(false);
   // Align atoms with ring stroke by using the ring radius minus half the stroke width
   const [occupiedOrbits, setOccupiedOrbits] = useState<Record<string, number>>({
-    L: ringConfig.outer.radius - ringStroke / 2,
-    A: ringConfig.middle.radius - ringStroke / 2,
-    S: ringConfig.inner.radius - ringStroke / 2,
+    L: ringConfig.outer.radius,
+    A: ringConfig.middle.radius,
+    S: ringConfig.inner.radius,
   });
 
   useEffect(() => {
@@ -187,11 +187,11 @@ const AnimatedHero: React.FC = () => {
 
   useEffect(() => {
     setOccupiedOrbits({
-      L: ringConfig.outer.radius - ringStroke / 2,
-      A: ringConfig.middle.radius - ringStroke / 2,
-      S: ringConfig.inner.radius - ringStroke / 2,
+      L: ringConfig.outer.radius,
+      A: ringConfig.middle.radius,
+      S: ringConfig.inner.radius,
     });
-  }, [ringConfig, ringStroke]);
+  }, [ringConfig]);
 
   const updateAtomOrbit = (atomLetter: string, newOrbit: number) => {
     setOccupiedOrbits(prev => ({
@@ -202,9 +202,9 @@ const AnimatedHero: React.FC = () => {
 
   const getAvailableOrbits = (currentAtom: string) => {
     const allOrbits = [
-      ringConfig.outer.radius - ringStroke / 2,
-      ringConfig.middle.radius - ringStroke / 2,
-      ringConfig.inner.radius - ringStroke / 2,
+      ringConfig.outer.radius,
+      ringConfig.middle.radius,
+      ringConfig.inner.radius,
     ];
     const currentAtomOrbit = occupiedOrbits[currentAtom];
     
