@@ -89,42 +89,46 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       }}
     >
       <div
-        className="absolute pointer-events-auto cursor-pointer flex flex-col items-center"
+        className="absolute"
         style={{
           offsetPath: `circle(${pathRadius}px at ${center}px ${center}px)`,
-          offsetRotate: "0deg", // Keep atoms upright
+          offsetRotate: "0deg",
           animation: `moveAtom-${duration} ${duration}s linear infinite`,
           animationPlayState: (isHovered || isTransitioning || isPaused) ? "paused" : "running",
-          offsetAnchor: "center",
-        }}
-        onMouseEnter={() => {
-          setIsHovered(true);
-          onHoverChange?.(true);
-        }}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          onHoverChange?.(false);
-        }}
-        onTouchStart={() => {
-          setIsHovered(true);
-          onHoverChange?.(true);
-        }}
-        onTouchEnd={() => {
-          setIsHovered(false);
-          onHoverChange?.(false);
         }}
       >
-        <AtomShell
-          material={material}
-          letter={letter}
-          isHovered={isHovered}
-          size={size}
-        />
-        {/* Always-visible label for accessibility */}
         <div
-          className="mt-1 px-2 py-0.5 rounded-full text-xs font-medium text-white bg-black/80 pointer-events-none whitespace-nowrap"
+          className="relative pointer-events-auto cursor-pointer flex flex-col items-center"
+          style={{ transform: "translate(-50%, -50%)" }}
+          onMouseEnter={() => {
+            setIsHovered(true);
+            onHoverChange?.(true);
+          }}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            onHoverChange?.(false);
+          }}
+          onTouchStart={() => {
+            setIsHovered(true);
+            onHoverChange?.(true);
+          }}
+          onTouchEnd={() => {
+            setIsHovered(false);
+            onHoverChange?.(false);
+          }}
         >
-          {label}
+          <AtomShell
+            material={material}
+            letter={letter}
+            isHovered={isHovered}
+            size={size}
+          />
+          {/* Always-visible label for accessibility */}
+          <div
+            className="mt-1 px-2 py-0.5 rounded-full text-xs font-medium text-white bg-black/80 pointer-events-none whitespace-nowrap"
+          >
+            {label}
+          </div>
         </div>
       </div>
       

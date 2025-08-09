@@ -37,18 +37,11 @@ const BookExpert = () => {
           className={`relative group bg-gradient-to-r ${colors[colorIndex]} text-white shadow-2xl hover:shadow-xl transition-all duration-500 hover:scale-105 rounded-lg p-3 overflow-hidden`}
           aria-label="Open Book Expert"
         >
-          {/* Book shape styling */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent rounded-lg"></div>
           <div className="absolute left-1 top-2 bottom-2 w-0.5 bg-white/30 rounded-full"></div>
-          <div className="relative flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            <span className="text-sm font-semibold">Book Expert</span>
-            <Sparkles className="h-4 w-4 animate-pulse" />
+          <div className="relative flex items-center justify-center">
+            <BookOpen className="h-6 w-6" />
           </div>
-          
-          {/* Animated sparkles */}
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-300 rounded-full animate-ping opacity-75"></div>
-          <div className="absolute top-1 right-1 w-2 h-2 bg-yellow-200 rounded-full animate-pulse"></div>
         </button>
       </div>
     );
