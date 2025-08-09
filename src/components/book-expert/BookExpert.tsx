@@ -23,7 +23,7 @@ const BookExpert = () => {
     return (
       <button
         onClick={toggleChat}
-        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"
+        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-primary via-secondary to-accent text-primary-foreground shadow-lg hover-scale"
         aria-label="Open Book Expert"
       >
         <MessageCircle className="h-6 w-6" />
@@ -32,8 +32,8 @@ const BookExpert = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex h-96 w-80 flex-col overflow-hidden rounded-lg border bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
-      <div className="flex items-center justify-between border-b bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-800">
+    <div className="fixed bottom-4 right-4 z-50 flex h-96 w-80 flex-col overflow-hidden rounded-xl border border-border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/70">
+      <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-primary via-secondary to-accent p-3 text-primary-foreground">
         <span className="font-semibold">Book Expert</span>
         <button onClick={closeChat} aria-label="Close chat" className="p-1">
           <X className="h-4 w-4" />
@@ -47,7 +47,7 @@ const BookExpert = () => {
               'max-w-[80%] rounded-lg px-3 py-2',
               m.sender === 'user'
                 ? 'ml-auto bg-primary text-primary-foreground'
-                : 'bg-muted'
+                : 'bg-secondary text-secondary-foreground'
             )}
           >
             {m.text}
@@ -63,7 +63,7 @@ const BookExpert = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about books..."
-            className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none"
+            className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           />
           <Button size="sm" onClick={handleSend}>
             Send

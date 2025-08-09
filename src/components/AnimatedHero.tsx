@@ -214,7 +214,8 @@ const AnimatedHero: React.FC = () => {
     });
   };
 
-  const isPaused = isAnyAtomHovered || isReducedMotion || isTabHidden;
+  const durationFactor = isReducedMotion ? 2 : 1;
+  const isPaused = isAnyAtomHovered || isTabHidden;
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
@@ -225,7 +226,7 @@ const AnimatedHero: React.FC = () => {
           radius={ring.radius}
           color={ring.color}
           rotation={ring.rotation}
-          duration={ring.duration}
+          duration={ring.duration * durationFactor}
           strokeWidth={ringStroke}
           isPaused={isPaused}
         />
@@ -251,7 +252,7 @@ const AnimatedHero: React.FC = () => {
           letter={atom.letter}
           label={atom.label}
           materialId={atom.materialId}
-          duration={atom.duration}
+          duration={atom.duration * durationFactor}
           initialAngle={atom.initialAngle}
           availableOrbits={getAvailableOrbits(atom.letter)}
           orbitSwitchInterval={atom.orbitSwitchInterval}
