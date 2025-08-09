@@ -18,10 +18,7 @@ serve(async (req) => {
       throw new Error('Text is required');
     }
 
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
-    if (!geminiApiKey) {
-      throw new Error('Gemini API key not configured');
-    }
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyDXZoJpWDcQwnHvUqAjHbqJ9Ky8SM-kr1w';
 
     const payload = {
       contents: [
