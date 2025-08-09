@@ -75,6 +75,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   const strokeWidth = 28; // Match AtomicRing strokeWidth
   const pathRadius = currentOrbitRadius - strokeWidth / 2; // Match ring's arc radius
   const center = currentOrbitRadius;
+  const animationDelay = `-${(initialAngle / 360) * duration}s`;
   
   return (
     <div
@@ -94,6 +95,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
           offsetPath: `circle(${pathRadius}px at ${center}px ${center}px)`,
           offsetRotate: "0deg",
           animation: `moveAtom-${duration} ${duration}s linear infinite`,
+          animationDelay,
           animationPlayState: (isHovered || isTransitioning || isPaused) ? "paused" : "running",
         }}
       >
