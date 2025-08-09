@@ -55,33 +55,38 @@ export const AtomShell: React.FC<AtomShellProps> = ({
 }) => {
   return (
     <div
-      className="rounded-full flex items-center justify-center font-bold cursor-pointer transition-all duration-500 relative overflow-hidden"
-      style={{
-        width: size,
-        height: size,
-        fontSize: size * 0.375, // Responsive font size based on atom size
-        background: material.background,
-        color: material.textColor,
-        border: material.border,
-        boxShadow: isHovered ? 
-          `${material.glowEffect}, 0 8px 32px ${material.shadowColor}` : 
-          `0 4px 20px ${material.shadowColor}`,
-        transform: isHovered ? "scale(1.15)" : "scale(1)",
-      }}
+      className="rounded-full flex items-center justify-center cursor-pointer relative"
+      style={{ width: size, height: size, overflow: "visible", willChange: "transform" }}
     >
-      {/* Subtle inner highlight */}
       <div
-        className="absolute rounded-full opacity-20"
+        className="rounded-full flex items-center justify-center font-bold transition-transform duration-500 relative"
         style={{
-          inset: size * 0.125, // Responsive inset based on size
-          background: `radial-gradient(circle at 30% 30%, rgba(0,0,0,0.1), transparent 50%)`,
+          width: size,
+          height: size,
+          fontSize: size * 0.375, // Responsive font size based on atom size
+          background: material.background,
+          color: material.textColor,
+          border: material.border,
+          boxShadow: isHovered
+            ? `${material.glowEffect}, 0 8px 32px ${material.shadowColor}`
+            : `0 4px 20px ${material.shadowColor}`,
+          transform: isHovered ? "scale(1.15)" : "scale(1)",
         }}
-      />
-      
-      {/* Letter */}
-      <span className="relative z-10 font-extrabold tracking-wider">
-        {letter}
-      </span>
+      >
+        {/* Subtle inner highlight */}
+        <div
+          className="absolute rounded-full opacity-20"
+          style={{
+            inset: size * 0.125, // Responsive inset based on size
+            background: `radial-gradient(circle at 30% 30%, rgba(0,0,0,0.1), transparent 50%)`,
+          }}
+        />
+
+        {/* Letter */}
+        <span className="relative z-10 font-extrabold tracking-wider">
+          {letter}
+        </span>
+      </div>
     </div>
   );
 };

@@ -30,6 +30,7 @@ export const FloatingIcon: React.FC<FloatingIconProps> = ({
         height: size,
         animation: `iconPulse 4s ease-in-out infinite`,
         animationDelay: `${delay}s`,
+        willChange: "transform, opacity",
       }}
     >
       <Icon size={size / 2} className={color} />

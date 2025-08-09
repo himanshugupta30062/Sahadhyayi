@@ -35,14 +35,14 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
 
   return (
     <div
-      className="absolute pointer-events-none"
+      className="absolute pointer-events-none z-[1]"
       style={{
         width: size,
         height: size,
         left: `calc(50% - ${radius}px)`,
         top: `calc(50% - ${radius}px)`,
         transformOrigin: "50% 50%",
-        animation: `spin-${duration}-${radius} ${duration}s linear infinite`,
+        animation: `atomic-spin ${duration}s linear infinite`,
         animationPlayState: isPaused ? "paused" : "running",
         willChange: "transform",
       }}
@@ -72,8 +72,8 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
         />
       </svg>
       <style>{`
-        @keyframes spin-${duration}-${radius} {
-          0% { transform: rotate(${rotation}deg); }
+        @keyframes atomic-spin {
+          0%   { transform: rotate(${rotation}deg); }
           100% { transform: rotate(${360 + rotation}deg); }
         }
       `}</style>
