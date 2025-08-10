@@ -5,11 +5,35 @@ import { OrbitingAtom } from "./hero/OrbitingAtom";
 import { FloatingIcon } from "./hero/FloatingIcon";
 import { HeroContent } from "./hero/HeroContent";
 
-// desktop: radii, colors & weights tuned to the reference
+// desktop: radii, thinner strokes & custom gradients
 const DESKTOP_RING_CONFIG = {
-  outer:  { radius: 340, color: "url(#ring-gradient-outer)",  rotation: 0,   duration: 12, stroke: 34, glow: 2.8 },
-  middle: { radius: 290, color: "url(#ring-gradient-middle)", rotation: 120, duration: 10, stroke: 28, glow: 2.3 },
-  inner:  { radius: 250, color: "url(#ring-gradient-inner)",  rotation: 240, duration:  8, stroke: 26, glow: 2.0 },
+  outer:  {
+    radius: 340,
+    colors: ["#20E0D2", "#13C296", "#FF3EA5"],
+    rotation: 0,
+    duration: 12,
+    stroke: 16,
+    glow: 2.8,
+    gradientAngle: 0,
+  },
+  middle: {
+    radius: 290,
+    colors: ["#0B1E3A", "#1B68FF"],
+    rotation: 120,
+    duration: 10,
+    stroke: 12,
+    glow: 2.3,
+    gradientAngle: 120,
+  },
+  inner:  {
+    radius: 250,
+    colors: ["#1AD1B9", "#19A0F5"],
+    rotation: 240,
+    duration: 8,
+    stroke: 8,
+    glow: 2.0,
+    gradientAngle: 240,
+  },
 };
 
 const DESKTOP_ATOMS = [
@@ -25,11 +49,35 @@ const DESKTOP_FLOATERS = [
   { Icon: TrendingUp,   position: { bottom:"12%",right:"12%"  }, color: "text-emerald-400",delay: 3, size: 64 },
 ];
 
-// mobile: smaller radii & thinner strokes, slower base rotation for elegance
+// mobile: smaller radii & even slimmer strokes
 const MOBILE_RING_CONFIG = {
-  outer:  { radius: 280, color: "url(#ring-gradient-outer)",  rotation: 0,   duration: 24, stroke: 22, glow: 2.2 },
-  middle: { radius: 230, color: "url(#ring-gradient-middle)", rotation: 120, duration: 20, stroke: 18, glow: 2.0 },
-  inner:  { radius: 180, color: "url(#ring-gradient-inner)",  rotation: 240, duration: 16, stroke: 16, glow: 1.8 },
+  outer:  {
+    radius: 280,
+    colors: ["#20E0D2", "#13C296", "#FF3EA5"],
+    rotation: 0,
+    duration: 24,
+    stroke: 12,
+    glow: 2.2,
+    gradientAngle: 0,
+  },
+  middle: {
+    radius: 230,
+    colors: ["#0B1E3A", "#1B68FF"],
+    rotation: 120,
+    duration: 20,
+    stroke: 8,
+    glow: 2.0,
+    gradientAngle: 120,
+  },
+  inner:  {
+    radius: 180,
+    colors: ["#1AD1B9", "#19A0F5"],
+    rotation: 240,
+    duration: 16,
+    stroke: 6,
+    glow: 1.8,
+    gradientAngle: 240,
+  },
 };
 const MOBILE_ATOMS = [
   { letter: "L", label: "Library",      materialId: "library", initialAngle:  0,  size: 32 },
@@ -91,7 +139,14 @@ const AnimatedHero: React.FC = () => {
   };
   const ringKeyByAtom: Record<string, "outer" | "middle" | "inner"> = { L: "outer", A: "middle", S: "inner" };
   const effByKey: Record<"outer"|"middle"|"inner", number> = {
-    outer: effOuter, middle: effMiddle, inner: effInner,
+    outer: effOuter,
+    middle: effMiddle,
+    inner: effInner,
+  };
+  const strokeByKey: Record<"outer"|"middle"|"inner", number> = {
+    outer: RC.outer.stroke,
+    middle: RC.middle.stroke,
+    inner: RC.inner.stroke,
   };
 
   return (
@@ -105,12 +160,13 @@ const AnimatedHero: React.FC = () => {
         <AtomicRing
           key={cfg.radius}
           radius={cfg.radius}
-          color={cfg.color}
+          colors={cfg.colors}
           rotation={cfg.rotation}
           duration={eff(cfg.duration)}
           strokeWidth={cfg.stroke}
           gapDegrees={12}
           glow={cfg.glow}
+          gradientAngle={cfg.gradientAngle}
           isPaused={pausedRings}
         />
       ))}
@@ -131,7 +187,6 @@ const AnimatedHero: React.FC = () => {
       {ATOMS.map((atom) => {
         const key = ringKeyByAtom[atom.letter];
         const atomDuration = Math.max(1, effByKey[key] / 2); // half of ring duration
-        const strokeForAlignment = Math.max(RC.outer.stroke, RC.middle.stroke, RC.inner.stroke);
         return (
           <OrbitingAtom
             key={atom.letter}
@@ -142,7 +197,7 @@ const AnimatedHero: React.FC = () => {
             duration={atomDuration}
             initialAngle={atom.initialAngle}
             size={atom.size}
-            strokeWidth={strokeForAlignment}
+            strokeWidth={strokeByKey[key]}
             availableOrbits={[]} // keep fixed for premium, steady look
             onHoverChange={setIsAnyAtomHovered}
           />

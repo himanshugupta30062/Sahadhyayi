@@ -2,24 +2,26 @@ import React, { useMemo } from "react";
 
 interface AtomicRingProps {
   radius: number;          // px
-  color: string;           // solid or "url(#ring-gradient-*)"
+  colors: string[];        // gradient stops
   rotation: number;        // starting angle
   duration: number;        // seconds per 360° rotation
   strokeWidth?: number;    // px
   isPaused?: boolean;
   gapDegrees?: number;     // visual gap at arc ends
   glow?: number;           // 0..4, glow strength
+  gradientAngle?: number;  // rotate gradient placement
 }
 
 export const AtomicRing: React.FC<AtomicRingProps> = ({
   radius,
-  color,
+  colors,
   rotation,
   duration,
   strokeWidth = 28,
   isPaused = false,
   gapDegrees = 14,
   glow = 2.2,
+  gradientAngle = 0,
 }) => {
   const size = radius * 2;
   const c = radius;
@@ -52,21 +54,21 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
     >
       <svg width={size} height={size} className="absolute inset-0">
         <defs>
-          {/* OUTER gradient: cyan -> teal -> magenta (like the screenshot) */}
-          <linearGradient id="ring-gradient-outer" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stopColor="#20E0D2" />
-            <stop offset="52%"  stopColor="#13C296" />
-            <stop offset="100%" stopColor="#FF3EA5" />
-          </linearGradient>
-          {/* MIDDLE gradient: deep navy -> blue */}
-          <linearGradient id="ring-gradient-middle" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stopColor="#0B1E3A" />
-            <stop offset="100%" stopColor="#1B68FF" />
-          </linearGradient>
-          {/* INNER gradient: blue greenish cycle */}
-          <linearGradient id="ring-gradient-inner" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stopColor="#1AD1B9" />
-            <stop offset="100%" stopColor="#19A0F5" />
+          <linearGradient
+            id={`ring-gradient-${radius}`}
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+            gradientTransform={`rotate(${gradientAngle}, 0.5, 0.5)`}
+          >
+            {colors.map((c, i) => (
+              <stop
+                key={i}
+                offset={`${(i / (colors.length - 1)) * 100}%`}
+                stopColor={c}
+              />
+            ))}
           </linearGradient>
 
           <filter id={`ring-glow-${radius}`}>
@@ -81,7 +83,7 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
         <path
           d={d}
           fill="none"
-          stroke={color}
+          stroke={`url(#ring-gradient-${radius})`}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           filter={`url(#ring-glow-${radius})`}
