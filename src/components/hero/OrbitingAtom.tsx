@@ -10,6 +10,7 @@ interface OrbitingAtomProps {
   duration: number;
   initialAngle: number;
   size?: number;
+  strokeWidth?: number;
   onHoverChange?: (isHovered: boolean) => void;
   isPaused?: boolean;
 }
@@ -22,6 +23,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   duration,
   initialAngle,
   size = 48,
+  strokeWidth = 28,
   onHoverChange,
   isPaused = false,
 }) => {
@@ -30,9 +32,8 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   const material = ATOM_MATERIALS[materialId];
   const orbitSize = orbitRadius * 2;
 
-  // Match the AtomicRing's arc path exactly - full circle with stroke compensation
-  const strokeWidth = 28; // Match AtomicRing strokeWidth
-  const pathRadius = orbitRadius - strokeWidth / 2; // Match ring's arc radius
+  // Match the AtomicRing's ring radius with stroke compensation
+  const pathRadius = orbitRadius - (strokeWidth ?? 28) / 2;
   const center = orbitRadius;
   const animationDelay = `-${(initialAngle / 360) * duration}s`;
   
@@ -51,16 +52,11 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
         className="absolute"
         style={{
           offsetPath: `circle(${pathRadius}px at ${center}px ${center}px)`,
-          WebkitOffsetPath: `circle(${pathRadius}px at ${center}px ${center}px)`,
           offsetRotate: "0deg",
-          WebkitOffsetRotate: "0deg",
 
           animation: `orbit-move ${duration}s linear infinite`,
-          WebkitAnimation: `orbit-move ${duration}s linear infinite`,
           animationDelay,
-          WebkitAnimationDelay: animationDelay,
           animationPlayState: (isHovered || isPaused) ? "paused" : "running",
-          WebkitAnimationPlayState: (isHovered || isPaused) ? "paused" : "running",
           willChange: "offset-distance, transform",
         }}
       >

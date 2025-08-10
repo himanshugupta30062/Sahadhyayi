@@ -221,6 +221,7 @@ const AnimatedHero: React.FC = () => {
           duration={atom.duration * durationFactor}
           initialAngle={atom.initialAngle}
           size={atom.size}
+          strokeWidth={ringStroke}
           onHoverChange={setIsAnyAtomHovered}
           isPaused={pausedAtoms}
         />
