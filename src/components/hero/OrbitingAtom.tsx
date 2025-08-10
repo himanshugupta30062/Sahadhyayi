@@ -3,16 +3,16 @@ import { ATOM_MATERIALS } from "./AtomMaterials";
 import { AtomShell } from "./AtomShell";
 
 interface OrbitingAtomProps {
-  orbitRadius: number;            // ring radius passed from AnimatedHero
-  letter: string;                 // "L" | "A" | "S"
-  label: string;                  // accessibility label
-  materialId: string;             // "library" | "author" | "social"
-  duration: number;               // seconds per full half-orbit loop
-  initialAngle: number;           // degrees (maps into the -90..+90 range)
-  availableOrbits?: number[];     // optional: list of radii
-  orbitSwitchInterval?: number;   // optional: ms between orbit hops (disabled by default)
-  size?: number;                  // px diameter of the atom
-  strokeWidth?: number;           // ring stroke (to align to visual center)
+  orbitRadius: number;
+  letter: string;
+  label: string;
+  materialId: string;
+  duration: number;               // seconds for a 180° sweep
+  initialAngle: number;           // any degrees; normalized to -90..+90
+  size?: number;
+  strokeWidth?: number;
+  availableOrbits?: number[];     // keep [] for locked look
+  orbitSwitchInterval?: number;   // ms; undefined to disable
   onHoverChange?: (isHovered: boolean) => void;
   onOrbitChange?: (newOrbit: number) => void;
 }
@@ -24,145 +24,108 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   materialId,
   duration,
   initialAngle,
-  availableOrbits = [],
-  orbitSwitchInterval,            // leave undefined to disable auto-switch
   size = 44,
   strokeWidth = 28,
+  availableOrbits = [],
+  orbitSwitchInterval,
   onHoverChange,
   onOrbitChange,
 }) => {
   const material = useMemo(() => ATOM_MATERIALS[materialId], [materialId]);
 
-  // internal state/refs
   const [isHovered, setIsHovered] = useState(false);
   const [currentOrbit, setCurrentOrbit] = useState(orbitRadius);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
+
   const atomRef = useRef<HTMLDivElement | null>(null);
-  const frameRef = useRef<number | null>(null);
-  const lastTsRef = useRef<number | null>(null);
-  const angleDegRef = useRef<number>(normalizeToHalf(initialAngle));
-  const hiddenRef = useRef<boolean>(false);
-  const switchTimerRef = useRef<number | null>(null);
+  const frame = useRef<number | null>(null);
+  const lastTs = useRef<number | null>(null);
+  const angle = useRef<number>(normalizeToHalf(initialAngle));
+  const hidden = useRef<boolean>(false);
+  const switchTimer = useRef<number | null>(null);
 
-  // keep orbit in sync with prop
-  useEffect(() => {
-    if (orbitRadius !== currentOrbit) setCurrentOrbit(orbitRadius);
-  }, [orbitRadius]);
+  useEffect(() => setCurrentOrbit(orbitRadius), [orbitRadius]);
 
-  // handle tab visibility (pause)
   useEffect(() => {
-    const onVis = () => (hiddenRef.current = document.hidden);
-    onVis();
-    document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
+    const vis = () => (hidden.current = document.hidden);
+    vis(); document.addEventListener("visibilitychange", vis);
+    return () => document.removeEventListener("visibilitychange", vis);
   }, []);
 
-  // optional orbit switching (disabled unless interval provided)
+  // Optional orbit switch (off unless interval provided)
   useEffect(() => {
-    if (!orbitSwitchInterval || availableOrbits.length < 2) return;
+    if (!orbitSwitchInterval || availableOritsTooFew(availableOrbits)) return;
     const tick = () => {
       const idx = Math.max(0, availableOrbits.indexOf(currentOrbit));
       const next = availableOrbits[(idx + 1) % availableOrbits.length];
       setCurrentOrbit(next);
       onOrbitChange?.(next);
-      // keep angle continuous; nothing else to do
-      switchTimerRef.current = window.setTimeout(tick, orbitSwitchInterval);
+      switchTimer.current = window.setTimeout(tick, orbitSwitchInterval);
     };
-    switchTimerRef.current = window.setTimeout(tick, orbitSwitchInterval);
-    return () => {
-      if (switchTimerRef.current) window.clearTimeout(switchTimerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orbitSwitchInterval, availableOrbits, currentOrbit]);
+    switchTimer.current = window.setTimeout(tick, orbitSwitchInterval);
+    return () => { if (switchTimer.current) window.clearTimeout(switchTimer.current); };
+  }, [orbitSwitchInterval, availableOrbits, currentOrbit, onOrbitChange]);
 
-  // main animation loop (locked to half-arc)
   useEffect(() => {
     const step = (ts: number) => {
-      if (lastTsRef.current == null) lastTsRef.current = ts;
-      const dt = (ts - lastTsRef.current) / 1000; // seconds
-      lastTsRef.current = ts;
+      if (lastTs.current == null) lastTs.current = ts;
+      const dt = (ts - lastTs.current) / 1000;
+      lastTs.current = ts;
 
-      const paused = isHovered || hiddenRef.current;
-      if (!paused) {
-        // advance angle across 180° over `duration` sec
-        const degPerSec = 180 / duration;
-        angleDegRef.current = wrapHalf(angleDegRef.current + degPerSec * dt);
+      if (!(isHovered || hidden.current)) {
+        const degPerSec = 180 / duration;     // we traverse half circle in 'duration'
+        angle.current = wrapHalf(angle.current + degPerSec * dt);
       }
 
-      // compute position ON the ring's visible arc
+      // place atom exactly on the painted stroke center
       const center = currentOrbit;
-      const arcRadius = Math.max(1, currentOrbit - strokeWidth / 2); // stay on colored stroke
-      const angleRad = (angleDegRef.current * Math.PI) / 180;        // -90..+90
+      const r = Math.max(1, currentOrbit - strokeWidth / 2);
+      const rad = (angle.current * Math.PI) / 180;
+      const x = center + r * Math.cos(rad);
+      const y = center + r * Math.sin(rad);
 
-      const x = center + arcRadius * Math.cos(angleRad);
-      const y = center + arcRadius * Math.sin(angleRad);
+      const node = atomRef.current;
+      if (node) {
+        node.style.left = `${x}px`;
+        node.style.top  = `${y}px`;
+        node.style.transform = `translate(-50%, -50%)`;
 
-      // place wrapper and atom
-      const w = wrapperRef.current;
-      const a = atomRef.current;
-      if (w && a) {
-        // wrapper is already positioned via absolute in JSX; we only move the atom node
-        a.style.left = `${x}px`;
-        a.style.top = `${y}px`;
-        a.style.transform = `translate(-50%, -50%)`;
-
-        // hard snap-back safety (in case any external transform nudged it)
-        // compute distance to center and clamp to arcRadius
-        const dx = x - center;
-        const dy = y - center;
+        // snap-back safety
+        const dx = x - center, dy = y - center;
         const dist = Math.hypot(dx, dy);
-        if (Math.abs(dist - arcRadius) > 0.75) {
-          const ux = dx / (dist || 1);
-          const uy = dy / (dist || 1);
-          const sx = center + ux * arcRadius;
-          const sy = center + uy * arcRadius;
-          a.style.left = `${sx}px`;
-          a.style.top = `${sy}px`;
+        if (Math.abs(dist - r) > 0.75) {
+          const ux = dx / (dist || 1), uy = dy / (dist || 1);
+          node.style.left = `${center + ux * r}px`;
+          node.style.top  = `${center + uy * r}px`;
         }
       }
 
-      frameRef.current = requestAnimationFrame(step);
+      frame.current = requestAnimationFrame(step);
     };
 
-    frameRef.current = requestAnimationFrame(step);
+    frame.current = requestAnimationFrame(step);
     return () => {
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
-      frameRef.current = null;
-      lastTsRef.current = null;
+      if (frame.current) cancelAnimationFrame(frame.current);
+      frame.current = null;
+      lastTs.current = null;
     };
   }, [isHovered, duration, currentOrbit, strokeWidth]);
 
-  // hover handlers (pause + glow)
-  const onEnter = () => {
-    setIsHovered(true);
-    onHoverChange?.(true);
-  };
-  const onLeave = () => {
-    setIsHovered(false);
-    onHoverChange?.(false);
-  };
+  const onEnter = () => { setIsHovered(true);  onHoverChange?.(true);  };
+  const onLeave = () => { setIsHovered(false); onHoverChange?.(false); };
 
-  const sizeBox = currentOrbit * 2;
+  const box = currentOrbit * 2;
 
   return (
     <div
-      ref={wrapperRef}
       className="absolute pointer-events-none z-[4]"
       style={{
-        width: sizeBox,
-        height: sizeBox,
+        width: box,
+        height: box,
         left: `calc(50% - ${currentOrbit}px)`,
-        top: `calc(50% - ${currentOrbit}px)`,
-        // we never animate wrapper geometry while moving; that prevents drift
-        willChange: "contents",
+        top:  `calc(50% - ${currentOrbit}px)`,
       }}
     >
-      {/* Absolutely-positioned atom node that we place every frame */}
-      <div
-        ref={atomRef}
-        className="absolute"
-        style={{ left: 0, top: 0 }}
-      >
+      <div ref={atomRef} className="absolute">
         <div
           className="relative pointer-events-auto cursor-pointer flex flex-col items-center"
           onMouseEnter={onEnter}
@@ -180,19 +143,17 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   );
 };
 
-// map any angle to the visible half: -90..+90
+function availableOritsTooFew(a: number[]) {
+  return !a || a.length < 2;
+}
 function normalizeToHalf(deg: number) {
-  // first bring to 0..360
   let a = ((deg % 360) + 360) % 360;
-  // then map to -180..+180
   if (a > 180) a -= 360;
-  // clamp to -90..+90 (start near requested side)
   if (a < -90) a = -90 + ((a + 90) % 180);
   if (a > 90)  a =  90 - ((90 - a) % 180);
   return a;
 }
 function wrapHalf(deg: number) {
-  // keep cycling within -90..+90
   if (deg > 90) return -90 + (deg - 90);
   if (deg < -90) return 90 - (-90 - deg);
   return deg;
