@@ -10,7 +10,6 @@ interface BookExpertContextType {
   isOpen: boolean;
   messages: ChatMessage[];
   toggleChat: () => void;
-  closeChat: () => void;
   sendMessage: (text: string) => Promise<void>;
 }
 
@@ -31,7 +30,6 @@ export const BookExpertProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   ]);
 
   const toggleChat = () => setIsOpen(prev => !prev);
-  const closeChat = () => setIsOpen(false);
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
@@ -59,7 +57,7 @@ export const BookExpertProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   return (
-    <BookExpertContext.Provider value={{ isOpen, messages, toggleChat, closeChat, sendMessage }}>
+    <BookExpertContext.Provider value={{ isOpen, messages, toggleChat, sendMessage }}>
       {children}
     </BookExpertContext.Provider>
   );
