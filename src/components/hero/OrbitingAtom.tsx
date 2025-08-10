@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ATOM_MATERIALS } from "./AtomMaterials";
 import { AtomShell } from "./AtomShell";
 
@@ -9,10 +9,11 @@ interface OrbitingAtomProps {
   materialId: string;
   duration: number;
   initialAngle: number;
+  availableOrbits: number[];
+  orbitSwitchInterval?: number;
   size?: number;
-  strokeWidth?: number;
   onHoverChange?: (isHovered: boolean) => void;
-  isPaused?: boolean;
+  onOrbitChange?: (newOrbit: number) => void;
 }
 
 export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
@@ -22,97 +23,124 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   materialId,
   duration,
   initialAngle,
+  availableOrbits,
+  orbitSwitchInterval = 15000,
   size = 48,
-  strokeWidth = 28,
   onHoverChange,
-  isPaused = false,
+  onOrbitChange,
 }) => {
+  const [currentOrbitRadius, setCurrentOrbitRadius] = useState(orbitRadius);
   const [isHovered, setIsHovered] = useState(false);
-
-  const material = ATOM_MATERIALS[materialId];
-  const orbitSize = orbitRadius * 2;
-
-  // Match the AtomicRing's ring radius with stroke compensation
-  const pathRadius = orbitRadius - (strokeWidth ?? 28) / 2;
-  const center = orbitRadius;
-
-  // Build the same 180° arc path as AtomicRing (right-side)
-  const startAngle = -90;
-  const endAngle = 90;
-  const startX = center + pathRadius * Math.cos((startAngle * Math.PI) / 180);
-  const startY = center + pathRadius * Math.sin((startAngle * Math.PI) / 180);
-  const endX = center + pathRadius * Math.cos((endAngle * Math.PI) / 180);
-  const endY = center + pathRadius * Math.sin((endAngle * Math.PI) / 180);
-  const arcPath = `path('M ${startX} ${startY} A ${pathRadius} ${pathRadius} 0 0 1 ${endX} ${endY}')`;
-
-  const animationDelay = `-${(initialAngle / 360) * duration}s`;
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
+  const material = ATOM_MATERIALS[materialId];
+  const orbitSize = currentOrbitRadius * 2;
+
+  // Chemistry rule: Switch to unoccupied orbits only
+  useEffect(() => {
+    if (availableOrbits.length <= 1) return; // No alternatives available
+    
+    const interval = setInterval(() => {
+      if (isHovered || isTransitioning) return; // Don't switch during hover or transition
+      
+      const otherOrbits = availableOrbits.filter(orbit => orbit !== currentOrbitRadius);
+      if (otherOrbits.length > 0) {
+        setIsTransitioning(true);
+        const nextOrbit = otherOrbits[Math.floor(Math.random() * otherOrbits.length)];
+        
+        // Smooth transition with pleasant timing
+        setTimeout(() => {
+          setCurrentOrbitRadius(nextOrbit);
+          onOrbitChange?.(nextOrbit);
+          
+          setTimeout(() => {
+            setIsTransitioning(false);
+          }, 2000); // Transition duration
+        }, 500); // Small delay for natural feel
+      }
+    }, orbitSwitchInterval);
+
+    return () => clearInterval(interval);
+  }, [availableOrbits, currentOrbitRadius, orbitSwitchInterval, isHovered, isTransitioning, onOrbitChange]);
+
+  // Update orbit when prop changes (from parent state management)
+  useEffect(() => {
+    if (orbitRadius !== currentOrbitRadius) {
+      setCurrentOrbitRadius(orbitRadius);
+    }
+  }, [orbitRadius]);
+
   return (
     <div
-      className="absolute pointer-events-none z-[4]"
+      className="absolute pointer-events-none"
       style={{
         width: orbitSize,
         height: orbitSize,
-        left: `calc(50% - ${orbitRadius}px)`,
-        top: `calc(50% - ${orbitRadius}px)`,
-        willChange: "left, top, width, height",
+        left: `calc(50% - ${currentOrbitRadius}px)`,
+        top: `calc(50% - ${currentOrbitRadius}px)`,
+        transition: "all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        opacity: isTransitioning ? 0.7 : 1,
       }}
     >
+      {/* SVG path for offset-path animation */}
+      <svg
+        width={orbitSize}
+        height={orbitSize}
+        className="absolute inset-0 pointer-events-none"
+        style={{ overflow: "visible" }}
+      >
+        <defs>
+          <path
+            id={`half-circle-path-${currentOrbitRadius}`}
+            d={`M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}`}
+          />
+        </defs>
+      </svg>
+      
       <div
-        className="absolute"
+        className="absolute pointer-events-auto cursor-pointer flex flex-col items-center"
         style={{
-          offsetPath: arcPath,
-          offsetRotate: "0deg",
-
-          animation: `orbit-move ${duration}s linear infinite`,
-          animationDelay,
-          animationPlayState: (isHovered || isPaused) ? "paused" : "running",
-          willChange: "offset-distance, transform",
+          offsetPath: `path('M 0 ${currentOrbitRadius} A ${currentOrbitRadius} ${currentOrbitRadius} 0 0 1 ${orbitSize} ${currentOrbitRadius}')`,
+          offsetRotate: "0deg", // Keep atoms upright
+          animation: (isHovered || isTransitioning) ? "none" : `moveAtom-${duration} ${duration}s linear infinite`,
+          left: 0,
+          top: `-${size/2}px`, // Center atom vertically on the path
+        }}
+        onMouseEnter={() => {
+          setIsHovered(true);
+          onHoverChange?.(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          onHoverChange?.(false);
+        }}
+        onTouchStart={() => {
+          setIsHovered(true);
+          onHoverChange?.(true);
+        }}
+        onTouchEnd={() => {
+          setIsHovered(false);
+          onHoverChange?.(false);
         }}
       >
+        <AtomShell
+          material={material}
+          letter={letter}
+          isHovered={isHovered}
+          size={size}
+        />
+        {/* Always-visible label for accessibility */}
         <div
-          className="relative pointer-events-auto cursor-pointer flex flex-col items-center"
-          style={{ transform: "translate(-50%, -50%)" }}
-          onMouseEnter={() => {
-            setIsHovered(true);
-            onHoverChange?.(true);
-          }}
-          onMouseLeave={() => {
-            setIsHovered(false);
-            onHoverChange?.(false);
-          }}
-          onTouchStart={() => {
-            setIsHovered(true);
-            onHoverChange?.(true);
-          }}
-          onTouchEnd={() => {
-            setIsHovered(false);
-            onHoverChange?.(false);
-          }}
+          className="mt-1 px-2 py-0.5 rounded-full text-xs font-medium text-white bg-black/80 pointer-events-none whitespace-nowrap"
         >
-          <AtomShell
-            material={material}
-            letter={letter}
-            isHovered={isHovered}
-            size={size}
-          />
-          {/* Always-visible label for accessibility */}
-          <div
-            className="mt-1 px-2 py-0.5 rounded-full text-xs font-medium text-white bg-black/80 pointer-events-none whitespace-nowrap"
-          >
-            {label}
-          </div>
+          {label}
         </div>
       </div>
       
       <style>{`
-        @keyframes orbit-move {
-          0%   { offset-distance: 0%; }
+        @keyframes moveAtom-${duration} {
+          0% { offset-distance: 0%; }
           100% { offset-distance: 100%; }
-        }
-        @-webkit-keyframes orbit-move {
-          0%   { -webkit-offset-distance: 0%;   offset-distance: 0%; }
-          100% { -webkit-offset-distance: 100%; offset-distance: 100%; }
         }
       `}</style>
     </div>
