@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 interface AtomicRingProps {
-  radius: number;
-  color: string;
-  rotation: number;
-  duration: number;
-  strokeWidth?: number;
+  radius: number;          // px
+  color: string;           // solid or "url(#ring-gradient-*)"
+  rotation: number;        // starting angle
+  duration: number;        // seconds per 360° rotation
+  strokeWidth?: number;    // px
   isPaused?: boolean;
+  gapDegrees?: number;     // visual gap at arc ends
+  glow?: number;           // 0..4, glow strength
 }
 
 export const AtomicRing: React.FC<AtomicRingProps> = ({
@@ -15,24 +17,24 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
   rotation,
   duration,
   strokeWidth = 28,
-  isPaused = false
+  isPaused = false,
+  gapDegrees = 14,
+  glow = 2.2,
 }) => {
   const size = radius * 2;
-  const center = radius;
-  const arcRadius = radius - strokeWidth / 2;
+  const c = radius;
+  const r = Math.max(1, radius - strokeWidth / 2);
 
-  // Create a 180-degree half-circle arc path (right-side)
-  const createArcPath = () => {
-    const startAngle = -90;
-    const endAngle = 90; // 180 degrees for half-circle
-    const startX = center + arcRadius * Math.cos((startAngle * Math.PI) / 180);
-    const startY = center + arcRadius * Math.sin((startAngle * Math.PI) / 180);
-    const endX = center + arcRadius * Math.cos((endAngle * Math.PI) / 180);
-    const endY = center + arcRadius * Math.sin((endAngle * Math.PI) / 180);
-
-    return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
-  };
-
+  // top half-arc with a little gap at each end
+  const d = useMemo(() => {
+    const start = (-90 + gapDegrees / 2) * (Math.PI / 180);
+    const end   = ( 90 - gapDegrees / 2) * (Math.PI / 180);
+    const sx = c + r * Math.cos(start);
+    const sy = c + r * Math.sin(start);
+    const ex = c + r * Math.cos(end);
+    const ey = c + r * Math.sin(end);
+    return `M ${sx} ${sy} A ${r} ${r} 0 0 1 ${ex} ${ey}`;
+  }, [c, r, gapDegrees]);
 
   return (
     <div
@@ -41,7 +43,7 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
         width: size,
         height: size,
         left: `calc(50% - ${radius}px)`,
-        top: `calc(50% - ${radius}px)`,
+        top:  `calc(50% - ${radius}px)`,
         transformOrigin: "50% 50%",
         animation: `atomic-spin ${duration}s linear infinite`,
         animationPlayState: isPaused ? "paused" : "running",
@@ -50,28 +52,42 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
     >
       <svg width={size} height={size} className="absolute inset-0">
         <defs>
-          <linearGradient id="dark-red-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#7f1d1d" />
-            <stop offset="50%" stopColor="#991b1b" />
-            <stop offset="100%" stopColor="#b91c1c" />
+          {/* OUTER gradient: cyan -> teal -> magenta (like the screenshot) */}
+          <linearGradient id="ring-gradient-outer" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stopColor="#20E0D2" />
+            <stop offset="52%"  stopColor="#13C296" />
+            <stop offset="100%" stopColor="#FF3EA5" />
           </linearGradient>
-          <filter id={`glow-${radius}`}>
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge> 
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
+          {/* MIDDLE gradient: deep navy -> blue */}
+          <linearGradient id="ring-gradient-middle" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stopColor="#0B1E3A" />
+            <stop offset="100%" stopColor="#1B68FF" />
+          </linearGradient>
+          {/* INNER gradient: blue greenish cycle */}
+          <linearGradient id="ring-gradient-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stopColor="#1AD1B9" />
+            <stop offset="100%" stopColor="#19A0F5" />
+          </linearGradient>
+
+          <filter id={`ring-glow-${radius}`}>
+            <feGaussianBlur stdDeviation={glow} result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
+
         <path
-          d={createArcPath()}
+          d={d}
           fill="none"
           stroke={color}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          filter={`url(#glow-${radius})`}
+          filter={`url(#ring-glow-${radius})`}
         />
       </svg>
+
       <style>{`
         @keyframes atomic-spin {
           0%   { transform: rotate(${rotation}deg); }

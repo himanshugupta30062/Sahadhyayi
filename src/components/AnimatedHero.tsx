@@ -1,204 +1,121 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { BookOpen, MessageCircle, Users, TrendingUp } from "lucide-react";
 import { AtomicRing } from "./hero/AtomicRing";
 import { OrbitingAtom } from "./hero/OrbitingAtom";
 import { FloatingIcon } from "./hero/FloatingIcon";
 import { HeroContent } from "./hero/HeroContent";
 
-// Desktop configuration
+// desktop: radii, colors & weights tuned to the reference
 const DESKTOP_RING_CONFIG = {
-  outer: { radius: 340, color: "url(#dark-red-gradient)", rotation: 0, duration: 12 },
-  middle: { radius: 290, color: "#22c55e", rotation: 120, duration: 10 },
-  inner: { radius: 250, color: "#3b82f6", rotation: 240, duration: 8 },
+  outer:  { radius: 340, color: "url(#ring-gradient-outer)",  rotation: 0,   duration: 12, stroke: 34, glow: 2.8 },
+  middle: { radius: 290, color: "url(#ring-gradient-middle)", rotation: 120, duration: 10, stroke: 28, glow: 2.3 },
+  inner:  { radius: 250, color: "url(#ring-gradient-inner)",  rotation: 240, duration:  8, stroke: 26, glow: 2.0 },
 };
 
-const DESKTOP_ATOM_CONFIG = [
-  {
-    letter: "L",
-    label: "Library",
-    materialId: "library",
-    duration: 8, // Faster speed
-    initialAngle: 0,
-    size: 44,
-  },
-  {
-    letter: "A",
-    label: "Authors",
-    materialId: "author",
-    duration: 6, // Faster speed
-    initialAngle: 120,
-    size: 44,
-  },
-  {
-    letter: "S",
-    label: "Social Media",
-    materialId: "social",
-    duration: 5, // Fastest speed
-    initialAngle: 240,
-    size: 44,
-  },
+const DESKTOP_ATOMS = [
+  { letter: "L", label: "Library",      materialId: "library", initialAngle:  0,  size: 46 },
+  { letter: "A", label: "Authors",      materialId: "author",  initialAngle: 120, size: 46 },
+  { letter: "S", label: "Social Media", materialId: "social",  initialAngle: 240, size: 46 },
 ];
 
-const DESKTOP_FLOATING_ICONS = [
-  {
-    Icon: BookOpen,
-    position: { top: "12%", left: "12%" },
-    color: "text-cyan-400",
-    delay: 0,
-    size: 64,
-  },
-  {
-    Icon: MessageCircle,
-    position: { top: "12%", right: "12%" },
-    color: "text-pink-400",
-    delay: 1,
-    size: 64,
-  },
-  {
-    Icon: Users,
-    position: { bottom: "12%", left: "12%" },
-    color: "text-purple-400",
-    delay: 2,
-    size: 64,
-  },
-  {
-    Icon: TrendingUp,
-    position: { bottom: "12%", right: "12%" },
-    color: "text-emerald-400",
-    delay: 3,
-    size: 64,
-  },
+const DESKTOP_FLOATERS = [
+  { Icon: BookOpen,     position: { top: "12%",  left: "12%"  }, color: "text-cyan-400",   delay: 0, size: 64 },
+  { Icon: MessageCircle,position: { top: "12%",  right:"12%"  }, color: "text-pink-400",   delay: 1, size: 64 },
+  { Icon: Users,        position: { bottom:"12%",left: "12%"  }, color: "text-purple-400", delay: 2, size: 64 },
+  { Icon: TrendingUp,   position: { bottom:"12%",right:"12%"  }, color: "text-emerald-400",delay: 3, size: 64 },
 ];
 
-// Mobile configuration (adjusted to keep text clear of the rings)
+// mobile: smaller radii & thinner strokes, slower base rotation for elegance
 const MOBILE_RING_CONFIG = {
-  outer: { radius: 280, color: "url(#dark-red-gradient)", rotation: 0, duration: 24 },
-  middle: { radius: 230, color: "#22c55e", rotation: 120, duration: 20 },
-  inner: { radius: 180, color: "#3b82f6", rotation: 240, duration: 16 },
+  outer:  { radius: 280, color: "url(#ring-gradient-outer)",  rotation: 0,   duration: 24, stroke: 22, glow: 2.2 },
+  middle: { radius: 230, color: "url(#ring-gradient-middle)", rotation: 120, duration: 20, stroke: 18, glow: 2.0 },
+  inner:  { radius: 180, color: "url(#ring-gradient-inner)",  rotation: 240, duration: 16, stroke: 16, glow: 1.8 },
 };
-
-const MOBILE_ATOM_CONFIG = [
-  {
-    letter: "L",
-    label: "Library",
-    materialId: "library",
-    duration: 8, // Faster speed
-    initialAngle: 0,
-    size: 28,
-  },
-  {
-    letter: "A",
-    label: "Authors",
-    materialId: "author",
-    duration: 6, // Faster speed
-    initialAngle: 120,
-    size: 28,
-  },
-  {
-    letter: "S",
-    label: "Social Media",
-    materialId: "social",
-    duration: 5, // Fastest speed
-    initialAngle: 240,
-    size: 28,
-  },
+const MOBILE_ATOMS = [
+  { letter: "L", label: "Library",      materialId: "library", initialAngle:  0,  size: 32 },
+  { letter: "A", label: "Authors",      materialId: "author",  initialAngle: 120, size: 32 },
+  { letter: "S", label: "Social Media", materialId: "social",  initialAngle: 240, size: 32 },
 ];
-
-const MOBILE_FLOATING_ICONS = [
-  {
-    Icon: BookOpen,
-    position: { top: "6%", left: "6%" },
-    color: "text-cyan-400",
-    delay: 0,
-    size: 40,
-  },
-  {
-    Icon: MessageCircle,
-    position: { top: "6%", right: "6%" },
-    color: "text-pink-400",
-    delay: 1,
-    size: 40,
-  },
-  {
-    Icon: Users,
-    position: { bottom: "6%", left: "6%" },
-    color: "text-purple-400",
-    delay: 2,
-    size: 40,
-  },
-  {
-    Icon: TrendingUp,
-    position: { bottom: "6%", right: "6%" },
-    color: "text-emerald-400",
-    delay: 3,
-    size: 40,
-  },
+const MOBILE_FLOATERS = [
+  { Icon: BookOpen,     position: { top: "6%",  left: "6%"  },  color: "text-cyan-400",   delay: 0, size: 40 },
+  { Icon: MessageCircle,position: { top: "6%",  right:"6%"  },  color: "text-pink-400",   delay: 1, size: 40 },
+  { Icon: Users,        position: { bottom:"6%",left: "6%"  },  color: "text-purple-400", delay: 2, size: 40 },
+  { Icon: TrendingUp,   position: { bottom:"6%",right:"6%"  },  color: "text-emerald-400",delay: 3, size: 40 },
 ];
 
 const AnimatedHero: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
-  const ringConfig = isMobile ? MOBILE_RING_CONFIG : DESKTOP_RING_CONFIG;
-  const atomConfig = isMobile ? MOBILE_ATOM_CONFIG : DESKTOP_ATOM_CONFIG;
-  const floatingIcons = isMobile ? MOBILE_FLOATING_ICONS : DESKTOP_FLOATING_ICONS;
-  const ringStroke = isMobile ? 10 : 28; // Thinner rings for mobile
-  // Maintain consistent spacing between the inner ring and the central content mask
-  const maskSize = 2 * (ringConfig.inner.radius - ringStroke / 2 - 36);
-
   const [isAnyAtomHovered, setIsAnyAtomHovered] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [isTabHidden, setIsTabHidden] = useState(false);
-  const orbitRadii = {
-    L: ringConfig.outer.radius,
-    A: ringConfig.middle.radius,
-    S: ringConfig.inner.radius,
-  };
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize(); window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
-
-  // prefers-reduced-motion (optional)
   useEffect(() => {
-    if (typeof window === "undefined") return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const onChange = () => setIsReducedMotion(mq.matches);
-    onChange();
-    mq.addEventListener?.("change", onChange);
+    onChange(); mq.addEventListener?.("change", onChange);
     return () => mq.removeEventListener?.("change", onChange);
   }, []);
-
-  // pause when tab not visible (optional)
   useEffect(() => {
     const onVis = () => setIsTabHidden(document.hidden);
-    onVis();
-    document.addEventListener("visibilitychange", onVis);
+    onVis(); document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
+  const RC = isMobile ? MOBILE_RING_CONFIG : DESKTOP_RING_CONFIG;
+  const ATOMS = isMobile ? MOBILE_ATOMS : DESKTOP_ATOMS;
+  const FLOATERS = isMobile ? MOBILE_FLOATERS : DESKTOP_FLOATERS;
+
+  // keep text safely inside the inner ring
+  const maskSize = 2 * (RC.inner.radius - RC.inner.stroke / 2 - 36);
+
+  // speed sync: atoms traverse 180° while ring rotates 360°
   const durationFactor = isReducedMotion ? 1.3 : 1;
-  const ringSpeedBoost = 1.5;
+  const ringSpeedBoost = 1.35; // subtle nudge; atoms stay synced automatically
   const pausedRings = isTabHidden;
   const pausedAtoms = isAnyAtomHovered || isTabHidden;
 
+  const eff = (base: number) => Math.max(2, (base * durationFactor) / ringSpeedBoost);
+  const effOuter  = eff(RC.outer.duration);
+  const effMiddle = eff(RC.middle.duration);
+  const effInner  = eff(RC.inner.duration);
+
+  const orbitRadii: Record<string, number> = {
+    L: RC.outer.radius,
+    A: RC.middle.radius,
+    S: RC.inner.radius,
+  };
+  const ringKeyByAtom: Record<string, "outer" | "middle" | "inner"> = { L: "outer", A: "middle", S: "inner" };
+  const effByKey: Record<"outer"|"middle"|"inner", number> = {
+    outer: effOuter, middle: effMiddle, inner: effInner,
+  };
+
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
-      {/* Atomic Rings */}
-      {Object.values(ringConfig).map((ring, index) => (
+      {/* RINGS */}
+      {[
+        { cfg: RC.outer },
+        { cfg: RC.middle },
+        { cfg: RC.inner },
+      ].map(({ cfg }) => (
         <AtomicRing
-          key={index}
-          radius={ring.radius}
-          color={ring.color}
-          rotation={ring.rotation}
-          duration={Math.max(2, (ring.duration * durationFactor) / ringSpeedBoost)}
-          strokeWidth={ringStroke}
+          key={cfg.radius}
+          radius={cfg.radius}
+          color={cfg.color}
+          rotation={cfg.rotation}
+          duration={eff(cfg.duration)}
+          strokeWidth={cfg.stroke}
+          gapDegrees={12}
+          glow={cfg.glow}
           isPaused={pausedRings}
         />
       ))}
 
-      {/* Central mask to protect content */}
+      {/* CENTER MASK */}
       <div
         className="absolute rounded-full bg-black z-[2]"
         style={{
@@ -210,31 +127,32 @@ const AnimatedHero: React.FC = () => {
         }}
       />
 
-      {/* Orbiting Atoms */}
-      {atomConfig.map((atom) => (
-        <OrbitingAtom
-          key={atom.letter}
-          orbitRadius={orbitRadii[atom.letter]}
-          letter={atom.letter}
-          label={atom.label}
-          materialId={atom.materialId}
-          duration={atom.duration * durationFactor}
-          initialAngle={atom.initialAngle}
-          size={atom.size}
-          strokeWidth={ringStroke}
-          availableOrbits={Object.values(orbitRadii)}
-          orbitSwitchInterval={15000}
-          onHoverChange={setIsAnyAtomHovered}
-          onOrbitChange={(newOrbit) => {
-            // Handle orbit change if needed
-          }}
-        />
-      ))}
+      {/* ATOMS (locked to ring, synced) */}
+      {ATOMS.map((atom) => {
+        const key = ringKeyByAtom[atom.letter];
+        const atomDuration = Math.max(1, effByKey[key] / 2); // half of ring duration
+        const strokeForAlignment = Math.max(RC.outer.stroke, RC.middle.stroke, RC.inner.stroke);
+        return (
+          <OrbitingAtom
+            key={atom.letter}
+            orbitRadius={orbitRadii[atom.letter]}
+            letter={atom.letter}
+            label={atom.label}
+            materialId={atom.materialId}
+            duration={atomDuration}
+            initialAngle={atom.initialAngle}
+            size={atom.size}
+            strokeWidth={strokeForAlignment}
+            availableOrbits={[]} // keep fixed for premium, steady look
+            onHoverChange={setIsAnyAtomHovered}
+          />
+        );
+      })}
 
-      {/* Floating Icons */}
-      {floatingIcons.map((icon, index) => (
+      {/* FLOATING ICONS */}
+      {FLOATERS.map((icon, i) => (
         <FloatingIcon
-          key={index}
+          key={i}
           Icon={icon.Icon}
           position={icon.position}
           color={icon.color}
@@ -243,22 +161,17 @@ const AnimatedHero: React.FC = () => {
         />
       ))}
 
-      {/* Central Content */}
+      {/* CENTER CONTENT */}
       <HeroContent />
 
-      {/* Global animations */}
+      {/* GLOBAL STYLES */}
       <style>{`
-        .animate-gradient-shift {
-          background-size: 200% 200%;
-          animation: gradient-shift 3s ease infinite;
-        }
+        .animate-gradient-shift { background-size: 200% 200%; animation: gradient-shift 3s ease infinite; }
         @keyframes gradient-shift {
           0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
+          50%      { background-position: 100% 50%; }
         }
-        @media (max-width: 768px) {
-          .max-w-sm { max-width: 90vw; }
-        }
+        @media (max-width: 768px) { .max-w-sm { max-width: 90vw; } }
       `}</style>
     </div>
   );
