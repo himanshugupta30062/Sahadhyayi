@@ -21,6 +21,18 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
   const center = radius;
   const arcRadius = radius - strokeWidth / 2;
 
+  // Create a 180-degree half-circle arc path (right-side)
+  const createArcPath = () => {
+    const startAngle = -90;
+    const endAngle = 90; // 180 degrees for half-circle
+    const startX = center + arcRadius * Math.cos((startAngle * Math.PI) / 180);
+    const startY = center + arcRadius * Math.sin((startAngle * Math.PI) / 180);
+    const endX = center + arcRadius * Math.cos((endAngle * Math.PI) / 180);
+    const endY = center + arcRadius * Math.sin((endAngle * Math.PI) / 180);
+
+    return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
+  };
+
 
   return (
     <div
@@ -51,10 +63,8 @@ export const AtomicRing: React.FC<AtomicRingProps> = ({
             </feMerge>
           </filter>
         </defs>
-        <circle
-          cx={center}
-          cy={center}
-          r={arcRadius}
+        <path
+          d={createArcPath()}
           fill="none"
           stroke={color}
           strokeWidth={strokeWidth}

@@ -35,6 +35,16 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
   // Match the AtomicRing's ring radius with stroke compensation
   const pathRadius = orbitRadius - (strokeWidth ?? 28) / 2;
   const center = orbitRadius;
+
+  // Build the same 180° arc path as AtomicRing (right-side)
+  const startAngle = -90;
+  const endAngle = 90;
+  const startX = center + pathRadius * Math.cos((startAngle * Math.PI) / 180);
+  const startY = center + pathRadius * Math.sin((startAngle * Math.PI) / 180);
+  const endX = center + pathRadius * Math.cos((endAngle * Math.PI) / 180);
+  const endY = center + pathRadius * Math.sin((endAngle * Math.PI) / 180);
+  const arcPath = `path('M ${startX} ${startY} A ${pathRadius} ${pathRadius} 0 0 1 ${endX} ${endY}')`;
+
   const animationDelay = `-${(initialAngle / 360) * duration}s`;
   
   return (
@@ -51,7 +61,7 @@ export const OrbitingAtom: React.FC<OrbitingAtomProps> = ({
       <div
         className="absolute"
         style={{
-          offsetPath: `circle(${pathRadius}px at ${center}px ${center}px)`,
+          offsetPath: arcPath,
           offsetRotate: "0deg",
 
           animation: `orbit-move ${duration}s linear infinite`,
