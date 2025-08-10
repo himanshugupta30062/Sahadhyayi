@@ -2,7 +2,7 @@
 // Themes: outer=RED blend, middle=GREEN blend, inner=BLUE blend
 // Rings: single ~65% coloured arc each, rotating; thickness increases outward
 
-import React, { useEffect, useRef, useLayoutEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 // ---------- Geometry helpers ----------
 const toRadTop = (deg: number) => (deg - 90) * (Math.PI / 180); // 0° at top
@@ -52,7 +52,7 @@ export default function HeroAtomicRings() {
   const atomRefs = [useRef<SVGGElement|null>(null), useRef<SVGGElement|null>(null), useRef<SVGGElement|null>(null)];
 
   const ringAngles = useRef([0, 0, 0]);           // dynamic ring arc rotations
-  const atomAngles = useRef([ROTOR_START.outer, ROTOR_START.mid, ROTOR_START.inner]);       // dynamic atom angles
+  const atomAngles = useRef([0, 120, 240]);       // dynamic atom angles
   const atomRings  = useRef([0, 1, 2]);           // fixed ring per atom: 0=outer,1=mid,2=inner
 
   const radii   = [OUTER, MID, INNER];
@@ -61,7 +61,7 @@ export default function HeroAtomicRings() {
   const rotorDir   = [ROTOR_DIR.outer,   ROTOR_DIR.mid,   ROTOR_DIR.inner];
 
   // Initial placement so nothing looks frozen pre-RAF
-  useLayoutEffect(() => {
+  useEffect(() => {
     for (let i = 0; i < 3; i++) {
       const g = ringRefs[i].current;
       if (g) g.setAttribute("transform", `rotate(${ringAngles.current[i]} 0 0)`);
