@@ -32,9 +32,11 @@ const AnimatedHero: React.FC = () => {
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
-      {/* RINGS & ATOMS */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <HeroAtomicRings size={isMobile ? 360 : 720} />
+      {/* RINGS, ATOMS & CENTER CONTENT */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <HeroAtomicRings size={isMobile ? 360 : 720}>
+          <HeroContent />
+        </HeroAtomicRings>
       </div>
 
       {/* FLOATING ICONS */}
@@ -48,9 +50,6 @@ const AnimatedHero: React.FC = () => {
           size={icon.size}
         />
       ))}
-
-      {/* CENTER CONTENT */}
-      <HeroContent />
 
       {/* GLOBAL STYLES */}
       <style>{`
