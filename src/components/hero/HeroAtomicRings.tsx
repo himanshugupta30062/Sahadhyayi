@@ -34,9 +34,9 @@ interface HeroAtomicRingsProps {
 
 export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRingsProps) {
   // ===== Visual config =====
-  const INNER = 235;  // thinnest
+  const INNER = 225;  // thinnest
   const MID   = 255;  // medium
-  const OUTER = 275;  // thickest
+  const OUTER = 285;  // thickest
 
   const STROKES = { inner: 10, mid: 14, outer: 20 } as const; // thicker outward
 
@@ -46,11 +46,11 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
 
   // Rotating arc start angles + speeds
   const ROTOR_START = { outer: -18, mid: 12, inner: -36 } as const; // degrees
-  const ROTOR_DUR   = { outer: 22,  mid: 18, inner: 14 } as const;  // seconds per 360
+  const ROTOR_DUR   = { outer: 28,  mid: 24, inner: 20 } as const;  // seconds per 360
   const ROTOR_DIR   = { outer: 1,   mid: -1, inner: 1 } as const;   // +1 cw, -1 ccw
 
   // Atom motion — continuous path rotation
-  const ATOM_SPEED = 60;  // deg/sec (~6s per lap). Lower = slower, higher = faster
+  const ATOM_SPEED = 50;  // deg/sec (~7.2s per lap). Lower = slower, higher = faster
 
   // ---------- Refs ----------
   const ringRefs = [useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null)];
