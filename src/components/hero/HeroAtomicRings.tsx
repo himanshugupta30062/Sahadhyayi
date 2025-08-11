@@ -27,7 +27,11 @@ function inInterval(a: number, start: number, end: number) {
   return a >= start || a <= end; // wrapped
 }
 
-export default function HeroAtomicRings() {
+interface HeroAtomicRingsProps {
+  size?: number;
+}
+
+export default function HeroAtomicRings({ size = 720 }: HeroAtomicRingsProps) {
   // ===== Visual config =====
   const INNER = 235;  // thinnest
   const MID   = 255;  // medium
@@ -117,8 +121,16 @@ export default function HeroAtomicRings() {
   const COVER_SWEEP = (r: number, start: number) => arcPath(r, start, start + SWEEP_DEG);
 
   return (
-    <div className="relative flex items-center justify-center w-full">
-      <svg className="block" style={{ width: 720, height: 720 }} viewBox="-360 -360 720 720" aria-hidden>
+    <div
+      className="relative flex items-center justify-center w-full"
+      style={{ width: size, height: size }}
+    >
+      <svg
+        className="block"
+        style={{ width: "100%", height: "100%" }}
+        viewBox="-360 -360 720 720"
+        aria-hidden
+      >
         <defs>
           {/* atom glow */}
           <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
@@ -176,15 +188,39 @@ export default function HeroAtomicRings() {
         {/* ATOMS — rotate on path; snap to arc START if they hit blank */}
         <g ref={el => (atomRefs[0].current = el)}>
           <circle r={9} fill="#ef4444" filter="url(#soft)" />
-          <text y={4} textAnchor="middle" fontSize={10} fontWeight={700} fill="#ffffff">A</text>
+          <text
+            y={4}
+            textAnchor="middle"
+            fontSize={10}
+            fontWeight={700}
+            fill="#ffffff"
+          >
+            L
+          </text>
         </g>
         <g ref={el => (atomRefs[1].current = el)}>
           <circle r={8} fill="#22c55e" filter="url(#soft)" />
-          <text y={4} textAnchor="middle" fontSize={9} fontWeight={700} fill="#f8fafc">S</text>
+          <text
+            y={4}
+            textAnchor="middle"
+            fontSize={9}
+            fontWeight={700}
+            fill="#f8fafc"
+          >
+            A
+          </text>
         </g>
         <g ref={el => (atomRefs[2].current = el)}>
           <circle r={8} fill="#3b82f6" filter="url(#soft)" />
-          <text y={4} textAnchor="middle" fontSize={9} fontWeight={700} fill="#f8fafc">L</text>
+          <text
+            y={4}
+            textAnchor="middle"
+            fontSize={9}
+            fontWeight={700}
+            fill="#f8fafc"
+          >
+            S
+          </text>
         </g>
       </svg>
     </div>
