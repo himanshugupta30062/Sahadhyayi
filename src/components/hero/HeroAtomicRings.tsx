@@ -4,6 +4,138 @@
 
 import React, { useEffect, useRef, ReactNode } from "react";
 
+// Atom component with realistic styling
+interface AtomComponentProps {
+  atomRef: React.MutableRefObject<SVGGElement | null>;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  type: 'library' | 'authors' | 'social';
+  scale: number;
+  isMobile: boolean;
+  isSmallMobile: boolean;
+}
+
+const AtomComponent: React.FC<AtomComponentProps> = ({ 
+  atomRef, 
+  onMouseEnter, 
+  onMouseLeave, 
+  type, 
+  scale,
+  isMobile,
+  isSmallMobile
+}) => {
+  const atomConfigs = {
+    library: {
+      color: '#ef4444',
+      gradient: 'url(#g-library)',
+      letter: 'L',
+      label: 'Library',
+      shadowColor: '#ef4444'
+    },
+    authors: {
+      color: '#22c55e',
+      gradient: 'url(#g-authors)',
+      letter: 'A',
+      label: 'Authors',
+      shadowColor: '#22c55e'
+    },
+    social: {
+      color: '#3b82f6',
+      gradient: 'url(#g-social)',
+      letter: 'S',
+      label: 'Social Media',
+      shadowColor: '#3b82f6'
+    }
+  };
+
+  const config = atomConfigs[type];
+  const baseRadius = type === 'library' ? 18 : 16;
+  const radius = Math.max(8, Math.round(baseRadius * scale));
+  const fontSize = Math.max(8, Math.round(12 * scale));
+  const labelFontSize = Math.max(6, Math.round(8 * scale));
+
+  return (
+    <>
+      {/* Enhanced gradients for realistic atom appearance */}
+      <defs>
+        <radialGradient id={`g-${type}`} cx="0.3" cy="0.3" r="0.8">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.8)" />
+          <stop offset="30%" stopColor={config.color} />
+          <stop offset="70%" stopColor={config.color} />
+          <stop offset="100%" stopColor="rgba(0,0,0,0.3)" />
+        </radialGradient>
+        <filter id={`atom-glow-${type}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor={config.shadowColor} floodOpacity="0.5"/>
+          <feMerge> 
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      
+      <g
+        ref={el => (atomRef.current = el)}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        className="pointer-events-auto cursor-pointer transition-transform duration-300 hover:scale-110"
+      >
+        {/* Outer electron shell effect */}
+        <circle 
+          r={radius + 4} 
+          fill="none" 
+          stroke={config.color} 
+          strokeWidth={Math.max(1, scale * 0.5)}
+          opacity="0.3"
+          strokeDasharray="2,2"
+        />
+        
+        {/* Main atom body with realistic gradient */}
+        <circle 
+          r={radius} 
+          fill={config.gradient}
+          filter={`url(#atom-glow-${type})`}
+          className="transition-all duration-300"
+        />
+        
+        {/* Nucleus highlight */}
+        <circle 
+          r={radius * 0.3} 
+          fill="rgba(255,255,255,0.6)"
+          opacity="0.8"
+        />
+        
+        {/* Letter/Symbol */}
+        <text
+          y={fontSize * 0.4}
+          textAnchor="middle"
+          fontSize={fontSize}
+          fontWeight={700}
+          fill="#ffffff"
+          className="pointer-events-none select-none"
+          style={{ textShadow: `0 0 4px ${config.shadowColor}` }}
+        >
+          {config.letter}
+        </text>
+        
+        {/* Floating label - only show on larger screens */}
+        {!isSmallMobile && (
+          <text
+            y={radius + 15}
+            textAnchor="middle"
+            fontSize={labelFontSize}
+            fontWeight={600}
+            fill="rgba(255,255,255,0.9)"
+            className="pointer-events-none select-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          >
+            {config.label}
+          </text>
+        )}
+      </g>
+    </>
+  );
+};
+
 // ---------- Geometry helpers ----------
 const toRadTop = (deg: number) => (deg - 90) * (Math.PI / 180); // 0° at top
 const norm = (a: number) => ((a % 360) + 360) % 360;
@@ -30,15 +162,34 @@ function inInterval(a: number, start: number, end: number) {
 interface HeroAtomicRingsProps {
   size?: number;
   children?: ReactNode;
+  isMobile?: boolean;
+  isSmallMobile?: boolean;
 }
 
-export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRingsProps) {
-  // ===== Visual config =====
-  const INNER = 225;  // thinnest
-  const MID   = 255;  // medium
-  const OUTER = 285;  // thickest
+export default function HeroAtomicRings({ 
+  size = 720, 
+  children, 
+  isMobile = false, 
+  isSmallMobile = false 
+}: HeroAtomicRingsProps) {
+  // ===== Responsive Visual config =====
+  const scale = size / 720; // Scale factor based on size
+  
+  const INNER = Math.round(225 * scale);
+  const MID   = Math.round(255 * scale);
+  const OUTER = Math.round(285 * scale);
 
-  const STROKES = { inner: 10, mid: 14, outer: 20 } as const; // thicker outward
+  const baseStrokes = isSmallMobile 
+    ? { inner: 6, mid: 8, outer: 12 }
+    : isMobile 
+    ? { inner: 8, mid: 10, outer: 16 }
+    : { inner: 10, mid: 14, outer: 20 };
+  
+  const STROKES = {
+    inner: Math.round(baseStrokes.inner * scale),
+    mid: Math.round(baseStrokes.mid * scale),
+    outer: Math.round(baseStrokes.outer * scale)
+  } as const;
 
   // Coloured arc coverage: ~65% of circumference
   const COVERAGE = 0.65;                 // try 0.60–0.70
@@ -214,58 +365,34 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           </g>
         </g>
 
-        {/* ATOMS — rotate on path; snap to arc START if they hit blank */}
-        <g
-          ref={el => (atomRefs[0].current = el)}
+        {/* Enhanced atoms with realistic appearance and proper labels */}
+        <AtomComponent 
+          atomRef={atomRefs[0]}
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
-          className="pointer-events-auto cursor-pointer"
-        >
-          <circle r={16} fill="#ef4444" filter="url(#soft)" />
-          <text
-            y={6}
-            textAnchor="middle"
-            fontSize={12}
-            fontWeight={700}
-            fill="#ffffff"
-          >
-            L
-          </text>
-        </g>
-        <g
-          ref={el => (atomRefs[1].current = el)}
+          type="library"
+          scale={scale}
+          isMobile={isMobile}
+          isSmallMobile={isSmallMobile}
+        />
+        <AtomComponent 
+          atomRef={atomRefs[1]}
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
-          className="pointer-events-auto cursor-pointer"
-        >
-          <circle r={15} fill="#22c55e" filter="url(#soft)" />
-          <text
-            y={6}
-            textAnchor="middle"
-            fontSize={11}
-            fontWeight={700}
-            fill="#f8fafc"
-          >
-            A
-          </text>
-        </g>
-        <g
-          ref={el => (atomRefs[2].current = el)}
+          type="authors"
+          scale={scale}
+          isMobile={isMobile}
+          isSmallMobile={isSmallMobile}
+        />
+        <AtomComponent 
+          atomRef={atomRefs[2]}
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
-          className="pointer-events-auto cursor-pointer"
-        >
-          <circle r={15} fill="#3b82f6" filter="url(#soft)" />
-          <text
-            y={6}
-            textAnchor="middle"
-            fontSize={11}
-            fontWeight={700}
-            fill="#f8fafc"
-          >
-            S
-          </text>
-        </g>
+          type="social"
+          scale={scale}
+          isMobile={isMobile}
+          isSmallMobile={isSmallMobile}
+        />
       </svg>
       {children && (
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">

@@ -19,22 +19,47 @@ const MOBILE_FLOATERS = [
 ];
 
 const AnimatedHero: React.FC = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 768);
-    onResize();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    const updateScreenSize = () => {
+      setScreenSize({ 
+        width: window.innerWidth, 
+        height: window.innerHeight 
+      });
+    };
+    
+    updateScreenSize();
+    window.addEventListener("resize", updateScreenSize);
+    return () => window.removeEventListener("resize", updateScreenSize);
   }, []);
 
+  // Responsive sizing based on screen dimensions
+  const getResponsiveSize = () => {
+    const { width, height } = screenSize;
+    const minDimension = Math.min(width, height);
+    
+    if (width < 480) return Math.min(320, minDimension * 0.85); // Extra small phones
+    if (width < 768) return Math.min(400, minDimension * 0.9);  // Small phones
+    if (width < 1024) return Math.min(500, minDimension * 0.8); // Tablets
+    return Math.min(720, minDimension * 0.75); // Desktop
+  };
+
+  const isMobile = screenSize.width < 768;
+  const isSmallMobile = screenSize.width < 480;
+  const heroSize = getResponsiveSize();
+  
   const FLOATERS = isMobile ? MOBILE_FLOATERS : DESKTOP_FLOATERS;
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
       {/* RINGS, ATOMS & CENTER CONTENT */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <HeroAtomicRings size={isMobile ? 360 : 720}>
+        <HeroAtomicRings 
+          size={heroSize}
+          isMobile={isMobile}
+          isSmallMobile={isSmallMobile}
+        >
           <HeroContent />
         </HeroAtomicRings>
       </div>
