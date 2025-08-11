@@ -3,6 +3,7 @@ import { X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBookExpert } from '@/contexts/BookExpertContext';
 import { cn } from '@/lib/utils';
+import BookExpertIcon from './Sahadhyayi_Book.png';
 
 const BookExpert = () => {
   const { isOpen, toggleChat, closeChat, messages, sendMessage } = useBookExpert();
@@ -39,10 +40,10 @@ const BookExpert = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent" />
           <div className="relative flex items-center justify-center">
-            <img 
-              src="/lovable-uploads/b87b26d6-95c0-43ce-b6b8-40102e1a9b09.png" 
-              alt="AI Book Expert" 
-              className="h-8 w-8 filter invert brightness-0" 
+            <img
+              src={BookExpertIcon}
+              alt="Book Expert AI"
+              className="h-8 w-8 object-contain"
             />
           </div>
         </button>
@@ -57,10 +58,10 @@ const BookExpert = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
         <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-white/40 rounded-full"></div>
         <div className="relative flex items-center gap-2">
-          <img 
-            src="/lovable-uploads/b87b26d6-95c0-43ce-b6b8-40102e1a9b09.png" 
-            alt="AI Book Expert" 
-            className="h-6 w-6 filter invert brightness-0" 
+          <img
+            src={BookExpertIcon}
+            alt="Book Expert AI"
+            className="h-6 w-6 object-contain"
           />
           <span className="font-bold text-lg">AI Book Expert</span>
           <Sparkles className="h-4 w-4 animate-pulse" />
