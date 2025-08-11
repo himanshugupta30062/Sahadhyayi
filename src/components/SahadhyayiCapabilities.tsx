@@ -72,7 +72,8 @@ const SahadhyayiCapabilities: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 sm:mb-12">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-            Explore Sahadhyayi's <span className="text-teal-400">Capabilities</span>
+            Explore Sahadhyayi's{" "}
+            <span className="text-sky-400">Capabilities</span>
           </h2>
           <p className="text-lg sm:text-xl text-gray-300 max-w-4xl mx-auto">
             Discover how Sahadhyayi transforms reading into community, insight, and influence—bringing books, people, and ideas together in one intelligent ecosystem.
@@ -123,10 +124,13 @@ const SahadhyayiCapabilities: React.FC = () => {
                             <Icon className="w-8 h-8 text-white transition-colors" aria-hidden="true" />
                           </div>
 
-                          <h3 className="text-xl font-semibold mb-2">
+                          {/* Heading: white in normal state; blue tint on hover (kept same) */}
+                          <h3 className="text-xl font-semibold mb-2 text-white group-hover:text-blue-300 transition-colors duration-300">
                             {cap.title}
                           </h3>
-                          <p className="text-sm mb-3 text-gray-300 group-hover:text-white transition-colors">
+
+                          {/* Keep text gray in both states */}
+                          <p className="text-sm mb-3 text-gray-300">
                             {cap.tagline}
                           </p>
 
