@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Users, Mail, LogIn, Facebook } from "lucide-react";
+import { Users, Mail, LogIn, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -239,7 +239,7 @@ const GlobalFooter = () => {
           <p className="text-white text-sm">
             © 2024 Sahadhyayi. All rights reserved. Building a global reading community.
           </p>
-          <div className="flex space-x-4 mt-4 md:mt-0">
+          <div className="flex space-x-4 mt-4 md:mt-0 mr-24 md:mr-0">
             <a
               href="https://www.facebook.com/profile.php?id=61578920175928"
               target="_blank"
@@ -256,23 +256,23 @@ const GlobalFooter = () => {
               title="Twitter"
             >
               <span className="sr-only">Twitter</span>
-              🐦
+              <Twitter className="h-4 w-4" />
             </button>
-            <button 
+            <button
               onClick={() => handleSocialClick('Instagram')}
               className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="Instagram"
             >
               <span className="sr-only">Instagram</span>
-              📷
+              <Instagram className="h-4 w-4" />
             </button>
-            <button 
+            <button
               onClick={() => handleSocialClick('LinkedIn')}
               className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="LinkedIn"
             >
               <span className="sr-only">LinkedIn</span>
-              💼
+              <Linkedin className="h-4 w-4" />
             </button>
           </div>
         </div>
