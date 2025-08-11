@@ -34,14 +34,17 @@ const BookExpert = () => {
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={toggleChat}
-          className="relative group flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 text-white shadow-2xl hover:shadow-xl transition-all duration-500 hover:scale-105 w-16 h-16 rounded-full"
+          className={`relative group flex items-center justify-center bg-gradient-to-r ${colors[colorIndex]} text-white shadow-2xl hover:shadow-xl transition-all duration-500 hover:scale-105 w-16 h-16 overflow-hidden [clip-path:polygon(25%_6.7%,75%_6.7%,100%_50%,75%_93.3%,25%_93.3%,0%_50%)]`}
           aria-label="Open Book Expert"
         >
-          <img 
-            src="/lovable-uploads/b87b26d6-95c0-43ce-b6b8-40102e1a9b09.png" 
-            alt="AI Book Expert" 
-            className="h-10 w-10 filter invert brightness-0" 
-          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent" />
+          <div className="relative flex items-center justify-center">
+            <img 
+              src="/lovable-uploads/b87b26d6-95c0-43ce-b6b8-40102e1a9b09.png" 
+              alt="AI Book Expert" 
+              className="h-8 w-8 filter invert brightness-0" 
+            />
+          </div>
         </button>
       </div>
     );
