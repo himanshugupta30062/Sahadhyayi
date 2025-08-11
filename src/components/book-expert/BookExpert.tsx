@@ -3,7 +3,7 @@ import { X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBookExpert } from '@/contexts/BookExpertContext';
 import { cn } from '@/lib/utils';
-import BookExpertIcon from './Sahadhyayi_Book.png';
+import bookIcon from '@/components/book-expert/Sahadhyayi_Book.png';
 
 const BookExpert = () => {
   const { isOpen, toggleChat, closeChat, messages, sendMessage } = useBookExpert();
@@ -32,22 +32,26 @@ const BookExpert = () => {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50">
-        <button
-          onClick={toggleChat}
-          className={`relative group flex items-center justify-center bg-gradient-to-r ${colors[colorIndex]} text-white shadow-2xl hover:shadow-xl transition-all duration-500 hover:scale-105 w-16 h-16 overflow-hidden [clip-path:polygon(25%_6.7%,75%_6.7%,100%_50%,75%_93.3%,25%_93.3%,0%_50%)]`}
-          aria-label="Open Book Expert"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent" />
-          <div className="relative flex items-center justify-center">
-            <img
-              src={BookExpertIcon}
-              alt="Book Expert AI"
-              className="h-8 w-8 object-contain"
-            />
-          </div>
-        </button>
-      </div>
+      <button
+        onClick={toggleChat}
+        aria-label="Open Book Expert"
+        className="fixed bottom-6 right-6 z-50 focus:outline-none"
+      >
+        <img
+          src={bookIcon}
+          alt="Book Expert (AI)"
+          loading="eager"
+          decoding="async"
+          className="
+            w-20 h-20 md:w-24 md:h-24
+            rounded-full object-cover
+            shadow-lg ring-1 ring-white/10
+            hover:scale-105 active:scale-95 transition-transform
+            select-none pointer-events-auto
+          "
+          draggable={false}
+        />
+      </button>
     );
   }
 
@@ -59,7 +63,7 @@ const BookExpert = () => {
         <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-white/40 rounded-full"></div>
         <div className="relative flex items-center gap-2">
           <img
-            src={BookExpertIcon}
+            src={bookIcon}
             alt="Book Expert AI"
             className="h-6 w-6 object-contain"
           />
