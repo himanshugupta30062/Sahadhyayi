@@ -250,14 +250,16 @@ const GlobalFooter = () => {
               <span className="sr-only">Facebook</span>
               <Facebook className="h-4 w-4" />
             </a>
-            <button
-              onClick={() => handleSocialClick('Twitter')}
+            <a
+              href="https://x.com/Sahadhyayi"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="Twitter"
             >
               <span className="sr-only">Twitter</span>
               <Twitter className="h-4 w-4" />
-            </button>
+            </a>
             <button
               onClick={() => handleSocialClick('Instagram')}
               className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
