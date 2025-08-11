@@ -155,14 +155,15 @@ const capabilities: Capability[] = [
 const SahadhyayiCapabilities: React.FC = () => {
   const [windowCount, setWindowCount] = useState(3);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const [gap, setGap] = useState(1.5); // gap size in rems
+  const [isHoveredCarousel, setIsHoveredCarousel] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [gap, setGap] = useState(1.5); // rem
 
   const updateWindowCount = useCallback(() => {
-    const width = window.innerWidth;
+    const width = typeof window !== "undefined" ? window.innerWidth : 1280;
     if (width < 640) {
       setWindowCount(1);
-      setGap(1); // smaller gap on mobile
+      setGap(1);
     } else if (width < 1024) {
       setWindowCount(2);
       setGap(1.5);
@@ -180,13 +181,18 @@ const SahadhyayiCapabilities: React.FC = () => {
 
   const maxStart = capabilities.length - windowCount;
 
+  // autoplay – still rotates, but we ONLY highlight on hover/focus
   useEffect(() => {
-    if (isHovered) return;
-    const interval = setInterval(() => {
+    if (isHoveredCarousel) return;
+    const id = setInterval(() => {
       setCurrentIndex((prev) => (prev >= maxStart ? 0 : prev + 1));
     }, 4000);
-    return () => clearInterval(interval);
-  }, [isHovered, maxStart]);
+    return () => clearInterval(id);
+  }, [isHoveredCarousel, maxStart]);
+
+  useEffect(() => {
+    setCurrentIndex((prev) => Math.min(prev, maxStart));
+  }, [maxStart]);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -204,11 +210,7 @@ const SahadhyayiCapabilities: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
-  useEffect(() => {
-    setCurrentIndex((prev) => Math.min(prev, maxStart));
-  }, [maxStart]);
-
-  const centerIndex = currentIndex + Math.floor(windowCount / 2);
+  const translate = `translateX(calc(-${(currentIndex * 100) / windowCount}% - ${currentIndex * gap}rem))`;
 
   return (
     <section
@@ -220,7 +222,7 @@ const SahadhyayiCapabilities: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-            Explore Sahadhyayi's <span className="text-teal-400">Capabilities</span>
+            Explore Sahadhyayi&apos;s <span className="text-teal-400">Capabilities</span>
           </h2>
           <p className="text-lg sm:text-xl text-gray-300 max-w-4xl mx-auto">
             Discover how Sahadhyayi transforms reading into community, insight, and influence—bringing books, people, and ideas together in one intelligent ecosystem.
@@ -230,17 +232,18 @@ const SahadhyayiCapabilities: React.FC = () => {
         {/* Carousel */}
         <div
           className="relative"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          onMouseEnter={() => setIsHoveredCarousel(true)}
+          onMouseLeave={() => { setIsHoveredCarousel(false); setHoveredIndex(null); }}
         >
           <div className="overflow-hidden">
             <div
               className="flex gap-4 sm:gap-6 transition-transform duration-700"
-              style={{ transform: `translateX(calc(-${(currentIndex * 100) / windowCount}% - ${currentIndex * gap}rem))` }}
+              style={{ transform: translate }}
             >
               {capabilities.map((capability, index) => {
                 const Icon = capability.icon;
-                const isCenter = index === centerIndex;
+                const isActive = hoveredIndex === index; // highlight ONLY on hover/focus
+
                 return (
                   <div
                     key={capability.id}
@@ -248,6 +251,10 @@ const SahadhyayiCapabilities: React.FC = () => {
                     className="flex-shrink-0"
                   >
                     <Card
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                      onFocus={() => setHoveredIndex(index)}
+                      onBlur={() => setHoveredIndex(null)}
                       onClick={() =>
                         setCurrentIndex(
                           Math.min(
@@ -256,51 +263,67 @@ const SahadhyayiCapabilities: React.FC = () => {
                           )
                         )
                       }
-                      className={`relative overflow-hidden transition-transform duration-500 cursor-pointer border rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-300 flex flex-col h-full ${
-                        isCenter
-                          ? "bg-gradient-to-br from-blue-600 to-teal-400 text-white scale-105 shadow-2xl border-transparent"
-                          : "bg-gray-900 text-gray-300 border-gray-700 hover:scale-105"
-                      }`}
+                      className={[
+                        "relative overflow-hidden cursor-pointer rounded-[20px] flex flex-col h-full",
+                        // UNIFORM BASE BORDER — single solid line (no double borders)
+                        "border-2 border-white/20",
+                        // motion & hover behaviors
+                        "transition-transform duration-500 ease-out will-change-transform",
+                        isActive
+                          ? [
+                              // rotate + accent ring + gradient only on hover/focus
+                              "hover:rotate-[1deg]",
+                              "ring-2 ring-white/60 ring-offset-0",
+                              "bg-gradient-to-br from-blue-600 to-teal-400 text-white",
+                              "scale-[1.02]",
+                            ].join(" ")
+                          : [
+                              // inactive state stays dark but keeps the SAME border width for uniform edges
+                              "bg-gray-900 text-gray-300 hover:border-white/40",
+                              "hover:rotate-[1deg] hover:scale-[1.01]",
+                            ].join(" "),
+                      ].join(" ")}
                       aria-label={capability.title}
                       tabIndex={0}
                     >
-                      <CardContent className="p-8 text-center flex flex-col h-full">
+                      <CardContent className="p-8 text-left flex flex-col h-full">
                         <div
-                          className={`w-16 h-16 mx-auto mb-5 rounded-lg flex items-center justify-center ${
-                            isCenter ? "bg-white/20" : "bg-teal-500/10"
+                          className={`w-16 h-16 mb-6 rounded-2xl flex items-center justify-center ${
+                            isActive ? "bg-white/20" : "bg-white/5"
                           }`}
                         >
                           <Icon
-                            className={`w-8 h-8 transition-colors ${
-                              isCenter ? "text-white" : "text-teal-300"
-                            }`}
+                            className={`w-8 h-8 ${isActive ? "text-white" : "text-teal-300"}`}
                             aria-hidden="true"
                           />
                         </div>
 
-                        <h3 className="text-xl font-semibold mb-2">
-                          {capability.title}
+                        <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight mb-3">
+                          {capability.title.toUpperCase()}
                         </h3>
                         <p
-                          className={`text-sm mb-3 ${
-                            isCenter ? "text-teal-100" : "text-gray-400"
+                          className={`text-sm sm:text-[15px] leading-relaxed mb-3 ${
+                            isActive ? "text-teal-100" : "text-gray-400"
                           }`}
                         >
                           {capability.tagline}
                         </p>
-                        <p className="text-sm leading-relaxed flex-grow min-h-[80px]">
+                        <p className="text-sm sm:text-[15px] leading-6 flex-grow">
                           {capability.detail}
                         </p>
 
-                        {isCenter ? (
-                          <div className="bg-white/10 border border-white/20 rounded-lg p-3 mt-4">
+                        {/* Only reveal the metric strip on hover/focus */}
+                        <div
+                          className={`mt-4 transition-opacity duration-300 ${
+                            isActive ? "opacity-100" : "opacity-0 pointer-events-none"
+                          }`}
+                        >
+                          <div className="bg-white/10 border border-white/20 rounded-xl p-3">
                             <p className="text-xs font-medium text-teal-100 flex items-center gap-2">
                               <span aria-hidden="true">📊</span> {capability.metric}
                             </p>
                           </div>
-                        ) : (
-                          <div aria-hidden="true" className="mt-4 invisible h-[48px]" />
-                        )}
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
@@ -309,8 +332,9 @@ const SahadhyayiCapabilities: React.FC = () => {
             </div>
           </div>
 
+          {/* Dots */}
           <div className="flex justify-center gap-3 mt-6" aria-label="Capability navigation">
-            {Array.from({ length: maxStart + 1 }).map((_, idx) => (
+            {Array.from({ length: capabilities.length - windowCount + 1 }).map((_, idx) => (
               <button
                 type="button"
                 key={idx}
@@ -331,3 +355,4 @@ const SahadhyayiCapabilities: React.FC = () => {
 };
 
 export default SahadhyayiCapabilities;
+
