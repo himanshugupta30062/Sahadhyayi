@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Users, Mail, LogIn } from "lucide-react";
+import { Users, Mail, LogIn, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -248,7 +248,7 @@ const GlobalFooter = () => {
               title="Facebook"
             >
               <span className="sr-only">Facebook</span>
-              📘
+              <Facebook className="h-4 w-4" />
             </a>
             <button
               onClick={() => handleSocialClick('Twitter')}
