@@ -32,13 +32,6 @@ const GlobalFooter = () => {
     window.location.href = 'mailto:gyan@sahadhyayi.com';
   };
 
-  const handleSocialClick = (platform: string) => {
-    toast({
-      title: `${platform} Coming Soon!`,
-      description: "We're working on our social media presence. Stay tuned!",
-    });
-  };
-
   const handleShowStats = () => {
     if (!showCount) {
       fetchStats();
@@ -270,14 +263,16 @@ const GlobalFooter = () => {
               <span className="sr-only">Instagram</span>
               <Instagram className="h-4 w-4" />
             </a>
-            <button
-              onClick={() => handleSocialClick('LinkedIn')}
+            <a
+              href="https://www.linkedin.com/company/sahadhyayi/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-white hover:text-white transition-colors p-2 hover:bg-orange-500 rounded"
               title="LinkedIn"
             >
               <span className="sr-only">LinkedIn</span>
               <Linkedin className="h-4 w-4" />
-            </button>
+            </a>
           </div>
         </div>
       </div>
