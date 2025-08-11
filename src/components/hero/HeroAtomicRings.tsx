@@ -46,11 +46,11 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
 
   // Rotating arc start angles + speeds
   const ROTOR_START = { outer: -18, mid: 12, inner: -36 } as const; // degrees
-  const ROTOR_DUR   = { outer: 28,  mid: 24, inner: 20 } as const;  // seconds per 360
+  const ROTOR_DUR   = { outer: 42,  mid: 36, inner: 30 } as const;  // slower: seconds per 360
   const ROTOR_DIR   = { outer: 1,   mid: -1, inner: 1 } as const;   // +1 cw, -1 ccw
 
   // Atom motion — continuous path rotation
-  const ATOM_SPEED = 50;  // deg/sec (~7.2s per lap). Lower = slower, higher = faster
+  const ATOM_SPEED = 30;  // deg/sec (~12s per lap). Lower = slower, higher = faster
 
   // ---------- Refs ----------
   const ringRefs = [useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null)];
@@ -229,7 +229,16 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
             fontWeight={700}
             fill="#ffffff"
           >
-            L
+            S
+          </text>
+          <text
+            y={30}
+            textAnchor="middle"
+            fontSize={10}
+            fontWeight={500}
+            fill="#f8fafc"
+          >
+            Social Media
           </text>
         </g>
         <g
@@ -248,6 +257,15 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           >
             A
           </text>
+          <text
+            y={28}
+            textAnchor="middle"
+            fontSize={9}
+            fontWeight={500}
+            fill="#f8fafc"
+          >
+            Authors
+          </text>
         </g>
         <g
           ref={el => (atomRefs[2].current = el)}
@@ -263,7 +281,16 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
             fontWeight={700}
             fill="#f8fafc"
           >
-            S
+            L
+          </text>
+          <text
+            y={28}
+            textAnchor="middle"
+            fontSize={9}
+            fontWeight={500}
+            fill="#f8fafc"
+          >
+            Library
           </text>
         </g>
       </svg>
