@@ -33,10 +33,10 @@ interface HeroAtomicRingsProps {
 }
 
 export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRingsProps) {
-  // ===== Visual config - Realistic atomic spacing =====
-  const INNER = 180;  // innermost orbit
-  const MID   = 240;  // middle orbit  
-  const OUTER = 320;  // outermost orbit
+  // ===== Visual config =====
+  const INNER = 225;  // thinnest
+  const MID   = 255;  // medium
+  const OUTER = 285;  // thickest
 
   const STROKES = { inner: 10, mid: 14, outer: 20 } as const; // thicker outward
 
@@ -178,37 +178,58 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           </linearGradient>
         </defs>
 
-        {/* Hidden orbital paths - atoms follow these invisible guides */}
-        <g style={{ opacity: 0 }}>
-          <circle r={OUTER} cx={0} cy={0} fill="none" stroke="transparent" strokeWidth={STROKES.outer} />
-          <circle r={MID} cx={0} cy={0} fill="none" stroke="transparent" strokeWidth={STROKES.mid} />
-          <circle r={INNER} cx={0} cy={0} fill="none" stroke="transparent" strokeWidth={STROKES.inner} />
+        {/* Outer ring */}
+        <g>
+          <circle r={OUTER} cx={0} cy={0} fill="none" stroke={`rgba(255,255,255,0.08)`} strokeWidth={STROKES.outer} />
+          <g ref={el => (ringRefs[0].current = el)}>
+            <path d={COVER_SWEEP(OUTER, ROTOR_START.outer)} fill="none" stroke="url(#g-outer)" strokeWidth={STROKES.outer} strokeLinecap="round" />
+          </g>
         </g>
 
-        {/* Realistic Atoms with proper labels */}
+        {/* Middle ring */}
+        <g>
+          <circle r={MID} cx={0} cy={0} fill="none" stroke={`rgba(255,255,255,0.08)`} strokeWidth={STROKES.mid} />
+          <g ref={el => (ringRefs[1].current = el)}>
+            <path
+              d={COVER_SWEEP(MID, ROTOR_START.mid)}
+              fill="none"
+              stroke="url(#g-mid)"
+              strokeWidth={STROKES.mid}
+              strokeLinecap="round"
+            />
+          </g>
+        </g>
+
+        {/* Inner ring */}
+        <g>
+          <circle r={INNER} cx={0} cy={0} fill="none" stroke={`rgba(255,255,255,0.10)`} strokeWidth={STROKES.inner} />
+          <g ref={el => (ringRefs[2].current = el)}>
+            <path
+              d={COVER_SWEEP(INNER, ROTOR_START.inner)}
+              fill="none"
+              stroke="url(#g-inner)"
+              strokeWidth={STROKES.inner}
+              strokeLinecap="round"
+            />
+          </g>
+        </g>
+
+        {/* ATOMS — rotate on path; snap to arc START if they hit blank */}
         <g
           ref={el => (atomRefs[0].current = el)}
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
           className="pointer-events-auto cursor-pointer"
         >
-          {/* Library Atom - Red gradient sphere */}
-          <defs>
-            <radialGradient id="library-atom">
-              <stop offset="20%" stopColor="#ff6b8a" />
-              <stop offset="80%" stopColor="#dc2626" />
-              <stop offset="100%" stopColor="#991b1b" />
-            </radialGradient>
-          </defs>
-          <circle r={18} fill="url(#library-atom)" filter="url(#soft)" 
-                  style={{ filter: "url(#soft) drop-shadow(0 0 12px rgba(220, 38, 38, 0.8))" }} />
-          <circle r={15} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-          <text y={7} textAnchor="middle" fontSize={14} fontWeight={800} fill="#ffffff" letterSpacing="0.5px">
+          <circle r={16} fill="#ef4444" filter="url(#soft)" />
+          <text
+            y={6}
+            textAnchor="middle"
+            fontSize={12}
+            fontWeight={700}
+            fill="#ffffff"
+          >
             L
-          </text>
-          <text y={32} textAnchor="middle" fontSize={10} fontWeight={600} fill="#ffffff" 
-                style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>
-            Library
           </text>
         </g>
         <g
@@ -217,23 +238,15 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           onMouseLeave={handleLeave}
           className="pointer-events-auto cursor-pointer"
         >
-          {/* Authors Atom - Green gradient sphere */}
-          <defs>
-            <radialGradient id="authors-atom">
-              <stop offset="20%" stopColor="#86efac" />
-              <stop offset="80%" stopColor="#22c55e" />
-              <stop offset="100%" stopColor="#16a34a" />
-            </radialGradient>
-          </defs>
-          <circle r={17} fill="url(#authors-atom)" filter="url(#soft)"
-                  style={{ filter: "url(#soft) drop-shadow(0 0 12px rgba(34, 197, 94, 0.8))" }} />
-          <circle r={14} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-          <text y={7} textAnchor="middle" fontSize={13} fontWeight={800} fill="#ffffff" letterSpacing="0.5px">
+          <circle r={15} fill="#22c55e" filter="url(#soft)" />
+          <text
+            y={6}
+            textAnchor="middle"
+            fontSize={11}
+            fontWeight={700}
+            fill="#f8fafc"
+          >
             A
-          </text>
-          <text y={30} textAnchor="middle" fontSize={10} fontWeight={600} fill="#ffffff"
-                style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>
-            Authors
           </text>
         </g>
         <g
@@ -242,23 +255,15 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           onMouseLeave={handleLeave}
           className="pointer-events-auto cursor-pointer"
         >
-          {/* Social Media Atom - Blue gradient sphere */}
-          <defs>
-            <radialGradient id="social-atom">
-              <stop offset="20%" stopColor="#93c5fd" />
-              <stop offset="80%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#1d4ed8" />
-            </radialGradient>
-          </defs>
-          <circle r={16} fill="url(#social-atom)" filter="url(#soft)"
-                  style={{ filter: "url(#soft) drop-shadow(0 0 12px rgba(59, 130, 246, 0.8))" }} />
-          <circle r={13} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-          <text y={6} textAnchor="middle" fontSize={12} fontWeight={800} fill="#ffffff" letterSpacing="0.5px">
+          <circle r={15} fill="#3b82f6" filter="url(#soft)" />
+          <text
+            y={6}
+            textAnchor="middle"
+            fontSize={11}
+            fontWeight={700}
+            fill="#f8fafc"
+          >
             S
-          </text>
-          <text y={28} textAnchor="middle" fontSize={9} fontWeight={600} fill="#ffffff"
-                style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>
-            Social Media
           </text>
         </g>
       </svg>
