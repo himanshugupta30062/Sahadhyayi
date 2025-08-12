@@ -45,31 +45,31 @@
 
     --radius: 0.5rem;
 
-    /* Enhanced color system for Sahadhyayi */
-    --sahadhyayi-orange: 25 95% 53%;
-    --sahadhyayi-orange-light: 25 100% 97%;
-    --sahadhyayi-amber: 45 93% 58%;
-    --sahadhyayi-amber-light: 48 100% 96%;
-    --sahadhyayi-warm: 222.2 84% 4.9%;
-    --sahadhyayi-warm-light: 210 40% 98%;
-    --brand-orange: 38 92% 50%;
+    /* Enhanced monochrome system for Sahadhyayi */
+    --sahadhyayi-orange: 0 0% 12%; /* deep gray */
+    --sahadhyayi-orange-light: 0 0% 96%; /* light gray */
+    --sahadhyayi-amber: 0 0% 28%; /* mid-dark gray */
+    --sahadhyayi-amber-light: 0 0% 92%; /* pale gray */
+    --sahadhyayi-warm: 0 0% 7%;
+    --sahadhyayi-warm-light: 0 0% 98%;
+    --brand-orange: 0 0% 20%;
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--sahadhyayi-orange)), hsl(var(--sahadhyayi-amber)));
-    --gradient-warm: linear-gradient(135deg, hsl(var(--sahadhyayi-amber-light)), hsl(var(--sahadhyayi-orange-light)));
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 12%), hsl(0 0% 28%));
+    --gradient-warm: linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 92%));
     
     /* Shadows */
-    --shadow-warm: 0 4px 12px hsl(var(--sahadhyayi-orange) / 0.15);
-    --shadow-soft: 0 2px 8px hsl(var(--border) / 0.1);
+    --shadow-warm: 0 4px 12px hsl(0 0% 0% / 0.2);
+    --shadow-soft: 0 2px 8px hsl(var(--border) / 0.15);
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 222.2 84% 4.9%;
-    --sidebar-primary: 222.2 47.4% 11.2%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 222.2 84% 4.9%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 0 0% 12%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 7%;
     --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 25 95% 53%;
+    --sidebar-ring: 0 0% 0%;
   }
 
   .dark {
@@ -249,8 +249,8 @@ a:focus-visible,
 
 /* Highlight style for search matches */
 mark.search-highlight {
-  background-color: hsl(var(--sahadhyayi-amber) / 0.3);
-  color: hsl(var(--sahadhyayi-warm));
+  background-color: hsl(var(--muted-foreground) / 0.15);
+  color: hsl(var(--foreground));
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   font-weight: 500;
@@ -258,11 +258,11 @@ mark.search-highlight {
 
 /* Better button states */
 .btn-primary {
-  @apply bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-200;
+  @apply bg-foreground text-background hover:opacity-90 shadow-lg hover:shadow-xl transition-all duration-200;
 }
 
 .btn-secondary {
-  @apply border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 bg-white transition-all duration-200;
+  @apply border-2 border-foreground/40 text-foreground hover:bg-foreground/5 hover:border-foreground/60 bg-background transition-all duration-200;
 }
 
 /* Loading states */

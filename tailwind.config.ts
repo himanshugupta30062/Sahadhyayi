@@ -55,12 +55,12 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
         // Sahadhyayi brand colors
-        'sahadhyayi-orange': 'hsl(25 95% 53%)',
-        'sahadhyayi-orange-light': 'hsl(25 100% 97%)',
-        'sahadhyayi-amber': 'hsl(45 93% 58%)',
-        'sahadhyayi-amber-light': 'hsl(48 100% 96%)',
-        'sahadhyayi-warm': 'hsl(222.2 84% 4.9%)',
-        'sahadhyayi-warm-light': 'hsl(210 40% 98%)',
+'sahadhyayi-orange': 'hsl(0 0% 12%)',
+'sahadhyayi-orange-light': 'hsl(0 0% 96%)',
+'sahadhyayi-amber': 'hsl(0 0% 28%)',
+'sahadhyayi-amber-light': 'hsl(0 0% 92%)',
+'sahadhyayi-warm': 'hsl(0 0% 7%)',
+'sahadhyayi-warm-light': 'hsl(0 0% 98%)',
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
