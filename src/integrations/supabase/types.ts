@@ -402,42 +402,51 @@ export type Database = {
       }
       book_ratings: {
         Row: {
+          book_id: string
+          created_at: string
           id: string
-          book_id: string | null
-          user_id: string | null
-          rating: number | null
-          created_at: string | null
+          rating: number
+          updated_at: string
+          user_id: string
         }
         Insert: {
+          book_id: string
+          created_at?: string
           id?: string
-          book_id?: string | null
-          user_id?: string | null
-          rating?: number | null
-          created_at?: string | null
+          rating: number
+          updated_at?: string
+          user_id: string
         }
         Update: {
+          book_id?: string
+          created_at?: string
           id?: string
-          book_id?: string | null
-          user_id?: string | null
-          rating?: number | null
-          created_at?: string | null
+          rating?: number
+          updated_at?: string
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "book_ratings_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_library"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "book_ratings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      book_ratings_agg: {
+        Row: {
+          avg_rating: number
+          book_id: string
+          rating_count: number
+          updated_at: string
+        }
+        Insert: {
+          avg_rating?: number
+          book_id: string
+          rating_count?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_rating?: number
+          book_id?: string
+          rating_count?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       book_summaries: {
         Row: {
@@ -2148,69 +2157,6 @@ export type Database = {
         }
         Relationships: []
       }
-      feedback: {
-        Row: {
-          id: string
-          name: string | null
-          email: string | null
-          type: string | null
-          subject: string | null
-          message: string | null
-          rating: number | null
-          responded: boolean | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name?: string | null
-          email?: string | null
-          type?: string | null
-          subject?: string | null
-          message?: string | null
-          rating?: number | null
-          responded?: boolean | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string | null
-          email?: string | null
-          type?: string | null
-          subject?: string | null
-          message?: string | null
-          rating?: number | null
-          responded?: boolean | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      content_reports: {
-        Row: {
-          id: string
-          reporter_id: string
-          content_id: string
-          content_type: string
-          reason: string | null
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          reporter_id: string
-          content_id: string
-          content_type: string
-          reason?: string | null
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          reporter_id?: string
-          content_id?: string
-          content_type?: string
-          reason?: string | null
-          created_at?: string | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -2298,6 +2244,10 @@ export type Database = {
               page?: string
               country_code?: string
             }
+        Returns: undefined
+      }
+      refresh_book_ratings_agg: {
+        Args: { target_book: string }
         Returns: undefined
       }
       update_author_book_counts: {
