@@ -194,6 +194,17 @@
     </header>
     <div id="root"></div>
     <script>
+      // Support GitHub Pages-style SPA redirects (?p=/path)
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('p');
+      if (p) {
+        try {
+          const target = decodeURIComponent(p);
+          history.replaceState(null, '', target);
+        } catch {}
+      }
+
+      // Legacy sessionStorage-based redirect support
       const redirectPath = sessionStorage.redirectPath;
       if (redirectPath) {
         sessionStorage.removeItem('redirectPath');

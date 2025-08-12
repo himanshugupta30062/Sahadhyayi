@@ -48,22 +48,18 @@
       }
     </style>
     <script>
-      function showFallback() {
-        const el = document.getElementById('fallback');
-        if (el) el.style.display = 'block';
-      }
-      // Preserve the requested path for client-side routing
-      try {
-        sessionStorage.redirectPath =
-          window.location.pathname + window.location.search + window.location.hash;
-        // Attempt to redirect to the SPA entry point
-        window.location.replace('/');
-        // If the redirect hasn't happened after a short delay, show the fallback
-        setTimeout(showFallback, 4000);
-      } catch (e) {
-        // If anything fails (e.g. sessionStorage unavailable), show the fallback immediately
-        showFallback();
-      }
+      (function () {
+        try {
+          var l = window.location;
+          var dest = '/' + '?p=' + encodeURIComponent(l.pathname + l.search + l.hash);
+          // Use replace so the 404 doesn't remain in history
+          l.replace(dest);
+        } catch (e) {
+          // If anything fails, show the fallback message
+          var el = document.getElementById('fallback');
+          if (el) el.style.display = 'block';
+        }
+      })();
     </script>
   </head>
 
