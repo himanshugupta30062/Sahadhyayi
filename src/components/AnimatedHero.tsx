@@ -34,7 +34,7 @@ const AnimatedHero: React.FC = () => {
     <div className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
       {/* RINGS, ATOMS & CENTER CONTENT */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <HeroAtomicRings size={isMobile ? 360 : 720}>
+        <HeroAtomicRings size={isMobile ? 320 : 720}>
           <HeroContent />
         </HeroAtomicRings>
       </div>

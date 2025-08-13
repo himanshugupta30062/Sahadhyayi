@@ -296,7 +296,7 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
       </svg>
       {children && (
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <div className="w-full max-w-[60%] pointer-events-auto">{children}</div>
+          <div className="w-full max-w-[55%] sm:max-w-[60%] pointer-events-auto">{children}</div>
         </div>
       )}
     </div>
