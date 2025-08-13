@@ -52,11 +52,7 @@ const ReaderMap = () => {
     const fetchReaders = async () => {
       if (!bookId) return;
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, location_lat, location_lng')
-        .eq('location_sharing', true)
-        .not('location_lat', 'is', null)
-        .not('location_lng', 'is', null);
+        .rpc('get_friend_locations');
       
       if (error) {
         console.error('Error fetching readers', error);

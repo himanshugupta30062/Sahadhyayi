@@ -176,24 +176,9 @@ export const ReadersNearMeMap: React.FC = () => {
     if (!userLocation || !selectedBook || !user) return;
 
     try {
-      // Fetch users reading the same book with location data
+      // Fetch location data for friends only - sensitive location data now restricted
       const { data: readersData, error } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          full_name,
-          profile_photo_url,
-          location_lat,
-          location_lng,
-          user_bookshelf!inner(book_id, status),
-          user_avatars(avatar_img_url)
-        `)
-        .eq('user_bookshelf.book_id', selectedBook.id)
-        .in('user_bookshelf.status', ['reading', 'want_to_read'])
-        .eq('location_sharing', true)
-        .not('location_lat', 'is', null)
-        .not('location_lng', 'is', null)
-        .neq('id', user.id);
+        .rpc('get_friend_locations');
 
       if (error) {
         console.error('Error fetching nearby readers:', error);

@@ -108,9 +108,9 @@ const MapPage = () => {
         let enrichedData: ReaderLocation[] = [];
         if (data && data.length > 0) {
           const userIds = data.map(d => d.user_id);
+          // Note: Profile access now requires proper authorization
           const { data: profilesData } = await supabase
-            .from('profiles')
-            .select('id, full_name, username')
+            .rpc('get_public_profiles_for_search', { search_term: '' })
             .in('id', userIds);
 
           enrichedData = data.map(reader => ({

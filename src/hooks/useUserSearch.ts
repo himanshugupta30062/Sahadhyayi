@@ -34,11 +34,8 @@ export const useUserSearch = (searchTerm: string) => {
       
       try {
         const { data, error } = await supabase
-          .from('profiles')
-          .select('id, full_name, username, profile_photo_url, bio')
-          .or(`full_name.ilike.%${debouncedSearchTerm}%,username.ilike.%${debouncedSearchTerm}%,bio.ilike.%${debouncedSearchTerm}%`)
-          .neq('id', user?.id || '')
-          .limit(20);
+          .rpc('get_public_profiles_for_search', { search_term: debouncedSearchTerm })
+          .neq('id', user?.id || '');
         
         if (error) {
           console.error('User search API error:', error);
@@ -95,8 +92,7 @@ export const useAllUsers = () => {
         const excludeIds = [...friendIds, ...pendingIds, user?.id || ''];
 
         const { data, error } = await supabase
-          .from('profiles')
-          .select('id, full_name, username, profile_photo_url, bio')
+          .rpc('get_public_profiles_for_search', { search_term: '' })
           .not('id', 'in', `(${excludeIds.map(id => `"${id}"`).join(',')})`)
           .limit(50);
         

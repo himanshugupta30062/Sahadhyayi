@@ -2205,6 +2205,25 @@ export type Database = {
           actual_books_count: number
         }[]
       }
+      get_friend_locations: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          full_name: string
+          location_lat: number
+          location_lng: number
+        }[]
+      }
+      get_public_profiles_for_search: {
+        Args: { search_term?: string }
+        Returns: {
+          id: string
+          username: string
+          full_name: string
+          bio: string
+          profile_photo_url: string
+        }[]
+      }
       get_user_bookshelf_stats: {
         Args: { user_uuid: string }
         Returns: {
