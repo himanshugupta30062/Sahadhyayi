@@ -34,13 +34,12 @@ const SahadhyayiCapabilities: React.FC = () => {
   const [windowCount, setWindowCount] = useState(3);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-  const [gap, setGap] = useState(1.5);
 
   const updateWindowCount = useCallback(() => {
     const w = window.innerWidth;
-    if (w < 640) { setWindowCount(1); setGap(1); }
-    else if (w < 1024) { setWindowCount(2); setGap(1.5); }
-    else { setWindowCount(3); setGap(1.5); }
+    if (w < 640) setWindowCount(1);
+    else if (w < 1024) setWindowCount(2);
+    else setWindowCount(3);
   }, []);
 
   useEffect(() => {
@@ -88,9 +87,9 @@ const SahadhyayiCapabilities: React.FC = () => {
           {/* Ensure cards stay within the page bounds */}
           <div className="overflow-hidden">
             <div
-              className="flex items-stretch gap-4 sm:gap-6 transition-transform duration-700 will-change-transform"
+              className="flex items-stretch -mx-2 sm:-mx-3 transition-transform duration-700 will-change-transform"
               style={{
-                transform: `translateX(calc(-${(currentIndex * 100) / windowCount}% - ${currentIndex * gap}rem))`,
+                transform: `translateX(-${(currentIndex * 100) / windowCount}%)`,
               }}
             >
               {capabilities.map((cap) => {
@@ -99,7 +98,7 @@ const SahadhyayiCapabilities: React.FC = () => {
                   <div
                     key={cap.id}
                     style={{ flex: `0 0 ${100 / windowCount}%` }}
-                    className="flex-shrink-0 px-0.5"
+                    className="flex-shrink-0 px-2 sm:px-3"
                   >
                     <div className="group relative h-full">
                       {/* Card: neutral black with thick single border */}
