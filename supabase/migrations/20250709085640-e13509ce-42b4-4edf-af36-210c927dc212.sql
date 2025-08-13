@@ -19,7 +19,6 @@ RETURNS TABLE (
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = 'public, pg_catalog'
 AS $$
 BEGIN
   RETURN QUERY

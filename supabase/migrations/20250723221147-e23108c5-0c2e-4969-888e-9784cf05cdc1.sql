@@ -154,8 +154,7 @@ BEGIN
   
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = 'public, pg_catalog';
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to notify followers when author creates an event
 CREATE OR REPLACE FUNCTION public.notify_followers_on_event()
@@ -177,8 +176,7 @@ BEGIN
   
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = 'public, pg_catalog';
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create triggers for notifications
 CREATE TRIGGER notify_followers_on_qa_answer_trigger

@@ -45,7 +45,8 @@ policies:
 1. `public.profiles` – users can insert their own profile.
 2. `public.books` – authenticated users can insert, update and delete their own
    books while anyone can read them.
-3. `public.contact_messages` – only authenticated users can `SELECT` messages.
+3. `public.contact_messages` – only admins can `SELECT` messages. Admin status is
+   determined by the `public.is_admin()` function added in the migration.
 4. `public.groups` – authenticated users can manage groups they created.
 5. `public.group_members` – users can update their own membership rows.
 6. `public.user_books` – users can update their own reading status.

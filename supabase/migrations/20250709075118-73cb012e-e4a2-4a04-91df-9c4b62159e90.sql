@@ -47,8 +47,7 @@ BEGIN
   ),
   updated_at = NOW();
 END;
-$$ LANGUAGE plpgsql
-  SET search_path = 'public, pg_catalog';
+$$ LANGUAGE plpgsql;
 
 -- Execute the function to update book counts
 SELECT update_author_book_counts();

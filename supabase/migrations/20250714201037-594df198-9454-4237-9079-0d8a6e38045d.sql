@@ -195,8 +195,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = 'public, pg_catalog';
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger for friend request acceptance
 DROP TRIGGER IF EXISTS trigger_friend_request_acceptance ON friend_requests;

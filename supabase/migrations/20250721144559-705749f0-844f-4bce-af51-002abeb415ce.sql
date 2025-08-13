@@ -69,8 +69,7 @@ BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql
-  SET search_path = 'public, pg_catalog';
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER avatar_updated_at_trigger
   BEFORE UPDATE ON public.user_avatars
@@ -83,8 +82,7 @@ BEGIN
   NEW.last_updated = now();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql
-  SET search_path = 'public, pg_catalog';
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER location_updated_trigger
   BEFORE UPDATE ON public.user_locations

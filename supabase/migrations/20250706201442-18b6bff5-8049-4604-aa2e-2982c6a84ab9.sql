@@ -24,7 +24,6 @@ CREATE OR REPLACE FUNCTION cleanup_unused_books()
 RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = 'public, pg_catalog'
 AS $$
 DECLARE
     deleted_count integer := 0;
