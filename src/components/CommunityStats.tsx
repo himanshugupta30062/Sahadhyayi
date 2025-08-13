@@ -31,61 +31,109 @@ const CommunityStats = () => {
     },
   });
 
-  const fetchCommunityStats = async () => {
+  const getCommunityUserCount = async () => {
     try {
       setStats(prev => ({
         ...prev,
-        loading: { members: true, visitors: true },
-        errors: { members: null, visitors: null },
+        loading: { ...prev.loading, members: true },
+        errors: { ...prev.errors, members: null },
       }));
 
-      const { data, error } = await supabase.functions.invoke('community-stats');
+      // Get count of registered users from profiles table
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
       if (error) {
-        console.error('Error fetching community stats:', error);
+        console.error('Error fetching user count:', error);
         throw error;
       }
 
       setStats(prev => ({
         ...prev,
-        registeredMembers: data?.totalSignups || 0,
-        totalVisitors: data?.totalVisits || 0,
-        loading: { members: false, visitors: false },
+        registeredMembers: count || 0,
+        loading: { ...prev.loading, members: false },
       }));
     } catch (error) {
-      console.error('Error fetching community stats:', error);
+      console.error('Error fetching user count:', error);
       setStats(prev => ({
         ...prev,
-        registeredMembers: 0,
-        totalVisitors: 0,
-        loading: { members: false, visitors: false },
-        errors: {
-          members: 'Unable to load member count',
-          visitors: 'Unable to load visit data',
-        },
+        registeredMembers: 0, // Fallback to 0
+        loading: { ...prev.loading, members: false },
+        errors: { ...prev.errors, members: 'Unable to load member count' },
+      }));
+    }
+  };
+
+  const getTotalPageViews = async () => {
+    try {
+      setStats(prev => ({
+        ...prev,
+        loading: { ...prev.loading, visitors: true },
+        errors: { ...prev.errors, visitors: null },
+      }));
+
+      // Try the RPC function first
+      const { data, error } = await supabase.rpc('get_website_visit_count');
+
+      if (error) {
+        console.error('RPC function error:', error);
+        // Fallback to direct table query
+        const { count: fallbackCount, error: fallbackError } = await supabase
+          .from('website_visits')
+          .select('*', { count: 'exact', head: true });
+
+        if (fallbackError) {
+          console.error('Fallback query error:', fallbackError);
+          throw fallbackError;
+        }
+
+        setStats(prev => ({
+          ...prev,
+          totalVisitors: fallbackCount || 0,
+          loading: { ...prev.loading, visitors: false },
+        }));
+        return;
+      }
+
+      setStats(prev => ({
+        ...prev,
+        totalVisitors: data || 0,
+        loading: { ...prev.loading, visitors: false },
+      }));
+    } catch (error) {
+      console.error('Error fetching page views:', error);
+      setStats(prev => ({
+        ...prev,
+        totalVisitors: 0, // Fallback to 0
+        loading: { ...prev.loading, visitors: false },
+        errors: { ...prev.errors, visitors: 'Unable to load visit data' },
       }));
     }
   };
 
   React.useEffect(() => {
-    fetchCommunityStats();
+    getCommunityUserCount();
+    getTotalPageViews();
 
-    // Set up real-time updates for user registrations and page visits
+    // Set up real-time updates for user registrations
     const profilesChannel = supabase
       .channel('profiles-changes')
-      .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'profiles' },
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'profiles' }, 
         () => {
-          fetchCommunityStats();
+          getCommunityUserCount();
         }
       )
       .subscribe();
 
+    // Set up real-time updates for page visits
     const visitsChannel = supabase
       .channel('visits-changes')
-      .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'website_visits' },
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'website_visits' }, 
         () => {
-          fetchCommunityStats();
+          getTotalPageViews();
         }
       )
       .subscribe();
@@ -97,7 +145,8 @@ const CommunityStats = () => {
   }, []);
 
   const handleRetry = () => {
-    fetchCommunityStats();
+    getCommunityUserCount();
+    getTotalPageViews();
   };
 
   return (

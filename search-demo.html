@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-82BF21X121"></script>
@@ -12,7 +12,7 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="dark">
   <title>Search Highlight Demo - Sahadhyayi</title>
   <meta name="description" content="Demo page showcasing search term highlighting within text for the Sahadhyayi platform." />
   <style>
@@ -21,15 +21,17 @@
       margin: 0;
       padding: 0;
       line-height: 1.6;
+      background: #000;
+      color: #fff;
     }
     .search-bar {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      background: #fff;
+      background: #000;
       padding: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(255,255,255,0.1);
       z-index: 1000;
       display: flex;
       gap: 4px;
@@ -38,26 +40,29 @@
       flex: 1;
       padding: 6px 8px;
       font-size: 1rem;
-      border: 1px solid #ccc;
+      border: 1px solid #555;
       border-radius: 4px;
+      background: #000;
+      color: #fff;
     }
     .search-bar button {
       padding: 6px 12px;
       font-size: 1rem;
       border: none;
-      background: #007BFF;
+      background: #333;
       color: #fff;
       border-radius: 4px;
       cursor: pointer;
     }
     .search-bar button:hover {
-      background: #0056b3;
+      background: #555;
     }
     .content {
       padding: 80px 20px 20px; /* space for fixed bar */
     }
     mark.search-highlight {
-      background: yellow;
+      background: #fff;
+      color: #000;
     }
   </style>
 </head>
