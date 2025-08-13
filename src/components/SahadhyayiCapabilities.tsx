@@ -65,7 +65,7 @@ const SahadhyayiCapabilities: React.FC = () => {
 
   return (
     <section
-      className="py-12 sm:py-16 px-4 bg-black text-white overflow-visible"
+      className="py-12 sm:py-16 px-4 bg-black text-white overflow-x-hidden"
       aria-label="Sahadhyayi capabilities carousel"
       role="region"
     >
@@ -85,8 +85,8 @@ const SahadhyayiCapabilities: React.FC = () => {
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          {/* keep borders visible; no clipping on hover */}
-          <div className="overflow-visible">
+          {/* Ensure cards stay within the page bounds */}
+          <div className="overflow-hidden">
             <div
               className="flex items-stretch gap-4 sm:gap-6 transition-transform duration-700 will-change-transform"
               style={{
