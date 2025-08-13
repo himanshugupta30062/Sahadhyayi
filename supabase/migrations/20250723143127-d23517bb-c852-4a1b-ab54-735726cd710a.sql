@@ -80,7 +80,8 @@ BEGIN
   END IF;
   RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+  SET search_path = 'public, pg_catalog';
 
 -- Trigger to automatically update follower counts
 CREATE TRIGGER author_follower_count_trigger
@@ -98,6 +99,7 @@ CREATE OR REPLACE FUNCTION notify_author_followers(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = 'public, pg_catalog'
 AS $$
 BEGIN
   INSERT INTO public.notifications (user_id, author_id, type, title, message)

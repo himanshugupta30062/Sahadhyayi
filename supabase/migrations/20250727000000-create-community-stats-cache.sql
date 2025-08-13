@@ -16,6 +16,7 @@ CREATE OR REPLACE FUNCTION public.refresh_community_stats_cache()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = 'public, pg_catalog'
 AS $$
 BEGIN
   UPDATE public.community_stats_cache

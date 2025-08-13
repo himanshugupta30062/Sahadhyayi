@@ -24,6 +24,7 @@ CREATE OR REPLACE FUNCTION get_website_visit_count()
 RETURNS bigint
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = 'public, pg_catalog'
 AS $$
 BEGIN
   RETURN (SELECT COUNT(*) FROM public.website_visits);
@@ -39,6 +40,7 @@ CREATE OR REPLACE FUNCTION record_website_visit(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = 'public, pg_catalog'
 AS $$
 BEGIN
   INSERT INTO public.website_visits (ip_address, user_agent, page_url)

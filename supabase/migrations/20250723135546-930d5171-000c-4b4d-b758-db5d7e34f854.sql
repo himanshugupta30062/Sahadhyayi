@@ -8,7 +8,8 @@ RETURNS TEXT AS $$
 BEGIN
   RETURN LOWER(TRIM(REGEXP_REPLACE(name, '[^a-zA-Z0-9\s]', '', 'g')));
 END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+$$ LANGUAGE plpgsql IMMUTABLE
+  SET search_path = 'public, pg_catalog';
 
 -- Step 3: Create function to link existing books to authors
 CREATE OR REPLACE FUNCTION link_books_to_authors()
@@ -58,7 +59,8 @@ BEGIN
   
   RETURN linked_count;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+  SET search_path = 'public, pg_catalog';
 
 -- Step 4: Execute the linking function
 SELECT link_books_to_authors();
@@ -84,6 +86,7 @@ RETURNS TABLE(
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = 'public, pg_catalog'
 AS $$
 BEGIN
   RETURN QUERY
@@ -140,7 +143,8 @@ BEGIN
     RETURN NEW;
   END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+  SET search_path = 'public, pg_catalog';
 
 -- Create trigger for automatic book count updates
 DROP TRIGGER IF EXISTS trigger_update_author_books_count ON public.books_library;

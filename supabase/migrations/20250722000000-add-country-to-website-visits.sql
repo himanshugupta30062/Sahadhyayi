@@ -12,6 +12,7 @@ CREATE OR REPLACE FUNCTION record_website_visit(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = 'public, pg_catalog'
 AS $$
 BEGIN
   INSERT INTO public.website_visits (ip_address, user_agent, page_url, country)

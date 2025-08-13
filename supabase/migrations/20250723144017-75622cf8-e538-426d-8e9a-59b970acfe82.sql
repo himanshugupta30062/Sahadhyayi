@@ -116,6 +116,7 @@ CREATE OR REPLACE FUNCTION notify_followers_on_post()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = 'public, pg_catalog'
 AS $$
 BEGIN
   -- Only notify on insert of published posts
