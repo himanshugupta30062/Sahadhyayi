@@ -62,21 +62,12 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     }
 
     try {
-      const { count: signups, error: signupError } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
-      if (signupError) throw signupError;
-
-      const { count: visits, error: visitError } = await supabase
-        .from('website_visits')
-        .select('*', { count: 'exact', head: true });
-
-      if (visitError) throw visitError;
+      const { data, error: funcError } = await supabase.functions.invoke('community-stats');
+      if (funcError) throw funcError;
 
       const updated = {
-        totalSignups: signups ?? 0,
-        totalVisits: visits ?? 0,
+        totalSignups: data?.totalSignups ?? 0,
+        totalVisits: data?.totalVisits ?? 0,
         lastUpdated: new Date().toISOString(),
       };
 
