@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -2169,47 +2169,47 @@ export type Database = {
       get_authors_data: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          name: string
           bio: string
-          profile_image_url: string
-          location: string
-          website_url: string
-          social_links: Json
-          genres: string[]
           books_count: number
-          followers_count: number
-          rating: number
-          upcoming_events: number
           created_at: string
+          followers_count: number
+          genres: string[]
+          id: string
+          location: string
+          name: string
+          profile_image_url: string
+          rating: number
+          social_links: Json
+          upcoming_events: number
           updated_at: string
+          website_url: string
         }[]
       }
       get_authors_with_books: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          name: string
-          bio: string
-          profile_image_url: string
-          location: string
-          website_url: string
-          social_links: Json
-          genres: string[]
-          books_count: number
-          followers_count: number
-          rating: number
-          upcoming_events: number
-          created_at: string
-          updated_at: string
           actual_books_count: number
+          bio: string
+          books_count: number
+          created_at: string
+          followers_count: number
+          genres: string[]
+          id: string
+          location: string
+          name: string
+          profile_image_url: string
+          rating: number
+          social_links: Json
+          upcoming_events: number
+          updated_at: string
+          website_url: string
         }[]
       }
       get_friend_locations: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
           full_name: string
+          id: string
           location_lat: number
           location_lng: number
         }[]
@@ -2217,19 +2217,19 @@ export type Database = {
       get_public_profiles_for_search: {
         Args: { search_term?: string }
         Returns: {
-          id: string
-          username: string
-          full_name: string
           bio: string
+          full_name: string
+          id: string
           profile_photo_url: string
+          username: string
         }[]
       }
       get_user_bookshelf_stats: {
         Args: { user_uuid: string }
         Returns: {
-          total_books: number
-          reading_books: number
           completed_books: number
+          reading_books: number
+          total_books: number
           want_to_read_books: number
         }[]
       }
@@ -2248,21 +2248,21 @@ export type Database = {
       notify_author_followers: {
         Args: {
           author_uuid: string
-          notification_type: string
-          notification_title: string
           notification_message: string
+          notification_title: string
+          notification_type: string
         }
         Returns: undefined
       }
       record_website_visit: {
         Args:
-          | { ip_addr?: string; user_agent_string?: string; page?: string }
           | {
-              ip_addr?: unknown
-              user_agent_string?: string
-              page?: string
               country_code?: string
+              ip_addr?: unknown
+              page?: string
+              user_agent_string?: string
             }
+          | { ip_addr?: string; page?: string; user_agent_string?: string }
         Returns: undefined
       }
       refresh_book_ratings_agg: {
