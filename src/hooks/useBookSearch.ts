@@ -57,29 +57,19 @@ export const useBookSearch = () => {
     setError(null);
 
     try {
-      console.log('🔍 Starting book search for:', searchTerm);
-      
       const { data, error: functionError } = await supabase.functions.invoke('search-books-preview', {
         body: { searchTerm: searchTerm.trim() }
       });
 
-      console.log('📡 Search response:', { data, functionError });
-
       if (functionError) {
-        throw new Error(`Function error: ${functionError.message}`);
-      }
-
-      if (!data) {
-        throw new Error('No data received from search function');
+        throw new Error(functionError.message);
       }
 
       const response = data as SearchResponse;
 
       if (response.success) {
-        console.log(`✅ Search successful: ${response.books?.length || 0} books found`);
-        
         // Convert preview books to include temporary ID for UI
-        const booksWithTempId = (response.books || []).map((book, index) => ({
+        const booksWithTempId = response.books.map((book, index) => ({
           ...book,
           id: `temp-${Date.now()}-${index}`,
           created_at: new Date().toISOString()
@@ -91,7 +81,7 @@ export const useBookSearch = () => {
         }
         return booksWithTempId;
       } else {
-        throw new Error(response.error || 'Search failed - no success flag');
+        throw new Error(response.error || 'Search failed');
       }
     } catch (err) {
       console.error('Book search error:', err);

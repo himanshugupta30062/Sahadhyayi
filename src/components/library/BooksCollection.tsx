@@ -85,93 +85,80 @@ const BooksCollection = ({
   const allGridRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = async (searchTerm: string) => {
-    console.log('🚀 Starting comprehensive book search for:', searchTerm);
+    const results = await searchBooks(searchTerm);
+    let external: ExternalBook[] = [];
+    let libgenBooks: LibgenBook[] = [];
     
-    try {
-      const results = await searchBooks(searchTerm);
-      console.log('📚 Internal search results:', results.length);
+    // Search external sources in parallel
+    const searchPromises = [];
+    
+    if (useExternalSources) {
+      // Search existing external sources
+      searchPromises.push(
+        searchExternalSources(searchTerm).catch(error => {
+          console.warn('External search failed:', error);
+          return [];
+        })
+      );
       
-      let external: ExternalBook[] = [];
-      let libgenBooks: LibgenBook[] = [];
-      
-      // Search external sources in parallel
-      const searchPromises = [];
-      
-      if (useExternalSources) {
-        // Search existing external sources
-        searchPromises.push(
-          searchExternalSources(searchTerm).catch(error => {
-            console.warn('External search failed:', error);
-            return [];
-          })
-        );
-        
-        // Search Libgen
-        searchPromises.push(
-          searchLibgen(searchTerm).then(response => {
-            if (response.success) {
-              return response.books;
-            }
-            console.warn('Libgen search failed:', response.error);
-            return [];
-          }).catch(error => {
-            console.warn('Libgen search error:', error);
-            return [];
-          })
-        );
+      // Search Libgen
+      searchPromises.push(
+        searchLibgen(searchTerm).then(response => {
+          if (response.success) {
+            return response.books;
+          }
+          console.warn('Libgen search failed:', response.error);
+          return [];
+        }).catch(error => {
+          console.warn('Libgen search error:', error);
+          return [];
+        })
+      );
+    }
+
+    if (searchPromises.length > 0) {
+      try {
+        const [externalResults, libgenResults] = await Promise.all(searchPromises);
+        external = externalResults || [];
+        libgenBooks = libgenResults || [];
+      } catch (error) {
+        console.warn('Parallel search failed:', error);
       }
+    }
 
-      if (searchPromises.length > 0) {
-        try {
-          const [externalResults, libgenResults] = await Promise.all(searchPromises);
-          external = externalResults || [];
-          libgenBooks = libgenResults || [];
-          console.log('🌐 External search results:', external.length, 'Libgen results:', libgenBooks.length);
-        } catch (error) {
-          console.warn('Parallel search failed:', error);
-        }
-      }
+    // Convert Libgen books to ExternalBook format for display
+    const libgenExternalBooks: ExternalBook[] = libgenBooks.map(book => ({
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      year: book.year || '',
+      language: '',
+      extension: book.format || '',
+      size: book.size || '',
+      md5: book.id,
+      downloadUrl: book.mirrorLink,
+      source: 'libgen' as any
+    }));
 
-      // Convert Libgen books to ExternalBook format for display
-      const libgenExternalBooks: ExternalBook[] = libgenBooks.map(book => ({
-        id: book.id,
-        title: book.title,
-        author: book.author,
-        year: book.year || '',
-        language: '',
-        extension: book.format || '',
-        size: book.size || '',
-        md5: book.id,
-        downloadUrl: book.mirrorLink,
-        source: 'libgen' as any
-      }));
+    // Combine all external sources
+    const allExternalBooks = [...external, ...libgenExternalBooks];
 
-      // Combine all external sources
-      const allExternalBooks = [...external, ...libgenExternalBooks];
+    // Filter out duplicates between internal and external results
+    const uniqueExternal = allExternalBooks.filter(ext => {
+      return !results.some(r => 
+        r.title.toLowerCase() === ext.title.toLowerCase() && 
+        r.author?.toLowerCase() === ext.author?.toLowerCase()
+      );
+    });
 
-      // Filter out duplicates between internal and external results
-      const uniqueExternal = allExternalBooks.filter(ext => {
-        return !results.some(r => 
-          r.title.toLowerCase() === ext.title.toLowerCase() && 
-          r.author?.toLowerCase() === ext.author?.toLowerCase()
-        );
-      });
-
-      console.log('📖 Total unique results:', results.length + uniqueExternal.length);
-
-      if ((results && results.length > 0) || uniqueExternal.length > 0) {
-        setFoundBooks(results);
-        setOpenAccessBooks(uniqueExternal);
-        setLastSearchTerm(searchTerm);
-        setShowSelectionModal(true);
-      } else {
-        // Show detailed error message if no results found
-        const errorMsg = searchError || 'No books found for your search. Try different keywords, check your spelling, or try a broader search term.';
-        alert(errorMsg);
-      }
-    } catch (error) {
-      console.error('❌ Search failed:', error);
-      alert('Search failed. Please try again or check your internet connection.');
+    if ((results && results.length > 0) || uniqueExternal.length > 0) {
+      setFoundBooks(results);
+      setOpenAccessBooks(uniqueExternal);
+      setLastSearchTerm(searchTerm);
+      setShowSelectionModal(true);
+    } else {
+      // Show message if no results found
+      alert('No books found for your search. Try different keywords or check your spelling.');
     }
   };
 
@@ -295,9 +282,9 @@ const BooksCollection = ({
               <Search className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Ultimate Book Finder - Fixed!</h3>
+              <h3 className="text-lg font-bold text-gray-900">Ultimate Book Finder</h3>
               <p className="text-sm text-gray-600 font-normal">
-                Search millions of books from 4 major sources instantly. Try searching for "Harry Potter" or "1984" to test!
+                Search millions of books from 4 major sources & choose which versions to add to your library
               </p>
             </div>
           </CardTitle>
