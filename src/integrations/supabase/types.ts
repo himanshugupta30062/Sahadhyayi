@@ -2205,6 +2205,16 @@ export type Database = {
           website_url: string
         }[]
       }
+      get_contact_messages_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+        }[]
+      }
       get_friend_locations: {
         Args: Record<PropertyKey, never>
         Returns: {

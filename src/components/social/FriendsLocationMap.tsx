@@ -27,7 +27,11 @@ export const FriendsLocationMap: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
 
-  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y';
+  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  
+  if (!GOOGLE_MAPS_API_KEY) {
+    console.warn('Google Maps API key not configured');
+  }
 
   // Load Google Maps
   useEffect(() => {

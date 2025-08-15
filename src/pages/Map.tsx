@@ -73,9 +73,11 @@ const MapPage = () => {
   const friends = friendsQuery.data || [];
   const friendsLoading = friendsQuery.isLoading;
 
-  const GOOGLE_MAPS_API_KEY =
-    (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ||
-    'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y';
+  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+  
+  if (!GOOGLE_MAPS_API_KEY) {
+    console.warn('Google Maps API key not configured');
+  }
 
   useEffect(() => {
     loadGoogleMaps(GOOGLE_MAPS_API_KEY)

@@ -39,9 +39,11 @@ export const ModernGoogleMap: React.FC = () => {
   const [currentBook, setCurrentBook] = useState('');
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
 
-  const GOOGLE_MAPS_API_KEY =
-    (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ||
-    'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y';
+  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+  
+  if (!GOOGLE_MAPS_API_KEY) {
+    console.warn('Google Maps API key not configured');
+  }
 
   // Load readers from Supabase with real-time updates
   useEffect(() => {

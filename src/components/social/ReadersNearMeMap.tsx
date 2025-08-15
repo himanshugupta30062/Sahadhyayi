@@ -53,7 +53,11 @@ export const ReadersNearMeMap: React.FC = () => {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedBook, setSelectedBook] = useState<BookOption | null>(null);
 
-  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y';
+  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  
+  if (!GOOGLE_MAPS_API_KEY) {
+    console.warn('Google Maps API key not configured');
+  }
   const MAX_DISTANCE_KM = 50;
 
   // Auto-load map and request location on component mount

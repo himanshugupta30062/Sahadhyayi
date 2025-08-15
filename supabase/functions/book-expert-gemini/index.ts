@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://rknxtatvlzunatpyqxro.supabase.co, https://www.sahadhyayi.com, https://sahadhyayi.com',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -14,18 +14,30 @@ serve(async (req) => {
   try {
     const { text } = await req.json();
 
-    if (!text || typeof text !== 'string') {
-      throw new Error('Text is required');
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      throw new Error('Valid text input is required');
     }
+    
+    if (text.length > 2000) {
+      throw new Error('Text input too long. Maximum 2000 characters allowed.');
+    }
+    
+    // Basic input sanitization
+    const sanitizedText = text.trim().replace(/[<>]/g, '');
 
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyDXZoJpWDcQwnHvUqAjHbqJ9Ky8SM-kr1w';
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    
+    if (!geminiApiKey) {
+      console.error('GEMINI_API_KEY environment variable not set');
+      throw new Error('API configuration error');
+    }
 
     const payload = {
       contents: [
         {
           parts: [
             {
-              text: `You are a helpful AI book expert for Sahadhyayi. Please provide concise, accurate responses related to books, reading, and literature. User question: ${text}`,
+              text: `You are a helpful AI book expert for Sahadhyayi. Please provide concise, accurate responses related to books, reading, and literature. User question: ${sanitizedText}`,
             },
           ],
         },
