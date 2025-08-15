@@ -70,7 +70,7 @@ const BookSearchBar: React.FC<BookSearchBarProps> = ({ onSearch, loading, onTogg
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input
           type="text"
-          placeholder="Search for any book by title, author, or keyword - we'll find it across 4 major sources!"
+          placeholder="Search for any book by title, author, or keyword (e.g., 'Harry Potter', 'Shakespeare', 'Python programming')"
           value={searchTerm}
           onChange={handleInputChange}
           className="pl-10 h-12 text-base"

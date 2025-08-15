@@ -162,7 +162,10 @@ const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], search
             Book Search Results - "{searchTerm}"
           </DialogTitle>
           <p className="text-muted-foreground">
-            Found {books.length} book{books.length !== 1 ? 's' : ''}. Preview and select books to add to the library.
+            Found {books.length + externalBooks.length} book{(books.length + externalBooks.length) !== 1 ? 's' : ''} from multiple sources. 
+            {books.length > 0 && ` ${books.length} from our library`}
+            {externalBooks.length > 0 && ` ${externalBooks.length} from external sources`}. 
+            Preview and select books to add to your library.
           </p>
         </DialogHeader>
 
