@@ -1238,6 +1238,30 @@ export type Database = {
         }
         Relationships: []
       }
+      location_sharing_consent: {
+        Row: {
+          consented_at: string | null
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          consented_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          consented_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string | null
@@ -2245,6 +2269,14 @@ export type Database = {
           location_lng: number
         }[]
       }
+      get_location_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_readers: number
+          countries_represented: number
+          total_sharing_users: number
+        }[]
+      }
       get_nearby_readers: {
         Args: { radius_km?: number }
         Returns: {
@@ -2306,6 +2338,10 @@ export type Database = {
           notification_title: string
           notification_type: string
         }
+        Returns: undefined
+      }
+      record_location_consent: {
+        Args: { ip_addr?: unknown; user_agent_string?: string }
         Returns: undefined
       }
       record_website_visit: {

@@ -244,6 +244,18 @@ export const FriendsLocationMap: React.FC = () => {
 
       let updateResult;
       
+      // Record location sharing consent first
+      const { error: consentError } = await supabase.rpc('record_location_consent', {
+        ip_addr: null,
+        user_agent_string: navigator.userAgent
+      });
+
+      if (consentError) {
+        console.error('Failed to record consent:', consentError);
+        toast.error('Failed to record location sharing consent');
+        return;
+      }
+
       if (existingProfile) {
         // Update existing profile
         updateResult = await supabase
@@ -251,7 +263,6 @@ export const FriendsLocationMap: React.FC = () => {
           .update({
             location_lat: position.lat,
             location_lng: position.lng,
-            location_sharing: true,
             last_seen: new Date().toISOString(),
           })
           .eq('id', user.id);
@@ -263,7 +274,6 @@ export const FriendsLocationMap: React.FC = () => {
             id: user.id,
             location_lat: position.lat,
             location_lng: position.lng,
-            location_sharing: true,
             last_seen: new Date().toISOString(),
             full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
           });

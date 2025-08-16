@@ -180,39 +180,33 @@ export const ReadersNearMeMap: React.FC = () => {
     if (!userLocation || !selectedBook || !user) return;
 
     try {
-      // Fetch location data for friends only - sensitive location data now restricted
+      // Use the new secure function that only returns friends' locations
       const { data: readersData, error } = await supabase
-        .rpc('get_friend_locations');
+        .rpc('get_nearby_readers', { radius_km: 10 });
 
       if (error) {
         console.error('Error fetching nearby readers:', error);
+        toast.error("Unable to find nearby readers. Make sure you have location sharing enabled and friends who also share their location.");
         return;
       }
 
       if (!readersData || readersData.length === 0) {
         setNearbyReaders([]);
+        toast.info("No friends are currently reading nearby. Invite friends to join and enable location sharing!");
         return;
       }
 
-      // Calculate distances and filter within radius
-      const readersWithDistance = readersData
-        .map((reader: any) => ({
-          id: reader.id,
-          full_name: reader.full_name,
-          profile_photo_url: reader.profile_photo_url,
-          location_lat: Number(reader.location_lat),
-          location_lng: Number(reader.location_lng),
-          distance: calculateDistance(
-            userLocation,
-            { lat: Number(reader.location_lat), lng: Number(reader.location_lng) }
-          ),
-          current_book_title: selectedBook.title,
-          avatar_img_url: reader.user_avatars?.[0]?.avatar_img_url,
-        }))
-        .filter((reader: NearbyReader) => reader.distance <= MAX_DISTANCE_KM)
-        .sort((a: NearbyReader, b: NearbyReader) => a.distance - b.distance);
-
-      setNearbyReaders(readersWithDistance);
+      // Use the secure data from the new function
+      setNearbyReaders(readersData.map((reader: any) => ({
+        id: reader.reader_id,
+        full_name: reader.reader_name,
+        profile_photo_url: null, // Don't expose profile photos in location context
+        location_lat: 0, // Don't expose exact coordinates to frontend 
+        location_lng: 0, // Don't expose exact coordinates to frontend
+        distance: reader.distance_km,
+        current_book_title: reader.book_title,
+        avatar_img_url: null, // Don't expose avatars in location context
+      })));
     } catch (error) {
       console.error('Error fetching nearby readers:', error);
     }
