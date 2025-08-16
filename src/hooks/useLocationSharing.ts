@@ -32,42 +32,23 @@ export const useLocationSharing = () => {
 
       const { latitude, longitude } = position.coords;
 
-      // Check if user already has location shared for this book
-      const { data: existingLocation } = await supabase
-        .from('user_books_location')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('book_id', bookId)
-        .maybeSingle();
+      // Use the new secure function that validates consent
+      const { data: locationId, error } = await supabase.rpc('share_book_location', {
+        book_uuid: bookId,
+        lat: latitude,
+        lng: longitude
+      });
 
-      if (existingLocation) {
-        // Update existing location
-        const { error } = await supabase
-          .from('user_books_location')
-          .update({
-            latitude,
-            longitude,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingLocation.id);
-
-        if (error) throw error;
-        toast.success('Location updated for this book!');
-      } else {
-        // Insert new location
-        const { error } = await supabase
-          .from('user_books_location')
-          .insert({
-            user_id: user.id,
-            book_id: bookId,
-            latitude,
-            longitude
-          });
-
-        if (error) throw error;
-        toast.success('Location shared for this book!');
+      if (error) {
+        if (error.message.includes('consent required')) {
+          toast.error('Location sharing consent required. Please enable location sharing in your settings.');
+        } else {
+          toast.error(`Failed to share location: ${error.message}`);
+        }
+        return false;
       }
 
+      toast.success('Location shared securely with friends!');
       return true;
     } catch (error: any) {
       console.error('Error sharing location:', error);

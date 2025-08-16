@@ -29,16 +29,20 @@ export const ShareLocationButton = ({
       }
 
       try {
-        const { data } = await supabase
-          .from('user_books_location')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('book_id', bookId)
-          .maybeSingle();
+        // Check if user has location sharing enabled using secure function
+        const { data: hasLocationSharing } = await supabase.rpc('user_has_location_sharing');
+        
+        if (!hasLocationSharing) {
+          setHasSharedLocation(false);
+          return;
+        }
 
-        setHasSharedLocation(!!data);
+        // For the UI state, we'll just check if they have location sharing enabled
+        // The actual location data is now secured and only visible to friends
+        setHasSharedLocation(hasLocationSharing);
       } catch (error) {
         console.error('Error checking location status:', error);
+        setHasSharedLocation(false);
       } finally {
         setIsChecking(false);
       }

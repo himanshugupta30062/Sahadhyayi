@@ -97,37 +97,41 @@ const MapPage = () => {
       setReadersLoading(true);
       setReadersError(null);
       try {
-        const { data, error } = await supabase
-          .from('user_books_location')
-          .select(`
-            latitude,
-            longitude,
-            user_id
-          `)
-          .eq('book_id', selectedBook.id);
+        // Use the new secure function to get nearby book readers
+        const { data, error } = await supabase.rpc('get_nearby_book_readers', {
+          book_uuid: selectedBook.id,
+          radius_km: 10
+        });
 
-        // Get profile data separately if we have readers
-        let enrichedData: ReaderLocation[] = [];
-        if (data && data.length > 0) {
-          const userIds = data.map(d => d.user_id);
-          // Note: Profile access now requires proper authorization
-          const { data: profilesData } = await supabase
-            .rpc('get_public_profiles_for_search', { search_term: '' })
-            .in('id', userIds);
-
-          enrichedData = data.map(reader => ({
-            ...reader,
-            profiles: profilesData?.find(profile => profile.id === reader.user_id) || null
-          }));
-        }
-        
         if (error) {
-          setReadersError(error.message);
+          console.error('Error fetching nearby readers:', error);
+          setReadersError('Unable to load nearby readers. Make sure you have location sharing enabled and are connected with friends.');
           setReaders([]);
-        } else {
-          setReaders(enrichedData);
+          return;
         }
+
+        if (!data || data.length === 0) {
+          setReaders([]);
+          setReadersError('No friends are currently reading this book nearby. Invite friends to join!');
+          return;
+        }
+
+        // Transform the secure data (no exact coordinates exposed to frontend)
+        const readerList = data.map((reader: any) => ({
+          user_id: reader.reader_id,
+          latitude: 0, // Don't expose exact coordinates for privacy
+          longitude: 0, // Don't expose exact coordinates for privacy
+          profiles: {
+            full_name: reader.reader_name,
+            username: reader.reader_name?.toLowerCase().replace(/\s+/g, '_')
+          },
+          distance: reader.distance_km,
+          reading_since: reader.reading_since
+        }));
+
+        setReaders(readerList);
       } catch (err) {
+        console.error('Error in fetchReaders:', err);
         setReadersError('Failed to fetch readers');
         setReaders([]);
       }

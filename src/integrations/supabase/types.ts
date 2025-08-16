@@ -2277,6 +2277,25 @@ export type Database = {
           total_sharing_users: number
         }[]
       }
+      get_location_usage_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_location_sharers: number
+          avg_locations_per_user: number
+          books_with_locations: number
+          total_book_locations: number
+        }[]
+      }
+      get_nearby_book_readers: {
+        Args: { book_uuid: string; radius_km?: number }
+        Returns: {
+          distance_km: number
+          is_friend: boolean
+          reader_id: string
+          reader_name: string
+          reading_since: string
+        }[]
+      }
       get_nearby_readers: {
         Args: { radius_km?: number }
         Returns: {
@@ -2359,9 +2378,17 @@ export type Database = {
         Args: { target_book: string }
         Returns: undefined
       }
+      share_book_location: {
+        Args: { book_uuid: string; lat: number; lng: number }
+        Returns: string
+      }
       update_author_book_counts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      user_has_location_sharing: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {
