@@ -2034,6 +2034,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_status: {
         Row: {
           is_online: boolean | null
@@ -2243,9 +2264,22 @@ export type Database = {
           want_to_read_books: number
         }[]
       }
+      get_visit_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_visits: number
+          unique_countries: number
+          visits_this_week: number
+          visits_today: number
+        }[]
+      }
       get_website_visit_count: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       link_books_to_authors: {
         Args: Record<PropertyKey, never>
