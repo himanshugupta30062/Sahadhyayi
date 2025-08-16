@@ -2245,6 +2245,16 @@ export type Database = {
           location_lng: number
         }[]
       }
+      get_nearby_readers: {
+        Args: { radius_km?: number }
+        Returns: {
+          book_title: string
+          distance_km: number
+          is_friend: boolean
+          reader_id: string
+          reader_name: string
+        }[]
+      }
       get_public_profiles_for_search: {
         Args: { search_term?: string }
         Returns: {
