@@ -2211,6 +2211,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      get_author_follower_count: {
+        Args: { author_uuid: string }
+        Returns: number
+      }
       get_authors_data: {
         Args: Record<PropertyKey, never>
         Returns: {
