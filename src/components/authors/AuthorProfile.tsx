@@ -12,6 +12,7 @@ import { ScheduleSessionDialog } from "./ScheduleSessionDialog";
 import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Author } from "@/hooks/useAuthors";
+import { useAuthorFollowerCount } from "@/hooks/useAuthorFollowerCount";
 
 interface AuthorProfileProps {
   author: Author & {
@@ -27,6 +28,7 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
   const [message, setMessage] = useState("");
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { data: followerCount = 0 } = useAuthorFollowerCount(author.id);
 
   const handleSendMessage = () => {
     toast({
@@ -64,7 +66,7 @@ const AuthorProfile = ({ author }: AuthorProfileProps) => {
           </div>
           <div className="flex items-center gap-2">
             <Users className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
-            <span className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'}`}>{author.followers_count.toLocaleString()}</span>
+            <span className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'}`}>{followerCount.toLocaleString()}</span>
           </div>
         </div>
       </CardHeader>

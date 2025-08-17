@@ -13,6 +13,7 @@ export const useAuthorFollow = (authorId?: string) => {
     queryFn: async () => {
       if (!user?.id || !authorId) return false;
       
+      // Use secure query that only returns user's own following relationships
       const { data, error } = await supabase
         .from('author_followers')
         .select('id')
@@ -93,6 +94,7 @@ export const useFollowedAuthors = () => {
     queryFn: async () => {
       if (!user?.id) return [];
       
+      // Get user's followed authors - this will work with the secure RLS policies
       const { data, error } = await supabase
         .from('author_followers')
         .select(`
@@ -103,8 +105,7 @@ export const useFollowedAuthors = () => {
             name,
             profile_image_url,
             bio,
-            books_count,
-            followers_count
+            books_count
           )
         `)
         .eq('user_id', user.id)
