@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { BookOpen, Download, Plus, Check, User } from 'lucide-react';
+import { BookOpen, Download, Plus, Check, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import OpenAccessBookCard from '@/components/books/OpenAccessBookCard';
 import LibgenBookCard from './LibgenBookCard';
 import type { ExternalBook } from '@/utils/searchExternalSources';
@@ -45,6 +45,15 @@ const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], search
   
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
   const [savedBookIds, setSavedBookIds] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const booksPerPage = 10;
+
+  const totalPages = Math.ceil(books.length / booksPerPage);
+  const paginatedBooks = useMemo(() => {
+    const startIndex = (currentPage - 1) * booksPerPage;
+    const endIndex = startIndex + booksPerPage;
+    return books.slice(startIndex, endIndex);
+  }, [books, currentPage, booksPerPage]);
 
   const handleBookSelection = (bookId: string, isSelected: boolean) => {
     const newSelection = new Set(selectedBooks);
@@ -57,6 +66,20 @@ const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], search
   };
 
   const handleSelectAll = () => {
+    if (selectedBooks.size === paginatedBooks.length) {
+      // Deselect all books on current page
+      const newSelection = new Set(selectedBooks);
+      paginatedBooks.forEach(book => newSelection.delete(book.id));
+      setSelectedBooks(newSelection);
+    } else {
+      // Select all books on current page
+      const newSelection = new Set(selectedBooks);
+      paginatedBooks.forEach(book => newSelection.add(book.id));
+      setSelectedBooks(newSelection);
+    }
+  };
+
+  const handleSelectAllBooks = () => {
     if (selectedBooks.size === books.length) {
       setSelectedBooks(new Set());
     } else {
@@ -147,6 +170,7 @@ const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], search
 
   const handleClose = () => {
     setSelectedBooks(new Set());
+    setCurrentPage(1);
     onClose();
   };
 
@@ -162,7 +186,11 @@ const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], search
             Book Search Results - "{searchTerm}"
           </DialogTitle>
           <p className="text-muted-foreground">
-            Found {books.length} book{books.length !== 1 ? 's' : ''}. Preview and select books to add to the library.
+            Found {books.length} book{books.length !== 1 ? 's' : ''} total. 
+            {books.length > booksPerPage && (
+              <span> Showing page {currentPage} of {totalPages} ({paginatedBooks.length} books on this page).</span>
+            )}
+            {" "}Preview and select books to add to the library.
           </p>
         </DialogHeader>
 
@@ -171,14 +199,26 @@ const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], search
           <div className="flex items-center gap-4">
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="select-all"
-                checked={selectedBooks.size === books.length && books.length > 0}
+                id="select-page"
+                checked={paginatedBooks.length > 0 && paginatedBooks.every(book => selectedBooks.has(book.id))}
                 onCheckedChange={handleSelectAll}
               />
-              <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
-                Select All ({selectedBooks.size}/{books.length})
+              <label htmlFor="select-page" className="text-sm font-medium cursor-pointer">
+                Select Page ({paginatedBooks.filter(book => selectedBooks.has(book.id)).length}/{paginatedBooks.length})
               </label>
             </div>
+            {books.length > booksPerPage && (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="select-all-books"
+                  checked={selectedBooks.size === books.length && books.length > 0}
+                  onCheckedChange={handleSelectAllBooks}
+                />
+                <label htmlFor="select-all-books" className="text-sm font-medium cursor-pointer">
+                  Select All Books ({selectedBooks.size}/{books.length})
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2">
@@ -193,8 +233,63 @@ const BookSelectionModal = ({ isOpen, onClose, books, externalBooks = [], search
           </div>
         </div>
 
+        {/* Pagination Controls */}
+        {books.length > booksPerPage && (
+          <div className="flex items-center justify-between gap-4 py-4 border-b">
+            <div className="text-sm text-muted-foreground">
+              Showing {((currentPage - 1) * booksPerPage) + 1} to {Math.min(currentPage * booksPerPage, books.length)} of {books.length} books
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className="w-10 h-8"
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-4 mt-4">
-          {books.map((book) => {
+          {paginatedBooks.map((book) => {
             const isSelected = selectedBooks.has(book.id);
             const isSaved = savedBookIds.has(book.id);
             

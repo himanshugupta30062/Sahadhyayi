@@ -77,7 +77,7 @@ serve(async (req) => {
 
 async function searchOpenLibrary(searchTerm: string): Promise<BookData[]> {
   try {
-    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchTerm)}&limit=10`
+    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchTerm)}&limit=50`
     const response = await fetch(url)
     const data = await response.json()
 
@@ -107,7 +107,7 @@ async function searchOpenLibrary(searchTerm: string): Promise<BookData[]> {
 
 async function searchGoogleBooks(searchTerm: string): Promise<BookData[]> {
   try {
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchTerm)}&maxResults=5`
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchTerm)}&maxResults=40`
     const response = await fetch(url)
     const data = await response.json()
 
@@ -150,7 +150,7 @@ async function searchProjectGutenberg(searchTerm: string): Promise<BookData[]> {
       return []
     }
 
-    return data.results.slice(0, 5).map((book: any) => ({
+    return data.results.slice(0, 20).map((book: any) => ({
       title: book.title || 'Unknown Title',
       author: book.authors?.[0]?.name,
       genre: book.subjects?.[0],
@@ -171,7 +171,7 @@ async function searchProjectGutenberg(searchTerm: string): Promise<BookData[]> {
 
 async function searchInternetArchive(searchTerm: string): Promise<BookData[]> {
   try {
-    const url = `https://archive.org/advancedsearch.php?q=title:(${encodeURIComponent(searchTerm)}) AND mediatype:texts&fl=identifier,title,creator,date,description&rows=3&output=json`
+    const url = `https://archive.org/advancedsearch.php?q=title:(${encodeURIComponent(searchTerm)}) AND mediatype:texts&fl=identifier,title,creator,date,description&rows=20&output=json`
     const response = await fetch(url)
     const data = await response.json()
 
@@ -237,5 +237,5 @@ async function mergeBookData(
     }
   }
 
-  return Array.from(mergedMap.values()).slice(0, 10) // Limit results
+  return Array.from(mergedMap.values()) // Return all results, no limit
 }
