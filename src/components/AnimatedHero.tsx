@@ -8,7 +8,6 @@ const DESKTOP_FLOATERS = [
   { Icon: BookOpen, position: { top: "12%", left: "12%" }, color: "text-cyan-400", delay: 0, size: 64 },
   { Icon: MessageCircle, position: { top: "12%", right: "12%" }, color: "text-pink-400", delay: 1, size: 64 },
   { Icon: Users, position: { bottom: "12%", left: "12%" }, color: "text-purple-400", delay: 2, size: 64 },
-  { Icon: TrendingUp, position: { bottom: "12%", right: "12%" }, color: "text-emerald-400", delay: 3, size: 64 },
 ];
 
 const MOBILE_FLOATERS = [
