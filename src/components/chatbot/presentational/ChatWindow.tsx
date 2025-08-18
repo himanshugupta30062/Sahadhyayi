@@ -8,7 +8,7 @@ interface ChatWindowProps {
   loading?: boolean;
 }
 
-export function ChatWindow({ isOpen, onToggle, gradientClass, children, loading }: ChatWindowProps) {
+export function ChatWindow({ isOpen, onToggle: _onToggle, gradientClass, children, loading }: ChatWindowProps) {
   return (
     <>
       {isOpen && (
@@ -29,15 +29,6 @@ export function ChatWindow({ isOpen, onToggle, gradientClass, children, loading 
           </section>
         </aside>
       )}
-      <button
-        aria-label={isOpen ? 'Minimize chat' : 'Open chat'}
-        aria-expanded={isOpen}
-        aria-controls="chat-panel"
-        onClick={onToggle}
-        className="fixed bottom-6 right-6 z-50 rounded-full border bg-background px-2 py-1 text-xs shadow-lg"
-      >
-        {isOpen ? '—' : 'Chat'}
-      </button>
     </>
   );
 }
