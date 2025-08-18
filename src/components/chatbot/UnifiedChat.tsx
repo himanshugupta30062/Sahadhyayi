@@ -28,7 +28,7 @@ interface Message {
 export default function UnifiedChat() {
   const [mode, setMode] = useState<Mode>('book');
   const gradientClass = useColorCycle(mode === 'book' ? BOOK_GRADIENTS : CHAT_GRADIENTS, 5000);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -123,13 +123,6 @@ export default function UnifiedChat() {
           </div>
         </aside>
       )}
-      <button
-        onClick={() => setIsOpen(o => !o)}
-        aria-label={isOpen ? 'Close chat' : 'Open chat'}
-        className="fixed bottom-6 right-6 z-50 rounded-full border bg-background px-3 py-1 text-xs shadow-lg"
-      >
-        {isOpen ? '—' : 'Chat'}
-      </button>
     </>
   );
 }
