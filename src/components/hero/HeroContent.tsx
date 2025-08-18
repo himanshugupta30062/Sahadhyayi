@@ -20,7 +20,7 @@ export const HeroContent: React.FC = () => {
         The Book Readers Social Media
       </h2>
 
-      <p className="text-[10px] sm:text-sm md:text-lg mb-3 sm:mb-8 leading-relaxed">
+      <p className="text-[10px] sm:text-sm md:text-lg mb-3 sm:mb-8 leading-relaxed text-white">
         Find new books, connect with readers, and share your love of reading—all in one friendly community.
       </p>
 
