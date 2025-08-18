@@ -15,7 +15,6 @@ const MOBILE_FLOATERS = [
   { Icon: BookOpen, position: { top: "8%", left: "4%" }, color: "text-cyan-400", delay: 0, size: 32 },
   { Icon: MessageCircle, position: { top: "8%", right: "4%" }, color: "text-pink-400", delay: 1, size: 32 },
   { Icon: Users, position: { bottom: "8%", left: "4%" }, color: "text-purple-400", delay: 2, size: 32 },
-  { Icon: TrendingUp, position: { bottom: "8%", right: "4%" }, color: "text-emerald-400", delay: 3, size: 32 },
 ];
 
 const AnimatedHero: React.FC = () => {
