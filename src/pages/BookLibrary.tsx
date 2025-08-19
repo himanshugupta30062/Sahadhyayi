@@ -4,6 +4,7 @@ import { SearchBar } from '@/components/ui/search-bar';
 import FilterPopup from '@/components/library/FilterPopup';
 import BooksCollection from '@/components/library/BooksCollection';
 import GenreSelector from '@/components/library/GenreSelector';
+import { useGenres } from '@/hooks/useLibraryBooks';
 import SEO from '@/components/SEO';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -17,6 +18,14 @@ const BookLibrary = () => {
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const { data: genresData } = useGenres();
+
+  const availableGenres = React.useMemo(() => {
+    const set = new Set<string>(['All']);
+    genresData?.forEach(g => set.add(g.name));
+    return Array.from(set);
+  }, [genresData]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem('scroll-/library');
@@ -161,21 +170,13 @@ const BookLibrary = () => {
               {/* Genre Selector */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Browse by Genre</h3>
-                <GenreSelector
-                  genres={[
-                    'All',
-                    'Science',
-                    'Fiction',
-                    'Fantasy',
-                    'Mystery',
-                    'Hindi',
-                    'Devotional',
-                    'Biography',
-                    'History'
-                  ]}
-                  selected={selectedGenre}
-                  onSelect={setSelectedGenre}
-                />
+                {availableGenres.length > 0 && (
+                  <GenreSelector
+                    genres={availableGenres}
+                    selected={selectedGenre}
+                    onSelect={setSelectedGenre}
+                  />
+                )}
               </div>
             </div>
           </div>

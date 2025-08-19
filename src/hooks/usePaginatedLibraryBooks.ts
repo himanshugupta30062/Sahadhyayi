@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
+import { mapBook } from './useLibraryBooks';
 
 interface UsePaginatedLibraryBooksParams {
   searchQuery?: string;
@@ -59,6 +60,8 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
       if (selectedGenre && selectedGenre !== 'All') {
         if (selectedGenre === 'Hindi') {
           query = query.eq('language', 'Hindi');
+        } else if (selectedGenre === 'Other') {
+          query = query.is('genre', null);
         } else {
           query = query.eq('genre', selectedGenre);
         }
@@ -91,22 +94,7 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
       setTotalPages(calculatedTotalPages);
 
       // Map and sort books by completeness before pagination
-      const allMappedBooks: Book[] = (data || []).map(book => ({
-        id: book.id,
-        title: book.title,
-        author: book.author || 'Unknown Author',
-        genre: book.genre,
-        cover_image_url: book.cover_image_url,
-        description: book.description,
-        publication_year: book.publication_year,
-        language: book.language || 'English',
-        pdf_url: book.pdf_url,
-        created_at: book.created_at,
-        price: 0,
-        isbn: book.isbn,
-        pages: book.pages,
-        author_bio: book.author_bio
-      }));
+      const allMappedBooks: Book[] = (data || []).map(mapBook);
 
       // Sort by completeness
       const sortedBooks = allMappedBooks.sort((a, b) => {

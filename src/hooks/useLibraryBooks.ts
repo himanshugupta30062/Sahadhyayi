@@ -62,6 +62,31 @@ export interface Genre {
   name: string;
 }
 
+const normalizeGenre = (genre?: string | null, language?: string): string => {
+  if (!genre || genre.trim() === '') {
+    return language === 'Hindi' ? 'Hindi' : 'Other';
+    }
+  const formatted = genre.charAt(0).toUpperCase() + genre.slice(1).toLowerCase();
+  return formatted;
+};
+
+export const mapBook = (book: any): Book => ({
+  id: book.id,
+  title: book.title,
+  author: book.author || 'Unknown Author',
+  genre: normalizeGenre(book.genre, book.language),
+  cover_image_url: book.cover_image_url,
+  description: book.description,
+  publication_year: book.publication_year,
+  language: book.language || 'English',
+  pdf_url: book.pdf_url,
+  created_at: book.created_at,
+  price: 0,
+  isbn: book.isbn,
+  pages: book.pages,
+  author_bio: book.author_bio
+});
+
 export const useAllLibraryBooks = () => {
   return useQuery({
     queryKey: ['all-library-books'],
@@ -75,22 +100,7 @@ export const useAllLibraryBooks = () => {
           throw error;
         }
 
-        const mappedBooks = data.map(book => ({
-          id: book.id,
-          title: book.title,
-          author: book.author || 'Unknown Author',
-          genre: book.genre,
-          cover_image_url: book.cover_image_url,
-          description: book.description,
-          publication_year: book.publication_year,
-          language: book.language || 'English',
-          pdf_url: book.pdf_url,
-          created_at: book.created_at,
-          price: 0, // Not applicable for library books
-          isbn: book.isbn,
-          pages: book.pages,
-          author_bio: book.author_bio
-        }));
+        const mappedBooks = data.map(mapBook);
 
         // Sort by completeness by default
         return sortBooksByCompleteness(mappedBooks);
@@ -112,22 +122,7 @@ export const useLibraryBooks = (searchQuery?: string) => {
       }
       const res = await secureFetch(`/api/books${params.toString() ? `?${params.toString()}` : ''}`);
       const data = await res.json();
-      const mappedBooks = (data || []).map(book => ({
-        id: book.id,
-        title: book.title,
-        author: book.author || 'Unknown Author',
-        genre: book.genre,
-        cover_image_url: book.cover_image_url,
-        description: book.description,
-        publication_year: book.publication_year,
-        language: book.language || 'English',
-        pdf_url: book.pdf_url,
-        created_at: book.created_at,
-        price: 0,
-        isbn: book.isbn,
-        pages: book.pages,
-        author_bio: book.author_bio
-      }));
+      const mappedBooks = (data || []).map(mapBook);
       return sortBooksByCompleteness(mappedBooks);
     },
   });
@@ -144,6 +139,8 @@ export const useBooksByGenre = (genre: string) => {
       if (genre !== 'All') {
         if (genre === 'Hindi') {
           query = query.eq('language', 'Hindi');
+        } else if (genre === 'Other') {
+          query = query.is('genre', null);
         } else {
           query = query.eq('genre', genre);
         }
@@ -156,22 +153,7 @@ export const useBooksByGenre = (genre: string) => {
         throw error;
       }
 
-      const mappedBooks = (data || []).map(book => ({
-        id: book.id,
-        title: book.title,
-        author: book.author || 'Unknown Author',
-        genre: book.genre,
-        cover_image_url: book.cover_image_url,
-        description: book.description,
-        publication_year: book.publication_year,
-        language: book.language || 'English',
-        pdf_url: book.pdf_url,
-        created_at: book.created_at,
-        price: 0,
-        isbn: book.isbn,
-        pages: book.pages,
-        author_bio: book.author_bio
-      }));
+      const mappedBooks = (data || []).map(mapBook);
 
       // Sort by completeness by default
       return sortBooksByCompleteness(mappedBooks);
@@ -187,16 +169,31 @@ export const useGenres = () => {
     queryFn: async (): Promise<Genre[]> => {
       const { data, error } = await supabase
         .from('books_library')
-        .select('genre')
-        .not('genre', 'is', null);
+        .select('genre, language');
 
       if (error) {
         console.error('Error fetching genres:', error);
         throw error;
       }
 
-      // Get unique genres and map to Genre interface
-      const uniqueGenres = [...new Set(data.map(item => item.genre))];
+      const genresSet = new Set<string>();
+      let hasOther = false;
+
+      data.forEach(item => {
+        if (item.genre) {
+          genresSet.add(normalizeGenre(item.genre));
+        } else if (item.language === 'Hindi') {
+          genresSet.add('Hindi');
+        } else {
+          hasOther = true;
+        }
+      });
+
+      if (hasOther) {
+        genresSet.add('Other');
+      }
+
+      const uniqueGenres = Array.from(genresSet);
       return uniqueGenres.map((genre, index) => ({
         id: index.toString(),
         name: genre
