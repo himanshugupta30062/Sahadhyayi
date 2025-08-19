@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, Mail, LogIn, Facebook, Twitter, Instagram, Linkedin, MessageCircle } from "lucide-react";
+import { Users, Mail, LogIn, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -256,16 +256,6 @@ const GlobalFooter = () => {
           </div>
         </div>
 
-        {/* (Optional) floating WhatsApp */}
-        <a
-          href="https://wa.me/919999999999" // ← your number
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Chat on WhatsApp"
-          className="fixed bottom-6 right-6 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-300 md:bottom-8 md:right-8"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </a>
       </footer>
 
       {/* sign-in dialog */}
