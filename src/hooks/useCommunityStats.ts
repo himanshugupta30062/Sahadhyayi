@@ -62,22 +62,15 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     }
 
     try {
-      const { count: signups, error: signupError } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
+      // Use the edge function instead of direct database queries for consistency
+      const { data, error } = await supabase.functions.invoke('community-stats');
 
-      if (signupError) throw signupError;
-
-      const { count: visits, error: visitError } = await supabase
-        .from('website_visits')
-        .select('*', { count: 'exact', head: true });
-
-      if (visitError) throw visitError;
+      if (error) throw error;
 
       const updated = {
-        totalSignups: signups ?? 0,
-        totalVisits: visits ?? 0,
-        lastUpdated: new Date().toISOString(),
+        totalSignups: data.totalSignups ?? 0,
+        totalVisits: data.totalVisits ?? 0,
+        lastUpdated: data.lastUpdated ?? new Date().toISOString(),
       };
 
       setStats(updated);
