@@ -2,11 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Author } from './useAuthors';
 
-const slugify = (text: string) =>
-  text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+import { slugify } from '@/utils/slugify';
 
 export const useAuthorBySlug = (slug?: string) => {
   return useQuery({

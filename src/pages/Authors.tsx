@@ -19,8 +19,7 @@ import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { toast } from '@/hooks/use-toast';
 import { generateWebsiteSchema, generateBreadcrumbSchema } from '@/utils/schema';
 
-const slugify = (text: string) =>
-  text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+import { slugify } from '@/utils/slugify';
 
 const Authors = () => {
   const [page, setPage] = useState(1);
