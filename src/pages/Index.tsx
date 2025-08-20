@@ -289,7 +289,7 @@ const Index = () => {
                 </Button>
               </Link>
               <Link to="/about" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-black px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white bg-transparent px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg transition-all duration-300 font-semibold">
                   Learn More About Sahadhyayi
                 </Button>
               </Link>
