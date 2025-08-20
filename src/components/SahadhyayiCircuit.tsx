@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // TypeScript interfaces for type safety
 interface Question {
@@ -147,10 +148,45 @@ const QuestionBubble = memo<QuestionBubbleProps>(({ id, x, y, label, color, hove
 
 QuestionBubble.displayName = 'QuestionBubble';
 
+// Mobile Question List Component
+const MobileQuestionList: React.FC = () => {
+  return (
+    <div className="w-full px-4 py-8 space-y-4">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-4">
+          Sahadhyayi Features
+        </h2>
+        <p className="text-blue-100">Discover what you can do in our reading community</p>
+      </div>
+      
+      <div className="space-y-3">
+        {questions.map((question) => (
+          <div
+            key={question.id}
+            className={`p-4 rounded-xl bg-gradient-to-r ${gradientClasses[question.color]} text-white shadow-lg border border-white/20 backdrop-blur-sm`}
+          >
+            <p className="font-medium text-sm leading-relaxed">{question.label}</p>
+          </div>
+        ))}
+      </div>
+      
+      <div className="text-center mt-8">
+        <Link
+          to="/signup"
+          className="inline-block px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold rounded-full shadow-xl transition-all duration-300 hover:scale-105"
+        >
+          Join the Reading Circle
+        </Link>
+      </div>
+    </div>
+  );
+};
+
 // Main enhanced component
 const SahadhyayiCircuit: React.FC = () => {
   const [hoveredId, setHovered] = useState<string | null>(null);
   const [focusedId, setFocused] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   // Memoize callbacks to prevent unnecessary re-renders
   const handleSetHovered = useCallback((id: string | null) => {
@@ -214,6 +250,30 @@ const SahadhyayiCircuit: React.FC = () => {
       />
     ));
   }, [hoveredId, focusedId, handleSetHovered, handleSetFocused]);
+
+  // Mobile view - show simple list
+  if (isMobile) {
+    return (
+      <div className="w-full min-h-screen bg-black text-white relative">
+        {/* Enhanced background with animated gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 opacity-50"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1)_0%,transparent_70%)]"></div>
+        
+        <div className="relative z-10">
+          <div className="text-center px-4 py-8">
+            <h1 className="text-2xl font-bold leading-tight bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent mb-2">
+              Want an intellectual friend from reading community?
+            </h1>
+            <p className="text-blue-100 font-medium mb-6">
+              Let's Explore Sahadhyayi!
+            </p>
+          </div>
+          
+          <MobileQuestionList />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col lg:flex-row w-full min-h-screen bg-black text-white overflow-hidden relative">
