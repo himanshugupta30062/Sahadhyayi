@@ -233,7 +233,7 @@ const SignUp = () => {
                     placeholder="Your full name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="pl-10"
+                    className="pl-10 bg-white text-black"
                     maxLength={100}
                     required
                   />
@@ -251,7 +251,7 @@ const SignUp = () => {
                     placeholder="your@email.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="pl-10"
+                    className="pl-10 bg-white text-black"
                     maxLength={254}
                     required
                   />
@@ -269,7 +269,7 @@ const SignUp = () => {
                     placeholder="Create a strong password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 bg-white text-black"
                     maxLength={128}
                     required
                   />
@@ -295,7 +295,7 @@ const SignUp = () => {
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 bg-white text-black"
                     maxLength={128}
                     required
                   />
