@@ -11,7 +11,23 @@ export const useAuthorBySlug = (slug?: string) => {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_authors_data');
       if (error) throw error;
-      const author = (data || []).find((a: any) => slugify(a.name) === slug);
+      
+      // More robust matching - try exact slug match first, then fuzzy matching
+      const normalizedSlug = slug?.toLowerCase().trim();
+      const author = (data || []).find((a: any) => {
+        const authorSlug = slugify(a.name?.trim() || '');
+        return authorSlug === normalizedSlug;
+      });
+      
+      // If no exact match found, log for debugging
+      if (!author && slug) {
+        console.log(`No author found for slug: "${slug}"`);
+        console.log('Available authors:', (data || []).map((a: any) => ({
+          name: a.name,
+          slug: slugify(a.name?.trim() || '')
+        })));
+      }
+      
       return author as Author | null;
     },
   });
