@@ -54,13 +54,14 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Sahadhyayi brand colors
-'sahadhyayi-orange': 'hsl(0 0% 12%)',
-'sahadhyayi-orange-light': 'hsl(0 0% 96%)',
-'sahadhyayi-amber': 'hsl(0 0% 28%)',
-'sahadhyayi-amber-light': 'hsl(0 0% 92%)',
-'sahadhyayi-warm': 'hsl(0 0% 7%)',
-'sahadhyayi-warm-light': 'hsl(0 0% 98%)',
+        // Sahadhyayi brand colors - using CSS variables for consistency
+        'sahadhyayi-orange': 'hsl(var(--sahadhyayi-orange))',
+        'sahadhyayi-orange-light': 'hsl(var(--sahadhyayi-orange-light))',
+        'sahadhyayi-amber': 'hsl(var(--sahadhyayi-amber))',
+        'sahadhyayi-amber-light': 'hsl(var(--sahadhyayi-amber-light))',
+        'sahadhyayi-warm': 'hsl(var(--sahadhyayi-warm))',
+        'sahadhyayi-warm-light': 'hsl(var(--sahadhyayi-warm-light))',
+        'brand-orange': 'hsl(var(--brand-orange))',
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
