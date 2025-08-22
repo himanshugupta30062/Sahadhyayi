@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, BookOpen, Calendar, Globe, Info, Download } from 'lucide-react';
+import { Star, BookOpen, Calendar, Globe, Info, Download, Plus } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
 import { useAuth } from '@/contexts/authHelpers';
+import { useAddToPersonalLibrary } from '@/hooks/usePersonalLibrary';
 import type { Book } from '@/hooks/useLibraryBooks';
 import AudioSummaryButton from '@/components/books/AudioSummaryButton';
 import PageSummarySection from '@/components/books/PageSummarySection';
@@ -25,6 +26,7 @@ interface BookDetailModalProps {
 const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const addToLibrary = useAddToPersonalLibrary();
   const [showSummaryModal, setShowSummaryModal] = useState(false);
 
   if (!book) return null;
@@ -103,6 +105,19 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
                 )}
                 
                 <div className="space-y-2">
+                  {/* Add to Library Button */}
+                  {user && (
+                    <Button 
+                      onClick={() => addToLibrary.mutate(book.id)}
+                      disabled={addToLibrary.isPending}
+                      className="w-full bg-primary hover:bg-primary/90" 
+                      variant="default"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      {addToLibrary.isPending ? 'Adding...' : 'Add to Library'}
+                    </Button>
+                  )}
+
                   {/* Download PDF Button */}
                   <Button 
                     onClick={handleDownloadPDF}

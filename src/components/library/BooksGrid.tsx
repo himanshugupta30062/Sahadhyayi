@@ -7,7 +7,7 @@ import BookCard from './BookCard';
 
 interface BooksGridProps {
   books: Book[];
-  onDownloadPDF: (book: Book) => void;
+  onDownloadPDF?: (book: Book) => void;
 }
 
 const BooksGrid = ({ books, onDownloadPDF }: BooksGridProps) => {
@@ -66,7 +66,7 @@ const BooksGrid = ({ books, onDownloadPDF }: BooksGridProps) => {
         <BookCard
           key={book.id}
           book={book}
-          onDownloadPDF={onDownloadPDF}
+          onDownloadPDF={onDownloadPDF || (() => {})}
         />
       ))}
     </div>
