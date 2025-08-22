@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,11 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/authHelpers';
 import { LogIn, Mail, Lock } from 'lucide-react';
-import { useCommunityStats } from '@/hooks/useCommunityStats';
 import SEO from '@/components/SEO';
 import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation';
 // import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
 import { useToast } from '@/hooks/use-toast';
+import { redirectToUserHome } from '@/utils/navigation';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -22,31 +22,13 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
   const { user, signIn } = useAuth();
-  const { joinCommunity } = useCommunityStats(false);
   const { toast } = useToast();
 
   // Redirect if already signed in
   useEffect(() => {
-    const joinAfterSignIn = localStorage.getItem('joinCommunityAfterSignIn') === 'true';
-
     if (user) {
-      if (joinAfterSignIn) {
-        // Clear the flag and join the community automatically
-        localStorage.removeItem('joinCommunityAfterSignIn');
-        joinCommunity().then(() => {
-          navigate('/social', { replace: true });
-        });
-        return;
-      }
-
-      // Determine intended destination from state or query parameter
-      const fromState = location.state?.from as string | undefined;
-      const fromQuery = searchParams.get('redirect');
-      const destination = fromState || fromQuery || '/dashboard';
-      navigate(destination, { replace: true });
+      redirectToUserHome(navigate);
 
       const scrollY = sessionStorage.getItem('redirectScrollY');
       if (scrollY) {
@@ -56,7 +38,7 @@ const SignIn = () => {
         }, 0);
       }
     }
-  }, [user, navigate, location.state, joinCommunity, searchParams]);
+  }, [user, navigate]);
 
   const validateForm = () => {
     if (!formData.email?.trim() || !formData.password) {
