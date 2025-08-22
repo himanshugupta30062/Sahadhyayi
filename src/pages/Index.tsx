@@ -11,6 +11,7 @@ import SEO from "@/components/SEO";
 import AnimatedHero from "@/components/AnimatedHero";
 import SahadhyayiCircuit from "@/components/SahadhyayiCircuit";
 import SahadhyayiCapabilities from "@/components/SahadhyayiCapabilities";
+import CurrentReads from "@/components/dashboard/CurrentReads";
 
 const Index = () => {
   const { user } = useAuth();
@@ -94,6 +95,29 @@ const Index = () => {
       <SahadhyayiCircuit />
       
       <SahadhyayiCapabilities />
+      
+      {/* Current Reads Section for Signed-in Users */}
+      {user && (
+        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                Welcome back, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader'}! 
+              </h2>
+              <p className="text-gray-700 text-lg">Continue your reading journey</p>
+            </div>
+            <CurrentReads userId={user.id} />
+            
+            <div className="text-center mt-8">
+              <Link to="/dashboard">
+                <Button className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3">
+                  Go to Full Dashboard
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
       
       <div className="min-h-screen bg-black text-white">
 

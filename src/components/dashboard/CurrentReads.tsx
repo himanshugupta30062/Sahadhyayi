@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { BookOpen, Plus } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { useReadingProgress } from '@/hooks/useReadingProgress';
+import { useUserBookshelf } from '@/hooks/useUserBookshelf';
 import AddBookToCurrentReadsDialog from './AddBookToCurrentReadsDialog';
 
 interface CurrentReadsProps {
@@ -15,7 +15,18 @@ interface CurrentReadsProps {
 
 const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
   const navigate = useNavigate();
-  const { data: readingProgress = [], isLoading, error } = useReadingProgress();
+  const { data: bookshelf = [], isLoading, error } = useUserBookshelf();
+  
+  // Filter books that are currently being read
+  const readingProgress = bookshelf.filter(item => item.status === 'reading').map(item => ({
+    id: item.id,
+    book_id: item.book_id,
+    book_title: item.books_library?.title || 'Unknown Title',
+    current_page: 0, // We can enhance this later with detailed progress
+    total_pages: (item.books_library as any)?.pages || 100, // Type assertion for pages field
+    cover_image_url: item.books_library?.cover_image_url,
+    user_id: item.user_id
+  }));
 
   console.log('Current Reads - Reading Progress Data:', readingProgress);
   console.log('Current Reads - Is Loading:', isLoading);
@@ -101,7 +112,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
             {readingProgress.map((book) => {
               const progressPercent = Math.round((book.current_page / book.total_pages) * 100);
               return (
-                <Card key={book.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/book/${book.id}`)}>
+                <Card key={book.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/book/${book.book_id}`)}>
                   <div className="flex space-x-3">
                     {book.cover_image_url ? (
                       <img
@@ -117,29 +128,21 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-sm truncate">{book.book_title}</h4>
                       <div className="flex items-center gap-2 mb-2">
-                        <p className="text-xs text-gray-500">
-                          Pages read: {book.current_page} / {book.total_pages}
-                        </p>
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                           Currently Reading
                         </span>
                       </div>
-                      <Progress value={progressPercent} className="h-2 mb-2" />
-                      <p className="text-xs text-amber-600 font-medium mb-2">{progressPercent}% complete</p>
+                      <p className="text-xs text-gray-600 mb-2">Started reading this book</p>
                       <Button 
                         size="sm" 
                         variant="outline" 
                         className="w-full text-xs"
                         onClick={(e) => {
                           e.stopPropagation();
-                          const newPage = prompt(`Current page (${book.current_page}/${book.total_pages}):`);
-                          if (newPage && !isNaN(Number(newPage)) && Number(newPage) >= 0 && Number(newPage) <= book.total_pages) {
-                            // Here you would update the reading progress
-                            console.log('Update progress to page:', newPage);
-                          }
+                          navigate(`/book/${book.book_id}`);
                         }}
                       >
-                        Update Progress
+                        Continue Reading
                       </Button>
                     </div>
                   </div>
@@ -154,10 +157,9 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
           <Carousel className="w-full">
             <CarouselContent>
               {readingProgress.map((book) => {
-                const progressPercent = Math.round((book.current_page / book.total_pages) * 100);
                 return (
                   <CarouselItem key={book.id} className="md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/book/${book.id}`)}>
+                    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/book/${book.book_id}`)}>
                       <CardContent className="p-4">
                         <div className="flex space-x-4">
                           {book.cover_image_url ? (
@@ -174,29 +176,21 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                           <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-sm truncate">{book.book_title}</h4>
                             <div className="flex items-center gap-2 mb-2">
-                              <p className="text-xs text-gray-500">
-                                Pages read: {book.current_page} / {book.total_pages}
-                              </p>
                               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                                 Currently Reading
                               </span>
                             </div>
-                            <Progress value={progressPercent} className="h-2 mb-2" />
-                            <p className="text-xs text-amber-600 font-medium">{progressPercent}% complete</p>
+                            <p className="text-xs text-gray-600 mb-2">Started reading this book</p>
                             <Button 
                               size="sm" 
                               variant="outline" 
                               className="mt-2 text-xs"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const newPage = prompt(`Current page (${book.current_page}/${book.total_pages}):`);
-                                if (newPage && !isNaN(Number(newPage)) && Number(newPage) >= 0 && Number(newPage) <= book.total_pages) {
-                                  // Here you would update the reading progress
-                                  console.log('Update progress to page:', newPage);
-                                }
+                                navigate(`/book/${book.book_id}`);
                               }}
                             >
-                              Update Progress
+                              Continue Reading
                             </Button>
                           </div>
                         </div>
