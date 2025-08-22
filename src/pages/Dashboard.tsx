@@ -19,7 +19,7 @@ import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
 import BookRecommendations from '@/components/dashboard/BookRecommendations';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: userBooks = [] } = useUserBookshelf();
   const [readingGoal, setReadingGoal] = useState(12);
@@ -75,7 +75,7 @@ const Dashboard = () => {
     (window as any).checkReadingGoal = checkReadingGoal;
   }, [checkReadingGoal]);
 
-  if (profileLoading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-4 sm:p-8">
         <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
