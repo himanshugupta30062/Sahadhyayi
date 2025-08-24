@@ -2332,6 +2332,10 @@ export type Database = {
           username: string
         }[]
       }
+      get_total_users_count: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_user_bookshelf_stats: {
         Args: { user_uuid: string }
         Returns: {

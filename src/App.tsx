@@ -5,6 +5,7 @@ import './sentry';
 
 import { toast } from '@/hooks/use-toast';
 import { errorHandler } from '@/utils/errorHandler';
+import usePageVisitTracker from '@/hooks/usePageVisitTracker';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRFToken } from '@/utils/security';
@@ -69,6 +70,9 @@ import "./App.css";
 });
 
 function App() {
+  // Track page visits for analytics
+  usePageVisitTracker();
+
   useEffect(() => {
     initializeSecurity();
     initializeSecureSession();

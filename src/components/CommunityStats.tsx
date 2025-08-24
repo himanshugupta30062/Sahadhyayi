@@ -39,19 +39,18 @@ const CommunityStats = () => {
         errors: { ...prev.errors, members: null },
       }));
 
-      // Get count of registered users from profiles table
-      const { count, error } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
+      // Use secure function to get total users count
+      const { data, error } = await supabase.rpc('get_total_users_count');
 
       if (error) {
         console.error('Error fetching user count:', error);
         throw error;
       }
 
+      console.log('✅ Successfully fetched user count:', data);
       setStats(prev => ({
         ...prev,
-        registeredMembers: count || 0,
+        registeredMembers: Number(data) || 0,
         loading: { ...prev.loading, members: false },
       }));
     } catch (error) {
@@ -88,6 +87,7 @@ const CommunityStats = () => {
           throw fallbackError;
         }
 
+        console.log('⚠️ Used fallback query, visit count:', fallbackCount);
         setStats(prev => ({
           ...prev,
           totalVisitors: fallbackCount || 0,
@@ -96,9 +96,10 @@ const CommunityStats = () => {
         return;
       }
 
+      console.log('✅ Successfully fetched visit count:', data);
       setStats(prev => ({
         ...prev,
-        totalVisitors: data || 0,
+        totalVisitors: Number(data) || 0,
         loading: { ...prev.loading, visitors: false },
       }));
     } catch (error) {

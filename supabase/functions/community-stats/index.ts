@@ -19,23 +19,21 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    // Count registered users from the profiles table
-    const { count: signups, error: signupError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
+    // Use secure functions to get counts without bypassing RLS
+    const { data: signups, error: signupError } = await supabase
+      .rpc('get_total_users_count')
 
     if (signupError) throw signupError
 
-    // Count recorded website visits
-    const { count: visits, error: visitError } = await supabase
-      .from('website_visits')
-      .select('*', { count: 'exact', head: true })
+    // Get website visits count
+    const { data: visits, error: visitError } = await supabase
+      .rpc('get_website_visit_count')
 
     if (visitError) throw visitError
 
     const stats = {
-      totalSignups: signups ?? 0,
-      totalVisits: visits ?? 0,
+      totalSignups: Number(signups) || 0,
+      totalVisits: Number(visits) || 0,
       lastUpdated: new Date().toISOString()
     }
 
