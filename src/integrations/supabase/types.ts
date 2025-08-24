@@ -2273,6 +2273,18 @@ export type Database = {
           location_lng: number
         }[]
       }
+      get_friend_profile_info: {
+        Args: { friend_user_id: string }
+        Returns: {
+          bio: string
+          id: string
+          joined_at: string
+          location: string
+          name: string
+          profile_picture_url: string
+          username: string
+        }[]
+      }
       get_location_analytics: {
         Args: Record<PropertyKey, never>
         Returns: {
