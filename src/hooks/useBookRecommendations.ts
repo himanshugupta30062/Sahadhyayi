@@ -9,9 +9,7 @@ export interface RecommendedBook {
   description?: string;
 }
 
-const BASE_URL =
-  (import.meta.env.VITE_RECOMMENDATIONS_URL as string | undefined) ||
-  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/recommendations`;
+const BASE_URL = 'https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/recommendations';
 
 export const useBookRecommendations = (userId?: string) => {
   return useQuery({
