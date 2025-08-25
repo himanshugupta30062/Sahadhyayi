@@ -42,7 +42,7 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => 
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {recommendations.map((book) => (
             <Card key={book.id} className="p-4 hover:shadow-md transition-shadow border border-gray-200">
               <div className="flex space-x-3">
