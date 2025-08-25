@@ -1,4 +1,9 @@
-import { supabase } from '@/integrations/supabase/client'
+import { createClient } from '@supabase/supabase-js'
+
+export const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export type BookSearchRow = {
   id: string
@@ -22,7 +27,7 @@ export type SearchParams = {
 export async function searchLibrary(
   query: string,
   params: SearchParams = {},
-  options: { signal?: AbortSignal } = {},
+  options: { signal?: AbortSignal } = {}
 ) {
   const { limit = 50, lang = null, minPopularity = null, genres = null } = params
   const { data, error } = await supabase.rpc<BookSearchRow>(
