@@ -1,3 +1,4 @@
+/* eslint-disable no-misleading-character-class */
 export const slugify = (text: string) => {
   return text
     .toLowerCase()
