@@ -223,6 +223,11 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       queryClient.clear();
 
+      // Redirect to home page after successful logout
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('Signout error:', error);
@@ -230,6 +235,11 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
       setLoading(false);
+      
+      // Even if there's an error, redirect to home page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     }
   };
 
