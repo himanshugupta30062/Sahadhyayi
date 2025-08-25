@@ -27,7 +27,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
-const BookLibrary = lazy(() => import('./pages/BookLibrary'));
+const Library = lazy(() => import('./pages/Library'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 import Profile from "./pages/Profile";
@@ -104,7 +104,7 @@ function App() {
                         path="/library"
                         element={
                           <Suspense fallback={<div>Loading…</div>}>
-                            <BookLibrary />
+                          <Library />
                           </Suspense>
                         }
                       />
