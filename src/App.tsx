@@ -27,7 +27,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
-const Library = lazy(() => import('./pages/Library'));
+const Library = lazy(() => import('./pages/library'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 import Profile from "./pages/Profile";

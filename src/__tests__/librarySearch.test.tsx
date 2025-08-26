@@ -68,7 +68,7 @@ describe('ResultsList', () => {
       id: '1',
       title: 't',
       author: 'a',
-      genres: [],
+      genre: 'fiction',
       language: 'en',
       cover_url: '',
       popularity: 1,
@@ -94,6 +94,6 @@ it('SQL smoke test', async () => {
   vi.doUnmock('@/lib/searchLibrary')
   const real = await import('@/lib/searchLibrary')
   const rows = await real.searchLibrary('harry potter', { genres: ['fantasy'] })
-  expect(rows.length).toBeGreaterThan(0)
+  expect(Array.isArray(rows) ? rows.length : 0).toBeGreaterThan(0)
   expect(rows[0].rank).toBeGreaterThan(0)
 })

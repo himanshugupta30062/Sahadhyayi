@@ -55,7 +55,7 @@ export function useLibrarySearch() {
       slowTimerRef.current = setTimeout(() => setSlow(true), 600)
       try {
         const data = await searchLibrary(q, f, { signal: controller.signal })
-        setResults(data)
+        setResults(Array.isArray(data) ? data : [])
         setError(null)
         window.dispatchEvent(new CustomEvent('search:submit', { detail: { q, filters: f } }))
       } catch (err: any) {

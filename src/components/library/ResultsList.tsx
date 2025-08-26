@@ -57,11 +57,11 @@ export default function ResultsList({ results, loading, error }: Props) {
                   {book.author && <span className="ml-2 text-sm text-gray-500">{book.author}</span>}
                 </h3>
                 <div className="flex flex-wrap gap-1 my-1 text-xs">
-                  {book.genres?.map((g) => (
-                    <span key={g} className="px-1 bg-gray-100 rounded">
-                      {g}
+                  {book.genre && (
+                    <span className="px-1 bg-gray-100 rounded">
+                      {book.genre}
                     </span>
-                  ))}
+                  )}
                   {book.language && (
                     <span className="px-1 bg-gray-100 rounded">{book.language}</span>
                   )}
