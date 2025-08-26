@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { sampleBooks } from '@/data/sampleBooks';
-import { secureFetch } from '@/lib/secureFetch';
 
 export interface Book {
   id: string;
@@ -106,29 +105,43 @@ export const useLibraryBooks = (searchQuery?: string) => {
   return useQuery({
     queryKey: ['library-books', searchQuery],
     queryFn: async (): Promise<Book[]> => {
-      const params = new URLSearchParams();
-      if (searchQuery && searchQuery.trim()) {
-        params.set('search', searchQuery);
+      try {
+        let query = supabase.from('books_library').select('*');
+
+        if (searchQuery && searchQuery.trim()) {
+          query = query.or(
+            `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,genre.ilike.%${searchQuery}%`
+          );
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          throw error;
+        }
+
+        const mappedBooks = (data || []).map(book => ({
+          id: book.id,
+          title: book.title,
+          author: book.author || 'Unknown Author',
+          genre: book.genre,
+          cover_image_url: book.cover_image_url,
+          description: book.description,
+          publication_year: book.publication_year,
+          language: book.language || 'English',
+          pdf_url: book.pdf_url,
+          created_at: book.created_at,
+          price: 0,
+          isbn: book.isbn,
+          pages: book.pages,
+          author_bio: book.author_bio
+        }));
+
+        return sortBooksByCompleteness(mappedBooks);
+      } catch (error) {
+        console.error('Error fetching library books:', error);
+        return sortBooksByCompleteness(sampleBooks);
       }
-      const res = await secureFetch(`/api/books${params.toString() ? `?${params.toString()}` : ''}`);
-      const data = await res.json();
-      const mappedBooks = (data || []).map(book => ({
-        id: book.id,
-        title: book.title,
-        author: book.author || 'Unknown Author',
-        genre: book.genre,
-        cover_image_url: book.cover_image_url,
-        description: book.description,
-        publication_year: book.publication_year,
-        language: book.language || 'English',
-        pdf_url: book.pdf_url,
-        created_at: book.created_at,
-        price: 0,
-        isbn: book.isbn,
-        pages: book.pages,
-        author_bio: book.author_bio
-      }));
-      return sortBooksByCompleteness(mappedBooks);
     },
   });
 };
