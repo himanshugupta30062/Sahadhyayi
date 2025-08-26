@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, BookOpen, Globe, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { useBookById } from '@/hooks/useBookById';
 import { useBookRatings, useRateBook } from '@/hooks/useBookRatings';
 import StarRating from '@/components/StarRating';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
+import { logBookEvent } from '@/lib/supabase/events';
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +31,12 @@ const BookDetails = () => {
   console.log('BookDetails - Book data:', book);
   console.log('BookDetails - Loading state:', isLoading);
   console.log('BookDetails - Error state:', error);
+
+  useEffect(() => {
+    if (book?.id) {
+      logBookEvent(book.id, 'view');
+    }
+  }, [book?.id]);
 
   if (isLoading) {
     return (
@@ -140,6 +147,12 @@ const BookDetails = () => {
 
   const handleAuthorClick = () => {
     console.log('Author clicked:', book.author);
+  };
+
+  const handleDownload = () => {
+    if (book?.id) {
+      logBookEvent(book.id, 'download');
+    }
   };
 
   return (
@@ -383,11 +396,12 @@ const BookDetails = () => {
               <TabsContent value="read" className="mt-0">
                 <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-lg">
                   <CardContent className="p-6">
-                    <BookReader 
+                    <BookReader
                       bookId={book.id}
                       bookTitle={book.title}
                       pdfUrl={book.pdf_url}
                       epubUrl={undefined}
+                      onDownload={handleDownload}
                     />
                   </CardContent>
                 </Card>

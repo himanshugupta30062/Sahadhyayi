@@ -40,9 +40,10 @@ interface BookReaderProps {
   bookTitle: string;
   pdfUrl?: string;
   epubUrl?: string;
+  onDownload?: () => void;
 }
 
-const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => {
+const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl, onDownload }: BookReaderProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { addQuote } = useQuotes();
@@ -558,7 +559,10 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open(pdfUrl, '_blank')}
+                  onClick={() => {
+                    onDownload?.();
+                    window.open(pdfUrl, '_blank');
+                  }}
                   className="flex items-center gap-1"
                 >
                   <Download className="w-4 h-4" />
