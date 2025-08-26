@@ -4,6 +4,7 @@ import { ask as askGeneral } from '@/ai/service';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
 import { useColorCycle } from '@/hooks/chatbot/useColorCycle';
 import { VoiceButton } from './presentational/VoiceButton';
+import { generateContextualResponse } from '@/utils/chatbotKnowledge';
 
 const BOOK_GRADIENTS = [
   'bg-gradient-to-r from-violet-500 to-purple-600',
@@ -59,7 +60,8 @@ export default function UnifiedChat() {
       addMessage({ sender: 'ai', text: reply, mode });
     } catch (err) {
       console.error(err);
-      addMessage({ sender: 'ai', text: 'Sorry—something went wrong. Please try again.', mode });
+      const fallback = generateContextualResponse(text);
+      addMessage({ sender: 'ai', text: fallback, mode });
     } finally {
       setLoading(false);
     }
