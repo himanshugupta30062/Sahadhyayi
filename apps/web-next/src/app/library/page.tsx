@@ -9,8 +9,6 @@ import { getBooks } from '@/lib/supabase/books';
 import type { Book } from '@/lib/types';
 import { makeAbortable } from '@/lib/fetchAbort';
 
-export const dynamic = 'force-dynamic';
-
 const defaultFilters: FilterState = {
   genres: [],
   language: undefined,
