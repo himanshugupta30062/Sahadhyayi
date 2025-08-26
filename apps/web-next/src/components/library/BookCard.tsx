@@ -9,7 +9,8 @@ interface Props {
 
 export default function BookCard({ book }: Props) {
   const router = useRouter();
-  const cover = book.cover_url ?? 'https://placehold.co/200x300?text=No+Cover';
+  const cover =
+    book.cover_image_url ?? 'https://placehold.co/200x300?text=No+Cover';
 
   return (
     <button
@@ -29,14 +30,11 @@ export default function BookCard({ book }: Props) {
         {book.title}
       </h3>
       <div className="mt-1 flex flex-wrap gap-1">
-        <span className="rounded bg-gray-200 px-1 text-[10px] font-medium">
-          {book.language}
-        </span>
-        {book.tags?.map((tag) => (
-          <span key={tag} className="rounded bg-gray-100 px-1 text-[10px]">
-            {tag}
+        {book.language && (
+          <span className="rounded bg-gray-200 px-1 text-[10px] font-medium">
+            {book.language}
           </span>
-        ))}
+        )}
       </div>
     </button>
   );

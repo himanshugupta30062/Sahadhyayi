@@ -60,7 +60,10 @@ export default function CurrentReads() {
         <Link key={item.book_id} href={`/library/${item.book.id}`} className="block text-sm">
           <div className="aspect-[2/3] w-full overflow-hidden rounded bg-gray-100">
             <img
-              src={item.book.cover_url ?? 'https://placehold.co/200x300?text=No+Cover'}
+              src={
+                item.book.cover_image_url ??
+                'https://placehold.co/200x300?text=No+Cover'
+              }
               alt={item.book.title}
               className="h-full w-full object-cover"
             />
