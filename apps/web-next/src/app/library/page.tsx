@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import LibraryGrid from '@/components/library/LibraryGrid';
 import SearchAndFilters, { FilterState } from '@/components/library/SearchAndFilters';
 import Paginator from '@/components/library/Paginator';
+import CurrentReads from '@/components/library/CurrentReads';
 import { getBooks } from '@/lib/supabase/books';
 import type { Book } from '@/lib/types';
 import { makeAbortable } from '@/lib/fetchAbort';
@@ -98,6 +99,7 @@ export default function LibraryPage() {
         filters={filters}
         onFiltersChange={handleFiltersChange}
       />
+      <CurrentReads />
       {error && <p className="text-red-600">{error}</p>}
       <LibraryGrid books={books} loading={loading} />
       {!loading && !error && books.length === 0 && (

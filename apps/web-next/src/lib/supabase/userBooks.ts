@@ -1,15 +1,47 @@
-import { supabase } from '@/integrations/supabase/client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { supabase } from '../../integrations/supabase/client';
+import type { Book, ReadingStatus, UserBook } from '../types';
+const supabaseClient: any = supabase;
 
-export type ReadingStatus = 'to_read' | 'reading' | 'completed';
+export interface CurrentRead extends UserBook {
+  book: Book;
+}
+
+export async function getCurrentReads(userId: string): Promise<CurrentRead[]> {
+  const { data, error } = await supabaseClient
+    .from('user_books' as any)
+    .select('book_id, status, progress, last_opened_at, books:book_id (*)')
+    .eq('user_id', userId)
+    .eq('status', 'reading')
+    .order('last_opened_at', { ascending: false })
+    .limit(6);
+
+  if (error) {
+    console.error('getCurrentReads error', error);
+    return [];
+  }
+
+  return (
+    (data || []) as any
+  ).map((item: any) => ({
+    user_id: userId,
+    book_id: item.book_id,
+    status: item.status as ReadingStatus,
+    progress: item.progress,
+    last_opened_at: item.last_opened_at,
+    book: item.books as Book,
+  }));
+}
 
 export async function getStatus(bookId: string): Promise<ReadingStatus | null> {
-  const {
-    data,
-    error,
-  } = await supabase
-    .from('user_books')
+  const { data: user } = await supabaseClient.auth.getUser();
+  if (!user?.user) return null;
+
+  const { data, error } = await supabaseClient
+    .from('user_books' as any)
     .select('status')
     .eq('book_id', bookId)
+    .eq('user_id', user.user.id)
     .maybeSingle();
 
   if (error) {
@@ -24,14 +56,15 @@ export async function setStatus(
   bookId: string,
   status: ReadingStatus,
 ): Promise<void> {
-  const {
-    data: user,
-  } = await supabase.auth.getUser();
+  const { data: user } = await supabaseClient.auth.getUser();
   if (!user?.user) throw new Error('Not authenticated');
 
-  const { error } = await supabase
-    .from('user_books')
-    .upsert({ book_id: bookId, status, user_id: user.user.id }, { onConflict: 'user_id,book_id' });
+  const { error } = await supabaseClient
+    .from('user_books' as any)
+    .upsert(
+      { book_id: bookId, status, user_id: user.user.id },
+      { onConflict: 'user_id,book_id' },
+    );
 
   if (error) {
     console.error('setStatus error', error);
@@ -40,14 +73,11 @@ export async function setStatus(
 }
 
 export async function toggleWishlist(bookId: string): Promise<boolean> {
-  const { data: user } = await supabase.auth.getUser();
+  const { data: user } = await supabaseClient.auth.getUser();
   if (!user?.user) throw new Error('Not authenticated');
 
-  const {
-    data: existing,
-    error: selectError,
-  } = await supabase
-    .from('user_wishlist')
+  const { data: existing, error: selectError } = await supabaseClient
+    .from('user_wishlist' as any)
     .select('id')
     .eq('book_id', bookId)
     .eq('user_id', user.user.id)
@@ -59,8 +89,8 @@ export async function toggleWishlist(bookId: string): Promise<boolean> {
   }
 
   if (existing) {
-    const { error } = await supabase
-      .from('user_wishlist')
+    const { error } = await supabaseClient
+      .from('user_wishlist' as any)
       .delete()
       .eq('id', existing.id);
     if (error) {
@@ -69,8 +99,8 @@ export async function toggleWishlist(bookId: string): Promise<boolean> {
     }
     return false;
   } else {
-    const { error } = await supabase
-      .from('user_wishlist')
+    const { error } = await supabaseClient
+      .from('user_wishlist' as any)
       .insert({ book_id: bookId, user_id: user.user.id });
     if (error) {
       console.error('toggleWishlist insert error', error);
@@ -80,3 +110,17 @@ export async function toggleWishlist(bookId: string): Promise<boolean> {
   }
 }
 
+export async function touchLastOpened(bookId: string): Promise<void> {
+  const { data: user } = await supabaseClient.auth.getUser();
+  if (!user?.user) return;
+
+  const { error } = await supabaseClient
+    .from('user_books' as any)
+    .update({ last_opened_at: new Date().toISOString() } as any)
+    .eq('user_id', user.user.id)
+    .eq('book_id', bookId);
+
+  if (error) {
+    console.error('touchLastOpened error', error);
+  }
+}

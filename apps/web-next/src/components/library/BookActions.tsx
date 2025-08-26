@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { getStatus, setStatus, toggleWishlist, ReadingStatus } from '../../lib/supabase/userBooks';
-import { getNote, upsertNote } from '../../lib/supabase/notes';
-import { supabase } from '@/integrations/supabase/client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { getStatus, setStatus, toggleWishlist, touchLastOpened } from '@/lib/supabase/userBooks';
+import { getNote, upsertNote } from '@/lib/supabase/notes';
+import type { ReadingStatus } from '@/lib/types';
+import { supabase } from '../../integrations/supabase/client';
+const supabaseClient: any = supabase;
 
 interface Props {
   bookId: string;
@@ -20,7 +22,7 @@ export default function BookActions({ bookId, fileUrl }: Props) {
   useEffect(() => {
     getStatus(bookId).then(setStatusState);
     getNote(bookId).then(setNote);
-    supabase
+    supabaseClient
       .from('user_wishlist')
       .select('id')
       .eq('book_id', bookId)
@@ -47,13 +49,14 @@ export default function BookActions({ bookId, fileUrl }: Props) {
   };
 
   const handleOpen = async () => {
-    await supabase
+    await touchLastOpened(bookId);
+    await supabaseClient
       .from('book_events')
       .insert({ book_id: bookId, event: 'view' });
   };
 
   const handleDownload = async () => {
-    await supabase
+    await supabaseClient
       .from('book_events')
       .insert({ book_id: bookId, event: 'download' });
   };
@@ -70,7 +73,7 @@ export default function BookActions({ bookId, fileUrl }: Props) {
   }, [note, bookId]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="book-actions">
       {status ? (
         <select
           value={status}
@@ -83,21 +86,37 @@ export default function BookActions({ bookId, fileUrl }: Props) {
           <option value="completed">Completed</option>
         </select>
       ) : (
-        <Button onClick={handleAdd} data-testid="add-btn">
+        <button
+          onClick={handleAdd}
+          data-testid="add-btn"
+          className="rounded border px-3 py-1"
+        >
           Add to My Library
-        </Button>
+        </button>
       )}
-      <Button onClick={handleWishlist} data-testid="wishlist-btn">
+      <button
+        onClick={handleWishlist}
+        data-testid="wishlist-btn"
+        className="rounded border px-3 py-1"
+      >
         {wishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
-      </Button>
+      </button>
       <div className="space-x-2">
-        <Button onClick={handleOpen} data-testid="open-btn">
+        <button
+          onClick={handleOpen}
+          data-testid="open-btn"
+          className="rounded border px-3 py-1"
+        >
           Open
-        </Button>
+        </button>
         {fileUrl && (
-          <Button onClick={handleDownload} data-testid="download-btn">
+          <button
+            onClick={handleDownload}
+            data-testid="download-btn"
+            className="rounded border px-3 py-1"
+          >
             Download
-          </Button>
+          </button>
         )}
       </div>
       <div>

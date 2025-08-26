@@ -11,7 +11,10 @@ interface Props {
 export default function LibraryGrid({ books, loading }: Props) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      <div
+        className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+        data-testid="library-grid"
+      >
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={i} className="animate-pulse space-y-2">
             <div className="aspect-[2/3] w-full rounded bg-gray-200" />
@@ -24,7 +27,10 @@ export default function LibraryGrid({ books, loading }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+    <div
+      className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+      data-testid="library-grid"
+    >
       {books.map((book) => (
         <BookCard key={book.id} book={book} />
       ))}
