@@ -33,6 +33,7 @@ export async function searchLibrary(
     .select('id, title, author, genre, language, cover_image_url, description')
     .ilike('title', `%${query.trim()}%`)
     .limit(limit)
+    .abortSignal(options.signal)
     
   if (error) throw error
   
@@ -45,7 +46,9 @@ export async function searchLibrary(
     language: book.language || '',
     cover_url: book.cover_image_url || '',
     popularity: 0,
-    snippet: book.description?.substring(0, 100) + '...' || '',
+    snippet: book.description
+      ? `${book.description.substring(0, 100)}...`
+      : '',
     rank: 1
   }))
 }
