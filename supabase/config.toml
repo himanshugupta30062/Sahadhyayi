@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.recommendations]
 verify_jwt = false
+
+[functions.log_book_event]
+verify_jwt = true

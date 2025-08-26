@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, BookOpen, Globe, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,12 +19,25 @@ import { useBookById } from '@/hooks/useBookById';
 import { useBookRatings, useRateBook } from '@/hooks/useBookRatings';
 import StarRating from '@/components/StarRating';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
+import { logBookEvent } from '@/lib/supabase/events';
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { data: book, isLoading, error } = useBookById(id);
   const { data: ratingData, isLoading: ratingLoading } = useBookRatings(id);
   const rateMutation = useRateBook(id);
+
+  useEffect(() => {
+    if (book?.id) {
+      logBookEvent(book.id, 'view').catch(() => {});
+    }
+  }, [book?.id]);
+
+  const handleDownloadEvent = () => {
+    if (book?.id) {
+      logBookEvent(book.id, 'download').catch(() => {});
+    }
+  };
 
   console.log('BookDetails - Route params:', { id });
   console.log('BookDetails - Book data:', book);
@@ -193,6 +206,7 @@ const BookDetails = () => {
                 price={book.price}
                 description={book.description}
                 pdfUrl={book.pdf_url}
+                onDownload={handleDownloadEvent}
               />
             </div>
 

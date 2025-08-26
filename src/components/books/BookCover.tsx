@@ -12,9 +12,10 @@ interface BookCoverProps {
   bookId: string;
   description?: string;
   pdfUrl?: string;
+  onDownload?: () => void;
 }
 
-const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl }: BookCoverProps) => {
+const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl, onDownload }: BookCoverProps) => {
   const handleDownloadPDF = () => {
     if (pdfUrl) {
       // Check if it's a direct PDF download or a preview link
@@ -31,6 +32,7 @@ const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl }:
         // Preview link (Google Books, etc.)
         window.open(pdfUrl, '_blank');
       }
+      onDownload?.();
     } else {
       alert('PDF not available for this book');
     }
