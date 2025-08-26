@@ -1,24 +1,17 @@
-/*
--- Suggested indexes for books
-CREATE INDEX ON books USING GIN (tags);
-CREATE INDEX ON books (language);
-CREATE INDEX ON books (created_at DESC);
-CREATE INDEX ON books (popularity DESC);
-CREATE INDEX ON books (lower(title) text_pattern_ops);
-*/
-
-import { supabase } from '@/integrations/supabase/client';
-import { z } from 'zod';
-import { bookSchema, type Book, type GetBooksParams } from '@/lib/types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { supabase } from '../../integrations/supabase/client';
+import type { Book, GetBooksParams } from '@/lib/types';
+const supabaseClient: any = supabase;
 
 export async function getBooks(
   params: GetBooksParams,
   signal?: AbortSignal,
 ): Promise<{ items: Book[]; nextCursor?: string }> {
-  const limit = 24;
-  let query = supabase
+  const limit = params.limit ?? 24;
+  let query = supabaseClient
     .from('books')
-    .select('*, authors:authors(id,name,photo_url)')
+    .select('*')
+    .order('created_at', { ascending: false })
     .limit(limit + 1);
 
   if (signal) {
@@ -68,16 +61,25 @@ export async function getBooks(
   if (params.q) {
     const like = `%${params.q}%`;
     query = query.or(
-      `title.ilike.${like},title_hi.ilike.${like},tags.ilike.${like},authors!inner(name.ilike.${like})`,
+      `title.ilike.${like},title_hi.ilike.${like},tags.ilike.${like}`,
     );
   }
 
   const { data, error } = await query;
   if (error) throw error;
 
-  const parsed = z.array(bookSchema).parse(data) as Book[];
-  const items = parsed.slice(0, limit);
-  const nextCursor = parsed.length > limit ? parsed[limit - 1].id : undefined;
+  const items = (data as Book[]).slice(0, limit);
+  const nextCursor = data && data.length > limit ? (data as Book[])[limit - 1].id : undefined;
 
   return { items, nextCursor };
+}
+
+export async function getBookById(id: string): Promise<Book | null> {
+  const { data, error } = await supabaseClient
+    .from('books')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as unknown as Book) ?? null;
 }

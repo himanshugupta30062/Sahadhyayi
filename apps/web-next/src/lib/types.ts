@@ -1,33 +1,38 @@
-import { z } from 'zod';
+export type Language = 'HI' | 'EN';
+export type ReadingStatus = 'to_read' | 'reading' | 'completed';
 
-export const languageSchema = z.union([z.literal('HI'), z.literal('EN')]);
-export type Language = z.infer<typeof languageSchema>;
+export interface Book {
+  id: string;
+  title: string;
+  title_hi?: string | null;
+  author_id?: string | null;
+  author_ids?: string[] | null;
+  genres?: string[] | null;
+  tags?: string[] | null;
+  language: Language;
+  year?: number | null;
+  cost?: number | null;
+  cover_url?: string | null;
+  file_url?: string | null;
+  popularity?: number | null;
+  created_at?: string;
+  updated_at?: string;
+}
 
-export const authorSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  photo_url: z.string().url().nullable().optional(),
-});
-export type Author = z.infer<typeof authorSchema>;
+export interface Author {
+  id: string;
+  name: string;
+  photo_url?: string | null;
+  bio?: string | null;
+}
 
-export const bookSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  title_hi: z.string().optional(),
-  author_ids: z.array(z.string()),
-  genres: z.array(z.string()),
-  tags: z.array(z.string()),
-  language: languageSchema,
-  year: z.number().int().optional(),
-  cost: z.number().nullable().optional(),
-  cover_url: z.string().url().nullable().optional(),
-  file_url: z.string().url().nullable().optional(),
-  popularity: z.number().optional(),
-  created_at: z.string(),
-  updated_at: z.string(),
-  authors: z.array(authorSchema).optional(),
-});
-export type Book = z.infer<typeof bookSchema>;
+export interface UserBook {
+  user_id: string;
+  book_id: string;
+  status: ReadingStatus;
+  progress?: number | null;
+  last_opened_at?: string | null;
+}
 
 export type SortOption = 'newest' | 'popularity' | 'az' | 'za';
 
@@ -39,4 +44,5 @@ export interface GetBooksParams {
   yearRange?: [number | undefined, number | undefined];
   sort?: SortOption;
   cursor?: string;
+  limit?: number;
 }

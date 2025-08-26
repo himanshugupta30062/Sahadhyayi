@@ -16,6 +16,7 @@ export default function BookCard({ book }: Props) {
       onClick={() => router.push(`/library/${book.id}`)}
       className="text-left"
       aria-label={`View details for ${book.title}`}
+      data-testid="book-card"
     >
       <div className="aspect-[2/3] w-full overflow-hidden rounded bg-gray-100">
         <img
@@ -24,17 +25,14 @@ export default function BookCard({ book }: Props) {
           className="h-full w-full object-cover"
         />
       </div>
-      <h3 className="mt-2 line-clamp-2 text-sm font-semibold">{book.title}</h3>
-      {book.authors && (
-        <p className="text-xs text-gray-600 line-clamp-1">
-          {book.authors.map((a) => a.name).join(', ')}
-        </p>
-      )}
+      <h3 className="mt-2 line-clamp-2 text-sm font-semibold" data-testid="book-title">
+        {book.title}
+      </h3>
       <div className="mt-1 flex flex-wrap gap-1">
         <span className="rounded bg-gray-200 px-1 text-[10px] font-medium">
           {book.language}
         </span>
-        {book.tags.map((tag) => (
+        {book.tags?.map((tag) => (
           <span key={tag} className="rounded bg-gray-100 px-1 text-[10px]">
             {tag}
           </span>
