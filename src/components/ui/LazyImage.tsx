@@ -24,6 +24,7 @@ export function LazyImage({
         decoding="async"
         alt={alt}
         src={src}
+        referrerPolicy="no-referrer"
         className={className}
         width={width}
         height={height}
