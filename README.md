@@ -202,3 +202,14 @@ This project makes use of open-source packages, and we are committed to complyin
 ## External Integrations
 
 Sahadhyayi can connect to Goodreads so you can import your existing bookshelf and export your reading history back to Goodreads. See [docs/ExternalIntegrations.md](docs/ExternalIntegrations.md) for details.
+
+## Library Merge Audit
+
+Use `tools/library-merge-audit.sh` to catch merge issues in library code.
+
+```bash
+bash tools/library-merge-audit.sh
+```
+
+The script reports duplicate `Book`/`Author` type definitions, TODO/CONFLICT markers, and unresolved imports in `apps/web-next/src/lib/supabase/books.ts`.
+It exits with a non-zero status if any issues are found.
