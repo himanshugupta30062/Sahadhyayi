@@ -9,8 +9,7 @@ interface Props {
 
 export default function BookCard({ book }: Props) {
   const router = useRouter();
-  const cover =
-    book.cover_image_url ?? 'https://placehold.co/200x300?text=No+Cover';
+  const cover = book.cover_url ?? 'https://placehold.co/200x300?text=No+Cover';
 
   return (
     <button

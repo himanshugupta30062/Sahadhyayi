@@ -12,8 +12,8 @@ export interface Book {
   publication_year?: number | null;
   pages?: number | null;
   isbn?: string | null;
-  cover_image_url?: string | null;
-  pdf_url?: string | null;
+  cover_url?: string | null;
+  file_url?: string | null;
   created_at?: string | null;
   description?: string | null;
 }
