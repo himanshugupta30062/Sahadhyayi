@@ -10,6 +10,7 @@ import { useColorCycle } from '@/hooks/chatbot/useColorCycle';
 import { useChatHistory } from '@/hooks/chatbot/useChatHistory';
 import { useChatbotAI } from '@/hooks/chatbot/useChatbotAI';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
+import { generateContextualResponse } from '@/utils/chatbotKnowledge';
 
 const GRADIENTS = [
   'bg-gradient-to-r from-emerald-500 to-blue-500',
@@ -33,8 +34,9 @@ export default function ChatbotContainer() {
       const reply = await ask(text);
       append('assistant', reply);
     } catch (e: any) {
-      append('assistant', 'Sorry—something went wrong. Please try again.');
       console.error(e);
+      const fallback = generateContextualResponse(text);
+      append('assistant', fallback);
     } finally {
       setLoading(false);
     }
