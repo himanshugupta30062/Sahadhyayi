@@ -527,7 +527,7 @@ export type Database = {
           author: string | null
           author_bio: string | null
           author_id: string | null
-          cover_image_url: string | null
+          cover_url: string | null
           created_at: string | null
           description: string | null
           genre: string | null
@@ -535,7 +535,7 @@ export type Database = {
           isbn: string | null
           language: string | null
           pages: number | null
-          pdf_url: string | null
+          file_url: string | null
           publication_year: number | null
           title: string
         }
@@ -543,7 +543,7 @@ export type Database = {
           author?: string | null
           author_bio?: string | null
           author_id?: string | null
-          cover_image_url?: string | null
+          cover_url?: string | null
           created_at?: string | null
           description?: string | null
           genre?: string | null
@@ -551,7 +551,7 @@ export type Database = {
           isbn?: string | null
           language?: string | null
           pages?: number | null
-          pdf_url?: string | null
+          file_url?: string | null
           publication_year?: number | null
           title: string
         }
@@ -559,7 +559,7 @@ export type Database = {
           author?: string | null
           author_bio?: string | null
           author_id?: string | null
-          cover_image_url?: string | null
+          cover_url?: string | null
           created_at?: string | null
           description?: string | null
           genre?: string | null
@@ -567,7 +567,7 @@ export type Database = {
           isbn?: string | null
           language?: string | null
           pages?: number | null
-          pdf_url?: string | null
+          file_url?: string | null
           publication_year?: number | null
           title?: string
         }
@@ -585,7 +585,7 @@ export type Database = {
         Row: {
           author: string | null
           author_bio: string | null
-          cover_image_url: string | null
+          cover_url: string | null
           created_at: string | null
           description: string | null
           genre: string | null
@@ -593,7 +593,7 @@ export type Database = {
           isbn: string | null
           language: string | null
           pages: number | null
-          pdf_url: string | null
+          file_url: string | null
           publication_year: number | null
           title: string
           updated_at: string | null
@@ -601,7 +601,7 @@ export type Database = {
         Insert: {
           author?: string | null
           author_bio?: string | null
-          cover_image_url?: string | null
+          cover_url?: string | null
           created_at?: string | null
           description?: string | null
           genre?: string | null
@@ -609,7 +609,7 @@ export type Database = {
           isbn?: string | null
           language?: string | null
           pages?: number | null
-          pdf_url?: string | null
+          file_url?: string | null
           publication_year?: number | null
           title: string
           updated_at?: string | null
@@ -617,7 +617,7 @@ export type Database = {
         Update: {
           author?: string | null
           author_bio?: string | null
-          cover_image_url?: string | null
+          cover_url?: string | null
           created_at?: string | null
           description?: string | null
           genre?: string | null
@@ -625,7 +625,7 @@ export type Database = {
           isbn?: string | null
           language?: string | null
           pages?: number | null
-          pdf_url?: string | null
+          file_url?: string | null
           publication_year?: number | null
           title?: string
           updated_at?: string | null
@@ -1610,7 +1610,7 @@ export type Database = {
       reading_progress: {
         Row: {
           book_title: string
-          cover_image_url: string | null
+          cover_url: string | null
           current_page: number
           id: number
           total_pages: number
@@ -1618,7 +1618,7 @@ export type Database = {
         }
         Insert: {
           book_title: string
-          cover_image_url?: string | null
+          cover_url?: string | null
           current_page?: number
           id?: number
           total_pages: number
@@ -1626,7 +1626,7 @@ export type Database = {
         }
         Update: {
           book_title?: string
-          cover_image_url?: string | null
+          cover_url?: string | null
           current_page?: number
           id?: number
           total_pages?: number
