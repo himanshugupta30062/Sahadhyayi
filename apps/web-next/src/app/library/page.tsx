@@ -55,7 +55,8 @@ export default function LibraryPage() {
       })
       .catch((err) => {
         if (err.name !== 'AbortError') {
-          setError('Something went wrong while loading books.');
+          console.error('Failed to load books', err);
+          setError('Failed to load books. Please try again later.');
         }
       })
       .finally(() => setLoading(false));

@@ -11,7 +11,6 @@ export async function getBooks(
   let query = supabaseClient
     .from('books_library')
     .select('*')
-    .order('created_at', { ascending: false })
     .limit(limit + 1);
 
   if (signal) {
@@ -55,7 +54,10 @@ export async function getBooks(
   }
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) {
+    console.error('getBooks error', error);
+    throw error;
+  }
 
   const items = (data as Book[]).slice(0, limit);
   const nextCursor = data && data.length > limit ? (data as Book[])[limit - 1].id : undefined;
