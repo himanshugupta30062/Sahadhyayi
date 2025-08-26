@@ -10,7 +10,7 @@ export interface CurrentRead extends UserBook {
 export async function getCurrentReads(userId: string): Promise<CurrentRead[]> {
   const { data, error } = await supabaseClient
     .from('user_books' as any)
-    .select('book_id, status, progress, last_opened_at, books:book_id (*)')
+    .select('book_id, status, progress, last_opened_at, books_library:book_id (*)')
     .eq('user_id', userId)
     .eq('status', 'reading')
     .order('last_opened_at', { ascending: false })
@@ -29,7 +29,7 @@ export async function getCurrentReads(userId: string): Promise<CurrentRead[]> {
     status: item.status as ReadingStatus,
     progress: item.progress,
     last_opened_at: item.last_opened_at,
-    book: item.books as Book,
+    book: item.books_library as Book,
   }));
 }
 

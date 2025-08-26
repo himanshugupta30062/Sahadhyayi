@@ -14,7 +14,7 @@ export default async function BookPage(props: any) {
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-4">
       <h1 className="text-3xl font-bold">{book.title}</h1>
-      <BookActions bookId={book.id} fileUrl={book.file_url} />
+      <BookActions bookId={book.id} fileUrl={book.pdf_url} />
     </div>
   );
 }

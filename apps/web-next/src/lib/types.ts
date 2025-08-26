@@ -4,19 +4,18 @@ export type ReadingStatus = 'to_read' | 'reading' | 'completed';
 export interface Book {
   id: string;
   title: string;
-  title_hi?: string | null;
+  author?: string | null;
+  author_bio?: string | null;
   author_id?: string | null;
-  author_ids?: string[] | null;
-  genres?: string[] | null;
-  tags?: string[] | null;
-  language: Language;
-  year?: number | null;
-  cost?: number | null;
-  cover_url?: string | null;
-  file_url?: string | null;
-  popularity?: number | null;
-  created_at?: string;
-  updated_at?: string;
+  genre?: string | null;
+  language?: Language | null;
+  publication_year?: number | null;
+  pages?: number | null;
+  isbn?: string | null;
+  cover_image_url?: string | null;
+  pdf_url?: string | null;
+  created_at?: string | null;
+  description?: string | null;
 }
 
 export interface Author {
