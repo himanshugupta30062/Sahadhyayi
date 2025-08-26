@@ -20,45 +20,72 @@ export default function BookActions({ bookId, fileUrl }: Props) {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    getStatus(bookId).then(setStatusState);
-    getNote(bookId).then(setNote);
+    getStatus(bookId).then(setStatusState).catch((e) => {
+      console.error('getStatus error', e);
+    });
+    getNote(bookId).then(setNote).catch((e) => {
+      console.error('getNote error', e);
+    });
     supabaseClient
       .from('user_wishlist')
       .select('id')
       .eq('book_id', bookId)
       .maybeSingle()
-      .then(({ data }) => setWishlisted(!!data));
+      .then(({ data }) => setWishlisted(!!data))
+      .catch((e: any) => {
+        console.error('wishlist fetch error', e);
+      });
   }, [bookId]);
 
   const handleAdd = async () => {
-    await setStatus(bookId, 'to_read');
-    setStatusState('to_read');
+    try {
+      await setStatus(bookId, 'to_read');
+      setStatusState('to_read');
+    } catch (e) {
+      console.error('add book error', e);
+    }
   };
 
   const handleWishlist = async () => {
-    const next = await toggleWishlist(bookId);
-    setWishlisted(next);
+    try {
+      const next = await toggleWishlist(bookId);
+      setWishlisted(next);
+    } catch (e) {
+      console.error('wishlist toggle error', e);
+    }
   };
 
   const handleStatusChange = async (
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const newStatus = e.target.value as ReadingStatus;
-    await setStatus(bookId, newStatus);
-    setStatusState(newStatus);
+    try {
+      await setStatus(bookId, newStatus);
+      setStatusState(newStatus);
+    } catch (e) {
+      console.error('status change error', e);
+    }
   };
 
   const handleOpen = async () => {
-    await touchLastOpened(bookId);
-    await supabaseClient
-      .from('book_events')
-      .insert({ book_id: bookId, event: 'view' });
+    try {
+      await touchLastOpened(bookId);
+      await supabaseClient
+        .from('book_events')
+        .insert({ book_id: bookId, event: 'view' });
+    } catch (e) {
+      console.error('open book error', e);
+    }
   };
 
   const handleDownload = async () => {
-    await supabaseClient
-      .from('book_events')
-      .insert({ book_id: bookId, event: 'download' });
+    try {
+      await supabaseClient
+        .from('book_events')
+        .insert({ book_id: bookId, event: 'download' });
+    } catch (e) {
+      console.error('download book error', e);
+    }
   };
 
   useEffect(() => {

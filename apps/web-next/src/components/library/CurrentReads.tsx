@@ -11,17 +11,31 @@ export default function CurrentReads() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      const user = data.user;
-      if (user) {
-        setUserId(user.id);
-        getCurrentReads(user.id)
-          .then(setReads)
-          .finally(() => setLoading(false));
-      } else {
+    supabase.auth
+      .getUser()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('getUser error', error);
+          setLoading(false);
+          return;
+        }
+        const user = data.user;
+        if (user) {
+          setUserId(user.id);
+          getCurrentReads(user.id)
+            .then(setReads)
+            .catch((e) => {
+              console.error('getCurrentReads error', e);
+            })
+            .finally(() => setLoading(false));
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        console.error('getUser error', e);
         setLoading(false);
-      }
-    });
+      });
   }, []);
 
   if (!userId) {

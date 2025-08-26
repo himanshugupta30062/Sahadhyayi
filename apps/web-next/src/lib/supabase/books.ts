@@ -60,7 +60,8 @@ export async function getBooks(
   }
 
   const items = (data as Book[]).slice(0, limit);
-  const nextCursor = data && data.length > limit ? (data as Book[])[limit - 1].id : undefined;
+  const nextCursor =
+    data && data.length > limit ? (data as Book[])[limit].id : undefined;
 
   return { items, nextCursor };
 }
@@ -71,6 +72,9 @@ export async function getBookById(id: string): Promise<Book | null> {
     .select('*')
     .eq('id', id)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    console.error('getBookById error', error);
+    return null;
+  }
   return (data as unknown as Book) ?? null;
 }
