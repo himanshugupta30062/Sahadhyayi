@@ -6,7 +6,7 @@ import SearchAndFilters, { FilterState } from '@/components/library/SearchAndFil
 import Paginator from '@/components/library/Paginator';
 import { getBooks } from '@/lib/supabase/books';
 import type { Book } from '@/lib/types';
-import useDebouncedValue from '@/lib/useDebouncedValue';
+import { makeAbortable } from '@/lib/fetchAbort';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,25 +28,26 @@ export default function LibraryPage() {
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [history, setHistory] = useState<string[]>([]);
 
-  const debouncedQuery = useDebouncedValue(query, 300);
-
   useEffect(() => {
-    const controller = new AbortController();
+    const { run, abort } = makeAbortable((signal) =>
+      getBooks(
+        {
+          q: query || undefined,
+          genres: filters.genres,
+          language: filters.language,
+          price: filters.price,
+          yearRange: filters.yearRange,
+          sort: filters.sort,
+          cursor,
+        },
+        signal,
+      ),
+    );
+
     setLoading(true);
     setError(null);
 
-    getBooks(
-      {
-        q: debouncedQuery || undefined,
-        genres: filters.genres,
-        language: filters.language,
-        price: filters.price,
-        yearRange: filters.yearRange,
-        sort: filters.sort,
-        cursor,
-      },
-      controller.signal,
-    )
+    run()
       .then((res) => {
         setBooks(res.items);
         setNextCursor(res.nextCursor);
@@ -58,8 +59,8 @@ export default function LibraryPage() {
       })
       .finally(() => setLoading(false));
 
-    return () => controller.abort();
-  }, [debouncedQuery, filters, cursor]);
+    return abort;
+  }, [query, filters, cursor]);
 
   const handleQueryChange = (val: string) => {
     setQuery(val);

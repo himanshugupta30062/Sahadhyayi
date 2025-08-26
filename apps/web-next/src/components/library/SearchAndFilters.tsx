@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import useDebouncedValue from '@/lib/useDebouncedValue';
 import type { Language, SortOption } from '@/lib/types';
 
 export interface FilterState {
@@ -25,6 +27,17 @@ export default function SearchAndFilters({
   filters,
   onFiltersChange,
 }: Props) {
+  const [internalQuery, setInternalQuery] = useState(query);
+  const debouncedQuery = useDebouncedValue(internalQuery, 300);
+
+  useEffect(() => {
+    onQueryChange(debouncedQuery);
+  }, [debouncedQuery, onQueryChange]);
+
+  useEffect(() => {
+    setInternalQuery(query);
+  }, [query]);
+
   const update = (partial: Partial<FilterState>) =>
     onFiltersChange({ ...filters, ...partial });
 
@@ -32,8 +45,8 @@ export default function SearchAndFilters({
     <div className="flex flex-wrap items-end gap-4">
       <input
         type="search"
-        value={query}
-        onChange={(e) => onQueryChange(e.target.value)}
+        value={internalQuery}
+        onChange={(e) => setInternalQuery(e.target.value)}
         placeholder="Search by title, author, tags..."
         aria-label="Search books"
         className="flex-1 rounded border px-2 py-1"
