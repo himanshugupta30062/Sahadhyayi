@@ -11,7 +11,7 @@ import SEO from "@/components/SEO";
 import AnimatedHero from "@/components/AnimatedHero";
 import SahadhyayiCircuit from "@/components/SahadhyayiCircuit";
 import SahadhyayiCapabilities from "@/components/SahadhyayiCapabilities";
-import CurrentReads from "@/components/dashboard/CurrentReads";
+import CurrentReads from "@/components/library/CurrentReads";
 
 const Index = () => {
   const { user } = useAuth();
@@ -106,7 +106,7 @@ const Index = () => {
               </h2>
               <p className="text-gray-700 text-lg">Continue your reading journey</p>
             </div>
-            <CurrentReads userId={user.id} />
+            <CurrentReads />
             
             <div className="text-center mt-8">
               <Link to="/dashboard">

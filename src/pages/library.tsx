@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { BookOpen, Download, Plus, Search, Grid, List, X, Calendar, FileText, Globe, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAddLibraryBook } from '@/hooks/useLibrary';
 import { toast } from '@/hooks/use-toast';
+import CurrentReads from '@/components/library/CurrentReads';
 
 interface Book {
   id: string;
@@ -437,6 +438,10 @@ export default function Library() {
               <div className="text-sm text-muted-foreground">Downloads</div>
             </div>
           </div>
+        </div>
+
+        <div className="mb-8">
+          <CurrentReads />
         </div>
 
         {/* Search and Filters */}
