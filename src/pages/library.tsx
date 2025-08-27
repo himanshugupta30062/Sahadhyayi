@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SEO from '@/components/SEO';
-import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,19 +12,6 @@ import { BookOpen, Download, Plus, Search, Grid, List, X, Calendar, FileText, Gl
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import CurrentReads from '@/components/library/CurrentReads';
-
-interface Book {
-  id: string;
-  title: string;
-  author?: string | null;
-  genre?: string | null;
-  language?: string | null;
-  cover_image_url?: string | null;
-  description?: string | null;
-  publication_year?: number | null;
-  pages?: number | null;
-  pdf_url?: string | null;
-}
 
 export default function Library() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
