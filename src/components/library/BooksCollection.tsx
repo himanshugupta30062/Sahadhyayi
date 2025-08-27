@@ -182,9 +182,9 @@ const BooksCollection = ({
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           book.title.toLowerCase().includes(query) ||
-          book.author.toLowerCase().includes(query) ||
+          (book.author && book.author.toLowerCase().includes(query)) ||
           (book.genre && book.genre.toLowerCase().includes(query));
         if (!matchesSearch) {
           return false;
