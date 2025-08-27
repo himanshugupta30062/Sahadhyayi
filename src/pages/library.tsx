@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SEO from '@/components/SEO';
-import { useLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BookOpen, Download, Plus, Search, Grid, List, X, Calendar, FileText, Globe, User, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useAddLibraryBook } from '@/hooks/useLibrary';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import CurrentReads from '@/components/library/CurrentReads';
 
@@ -36,8 +36,7 @@ export default function Library() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const booksPerPage = 24;
 
-  const { data: books = [], isLoading, error } = useLibraryBooks();
-  const addToLibrary = useAddLibraryBook();
+  const { data: books = [], isLoading, error } = useAllLibraryBooks();
 
   // Filter and search logic
   const filteredBooks = React.useMemo(() => {
@@ -105,20 +104,25 @@ export default function Library() {
 
   const handleAddToLibrary = async (book: Book) => {
     try {
-      await addToLibrary.mutateAsync({
-        title: book.title,
-        author: book.author || null,
-        genre: book.genre || null,
-        cover_image_url: book.cover_image_url || null
-      });
+      const { error } = await supabase
+        .from('user_books')
+        .insert({
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+          book_id: book.id,
+          status: 'want_to_read'
+        });
+
+      if (error) throw error;
+
       toast({
         title: 'Success',
         description: 'Book added to your library!'
       });
     } catch (error) {
+      console.error('Error adding book to library:', error);
       toast({
         title: 'Error',
-        description: 'Failed to add book to library',
+        description: 'Failed to add book to library. Please try again.',
         variant: 'destructive'
       });
     }
@@ -209,7 +213,6 @@ export default function Library() {
                       e.stopPropagation();
                       handleAddToLibrary(book);
                     }}
-                    disabled={addToLibrary.isPending}
                     size="sm"
                     className="w-32"
                   >
@@ -381,6 +384,7 @@ export default function Library() {
   };
 
   if (error) {
+    console.error('Library error:', error);
     return (
       <div className="min-h-screen bg-background">
         <SEO 
@@ -390,7 +394,12 @@ export default function Library() {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-destructive mb-4">Error Loading Library</h1>
-            <p className="text-muted-foreground">Please try again later.</p>
+            <p className="text-muted-foreground mb-4">
+              {error instanceof Error ? error.message : 'Something went wrong. Please try again later.'}
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
           </div>
         </div>
       </div>
@@ -645,10 +654,9 @@ export default function Library() {
                     variant="secondary" 
                     className="w-full"
                     size="lg"
-                    disabled={addToLibrary.isPending}
                   >
                     <Plus className="h-5 w-5 mr-2" />
-                    {addToLibrary.isPending ? 'Adding...' : 'Add to Library'}
+                    Add to Library
                   </Button>
                 </div>
               </div>
