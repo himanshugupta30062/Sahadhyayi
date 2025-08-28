@@ -36,7 +36,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
   };
 
   return (
-    <Card className="group hover:shadow-warm transition-all duration-300 transform hover:-translate-y-1 bg-card border-border overflow-hidden">
+    <Card className="book-card group hover:shadow-warm transition-all duration-300 transform hover:-translate-y-1 bg-card border-border">
       <div 
         className="aspect-[3/4] bg-gradient-primary relative overflow-hidden cursor-pointer"
         onMouseEnter={() => setIsHovered(true)}
