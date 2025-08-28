@@ -30,13 +30,14 @@ export default function ResultsList({ results, loading, error }: Props) {
 
   return (
     <div ref={parentRef} style={{ height: '60vh', overflow: 'auto' }}>
-      <div
+      <ul
+        role="list"
         style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', width: '100%' }}
       >
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const book = results[virtualRow.index]
           return (
-            <div
+            <li
               key={book.id}
               ref={rowVirtualizer.measureElement}
               className="flex gap-4 border-b p-4"
@@ -49,7 +50,12 @@ export default function ResultsList({ results, loading, error }: Props) {
               }}
             >
               {book.cover_url && (
-                <img src={book.cover_url} alt="" className="w-16 h-24 object-cover" />
+                <img
+                  src={book.cover_url}
+                  alt={`${book.title} book cover`}
+                  loading="lazy"
+                  className="w-16 h-24 object-cover"
+                />
               )}
               <div className="flex-1">
                 <h3 className="font-semibold">
@@ -72,15 +78,17 @@ export default function ResultsList({ results, loading, error }: Props) {
               </div>
               <div className="flex flex-col items-end gap-2">
                 <span className="text-xs bg-amber-100 px-2 py-0.5 rounded">{book.popularity}</span>
-                <button className="text-sm px-2 py-1 border rounded">Add to shelf</button>
+                <button className="text-sm px-2 py-1 border rounded bg-gray-100 text-gray-900 hover:bg-gray-200">
+                  Add to shelf
+                </button>
               </div>
-            </div>
+            </li>
           )
         })}
         {loading && (
-          <div className="p-4">Loading…</div>
+          <li className="p-4">Loading…</li>
         )}
-      </div>
+      </ul>
     </div>
   )
 }
