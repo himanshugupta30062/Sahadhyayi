@@ -103,7 +103,7 @@ export default function Library() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-neutral flex items-center justify-center">
         <Card className="p-8 text-center">
           <CardContent>
             <p className="text-red-500 mb-4">Error loading library: {error.message}</p>
@@ -115,7 +115,7 @@ export default function Library() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-neutral">
       <SEO 
         title="Enhanced Digital Library - Immersive Reading Experience | Sahadhyayi"
         description="Step into our immersive digital library with interactive features, personalized recommendations, and a vast collection of books across all genres."
@@ -131,7 +131,7 @@ export default function Library() {
         activeReaders={2847}
       />
 
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="page-container space-y-8">
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main content */}
@@ -212,12 +212,12 @@ export default function Library() {
             ) : filteredBooks.length === 0 ? (
               <Card className="p-12 text-center">
                 <CardContent>
-                  <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Books Found</h3>
-                  <p className="text-gray-600 mb-4">
+                  <BookOpen className="w-16 h-16 text-brand mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-brand mb-2">No Books Found</h3>
+                  <p className="mb-4">
                     Try adjusting your search criteria or filters to find more books.
                   </p>
-                  <Button onClick={handleReset} variant="outline">
+                  <Button onClick={handleReset} variant="outline" className="btn-primary">
                     Clear Filters
                   </Button>
                 </CardContent>
@@ -243,36 +243,36 @@ export default function Library() {
 
             {/* Featured Collections */}
             <div className="grid md:grid-cols-3 gap-6 mt-12">
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <Card className="bg-neutral border-brand">
                 <CardContent className="p-6 text-center">
-                  <div className="p-3 bg-blue-500 text-white rounded-full w-fit mx-auto mb-4">
+                  <div className="p-3 bg-brand text-white rounded-full w-fit mx-auto mb-4">
                     <Star className="w-6 h-6" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Editor's Choice</h3>
-                  <p className="text-sm text-gray-600 mb-4">Handpicked books by our editorial team</p>
-                  <Button variant="outline" size="sm">Explore</Button>
+                  <h3 className="font-semibold text-brand mb-2">Editor's Choice</h3>
+                  <p className="text-sm mb-4">Handpicked books by our editorial team</p>
+                  <Button variant="outline" size="sm" className="btn-primary">Explore</Button>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <Card className="bg-neutral border-brand">
                 <CardContent className="p-6 text-center">
-                  <div className="p-3 bg-green-500 text-white rounded-full w-fit mx-auto mb-4">
+                  <div className="p-3 bg-brand text-white rounded-full w-fit mx-auto mb-4">
                     <Users className="w-6 h-6" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Community Favorites</h3>
-                  <p className="text-sm text-gray-600 mb-4">Most loved books by our readers</p>
-                  <Button variant="outline" size="sm">Discover</Button>
+                  <h3 className="font-semibold text-brand mb-2">Community Favorites</h3>
+                  <p className="text-sm mb-4">Most loved books by our readers</p>
+                  <Button variant="outline" size="sm" className="btn-primary">Discover</Button>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <Card className="bg-neutral border-brand">
                 <CardContent className="p-6 text-center">
-                  <div className="p-3 bg-purple-500 text-white rounded-full w-fit mx-auto mb-4">
+                  <div className="p-3 bg-brand text-white rounded-full w-fit mx-auto mb-4">
                     <Sparkles className="w-6 h-6" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">New Arrivals</h3>
-                  <p className="text-sm text-gray-600 mb-4">Latest additions to our collection</p>
-                  <Button variant="outline" size="sm">Browse</Button>
+                  <h3 className="font-semibold text-brand mb-2">New Arrivals</h3>
+                  <p className="text-sm mb-4">Latest additions to our collection</p>
+                  <Button variant="outline" size="sm" className="btn-primary">Browse</Button>
                 </CardContent>
               </Card>
             </div>

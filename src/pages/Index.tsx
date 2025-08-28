@@ -91,39 +91,41 @@ const Index = () => {
       </script>
       {/* Animated Hero Section */}
       <AnimatedHero />
-      
-      <SahadhyayiCircuit />
-      
-      <SahadhyayiCapabilities />
-      
-      {/* Current Reads Section for Signed-in Users */}
-      {user && (
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                Welcome back, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader'}! 
-              </h2>
-              <p className="text-gray-700 text-lg">Continue your reading journey</p>
+      <div className="page-container">
+        <SahadhyayiCircuit />
+
+        <SahadhyayiCapabilities />
+
+        {/* Current Reads Section for Signed-in Users */}
+        {user && (
+          <section className="py-8 sm:py-12 lg:py-16 bg-neutral">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-brand mb-4">
+                  Welcome back, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader'}!
+                </h2>
+                <p className="text-lg">Continue your reading journey</p>
+              </div>
+              <CurrentReads />
+
+              <div className="text-center mt-8">
+                <Link to="/dashboard">
+                  <Button className="btn-primary px-8 py-3">
+                    Go to Full Dashboard
+                  </Button>
+                </Link>
+              </div>
             </div>
-            <CurrentReads />
-            
-            <div className="text-center mt-8">
-              <Link to="/dashboard">
-                <Button className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3">
-                  Go to Full Dashboard
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-      
-      <div className="min-h-screen bg-black text-white">
+          </section>
+        )}
+      </div>
+
+      <div className="bg-brand text-white">
+        <div className="page-container">
 
         {/* What Sahadhyayi Means Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black/60 backdrop-blur-sm">
-          <div className="max-w-6xl mx-auto text-center">
+        <section className="py-8 sm:py-12 lg:py-16">
+          <div className="text-center">
             <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-100 mb-4 sm:mb-6 lg:mb-8">What is Sahadhyayi? Understanding Our Name</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-center">
               <div className="text-left order-2 lg:order-1">
@@ -185,8 +187,8 @@ const Index = () => {
         </section>
 
         {/* Mission Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black">
-          <div className="max-w-6xl mx-auto text-center">
+        <section className="py-8 sm:py-12 lg:py-16">
+          <div className="text-center">
             <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-100 mb-4 sm:mb-6 lg:mb-8">How Sahadhyayi Revives Reading Culture</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-center">
               <div className="text-left order-2 lg:order-1">
@@ -299,27 +301,28 @@ const Index = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black text-white">
+        <section className="py-8 sm:py-12 lg:py-16 text-white">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold mb-3 sm:mb-4 lg:mb-6">Ready to Start Your Reading Journey?</h2>
-            <p className="text-sm sm:text-base lg:text-lg xl:text-xl mb-4 sm:mb-6 lg:mb-8 opacity-90 px-4">
+            <p className="text-sm sm:text-base lg:text-lg xl:text-xl mb-4 sm:mb-6 lg:mb-8 opacity-90">
               Join Sahadhyayi today and experience the joy of reading together.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link to="/signup" className="w-full sm:w-auto">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg">
+                <Button size="lg" variant="secondary" className="w-full sm:w-auto btn-primary px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg">
                   <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2" />
                   Get Started Free
                 </Button>
               </Link>
               <Link to="/about" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white font-semibold px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto btn-primary px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg">
                   Learn More About Sahadhyayi
                 </Button>
               </Link>
             </div>
           </div>
         </section>
+        </div>
       </div>
     </>
   );
