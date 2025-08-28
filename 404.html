@@ -32,21 +32,28 @@
       body {
         font-family: system-ui, sans-serif;
         display: flex;
+        flex-direction: column;
         min-height: 100vh;
-        align-items: center;
-        justify-content: center;
         padding: 2rem;
         text-align: center;
         background: #000;
         color: #fff;
       }
-      #fallback {
+      main {
+        flex: 1;
         max-width: 600px;
+        width: 100%;
+        margin: 0 auto;
         display: none;
       }
-      #fallback a {
+      main a {
         color: #fff;
         text-decoration: underline;
+      }
+      @media (max-width: 600px) {
+        body {
+          padding: 1rem;
+        }
       }
     </style>
     <script>
@@ -66,13 +73,26 @@
   </head>
 
   <body>
-    <div id="fallback">
+    <header>
+      <nav>
+        <a href="/" aria-label="Sahadhyayi home">
+          <img src="/lovable-uploads/sahadhyayi-logo-digital-reading.png" alt="Sahadhyayi logo" style="height:40px" />
+        </a>
+      </nav>
+    </header>
+    <main id="fallback">
       <h1>Page not found</h1>
-      <p>
-        The page you're looking for doesn't exist or the application failed to load.
-        You can try refreshing the page or return to the
-        <a href="/">homepage</a>.
-      </p>
-    </div>
+      <p>The page you're looking for doesn't exist or the application failed to load.</p>
+      <ul>
+        <li>Refresh the page</li>
+        <li>
+          Return to the
+          <a href="/">homepage</a>
+        </li>
+      </ul>
+    </main>
+    <footer>
+      <small>&copy; 2024 Sahadhyayi</small>
+    </footer>
   </body>
 </html>

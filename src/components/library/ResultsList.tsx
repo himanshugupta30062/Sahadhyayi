@@ -49,7 +49,7 @@ export default function ResultsList({ results, loading, error }: Props) {
               }}
             >
               {book.cover_url && (
-                <img src={book.cover_url} alt="" className="w-16 h-24 object-cover" />
+                <img src={book.cover_url} alt={`Cover of ${book.title}`} className="w-16 h-24 object-cover" />
               )}
               <div className="flex-1">
                 <h3 className="font-semibold">

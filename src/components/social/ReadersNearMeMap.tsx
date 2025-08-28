@@ -318,7 +318,7 @@ export const ReadersNearMeMap: React.FC = () => {
           <div style="padding: 12px; max-width: 250px;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
               <div style="width: 40px; height: 40px; background: ${isFriend ? '#10b981' : '#f97316'}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                ${reader.avatar_img_url ? `<img src="${reader.avatar_img_url}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />` : reader.full_name.charAt(0).toUpperCase()}
+                  ${reader.avatar_img_url ? `<img src="${reader.avatar_img_url}" alt="Avatar of ${reader.full_name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />` : reader.full_name.charAt(0).toUpperCase()}
               </div>
               <div>
                 <h3 style="margin: 0; font-size: 16px; font-weight: 600;">
