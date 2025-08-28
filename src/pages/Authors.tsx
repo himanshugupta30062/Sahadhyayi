@@ -1,17 +1,25 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, User, AlertCircle, RefreshCw } from 'lucide-react';
+import { Search, User, MapPin, Calendar, MessageSquare, Clock, AlertCircle, RefreshCw, Star, Users, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ChatWindow } from "@/components/social/ChatWindow";
+import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
+import { useAuth } from '@/contexts/authHelpers';
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import LibraryPagination from '@/components/library/LibraryPagination';
 import { useAuthors, type Author } from '@/hooks/useAuthors';
 import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { toast } from '@/hooks/use-toast';
-import AuthorCard from '@/components/authors/AuthorCard';
+import { generateWebsiteSchema, generateBreadcrumbSchema } from '@/utils/schema';
+
+import { slugify } from '@/utils/slugify';
 
 const Authors = () => {
   const [page, setPage] = useState(1);
@@ -25,6 +33,7 @@ const Authors = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [bookCountFilter, setBookCountFilter] = useState('all');
+  const [chatAuthor, setChatAuthor] = useState<string | null>(null);
 
   // Map books by author name for quick lookup  
   const booksByAuthor = useMemo(() => {
@@ -122,11 +131,55 @@ const Authors = () => {
   ];
 
   // SEO Schema
+  const pageSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Authors Directory - Sahadhyayi",
+    "description": "Discover talented authors on Sahadhyayi. Browse profiles, read biographies, and connect with writers from around the world.",
+    "url": "https://sahadhyayi.com/authors",
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "Featured Authors",
+      "numberOfItems": totalAuthors,
+      "itemListElement": authors.slice(0, 10).map((author, index) => ({
+        "@type": "Person",
+        "position": index + 1,
+        "name": author.name,
+        "description": author.bio,
+        "image": author.profile_image_url,
+        "url": `https://sahadhyayi.com/author/${author.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`,
+        "jobTitle": "Author",
+        "knowsAbout": author.genres,
+        "address": {
+          "@type": "Place",
+          "name": author.location
+        }
+      }))
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://sahadhyayi.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Authors",
+          "item": "https://sahadhyayi.com/authors"
+        }
+      ]
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral">
-        <div className="page-container">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading authors...</p>
@@ -139,11 +192,11 @@ const Authors = () => {
   // Error state with retry option
   if (error) {
     return (
-      <div className="min-h-screen bg-neutral">
-        <div className="page-container">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <div className="container mx-auto px-4 py-8">
           <div className="text-center max-w-md mx-auto">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-brand mb-4">Unable to Load Authors</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Unable to Load Authors</h1>
             <Alert className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -151,11 +204,11 @@ const Authors = () => {
               </AlertDescription>
             </Alert>
             <div className="space-y-4">
-              <Button onClick={handleRetry} className="btn-primary">
+              <Button onClick={handleRetry} className="bg-orange-600 hover:bg-orange-700">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Try Again
               </Button>
-              <p className="text-sm">
+              <p className="text-sm text-gray-500">
                 If the problem persists, please refresh the page or contact support.
               </p>
             </div>
@@ -182,8 +235,8 @@ const Authors = () => {
         type="website"
       />
 
-      <div className="min-h-screen bg-neutral">
-        <div className="page-container">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <div className="container mx-auto px-4 py-8">
           {/* Scroll target for pagination */}
           <div ref={scrollTargetRef} />
           
@@ -192,13 +245,13 @@ const Authors = () => {
 
           {/* Header */}
           <header className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-brand mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Authors Directory
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
               Discover talented authors, explore their works, and connect with writers who inspire you.
             </p>
-            <div className="text-sm">
+            <div className="text-sm text-gray-500">
               {totalAuthors > 0 ? (
                 `Found ${totalAuthors} author${totalAuthors !== 1 ? 's' : ''} in our community`
               ) : (
@@ -212,18 +265,16 @@ const Authors = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Search Bar */}
               <div className="lg:col-span-2">
-                <label htmlFor="author-search" className="block text-sm font-medium text-gray-700 mb-1">
-                  Search Authors
-                </label>
+                <label htmlFor="author-search" className="sr-only">Search authors</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
                     id="author-search"
                     type="text"
-                    placeholder="Search authors"
+                    placeholder="Search authors by name or bio..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-10 h-12 bg-gray-50 border-2 border-gray-200 focus:border-brand rounded-xl"
+                    className="pl-10 pr-10 h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400 rounded-xl"
                   />
                 </div>
               </div>
@@ -232,7 +283,7 @@ const Authors = () => {
               <div>
                 <label htmlFor="genre-filter" className="sr-only">Filter by genre</label>
                 <Select value={selectedGenre} onValueChange={setSelectedGenre}>
-                  <SelectTrigger id="genre-filter" className="h-12 bg-gray-50 border-2 border-gray-200 focus:border-brand rounded-xl">
+                  <SelectTrigger id="genre-filter" className="h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400 rounded-xl">
                     <SelectValue placeholder="Filter by Genre" />
                   </SelectTrigger>
                   <SelectContent>
@@ -248,7 +299,7 @@ const Authors = () => {
               <div>
                 <label htmlFor="book-count-filter" className="sr-only">Filter by books published</label>
                 <Select value={bookCountFilter} onValueChange={setBookCountFilter}>
-                  <SelectTrigger id="book-count-filter" className="h-12 bg-gray-50 border-2 border-gray-200 focus:border-brand rounded-xl">
+                  <SelectTrigger id="book-count-filter" className="h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400 rounded-xl">
                     <SelectValue placeholder="Books Published" />
                   </SelectTrigger>
                   <SelectContent>
@@ -265,13 +316,13 @@ const Authors = () => {
           {/* Show message if no authors found */}
           {filteredAuthors.length === 0 ? (
             <div className="text-center py-12">
-              <User className="w-16 h-16 text-brand mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-brand mb-2">No Authors Found</h2>
-              <p className="mb-6">
+              <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-500 mb-2">No Authors Found</h2>
+              <p className="text-gray-400 mb-6">
                 We're building our authors directory. Check back soon for more authors!
               </p>
               <Link to="/library">
-                <Button className="btn-primary">
+                <Button className="bg-orange-600 hover:bg-orange-700">
                   Explore Library
                 </Button>
               </Link>
@@ -281,7 +332,7 @@ const Authors = () => {
               {/* Featured Authors */}
               {featuredAuthors.length > 0 && (
                 <section aria-labelledby="featured-authors" className="mb-12">
-                  <h2 id="featured-authors" className="text-2xl font-bold text-brand mb-6">Featured Authors</h2>
+                  <h2 id="featured-authors" className="text-2xl font-bold text-gray-900 mb-6">Featured Authors</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {featuredAuthors.map(author => (
                       <AuthorCard
@@ -348,6 +399,169 @@ const Authors = () => {
         </div>
       </div>
     </>
+  );
+};
+
+// Author Card Component  
+interface AuthorCardProps {
+  author: Author;
+  books: Book[];
+  featured: boolean;
+}
+
+const AuthorCard: React.FC<AuthorCardProps> = ({ author, books, featured }) => {
+  const [showChat, setShowChat] = useState(false);
+  const { user } = useAuth();
+
+  const handleMessageClick = () => {
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to message authors.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    setShowChat(true);
+  };
+  const getAuthorInitials = (name: string) => {
+    return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
+  };
+
+  return (
+    <Card className={`group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-orange-200 ${featured ? 'ring-2 ring-orange-300' : ''}`}>
+      <CardContent className={featured ? "p-6" : "p-4"}>
+        <div className="text-center mb-4">
+          <Avatar className={`${featured ? 'w-20 h-20' : 'w-16 h-16'} mx-auto mb-3 ring-2 ring-orange-200 group-hover:ring-orange-400 transition-all`}>
+            <AvatarImage src={author.profile_image_url || ""} alt={author.name} />
+            <AvatarFallback className={`${featured ? 'text-lg' : 'text-sm'} font-bold bg-gradient-to-br from-orange-500 to-amber-500 text-white`}>
+              {getAuthorInitials(author.name)}
+            </AvatarFallback>
+          </Avatar>
+          <h3 className={`${featured ? 'text-xl' : 'text-lg'} font-semibold text-gray-900 mb-2`}>
+            {author.name}
+          </h3>
+          <div className="flex items-center justify-center gap-1 mb-2">
+            <MapPin className="w-3 h-3 text-gray-400" />
+            <span className="text-xs text-gray-500">{author.location}</span>
+          </div>
+          {author.bio && (
+            <p className={`text-gray-600 ${featured ? 'text-sm' : 'text-xs'} line-clamp-2 mb-3`}>
+              {author.bio}
+            </p>
+          )}
+        </div>
+
+        {/* Author Stats */}
+        <div className={`grid grid-cols-2 gap-2 mb-4 ${featured ? 'text-sm' : 'text-xs'}`}>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500 flex items-center gap-1">
+              <BookOpen className="w-3 h-3" />
+              Books
+            </span>
+            <span className="font-medium">{author.books_count}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500 flex items-center gap-1">
+              <Star className="w-3 h-3" />
+              Rating
+            </span>
+            <span className="font-medium">{author.rating}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500 flex items-center gap-1">
+              <Users className="w-3 h-3" />
+              Followers
+            </span>
+            <span className="font-medium">{author.followers_count.toLocaleString()}</span>
+          </div>
+          {author.upcoming_events > 0 && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500 flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                Events
+              </span>
+              <span className="font-medium">{author.upcoming_events}</span>
+            </div>
+          )}
+        </div>
+
+        {books.length > 0 && (
+          <div className={`mb-4 ${featured ? 'text-sm' : 'text-xs'} text-left`}>
+            <p className="font-medium text-gray-700 mb-1">Books:</p>
+            <ul className="list-disc list-inside space-y-1">
+              {books.slice(0, 2).map(book => (
+                <li key={book.id} className="text-gray-600">{book.title}</li>
+              ))}
+              {books.length > 2 && (
+                <li className="text-gray-500">+{books.length - 2} more</li>
+              )}
+            </ul>
+          </div>
+        )}
+
+        {/* Genres */}
+        {author.genres.length > 0 && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-1">
+              {author.genres.slice(0, featured ? 3 : 2).map((genre, index) => (
+                <Badge key={index} variant="outline" className="text-xs border-orange-200 text-orange-700">
+                  {genre}
+                </Badge>
+              ))}
+              {author.genres.length > (featured ? 3 : 2) && (
+                <Badge variant="outline" className="text-xs border-gray-200 text-gray-500">
+                  +{author.genres.length - (featured ? 3 : 2)}
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="grid grid-cols-1 gap-2">
+          <Link 
+            to={`/authors/${slugify(author.name)}`}
+            className="block"
+            onClick={(e) => {
+              console.log('Author name:', author.name);
+              console.log('Generated slug:', slugify(author.name));
+            }}
+          >
+            <Button size="sm" className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+              View Profile
+            </Button>
+          </Link>
+          <div className="grid grid-cols-2 gap-1">
+            <ScheduleSessionDialog
+              author={author}
+              trigger={
+                <Button variant="outline" size="sm" className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Schedule
+                </Button>
+              }
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs border-green-300 text-green-700 hover:bg-green-50"
+              onClick={handleMessageClick}
+            >
+              <MessageSquare className="w-3 h-3 mr-1" />
+              Message
+            </Button>
+            {showChat && (
+              <ChatWindow
+                friendId={author.id}
+                isOpen={showChat}
+                onClose={() => setShowChat(false)}
+              />
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
