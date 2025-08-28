@@ -45,15 +45,14 @@
 
     --radius: 0.5rem;
 
-    /* Enhanced library theme colors */
-    --library-primary: 28 84% 42%; /* warm amber */
-    --library-primary-light: 45 90% 85%; /* light golden */
-    --library-secondary: 32 52% 54%; /* burnt orange */
-    --library-secondary-light: 42 78% 90%; /* pale cream */
-    --library-accent: 20 14% 23%; /* warm brown */
-    --library-accent-light: 35 26% 95%; /* off-white */
-    --library-text: 25 25% 15%; /* dark brown */
-    --library-muted: 40 15% 75%; /* warm gray */
+    /* Enhanced monochrome system for Sahadhyayi */
+    --sahadhyayi-orange: 0 0% 12%; /* deep gray */
+    --sahadhyayi-orange-light: 0 0% 96%; /* light gray */
+    --sahadhyayi-amber: 0 0% 28%; /* mid-dark gray */
+    --sahadhyayi-amber-light: 0 0% 92%; /* pale gray */
+    --sahadhyayi-warm: 0 0% 7%;
+    --sahadhyayi-warm-light: 0 0% 98%;
+    --brand-orange: 0 0% 20%;
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(0 0% 12%), hsl(0 0% 28%));
