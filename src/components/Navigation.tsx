@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { MessageDropdown } from "@/components/messages/MessageDropdown";
+import { SearchBar } from "@/components/ui/search-bar";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const menuRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -49,19 +52,26 @@ const Navigation = () => {
     }
   }, [isOpen, isMobile]);
 
-  // Updated navigation items with core functionality only
+  // Updated navigation items with clear labels
   const navItems = user ? [
     { name: "Home", href: "/dashboard" },
     { name: "Library", href: "/library" },
     { name: "Authors", href: "/authors" },
-    { name: "Social Media", href: "/social" },
+    { name: "Community", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
     { name: "Authors", href: "/authors" },
-    { name: "Social Media", href: "/social" },
+    { name: "Community", href: "/social" },
   ];
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/library?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -111,9 +121,9 @@ const Navigation = () => {
                     key={item.name}
                     to={item.href}
                     className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
-                      (location.pathname === item.href || 
-                       (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1' 
+                      (location.pathname === item.href ||
+                       (item.href === "/" && location.pathname === "/dashboard" && user))
+                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1'
                         : 'text-gray-700'
                     }`}
                   >
@@ -121,6 +131,14 @@ const Navigation = () => {
                   </Link>
                 ))}
               </div>
+
+              <SearchBar
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+                onSearch={handleSearch}
+                placeholder="Search books"
+                className="w-64"
+              />
 
               {/* User Actions */}
               <div className="flex items-center space-x-4">
