@@ -178,8 +178,8 @@ const Authors = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-neutral">
+        <div className="page-container">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading authors...</p>
@@ -192,11 +192,11 @@ const Authors = () => {
   // Error state with retry option
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-neutral">
+        <div className="page-container">
           <div className="text-center max-w-md mx-auto">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Unable to Load Authors</h1>
+            <h1 className="text-2xl font-bold text-brand mb-4">Unable to Load Authors</h1>
             <Alert className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -204,11 +204,11 @@ const Authors = () => {
               </AlertDescription>
             </Alert>
             <div className="space-y-4">
-              <Button onClick={handleRetry} className="bg-orange-600 hover:bg-orange-700">
+              <Button onClick={handleRetry} className="btn-primary">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Try Again
               </Button>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm">
                 If the problem persists, please refresh the page or contact support.
               </p>
             </div>
@@ -235,8 +235,8 @@ const Authors = () => {
         type="website"
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-neutral">
+        <div className="page-container">
           {/* Scroll target for pagination */}
           <div ref={scrollTargetRef} />
           
@@ -245,13 +245,13 @@ const Authors = () => {
 
           {/* Header */}
           <header className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-brand mb-4">
               Authors Directory
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
               Discover talented authors, explore their works, and connect with writers who inspire you.
             </p>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm">
               {totalAuthors > 0 ? (
                 `Found ${totalAuthors} author${totalAuthors !== 1 ? 's' : ''} in our community`
               ) : (
@@ -274,7 +274,7 @@ const Authors = () => {
                     placeholder="Search authors by name or bio..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-10 h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400 rounded-xl"
+                    className="pl-10 pr-10 h-12 bg-gray-50 border-2 border-gray-200 focus:border-brand rounded-xl"
                   />
                 </div>
               </div>
@@ -283,7 +283,7 @@ const Authors = () => {
               <div>
                 <label htmlFor="genre-filter" className="sr-only">Filter by genre</label>
                 <Select value={selectedGenre} onValueChange={setSelectedGenre}>
-                  <SelectTrigger id="genre-filter" className="h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400 rounded-xl">
+                  <SelectTrigger id="genre-filter" className="h-12 bg-gray-50 border-2 border-gray-200 focus:border-brand rounded-xl">
                     <SelectValue placeholder="Filter by Genre" />
                   </SelectTrigger>
                   <SelectContent>
@@ -299,7 +299,7 @@ const Authors = () => {
               <div>
                 <label htmlFor="book-count-filter" className="sr-only">Filter by books published</label>
                 <Select value={bookCountFilter} onValueChange={setBookCountFilter}>
-                  <SelectTrigger id="book-count-filter" className="h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400 rounded-xl">
+                  <SelectTrigger id="book-count-filter" className="h-12 bg-gray-50 border-2 border-gray-200 focus:border-brand rounded-xl">
                     <SelectValue placeholder="Books Published" />
                   </SelectTrigger>
                   <SelectContent>
@@ -316,13 +316,13 @@ const Authors = () => {
           {/* Show message if no authors found */}
           {filteredAuthors.length === 0 ? (
             <div className="text-center py-12">
-              <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-500 mb-2">No Authors Found</h2>
-              <p className="text-gray-400 mb-6">
+              <User className="w-16 h-16 text-brand mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-brand mb-2">No Authors Found</h2>
+              <p className="mb-6">
                 We're building our authors directory. Check back soon for more authors!
               </p>
               <Link to="/library">
-                <Button className="bg-orange-600 hover:bg-orange-700">
+                <Button className="btn-primary">
                   Explore Library
                 </Button>
               </Link>
@@ -332,7 +332,7 @@ const Authors = () => {
               {/* Featured Authors */}
               {featuredAuthors.length > 0 && (
                 <section aria-labelledby="featured-authors" className="mb-12">
-                  <h2 id="featured-authors" className="text-2xl font-bold text-gray-900 mb-6">Featured Authors</h2>
+                  <h2 id="featured-authors" className="text-2xl font-bold text-brand mb-6">Featured Authors</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {featuredAuthors.map(author => (
                       <AuthorCard
