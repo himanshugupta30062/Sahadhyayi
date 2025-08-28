@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,9 +21,11 @@ const Navigation = () => {
   const [scrolled, setScrolled] = React.useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const menuRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
+  const [search, setSearch] = React.useState("");
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -54,14 +56,22 @@ const Navigation = () => {
     { name: "Home", href: "/dashboard" },
     { name: "Library", href: "/library" },
     { name: "Authors", href: "/authors" },
-    { name: "Social Media", href: "/social" },
+    { name: "Community", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
     { name: "Authors", href: "/authors" },
-    { name: "Social Media", href: "/social" },
+    { name: "Community", href: "/social" },
   ];
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (search.trim()) {
+      navigate(`/library?search=${encodeURIComponent(search.trim())}`);
+      setSearch("");
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -111,9 +121,9 @@ const Navigation = () => {
                     key={item.name}
                     to={item.href}
                     className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
-                      (location.pathname === item.href || 
-                       (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1' 
+                      (location.pathname === item.href ||
+                       (item.href === "/" && location.pathname === "/dashboard" && user))
+                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1'
                         : 'text-gray-700'
                     }`}
                   >
@@ -121,6 +131,21 @@ const Navigation = () => {
                   </Link>
                 ))}
               </div>
+
+              {/* Search Bar */}
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <label htmlFor="nav-search" className="sr-only">
+                  Search books
+                </label>
+                <input
+                  id="nav-search"
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search books"
+                  className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-600"
+                />
+              </form>
 
               {/* User Actions */}
               <div className="flex items-center space-x-4">
