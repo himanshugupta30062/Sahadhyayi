@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 import { 
   BookOpen, 
   Download, 
@@ -37,7 +38,8 @@ const InteractiveBookCard = ({
 
   if (viewMode === 'list') {
     return (
-      <Card className="mb-4 overflow-hidden hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm">
+      <Link to={`/book/${book.id}`}>
+        <Card className="mb-4 overflow-hidden hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-pointer">
         <CardContent className="p-6">
           <div className="flex gap-6">
             {/* Book Cover */}
@@ -122,12 +124,14 @@ const InteractiveBookCard = ({
           </div>
         </CardContent>
       </Card>
+      </Link>
     );
   }
 
   if (viewMode === 'bookshelf') {
     return (
-      <div className="relative">
+      <Link to={`/book/${book.id}`}>
+        <div className="relative cursor-pointer">
         <div 
           className="w-full h-48 bg-gradient-to-b from-library-primary to-library-secondary rounded-t-lg shadow-lg transform hover:-translate-y-2 transition-all duration-300 cursor-pointer"
           style={{
@@ -163,16 +167,18 @@ const InteractiveBookCard = ({
         {/* Book spine */}
         <div className="h-6 bg-gradient-to-r from-library-accent to-library-secondary rounded-b-lg shadow-md"></div>
       </div>
+      </Link>
     );
   }
 
   // Default grid view
   return (
-    <Card 
-      className="overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white/90 backdrop-blur-sm"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <Link to={`/book/${book.id}`}>
+      <Card 
+        className="overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white/90 backdrop-blur-sm cursor-pointer"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
       <CardContent className="p-0">
         {/* Book Cover */}
         <div className="relative aspect-[3/4] overflow-hidden">
@@ -258,6 +264,7 @@ const InteractiveBookCard = ({
         </div>
       </CardContent>
     </Card>
+    </Link>
   );
 };
 

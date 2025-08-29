@@ -10,6 +10,8 @@ interface LibraryHeroProps {
   onSearch: () => void;
   totalBooks?: number;
   activeReaders?: number;
+  avgRating?: number;
+  booksAddedToday?: number;
 }
 
 const LibraryHero = ({ 
@@ -17,15 +19,17 @@ const LibraryHero = ({
   onSearchChange, 
   onSearch, 
   totalBooks = 10000,
-  activeReaders = 2847 
+  activeReaders = 2847,
+  avgRating = 4.8,
+  booksAddedToday = 47
 }: LibraryHeroProps) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const stats = [
     { icon: BookOpen, label: 'Books Available', value: totalBooks.toLocaleString(), color: 'text-library-primary' },
     { icon: Users, label: 'Active Readers', value: activeReaders.toLocaleString(), color: 'text-library-secondary' },
-    { icon: Star, label: 'Avg Rating', value: '4.8', color: 'text-yellow-600' },
-    { icon: TrendingUp, label: 'Books Added Today', value: '47', color: 'text-green-600' },
+    { icon: Star, label: 'Avg Rating', value: avgRating.toString(), color: 'text-yellow-600' },
+    { icon: TrendingUp, label: 'Books Added Today', value: booksAddedToday.toString(), color: 'text-green-600' },
   ];
 
   return (
@@ -126,20 +130,20 @@ const LibraryHero = ({
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          {/* Stats - Improved design with smaller cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {stats.map((stat, index) => (
               <div 
                 key={stat.label}
-                className="bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-xl transform hover:scale-105 transition-all duration-200"
+                className="bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg transform hover:scale-105 transition-all duration-200"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="flex flex-col items-center space-y-2">
-                  <div className={`p-3 rounded-full bg-gray-100 ${stat.color}`}>
-                    <stat.icon className="w-6 h-6" />
+                  <div className={`p-2 rounded-full bg-gray-100 ${stat.color}`}>
+                    <stat.icon className="w-5 h-5" />
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-sm text-gray-600 text-center">{stat.label}</div>
+                  <div className="text-xl font-bold text-gray-900">{stat.value}</div>
+                  <div className="text-xs text-gray-600 text-center">{stat.label}</div>
                 </div>
               </div>
             ))}
