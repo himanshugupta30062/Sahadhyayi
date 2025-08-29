@@ -45,23 +45,26 @@
 
     --radius: 0.5rem;
 
-    /* Enhanced library theme colors */
-    --library-primary: 28 84% 42%; /* warm amber */
-    --library-primary-light: 45 90% 85%; /* light golden */
-    --library-secondary: 32 52% 54%; /* burnt orange */
-    --library-secondary-light: 42 78% 90%; /* pale cream */
-    --library-accent: 20 14% 23%; /* warm brown */
-    --library-accent-light: 35 26% 95%; /* off-white */
-    --library-text: 25 25% 15%; /* dark brown */
-    --library-muted: 40 15% 75%; /* warm gray */
+/* Enhanced Sahadhyayi brand colors - 60-30-10 rule */
+    --brand-primary: 28 84% 42%; /* warm amber - 60% primary */
+    --brand-secondary: 32 52% 54%; /* burnt orange - 30% secondary */
+    --brand-accent: 20 14% 23%; /* warm brown - 10% accent */
+    --brand-neutral: 45 10% 95%; /* warm cream/off-white */
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(0 0% 12%), hsl(0 0% 28%));
-    --gradient-warm: linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 92%));
+    /* Text hierarchy */
+    --text-primary: 20 14% 23%; /* dark brown for headings */
+    --text-secondary: 25 15% 35%; /* medium brown for body */
+    --text-muted: 25 8% 55%; /* light brown for muted text */
     
-    /* Shadows */
-    --shadow-warm: 0 4px 12px hsl(0 0% 0% / 0.2);
-    --shadow-soft: 0 2px 8px hsl(var(--border) / 0.15);
+    /* Gradients for visual interest */
+    --gradient-hero: linear-gradient(135deg, hsl(28 84% 42% / 0.95), hsl(32 52% 54% / 0.9));
+    --gradient-card: linear-gradient(135deg, hsl(45 10% 98%), hsl(45 10% 95%));
+    --gradient-button: linear-gradient(135deg, hsl(28 84% 42%), hsl(32 52% 54%));
+    
+    /* Refined shadows */
+    --shadow-card: 0 2px 12px hsl(28 84% 42% / 0.08);
+    --shadow-button: 0 4px 16px hsl(28 84% 42% / 0.2);
+    --shadow-elevated: 0 8px 32px hsl(28 84% 42% / 0.15);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 7%;
@@ -122,6 +125,8 @@
     @apply bg-background text-foreground;
     padding-top: 0;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-size: 16px; /* Ensure minimum 16px for accessibility */
+    line-height: 1.5; /* Improve readability */
   }
   
   /* Better scrollbar styling */
@@ -311,18 +316,50 @@ mark.search-highlight {
 }
 
 
-/* Responsive grid for book cards */
-.books-grid {
+/* Responsive grid for book cards - improved for UX */
+.library-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
 }
-@media (min-width: 640px) {
-  .books-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+
+@media (max-width: 640px) {
+  .library-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
   }
 }
+
 @media (min-width: 1024px) {
-  .books-grid {
+  .library-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 2rem;
   }
+}
+
+/* Improved button styles */
+.btn-brand-primary {
+  @apply bg-gradient-button text-white shadow-button hover:shadow-elevated transition-all duration-200 hover:scale-105;
+}
+
+.btn-brand-secondary {
+  @apply border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white transition-all duration-200;
+}
+
+/* Card improvements */
+.card-enhanced {
+  @apply bg-gradient-card shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1;
+}
+
+/* Text improvements for better readability */
+.text-hierarchy-primary {
+  @apply text-text-primary font-semibold leading-tight;
+}
+
+.text-hierarchy-secondary {
+  @apply text-text-secondary leading-relaxed;
+}
+
+.text-hierarchy-muted {
+  @apply text-text-muted text-sm;
 }
