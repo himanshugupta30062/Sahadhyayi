@@ -20,7 +20,7 @@ import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
 const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
 import Navigation from "./components/Navigation";
-import GlobalFooter from "./components/GlobalFooter";
+import StructuredFooter from "./components/footer/StructuredFooter";
 import ScrollToTop from "./components/ScrollToTop";
 
 // Page imports
@@ -141,7 +141,7 @@ function App() {
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
-                  <GlobalFooter />
+                  <StructuredFooter />
                 </div>
                 <Suspense fallback={<div />}>
                   <BookExpert />
