@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, Sparkles, BookOpen, Users, Star } from 'lucide-react';
 import LibraryHero from '@/components/library/LibraryHero';
 import BooksCollection from '@/components/library/BooksCollection';
-import ResponsiveBookGrid from '@/components/library/ResponsiveBookGrid';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
 
 export default function Library() {
