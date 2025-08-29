@@ -54,14 +54,15 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Sahadhyayi brand colors following 60-30-10 design system
-        'brand-primary': 'hsl(var(--brand-primary))',
-        'brand-secondary': 'hsl(var(--brand-secondary))',
-        'brand-accent': 'hsl(var(--brand-accent))',
-        'brand-neutral': 'hsl(var(--brand-neutral))',
-        'text-primary': 'hsl(var(--text-primary))',
-        'text-secondary': 'hsl(var(--text-secondary))',
-        'text-muted': 'hsl(var(--text-muted))',
+        // Sahadhyayi brand colors - using CSS variables for consistency
+        'library-primary': 'hsl(var(--library-primary))',
+        'library-primary-light': 'hsl(var(--library-primary-light))',
+        'library-secondary': 'hsl(var(--library-secondary))',
+        'library-secondary-light': 'hsl(var(--library-secondary-light))',
+        'library-accent': 'hsl(var(--library-accent))',
+        'library-accent-light': 'hsl(var(--library-accent-light))',
+        'library-text': 'hsl(var(--library-text))',
+        'library-muted': 'hsl(var(--library-muted))',
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -91,14 +92,12 @@ const config: Config = {
         ],
       },
       boxShadow: {
-        'card': 'var(--shadow-card)',
-        'button': 'var(--shadow-button)',
-        'elevated': 'var(--shadow-elevated)',
+        'warm': 'var(--shadow-warm)',
+        'soft': 'var(--shadow-soft)',
       },
       backgroundImage: {
-        'gradient-hero': 'var(--gradient-hero)',
-        'gradient-card': 'var(--gradient-card)',
-        'gradient-button': 'var(--gradient-button)',
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-warm': 'var(--gradient-warm)',
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

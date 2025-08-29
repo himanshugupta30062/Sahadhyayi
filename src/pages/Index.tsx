@@ -8,7 +8,9 @@ import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/authHelpers";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
-import ImprovedHero from "@/components/hero/ImprovedHero";
+import AnimatedHero from "@/components/AnimatedHero";
+import SahadhyayiCircuit from "@/components/SahadhyayiCircuit";
+import SahadhyayiCapabilities from "@/components/SahadhyayiCapabilities";
 import CurrentReads from "@/components/library/CurrentReads";
 
 const Index = () => {
@@ -87,43 +89,12 @@ const Index = () => {
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
       </script>
-      {/* Improved Hero Section */}
-      <ImprovedHero />
+      {/* Animated Hero Section */}
+      <AnimatedHero />
       
-      {/* Popular Books Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-text-primary mb-4">
-              Popular Books This Week
-            </h2>
-            <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-              Discover what fellow readers are enjoying right now
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {/* Sample popular books */}
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="group cursor-pointer">
-                <div className="aspect-[3/4] bg-gradient-to-br from-brand-primary/20 to-brand-secondary/20 rounded-lg mb-2 flex items-center justify-center group-hover:shadow-elevated transition-all duration-300">
-                  <span className="text-2xl font-bold text-brand-primary/60">B</span>
-                </div>
-                <h3 className="text-sm font-medium text-text-primary line-clamp-2">Sample Book Title</h3>
-                <p className="text-xs text-text-muted">Author Name</p>
-              </div>
-            ))}
-          </div>
-          
-          <div className="text-center mt-8">
-            <Link to="/library">
-              <Button className="bg-gradient-button text-white shadow-button hover:shadow-elevated px-8 py-3">
-                Explore Full Library
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <SahadhyayiCircuit />
+      
+      <SahadhyayiCapabilities />
       
       {/* Current Reads Section for Signed-in Users */}
       {user && (
