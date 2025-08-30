@@ -8,10 +8,6 @@ interface UseSpeechToTextOptions {
 }
 
 export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOptions) => {
-  console.log('useSpeechToText hook called...');
-  console.log('React available in useSpeechToText:', !!React);
-  console.log('React.useState available:', typeof React.useState);
-
   const [isRecording, setIsRecording] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);

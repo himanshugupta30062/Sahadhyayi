@@ -36,8 +36,6 @@ export const useEnhancedGeminiTraining = () => {
 
       if (error) {
         console.error('Error saving training data:', error);
-      } else {
-        console.log('Training data saved successfully');
       }
     } catch (error) {
       console.error('Error saving training data:', error);
@@ -62,10 +60,7 @@ export const useEnhancedGeminiTraining = () => {
 
       // If no data exists, populate with initial training data
       if (!existingData || existingData.length === 0) {
-        console.log('No existing training data found, populating initial data...');
         await populateInitialTrainingData(user.id);
-      } else {
-        console.log('Training data already exists, skipping initialization');
       }
     } catch (error) {
       console.error('Error initializing website knowledge:', error);
@@ -139,8 +134,6 @@ export const useEnhancedGeminiTraining = () => {
       a.download = `gemini_training_data_${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-
-      console.log(`Exported ${formattedData.length} training samples`);
     } catch (error) {
       console.error('Error exporting training data:', error);
     }

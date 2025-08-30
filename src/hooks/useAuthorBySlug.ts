@@ -33,15 +33,6 @@ export const useAuthorBySlug = (slug?: string) => {
         });
       }
       
-      // If no exact match found, log for debugging
-      if (!author && slug) {
-        console.log(`No author found for slug: "${slug}"`);
-        console.log('Available authors:', (data || []).map((a: any) => ({
-          name: a.name,
-          slug: slugify(a.name?.trim() || '')
-        })));
-      }
-      
       return author as Author | null;
     },
   });

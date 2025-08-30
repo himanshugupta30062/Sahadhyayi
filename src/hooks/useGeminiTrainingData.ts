@@ -12,7 +12,6 @@ export const useGeminiTraining = () => {
     try {
       // Only save if user is authenticated
       if (!user?.id) {
-        console.log('User not authenticated, skipping training data save');
         return;
       }
 
@@ -45,8 +44,6 @@ export const useGeminiTraining = () => {
 
       if (error) {
         console.error('Error saving Gemini training data:', error);
-      } else {
-        console.log('Enhanced training data saved successfully');
       }
     } catch (error) {
       console.error('Error saving Gemini training data:', error);
