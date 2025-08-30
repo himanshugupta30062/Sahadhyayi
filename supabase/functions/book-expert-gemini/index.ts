@@ -1,12 +1,31 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://rknxtatvlzunatpyqxro.supabase.co, https://www.sahadhyayi.com, https://sahadhyayi.com',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Handle CORS dynamically to support multiple allowed origins
+const ALLOWED_ORIGINS = [
+  "https://rknxtatvlzunatpyqxro.supabase.co",
+  "https://www.sahadhyayi.com",
+  "https://sahadhyayi.com",
+];
+
+function getCorsHeaders(origin: string | null) {
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+  };
+
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  } else {
+    headers["Access-Control-Allow-Origin"] = ALLOWED_ORIGINS[0];
+  }
+
+  return headers;
+}
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req.headers.get('origin'));
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
