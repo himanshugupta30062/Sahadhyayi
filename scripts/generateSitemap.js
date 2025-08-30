@@ -66,7 +66,13 @@ if (authors.length === 0) {
   ];
 }
 
-const slugify = text => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const slugify = text =>
+  encodeURIComponent(
+    text
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+  );
 
 const urls = [];
 const today = new Date().toISOString().split('T')[0];
