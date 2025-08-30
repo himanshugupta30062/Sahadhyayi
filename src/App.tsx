@@ -41,6 +41,12 @@ import About from "./pages/About";
 import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
 import Bookshelf from "./pages/Bookshelf";
+import HelpCenter from "./pages/HelpCenter";
+import Feedback from "./pages/Feedback";
+import CommunityGuidelines from "./pages/CommunityGuidelines";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
 
 import "./App.css";
 
@@ -138,6 +144,12 @@ function App() {
                         }
                       />
                       <Route path="/bookshelf" element={<Bookshelf />} />
+                      <Route path="/help-center" element={<HelpCenter />} />
+                      <Route path="/feedback" element={<Feedback />} />
+                      <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                      <Route path="/terms-of-service" element={<TermsOfService />} />
+                      <Route path="/cookie-policy" element={<CookiePolicy />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
