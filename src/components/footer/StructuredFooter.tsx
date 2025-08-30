@@ -57,51 +57,6 @@ const StructuredFooter = () => {
           </div>
         )}
         
-        {/* Community Actions */}
-        <div className="mb-12 text-center">
-          <div className="bg-gradient-to-r from-brand-primary/20 to-brand-secondary/20 rounded-2xl p-8 border border-white/10">
-            <h3 className="text-2xl font-bold mb-4">Join the Sahadhyayi Community</h3>
-            <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-              Connect with fellow readers, discover amazing books, and be part of a global reading revolution.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              {user ? (
-                <Link to="/dashboard">
-                  <Button className="bg-brand-primary hover:bg-brand-secondary text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    Go to Dashboard
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-              ) : (
-                <>
-                  <Link to="/signup">
-                    <Button className="bg-brand-primary hover:bg-brand-secondary text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2">
-                      <Users className="w-5 h-5" />
-                      Join Community
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </Link>
-                  <Link to="/signin">
-                    <Button variant="outline" className="border-white text-white hover:bg-white hover:text-brand-primary px-8 py-3 rounded-lg font-semibold">
-                      Sign In
-                    </Button>
-                  </Link>
-                </>
-              )}
-              
-              <Button
-                variant="ghost"
-                onClick={() => setShowStats(!showStats)}
-                className="text-gray-300 hover:text-white flex items-center gap-2"
-              >
-                <Eye className="w-4 h-4" />
-                {showStats ? 'Hide' : 'Show'} Community Stats
-              </Button>
-            </div>
-          </div>
-        </div>
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Brand Section */}
@@ -118,18 +73,16 @@ const StructuredFooter = () => {
               Rediscover the joy of deep reading through community, technology, and shared knowledge. Join fellow readers worldwide.
             </p>
             
-            {/* Newsletter Signup */}
+            {/* Community Stats Toggle */}
             <div className="mb-6">
-              <h4 className="text-sm font-semibold mb-3">Stay Connected</h4>
-              <div className="flex space-x-3">
-                <a
-                  href="mailto:gyan@sahadhyayi.com"
-                  className="inline-flex items-center px-3 py-2 text-sm bg-brand-primary text-white rounded-lg hover:bg-brand-secondary transition-colors"
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Contact Us
-                </a>
-              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowStats(!showStats)}
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                {showStats ? 'Hide' : 'Show'} Community Stats
+              </Button>
             </div>
           </div>
 
