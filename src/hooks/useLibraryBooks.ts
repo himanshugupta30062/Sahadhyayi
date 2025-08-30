@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { sampleBooks } from '@/data/sampleBooks';
 
 export interface Book {
   id: string;
@@ -94,8 +93,8 @@ export const useAllLibraryBooks = () => {
         // Sort by completeness by default
         return sortBooksByCompleteness(mappedBooks);
       } catch (error) {
-        console.error('Falling back to sample books due to error:', error);
-        return sortBooksByCompleteness(sampleBooks);
+        console.error('Error fetching library books:', error);
+        return [];
       }
     },
   });
@@ -140,7 +139,7 @@ export const useLibraryBooks = (searchQuery?: string) => {
         return sortBooksByCompleteness(mappedBooks);
       } catch (error) {
         console.error('Error fetching library books:', error);
-        return sortBooksByCompleteness(sampleBooks);
+        return [];
       }
     },
   });
