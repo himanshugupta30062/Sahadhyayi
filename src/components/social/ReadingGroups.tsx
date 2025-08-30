@@ -1,11 +1,10 @@
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -76,7 +75,17 @@ const mockGroups: ReadingGroup[] = [
 
 export const ReadingGroups = () => {
   const navigate = useNavigate();
-  const [groups, setGroups] = useState<ReadingGroup[]>(mockGroups);
+  const [groups, setGroups] = useState<ReadingGroup[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('reading-groups');
+        return stored ? JSON.parse(stored) : mockGroups;
+      } catch {
+        return mockGroups;
+      }
+    }
+    return mockGroups;
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newGroup, setNewGroup] = useState({
@@ -97,12 +106,20 @@ export const ReadingGroups = () => {
     group.genre.some(g => g.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('reading-groups', JSON.stringify(groups));
+    }
+  }, [groups]);
+
   const handleJoinGroup = (groupId: string) => {
-    setGroups(groups.map(group =>
-      group.id === groupId
-        ? { ...group, isJoined: !group.isJoined, members: group.isJoined ? group.members - 1 : group.members + 1 }
-        : group
-    ));
+    setGroups(prev =>
+      prev.map(group =>
+        group.id === groupId
+          ? { ...group, isJoined: !group.isJoined, members: group.isJoined ? group.members - 1 : group.members + 1 }
+          : group
+      )
+    );
     toast({ title: 'Group membership updated!' });
   };
 
@@ -117,7 +134,23 @@ export const ReadingGroups = () => {
         name: newGroup.name,
         description: newGroup.description
       });
-      
+
+      const createdGroup: ReadingGroup = {
+        id: Date.now().toString(),
+        name: newGroup.name,
+        description: newGroup.description,
+        coverImage: '',
+        members: 1,
+        maxMembers: newGroup.maxMembers,
+        currentBook: '',
+        nextMeeting: '',
+        location: 'Online',
+        isJoined: true,
+        isPrivate: newGroup.isPrivate,
+        genre: []
+      };
+
+      setGroups(prev => [createdGroup, ...prev]);
       setNewGroup({ name: '', description: '', maxMembers: 25, isPrivate: false });
       setShowCreateDialog(false);
       toast({ title: 'Reading group created successfully!' });
