@@ -8,7 +8,9 @@ import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/authHelpers";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
-import ImprovedHero from "@/components/hero/ImprovedHero";
+import AnimatedHero from "@/components/AnimatedHero";
+import SahadhyayiCapabilities from "@/components/SahadhyayiCapabilities";
+import SahadhyayiCircuit from "@/components/SahadhyayiCircuit";
 import CurrentReads from "@/components/library/CurrentReads";
 
 const Index = () => {
@@ -87,8 +89,14 @@ const Index = () => {
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
       </script>
-      {/* Improved Hero Section */}
-      <ImprovedHero />
+      {/* Animated Hero Section */}
+      <AnimatedHero />
+      
+      {/* Sahadhyayi Capabilities Section */}
+      <SahadhyayiCapabilities />
+      
+      {/* Sahadhyayi Circuit Section */}
+      <SahadhyayiCircuit />
       
       {/* Popular Books Section */}
       <section className="py-16 bg-white">
