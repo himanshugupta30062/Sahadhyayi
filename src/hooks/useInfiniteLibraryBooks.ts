@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
-import { sampleBooks } from '@/data/sampleBooks';
 
 interface InfiniteParams {
   genre: string;
@@ -69,11 +68,10 @@ export const useInfiniteLibraryBooks = ({
 
       if (error || !data) {
         console.error('Error fetching books:', error);
-        const fallback = sampleBooks.slice(start, end + 1);
         return {
-          books: fallback,
+          books: [],
           nextPage: pageParam + 1,
-          total: sampleBooks.length,
+          total: 0,
         };
       }
 
