@@ -55,7 +55,7 @@ const StructuredFooter = () => {
               <img
                 src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
                 alt="Sahadhyayi"
-                className="w-8 h-8 brightness-0 invert"
+                className="w-8 h-8"
               />
               <span className="text-xl font-bold">Sahadhyayi</span>
             </div>
