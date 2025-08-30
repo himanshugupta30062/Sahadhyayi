@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Heart, MessageCircle, Share2, BookOpen } from 'lucide-react';
+import { Heart, MessageCircle, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FeedComposer } from './FeedComposer';
 import { CommentSection } from './CommentSection';
@@ -77,19 +77,37 @@ const mockPosts: Post[] = [
 ];
 
 export const SocialFeed = () => {
-  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [posts, setPosts] = useState<Post[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('social-feed');
+        return stored ? JSON.parse(stored) : mockPosts;
+      } catch {
+        return mockPosts;
+      }
+    }
+    return mockPosts;
+  });
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [showComments, setShowComments] = useState<{[key: string]: boolean}>({});
   const [postViewerOpen, setPostViewerOpen] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('social-feed', JSON.stringify(posts));
+    }
+  }, [posts]);
+
   const handleLike = (postId: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? { ...post, isLiked: !post.isLiked, likes: post.isLiked ? post.likes - 1 : post.likes + 1 }
-        : post
-    ));
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId
+          ? { ...post, isLiked: !post.isLiked, likes: post.isLiked ? post.likes - 1 : post.likes + 1 }
+          : post
+      )
+    );
   };
 
   const handleCreatePost = async (postData: any) => {
@@ -111,7 +129,7 @@ export const SocialFeed = () => {
       isLiked: false
     };
     
-    setPosts([newPost, ...posts]);
+    setPosts(prev => [newPost, ...prev]);
   };
 
   const handleShare = (post: Post) => {
