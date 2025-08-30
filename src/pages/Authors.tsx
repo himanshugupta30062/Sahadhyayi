@@ -520,13 +520,9 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author, books, featured }) => {
 
         {/* Actions */}
         <div className="grid grid-cols-1 gap-2">
-          <Link 
+          <Link
             to={`/authors/${slugify(author.name)}`}
             className="block"
-            onClick={(e) => {
-              console.log('Author name:', author.name);
-              console.log('Generated slug:', slugify(author.name));
-            }}
           >
             <Button size="sm" className="w-full bg-orange-600 hover:bg-orange-700 text-white">
               View Profile

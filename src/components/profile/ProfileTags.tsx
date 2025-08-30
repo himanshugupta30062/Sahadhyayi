@@ -9,7 +9,6 @@ type ProfileTagsProps = {
 };
 
 const handlePopup = () => {
-  console.log("My Life Stories button clicked");
   openPopupWindow("https://jeevan-katha-anek-hai1.lovable.app/", "My Life Stories");
 };
 

@@ -3,8 +3,6 @@ import * as React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-console.log('DeleteProfileDialog loading, React available:', !!React);
-
 type DeleteProfileDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -18,8 +16,6 @@ const DeleteProfileDialog: React.FC<DeleteProfileDialogProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  console.log('DeleteProfileDialog rendering, React available:', !!React);
-  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>

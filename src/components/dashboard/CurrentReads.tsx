@@ -28,9 +28,6 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
     user_id: item.user_id
   }));
 
-  console.log('Current Reads - Reading Progress Data:', readingProgress);
-  console.log('Current Reads - Is Loading:', isLoading);
-  console.log('Current Reads - Error:', error);
 
   if (isLoading) {
     return (
