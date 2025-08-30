@@ -7,8 +7,6 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-console.log('use-toast loading, React available:', !!React);
-
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
 
