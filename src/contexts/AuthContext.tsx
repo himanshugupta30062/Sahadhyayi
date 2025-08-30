@@ -185,9 +185,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
       // Clear local auth state first
       setUser(null);
       setSession(null);
@@ -222,21 +221,15 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       queryClient.clear();
-
-      // Redirect to home page after successful logout
-      if (typeof window !== 'undefined') {
-        window.location.href = '/';
-      }
-
-      setLoading(false);
     } catch (error) {
       console.error('Signout error:', error);
       // Ensure local state is cleared even if there's an error
       setUser(null);
       setSession(null);
+    } finally {
+      // Always clear loading state and redirect
       setLoading(false);
-      
-      // Even if there's an error, redirect to home page
+
       if (typeof window !== 'undefined') {
         window.location.href = '/';
       }
