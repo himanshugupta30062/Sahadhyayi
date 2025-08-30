@@ -51,12 +51,15 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
             Navigate through Sahadhyayi and manage your account.
           </SheetDescription>
         </SheetHeader>
-        <div className="grid gap-4 py-4">
+        <nav aria-label="Mobile navigation" className="grid gap-4 py-4">
           {user ? (
             <>
               <div className="flex items-center space-x-2">
                 <Avatar>
-                  <AvatarImage src={user.user_metadata?.avatar_url || ""} />
+                  <AvatarImage
+                    src={user.user_metadata?.avatar_url || ""}
+                    alt={user.user_metadata?.full_name || user.email || 'User avatar'}
+                  />
                   <AvatarFallback>
                     {user.user_metadata?.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
@@ -81,7 +84,7 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
                   key={item.path}
                   to={item.path}
                   className={`flex items-center px-4 py-2 rounded-md hover:bg-gray-100 ${
-                    isActive(item.path) ? "text-orange-600" : "text-gray-700"
+                    isActive(item.path) ? "text-orange-700" : "text-gray-900"
                   }`}
                   onClick={onClose}
                 >
@@ -100,10 +103,10 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
             </>
           ) : (
             <>
-              <SignInLink className="block px-4 py-2 rounded-md hover:bg-gray-100">
+              <SignInLink className="block px-4 py-2 rounded-md hover:bg-gray-100 text-gray-900">
                 Sign In
               </SignInLink>
-              <Link to="/signup" className="block px-4 py-2 rounded-md hover:bg-gray-100">
+              <Link to="/signup" className="block px-4 py-2 rounded-md hover:bg-gray-100 text-gray-900">
                 Sign Up
               </Link>
               {navItems.map((item) => (
@@ -111,7 +114,7 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
                   key={item.path}
                   to={item.path}
                   className={`flex items-center px-4 py-2 rounded-md hover:bg-gray-100 ${
-                    isActive(item.path) ? "text-orange-600" : "text-gray-700"
+                    isActive(item.path) ? "text-orange-700" : "text-gray-900"
                   }`}
                   onClick={onClose}
                 >
@@ -121,7 +124,7 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
               ))}
             </>
           )}
-        </div>
+        </nav>
       </SheetContent>
     </Sheet>
   );

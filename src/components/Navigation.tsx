@@ -73,9 +73,7 @@ const Navigation = () => {
   };
 
   return (
-    <nav
-      role="navigation"
-      aria-label="Main"
+    <header
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
         scrolled
           ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200'
@@ -89,6 +87,7 @@ const Navigation = () => {
       >
         Skip to main content
       </a>
+      <nav role="navigation" aria-label="Main" className="w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -110,11 +109,11 @@ const Navigation = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
-                      (location.pathname === item.href || 
-                       (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1' 
-                        : 'text-gray-700'
+                    className={`text-sm font-medium transition-colors duration-200 hover:text-amber-700 ${
+                      (location.pathname === item.href ||
+                       (item.href === "/" && location.pathname === "/dashboard" && user))
+                        ? 'text-amber-700 border-b-2 border-amber-700 pb-1'
+                        : 'text-gray-900'
                     }`}
                   >
                     {item.name}
@@ -132,7 +131,10 @@ const Navigation = () => {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="flex items-center space-x-2 p-2">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.user_metadata?.avatar_url} />
+                            <AvatarImage
+                              src={user.user_metadata?.avatar_url}
+                              alt={user.user_metadata?.full_name || user.email || 'User avatar'}
+                            />
                             <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
                               {getUserInitials(user.email || 'U')}
                             </AvatarFallback>
@@ -164,15 +166,15 @@ const Navigation = () => {
                 ) : (
                   <div className="flex items-center space-x-4">
                     <SignInLink>
-                      <Button variant="ghost" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
-                        Sign In
-                      </Button>
-                    </SignInLink>
-                    <Link to="/signup">
+                        <Button variant="ghost" size="sm" className="border-2 border-orange-600 text-orange-700 hover:bg-orange-50">
+                          Sign In
+                        </Button>
+                      </SignInLink>
+                      <Link to="/signup">
                       <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
                         Sign Up
                       </Button>
-                    </Link>
+                      </Link>
                   </div>
                 )}
               </div>
@@ -192,7 +194,7 @@ const Navigation = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+                className="p-2 border-2 border-orange-600 text-orange-700 hover:bg-orange-50"
                 aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
                 ref={menuButtonRef}
               >
@@ -215,10 +217,10 @@ const Navigation = () => {
                   to={item.href}
                   onClick={() => setIsOpen(false)}
                   className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                    (location.pathname === item.href || 
-                     (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                      ? 'text-amber-600 bg-amber-50' 
-                      : 'text-gray-700 hover:text-amber-600 hover:bg-gray-50'
+                    (location.pathname === item.href ||
+                     (item.href === "/" && location.pathname === "/dashboard" && user))
+                      ? 'text-amber-700 bg-amber-50'
+                      : 'text-gray-900 hover:text-amber-700 hover:bg-gray-50'
                   }`}
                 >
                   {item.name}
@@ -229,7 +231,10 @@ const Navigation = () => {
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex items-center px-3 py-2">
                     <Avatar className="h-10 w-10 mr-3">
-                      <AvatarImage src={user.user_metadata?.avatar_url} />
+                      <AvatarImage
+                        src={user.user_metadata?.avatar_url}
+                        alt={user.user_metadata?.full_name || user.email || 'User avatar'}
+                      />
                       <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
                         {getUserInitials(user.email || 'U')}
                       </AvatarFallback>
@@ -244,7 +249,7 @@ const Navigation = () => {
                   <Link
                     to="/profile"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                    className="block px-3 py-2 text-sm font-medium text-gray-900 hover:text-amber-700 hover:bg-gray-50 rounded-md"
                   >
                     <User className="inline mr-2 h-4 w-4" />
                     Profile
@@ -252,14 +257,14 @@ const Navigation = () => {
                   <Link
                     to="/settings"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                    className="block px-3 py-2 text-sm font-medium text-gray-900 hover:text-amber-700 hover:bg-gray-50 rounded-md"
                   >
                     <Settings className="inline mr-2 h-4 w-4" />
                     Settings
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="block w-full text-left px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                    className="block w-full text-left px-3 py-2 text-sm font-medium text-gray-900 hover:text-amber-700 hover:bg-gray-50 rounded-md"
                   >
                     <LogOut className="inline mr-2 h-4 w-4" />
                     Sign Out
@@ -268,7 +273,7 @@ const Navigation = () => {
               ) : (
                 <div className="pt-4 space-y-3 border-t border-gray-200">
                   <SignInLink onClick={() => setIsOpen(false)} className="block">
-                    <Button variant="ghost" size="sm" className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
+                    <Button variant="ghost" size="sm" className="w-full justify-center border-2 border-orange-600 text-orange-700 hover:bg-orange-50">
                       Sign In
                     </Button>
                   </SignInLink>
@@ -283,7 +288,8 @@ const Navigation = () => {
           </div>
         )}
       </div>
-    </nav>
+      </nav>
+    </header>
   );
 };
 
