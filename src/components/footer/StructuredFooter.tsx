@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Facebook, Twitter, Instagram, Linkedin, Heart } from 'lucide-react';
+import { Mail, Facebook, Twitter, Instagram, Linkedin, Heart, Users, Eye, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
+import { Button } from '@/components/ui/button';
+import CommunityStats from '@/components/CommunityStats';
 
 const StructuredFooter = () => {
   const { user } = useAuth();
+  const [showStats, setShowStats] = useState(false);
 
   const footerSections = [
     {
@@ -47,6 +50,58 @@ const StructuredFooter = () => {
   return (
     <footer className="bg-text-primary text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Community Stats Section */}
+        {showStats && (
+          <div className="mb-12 bg-black/50 rounded-2xl p-6">
+            <CommunityStats />
+          </div>
+        )}
+        
+        {/* Community Actions */}
+        <div className="mb-12 text-center">
+          <div className="bg-gradient-to-r from-brand-primary/20 to-brand-secondary/20 rounded-2xl p-8 border border-white/10">
+            <h3 className="text-2xl font-bold mb-4">Join the Sahadhyayi Community</h3>
+            <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+              Connect with fellow readers, discover amazing books, and be part of a global reading revolution.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              {user ? (
+                <Link to="/dashboard">
+                  <Button className="bg-brand-primary hover:bg-brand-secondary text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Go to Dashboard
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/signup">
+                    <Button className="bg-brand-primary hover:bg-brand-secondary text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2">
+                      <Users className="w-5 h-5" />
+                      Join Community
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                  <Link to="/signin">
+                    <Button variant="outline" className="border-white text-white hover:bg-white hover:text-brand-primary px-8 py-3 rounded-lg font-semibold">
+                      Sign In
+                    </Button>
+                  </Link>
+                </>
+              )}
+              
+              <Button
+                variant="ghost"
+                onClick={() => setShowStats(!showStats)}
+                className="text-gray-300 hover:text-white flex items-center gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                {showStats ? 'Hide' : 'Show'} Community Stats
+              </Button>
+            </div>
+          </div>
+        </div>
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Brand Section */}
