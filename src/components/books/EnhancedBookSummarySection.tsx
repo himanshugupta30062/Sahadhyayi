@@ -50,8 +50,6 @@ const EnhancedBookSummarySection = ({ bookId, bookTitle }: EnhancedBookSummarySe
         })
       };
 
-      console.log('Generating enhanced summary with:', requestBody);
-
       const response = await supabase.functions.invoke('enhanced-book-summary', {
         body: requestBody
       });

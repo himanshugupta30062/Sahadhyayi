@@ -55,8 +55,6 @@ export const ScheduleSessionDialog = ({ author, trigger }: ScheduleSessionDialog
       notes: notes,
     };
 
-    console.log("Scheduling session:", sessionData);
-
     toast({
       title: "Session Scheduled!",
       description: `Your ${sessionType} session with ${author.name} has been scheduled for ${selectedDate.toLocaleDateString()} at ${selectedTime}.`,

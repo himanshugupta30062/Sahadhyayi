@@ -295,9 +295,6 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
           id: existingProgress.id,
           current_page: page
         });
-      } else {
-        // Create new progress entry - this would need a separate mutation
-        console.log('Creating new progress entry for book:', bookTitle);
       }
     } catch (error) {
       console.error('Error saving reading progress:', error);
@@ -361,7 +358,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
           url: window.location.href,
         });
       } catch (error) {
-        console.log('Error sharing:', error);
+        console.error('Error sharing:', error);
       }
     } else {
       // Fallback: copy to clipboard

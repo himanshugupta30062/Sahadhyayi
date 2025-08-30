@@ -57,12 +57,6 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
 
     setIsSubmitting(true);
     try {
-      console.log('Submitting continuation:', {
-        bookId,
-        continuationSummary,
-        userId: user?.id
-      });
-
       toast({
         title: "Continuation Submitted!",
         description: "Your sequel summary has been added to the community collection.",

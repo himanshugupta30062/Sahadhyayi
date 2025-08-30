@@ -39,10 +39,6 @@ const BookDetails = () => {
     }
   };
 
-  console.log('BookDetails - Route params:', { id });
-  console.log('BookDetails - Book data:', book);
-  console.log('BookDetails - Loading state:', isLoading);
-  console.log('BookDetails - Error state:', error);
 
   if (isLoading) {
     return (
@@ -148,11 +144,11 @@ const BookDetails = () => {
   const combinedSchema = [bookSchema, breadcrumbSchema] as any;
 
   const handleViewSummary = () => {
-    console.log('View summary clicked for book:', book.title);
+    // placeholder for view summary action
   };
 
   const handleAuthorClick = () => {
-    console.log('Author clicked:', book.author);
+    // placeholder for author click action
   };
 
   return (
