@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { secureFetch } from "./secureFetch";
 
 const CSRF_KEY = "csrfToken";
 
@@ -19,9 +20,8 @@ export function setCsrfToken(token: string | null) {
  */
 export function useSecureApi() {
   const login = useCallback(async () => {
-    const res = await fetch("/api/session", {
+    const res = await secureFetch("/api/session", {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: "{}",
     });
@@ -34,7 +34,7 @@ export function useSecureApi() {
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/session", { method: "DELETE", credentials: "include" });
+      await secureFetch("/api/session", { method: "DELETE" });
     } finally {
       setCsrfToken(null);
     }
