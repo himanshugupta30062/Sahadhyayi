@@ -1,224 +1,35 @@
+import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuth } from '@/contexts/authHelpers';
-import { LogIn, Mail, Lock } from 'lucide-react';
-import SEO from '@/components/SEO';
-import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation';
-// import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
-import { useToast } from '@/hooks/use-toast';
-import { redirectToUserHome } from '@/utils/navigation';
-
-const SignIn = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+export default function SignIn() {
+  const { signIn } = useAuth();
+  const nav = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-  const { user, signIn } = useAuth();
-  const { toast } = useToast();
 
-  // Redirect if already signed in
-  useEffect(() => {
-    if (user) {
-      redirectToUserHome(navigate);
-
-      const scrollY = sessionStorage.getItem('redirectScrollY');
-      if (scrollY) {
-        setTimeout(() => {
-          window.scrollTo(0, parseInt(scrollY, 10));
-          sessionStorage.removeItem('redirectScrollY');
-        }, 0);
-      }
-    }
-  }, [user, navigate]);
-
-  const validateForm = () => {
-    if (!formData.email?.trim() || !formData.password) {
-      setError("Please fill in all fields.");
-      return false;
-    }
-    
-    // Enhanced email validation using secure validation function
-    if (!validateEmail(formData.email)) {
-      setError("Please enter a valid email address.");
-      return false;
-    }
-    
-    // Check password length
-    if (formData.password.length < 8 || formData.password.length > 128) {
-      setError("Password must be between 8 and 128 characters.");
-      return false;
-    }
-    
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Rate limiting check
-    if (isRateLimited('signin', 5, 300000)) { // 5 attempts per 5 minutes
-      toast({
-        title: "Too Many Attempts",
-        description: "Too many sign-in attempts. Please wait 5 minutes before trying again.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    setErr(null);
     setLoading(true);
-    setError('');
-
-    if (!validateForm()) {
-      setLoading(false);
-      return;
-    }
-
     try {
-      const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
-      
-      // Log security event for failed attempts
-      const { error } = await signIn(sanitizedEmail, formData.password);
-
-      if (error) {
-        // Enhanced error handling with user-friendly messages
-        let errorMessage = error.message;
-        
-        if (error.message.includes('Invalid login credentials')) {
-          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-        } else if (error.message.includes('Email not confirmed')) {
-          errorMessage = 'Please check your email and click the confirmation link before signing in.';
-        } else if (error.message.includes('rate limit') || error.message.includes('too many')) {
-          errorMessage = 'Too many sign-in attempts. Please wait a moment before trying again.';
-        } else if (error.message.includes('Invalid email')) {
-          errorMessage = 'Please enter a valid email address.';
-        } else {
-          errorMessage = 'Sign-in failed. Please try again.';
-        }
-        
-        setError(errorMessage);
-        return;
-      }
-
-      // Success will be handled by the useEffect above
-    } catch (error: unknown) {
-      console.error('Signin error:', error);
-      setError('An unexpected error occurred. Please try again.');
+      await signIn(email, password); // Supabase + server session init
+      nav("/app");
+    } catch (e: any) {
+      setErr(e.message || "Sign-in failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    // Sanitize input for XSS prevention
-    const sanitizedValue = name === 'email' 
-      ? sanitizeInput(value, 254)
-      : value.substring(0, 128); // Limit password length during input
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: sanitizedValue
-    }));
-    
-    // Clear error when user starts typing
-    if (error) {
-      setError('');
-    }
-  };
-
-  // Don't render the form if user is already authenticated
-  if (user) {
-    return null;
-  }
-
   return (
-    <>
-      <SEO
-        title="Sign In - Sahadhyayi"
-        description="Access your Sahadhyayi account and continue reading."
-        canonical="https://sahadhyayi.com/signin"
-        url="https://sahadhyayi.com/signin"
-      />
-      <div className="min-h-screen flex items-center justify-center p-4 pt-16">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-              <LogIn className="w-6 h-6" />
-              Sign In to Sahadhyayi
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="pl-10 bg-white text-black"
-                    maxLength={254}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="pl-10 bg-white text-black"
-                    maxLength={128}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing In...' : 'Sign In'}
-              </Button>
-            </form>
-            
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/signup" className="text-amber-600 hover:text-amber-700 font-medium">
-                  Sign up here
-                </Link>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+    <form onSubmit={onSubmit} className="space-y-3">
+      <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" />
+      <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password" />
+      {err && <p className="text-red-600">{err}</p>}
+      <button disabled={loading}>{loading ? "Signing in..." : "Sign in"}</button>
+    </form>
   );
-};
-
-export default SignIn;
+}
