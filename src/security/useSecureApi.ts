@@ -18,17 +18,21 @@ export function setCsrfToken(token: string | null) {
 /** React hook: call only inside components/providers */
 export function useSecureApi() {
   const login = useCallback(async () => {
-    const res = await fetch("/api/session", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: "{}",
-    });
-    if (!res.ok) throw new Error(`/api/session failed: ${res.status}`);
-    const data = await res.json().catch(() => ({}));
-    if (!data?.csrfToken) throw new Error("No csrfToken in /api/session response");
-    setCsrfToken(data.csrfToken);
-    return data.csrfToken as string;
+    try {
+      const res = await fetch("/api/session", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      if (!res.ok) throw new Error("SESSION_INIT_FAILED");
+      const data = await res.json().catch(() => ({}));
+      if (!data?.csrfToken) throw new Error("SESSION_INIT_FAILED");
+      setCsrfToken(data.csrfToken);
+      return data.csrfToken as string;
+    } catch {
+      throw new Error("SESSION_INIT_FAILED");
+    }
   }, []);
 
   const logout = useCallback(async () => {
