@@ -22,7 +22,7 @@ dotenv.config();
 
 Sentry.init({ dsn: process.env.SENTRY_DSN });
 
-const CSP = [
+const CSP_DIRECTIVES = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://maps.googleapis.com https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -30,8 +30,10 @@ const CSP = [
   "font-src 'self' https://fonts.gstatic.com",
   "connect-src 'self' https://*.supabase.co wss:",
   "frame-src 'self'",
-  "report-uri /csp-report"
-].join('; ');
+  "report-uri /csp-report",
+];
+
+const CSP = CSP_DIRECTIVES.join('; ');
 
 const app = express();
 app.use(Sentry.Handlers.requestHandler());
