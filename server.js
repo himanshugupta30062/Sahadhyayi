@@ -13,9 +13,9 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import cors from 'cors';
 import busboy from 'busboy';
-import { validateFileUpload } from './src/utils/security.js';
-import { SECURITY_CONFIG } from './src/utils/securityConfig.js';
-import { sanitizeHTML, sanitizeInput } from './src/utils/validation.js';
+import { validateFileUpload } from './server-utils/security.js';
+import { SECURITY_CONFIG } from './server-utils/securityConfig.js';
+import { sanitizeHTML, sanitizeInput } from './server-utils/validation.js';
 import { parseLibgenHtml } from './server/libgenParser.js';
 
 dotenv.config();
