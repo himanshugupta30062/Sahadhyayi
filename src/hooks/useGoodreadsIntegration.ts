@@ -1,4 +1,4 @@
-import { secureFetch } from '@/security/secureFetch';
+import { secureFetch } from "../security/secureFetch";
 
 export interface GoodreadsBook {
   id: string;
