@@ -1,28 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client-universal';
-
-export interface ChatMessage {
-  sender: 'user' | 'bot';
-  text: string;
-}
-
-interface BookExpertContextType {
-  isOpen: boolean;
-  messages: ChatMessage[];
-  toggleChat: () => void;
-  closeChat: () => void;
-  sendMessage: (text: string) => Promise<void>;
-}
-
-const BookExpertContext = createContext<BookExpertContextType | undefined>(undefined);
-
-export const useBookExpert = () => {
-  const ctx = useContext(BookExpertContext);
-  if (!ctx) {
-    throw new Error('useBookExpert must be used within BookExpertProvider');
-  }
-  return ctx;
-};
+import { BookExpertContext, type ChatMessage } from './book-expert.utils';
 
 export const BookExpertProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,3 +44,4 @@ export const BookExpertProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 };
 
 export default BookExpertProvider;
+
