@@ -2,6 +2,7 @@
 import React, { FC } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, Users, Heart } from 'lucide-react';
+import BookFlipLoader from '@/components/ui/BookFlipLoader';
 
 interface LoadingSpinnerProps {
   type?: 'default' | 'page' | 'posts' | 'books';
@@ -10,19 +11,8 @@ interface LoadingSpinnerProps {
 const LoadingSpinner: FC<LoadingSpinnerProps> = ({ type = 'default' }) => {
   if (type === 'page') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="relative">
-          {/* Properly animated spinner */}
-          <div className="w-16 h-16 border-4 border-gray-600 border-t-white rounded-full animate-spin"></div>
-          
-          {/* Animated center dot */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full animate-pulse"></div>
-          
-          {/* Loading text */}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 text-white text-sm font-medium animate-pulse">
-            Loading...
-          </div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-brand-neutral to-background flex items-center justify-center">
+        <BookFlipLoader size="lg" text="Loading your library..." />
       </div>
     );
   }
@@ -75,10 +65,7 @@ const LoadingSpinner: FC<LoadingSpinnerProps> = ({ type = 'default' }) => {
 
   return (
     <div className="flex items-center justify-center py-8">
-      <div className="text-center space-y-4">
-        <div className="w-8 h-8 border-2 border-gray-300 border-t-sahadhyayi-orange rounded-full animate-spin mx-auto"></div>
-        <p className="text-sm text-gray-500 animate-pulse">Loading...</p>
-      </div>
+      <BookFlipLoader size="sm" />
     </div>
   );
 };

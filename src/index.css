@@ -232,6 +232,42 @@
   animation: bounce-subtle 2s ease-in-out infinite;
 }
 
+/* Book flip animations */
+@keyframes book-flip {
+  0%, 100% { 
+    transform: rotateY(0deg) scale(1);
+  }
+  25% { 
+    transform: rotateY(-15deg) scale(1.05);
+  }
+  50% { 
+    transform: rotateY(0deg) scale(1.1);
+  }
+  75% { 
+    transform: rotateY(15deg) scale(1.05);
+  }
+}
+
+.animate-book-flip {
+  animation: book-flip 2s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+@keyframes page-flip {
+  0%, 100% { 
+    opacity: 0.3;
+    transform: scaleY(0.8);
+  }
+  50% { 
+    opacity: 1;
+    transform: scaleY(1.2);
+  }
+}
+
+.animate-page-flip {
+  animation: page-flip 1.5s ease-in-out infinite;
+}
+
 /* Focus improvements */
 :focus-visible {
   outline: 2px solid currentColor;
