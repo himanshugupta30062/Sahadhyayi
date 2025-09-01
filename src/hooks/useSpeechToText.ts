@@ -1,6 +1,6 @@
 
-import * as React from 'react';
-import { secureFetch } from '@/security/secureFetch';
+import * as React from "react";
+import { secureFetch } from "../security/secureFetch";
 
 interface UseSpeechToTextOptions {
   onTranscript: (text: string) => void;
