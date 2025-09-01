@@ -1,27 +1,26 @@
 import { useCallback } from "react";
-import { secureFetch } from "./secureFetch";
 
 const CSRF_KEY = "csrfToken";
 
 export function getCsrfToken() {
-  return (typeof window !== "undefined" && localStorage.getItem(CSRF_KEY)) || "";
+  if (typeof window === "undefined") return "";
+  try { return localStorage.getItem(CSRF_KEY) || ""; } catch { return ""; }
 }
 
 export function setCsrfToken(token: string | null) {
   if (typeof window === "undefined") return;
-  if (!token) localStorage.removeItem(CSRF_KEY);
-  else localStorage.setItem(CSRF_KEY, token);
+  try {
+    if (!token) localStorage.removeItem(CSRF_KEY);
+    else localStorage.setItem(CSRF_KEY, token);
+  } catch { /* empty */ }
 }
 
-/**
- * Calls /api/session to (re)issue:
- *  - HttpOnly session cookie (server-managed)
- *  - CSRF token (returned in JSON)
- */
+/** React hook: call only inside components/providers */
 export function useSecureApi() {
   const login = useCallback(async () => {
-    const res = await secureFetch("/api/session", {
+    const res = await fetch("/api/session", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: "{}",
     });
@@ -33,11 +32,8 @@ export function useSecureApi() {
   }, []);
 
   const logout = useCallback(async () => {
-    try {
-      await secureFetch("/api/session", { method: "DELETE" });
-    } finally {
-      setCsrfToken(null);
-    }
+    try { await fetch("/api/session", { method: "DELETE", credentials: "include" }); }
+    finally { setCsrfToken(null); }
   }, []);
 
   return { login, logout };
