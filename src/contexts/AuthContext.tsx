@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { createClient, Session, User } from "@supabase/supabase-js";
 import { setCsrfToken } from "../security/useSecureApi";
 import { sessionClientLogin } from "../security/sessionClient";
+import { secureFetch } from "../security/secureFetch";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL!,
@@ -63,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCsrfToken(null);
     // optional: tell backend to clear cookie
     try {
-      await fetch("/api/session", { method: "DELETE", credentials: "include" });
+      await secureFetch("/api/session", { method: "DELETE" });
     } catch {
       /* ignore */
     }
