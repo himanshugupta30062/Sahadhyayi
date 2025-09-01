@@ -4,6 +4,8 @@ import { User, Session, AuthChangeEvent, AuthError } from '@supabase/supabase-js
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useQueryClient } from '@tanstack/react-query';
 import { AuthContext, type AuthContextType } from './authHelpers';
+import { sessionClientLogin, sessionClientLogout } from '../security/sessionClient';
+import { setCsrfToken } from '../security/useSecureApi';
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
   
@@ -30,7 +32,13 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Clear local state
           setUser(null);
           setSession(null);
-          
+          setCsrfToken(null);
+          try {
+            await sessionClientLogout();
+          } catch (err) {
+            console.error('sessionClientLogout failed', err);
+          }
+
           // Clear session-related storage
           if (typeof window !== 'undefined') {
             // Clear all session-related data
@@ -43,7 +51,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // Handle sign in event
         if (event === 'SIGNED_IN' && session?.user) {
-          
+          await sessionClientLogin();
+
           // Set up session tracking
           if (typeof window !== 'undefined') {
             const now = Date.now().toString();

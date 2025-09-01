@@ -13,6 +13,7 @@ import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation'
 // import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
 import { useToast } from '@/hooks/use-toast';
 import { redirectToUserHome } from '@/utils/navigation';
+import { sessionClientLogin } from '../security/sessionClient';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -107,6 +108,8 @@ const SignIn = () => {
         setError(errorMessage);
         return;
       }
+
+      await sessionClientLogin();
 
       // Success will be handled by the useEffect above
     } catch (error: unknown) {
