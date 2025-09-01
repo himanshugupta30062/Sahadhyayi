@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuth } from '@/contexts/authHelpers';
+import { useAuth } from '@/contexts/AuthContext';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation';
@@ -84,34 +84,25 @@ const SignIn = () => {
 
     try {
       const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
-      
-      // Log security event for failed attempts
-      const { error } = await signIn(sanitizedEmail, formData.password);
 
-      if (error) {
-        // Enhanced error handling with user-friendly messages
-        let errorMessage = error.message;
-        
-        if (error.message.includes('Invalid login credentials')) {
-          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-        } else if (error.message.includes('Email not confirmed')) {
-          errorMessage = 'Please check your email and click the confirmation link before signing in.';
-        } else if (error.message.includes('rate limit') || error.message.includes('too many')) {
-          errorMessage = 'Too many sign-in attempts. Please wait a moment before trying again.';
-        } else if (error.message.includes('Invalid email')) {
-          errorMessage = 'Please enter a valid email address.';
-        } else {
-          errorMessage = 'Sign-in failed. Please try again.';
-        }
-        
-        setError(errorMessage);
-        return;
-      }
+      await signIn(sanitizedEmail, formData.password);
 
       // Success will be handled by the useEffect above
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Signin error:', error);
-      setError('An unexpected error occurred. Please try again.');
+      let errorMessage = error?.message || 'Sign-in failed. Please try again.';
+
+      if (errorMessage.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (errorMessage.includes('Email not confirmed')) {
+        errorMessage = 'Please check your email and click the confirmation link before signing in.';
+      } else if (errorMessage.includes('rate limit') || errorMessage.includes('too many')) {
+        errorMessage = 'Too many sign-in attempts. Please wait a moment before trying again.';
+      } else if (errorMessage.includes('Invalid email')) {
+        errorMessage = 'Please enter a valid email address.';
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
