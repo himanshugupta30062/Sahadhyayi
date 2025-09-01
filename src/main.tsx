@@ -41,11 +41,11 @@ function initializeApp() {
     const root = createRoot(container);
     
     root.render(
-      <StrictMode>
-        <ErrorBoundary>
+      <ErrorBoundary>
+        <StrictMode>
           <App />
-        </ErrorBoundary>
-      </StrictMode>
+        </StrictMode>
+      </ErrorBoundary>
     );
   } catch (error) {
     if (import.meta.env.DEV) {
