@@ -1,4 +1,5 @@
 import { getCsrfToken, setCsrfToken } from "./useSecureApi";
+import { sessionClientLogin } from "./sessionClient";
 
 /**
  * Wraps fetch:
@@ -16,8 +17,7 @@ export async function secureFetch(input: RequestInfo | URL, init: RequestInit = 
   if (res.status === 401 || res.status === 403) {
     // refresh server session + CSRF
     try {
-      const mod = await import("./sessionClient");
-      await mod.sessionClientLogin();
+      await sessionClientLogin();
       // retry once with fresh token
       const res2 = await doFetch(input, init);
       return maybePersistRotatedCsrfAndReturn(input, init, res2);

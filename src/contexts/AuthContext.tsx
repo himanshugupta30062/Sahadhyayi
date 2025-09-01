@@ -31,12 +31,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           await sessionClientLogin(); // sync server cookie + csrf
         } catch (e) {
-          console.error("server session init failed", e);
+          console.warn("server session init failed", e);
         }
       } else if (event === "SIGNED_OUT") {
         setUser(null);
         setSession(null);
         setCsrfToken(null);
+        try {
+          await secureFetch("/api/session", { method: "DELETE" });
+        } catch (e) {
+          console.warn("/api/session DELETE failed", e);
+        }
       }
     });
 
@@ -52,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         await sessionClientLogin(); // ensure server session is in lockstep
       } catch (e) {
-        console.error("server session init failed", e);
+        console.warn("server session init failed", e);
       }
     }
   };
@@ -62,11 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setCsrfToken(null);
-    // optional: tell backend to clear cookie
     try {
       await secureFetch("/api/session", { method: "DELETE" });
-    } catch {
-      /* ignore */
+    } catch (e) {
+      console.warn("/api/session DELETE failed", e);
     }
   };
 
