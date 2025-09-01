@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { UserPlus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { PasswordStrength } from '@/components/ui/password-strength';
 import { validateEmail, validatePassword, sanitizeInput, validateUsername, isRateLimited } from '@/utils/validation';
-// import { initializeSecureSession, logSecurityEvent } from '@/utils/security';
+// import { initializeSecureSession, logSecurityEvent } from '@/utils/security.ts';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 
