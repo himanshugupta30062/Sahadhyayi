@@ -1,50 +1,19 @@
-import React from 'react';
-import { errorHandler } from '@/utils/errorHandler';
-import { ErrorFallback } from '@/components/ErrorFallback';
+import React from "react";
 
-type Props = { children: React.ReactNode; fallback?: React.ReactNode };
+type State = { hasError: boolean; error?: any };
 
-export class ErrorBoundary extends React.Component<Props, { hasError: boolean; error?: Error }> {
-  state = { hasError: false as boolean, error: undefined as Error | undefined };
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error) {
-    if (import.meta.env.DEV) {
-      console.error('🚨 Uncaught in ErrorBoundary:', error);
-    }
-
-    errorHandler.reportCustomError(
-      error.message,
-      { component: 'ErrorBoundary', action: 'componentDidCatch' },
-      'critical'
-    );
-
-    // Ensure any persistent loader is removed when an error occurs
-    const loader = document.getElementById('loader');
-    if (loader) {
-      loader.style.display = 'none';
-    }
-  }
-
+export class ErrorBoundary extends React.Component<React.PropsWithChildren, State> {
+  state: State = { hasError: false };
+  static getDerivedStateFromError(error: any) { return { hasError: true, error }; }
+  componentDidCatch(error: any, info: any) { console.error("ErrorBoundary", error, info); }
   render() {
     if (this.state.hasError) {
-      const defaultFallback = (
-        <ErrorFallback
-          error={this.state.error}
-          resetError={() => this.setState({ hasError: false, error: undefined })}
-        />
-      );
-      const fallback = this.props.fallback ?? defaultFallback;
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-          {fallback}
-        </div>
-      );
+      return <div style={{padding:16}}>
+        <h2>Something went wrong.</h2>
+        <pre style={{whiteSpace:"pre-wrap"}}>{String(this.state.error)}</pre>
+      </div>;
     }
-
     return this.props.children;
   }
 }
+
