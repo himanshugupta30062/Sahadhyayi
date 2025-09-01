@@ -6,6 +6,7 @@ import { BookOpen } from 'lucide-react';
 import AddBookDialog, { Book } from '@/components/AddBookDialog';
 import { User } from '@supabase/supabase-js';
 import { Profile } from '@/hooks/useProfile';
+import { logger } from '@/utils/consoleOptimizer';
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -21,7 +22,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, profile }) => {
     firstName.charAt(0).toUpperCase();
 
   const handleAddBook = (book: Book) => {
-    console.log('Adding book:', book);
+    logger.log('Adding book:', book);
     // Here you would typically add the book to the user's library
     setShowAddBook(false);
   };

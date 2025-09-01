@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Eye, Loader2, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { logger } from '@/utils/consoleOptimizer';
 
 interface CommunityStatsData {
   registeredMembers: number;
@@ -47,7 +48,7 @@ const CommunityStats = () => {
         throw error;
       }
 
-      console.log('✅ Successfully fetched user count:', data);
+      logger.log('✅ Successfully fetched user count:', data);
       setStats(prev => ({
         ...prev,
         registeredMembers: Number(data) || 0,
@@ -87,7 +88,7 @@ const CommunityStats = () => {
           throw fallbackError;
         }
 
-        console.log('⚠️ Used fallback query, visit count:', fallbackCount);
+        logger.log('⚠️ Used fallback query, visit count:', fallbackCount);
         setStats(prev => ({
           ...prev,
           totalVisitors: fallbackCount || 0,
@@ -96,7 +97,7 @@ const CommunityStats = () => {
         return;
       }
 
-      console.log('✅ Successfully fetched visit count:', data);
+      logger.log('✅ Successfully fetched visit count:', data);
       setStats(prev => ({
         ...prev,
         totalVisitors: Number(data) || 0,

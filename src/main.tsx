@@ -1,7 +1,6 @@
 
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import ReactLoader from './components/ReactLoader';
 import App from './App';
 import { errorHandler } from './utils/errorHandler';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -44,9 +43,7 @@ function initializeApp() {
     root.render(
       <StrictMode>
         <ErrorBoundary>
-          <ReactLoader>
-            <App />
-          </ReactLoader>
+          <App />
         </ErrorBoundary>
       </StrictMode>
     );

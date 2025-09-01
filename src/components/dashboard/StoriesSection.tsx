@@ -11,6 +11,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import DOMPurify from "dompurify";
+import { auditLogger } from '@/utils/consoleOptimizer';
 
 type StoriesSectionProps = {
   userId: string;
@@ -76,7 +77,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
       setStories((prev) => prev.filter((s) => s.id !== id));
       toast({ title: "Deleted", description: "The story was deleted." });
       // Security: Log story deletion (you may upgrade this to an audit trail later)
-      console.log(`[AUDIT] User ${userId} deleted story ${id} at ${new Date().toISOString()}`);
+      auditLogger.logUserAction(userId, 'deleted story', id);
     } catch (err: any) {
       toast({
         title: "Delete Failed",

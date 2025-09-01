@@ -27,7 +27,11 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     include: [
       '@radix-ui/react-dialog',
-      '@radix-ui/react-toast'
+      '@radix-ui/react-toast',
+      '@tanstack/react-query',
+      'react',
+      'react-dom',
+      'react-router-dom'
     ],
     force: true,
     exclude: ['@supabase/supabase-js']
@@ -46,15 +50,32 @@ export default defineConfig(({ mode }) => ({
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'terser',
+    target: 'esnext',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-toast'],
+          query: ['@tanstack/react-query'],
+          supabase: ['@supabase/supabase-js']
+        }
+      }
+    },
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
       },
       mangle: {
         safari10: true,
       },
     },
+    chunkSizeWarningLimit: 1000,
   },
   assetsInclude: ['**/*.webp', '**/*.avif'],
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
 }));
