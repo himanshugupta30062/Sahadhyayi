@@ -24,7 +24,7 @@ Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' https://maps.googleapis.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com",
   "style-src 'self' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' https://fonts.gstatic.com",
