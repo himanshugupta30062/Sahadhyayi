@@ -1,4 +1,5 @@
 import { getCsrfToken, setCsrfToken } from "./useSecureApi";
+import { sessionClientLogin } from "./sessionClient";
 
 /**
  * Wraps fetch:
@@ -8,19 +9,14 @@ import { getCsrfToken, setCsrfToken } from "./useSecureApi";
  *  - if server rotates CSRF and returns X-New-CSRF-Token, we persist it
  */
 export async function secureFetch(input: RequestInfo | URL, init: RequestInit = {}) {
-  // first attempt
   let res = await doFetch(input, init);
-  // handle rotation header
-  res = await maybePersistRotatedCsrfAndReturn(input, init, res);
+  res = await maybePersistRotatedCsrfAndReturn(res);
 
   if (res.status === 401 || res.status === 403) {
-    // refresh server session + CSRF
     try {
-      const mod = await import("./sessionClient");
-      await mod.sessionClientLogin();
-      // retry once with fresh token
+      await sessionClientLogin();                 // NO React hooks here
       const res2 = await doFetch(input, init);
-      return maybePersistRotatedCsrfAndReturn(input, init, res2);
+      return maybePersistRotatedCsrfAndReturn(res2);
     } catch {
       return res;
     }
@@ -41,12 +37,9 @@ async function doFetch(input: RequestInfo | URL, init: RequestInit) {
   });
 }
 
-async function maybePersistRotatedCsrfAndReturn(
-  input: RequestInfo | URL,
-  init: RequestInit,
-  res: Response
-) {
+async function maybePersistRotatedCsrfAndReturn(res: Response) {
   const newToken = res.headers.get("X-New-CSRF-Token");
   if (newToken) setCsrfToken(newToken);
   return res;
 }
+
