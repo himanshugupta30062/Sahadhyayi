@@ -10,7 +10,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRFToken } from '@/utils/security';
 
 // Context imports
-import AuthProvider from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import QuotesProvider from "./contexts/QuotesContext";
 import BookExpertProvider from "./contexts/BookExpertContext";
 
