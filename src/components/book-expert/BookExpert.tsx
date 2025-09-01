@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useBookExpert } from '@/contexts/BookExpertContext';
+import { useBookExpert } from '@/contexts/book-expert.utils';
 import { cn } from '@/lib/utils';
 import bookIcon from '@/components/book-expert/Sahadhyayi_Book.png';
 
