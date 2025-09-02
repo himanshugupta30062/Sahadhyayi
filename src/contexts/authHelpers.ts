@@ -1,23 +1,27 @@
-import { createContext, useContext } from 'react';
-import type { User, Session, AuthError } from '@supabase/supabase-js';
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: AuthError | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { useAuth as useBaseAuth } from './AuthContext';
+import type { AuthError } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const base = useBaseAuth();
+
+  const signUp = async (email: string, password: string, fullName?: string): Promise<{ error: AuthError | null }> => {
+    const redirectUrl = `${window.location.origin}/`;
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: fullName ? { full_name: fullName } : undefined,
+      },
+    });
+    return { error };
+  };
+
+  // Backward compatibility: expose a loading flag if callers expect it
+  const loading = false as const;
+
+  return { ...base, signUp, loading } as const;
 };
 
-export type { AuthContextType };
+export type { AuthError };
