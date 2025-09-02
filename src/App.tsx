@@ -7,7 +7,7 @@ import { errorHandler } from '@/utils/errorHandler';
 import usePageVisitTracker from '@/hooks/usePageVisitTracker';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRFToken } from '@/utils/security';
+import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRFToken } from '@/utils/security.ts';
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
