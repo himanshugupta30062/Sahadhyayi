@@ -4,9 +4,16 @@ import { setCsrfToken } from "../security/useSecureApi";
 import { sessionClientLogin } from "../security/sessionClient";
 import { secureFetch } from "../security/secureFetch";
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) as string;
+
+if ((!SUPABASE_URL || !SUPABASE_KEY) && import.meta.env.DEV) {
+  console.error('Supabase env vars missing: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY');
+}
+
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
+  SUPABASE_URL,
+  SUPABASE_KEY
 );
 
 type AuthContextType = {
