@@ -8,7 +8,7 @@ import { MessageCircle, MapPin, UsersIcon, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
-import { SocialFeed } from '@/components/social/SocialFeed';
+import { EnhancedSocialFeed } from '@/components/social/EnhancedSocialFeed';
 import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
 import { FriendsLocationMap } from '@/components/social/FriendsLocationMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
@@ -127,7 +127,7 @@ const SocialMedia = () => {
 
             <TabsContent value="feed" className="mt-0">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-orange-200 shadow-lg p-6">
-                <SocialFeed />
+                <EnhancedSocialFeed />
               </div>
             </TabsContent>
 

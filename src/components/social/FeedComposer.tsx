@@ -9,6 +9,7 @@ import { Image, BookOpen, Smile, Send, X } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { BookSelectionModal } from './BookSelectionModal';
 import { EmojiPicker } from './EmojiPicker';
+import { useCreatePost } from '@/hooks/useSocialPosts';
 import { useToast } from '@/hooks/use-toast';
 
 interface SelectedBook {
@@ -24,9 +25,10 @@ interface SelectedFeeling {
   label: string;
 }
 
-export const FeedComposer = ({ onPost }: { onPost: (postData: any) => void }) => {
+export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const createPost = useCreatePost();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [postText, setPostText] = useState('');
@@ -78,8 +80,23 @@ export const FeedComposer = ({ onPost }: { onPost: (postData: any) => void }) =>
       return;
     }
 
+    if (!user) {
+      toast({ title: 'Error', description: 'You must be signed in to create a post.', variant: 'destructive' });
+      return;
+    }
+
     setIsPosting(true);
     try {
+      // Create post in database
+      await createPost.mutateAsync({
+        content: postText.trim(),
+        book_id: selectedBook?.id,
+        feeling_emoji: selectedFeeling?.emoji,
+        feeling_label: selectedFeeling?.label,
+        image_url: imagePreview || undefined, // Use preview URL for now
+      });
+
+      // Legacy callback for compatibility
       const postData = {
         content: postText,
         image: selectedImage,
@@ -88,15 +105,14 @@ export const FeedComposer = ({ onPost }: { onPost: (postData: any) => void }) =>
         timestamp: new Date().toISOString()
       };
 
-      await onPost(postData);
+      onPost?.(postData);
       
       // Clear the composer
       setPostText('');
       clearAttachments();
       
-      toast({ title: 'Post created!', description: 'Your post has been shared successfully.' });
     } catch (error) {
-      toast({ title: 'Error', description: 'Failed to create post. Please try again.', variant: 'destructive' });
+      console.error('Error creating post:', error);
     } finally {
       setIsPosting(false);
     }
@@ -243,11 +259,11 @@ export const FeedComposer = ({ onPost }: { onPost: (postData: any) => void }) =>
             </div>
             <Button
               onClick={handlePost}
-              disabled={(!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting}
+              disabled={(!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting || createPost.isPending}
               className="bg-orange-600 hover:bg-orange-700 rounded-xl w-full sm:w-auto mt-2 sm:mt-0"
             >
               <Send className="w-4 h-4 mr-1" />
-              {isPosting ? 'Posting...' : 'Post'}
+              {isPosting || createPost.isPending ? 'Posting...' : 'Post'}
             </Button>
           </div>
         </CardContent>
