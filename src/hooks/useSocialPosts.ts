@@ -144,6 +144,7 @@ export const useSocialPosts = () => {
 export const useCreatePost = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (postData: {
@@ -153,9 +154,16 @@ export const useCreatePost = () => {
       feeling_emoji?: string;
       feeling_label?: string;
     }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+
+      const payload = {
+        ...postData,
+        user_id: user.id,
+      };
+
       const { data, error } = await supabase
         .from('posts')
-        .insert([postData])
+        .insert([payload])
         .select(`
           *,
           profiles!user_id(id, full_name, username, profile_photo_url),
@@ -255,12 +263,15 @@ export const usePostComments = (postId: string) => {
 export const useCreateComment = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('post_comments')
-        .insert([{ post_id: postId, content }])
+        .insert([{ post_id: postId, content, user_id: user.id }])
         .select(`
           *,
           profiles!user_id(id, full_name, username, profile_photo_url)
