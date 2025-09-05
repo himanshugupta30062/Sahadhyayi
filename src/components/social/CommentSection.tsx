@@ -4,12 +4,26 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageCircle, Edit2, Trash2, Reply } from 'lucide-react';
-import { useComments, useAddComment, useUpdateComment, useDeleteComment, Comment } from '@/hooks/useComments';
+import { usePostComments, useCreateComment } from '@/hooks/useSocialPosts';
 import { useAuth } from '@/contexts/authHelpers';
 import { formatDistanceToNow } from 'date-fns';
 
 interface CommentSectionProps {
   postId: string;
+}
+
+interface Comment {
+  id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  profiles?: {
+    id: string;
+    full_name: string;
+    username?: string;
+    profile_photo_url?: string;
+  };
 }
 
 interface CommentItemProps {
@@ -25,32 +39,24 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
   const [editContent, setEditContent] = useState(comment.content);
   const [replyContent, setReplyContent] = useState('');
 
-  const updateComment = useUpdateComment();
-  const deleteComment = useDeleteComment();
-  const addComment = useAddComment();
+  const createComment = useCreateComment();
 
   const isOwner = user?.id === comment.user_id;
 
   const handleEdit = () => {
-    updateComment.mutate({
-      id: comment.id,
-      content: editContent,
-      postId,
-    });
+    // Edit functionality temporarily disabled
     setIsEditing(false);
   };
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this comment?')) {
-      deleteComment.mutate({ id: comment.id, postId });
-    }
+    // Delete functionality temporarily disabled
+    console.log('Delete comment:', comment.id);
   };
 
   const handleReply = () => {
-    addComment.mutate({
+    createComment.mutate({
       postId,
       content: replyContent,
-      parentCommentId: comment.id,
     });
     setReplyContent('');
     setIsReplying(false);
@@ -59,17 +65,17 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
   return (
     <div className={`${isReply ? 'ml-10' : ''} mb-4`}>
       <div className="flex space-x-3">
-        <Avatar className="w-8 h-8">
-          <AvatarImage src={comment.user?.profile_photo_url} />
-          <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs">
-            {comment.user?.full_name?.charAt(0) || 'U'}
-          </AvatarFallback>
-        </Avatar>
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={comment.profiles?.profile_photo_url} />
+                <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs">
+                  {comment.profiles?.full_name?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
         
         <div className="flex-1">
           <div className="bg-gray-100 rounded-2xl px-3 py-2">
             <div className="flex items-center space-x-2 mb-1">
-              <span className="font-medium text-sm text-gray-900">{comment.user?.full_name || 'Unknown User'}</span>
+              <span className="font-medium text-sm text-gray-900">{comment.profiles?.full_name || 'Unknown User'}</span>
               <span className="text-xs text-gray-500">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
               </span>
@@ -83,7 +89,7 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
                   className="min-h-[60px] text-sm"
                 />
                 <div className="flex space-x-2">
-                  <Button size="sm" onClick={handleEdit} disabled={updateComment.isPending}>
+                  <Button size="sm" onClick={handleEdit}>
                     Save
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
@@ -137,6 +143,7 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
             <div className="mt-2 ml-3">
               <div className="flex space-x-2">
                 <Avatar className="w-6 h-6">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} />
                   <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs">
                     {user?.user_metadata?.full_name?.charAt(0) || 'U'}
                   </AvatarFallback>
@@ -149,7 +156,7 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
                     className="min-h-[60px] text-sm"
                   />
                   <div className="flex space-x-2 mt-2">
-                    <Button size="sm" onClick={handleReply} disabled={!replyContent.trim() || addComment.isPending}>
+                    <Button size="sm" onClick={handleReply} disabled={!replyContent.trim() || createComment.isPending}>
                       Reply
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setIsReplying(false)}>
@@ -161,14 +168,7 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
             </div>
           )}
 
-          {/* Render replies */}
-          {comment.replies && comment.replies.length > 0 && (
-            <div className="mt-3">
-              {comment.replies.map((reply) => (
-                <CommentItem key={reply.id} comment={reply} postId={postId} isReply={true} />
-              ))}
-            </div>
-          )}
+          {/* Replies temporarily disabled */}
         </div>
       </div>
     </div>
@@ -178,22 +178,20 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
 export const CommentSection = ({ postId }: CommentSectionProps) => {
   const { user } = useAuth();
   const [newComment, setNewComment] = useState('');
-  const { data: comments, isLoading } = useComments(postId);
-  const addComment = useAddComment();
+  const { data: comments, isLoading } = usePostComments(postId);
+  const createComment = useCreateComment();
 
   const handleAddComment = () => {
     if (!newComment.trim()) return;
     
-    addComment.mutate({
+    createComment.mutate({
       postId,
       content: newComment.trim(),
     });
     setNewComment('');
   };
 
-  const totalComments = comments?.reduce((total, comment) => {
-    return total + 1 + (comment.replies?.length || 0);
-  }, 0) || 0;
+  const totalComments = comments?.length || 0;
 
   return (
     <div className="mt-4 space-y-4">
@@ -207,11 +205,12 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
 
       {/* Add new comment */}
       <div className="flex space-x-3">
-        <Avatar className="w-8 h-8">
-          <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs">
-            {user?.user_metadata?.full_name?.charAt(0) || 'U'}
-          </AvatarFallback>
-        </Avatar>
+          <Avatar className="w-8 h-8">
+            <AvatarImage src={user?.user_metadata?.avatar_url} />
+            <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white text-xs">
+              {user?.user_metadata?.full_name?.charAt(0) || 'U'}
+            </AvatarFallback>
+          </Avatar>
         <div className="flex-1">
           <Textarea
             placeholder="Write a comment..."
@@ -223,7 +222,7 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
             className="mt-2"
             size="sm"
             onClick={handleAddComment}
-            disabled={!newComment.trim() || addComment.isPending}
+            disabled={!newComment.trim() || createComment.isPending}
           >
             Comment
           </Button>
