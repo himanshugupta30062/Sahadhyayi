@@ -24,9 +24,8 @@ const SignIn = () => {
   const { user, signIn } = useAuth();
   const { toast } = useToast();
 
-  // Get redirect path from URL params or location state
-  const searchParams = new URLSearchParams(location.search);
-  const redirectPath = searchParams.get('redirect') || location.state?.from || '/dashboard';
+  // Always redirect to home page after sign in
+  const redirectPath = '/';
 
   // Redirect if already signed in
   React.useEffect(() => {
@@ -83,8 +82,8 @@ const SignIn = () => {
       
       await signIn(sanitizedEmail, formData.password);
       
-      // Navigate to redirect path on success
-      navigate(redirectPath);
+      // Navigate to home page on success
+      navigate('/');
       
       // Restore scroll position if available
       if (typeof window !== 'undefined') {

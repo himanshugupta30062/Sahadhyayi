@@ -64,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
+    // Redirect to sign in page after sign out
+    window.location.href = '/signin';
   };
 
   return (
