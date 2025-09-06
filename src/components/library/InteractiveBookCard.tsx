@@ -224,13 +224,13 @@ const InteractiveBookCard = ({
             </div>
           </div>
 
-          {/* Status badges */}
-          <div className="absolute top-2 left-2">
+          {/* Status badges - hidden on mobile, shown on hover on desktop */}
+          <div className={`absolute top-2 left-2 transition-opacity duration-300 hidden md:block ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             {book.pdf_url && <Badge className="bg-green-500 text-white text-xs">PDF</Badge>}
           </div>
 
-          {/* Reading stats */}
-          <div className="absolute top-2 right-2 space-y-1">
+          {/* Reading stats - hidden on mobile, shown on hover on desktop */}
+          <div className={`absolute top-2 right-2 space-y-1 transition-opacity duration-300 hidden md:block ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             <div className="bg-black/50 text-white text-xs px-2 py-1 rounded-full flex items-center">
               <Users className="w-3 h-3 mr-1" />
               {readers}
