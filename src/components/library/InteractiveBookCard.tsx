@@ -191,8 +191,8 @@ const InteractiveBookCard = ({
             }}
           />
           
-          {/* Overlay with actions */}
-          <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+          {/* Overlay with actions - hidden on mobile */}
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300 hidden md:block ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             <div className="absolute bottom-4 left-4 right-4">
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center">
