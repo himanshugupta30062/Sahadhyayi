@@ -250,7 +250,7 @@ const InteractiveBookCard = ({
               <Clock className="w-3 h-3 mr-1" />
               {readingTime}h
             </div>
-            {book.pdf_url && onDownloadPDF && (
+            {book.pdf_url && onDownloadPDF && isHovered && (
               <Button 
                 size="sm" 
                 onClick={() => onDownloadPDF(book)}
