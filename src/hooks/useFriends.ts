@@ -143,3 +143,25 @@ export const useRespondToFriendRequest = () => {
     },
   });
 };
+
+export const useCancelFriendRequest = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ requestId }: { requestId: string }) => {
+      const { data, error } = await supabase
+        .from('friend_requests')
+        .delete()
+        .eq('id', requestId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['all-users'] }); // Refresh discover section
+    },
+  });
+};

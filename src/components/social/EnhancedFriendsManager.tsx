@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, UserPlus, MessageCircle, Users, Loader2, Check, X } from 'lucide-react';
 import { useUserSearch, useAllUsers } from '@/hooks/useUserSearch';
-import { useFriends, useSendFriendRequest, useFriendRequests, useRespondToFriendRequest } from '@/hooks/useFriends';
+import { useFriends, useSendFriendRequest, useFriendRequests, useRespondToFriendRequest, useCancelFriendRequest } from '@/hooks/useFriends';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/authHelpers';
 import { ChatWindow } from '@/components/social/ChatWindow';
@@ -25,6 +25,7 @@ export const EnhancedFriendsManager = () => {
   const { data: friendRequests = [], isLoading: isLoadingRequests } = useFriendRequests();
   const sendFriendRequest = useSendFriendRequest();
   const respondToFriendRequest = useRespondToFriendRequest();
+  const cancelFriendRequest = useCancelFriendRequest();
 
   const handleSendFriendRequest = async (userId: string, userName: string) => {
     try {
@@ -58,6 +59,23 @@ export const EnhancedFriendsManager = () => {
         variant: 'destructive',
         title: 'Error',
         description: 'Failed to respond to friend request. Please try again.',
+      });
+    }
+  };
+
+  const handleCancelRequest = async (requestId: string, addresseeName: string) => {
+    try {
+      await cancelFriendRequest.mutateAsync({ requestId });
+      toast({
+        title: 'Friend Request Cancelled',
+        description: `Friend request to ${addresseeName} has been cancelled.`,
+      });
+    } catch (error) {
+      console.error('Failed to cancel friend request:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to cancel friend request. Please try again.',
       });
     }
   };
@@ -318,9 +336,21 @@ export const EnhancedFriendsManager = () => {
                               </p>
                             </div>
                           </div>
-                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                            Pending
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                              Pending
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCancelRequest(request.id, request.addressee_profile?.full_name || 'User')}
+                              disabled={cancelFriendRequest.isPending}
+                              className="border-red-300 text-red-700 hover:bg-red-50"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
