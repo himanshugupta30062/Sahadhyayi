@@ -103,7 +103,34 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
     return () => window.removeEventListener('keydown', handleKey);
   }, [isOpen, handlePrevPage, handleNextPage, isFullscreen, onClose]);
 
-  // Page rendering
+  // PDF viewer component
+  const renderPdfViewer = () => {
+    if (!book?.pdf_url) return null;
+    
+    return (
+      <div 
+        className="w-full h-full rounded-lg overflow-hidden shadow-lg"
+        style={{
+          transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
+          transformOrigin: 'center',
+          minHeight: '600px'
+        }}
+      >
+        <iframe
+          src={`${book.pdf_url}#page=${currentPage}&zoom=${zoom}&toolbar=1&navpanes=1&scrollbar=1`}
+          width="100%"
+          height="600px"
+          className="border-0 rounded-lg"
+          title={`${book.title} - PDF Viewer`}
+          onError={(e) => {
+            console.error('PDF loading error:', e);
+          }}
+        />
+      </div>
+    );
+  };
+
+  // Page rendering for non-PDF content
   const renderPage = (pageNumber: number) => (
     <motion.div
       key={pageNumber}
@@ -171,15 +198,18 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setViewMode(viewMode === 'single' ? 'double' : 'single')
-              }
-            >
-              {viewMode === 'single' ? 'Single Page' : 'Double Page'}
-            </Button>
+            {/* View Mode Toggle - only show for non-PDF books */}
+            {!book?.pdf_url && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setViewMode(viewMode === 'single' ? 'double' : 'single')
+                }
+              >
+                {viewMode === 'single' ? 'Single Page' : 'Double Page'}
+              </Button>
+            )}
 
             <Button variant="outline" size="sm" onClick={handleZoomOut}>
               <ZoomOut className="w-4 h-4" />
@@ -229,12 +259,17 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
             </Button>
 
             <div className="flex space-x-4">
-              {viewMode === 'double' ? (
+              {book?.pdf_url ? (
+                // Display PDF viewer for PDFs
+                renderPdfViewer()
+              ) : viewMode === 'double' ? (
+                // Display double page view for non-PDFs
                 <>
                   {renderPage(currentPage)}
                   {currentPage < totalPages && renderPage(currentPage + 1)}
                 </>
               ) : (
+                // Display single page view for non-PDFs
                 renderPage(currentPage)
               )}
             </div>
