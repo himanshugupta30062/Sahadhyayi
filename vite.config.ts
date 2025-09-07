@@ -31,10 +31,11 @@ export default defineConfig(({ mode }) => ({
       '@tanstack/react-query',
       'react',
       'react-dom',
-      'react-router-dom'
+      'react-router-dom',
+      '@supabase/supabase-js'
     ],
     force: true,
-    exclude: ['@supabase/supabase-js']
+    exclude: []
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(mode),
