@@ -50,8 +50,21 @@ export const useCreateGroup = () => {
   
   return useMutation({
     mutationFn: async ({ name, description }: { name: string; description?: string }) => {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-      if (!userId) throw new Error('User not authenticated');
+      console.log('Creating group:', { name, description });
+      
+      // Check authentication first
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw new Error('Authentication error: ' + authError.message);
+      }
+      
+      if (!user?.id) {
+        console.error('No user found');
+        throw new Error('Please sign in to create a group');
+      }
+      
+      console.log('User authenticated:', user.id);
       
       // Create group
       const { data: group, error: groupError } = await supabase
@@ -59,24 +72,33 @@ export const useCreateGroup = () => {
         .insert([{
           name,
           description,
-          created_by: userId
+          created_by: user.id
         }])
         .select()
         .single();
       
-      if (groupError) throw groupError;
+      if (groupError) {
+        console.error('Group creation error:', groupError);
+        throw new Error('Failed to create group: ' + groupError.message);
+      }
+      
+      console.log('Group created:', group);
       
       // Add creator as admin
       const { error: memberError } = await supabase
         .from('group_chat_members')
         .insert([{
           group_id: group.id,
-          user_id: userId,
+          user_id: user.id,
           role: 'admin'
         }]);
       
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Member creation error:', memberError);
+        throw new Error('Failed to add creator as admin: ' + memberError.message);
+      }
       
+      console.log('Creator added as admin');
       return group;
     },
     onSuccess: () => {

@@ -58,11 +58,15 @@ const ReadingGroups = () => {
     if (!newGroup.name) return;
     
     try {
+      console.log('Attempting to create group:', newGroup);
       await createGroup.mutateAsync(newGroup);
       setNewGroup({ name: '', description: '' });
       setShowCreateGroup(false);
+      console.log('Group created successfully');
     } catch (error) {
       console.error('Error creating group:', error);
+      // Show a more specific error message to the user
+      alert('Failed to create group: ' + (error as Error).message);
     }
   };
 
