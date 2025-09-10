@@ -85,23 +85,23 @@ const LibraryHero = ({
           </div>
 
           {/* Enhanced Search Bar */}
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto relative z-50">
             <div className={`relative transform transition-all duration-300 ${isSearchFocused ? 'scale-105' : ''}`}>
               <div className="relative">
-                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6" />
+                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6 z-10" />
                 <Input
                   type="text"
                   placeholder="Search books, authors, genres..."
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setIsSearchFocused(false)}
+                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
                   onKeyPress={(e) => e.key === 'Enter' && onSearch()}
-                  className="pl-14 pr-32 py-6 text-lg bg-white/95 backdrop-blur-sm border-0 rounded-2xl shadow-2xl focus:bg-white focus:shadow-3xl transition-all duration-300"
+                  className="pl-14 pr-32 py-6 text-lg bg-white/95 backdrop-blur-sm border-0 rounded-2xl shadow-2xl focus:bg-white focus:shadow-3xl transition-all duration-300 relative z-10"
                 />
                 <Button
                   onClick={onSearch}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-library-primary to-library-secondary hover:from-library-secondary hover:to-library-primary text-white px-8 py-3 rounded-xl font-semibold shadow-lg transition-all duration-200"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-library-primary to-library-secondary hover:from-library-secondary hover:to-library-primary text-white px-8 py-3 rounded-xl font-semibold shadow-lg transition-all duration-200 z-20"
                 >
                   Search
                 </Button>
@@ -109,7 +109,7 @@ const LibraryHero = ({
               
               {/* Search suggestions overlay */}
               {isSearchFocused && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border p-4 z-50">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border p-4 z-[9999]">
                   <div className="text-sm text-gray-600 mb-2">Popular searches:</div>
                   <div className="flex flex-wrap gap-2">
                     {['Fiction', 'Science', 'History', 'Biography', 'Philosophy'].map((tag) => (
@@ -118,6 +118,7 @@ const LibraryHero = ({
                         onClick={() => {
                           onSearchChange(tag);
                           onSearch();
+                          setIsSearchFocused(false);
                         }}
                         className="px-3 py-1 bg-gray-100 hover:bg-library-primary hover:text-white rounded-full text-sm transition-colors"
                       >
