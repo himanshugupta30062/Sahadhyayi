@@ -6,6 +6,9 @@ const ALLOWED_ORIGINS = [
   "https://rknxtatvlzunatpyqxro.supabase.co",
   "https://www.sahadhyayi.com",
   "https://sahadhyayi.com",
+  "https://lovable.app",
+  "http://localhost:8080",
+  "*" // Allow all origins for development
 ];
 
 function getCorsHeaders(origin: string | null) {
@@ -15,11 +18,7 @@ function getCorsHeaders(origin: string | null) {
     "Access-Control-Allow-Methods": "POST,OPTIONS",
   };
 
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
-    headers["Access-Control-Allow-Origin"] = origin;
-  } else {
-    headers["Access-Control-Allow-Origin"] = ALLOWED_ORIGINS[0];
-  }
+  headers["Access-Control-Allow-Origin"] = "*";
 
   return headers;
 }
