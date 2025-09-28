@@ -50,7 +50,7 @@ serve(async (req) => {
 
     for (const item of shelf ?? []) {
       excludeIds.push(item.book_id);
-      const genre = item.books_library?.genre;
+      const genre = item.books_library?.[0]?.genre;
       if (!genre) continue;
       const weight = item.rating ?? 3;
       genreScores[genre] = (genreScores[genre] || 0) + weight;

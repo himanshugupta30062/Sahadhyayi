@@ -42,13 +42,13 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     // Get Gemini API key
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY')
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     if (!geminiApiKey) {
-      console.error('Gemini API key not configured')
-      throw new Error('Gemini API key not configured')
+      console.error('Gemini API key not configured');
+      throw new Error('Gemini API key not configured');
     }
 
-    console.log('Gemini API key found, length:', geminiApiKey.length, 'proceeding with request')
+    console.log('Gemini API key found, length:', geminiApiKey.length, 'proceeding with request');
 
     let finalPrompt = ''
     let isBookSummary = false
@@ -220,7 +220,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Failed to generate content',
-        details: error.message
+        details: error instanceof Error ? error.message : 'An unknown error occurred'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
