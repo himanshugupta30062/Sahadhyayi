@@ -49,6 +49,8 @@ export const useUpdateUserLocation = () => {
           latitude: location.lat,
           longitude: location.lng,
           is_active: true,
+        }, {
+          onConflict: 'user_id'
         })
         .select()
         .single();
