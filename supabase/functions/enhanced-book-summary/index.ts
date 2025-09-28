@@ -48,7 +48,7 @@ serve(async (req) => {
       throw new Error('Gemini API key not configured')
     }
 
-    console.log('Gemini API key found, proceeding with request')
+    console.log('Gemini API key found, length:', geminiApiKey.length, 'proceeding with request')
 
     let finalPrompt = ''
     let isBookSummary = false

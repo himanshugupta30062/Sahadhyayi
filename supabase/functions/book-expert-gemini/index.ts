@@ -52,6 +52,8 @@ serve(async (req) => {
       throw new Error('API configuration error');
     }
 
+    console.log('Gemini API key found, length:', geminiApiKey.length);
+
     const payload = {
       contents: [
         {
