@@ -11,8 +11,11 @@ import { useUserJoinedGroups } from "@/hooks/useUserGroups";
 import GroupCard from "@/components/groups/GroupCard";
 import GroupMessaging from "@/components/groups/GroupMessaging";
 import SEO from "@/components/SEO";
+import { useAuth } from "@/contexts/authHelpers";
+import { toast } from "sonner";
 
 const ReadingGroups = () => {
+  const { user } = useAuth();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [chatGroupId, setChatGroupId] = useState<string | null>(null);
   const [chatGroupName, setChatGroupName] = useState<string>('');
@@ -55,18 +58,27 @@ const ReadingGroups = () => {
   ];
 
   const handleCreateGroup = async () => {
-    if (!newGroup.name) return;
+    if (!user) {
+      toast.error('Please sign in to create a group');
+      return;
+    }
+    
+    if (!newGroup.name.trim()) {
+      toast.error('Please enter a group name');
+      return;
+    }
     
     try {
-      console.log('Attempting to create group:', newGroup);
+      console.log('Attempting to create group:', newGroup, 'User:', user.id);
       await createGroup.mutateAsync(newGroup);
       setNewGroup({ name: '', description: '' });
       setShowCreateGroup(false);
+      toast.success('Group created successfully!');
       console.log('Group created successfully');
     } catch (error) {
       console.error('Error creating group:', error);
-      // Show a more specific error message to the user
-      alert('Failed to create group: ' + (error as Error).message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to create group: ${errorMessage}`);
     }
   };
 
