@@ -8,6 +8,12 @@ declare global {
 }
 
 export const loadGoogleMaps = (apiKey: string): Promise<void> => {
+  // Validate API key
+  if (!apiKey || apiKey.trim() === '') {
+    console.error('Google Maps API key is missing or empty');
+    return Promise.reject(new Error('Google Maps API key is required. Please restart your dev server.'));
+  }
+
   // Return existing promise if maps are already loading
   if (window.googleMapsLoadingPromise) {
     return window.googleMapsLoadingPromise;

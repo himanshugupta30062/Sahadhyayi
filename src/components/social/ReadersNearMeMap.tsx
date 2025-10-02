@@ -55,8 +55,10 @@ export const ReadersNearMeMap: React.FC = () => {
 
   const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   
+  console.log('Google Maps API Key status:', GOOGLE_MAPS_API_KEY ? 'Loaded' : 'MISSING - Please restart dev server');
+  
   if (!GOOGLE_MAPS_API_KEY) {
-    console.warn('Google Maps API key not configured');
+    console.error('Google Maps API key not configured - Map will not load');
   }
   const MAX_DISTANCE_KM = 50;
 
@@ -400,7 +402,7 @@ export const ReadersNearMeMap: React.FC = () => {
     );
   }
 
-  if (!isLoaded) {
+  if (!isLoaded || !GOOGLE_MAPS_API_KEY) {
     return (
       <Card className="bg-white shadow-sm border-0 rounded-xl">
         <CardHeader>
@@ -410,12 +412,24 @@ export const ReadersNearMeMap: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="relative bg-gradient-to-br from-red-50 to-orange-50 rounded-xl h-[500px] border overflow-hidden flex items-center justify-center">
-            <div className="text-center max-w-md">
+            <div className="text-center max-w-md px-6">
               <MapPin className="w-12 h-12 mx-auto mb-4 text-red-400" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Map Loading Error</h3>
-              <p className="text-gray-600 mb-4">
-                Unable to load the interactive map. Please refresh the page.
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Map Configuration Issue</h3>
+              <p className="text-gray-600 mb-2">
+                {!GOOGLE_MAPS_API_KEY 
+                  ? 'Google Maps API key is not loaded.' 
+                  : 'Unable to load the interactive map.'}
               </p>
+              <p className="text-sm text-gray-500 mb-4">
+                Please <strong>restart your development server</strong> to load the environment variables, then refresh this page.
+              </p>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4 text-left">
+                <p className="text-xs text-gray-700 font-mono">
+                  1. Stop your dev server (Ctrl+C)<br/>
+                  2. Start it again (npm run dev)<br/>
+                  3. Refresh this page
+                </p>
+              </div>
               <Button 
                 onClick={() => window.location.reload()} 
                 className="bg-orange-600 hover:bg-orange-700"
