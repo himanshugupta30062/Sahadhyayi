@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
 import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ const Navigation = () => {
   const [scrolled, setScrolled] = React.useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const menuRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -65,6 +66,7 @@ const Navigation = () => {
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/signin');
     setIsOpen(false);
   };
 

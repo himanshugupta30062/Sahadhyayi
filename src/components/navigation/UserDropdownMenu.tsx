@@ -33,10 +33,11 @@ const UserDropdownMenu = () => {
       console.log('[DROPDOWN] Starting sign out...');
       await signOut();
       console.log('[DROPDOWN] Sign out completed, navigating...');
+      navigate('/signin');
     } catch (error) {
       console.error('[DROPDOWN] Sign out error:', error);
       // Force navigation even if there's an error
-      navigate('/');
+      navigate('/signin');
     }
   };
 

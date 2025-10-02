@@ -36,7 +36,7 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/");
+    navigate('/signin');
     onClose();
   };
 

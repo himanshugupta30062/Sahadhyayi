@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Search, Menu, X } from 'lucide-react';
@@ -13,6 +13,7 @@ const StickyNavigation = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const navItems = [
@@ -25,8 +26,10 @@ const StickyNavigation = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Navigate to library with search
-      window.location.href = `/library?search=${encodeURIComponent(searchQuery.trim())}`;
+      // Navigate to library with search using React Router
+      navigate(`/library?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setIsOpen(false);
     }
   };
 

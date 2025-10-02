@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Clock } from 'lucide-react';
@@ -18,6 +19,12 @@ const SessionTimeoutWarning: FC<SessionTimeoutWarningProps> = ({
 }) => {
   const [countdown, setCountdown] = useState(timeRemaining);
   const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/signin');
+  };
 
   useEffect(() => {
     setCountdown(timeRemaining);
@@ -69,7 +76,7 @@ const SessionTimeoutWarning: FC<SessionTimeoutWarningProps> = ({
         <div className="flex gap-3 justify-end">
           <Button
             variant="outline"
-            onClick={signOut}
+            onClick={handleSignOut}
             className="text-gray-600 hover:text-gray-800"
           >
             Logout Now
