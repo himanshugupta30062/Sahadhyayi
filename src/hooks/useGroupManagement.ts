@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
+import { toast } from 'sonner';
 
 export interface Group {
   id: string;
@@ -131,9 +132,13 @@ export const useJoinGroup = () => {
       return data;
     },
     onSuccess: () => {
+      toast.success('Successfully joined the group!');
       queryClient.invalidateQueries({ queryKey: ['user-groups'] });
       queryClient.invalidateQueries({ queryKey: ['all-groups'] });
       queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to join group: ${error.message}`);
     },
   });
 };
@@ -155,9 +160,13 @@ export const useLeaveGroup = () => {
       if (error) throw error;
     },
     onSuccess: () => {
+      toast.success('Successfully left the group');
       queryClient.invalidateQueries({ queryKey: ['user-groups'] });
       queryClient.invalidateQueries({ queryKey: ['all-groups'] });
       queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to leave group: ${error.message}`);
     },
   });
 };

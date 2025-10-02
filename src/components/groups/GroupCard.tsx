@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Users, Calendar, MapPin, BookOpen, MessageCircle } from 'lucide-react';
 import { Group } from '@/hooks/useGroupManagement';
 import { useJoinGroup, useLeaveGroup } from '@/hooks/useGroupManagement';
+import { useAuth } from '@/contexts/authHelpers';
+import { toast } from 'sonner';
 
 interface GroupCardProps {
   group: Group & { group_members?: { count: number }[] };
@@ -21,12 +23,18 @@ const GroupCard: React.FC<GroupCardProps> = ({
   onLeave,
   onChat
 }) => {
+  const { user } = useAuth();
   const joinGroup = useJoinGroup();
   const leaveGroup = useLeaveGroup();
 
   const memberCount = group.group_members?.[0]?.count || 0;
 
   const handleJoinLeave = () => {
+    if (!user) {
+      toast.error('Please sign in to join groups');
+      return;
+    }
+
     if (isJoined) {
       if (onLeave) {
         onLeave(group.id);

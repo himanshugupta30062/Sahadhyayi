@@ -25,9 +25,14 @@ const ReadingGroups = () => {
   });
 
   const { data: groups = [], isLoading } = useGroups();
+  const { data: userGroups = [] } = useUserJoinedGroups();
   const createGroup = useCreateGroup();
 
   const handleOpenChat = (groupId: string) => {
+    if (!user) {
+      toast.error('Please sign in to access group chat');
+      return;
+    }
     const group = groups.find(g => g.id === groupId);
     setChatGroupId(groupId);
     setChatGroupName(group?.name || 'Group Chat');
@@ -197,14 +202,17 @@ const ReadingGroups = () => {
 
           {!isLoading && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {groups.map((group) => (
-                <GroupCard
-                  key={group.id}
-                  group={group}
-                  isJoined={false}
-                  onChat={(id) => handleOpenChat(id)}
-                />
-              ))}
+              {groups.map((group) => {
+                const isJoined = userGroups.some(ug => ug.group_id === group.id);
+                return (
+                  <GroupCard
+                    key={group.id}
+                    group={group}
+                    isJoined={isJoined}
+                    onChat={(id) => handleOpenChat(id)}
+                  />
+                );
+              })}
             </div>
           )}
 
