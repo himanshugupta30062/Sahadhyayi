@@ -24,21 +24,13 @@ const SignIn = () => {
   const { user, signIn } = useAuth();
   const { toast } = useToast();
 
-  // Always redirect to home page after sign in
-  const redirectPath = '/';
+  // Redirect to dashboard after sign in
+  const redirectPath = '/dashboard';
 
   // Redirect if already signed in
   React.useEffect(() => {
     if (user) {
       navigate(redirectPath);
-      // Restore scroll position if available
-      if (typeof window !== 'undefined') {
-        const scrollY = sessionStorage.getItem('redirectScrollY');
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY));
-          sessionStorage.removeItem('redirectScrollY');
-        }
-      }
     }
   }, [user, navigate, redirectPath]);
 
@@ -82,17 +74,8 @@ const SignIn = () => {
       
       await signIn(sanitizedEmail, formData.password);
       
-      // Navigate to home page on success
-      navigate('/');
-      
-      // Restore scroll position if available
-      if (typeof window !== 'undefined') {
-        const scrollY = sessionStorage.getItem('redirectScrollY');
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY));
-          sessionStorage.removeItem('redirectScrollY');
-        }
-      }
+      // Navigate to dashboard on success
+      navigate('/dashboard');
       
     } catch (error: any) {
       console.error('Sign-in error:', error);
