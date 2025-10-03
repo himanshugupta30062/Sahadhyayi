@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Users, Calendar, Map, Plus } from "lucide-react";
+import { Users, Map, Plus } from "lucide-react";
 import { useGroups, useCreateGroup } from "@/hooks/useGroupManagement";
 import { useUserJoinedGroups } from "@/hooks/useUserGroups";
 import GroupCard from "@/components/groups/GroupCard";
@@ -37,30 +37,6 @@ const ReadingGroups = () => {
     setChatGroupId(groupId);
     setChatGroupName(group?.name || 'Group Chat');
   };
-
-  const upcomingEvents = [
-    {
-      title: "Book Discussion: The Midnight Library",
-      date: "March 15, 2025",
-      time: "7:00 PM IST",
-      type: "Virtual",
-      attendees: 45
-    },
-    {
-      title: "Author Meet: Local Indian Author",
-      date: "March 16, 2025",
-      time: "6:00 PM IST",
-      type: "Physical - Mumbai",
-      attendees: 25
-    },
-    {
-      title: "Reading Marathon Weekend",
-      date: "March 23-24, 2025",
-      time: "All Day",
-      type: "Global Virtual Event",
-      attendees: 500
-    }
-  ];
 
   const handleCreateGroup = async () => {
     if (!user) {
@@ -150,40 +126,6 @@ const ReadingGroups = () => {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-
-        {/* Upcoming Events */}
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Upcoming Events</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {upcomingEvents.map((event, index) => (
-              <Card key={index} className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
-                <CardHeader>
-                  <CardTitle className="text-lg text-gray-900">{event.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <Calendar className="w-4 h-4" />
-                    <span>{event.date}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <span className="font-medium">{event.time}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <Map className="w-4 h-4" />
-                    <span>{event.type}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <Users className="w-4 h-4" />
-                    <span>{event.attendees} attending</span>
-                  </div>
-                  <Button className="w-full mt-4 bg-amber-600 hover:bg-amber-700">
-                    Join Event
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         </div>
 
         {/* Reading Groups */}
