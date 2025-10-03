@@ -76,7 +76,7 @@ export const WhatsAppDiscovery = () => {
           .upsert({
             user_id: user?.id,
             platform: 'whatsapp',
-            platform_friend_id: `whatsapp_${friend.platform_friend_name?.replace(/\s+/g, '_').toLowerCase()}`,
+            platform_friend_id: `whatsapp_${(friend.platform_friend_name || 'user').replace(/\s+/g, '_').toLowerCase()}`,
             platform_friend_name: friend.platform_friend_name,
             platform_friend_avatar: friend.platform_friend_avatar,
             mutual_connections: friend.mutual_connections,

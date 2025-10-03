@@ -43,11 +43,11 @@ const ReadingCirclePanel: React.FC<ReadingCirclePanelProps> = ({ book }) => {
   const allReaders = [...book.readingFriends.map(friend => ({
     ...friend,
     phone: '+1234567890',
-    instagram: '@' + friend.name.toLowerCase().replace(' ', '_')
+    instagram: '@' + (friend.name || 'user').toLowerCase().replace(' ', '_')
   })), ...mockReaders];
 
   const filteredReaders = allReaders.filter(reader =>
-    reader.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (reader.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
