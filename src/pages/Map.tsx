@@ -9,6 +9,7 @@ import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { ReadersMap } from '@/components/maps/ReadersMap';
 import { FriendsMap } from '@/components/maps/FriendsMap';
 import { BookFilterDropdown } from '@/components/social/BookFilterDropdown';
+import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
 
 interface ReaderLocation {
   latitude: number;
@@ -72,12 +73,6 @@ const MapPage = () => {
   const friendsQuery = useFriends();
   const friends = friendsQuery.data || [];
   const friendsLoading = friendsQuery.isLoading;
-
-  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
-  
-  if (!GOOGLE_MAPS_API_KEY) {
-    console.warn('Google Maps API key not configured');
-  }
 
   useEffect(() => {
     loadGoogleMaps(GOOGLE_MAPS_API_KEY)

@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
+import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
 
 declare global {
   interface Window {
@@ -27,10 +28,7 @@ export const FriendsLocationMap: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
 
-  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  
-  if (!GOOGLE_MAPS_API_KEY) {
-    console.warn('Google Maps API key not configured');
+  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
     return (
       <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
         <div className="text-center p-6">
@@ -41,11 +39,11 @@ export const FriendsLocationMap: React.FC = () => {
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Google Maps API Key Required</h3>
           <p className="text-gray-600 mb-4">
-            To display the map, please configure your Google Maps API key in the environment variables.
+            To display the map, please configure your Google Maps API key.
           </p>
           <div className="text-sm text-gray-500">
             <p>1. Get an API key from <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">Google Cloud Console</a></p>
-            <p>2. Add it to your .env file as VITE_GOOGLE_MAPS_API_KEY</p>
+            <p>2. Update src/config/maps.ts with your API key</p>
           </div>
         </div>
       </div>

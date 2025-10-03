@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { MapPin, Users, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { toast } from 'sonner';
+import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
 
 // Declare global types for Google Maps
 declare global {
@@ -39,9 +40,7 @@ export const ModernGoogleMap: React.FC = () => {
   const [currentBook, setCurrentBook] = useState('');
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
 
-  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
-  
-  if (!GOOGLE_MAPS_API_KEY) {
+  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
     return (
       <Card>
         <CardHeader>
@@ -64,7 +63,7 @@ export const ModernGoogleMap: React.FC = () => {
               </p>
               <div className="text-sm text-gray-500">
                 <p>1. Get an API key from <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">Google Cloud Console</a></p>
-                <p>2. Add it to your .env file as VITE_GOOGLE_MAPS_API_KEY</p>
+                <p>2. Update src/config/maps.ts with your API key</p>
               </div>
             </div>
           </div>
