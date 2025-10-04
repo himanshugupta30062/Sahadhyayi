@@ -40,7 +40,10 @@ export const ModernGoogleMap: React.FC = () => {
   const [currentBook, setCurrentBook] = useState('');
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
 
-  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+  // API key validation will be done when loading the map
+  const isValidApiKey = GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY.length > 20;
+
+  if (!isValidApiKey) {
     return (
       <Card>
         <CardHeader>

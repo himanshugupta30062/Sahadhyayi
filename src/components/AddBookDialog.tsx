@@ -83,9 +83,9 @@ const AddBookDialog = ({ onAddBook }: AddBookDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const filteredBooks = availableBooks.filter(book =>
-    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.genre.toLowerCase().includes(searchTerm.toLowerCase())
+    (book.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (book.author || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (book.genre || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddBook = (book: Book) => {

@@ -112,11 +112,11 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
     const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
 
     if (mentionMatch) {
-      const searchTerm = mentionMatch[1].toLowerCase();
+      const searchTerm = mentionMatch[1]?.toLowerCase() || '';
       const suggestions = members
         .filter(member => 
-          member.user_profile?.username?.toLowerCase().includes(searchTerm) ||
-          member.user_profile?.full_name?.toLowerCase().includes(searchTerm)
+          member.user_profile?.username?.toLowerCase()?.includes(searchTerm) ||
+          member.user_profile?.full_name?.toLowerCase()?.includes(searchTerm)
         )
         .slice(0, 5);
 

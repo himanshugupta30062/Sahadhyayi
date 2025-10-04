@@ -101,9 +101,9 @@ export const ReadingGroups = () => {
   const createGroupMutation = useCreateGroup();
 
   const filteredGroups = groups.filter(group =>
-    group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    group.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    group.genre.some(g => g.toLowerCase().includes(searchQuery.toLowerCase()))
+    (group.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (group.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    group.genre?.some(g => (g || '').toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   useEffect(() => {

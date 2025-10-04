@@ -57,7 +57,7 @@ export const SocialFriends = () => {
   }, []);
 
   const filteredFriends = friends.filter(friend =>
-    friend.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (friend.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getInitials = (name: string) => {

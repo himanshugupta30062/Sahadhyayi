@@ -28,27 +28,8 @@ export const FriendsLocationMap: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
 
-  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
-    return (
-      <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-        <div className="text-center p-6">
-          <div className="text-gray-600 mb-4">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4M9 7l6 3" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Google Maps API Key Required</h3>
-          <p className="text-gray-600 mb-4">
-            To display the map, please configure your Google Maps API key.
-          </p>
-          <div className="text-sm text-gray-500">
-            <p>1. Get an API key from <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">Google Cloud Console</a></p>
-            <p>2. Update src/config/maps.ts with your API key</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // API key validation will be done when loading the map
+  const isValidApiKey = GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY.length > 20;
 
   // Load Google Maps
   useEffect(() => {

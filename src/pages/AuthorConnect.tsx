@@ -73,9 +73,9 @@ const AuthorConnect = () => {
   ];
 
   const filteredAuthors = authors.filter(author =>
-    author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    author.genre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    author.books?.some(book => book.toLowerCase().includes(searchTerm.toLowerCase()))
+    (author.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (author.genre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    author.books?.some(book => (book || '').toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
