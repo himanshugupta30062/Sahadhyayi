@@ -118,7 +118,7 @@ const MapPage = () => {
           longitude: 0, // Don't expose exact coordinates for privacy
           profiles: {
             full_name: reader.reader_name,
-            username: reader.reader_name?.toLowerCase().replace(/\s+/g, '_')
+            username: (reader.reader_name || 'user').toLowerCase().replace(/\s+/g, '_')
           },
           distance: reader.distance_km,
           reading_since: reader.reading_since

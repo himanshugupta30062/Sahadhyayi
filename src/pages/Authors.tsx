@@ -72,7 +72,7 @@ const Authors = () => {
   const filteredAuthors = useMemo(() => {
     return authors.filter(author => {
       const matchesSearch = !searchTerm || 
-        author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (author.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         author.bio?.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesGenre = selectedGenre === 'all' || 
@@ -147,7 +147,7 @@ const Authors = () => {
         "name": author.name,
         "description": author.bio,
         "image": author.profile_image_url,
-        "url": `https://sahadhyayi.com/author/${author.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`,
+        "url": `https://sahadhyayi.com/author/${(author.name || 'unknown').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`,
         "jobTitle": "Author",
         "knowsAbout": author.genres,
         "address": {
@@ -338,7 +338,7 @@ const Authors = () => {
                       <AuthorCard
                         key={author.id}
                         author={author}
-                        books={booksByAuthor[author.name.toLowerCase().trim()] ?? []}
+                        books={booksByAuthor[(author.name || '').toLowerCase().trim()] ?? []}
                         featured={true}
                       />
                     ))}
@@ -374,7 +374,7 @@ const Authors = () => {
                         <AuthorCard
                           key={author.id}
                           author={author}
-                          books={booksByAuthor[author.name.toLowerCase().trim()] ?? []}
+                          books={booksByAuthor[(author.name || '').toLowerCase().trim()] ?? []}
                           featured={false}
                         />
                       ))}

@@ -36,7 +36,7 @@ const OpenSourceLicenses = () => {
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(license =>
-        license.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (license.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         license.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
