@@ -1,5 +1,6 @@
 /* eslint-disable no-misleading-character-class */
-export const slugify = (text: string) => {
+export const slugify = (text?: string | null) => {
+  if (!text) return '';
   return text
     .toLowerCase()
     .trim()

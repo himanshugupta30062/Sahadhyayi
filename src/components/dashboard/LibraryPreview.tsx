@@ -53,11 +53,11 @@ const LibraryPreview = () => {
                   )}
                 </div>
                 <h4 className="font-medium text-xs truncate">{book.title}</h4>
-                {book.author && (
+                {book.author ? (
                   <p className="text-xs text-gray-500 truncate">
                     <Link to={`/authors/${slugify(book.author)}`}>{book.author}</Link>
                   </p>
-                )}
+                ) : null}
               </div>
             ))}
           </div>

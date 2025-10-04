@@ -62,7 +62,11 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => 
                   <div>
                     <h4 className="font-semibold text-sm line-clamp-2 text-gray-900">{book.title}</h4>
                     <p className="text-xs text-gray-500">
-                      <Link to={`/authors/${slugify(book.author)}`}>{book.author || 'Unknown Author'}</Link>
+                      {book.author ? (
+                        <Link to={`/authors/${slugify(book.author)}`}>{book.author}</Link>
+                      ) : (
+                        'Unknown Author'
+                      )}
                     </p>
                   </div>
                   {book.genre && (
