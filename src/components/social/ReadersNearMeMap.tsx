@@ -98,10 +98,10 @@ export const ReadersNearMeMap: React.FC = () => {
         setIsLoading(true);
         await loadGoogleMaps(GOOGLE_MAPS_API_KEY);
         setIsLoaded(true);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error loading Google Maps:', error);
-        toast.error('Failed to load map');
-      } finally {
+        setIsLoaded(false);
         setIsLoading(false);
       }
     };

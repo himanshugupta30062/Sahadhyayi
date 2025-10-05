@@ -79,8 +79,9 @@ const MapPage = () => {
       .then(() => setMapsLoaded(true))
       .catch(err => {
         console.error('Failed to load Google Maps', err);
+        setMapsLoaded(false);
       });
-  }, [GOOGLE_MAPS_API_KEY]);
+  }, []);
 
   useEffect(() => {
     if (!selectedBook?.id) {

@@ -38,16 +38,17 @@ export const FriendsLocationMap: React.FC = () => {
         setIsLoading(true);
         await loadGoogleMaps(GOOGLE_MAPS_API_KEY);
         setIsLoaded(true);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error loading Google Maps:', error);
-        toast.error('Failed to load map');
-      } finally {
+        toast.error('Failed to load map. Please check your internet connection.');
+        setIsLoaded(false);
         setIsLoading(false);
       }
     };
 
     loadMap();
-  }, [GOOGLE_MAPS_API_KEY]);
+  }, []);
 
   // Initialize map when loaded
   useEffect(() => {

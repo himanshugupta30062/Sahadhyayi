@@ -9,9 +9,9 @@ declare global {
 
 export const loadGoogleMaps = (apiKey: string): Promise<void> => {
   // Validate API key
-  if (!apiKey || apiKey.trim() === '') {
-    console.error('Google Maps API key is missing or empty');
-    return Promise.reject(new Error('Google Maps API key is required. Please restart your dev server.'));
+  if (!apiKey || apiKey.trim() === '' || apiKey.length < 20) {
+    console.error('Invalid Google Maps API key:', apiKey ? 'too short' : 'missing');
+    return Promise.reject(new Error('Invalid Google Maps API key. Please check your configuration.'));
   }
 
   // Return existing promise if maps are already loading
@@ -31,6 +31,7 @@ export const loadGoogleMaps = (apiKey: string): Promise<void> => {
     
     // Set up callback
     window[callbackName] = () => {
+      console.log('Google Maps loaded successfully');
       resolve();
       // Clean up
       delete window[callbackName];
@@ -42,8 +43,10 @@ export const loadGoogleMaps = (apiKey: string): Promise<void> => {
     script.async = true;
     script.defer = true;
     
-    script.onerror = () => {
-      reject(new Error('Failed to load Google Maps API'));
+    script.onerror = (error) => {
+      console.error('Failed to load Google Maps script:', error);
+      const errorMessage = 'Failed to load Google Maps. Please check: 1) API key is valid, 2) Maps JavaScript API is enabled, 3) Domain is whitelisted in Google Cloud Console.';
+      reject(new Error(errorMessage));
       delete window[callbackName];
       delete window.googleMapsLoadingPromise;
     };
