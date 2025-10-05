@@ -5,6 +5,7 @@ import SEO from '@/components/SEO';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { useParams } from 'react-router-dom';
+import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
 
 interface ReaderProfile {
   id: string;
@@ -27,12 +28,6 @@ const ReaderMap = () => {
   const [map, setMap] = useState<any>(null);
   const [readers, setReaders] = useState<ReaderProfile[]>([]);
 
-  const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
-  
-  if (!GOOGLE_MAPS_API_KEY) {
-    console.warn('Google Maps API key not configured');
-  }
-
   useEffect(() => {
     loadGoogleMaps(GOOGLE_MAPS_API_KEY)
       .then(() => {
@@ -48,7 +43,7 @@ const ReaderMap = () => {
       .catch(err => {
         console.error('Failed to load Google Maps', err);
       });
-  }, [GOOGLE_MAPS_API_KEY]);
+  }, []);
 
   useEffect(() => {
     const fetchReaders = async () => {
