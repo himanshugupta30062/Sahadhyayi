@@ -2,7 +2,7 @@
 // This is a publishable key that's meant to be used in the browser
 // Make sure to restrict it to your domain in Google Cloud Console
 
-export const GOOGLE_MAPS_API_KEY = 'AIzaSyCw2_r9mOx7ORFN1i48tiKsjFKG4IUym2g';
+export const GOOGLE_MAPS_API_KEY = 'AIzaSyDPBJ3hdp-aILWTyyAJQtDku30yiLA4P2Y';
 
 // Instructions to get your API key:
 // 1. Go to https://console.cloud.google.com/
