@@ -27,6 +27,7 @@ import Index from "./pages/Index";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import ResetPassword from "./pages/ResetPassword";
+import ConfirmEmail from "./pages/ConfirmEmail";
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded pages (optimized chunks)
@@ -140,6 +141,7 @@ const App = memo(() => {
                         <Route path="/signup" element={<SignUp />} />
                         <Route path="/signin" element={<SignIn />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/confirm-email" element={<ConfirmEmail />} />
                         <Route path="*" element={<NotFound />} />
                         
                         {/* Primary routes - optimized lazy loading */}
