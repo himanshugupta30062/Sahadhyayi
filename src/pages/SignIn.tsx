@@ -150,7 +150,7 @@ const SignIn = () => {
                     placeholder="your@email.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="pl-10 bg-white text-black"
+                    className="pl-10"
                     maxLength={254}
                     required
                   />
@@ -168,7 +168,7 @@ const SignIn = () => {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="pl-10 pr-10 bg-white text-black"
+                    className="pl-10 pr-10"
                     required
                   />
                   <button
