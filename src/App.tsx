@@ -26,6 +26,7 @@ import BookFlipLoader from "./components/ui/BookFlipLoader";
 import Index from "./pages/Index";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded pages (optimized chunks)
@@ -138,6 +139,7 @@ const App = memo(() => {
                         <Route path="/" element={<Index />} />
                         <Route path="/signup" element={<SignUp />} />
                         <Route path="/signin" element={<SignIn />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="*" element={<NotFound />} />
                         
                         {/* Primary routes - optimized lazy loading */}
