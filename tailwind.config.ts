@@ -72,6 +72,17 @@ const config: Config = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        auth: {
+          card: "hsl(var(--auth-card))",
+          "card-foreground": "hsl(var(--auth-card-foreground))",
+          input: "hsl(var(--auth-input))",
+          "input-border": "hsl(var(--auth-input-border))",
+          "button-primary": "hsl(var(--auth-button-primary))",
+          "button-primary-foreground": "hsl(var(--auth-button-primary-foreground))",
+          "button-secondary": "hsl(var(--auth-button-secondary))",
+          "button-secondary-foreground": "hsl(var(--auth-button-secondary-foreground))",
+          "button-secondary-border": "hsl(var(--auth-button-secondary-border))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

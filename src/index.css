@@ -74,6 +74,17 @@
     --sidebar-accent-foreground: 0 0% 7%;
     --sidebar-border: 214.3 31.8% 91.4%;
     --sidebar-ring: 0 0% 0%;
+
+    /* Auth form colors */
+    --auth-card: 0 0% 100%;
+    --auth-card-foreground: 222.2 84% 4.9%;
+    --auth-input: 0 0% 100%;
+    --auth-input-border: 214.3 31.8% 91.4%;
+    --auth-button-primary: 28 84% 42%;
+    --auth-button-primary-foreground: 0 0% 100%;
+    --auth-button-secondary: 0 0% 100%;
+    --auth-button-secondary-foreground: 222.2 84% 4.9%;
+    --auth-button-secondary-border: 214.3 31.8% 91.4%;
   }
 
   .dark {
@@ -113,6 +124,17 @@
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 0 0% 100%;
+
+    /* Auth form colors - dark mode */
+    --auth-card: 0 0% 7%;
+    --auth-card-foreground: 0 0% 98%;
+    --auth-input: 0 0% 12%;
+    --auth-input-border: 0 0% 20%;
+    --auth-button-primary: 28 84% 42%;
+    --auth-button-primary-foreground: 0 0% 100%;
+    --auth-button-secondary: 0 0% 12%;
+    --auth-button-secondary-foreground: 0 0% 98%;
+    --auth-button-secondary-border: 0 0% 20%;
   }
 }
 
