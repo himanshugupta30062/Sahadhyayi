@@ -199,7 +199,7 @@ const SignIn = () => {
                 </div>
               </div>
               
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" variant="auth" className="w-full" disabled={loading}>
                 {loading ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
@@ -219,7 +219,7 @@ const SignIn = () => {
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="authOutline"
                   onClick={() => handleOAuthSignIn('google')}
                   className="w-full"
                 >
@@ -245,7 +245,7 @@ const SignIn = () => {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="authOutline"
                   onClick={() => handleOAuthSignIn('github')}
                   className="w-full"
                 >

@@ -226,7 +226,7 @@ const ResetPassword = () => {
                 </ul>
               </div>
               
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" variant="auth" className="w-full" disabled={loading}>
                 {loading ? 'Updating Password...' : 'Update Password'}
               </Button>
             </form>

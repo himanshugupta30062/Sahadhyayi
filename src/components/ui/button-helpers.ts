@@ -15,6 +15,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        auth: "bg-[hsl(var(--auth-button-primary))] text-[hsl(var(--auth-button-primary-foreground))] hover:bg-[hsl(var(--auth-button-primary))]/90 shadow-sm",
+        authOutline: "border border-[hsl(var(--auth-button-secondary-border))] bg-[hsl(var(--auth-button-secondary))] text-[hsl(var(--auth-button-secondary-foreground))] hover:bg-[hsl(var(--auth-button-secondary-border))]/10",
       },
       size: {
         default: "h-10 px-4 py-2",
