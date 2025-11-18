@@ -4,25 +4,33 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
 
-// Types for user_profile
+// Types for profiles table
 export interface UserProfile {
   id: string;
-  name: string | null;
+  full_name: string | null;
   username: string | null;
-  email: string | null;
-  profile_picture_url: string | null;
+  email?: string | null;
+  profile_photo_url: string | null;
   bio: string | null;
-  dob: string | null;
-  gender: 'male' | 'female' | 'other' | null;
-  location: string | null;
+  location_lat: number | null;
+  location_lng: number | null;
+  location_sharing: boolean | null;
   writing_frequency: string | null;
   stories_written_count: number | null;
   stories_read_count: number | null;
-  joined_at: string | null;
-  life_tags: string[] | null;
-  social_links: Record<string, string> | null;
-  deleted: boolean | null;
-  last_updated: string | null;
+  tags_used: any | null;
+  created_at: string;
+  updated_at: string | null;
+  last_seen: string | null;
+  // Extended fields not in base profiles table
+  name?: string | null;
+  dob?: string | null;
+  gender?: 'male' | 'female' | 'other' | null;
+  location?: string | null;
+  joined_at?: string | null;
+  life_tags?: string[] | null;
+  social_links?: Record<string, string> | null;
+  profile_picture_url?: string | null;
 }
 
 export const useUserProfile = () => {
@@ -36,10 +44,9 @@ export const useUserProfile = () => {
       
       try {
         const { data, error } = await supabase
-          .from('user_profile')
+          .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .eq('deleted', false)
           .maybeSingle();
           
         if (error) {
@@ -80,11 +87,11 @@ export const useUpsertUserProfile = () => {
         );
         
         const { data, error } = await supabase
-          .from('user_profile')
+          .from('profiles')
           .upsert({ 
             ...cleanUpdates, 
             id: user.id,
-            last_updated: new Date().toISOString()
+            updated_at: new Date().toISOString()
           }, { onConflict: 'id' })
           .select()
           .single();
@@ -130,11 +137,8 @@ export const useDeleteUserProfile = () => {
       
       try {
         const { error } = await supabase
-          .from('user_profile')
-          .update({ 
-            deleted: true,
-            last_updated: new Date().toISOString()
-          })
+          .from('profiles')
+          .delete()
           .eq('id', user.id);
           
         if (error) {
@@ -148,6 +152,7 @@ export const useDeleteUserProfile = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user_profile'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast({
         title: "Success",
         description: "Profile deleted successfully",
