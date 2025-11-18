@@ -40,7 +40,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
     if (!username || username === defaultValues.username) return true;
     
     const { data, error } = await supabase
-      .from('user_profile')
+      .from('profiles')
       .select('id')
       .eq('username', username)
       .neq('id', user?.id || '')

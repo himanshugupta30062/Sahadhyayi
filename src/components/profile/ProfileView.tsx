@@ -138,16 +138,6 @@ export const ProfileView: React.FC = () => {
     );
   }
 
-  // Soft-deleted
-  if (profile && profile.deleted) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <User className="w-10 h-10 mb-2 text-gray-400" />
-        <div>Your account has been deleted.</div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 py-4 px-1">
       <div className="max-w-2xl mx-auto animate-fade-in">
