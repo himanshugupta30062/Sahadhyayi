@@ -297,8 +297,8 @@ export const ReadingGroups = () => {
                       
                       {/* Group Info */}
                       <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                          <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="font-semibold text-gray-900">{group.name}</h3>
                               {membership.role === 'admin' && (
@@ -313,7 +313,7 @@ export const ReadingGroups = () => {
                           </div>
                           <Button
                             variant="outline"
-                            className="border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl"
+                            className="border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl w-full sm:w-auto whitespace-nowrap"
                             onClick={() => navigate(`/groups/${group.id}`)}
                           >
                             View Group
@@ -321,14 +321,14 @@ export const ReadingGroups = () => {
                         </div>
                         
                         {/* Group Stats */}
-                        <div className="flex items-center gap-4 text-sm text-gray-500 mt-3">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            Member since {new Date(membership.joined_at).toLocaleDateString()}
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500 mt-3">
+                          <span className="flex items-center gap-1 whitespace-nowrap">
+                            <Users className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">Member since {new Date(membership.joined_at).toLocaleDateString()}</span>
                           </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {new Date(group.created_at).toLocaleDateString()}
+                          <span className="flex items-center gap-1 whitespace-nowrap">
+                            <Calendar className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">{new Date(group.created_at).toLocaleDateString()}</span>
                           </span>
                         </div>
                         
@@ -376,8 +376,8 @@ export const ReadingGroups = () => {
                 
                 {/* Group Info */}
                 <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-gray-900">{group.name}</h3>
                         {group.isPrivate && (
@@ -400,32 +400,32 @@ export const ReadingGroups = () => {
                     <Button
                       onClick={() => handleJoinGroup(group.id)}
                       variant={group.isJoined ? "outline" : "default"}
-                      className={group.isJoined 
-                        ? "border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl" 
-                        : "bg-orange-600 hover:bg-orange-700 rounded-xl"
-                      }
+                      className={`${group.isJoined 
+                        ? "border-orange-300 text-orange-700 hover:bg-orange-50" 
+                        : "bg-orange-600 hover:bg-orange-700"
+                      } rounded-xl w-full sm:w-auto whitespace-nowrap`}
                     >
                       {group.isJoined ? 'Leave' : 'Join'}
                     </Button>
                   </div>
                   
                   {/* Group Stats */}
-                  <div className="flex items-center gap-4 text-sm text-gray-500 mt-3">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      {group.members}/{group.maxMembers} members
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 mt-3">
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Users className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{group.members}/{group.maxMembers} members</span>
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Book className="w-4 h-4" />
-                      {group.currentBook}
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Book className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{group.currentBook}</span>
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {group.nextMeeting}
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Calendar className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{group.nextMeeting}</span>
                     </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {group.location}
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{group.location}</span>
                     </span>
                   </div>
                   
