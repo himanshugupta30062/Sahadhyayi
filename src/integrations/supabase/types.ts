@@ -1242,21 +1242,21 @@ export type Database = {
         Row: {
           consented_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           user_id: string
         }
         Insert: {
           consented_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id: string
         }
         Update: {
           consented_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string
         }
@@ -2293,16 +2293,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cleanup_unused_books: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      cleanup_unused_books: { Args: never; Returns: number }
       get_author_follower_count: {
         Args: { author_uuid: string }
         Returns: number
       }
       get_authors_data: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           bio: string
           books_count: number
@@ -2321,7 +2318,7 @@ export type Database = {
         }[]
       }
       get_authors_with_books: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           actual_books_count: number
           bio: string
@@ -2341,7 +2338,7 @@ export type Database = {
         }[]
       }
       get_contact_messages_admin: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           email: string
@@ -2351,7 +2348,7 @@ export type Database = {
         }[]
       }
       get_friend_locations: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           full_name: string
           id: string
@@ -2372,7 +2369,7 @@ export type Database = {
         }[]
       }
       get_location_analytics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_readers: number
           countries_represented: number
@@ -2380,7 +2377,7 @@ export type Database = {
         }[]
       }
       get_location_usage_analytics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_location_sharers: number
           avg_locations_per_user: number
@@ -2418,10 +2415,7 @@ export type Database = {
           username: string
         }[]
       }
-      get_total_users_count: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      get_total_users_count: { Args: never; Returns: number }
       get_user_bookshelf_stats: {
         Args: { user_uuid: string }
         Returns: {
@@ -2432,7 +2426,7 @@ export type Database = {
         }[]
       }
       get_visit_statistics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           total_visits: number
           unique_countries: number
@@ -2440,22 +2434,10 @@ export type Database = {
           visits_today: number
         }[]
       }
-      get_website_visit_count: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      link_books_to_authors: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      normalize_name: {
-        Args: { name: string }
-        Returns: string
-      }
+      get_website_visit_count: { Args: never; Returns: number }
+      is_admin: { Args: never; Returns: boolean }
+      link_books_to_authors: { Args: never; Returns: number }
+      normalize_name: { Args: { name: string }; Returns: string }
       notify_author_followers: {
         Args: {
           author_uuid: string
@@ -2469,17 +2451,24 @@ export type Database = {
         Args: { ip_addr?: unknown; user_agent_string?: string }
         Returns: undefined
       }
-      record_website_visit: {
-        Args:
-          | {
+      record_website_visit:
+        | {
+            Args: {
+              ip_addr?: string
+              page?: string
+              user_agent_string?: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
               country_code?: string
               ip_addr?: unknown
               page?: string
               user_agent_string?: string
             }
-          | { ip_addr?: string; page?: string; user_agent_string?: string }
-        Returns: undefined
-      }
+            Returns: undefined
+          }
       refresh_book_ratings_agg: {
         Args: { target_book: string }
         Returns: undefined
@@ -2488,14 +2477,8 @@ export type Database = {
         Args: { book_uuid: string; lat: number; lng: number }
         Returns: string
       }
-      update_author_book_counts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      user_has_location_sharing: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      update_author_book_counts: { Args: never; Returns: undefined }
+      user_has_location_sharing: { Args: never; Returns: boolean }
     }
     Enums: {
       chat_type: "individual" | "group"
