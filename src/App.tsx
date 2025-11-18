@@ -43,6 +43,7 @@ const Authors = lazy(() => import('./pages/Authors'));
 const AuthorSlugPage = lazy(() => import('./pages/authors/[slug]'));
 const AuthorDetails = lazy(() => import('./pages/AuthorDetails'));
 const ReadingGroups = lazy(() => import('./pages/ReadingGroups'));
+const GroupDetails = lazy(() => import('./pages/GroupDetails'));
 const Map = lazy(() => import('./pages/Map'));
 const About = lazy(() => import('./pages/About'));
 const Blog = lazy(() => import('./pages/Blog'));
@@ -216,6 +217,14 @@ const App = memo(() => {
                           element={
                             <Suspense fallback={<LoadingFallback />}>
                               <ReadingGroups />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/groups/:id"
+                          element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <GroupDetails />
                             </Suspense>
                           }
                         />
