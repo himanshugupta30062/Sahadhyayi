@@ -73,15 +73,22 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const { data: chapterProgress = [] } = useChapterProgress(bookId);
   const markChapterRead = useMarkChapterAsRead(bookId);
 
-  // Determine if we have an EPUB or PDF
+  // Determine book type and URLs
   const isEpub = epubUrl && epubUrl.length > 0;
-  
-  // Check if PDF URL is a valid direct PDF or Google Books link
   const isGoogleBooks = pdfUrl?.includes('books.google');
   const isDirectPdf = pdfUrl && !isGoogleBooks && (pdfUrl.endsWith('.pdf') || pdfUrl.includes('/pdf/'));
   const isPdf = isDirectPdf;
   
-  const bookUrl = isEpub ? epubUrl : (isDirectPdf ? pdfUrl : undefined);
+  const bookUrl = isEpub ? epubUrl : pdfUrl;
+  
+  // Extract Google Books ID from URL for embedding
+  const getGoogleBooksId = (url: string | undefined) => {
+    if (!url) return null;
+    const match = url.match(/id=([^&]+)/);
+    return match ? match[1] : null;
+  };
+  
+  const googleBooksId = isGoogleBooks ? getGoogleBooksId(pdfUrl) : null;
 
   // Calculate reading progress percentage
   const progressPercentage = totalPages > 0 ? (currentPage / totalPages) * 100 : 0;
@@ -454,26 +461,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     return `${hours}h ${mins}m`;
   };
 
-  if (!bookUrl) {
+  if (!bookUrl && !isGoogleBooks) {
     return (
       <div className="text-center py-12">
         <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
         <h3 className="text-xl font-semibold text-gray-700 mb-2">Book Not Available for Online Reading</h3>
-        <p className="text-gray-500 mb-4">
-          {isGoogleBooks 
-            ? "This book is available through Google Books. Click below to view it on Google Books."
-            : "This book doesn't have a direct reading link yet."}
-        </p>
+        <p className="text-gray-500 mb-4">This book doesn't have a direct reading link yet.</p>
         <div className="flex gap-3 justify-center mt-6">
-          {isGoogleBooks && pdfUrl && (
-            <Button
-              onClick={() => window.open(pdfUrl, '_blank')}
-              className="flex items-center gap-2"
-            >
-              <BookOpen className="w-4 h-4" />
-              View on Google Books
-            </Button>
-          )}
           {audioSummary && (
             <Button variant="outline" className="flex items-center gap-2">
               <Volume2 className="w-4 h-4" />
@@ -766,6 +760,27 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   </div>
                 )}
               </>
+            ) : isGoogleBooks && googleBooksId ? (
+              <div className="relative">
+                <iframe
+                  src={`https://books.google.com/books?id=${googleBooksId}&lpg=PP1&pg=PP1&output=embed`}
+                  className={`w-full border-0 rounded-lg bg-white ${isFullscreen ? 'h-screen' : 'h-[700px]'}`}
+                  style={{ width: '100%' }}
+                  title={bookTitle}
+                  allowFullScreen
+                />
+                <div className="mt-3 text-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(pdfUrl, '_blank')}
+                    className="flex items-center gap-2 mx-auto"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    Open Full View in Google Books
+                  </Button>
+                </div>
+              </div>
             ) : isPdf ? (
               <div className="relative">
                 <iframe
@@ -855,13 +870,18 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 <p>Use the navigation buttons or arrow keys to turn pages.</p>
                 <p className="text-xs">Your reading position and progress are automatically saved.</p>
               </div>
-            ) : (
+            ) : isGoogleBooks ? (
+              <div>
+                <p>Use the Google Books reader controls to navigate through the book.</p>
+                <p className="text-xs">Limited preview may be available based on publisher settings.</p>
+              </div>
+            ) : isPdf ? (
               <div>
                 <p>Use the navigation buttons or built-in PDF controls to move through the book.</p>
                 <p className="text-xs">Zoom, search, and download features are available in the PDF toolbar.</p>
               </div>
-            )}
-            {user && (
+            ) : null}
+            {user && !isGoogleBooks && (
               <Badge variant="secondary" className="mt-2">
                 <Clock className="w-3 h-3 mr-1" />
                 Reading session: {formatReadingTime(readingTime)}
