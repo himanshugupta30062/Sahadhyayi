@@ -75,8 +75,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
 
   // Determine if we have an EPUB or PDF
   const isEpub = epubUrl && epubUrl.length > 0;
-  const isPdf = pdfUrl && pdfUrl.length > 0;
-  const bookUrl = isEpub ? epubUrl : pdfUrl;
+  
+  // Check if PDF URL is a valid direct PDF or Google Books link
+  const isGoogleBooks = pdfUrl?.includes('books.google');
+  const isDirectPdf = pdfUrl && !isGoogleBooks && (pdfUrl.endsWith('.pdf') || pdfUrl.includes('/pdf/'));
+  const isPdf = isDirectPdf;
+  
+  const bookUrl = isEpub ? epubUrl : (isDirectPdf ? pdfUrl : undefined);
 
   // Calculate reading progress percentage
   const progressPercentage = totalPages > 0 ? (currentPage / totalPages) * 100 : 0;
@@ -453,16 +458,32 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     return (
       <div className="text-center py-12">
         <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-        <h3 className="text-xl font-semibold text-gray-700 mb-2">Book Not Available</h3>
-        <p className="text-gray-500 mb-4">This book is not available for online reading yet.</p>
-        {audioSummary && (
-          <div className="mt-4">
+        <h3 className="text-xl font-semibold text-gray-700 mb-2">Book Not Available for Online Reading</h3>
+        <p className="text-gray-500 mb-4">
+          {isGoogleBooks 
+            ? "This book is available through Google Books. Click below to view it on Google Books."
+            : "This book doesn't have a direct reading link yet."}
+        </p>
+        <div className="flex gap-3 justify-center mt-6">
+          {isGoogleBooks && pdfUrl && (
+            <Button
+              onClick={() => window.open(pdfUrl, '_blank')}
+              className="flex items-center gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              View on Google Books
+            </Button>
+          )}
+          {audioSummary && (
             <Button variant="outline" className="flex items-center gap-2">
               <Volume2 className="w-4 h-4" />
               Listen to Audio Summary
             </Button>
-          </div>
-        )}
+          )}
+        </div>
+        <p className="text-sm text-gray-400 mt-4">
+          Looking for the full book? Try searching for "{bookTitle}" on online bookstores.
+        </p>
       </div>
     );
   }
