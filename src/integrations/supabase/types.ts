@@ -2415,6 +2415,10 @@ export type Database = {
       }
     }
     Functions: {
+      are_friends: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: boolean
+      }
       cleanup_unused_books: { Args: never; Returns: number }
       get_author_follower_count: {
         Args: { author_uuid: string }
@@ -2558,6 +2562,7 @@ export type Database = {
       }
       get_website_visit_count: { Args: never; Returns: number }
       has_location_consent: { Args: { user_uuid: string }; Returns: boolean }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       link_books_to_authors: { Args: never; Returns: number }
       normalize_name: { Args: { name: string }; Returns: string }
