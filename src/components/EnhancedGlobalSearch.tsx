@@ -26,8 +26,9 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
   
   const debouncedQuery = useDebouncedValue(searchQuery, 300);
   
-  // Fetch books with search query
-  const { data: books, isLoading } = useLibraryBooks(debouncedQuery);
+  // Fetch books with search query (only search if query has at least 2 characters)
+  const shouldSearch = debouncedQuery.trim().length >= 2;
+  const { data: books, isLoading } = useLibraryBooks(shouldSearch ? debouncedQuery : undefined);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -108,9 +109,10 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
     }
   };
 
-  const results = books || [];
+  const results = (books || []).slice(0, 10); // Limit to 10 results
   const showRecent = !searchQuery && recentSearches.length > 0;
-  const showResults = searchQuery && results.length > 0;
+  const showResults = searchQuery.trim().length >= 2 && results.length > 0;
+  const showNoResults = searchQuery.trim().length >= 2 && !isLoading && results.length === 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -177,9 +179,15 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
               </div>
             )}
 
-            {isLoading && searchQuery && (
+            {isLoading && searchQuery.trim().length >= 2 && (
               <div className="text-center py-8 text-muted-foreground">
                 <div className="animate-pulse">Searching...</div>
+              </div>
+            )}
+
+            {searchQuery.trim().length > 0 && searchQuery.trim().length < 2 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">Type at least 2 characters to search</p>
               </div>
             )}
 
@@ -234,7 +242,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
               </div>
             )}
 
-            {searchQuery && !isLoading && results.length === 0 && (
+            {showNoResults && (
               <div className="text-center py-8 text-muted-foreground">
                 <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm">No books found for "{searchQuery}"</p>
