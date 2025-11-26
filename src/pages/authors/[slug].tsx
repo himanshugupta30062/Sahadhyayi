@@ -22,7 +22,7 @@ import { useAuthorQuestions } from '@/hooks/useAuthorQuestions';
 import { useAuthorEvents } from '@/hooks/useAuthorEvents';
 import { VerificationBadge } from '@/components/authors/VerificationBadge';
 import { generateAuthorSchema, generateBreadcrumbSchema } from '@/utils/schema';
-import Breadcrumb from '@/components/ui/breadcrumb';
+import Breadcrumb from '@/components/Breadcrumb';
 import { slugify } from '@/utils/slugify';
 import SocialShare from '@/components/SocialShare';
 
@@ -63,6 +63,11 @@ const AuthorSlugPage = () => {
     { name: author.name, url: authorUrl }
   ];
 
+  const breadcrumbNav = [
+    { name: 'Authors', path: '/authors' },
+    { name: author.name, path: `/authors/${slug}`, current: true }
+  ];
+
   const authorSchema = generateAuthorSchema({
     name: author.name,
     bio: author.bio || undefined,
@@ -87,7 +92,7 @@ const AuthorSlugPage = () => {
       />
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-muted pt-16">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <Breadcrumb items={breadcrumbItems} className="mb-4" />
+          <Breadcrumb items={breadcrumbNav} className="mb-4" />
 
           {/* Hero/Profile Section */}
           <div className="relative mb-20">

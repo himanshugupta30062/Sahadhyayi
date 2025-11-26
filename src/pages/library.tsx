@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SEO from '@/components/SEO';
+import Breadcrumb from '@/components/Breadcrumb';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,10 @@ export default function Library() {
   };
 
 
+  const breadcrumbItems = [
+    { name: 'Library', path: '/library', current: true }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <SEO 
@@ -54,6 +59,11 @@ export default function Library() {
       />
 
       <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Breadcrumb items={breadcrumbItems} />
+        </div>
+
         {/* Main Books Collection */}
         <BooksCollection
           searchQuery={searchQuery}

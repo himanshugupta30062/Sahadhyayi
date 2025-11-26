@@ -12,7 +12,7 @@ import { ChatWindow } from "@/components/social/ChatWindow";
 import { ScheduleSessionDialog } from "@/components/authors/ScheduleSessionDialog";
 import { useAuth } from '@/contexts/authHelpers';
 import SEO from '@/components/SEO';
-import Breadcrumb from '@/components/ui/breadcrumb';
+import Breadcrumb from '@/components/Breadcrumb';
 import LibraryPagination from '@/components/library/LibraryPagination';
 import { useAuthors, type Author } from '@/hooks/useAuthors';
 import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
@@ -127,7 +127,7 @@ const Authors = () => {
 
   // Breadcrumb data
   const breadcrumbItems = [
-    { name: 'Authors', url: '/authors', current: true }
+    { name: 'Authors', path: '/authors', current: true }
   ];
 
   // SEO Schema
@@ -231,7 +231,7 @@ const Authors = () => {
           'international authors', 'author biographies', 'reading community authors',
           'sahadhyayi authors', 'discover authors', 'author interviews'
         ]}
-        breadcrumbs={breadcrumbItems}
+        breadcrumbs={breadcrumbItems.map(item => ({ name: item.name, url: `https://sahadhyayi.com${item.path}` }))}
         type="website"
       />
 

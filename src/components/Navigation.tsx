@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
-import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Settings, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/authHelpers";
 import {
@@ -15,16 +15,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { MessageDropdown } from "@/components/messages/MessageDropdown";
+import { EnhancedGlobalSearch } from "@/components/EnhancedGlobalSearch";
+import { useGlobalSearchShortcut } from "@/hooks/useKeyboardShortcuts";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const menuRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
+
+  // Global search keyboard shortcut
+  useGlobalSearchShortcut(() => setSearchOpen(true));
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -128,6 +134,17 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 {user ? (
                   <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSearchOpen(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Search className="w-4 h-4" />
+                      <span className="text-xs text-muted-foreground hidden lg:inline">
+                        Cmd+K
+                      </span>
+                    </Button>
                     <MessageDropdown />
                     <NotificationDropdown />
                     <DropdownMenu>
@@ -285,6 +302,9 @@ const Navigation = () => {
           </div>
         )}
       </div>
+
+      {/* Global Search Dialog */}
+      <EnhancedGlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </nav>
   );
 };
