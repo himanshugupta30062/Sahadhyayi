@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, Search, TrendingUp, Users, Star, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useLibraryBooks } from '@/hooks/useLibraryBooks';
+import useDebouncedValue from '@/lib/useDebouncedValue';
+import { Link } from 'react-router-dom';
 import libraryBg from '@/assets/library-hero-bg.jpg';
 
 interface LibraryHeroProps {
@@ -24,6 +27,37 @@ const LibraryHero = ({
   booksAddedToday = 47
 }: LibraryHeroProps) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
+  
+  // Fetch book suggestions based on search query
+  const { data: suggestions = [], isLoading } = useLibraryBooks(
+    debouncedSearchQuery && debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined
+  );
+
+  // Show only top 6 suggestions
+  const limitedSuggestions = suggestions.slice(0, 6);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+        setIsSearchFocused(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSuggestionClick = (bookTitle: string) => {
+    onSearchChange(bookTitle);
+    setShowSuggestions(false);
+    setIsSearchFocused(false);
+    onSearch();
+  };
 
   const stats = [
     { icon: BookOpen, label: 'Books Available', value: totalBooks.toLocaleString(), color: 'text-library-primary' },
@@ -85,7 +119,7 @@ const LibraryHero = ({
           </div>
 
           {/* Enhanced Search Bar */}
-          <div className="max-w-2xl mx-auto relative z-50 px-2 sm:px-0">
+          <div className="max-w-2xl mx-auto relative z-50 px-2 sm:px-0" ref={searchRef}>
             <div className={`relative transform transition-all duration-300 ${isSearchFocused ? 'scale-105' : ''}`}>
               <div className="relative">
                 <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 sm:h-6 sm:w-6 z-10" />
@@ -93,34 +127,118 @@ const LibraryHero = ({
                   type="text"
                   placeholder="Search books, authors, genres..."
                   value={searchQuery}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
-                  onKeyPress={(e) => e.key === 'Enter' && onSearch()}
+                  onChange={(e) => {
+                    onSearchChange(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => {
+                    setIsSearchFocused(true);
+                    setShowSuggestions(true);
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      onSearch();
+                      setShowSuggestions(false);
+                    }
+                  }}
                   className="pl-12 sm:pl-14 pr-24 sm:pr-32 py-4 sm:py-6 text-base sm:text-lg bg-white/95 backdrop-blur-sm border-0 rounded-xl sm:rounded-2xl shadow-2xl focus:bg-white focus:shadow-3xl transition-all duration-300 relative z-10"
+                  autoComplete="off"
                 />
                 <Button
-                  onClick={onSearch}
+                  onClick={() => {
+                    onSearch();
+                    setShowSuggestions(false);
+                  }}
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-library-primary to-library-secondary hover:from-library-secondary hover:to-library-primary text-white px-4 sm:px-8 py-2 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold shadow-lg transition-all duration-200 z-20"
                 >
                   Search
                 </Button>
               </div>
               
-              {/* Search suggestions overlay */}
-              {isSearchFocused && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border p-4 z-[9999]">
-                  <div className="text-sm text-gray-600 mb-2">Popular searches:</div>
+              {/* Dynamic Search Suggestions Dropdown */}
+              {showSuggestions && searchQuery.trim().length >= 2 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-[9999] max-h-[400px] overflow-y-auto">
+                  {isLoading ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="animate-pulse">Searching...</div>
+                    </div>
+                  ) : limitedSuggestions.length > 0 ? (
+                    <div>
+                      <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+                        <span className="text-xs font-semibold text-gray-600 uppercase">
+                          Suggestions ({limitedSuggestions.length})
+                        </span>
+                      </div>
+                      <ul className="divide-y divide-gray-100">
+                        {limitedSuggestions.map((book) => (
+                          <li key={book.id}>
+                            <button
+                              onClick={() => handleSuggestionClick(book.title)}
+                              className="w-full px-4 py-3 hover:bg-gray-50 transition-colors text-left flex items-start gap-3 group"
+                            >
+                              {book.cover_image_url ? (
+                                <img
+                                  src={book.cover_image_url}
+                                  alt={book.title}
+                                  className="w-10 h-14 object-cover rounded shadow-sm flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-10 h-14 bg-gradient-to-br from-library-primary to-library-secondary rounded flex items-center justify-center flex-shrink-0">
+                                  <BookOpen className="w-5 h-5 text-white" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-900 group-hover:text-library-primary transition-colors line-clamp-1">
+                                  {book.title}
+                                </div>
+                                <div className="text-sm text-gray-600 line-clamp-1">
+                                  {book.author}
+                                </div>
+                                {book.genre && (
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {book.genre}
+                                  </div>
+                                )}
+                              </div>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                        <button
+                          onClick={() => {
+                            onSearch();
+                            setShowSuggestions(false);
+                          }}
+                          className="text-sm text-library-primary hover:text-library-secondary font-medium transition-colors"
+                        >
+                          View all results for "{searchQuery}"
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="text-sm">No books found for "{searchQuery}"</div>
+                      <div className="text-xs text-gray-400 mt-1">Try different keywords</div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Popular searches when no query */}
+              {showSuggestions && searchQuery.trim().length === 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-[9999]">
+                  <div className="text-sm text-gray-600 font-medium mb-3">Popular searches:</div>
                   <div className="flex flex-wrap gap-2">
-                    {['Fiction', 'Science', 'History', 'Biography', 'Philosophy'].map((tag) => (
+                    {['Fiction', 'Science', 'History', 'Biography', 'Philosophy', 'Technology'].map((tag) => (
                       <button
                         key={tag}
                         onClick={() => {
                           onSearchChange(tag);
+                          setShowSuggestions(false);
                           onSearch();
-                          setIsSearchFocused(false);
                         }}
-                        className="px-3 py-1 bg-gray-100 hover:bg-library-primary hover:text-white rounded-full text-sm transition-colors"
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-library-primary hover:text-white rounded-full text-sm transition-colors font-medium"
                       >
                         {tag}
                       </button>
