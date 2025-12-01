@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface EnhancedLazyImageProps {
@@ -10,6 +10,7 @@ interface EnhancedLazyImageProps {
   width?: number;
   height?: number;
   placeholderSrc?: string;
+  fallback?: ReactNode;
   onLoad?: () => void;
   onError?: () => void;
 }
@@ -23,6 +24,7 @@ export function EnhancedLazyImage({
   width,
   height,
   placeholderSrc,
+  fallback,
   onLoad,
   onError,
 }: EnhancedLazyImageProps) {
@@ -62,6 +64,10 @@ export function EnhancedLazyImage({
     setHasError(true);
     onError?.();
   };
+
+  if (hasError && fallback) {
+    return <>{fallback}</>;
+  }
 
   return (
     <picture className={cn('block', className)}>

@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
 import { useAuth } from '@/contexts/authHelpers';
 import { useAddToPersonalLibrary, usePersonalLibrary } from '@/hooks/usePersonalLibrary';
+import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
 import type { Book } from '@/hooks/useLibraryBooks';
 
 
@@ -42,40 +43,21 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {book.cover_image_url ? (
-          <img
-            src={book.cover_image_url}
-            alt={book.title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              e.currentTarget.src = '/default-cover.jpg';
-              e.currentTarget.onerror = null; // Prevent infinite loop
-            }}
-          />
-        ) : (
-          <img
-            src="/default-cover.jpg"
-            alt={book.title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              // If default cover also fails, show placeholder
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling?.classList.remove('hidden');
-            }}
-          />
-        )}
-        
-        {/* Fallback placeholder when both cover_url and default-cover.jpg fail */}
-        <div className="hidden w-full h-full flex items-center justify-center text-white p-4">
-          <div className="text-center">
-            <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
-            <div className="text-sm font-medium leading-tight">
-              {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
+        <EnhancedLazyImage
+          src={book.cover_image_url || '/default-cover.jpg'}
+          alt={book.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          fallback={
+            <div className="w-full h-full flex items-center justify-center text-white p-4 bg-gradient-primary">
+              <div className="text-center">
+                <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
+                <div className="text-sm font-medium leading-tight">
+                  {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* Enhanced Action Buttons Overlay - Icon Only with Hover Text */}
         <div
