@@ -17,6 +17,7 @@ import { NotificationDropdown } from "@/components/notifications/NotificationDro
 import { MessageDropdown } from "@/components/messages/MessageDropdown";
 import { EnhancedGlobalSearch } from "@/components/EnhancedGlobalSearch";
 import { useGlobalSearchShortcut } from "@/hooks/useKeyboardShortcuts";
+import { EnhancedLazyImage } from "@/components/ui/EnhancedLazyImage";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -101,10 +102,12 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-3 font-bold text-2xl text-gray-800">
-            <img
+            <EnhancedLazyImage
               src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
               alt="Sahadhyayi navigation logo"
               className="w-8 h-8 flex-shrink-0"
+              width={32}
+              height={32}
             />
             <span className="whitespace-nowrap leading-none">Sahadhyayi</span>
           </Link>
