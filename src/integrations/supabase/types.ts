@@ -2582,7 +2582,8 @@ export type Database = {
       record_website_visit:
         | {
             Args: {
-              ip_addr?: string
+              country_code?: string
+              ip_addr?: unknown
               page?: string
               user_agent_string?: string
             }
@@ -2590,8 +2591,7 @@ export type Database = {
           }
         | {
             Args: {
-              country_code?: string
-              ip_addr?: unknown
+              ip_addr?: string
               page?: string
               user_agent_string?: string
             }
