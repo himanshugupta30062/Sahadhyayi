@@ -1,4 +1,5 @@
 import { toast } from '@/hooks/use-toast';
+import { captureError, addSentryBreadcrumb } from '@/sentry';
 
 export interface ErrorContext {
   userId?: string;
@@ -57,7 +58,7 @@ class ErrorHandler {
       });
     });
 
-    // Network errors (optional enhancement)
+    // Network errors
     if ('navigator' in window && 'onLine' in navigator) {
       window.addEventListener('offline', () => {
         this.handleError({
@@ -81,23 +82,43 @@ class ErrorHandler {
       this.errorQueue.shift();
     }
 
-    // Log in development
-      if (import.meta.env.DEV) {
-        console.group(`🚨 Runtime Error [${errorReport.severity}]`);
-        console.error('Message:', errorReport.message);
-        console.error('Type:', errorReport.type);
-        console.error('Context:', errorReport.context);
-        if (errorReport.stack) {
-          console.error('Stack:', errorReport.stack);
-        }
-        console.groupEnd();
+    // Add breadcrumb for error context
+    addSentryBreadcrumb(
+      'error',
+      errorReport.message,
+      this.mapSeverityToSentryLevel(errorReport.severity),
+      {
+        type: errorReport.type,
+        ...errorReport.context,
       }
+    );
+
+    // Log in development
+    if (import.meta.env.DEV) {
+      console.group(`🚨 Runtime Error [${errorReport.severity}]`);
+      console.error('Message:', errorReport.message);
+      console.error('Type:', errorReport.type);
+      console.error('Context:', errorReport.context);
+      if (errorReport.stack) {
+        console.error('Stack:', errorReport.stack);
+      }
+      console.groupEnd();
+    }
 
     // Show user-friendly notification based on severity
     this.showUserNotification(errorReport);
 
-    // In production, you could send to error tracking service
-    this.reportToService(errorReport);
+    // Report to Sentry
+    this.reportToSentry(errorReport);
+  }
+
+  private mapSeverityToSentryLevel(severity: ErrorReport['severity']): 'fatal' | 'error' | 'warning' | 'info' {
+    switch (severity) {
+      case 'critical': return 'fatal';
+      case 'high': return 'error';
+      case 'medium': return 'warning';
+      case 'low': return 'info';
+    }
   }
 
   private createContext(additional: Partial<ErrorContext> = {}): ErrorContext {
@@ -157,17 +178,27 @@ class ErrorHandler {
     }
   }
 
-  private reportToService(errorReport: ErrorReport) {
-    // In production, implement error reporting service
-    // Example: Send to Sentry, LogRocket, etc.
-    if (import.meta.env.PROD) {
-      // Implement your error reporting service here
-      // fetch('/api/errors', { method: 'POST', body: JSON.stringify(errorReport) });
+  private reportToSentry(errorReport: ErrorReport) {
+    if (import.meta.env.PROD || import.meta.env.VITE_SENTRY_DSN) {
+      const error = new Error(errorReport.message);
+      if (errorReport.stack) {
+        error.stack = errorReport.stack;
+      }
+      
+      captureError(error, {
+        errorType: errorReport.type,
+        severity: errorReport.severity,
+        ...errorReport.context,
+      }, this.mapSeverityToSentryLevel(errorReport.severity));
     }
   }
 
   // Method to manually report custom errors
-  reportCustomError(message: string, context?: Partial<ErrorContext>, severity: ErrorReport['severity'] = 'medium') {
+  reportCustomError(
+    message: string, 
+    context?: Partial<ErrorContext>, 
+    severity: ErrorReport['severity'] = 'medium'
+  ) {
     this.handleError({
       message,
       type: 'custom',
@@ -202,7 +233,11 @@ export const errorHandler = ErrorHandler.getInstance();
 // Hook for components to report errors
 export const useErrorHandler = () => {
   return {
-    reportError: (message: string, context?: Partial<ErrorContext>, severity: ErrorReport['severity'] = 'medium') => {
+    reportError: (
+      message: string, 
+      context?: Partial<ErrorContext>, 
+      severity: ErrorReport['severity'] = 'medium'
+    ) => {
       errorHandler.reportCustomError(message, context, severity);
     },
     getErrorStats: () => errorHandler.getErrorStats(),

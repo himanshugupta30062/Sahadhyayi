@@ -1,33 +1,63 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
-// Handle CORS dynamically to support multiple allowed origins
-const ALLOWED_ORIGINS = [
-  "https://rknxtatvlzunatpyqxro.supabase.co",
-  "https://www.sahadhyayi.com",
-  "https://sahadhyayi.com",
-  "https://lovable.app",
-  "http://localhost:8080",
-  "*" // Allow all origins for development
-];
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST,OPTIONS",
+};
 
-function getCorsHeaders(origin: string | null) {
-  const headers: Record<string, string> = {
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST,OPTIONS",
-  };
+// Rate limiting configuration
+const RATE_LIMIT = {
+  maxRequests: 20,
+  windowMinutes: 1
+}
 
-  headers["Access-Control-Allow-Origin"] = "*";
-
-  return headers;
+async function checkRateLimit(supabaseClient: any, identifier: string, endpoint: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabaseClient.rpc('check_rate_limit', {
+      p_identifier: identifier,
+      p_endpoint: endpoint,
+      p_max_requests: RATE_LIMIT.maxRequests,
+      p_window_minutes: RATE_LIMIT.windowMinutes
+    })
+    
+    if (error) {
+      console.error('Rate limit check error:', error)
+      return true
+    }
+    
+    return data === true
+  } catch (error) {
+    console.error('Rate limit exception:', error)
+    return true
+  }
 }
 
 serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req.headers.get('origin'));
-
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  )
+
+  // Get client identifier
+  const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+                   req.headers.get('x-real-ip') || 
+                   'unknown'
+
+  // Check rate limit
+  const isAllowed = await checkRateLimit(supabaseClient, clientIP, 'book-expert-gemini')
+  if (!isAllowed) {
+    console.log(`🚫 Rate limit exceeded for IP: ${clientIP}`)
+    return new Response(
+      JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+      { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
 
   try {
@@ -41,7 +71,6 @@ serve(async (req) => {
       throw new Error('Text input too long. Maximum 2000 characters allowed.');
     }
     
-    // Basic input sanitization
     const sanitizedText = text.trim().replace(/[<>]/g, '');
 
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
@@ -51,7 +80,7 @@ serve(async (req) => {
       throw new Error('API configuration error');
     }
 
-    console.log('Gemini API key found, length:', geminiApiKey.length);
+    console.log('Gemini API key found, processing request for IP:', clientIP);
 
     const payload = {
       contents: [
