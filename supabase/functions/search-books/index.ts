@@ -6,6 +6,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Rate limiting configuration
+const RATE_LIMIT = {
+  maxRequests: 10,
+  windowMinutes: 1
+}
+
 interface BookData {
   title: string;
   author?: string;
@@ -20,9 +26,50 @@ interface BookData {
   pdf_url?: string;
 }
 
+async function checkRateLimit(supabaseClient: any, identifier: string, endpoint: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabaseClient.rpc('check_rate_limit', {
+      p_identifier: identifier,
+      p_endpoint: endpoint,
+      p_max_requests: RATE_LIMIT.maxRequests,
+      p_window_minutes: RATE_LIMIT.windowMinutes
+    })
+    
+    if (error) {
+      console.error('Rate limit check error:', error)
+      return true // Allow on error to prevent blocking legitimate requests
+    }
+    
+    return data === true
+  } catch (error) {
+    console.error('Rate limit exception:', error)
+    return true
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
+
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  )
+
+  // Get client identifier (IP or forwarded IP)
+  const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+                   req.headers.get('x-real-ip') || 
+                   'unknown'
+
+  // Check rate limit
+  const isAllowed = await checkRateLimit(supabaseClient, clientIP, 'search-books')
+  if (!isAllowed) {
+    console.log(`🚫 Rate limit exceeded for IP: ${clientIP}`)
+    return new Response(
+      JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+      { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
 
   try {
@@ -34,11 +81,6 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
 
     console.log('🔍 Ultimate Book Search for:', searchTerm)
 
@@ -115,7 +157,7 @@ async function searchOpenLibrary(searchTerm: string): Promise<BookData[]> {
       cover_image_url: book.cover_i 
         ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg`
         : undefined,
-      description: undefined, // Open Library rarely has descriptions
+      description: undefined,
       publication_year: book.first_publish_year,
       pages: book.number_of_pages_median,
       language: book.language?.[0] || 'English',
@@ -236,7 +278,6 @@ async function mergeBookData(
     
     if (mergedMap.has(key)) {
       const existing = mergedMap.get(key)!
-      // Merge data, preferring non-empty values
       mergedMap.set(key, {
         title: existing.title || book.title,
         author: existing.author || book.author,
@@ -248,7 +289,6 @@ async function mergeBookData(
         publication_year: existing.publication_year || book.publication_year,
         pages: existing.pages || book.pages,
         language: existing.language || book.language,
-        // Prefer actual PDF downloads over preview links
         pdf_url: (existing.pdf_url && existing.pdf_url.includes('gutenberg')) ? existing.pdf_url :
                  (book.pdf_url && book.pdf_url.includes('gutenberg')) ? book.pdf_url :
                  (existing.pdf_url && existing.pdf_url.includes('archive.org')) ? existing.pdf_url :
@@ -260,12 +300,11 @@ async function mergeBookData(
     }
   }
 
-  return Array.from(mergedMap.values()).slice(0, 10) // Limit results
+  return Array.from(mergedMap.values()).slice(0, 10)
 }
 
 async function saveOrUpdateBook(supabaseClient: any, book: BookData): Promise<any> {
   try {
-    // Check for duplicates using ISBN or title+author
     let duplicateQuery = supabaseClient
       .from('books_library')
       .select('*')
@@ -284,7 +323,6 @@ async function saveOrUpdateBook(supabaseClient: any, book: BookData): Promise<an
       const existingBook = existing[0]
       console.log(`📖 Found existing book: ${book.title}`)
       
-      // Update missing fields
       const updateData: any = {}
       
       if (!existingBook.description && book.description) updateData.description = book.description
@@ -310,7 +348,6 @@ async function saveOrUpdateBook(supabaseClient: any, book: BookData): Promise<an
       return existingBook
     }
 
-    // Insert new book
     const { data, error } = await supabaseClient
       .from('books_library')
       .insert({

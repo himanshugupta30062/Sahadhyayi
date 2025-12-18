@@ -1723,6 +1723,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          id: string
+          identifier: string
+          request_count: number | null
+          window_start: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          identifier: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          identifier?: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       readers: {
         Row: {
           book: string
@@ -2419,6 +2446,16 @@ export type Database = {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
       }
+      check_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_identifier: string
+          p_max_requests?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_unused_books: { Args: never; Returns: number }
       get_author_follower_count: {
         Args: { author_uuid: string }
