@@ -121,37 +121,49 @@ const LibraryHero = ({
           {/* Enhanced Search Bar */}
           <div className="max-w-2xl mx-auto relative z-50 px-2 sm:px-0" ref={searchRef}>
             <div className={`relative transform transition-all duration-300 ${isSearchFocused ? 'scale-105' : ''}`}>
-              <div className="relative">
-                <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 sm:h-6 sm:w-6 z-10" />
-                <Input
-                  type="text"
-                  placeholder="Search books, authors, genres..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    onSearchChange(e.target.value);
-                    setShowSuggestions(true);
-                  }}
-                  onFocus={() => {
-                    setIsSearchFocused(true);
-                    setShowSuggestions(true);
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
+              <div className="relative flex items-center gap-2 sm:gap-0">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 sm:left-6 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 sm:h-6 sm:w-6 z-10" />
+                  <Input
+                    type="text"
+                    placeholder="Search books, authors..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      onSearchChange(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => {
+                      setIsSearchFocused(true);
+                      setShowSuggestions(true);
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        onSearch();
+                        setShowSuggestions(false);
+                      }
+                    }}
+                    className="pl-10 sm:pl-14 pr-3 sm:pr-32 py-3 sm:py-6 text-sm sm:text-lg bg-white/95 backdrop-blur-sm border-0 rounded-xl sm:rounded-2xl shadow-2xl focus:bg-white focus:shadow-3xl transition-all duration-300 relative z-10 w-full"
+                    autoComplete="off"
+                  />
+                  <Button
+                    onClick={() => {
                       onSearch();
                       setShowSuggestions(false);
-                    }
-                  }}
-                  className="pl-12 sm:pl-14 pr-24 sm:pr-32 py-4 sm:py-6 text-base sm:text-lg bg-white/95 backdrop-blur-sm border-0 rounded-xl sm:rounded-2xl shadow-2xl focus:bg-white focus:shadow-3xl transition-all duration-300 relative z-10"
-                  autoComplete="off"
-                />
+                    }}
+                    className="hidden sm:flex absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-library-primary to-library-secondary hover:from-library-secondary hover:to-library-primary text-white px-8 py-3 rounded-xl text-base font-semibold shadow-lg transition-all duration-200 z-20"
+                  >
+                    Search
+                  </Button>
+                </div>
                 <Button
                   onClick={() => {
                     onSearch();
                     setShowSuggestions(false);
                   }}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-library-primary to-library-secondary hover:from-library-secondary hover:to-library-primary text-white px-4 sm:px-8 py-2 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold shadow-lg transition-all duration-200 z-20"
+                  className="sm:hidden flex-shrink-0 bg-gradient-to-r from-library-primary to-library-secondary hover:from-library-secondary hover:to-library-primary text-white p-3 rounded-xl shadow-lg transition-all duration-200 z-20"
+                  aria-label="Search"
                 >
-                  Search
+                  <Search className="h-5 w-5" />
                 </Button>
               </div>
               
