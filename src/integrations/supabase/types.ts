@@ -400,6 +400,53 @@ export type Database = {
           },
         ]
       }
+      book_quiz_questions: {
+        Row: {
+          book_id: string | null
+          correct_answer: number
+          created_at: string | null
+          difficulty: string | null
+          explanation: string | null
+          hint: string | null
+          id: string
+          options: Json
+          points: number | null
+          question: string
+        }
+        Insert: {
+          book_id?: string | null
+          correct_answer: number
+          created_at?: string | null
+          difficulty?: string | null
+          explanation?: string | null
+          hint?: string | null
+          id?: string
+          options: Json
+          points?: number | null
+          question: string
+        }
+        Update: {
+          book_id?: string | null
+          correct_answer?: number
+          created_at?: string | null
+          difficulty?: string | null
+          explanation?: string | null
+          hint?: string | null
+          id?: string
+          options?: Json
+          points?: number | null
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_quiz_questions_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       book_ratings: {
         Row: {
           book_id: string
@@ -1060,6 +1107,131 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      game_answers: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_correct: boolean | null
+          points_earned: number | null
+          question_id: string | null
+          session_id: string | null
+          time_taken_seconds: number | null
+          user_answer: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_correct?: boolean | null
+          points_earned?: number | null
+          question_id?: string | null
+          session_id?: string | null
+          time_taken_seconds?: number | null
+          user_answer?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_correct?: boolean | null
+          points_earned?: number | null
+          question_id?: string | null
+          session_id?: string | null
+          time_taken_seconds?: number | null
+          user_answer?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "book_quiz_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_answers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_badges: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+        }
+        Relationships: []
+      }
+      game_sessions: {
+        Row: {
+          book_id: string | null
+          completed_at: string | null
+          current_question: number | null
+          difficulty: string | null
+          id: string
+          lifelines_used: Json | null
+          score: number | null
+          started_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          book_id?: string | null
+          completed_at?: string | null
+          current_question?: number | null
+          difficulty?: string | null
+          id?: string
+          lifelines_used?: Json | null
+          score?: number | null
+          started_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          book_id?: string | null
+          completed_at?: string | null
+          current_question?: number | null
+          difficulty?: string | null
+          id?: string
+          lifelines_used?: Json | null
+          score?: number | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_sessions_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gemini_training_data: {
         Row: {
@@ -2080,6 +2252,74 @@ export type Database = {
           },
         ]
       }
+      user_game_badges: {
+        Row: {
+          badge_id: string | null
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_game_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "game_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_game_stats: {
+        Row: {
+          best_streak: number | null
+          created_at: string | null
+          current_streak: number | null
+          games_played: number | null
+          games_won: number | null
+          id: string
+          rank: string | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          best_streak?: number | null
+          created_at?: string | null
+          current_streak?: number | null
+          games_played?: number | null
+          games_won?: number | null
+          id?: string
+          rank?: string | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          best_streak?: number | null
+          created_at?: string | null
+          current_streak?: number | null
+          games_played?: number | null
+          games_won?: number | null
+          id?: string
+          rank?: string | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_generated_content: {
         Row: {
           book_id: string | null
@@ -2528,6 +2768,18 @@ export type Database = {
           location: string
           name: string
           profile_picture_url: string
+          username: string
+        }[]
+      }
+      get_game_leaderboard: {
+        Args: { limit_count?: number }
+        Returns: {
+          full_name: string
+          games_won: number
+          profile_photo_url: string
+          rank: string
+          total_points: number
+          user_id: string
           username: string
         }[]
       }
