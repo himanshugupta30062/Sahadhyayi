@@ -48,6 +48,7 @@ const Map = lazy(() => import('./pages/Map'));
 const About = lazy(() => import('./pages/About'));
 const Blog = lazy(() => import('./pages/Blog'));
 const Bookshelf = lazy(() => import('./pages/Bookshelf'));
+const Games = lazy(() => import('./pages/Games'));
 
 // Footer pages (lowest priority)
 const HelpCenter = lazy(() => import('./pages/HelpCenter'));
@@ -257,6 +258,14 @@ const App = memo(() => {
                           element={
                             <Suspense fallback={<LoadingFallback />}>
                               <Bookshelf />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/games"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading games..." />}>
+                              <Games />
                             </Suspense>
                           }
                         />
