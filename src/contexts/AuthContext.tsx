@@ -1,13 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client-universal";
-import { setCsrfToken } from "../security/useSecureApi";
-import { sessionClientLogin } from "../security/sessionClient";
-import { secureFetch } from "../security/secureFetch";
 
 type AuthContextType = {
   user: User | null;
   session: Session | null;
+  loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -18,25 +16,26 @@ export const useAuth = () => useContext(AuthContext);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, sess) => {
-      if (event === "SIGNED_IN" && sess?.user) {
-        setUser(sess.user);
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, sess) => {
         setSession(sess);
-        try {
-          await sessionClientLogin(); // sync server cookie + csrf
-        } catch (e) {
-          console.warn("server session init failed", e);
-        }
-      } else if (event === "SIGNED_OUT") {
-        setUser(null);
-        setSession(null);
-        setCsrfToken(null);
+        setUser(sess?.user ?? null);
+        setLoading(false);
       }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      setLoading(false);
     });
 
-    return () => subscription.subscription.unsubscribe();
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -45,11 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (data.session) {
       setUser(data.session.user);
       setSession(data.session);
-      try {
-        await sessionClientLogin(); // ensure server session is in lockstep
-      } catch (e) {
-        console.warn("server session init failed", e);
-      }
     }
   };
 
@@ -57,17 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    setCsrfToken(null);
-    // optional: tell backend to clear cookie
-    try {
-      await secureFetch("/api/session", { method: "DELETE" });
-    } catch {
-      /* ignore */
-    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
