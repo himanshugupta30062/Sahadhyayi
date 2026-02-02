@@ -1,8 +1,7 @@
 
 import * as React from 'react';
-import { useMemo, useEffect, useState, useRef } from 'react';
-import { Library, Search, Trash2 } from 'lucide-react';
-import { useCleanupUnusedBooks } from '@/hooks/usePersonalLibrary';
+import { useMemo, useState, useRef } from 'react';
+import { Library, Search } from 'lucide-react';
 import PersonalLibrary from '@/components/PersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { usePaginatedLibraryBooks } from '@/hooks/usePaginatedLibraryBooks';
@@ -65,8 +64,6 @@ const BooksCollection = ({
     selectedYear,
     selectedLanguage,
   });
-  
-  const cleanupMutation = useCleanupUnusedBooks();
   
   // Book search functionality
   const {
@@ -168,12 +165,9 @@ const BooksCollection = ({
       window.dispatchEvent(new Event('shelfUpdated'));
   };
 
-  const handleCleanup = async () => {
-    if (user) {
-      await cleanupMutation.mutateAsync();
-      refetchAll(); // Refresh all books after cleanup
-    }
-  };
+  // Note: Cleanup functionality has been removed for security reasons
+  // The cleanup_unused_books() function is now admin-only and should be
+  // triggered through admin dashboard or scheduled background jobs
 
   const getFilteredBooks = (books: Book[]) => {
 
@@ -298,28 +292,15 @@ const BooksCollection = ({
                 onToggleExternal={setUseExternalSources}
               />
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => { refetchAll(); window.dispatchEvent(new Event('shelfUpdated')); }}
-                disabled={searchLoading}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </Button>
-              {user && (
-                <Button
-                  variant="outline"
-                  onClick={handleCleanup}
-                  disabled={cleanupMutation.isPending}
-                  className="flex items-center gap-2 text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Cleanup
-                </Button>
-              )}
-            </div>
+            <Button
+              variant="outline"
+              onClick={() => { refetchAll(); window.dispatchEvent(new Event('shelfUpdated')); }}
+              disabled={searchLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
           </div>
 
           {searchError && (

@@ -118,18 +118,7 @@ export const useRemoveFromPersonalLibrary = () => {
   });
 };
 
-export const useCleanupUnusedBooks = () => {
-  return useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.rpc('cleanup_unused_books');
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (deletedCount) => {
-      toast({ 
-        title: 'Cleanup Complete', 
-        description: `${deletedCount} unused book versions were removed` 
-      });
-    },
-  });
-};
+// Note: useCleanupUnusedBooks has been removed for security reasons.
+// The cleanup_unused_books() function should only be callable by admins
+// through server-side scheduled jobs or admin dashboard, not client-side code.
+// This prevents any authenticated user from triggering mass deletion of books.
