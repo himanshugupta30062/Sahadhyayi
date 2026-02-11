@@ -200,13 +200,18 @@ const SignUp = () => {
         canonical="https://sahadhyayi.com/signup"
         url="https://sahadhyayi.com/signup"
       />
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-              <UserPlus className="w-6 h-6" />
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+        <Card className="w-full max-w-md border-none shadow-elevated bg-white">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
+              <UserPlus className="w-7 h-7 text-white" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-foreground">
               Join Sahadhyayi
             </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Create your account and start reading together
+            </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -223,9 +228,9 @@ const SignUp = () => {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name" className="text-foreground font-medium">Full Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="name"
                     name="name"
@@ -233,7 +238,7 @@ const SignUp = () => {
                     placeholder="Your full name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="pl-10"
+                    className="pl-10 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20"
                     maxLength={100}
                     required
                   />
@@ -241,9 +246,9 @@ const SignUp = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     name="email"
@@ -251,7 +256,7 @@ const SignUp = () => {
                     placeholder="your@email.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="pl-10"
+                    className="pl-10 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20"
                     maxLength={254}
                     required
                   />
@@ -259,9 +264,9 @@ const SignUp = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-foreground font-medium">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     name="password"
@@ -269,14 +274,14 @@ const SignUp = () => {
                     placeholder="Create a strong password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20"
                     maxLength={128}
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -285,9 +290,9 @@ const SignUp = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-foreground font-medium">Confirm Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -295,29 +300,29 @@ const SignUp = () => {
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20"
                     maxLength={128}
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
               
-              <Button type="submit" variant="auth" className="w-full" disabled={loading}>
+              <Button type="submit" variant="auth" className="w-full shadow-lg hover:shadow-xl transition-shadow" disabled={loading}>
                 {loading ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>
             
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Already have an account?{' '}
-                <SignInLink className="text-amber-600 hover:text-amber-700 font-medium">
+                <SignInLink className="text-amber-600 hover:text-amber-700 font-semibold transition-colors">
                   Sign in here
                 </SignInLink>
               </p>
