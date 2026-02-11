@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
@@ -11,9 +10,9 @@ import { useAuth } from '@/contexts/authHelpers';
 import { UserPlus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { PasswordStrength } from '@/components/ui/password-strength';
 import { validateEmail, validatePassword, sanitizeInput, validateUsername, isRateLimited } from '@/utils/validation';
-// import { initializeSecureSession, logSecurityEvent } from '@/utils/security.ts';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
+import { motion } from 'framer-motion';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -39,49 +38,37 @@ const SignUp = () => {
   }, [user, navigate]);
 
   const validateForm = () => {
-    // Enhanced input validation
     if (!formData.name?.trim() || !formData.email?.trim() || !formData.password || !formData.confirmPassword) {
       setError("Please fill in all fields.");
       return false;
     }
-    
-    // Name validation
     if (formData.name.trim().length < 2) {
       setError("Name must be at least 2 characters long.");
       return false;
     }
-    
     if (formData.name.trim().length > 100) {
       setError("Name must be less than 100 characters.");
       return false;
     }
-    
-    // Email validation
     if (!validateEmail(formData.email)) {
       setError("Please enter a valid email address.");
       return false;
     }
-    
-    // Password validation
     const passwordValidation = validatePassword(formData.password);
     if (!passwordValidation.isValid) {
       setError(passwordValidation.message || "Password does not meet requirements.");
       return false;
     }
-    
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return false;
     }
-    
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Rate limiting check
-    if (isRateLimited('signup', 3, 600000)) { // 3 attempts per 10 minutes
+    if (isRateLimited('signup', 3, 600000)) {
       toast({
         title: "Too Many Attempts",
         description: "Too many sign-up attempts. Please wait 10 minutes before trying again.",
@@ -89,30 +76,19 @@ const SignUp = () => {
       });
       return;
     }
-
     setLoading(true);
     setError('');
     setSuccess('');
-
     if (!validateForm()) {
       setLoading(false);
       return;
     }
-
     try {
       const sanitizedName = sanitizeInput(formData.name.trim(), 100);
       const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
-      
-      const { error } = await signUp(
-        sanitizedEmail, 
-        formData.password, 
-        sanitizedName
-      );
-
+      const { error } = await signUp(sanitizedEmail, formData.password, sanitizedName);
       if (error) {
-        // Enhanced error handling with user-friendly messages
         let errorMessage = error.message;
-        
         if (error.message.includes('User already registered') || error.message.includes('already exists')) {
           errorMessage = 'An account with this email already exists. Please sign in.';
         } else if (error.message.includes('Invalid email')) {
@@ -124,47 +100,20 @@ const SignUp = () => {
         } else if (error.message.includes('email') && error.message.includes('confirm')) {
           errorMessage = 'A verification email has been sent to your email.';
           setSuccess(errorMessage);
-          
-          // Clear form on success
-          setFormData({
-            name: '',
-            email: '',
-            password: '',
-            confirmPassword: '',
-          });
-          
-          // Redirect after delay
-          setTimeout(() => {
-            navigate('/signin');
-          }, 2000);
-          
+          setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+          setTimeout(() => navigate('/signin'), 2000);
           setLoading(false);
           return;
         } else {
           errorMessage = 'Registration failed. Please try again.';
         }
-        
         setError(errorMessage);
         setLoading(false);
         return;
       }
-
-      // Success case
       setSuccess('A verification email has been sent to your email.');
-      
-      // Clear form on success
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      });
-      
-      // Redirect after delay
-      setTimeout(() => {
-        navigate('/signin');
-      }, 2000);
-      
+      setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+      setTimeout(() => navigate('/signin'), 2000);
     } catch (error: unknown) {
       console.error('Signup error:', error);
       setError('An unexpected error occurred. Please try again.');
@@ -175,22 +124,13 @@ const SignUp = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
-    // Input sanitization - prevent XSS
-    const sanitizedValue = name === 'name' ? 
-      sanitizeInput(value, 100) : 
-      value;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: sanitizedValue
-    }));
-    
-    // Clear error when user starts typing
-    if (error) {
-      setError('');
-    }
+    const sanitizedValue = name === 'name' ? sanitizeInput(value, 100) : value;
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+    if (error) setError('');
   };
+
+  const inputClass = "pl-10 h-11 bg-white border-border/80 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all";
+  const inputWithToggleClass = "pl-10 pr-10 h-11 bg-white border-border/80 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all";
 
   return (
     <>
@@ -200,135 +140,166 @@ const SignUp = () => {
         canonical="https://sahadhyayi.com/signup"
         url="https://sahadhyayi.com/signup"
       />
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
-        <Card className="w-full max-w-md border-none shadow-elevated bg-white">
-          <CardHeader className="text-center pb-2">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
-              <UserPlus className="w-7 h-7 text-white" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-foreground">
-              Join Sahadhyayi
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              Create your account and start reading together
-            </p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              {success && (
-                <Alert>
-                  <AlertDescription>{success}</AlertDescription>
-                </Alert>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-foreground font-medium">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Your full name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="pl-10 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20"
-                    maxLength={100}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="pl-10 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20"
-                    maxLength={254}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground font-medium">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="pl-10 pr-10 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20"
-                    maxLength={128}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-                <PasswordStrength password={formData.password} />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-foreground font-medium">Confirm Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="pl-10 pr-10 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20"
-                    maxLength={128}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-              
-              <Button type="submit" variant="auth" className="w-full shadow-lg hover:shadow-xl transition-shadow" disabled={loading}>
-                {loading ? 'Creating Account...' : 'Create Account'}
-              </Button>
-            </form>
-            
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Already have an account?{' '}
-                <SignInLink className="text-amber-600 hover:text-amber-700 font-semibold transition-colors">
-                  Sign in here
-                </SignInLink>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50/60 to-yellow-50">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-amber-200/20 blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-orange-200/20 blur-3xl" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="w-full max-w-md relative z-10"
+        >
+          <Card className="border-none shadow-elevated bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
+            <CardHeader className="text-center pb-2 pt-8">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25"
+              >
+                <UserPlus className="w-8 h-8 text-white" />
+              </motion.div>
+              <CardTitle className="text-2xl font-bold text-foreground tracking-tight">
+                Join Sahadhyayi
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1.5">
+                Create your account and start reading together
               </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="px-6 pb-8">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                    <Alert variant="destructive" className="rounded-xl">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  </motion.div>
+                )}
+                {success && (
+                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                    <Alert className="rounded-xl border-green-200 bg-green-50 text-green-800">
+                      <AlertDescription>{success}</AlertDescription>
+                    </Alert>
+                  </motion.div>
+                )}
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="name" className="text-foreground font-medium text-sm">Full Name</Label>
+                  <div className="relative group">
+                    <User className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground group-focus-within:text-amber-600 transition-colors" />
+                    <Input
+                      id="name"
+                      name="name"
+                      type="text"
+                      placeholder="Your full name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className={inputClass}
+                      maxLength={100}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-foreground font-medium text-sm">Email</Label>
+                  <div className="relative group">
+                    <Mail className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground group-focus-within:text-amber-600 transition-colors" />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={inputClass}
+                      maxLength={254}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="password" className="text-foreground font-medium text-sm">Password</Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground group-focus-within:text-amber-600 transition-colors" />
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a strong password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={inputWithToggleClass}
+                      maxLength={128}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <PasswordStrength password={formData.password} />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirmPassword" className="text-foreground font-medium text-sm">Confirm Password</Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground group-focus-within:text-amber-600 transition-colors" />
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className={inputWithToggleClass}
+                      maxLength={128}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  variant="auth" 
+                  className="w-full h-11 rounded-xl shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/30 transition-all text-base font-semibold" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Creating Account...
+                    </span>
+                  ) : 'Create Account'}
+                </Button>
+              </form>
+              
+              <div className="mt-7 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Already have an account?{' '}
+                  <SignInLink className="text-amber-600 hover:text-amber-700 font-semibold transition-colors underline-offset-4 hover:underline">
+                    Sign in here
+                  </SignInLink>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </>
   );
