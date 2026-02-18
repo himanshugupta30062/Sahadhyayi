@@ -18,6 +18,7 @@ import BookExpertProvider from "./contexts/BookExpertContext";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
 import Navigation from "./components/Navigation";
+import ProtectedRoute from "./components/ProtectedRoute";
 import StructuredFooter from "./components/footer/StructuredFooter";
 import ScrollToTop from "./components/ScrollToTop";
 import BookFlipLoader from "./components/ui/BookFlipLoader";
@@ -158,9 +159,11 @@ const App = memo(() => {
                         <Route
                           path="/dashboard"
                           element={
-                            <Suspense fallback={<LoadingFallback message="Loading dashboard..." />}>
-                              <Dashboard />
-                            </Suspense>
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading dashboard..." />}>
+                                <Dashboard />
+                              </Suspense>
+                            </ProtectedRoute>
                           }
                         />
                         <Route
@@ -176,9 +179,11 @@ const App = memo(() => {
                         <Route
                           path="/profile"
                           element={
-                            <Suspense fallback={<LoadingFallback />}>
-                              <Profile />
-                            </Suspense>
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <Profile />
+                              </Suspense>
+                            </ProtectedRoute>
                           }
                         />
                         <Route

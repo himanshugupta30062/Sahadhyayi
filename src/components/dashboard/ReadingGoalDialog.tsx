@@ -18,7 +18,7 @@ const ReadingGoalDialog: React.FC<ReadingGoalDialogProps> = ({ onGoalUpdate }) =
 
   // Load existing goal from localStorage on component mount
   useEffect(() => {
-    const existingGoal = localStorage.getItem('readingGoal2024');
+    const existingGoal = localStorage.getItem(`readingGoal${new Date().getFullYear()}`);
     if (existingGoal) {
       const parsedGoal = parseInt(existingGoal) || 12;
       setGoal(parsedGoal);
@@ -27,7 +27,7 @@ const ReadingGoalDialog: React.FC<ReadingGoalDialogProps> = ({ onGoalUpdate }) =
 
   const handleSaveGoal = () => {
     // Save to localStorage
-    localStorage.setItem('readingGoal2024', goal.toString());
+    localStorage.setItem(`readingGoal${new Date().getFullYear()}`, goal.toString());
     
     // Trigger callback to update parent component
     if (onGoalUpdate) {

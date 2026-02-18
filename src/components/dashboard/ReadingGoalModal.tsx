@@ -32,7 +32,7 @@ const ReadingGoalModal: React.FC<ReadingGoalModalProps> = ({
   const handleUpdateGoal = () => {
     if (newGoal > 0) {
       onGoalUpdate(newGoal);
-      localStorage.setItem('readingGoal2024', newGoal.toString());
+      localStorage.setItem(`readingGoal${new Date().getFullYear()}`, newGoal.toString());
       // Dispatch custom event to update the dashboard
       window.dispatchEvent(new CustomEvent('readingGoalUpdated', { detail: { goal: newGoal } }));
       onClose();
