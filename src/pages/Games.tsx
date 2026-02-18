@@ -114,40 +114,49 @@ export default function Games() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex items-center justify-center p-4">
+        {/* Decorative background elements */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-amber-200/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl" />
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10"
         >
-          <Card className="max-w-md w-full text-center bg-white/10 backdrop-blur-sm border-white/20">
+          <Card className="max-w-md w-full text-center bg-white/95 backdrop-blur-sm border-border shadow-xl rounded-2xl">
             <CardContent className="pt-8 pb-6">
               <motion.div
                 animate={{ rotate: [0, -5, 5, -5, 0] }}
                 transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
+                className="inline-block"
               >
-                <Gamepad2 className="h-20 w-20 mx-auto text-primary mb-4" />
+                <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg mb-4">
+                  <Gamepad2 className="h-10 w-10 text-white" />
+                </div>
               </motion.div>
-              <h2 className="text-3xl font-bold text-white mb-2">Book Quiz Challenge</h2>
-              <p className="text-white/70 mb-8">Test your knowledge, earn points, and compete with friends!</p>
+              <h2 className="text-3xl font-bold text-foreground mb-2">Book Quiz Challenge</h2>
+              <p className="text-muted-foreground mb-8">Test your knowledge, earn points, and compete with friends!</p>
               
               <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="text-center">
-                  <Trophy className="h-8 w-8 mx-auto text-yellow-400 mb-2" />
-                  <p className="text-xs text-white/60">Leaderboards</p>
+                <div className="text-center p-3 rounded-xl bg-amber-50">
+                  <Trophy className="h-8 w-8 mx-auto text-amber-600 mb-2" />
+                  <p className="text-xs text-muted-foreground font-medium">Leaderboards</p>
                 </div>
-                <div className="text-center">
-                  <Medal className="h-8 w-8 mx-auto text-purple-400 mb-2" />
-                  <p className="text-xs text-white/60">Achievements</p>
+                <div className="text-center p-3 rounded-xl bg-orange-50">
+                  <Medal className="h-8 w-8 mx-auto text-orange-600 mb-2" />
+                  <p className="text-xs text-muted-foreground font-medium">Achievements</p>
                 </div>
-                <div className="text-center">
-                  <Users className="h-8 w-8 mx-auto text-blue-400 mb-2" />
-                  <p className="text-xs text-white/60">Multiplayer</p>
+                <div className="text-center p-3 rounded-xl bg-yellow-50">
+                  <Users className="h-8 w-8 mx-auto text-yellow-700 mb-2" />
+                  <p className="text-xs text-muted-foreground font-medium">Multiplayer</p>
                 </div>
               </div>
 
               <Button 
                 size="lg" 
-                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg"
                 onClick={() => window.location.href = '/signin'}
               >
                 Sign In to Play
