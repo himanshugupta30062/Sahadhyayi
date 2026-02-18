@@ -28,7 +28,7 @@ const Dashboard = () => {
   // Load reading goal from localStorage and listen for updates
   useEffect(() => {
     const loadGoal = () => {
-      const savedGoal = localStorage.getItem('readingGoal2024');
+      const savedGoal = localStorage.getItem(`readingGoal${new Date().getFullYear()}`);
       if (savedGoal) {
         setReadingGoal(parseInt(savedGoal) || 12);
       }
@@ -193,7 +193,7 @@ const Dashboard = () => {
               {/* Reading Goal */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">2024 Reading Goal</CardTitle>
+                  <CardTitle className="text-base">{new Date().getFullYear()} Reading Goal</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
