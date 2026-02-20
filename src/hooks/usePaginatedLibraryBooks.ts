@@ -142,17 +142,30 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 
-      // Apply pagination to sorted books
+      // Deduplicate by title (case-insensitive) — keep the first (most complete) entry
+      const seen = new Set<string>();
+      const deduplicatedBooks = sortedBooks.filter(book => {
+        const key = book.title.trim().toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      const dedupTotalCount = deduplicatedBooks.length;
+      const dedupTotalPages = Math.ceil(dedupTotalCount / pageSize);
+      setTotalPages(dedupTotalPages);
+
+      // Apply pagination to deduplicated books
       const startIndex = (page - 1) * pageSize;
-      const books = sortedBooks.slice(startIndex, startIndex + pageSize);
+      const books = deduplicatedBooks.slice(startIndex, startIndex + pageSize);
 
       return {
         books,
-        totalCount,
-        totalPages: calculatedTotalPages,
+        totalCount: dedupTotalCount,
+        totalPages: dedupTotalPages,
         currentPage: page,
         pageSize,
-        hasNextPage: page < calculatedTotalPages,
+        hasNextPage: page < dedupTotalPages,
         hasPrevPage: page > 1
       };
     } catch (error) {
