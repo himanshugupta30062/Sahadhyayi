@@ -161,108 +161,230 @@ export default function Games() {
           </motion.div>
         ))}
 
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-12 gap-8">
-          {/* Rotating Quote */}
-          <motion.div
-            className="max-w-lg text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={quoteIndex}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.5 }}
-              >
-                <p className="text-lg md:text-xl italic text-foreground/70 font-medium">
-                  "{bookQuotes[quoteIndex].text}"
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">— {bookQuotes[quoteIndex].author}</p>
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
-
-          {/* Main Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="w-full max-w-md"
-          >
-            <Card className="text-center bg-white/95 backdrop-blur-sm border-border shadow-xl rounded-2xl">
-              <CardContent className="pt-8 pb-6">
-                <motion.div
-                  animate={{ rotate: [0, -5, 5, -5, 0] }}
-                  transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
-                  className="inline-block"
-                >
-                  <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg mb-4">
-                    <Gamepad2 className="h-10 w-10 text-white" />
-                  </div>
-                </motion.div>
-                <h2 className="text-3xl font-bold text-foreground mb-2">Book Quiz Challenge</h2>
-                <p className="text-muted-foreground mb-6">Test your knowledge, earn points, and compete with friends!</p>
-                
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
-                    <Trophy className="h-7 w-7 mx-auto text-amber-600 mb-1.5" />
-                    <p className="text-xs text-muted-foreground font-medium">Leaderboards</p>
-                  </div>
-                  <div className="text-center p-3 rounded-xl bg-orange-50 border border-orange-100">
-                    <Medal className="h-7 w-7 mx-auto text-orange-600 mb-1.5" />
-                    <p className="text-xs text-muted-foreground font-medium">Achievements</p>
-                  </div>
-                  <div className="text-center p-3 rounded-xl bg-yellow-50 border border-yellow-100">
-                    <Users className="h-7 w-7 mx-auto text-yellow-700 mb-1.5" />
-                    <p className="text-xs text-muted-foreground font-medium">Multiplayer</p>
-                  </div>
-                </div>
-
-                <Button 
-                  size="lg" 
-                  className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg"
-                  onClick={() => window.location.href = '/signin'}
-                >
-                  Sign In to Play
-                  <ChevronRight className="ml-2 h-5 w-5" />
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* How it works section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="w-full max-w-lg"
-          >
-            <h3 className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">How It Works</h3>
-            <div className="grid grid-cols-3 gap-4">
+        <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-12">
+          <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-center">
+            
+            {/* Left Side - Stats & Fun Facts */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="hidden lg:flex flex-col gap-4"
+            >
               {[
-                { icon: BookOpen, step: "1", label: "Pick a Book", desc: "Choose from our library" },
-                { icon: Target, step: "2", label: "Answer Questions", desc: "AI-generated quizzes" },
-                { icon: Trophy, step: "3", label: "Earn Rewards", desc: "Points, badges & ranks" },
-              ].map((item, i) => (
+                { icon: "🧠", title: "10,000+", desc: "Quiz Questions", bg: "bg-amber-50 border-amber-100" },
+                { icon: "📚", title: "500+", desc: "Books Available", bg: "bg-orange-50 border-orange-100" },
+                { icon: "🏆", title: "4 Modes", desc: "Classic · Speed · Survival · Challenge", bg: "bg-yellow-50 border-yellow-100" },
+              ].map((stat, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + i * 0.15 }}
-                  className="text-center"
+                  className={`p-4 rounded-2xl border backdrop-blur-sm bg-white/80 ${stat.bg} shadow-sm`}
                 >
-                  <div className="w-12 h-12 mx-auto rounded-full bg-white/80 border border-amber-200 flex items-center justify-center mb-2 shadow-sm">
-                    <item.icon className="h-5 w-5 text-amber-600" />
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{stat.icon}</span>
+                    <div>
+                      <p className="text-lg font-bold text-foreground">{stat.title}</p>
+                      <p className="text-xs text-muted-foreground">{stat.desc}</p>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                  <p className="text-xs text-muted-foreground">{item.desc}</p>
                 </motion.div>
               ))}
+
+              {/* Rotating Quote */}
+              <motion.div
+                className="p-4 rounded-2xl bg-white/60 border border-amber-100 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={quoteIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <p className="text-sm italic text-foreground/70 leading-relaxed">
+                      "{bookQuotes[quoteIndex].text}"
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">— {bookQuotes[quoteIndex].author}</p>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+            </motion.div>
+
+            {/* Center - Main Card */}
+            <div className="flex flex-col items-center gap-6">
+              {/* Mobile-only quote */}
+              <motion.div
+                className="lg:hidden max-w-md text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={quoteIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <p className="text-lg italic text-foreground/70 font-medium">
+                      "{bookQuotes[quoteIndex].text}"
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">— {bookQuotes[quoteIndex].author}</p>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="w-full max-w-md"
+              >
+                <Card className="text-center bg-white/95 backdrop-blur-sm border-border shadow-xl rounded-2xl">
+                  <CardContent className="pt-8 pb-6">
+                    <motion.div
+                      animate={{ rotate: [0, -5, 5, -5, 0] }}
+                      transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
+                      className="inline-block"
+                    >
+                      <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg mb-4">
+                        <Gamepad2 className="h-10 w-10 text-white" />
+                      </div>
+                    </motion.div>
+                    <h2 className="text-3xl font-bold text-foreground mb-2">Book Quiz Challenge</h2>
+                    <p className="text-muted-foreground mb-6">Test your knowledge, earn points, and compete with friends!</p>
+                    
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                      <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
+                        <Trophy className="h-7 w-7 mx-auto text-amber-600 mb-1.5" />
+                        <p className="text-xs text-muted-foreground font-medium">Leaderboards</p>
+                      </div>
+                      <div className="text-center p-3 rounded-xl bg-orange-50 border border-orange-100">
+                        <Medal className="h-7 w-7 mx-auto text-orange-600 mb-1.5" />
+                        <p className="text-xs text-muted-foreground font-medium">Achievements</p>
+                      </div>
+                      <div className="text-center p-3 rounded-xl bg-yellow-50 border border-yellow-100">
+                        <Users className="h-7 w-7 mx-auto text-yellow-700 mb-1.5" />
+                        <p className="text-xs text-muted-foreground font-medium">Multiplayer</p>
+                      </div>
+                    </div>
+
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg"
+                      onClick={() => window.location.href = '/signin'}
+                    >
+                      Sign In to Play
+                      <ChevronRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* How it works */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="w-full max-w-md"
+              >
+                <h3 className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">How It Works</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { icon: BookOpen, label: "Pick a Book", desc: "Choose from our library" },
+                    { icon: Target, label: "Answer Questions", desc: "AI-generated quizzes" },
+                    { icon: Trophy, label: "Earn Rewards", desc: "Points, badges & ranks" },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 + i * 0.15 }}
+                      className="text-center"
+                    >
+                      <div className="w-12 h-12 mx-auto rounded-full bg-white/80 border border-amber-200 flex items-center justify-center mb-2 shadow-sm">
+                        <item.icon className="h-5 w-5 text-amber-600" />
+                      </div>
+                      <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+
+            {/* Right Side - Game Modes & Ranks */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="hidden lg:flex flex-col gap-4"
+            >
+              {/* Game Modes Preview */}
+              <div className="p-4 rounded-2xl bg-white/80 border border-amber-100 backdrop-blur-sm shadow-sm">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Game Modes</p>
+                {[
+                  { emoji: "🎯", name: "Classic", desc: "Answer at your own pace" },
+                  { emoji: "⚡", name: "Speed Run", desc: "Race against the clock" },
+                  { emoji: "❤️", name: "Survival", desc: "3 lives, no mistakes" },
+                  { emoji: "🏅", name: "Challenge", desc: "Compete with friends" },
+                ].map((mode, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + i * 0.1 }}
+                    className="flex items-center gap-3 py-2 border-b border-amber-50 last:border-0"
+                  >
+                    <span className="text-xl">{mode.emoji}</span>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{mode.name}</p>
+                      <p className="text-xs text-muted-foreground">{mode.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Ranks Preview */}
+              <div className="p-4 rounded-2xl bg-white/80 border border-amber-100 backdrop-blur-sm shadow-sm">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Climb the Ranks</p>
+                <div className="flex flex-wrap gap-2">
+                  {["📖 Beginner", "📕 Reader", "📗 Scholar", "📘 Expert", "👑 Master"].map((rank, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.8 + i * 0.1 }}
+                      className="px-3 py-1.5 text-xs rounded-full bg-amber-50 border border-amber-200 text-foreground font-medium"
+                    >
+                      {rank}
+                    </motion.span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Live Stats Teaser */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="p-4 rounded-2xl bg-gradient-to-br from-amber-100/50 to-orange-100/50 border border-amber-200 backdrop-blur-sm text-center"
+              >
+                <Sparkles className="h-6 w-6 mx-auto text-amber-600 mb-2" />
+                <p className="text-sm font-semibold text-foreground">Join the Community</p>
+                <p className="text-xs text-muted-foreground mt-1">Compete, learn, and have fun with fellow readers!</p>
+              </motion.div>
+            </motion.div>
+
+          </div>
         </div>
       </div>
     );
