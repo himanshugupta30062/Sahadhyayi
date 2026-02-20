@@ -201,7 +201,7 @@ export default function Games() {
                 className="container max-w-6xl mx-auto px-4 py-8"
               >
                 {/* Hero Header */}
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 p-8 mb-8">
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-brand-primary/20 via-brand-secondary/20 to-amber-500/20 p-8 mb-8">
                   <div className="absolute inset-0 bg-[url('/placeholder.svg')] opacity-5" />
                   <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="text-center md:text-left">
@@ -211,7 +211,7 @@ export default function Games() {
                         transition={{ type: 'spring', stiffness: 200 }}
                         className="inline-flex items-center gap-3 mb-4"
                       >
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
                           <Gamepad2 className="h-8 w-8 text-white" />
                         </div>
                         <div>
@@ -297,8 +297,8 @@ export default function Games() {
                         label="Games Won" 
                         value={stats?.games_won || 0}
                         loading={statsLoading}
-                        gradient="from-purple-500/20 to-pink-500/20"
-                        iconColor="text-purple-500"
+                        gradient="from-amber-500/20 to-orange-500/20"
+                        iconColor="text-amber-600"
                       />
                       <StatCard 
                         icon={<Flame className="h-5 w-5" />} 
@@ -351,7 +351,7 @@ export default function Games() {
                           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             <Button 
                               size="lg" 
-                              className="text-lg px-8 py-6 rounded-2xl bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-xl"
+                              className="text-lg px-8 py-6 rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-xl"
                               onClick={() => setView('select-book')}
                             >
                               <Sparkles className="mr-2 h-5 w-5" />
@@ -506,7 +506,7 @@ export default function Games() {
               <h3 className="text-2xl font-black mb-2">Achievement Unlocked!</h3>
               <p className="text-xl text-primary font-bold mb-2">{newBadge.name}</p>
               <p className="text-muted-foreground mb-6">{newBadge.description}</p>
-              <Button onClick={dismissNewBadge} className="w-full bg-gradient-to-r from-primary to-purple-600">
+              <Button onClick={dismissNewBadge} className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
                 <Sparkles className="mr-2 h-4 w-4" />
                 Awesome!
               </Button>
