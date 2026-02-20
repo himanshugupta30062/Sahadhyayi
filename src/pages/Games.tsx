@@ -65,6 +65,23 @@ export default function Games() {
   const [selectedMode, setSelectedMode] = useState<GameMode>('classic');
   const [lastGameResult, setLastGameResult] = useState<{ score: number; correct: number; total: number } | null>(null);
   const [activeTab, setActiveTab] = useState<'play' | 'social' | 'achievements'>('play');
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  const bookQuotes = React.useMemo(() => [
+    { text: "A reader lives a thousand lives before he dies.", author: "George R.R. Martin" },
+    { text: "The more that you read, the more things you will know.", author: "Dr. Seuss" },
+    { text: "Books are a uniquely portable magic.", author: "Stephen King" },
+    { text: "Reading is to the mind what exercise is to the body.", author: "Joseph Addison" },
+  ], []);
+
+  React.useEffect(() => {
+    if (!user) {
+      const interval = setInterval(() => {
+        setQuoteIndex((prev) => (prev + 1) % bookQuotes.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [user, bookQuotes]);
 
   const handleBookSelect = async (bookId: string) => {
     await startGame(bookId, selectedDifficulty);
@@ -114,57 +131,139 @@ export default function Games() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden">
         {/* Decorative background elements */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-amber-200/30 rounded-full blur-3xl" />
+        <div className="absolute top-10 left-10 w-72 h-72 bg-amber-200/30 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl" />
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10"
-        >
-          <Card className="max-w-md w-full text-center bg-white/95 backdrop-blur-sm border-border shadow-xl rounded-2xl">
-            <CardContent className="pt-8 pb-6">
-              <motion.div
-                animate={{ rotate: [0, -5, 5, -5, 0] }}
-                transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
-                className="inline-block"
-              >
-                <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg mb-4">
-                  <Gamepad2 className="h-10 w-10 text-white" />
-                </div>
-              </motion.div>
-              <h2 className="text-3xl font-bold text-foreground mb-2">Book Quiz Challenge</h2>
-              <p className="text-muted-foreground mb-8">Test your knowledge, earn points, and compete with friends!</p>
-              
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="text-center p-3 rounded-xl bg-amber-50">
-                  <Trophy className="h-8 w-8 mx-auto text-amber-600 mb-2" />
-                  <p className="text-xs text-muted-foreground font-medium">Leaderboards</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-orange-50">
-                  <Medal className="h-8 w-8 mx-auto text-orange-600 mb-2" />
-                  <p className="text-xs text-muted-foreground font-medium">Achievements</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-yellow-50">
-                  <Users className="h-8 w-8 mx-auto text-yellow-700 mb-2" />
-                  <p className="text-xs text-muted-foreground font-medium">Multiplayer</p>
-                </div>
-              </div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-100/40 rounded-full blur-3xl" />
 
-              <Button 
-                size="lg" 
-                className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg"
-                onClick={() => window.location.href = '/signin'}
+        {/* Floating book icons background */}
+        {[BookOpen, Star, Trophy, Zap, Flame, Target].map((Icon, i) => (
+          <motion.div
+            key={i}
+            className="absolute text-amber-300/20"
+            style={{
+              top: `${15 + (i * 14) % 70}%`,
+              left: `${5 + (i * 18) % 85}%`,
+            }}
+            animate={{
+              y: [0, -20, 0],
+              rotate: [0, i % 2 === 0 ? 10 : -10, 0],
+              opacity: [0.15, 0.3, 0.15],
+            }}
+            transition={{
+              duration: 4 + i,
+              repeat: Infinity,
+              delay: i * 0.7,
+            }}
+          >
+            <Icon className="h-10 w-10 md:h-14 md:w-14" />
+          </motion.div>
+        ))}
+
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-12 gap-8">
+          {/* Rotating Quote */}
+          <motion.div
+            className="max-w-lg text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={quoteIndex}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.5 }}
               >
-                Sign In to Play
-                <ChevronRight className="ml-2 h-5 w-5" />
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
+                <p className="text-lg md:text-xl italic text-foreground/70 font-medium">
+                  "{bookQuotes[quoteIndex].text}"
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">— {bookQuotes[quoteIndex].author}</p>
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Main Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="w-full max-w-md"
+          >
+            <Card className="text-center bg-white/95 backdrop-blur-sm border-border shadow-xl rounded-2xl">
+              <CardContent className="pt-8 pb-6">
+                <motion.div
+                  animate={{ rotate: [0, -5, 5, -5, 0] }}
+                  transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
+                  className="inline-block"
+                >
+                  <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg mb-4">
+                    <Gamepad2 className="h-10 w-10 text-white" />
+                  </div>
+                </motion.div>
+                <h2 className="text-3xl font-bold text-foreground mb-2">Book Quiz Challenge</h2>
+                <p className="text-muted-foreground mb-6">Test your knowledge, earn points, and compete with friends!</p>
+                
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
+                    <Trophy className="h-7 w-7 mx-auto text-amber-600 mb-1.5" />
+                    <p className="text-xs text-muted-foreground font-medium">Leaderboards</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-orange-50 border border-orange-100">
+                    <Medal className="h-7 w-7 mx-auto text-orange-600 mb-1.5" />
+                    <p className="text-xs text-muted-foreground font-medium">Achievements</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-yellow-50 border border-yellow-100">
+                    <Users className="h-7 w-7 mx-auto text-yellow-700 mb-1.5" />
+                    <p className="text-xs text-muted-foreground font-medium">Multiplayer</p>
+                  </div>
+                </div>
+
+                <Button 
+                  size="lg" 
+                  className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg"
+                  onClick={() => window.location.href = '/signin'}
+                >
+                  Sign In to Play
+                  <ChevronRight className="ml-2 h-5 w-5" />
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* How it works section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="w-full max-w-lg"
+          >
+            <h3 className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">How It Works</h3>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { icon: BookOpen, step: "1", label: "Pick a Book", desc: "Choose from our library" },
+                { icon: Target, step: "2", label: "Answer Questions", desc: "AI-generated quizzes" },
+                { icon: Trophy, step: "3", label: "Earn Rewards", desc: "Points, badges & ranks" },
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + i * 0.15 }}
+                  className="text-center"
+                >
+                  <div className="w-12 h-12 mx-auto rounded-full bg-white/80 border border-amber-200 flex items-center justify-center mb-2 shadow-sm">
+                    <item.icon className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </div>
     );
   }
