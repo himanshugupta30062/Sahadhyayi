@@ -151,13 +151,35 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
         return true;
       });
 
-      const dedupTotalCount = deduplicatedBooks.length;
+      // Spread books by the same author across pages (round-robin by author)
+      const authorGroups = new Map<string, Book[]>();
+      for (const book of deduplicatedBooks) {
+        const authorKey = (book.author || 'Unknown').trim().toLowerCase();
+        if (!authorGroups.has(authorKey)) authorGroups.set(authorKey, []);
+        authorGroups.get(authorKey)!.push(book);
+      }
+      const queues = Array.from(authorGroups.values());
+      // Sort queues so authors with most books come first (better spread)
+      queues.sort((a, b) => b.length - a.length);
+      const spreadBooks: Book[] = [];
+      let remaining = true;
+      while (remaining) {
+        remaining = false;
+        for (const q of queues) {
+          if (q.length > 0) {
+            spreadBooks.push(q.shift()!);
+            if (q.length > 0) remaining = true;
+          }
+        }
+      }
+
+      const dedupTotalCount = spreadBooks.length;
       const dedupTotalPages = Math.ceil(dedupTotalCount / pageSize);
       setTotalPages(dedupTotalPages);
 
       // Apply pagination to deduplicated books
       const startIndex = (page - 1) * pageSize;
-      const books = deduplicatedBooks.slice(startIndex, startIndex + pageSize);
+      const books = spreadBooks.slice(startIndex, startIndex + pageSize);
 
       return {
         books,
