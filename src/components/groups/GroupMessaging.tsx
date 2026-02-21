@@ -195,18 +195,31 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
     return mentions;
   };
 
+  const renderMessageContent = (content: string, mentions: string[]) => {
+    if (mentions.length === 0) {
+      return <>{content}</>;
+    }
+
+    // Build a regex that matches any @mention
+    const escapedMentions = mentions.map(m => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const mentionPattern = new RegExp(`(@(?:${escapedMentions.join('|')}))`, 'g');
+    const parts = content.split(mentionPattern);
+
+    return (
+      <>
+        {parts.map((part, i) => {
+          if (mentions.some(m => part === `@${m}`)) {
+            return <span key={i} className="text-primary font-semibold">{part}</span>;
+          }
+          return <span key={i}>{part}</span>;
+        })}
+      </>
+    );
+  };
+
   const renderMessage = (message: Message) => {
     const isOwnMessage = message.sender_id === user?.id;
     const mentions = extractMentions(message.content);
-    
-    // Highlight mentions in message content
-    let displayContent = message.content;
-    mentions.forEach(mention => {
-      displayContent = displayContent.replace(
-        new RegExp(`@${mention}`, 'g'),
-        `<span class="text-primary font-semibold">@${mention}</span>`
-      );
-    });
 
     return (
       <div
@@ -236,8 +249,9 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
                 ? 'bg-primary text-primary-foreground ml-auto'
                 : 'bg-muted'
             }`}
-            dangerouslySetInnerHTML={{ __html: displayContent }}
-          />
+          >
+            {renderMessageContent(message.content, mentions)}
+          </div>
         </div>
       </div>
     );
