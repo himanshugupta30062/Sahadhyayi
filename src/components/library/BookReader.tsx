@@ -103,29 +103,46 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
     return () => window.removeEventListener('keydown', handleKey);
   }, [isOpen, handlePrevPage, handleNextPage, isFullscreen, onClose]);
 
+  // Determine the best PDF embed URL
+  const getPdfEmbedUrl = (url: string) => {
+    // Use Google Docs Viewer to proxy PDFs that block iframe embedding (e.g. archive.org)
+    return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+  };
+
   // PDF viewer component
   const renderPdfViewer = () => {
     if (!book?.pdf_url) return null;
     
     return (
       <div 
-        className="w-full h-full rounded-lg overflow-hidden shadow-lg"
+        className="w-full rounded-lg overflow-hidden shadow-lg"
         style={{
-          transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
-          transformOrigin: 'center',
-          minHeight: '600px'
+          minHeight: isFullscreen ? 'calc(100vh - 160px)' : '70vh',
+          height: isFullscreen ? 'calc(100vh - 160px)' : '70vh',
         }}
       >
         <iframe
-          src={`${book.pdf_url}#page=${currentPage}&zoom=${zoom}&toolbar=1&navpanes=1&scrollbar=1`}
+          src={getPdfEmbedUrl(book.pdf_url)}
           width="100%"
-          height="600px"
+          height="100%"
           className="border-0 rounded-lg"
           title={`${book.title} - PDF Viewer`}
+          allow="autoplay"
+          sandbox="allow-scripts allow-same-origin allow-popups"
           onError={(e) => {
             console.error('PDF loading error:', e);
           }}
         />
+        <div className="text-center mt-2">
+          <a 
+            href={book.pdf_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-sm text-blue-500 hover:underline"
+          >
+            Open PDF in new tab ↗
+          </a>
+        </div>
       </div>
     );
   };
@@ -175,9 +192,9 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className={`max-w-full ${
-          isFullscreen ? 'h-screen' : 'max-h-[90vh]'
-        } p-0 transition-colors duration-300 ${
+        className={`max-w-6xl w-[95vw] ${
+          isFullscreen ? 'h-screen max-h-screen' : 'h-[90vh] max-h-[90vh]'
+        } p-0 transition-colors duration-300 flex flex-col ${
           darkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-100 text-gray-900'
         }`}
       >
