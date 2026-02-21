@@ -11,6 +11,7 @@ export async function getBooks(
   let query = supabaseClient
     .from('books_library')
     .select('*')
+    .order('pdf_url', { ascending: false, nullsFirst: false })
     .limit(limit + 1);
 
   if (signal) {

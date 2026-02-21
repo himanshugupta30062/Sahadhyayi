@@ -43,10 +43,12 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
 
   const fetchPaginatedBooks = React.useCallback(async (): Promise<PaginatedBooksResponse> => {
     try {
-      // Start building the query - remove the order clause to apply custom sorting later
+      // Order by pdf_url presence first (books with PDFs on top), then by created_at
       let query = supabase
         .from('books_library')
-        .select('*', { count: 'exact' });
+        .select('*', { count: 'exact' })
+        .order('pdf_url', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false });
 
       // Apply search filter
       if (searchQuery && searchQuery.trim()) {
