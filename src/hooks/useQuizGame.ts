@@ -162,7 +162,7 @@ export function useQuizGame() {
     const currentQuestion = questions[currentQuestionIndex];
 
     switch (lifeline) {
-      case '50-50':
+      case '50-50': {
         // Hide 2 wrong answers
         const wrongAnswers = currentQuestion.options
           .map((_, i) => i)
@@ -170,6 +170,7 @@ export function useQuizGame() {
         const toHide = wrongAnswers.sort(() => Math.random() - 0.5).slice(0, 2);
         setHiddenOptions(toHide);
         break;
+      }
       case 'hint':
         setShowHint(true);
         break;
