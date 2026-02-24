@@ -34,7 +34,7 @@ interface HeroAtomicRingsProps {
 
 export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRingsProps) {
   // ===== Visual config =====
-  const CORE  = 195;  // thinnest (new innermost)
+  const CORE  = 210;  // innermost
   const INNER = 225;
   const MID   = 255;
   const OUTER = 285;  // thickest
@@ -235,6 +235,7 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
         </g>
 
         {/* ATOMS — rotate on path; snap to arc START if they hit blank */}
+        {/* Outer ring: Library */}
         <g
           ref={el => (atomRefs[0].current = el)}
           onMouseEnter={handleEnter}
@@ -242,25 +243,10 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           className="pointer-events-auto cursor-pointer"
         >
           <circle r={16} fill="#ef4444" filter="url(#soft)" />
-          <text
-            y={6}
-            textAnchor="middle"
-            fontSize={12}
-            fontWeight={700}
-            fill="#ffffff"
-          >
-            S
-          </text>
-          <text
-            y={30}
-            textAnchor="middle"
-            fontSize={10}
-            fontWeight={500}
-            fill="#f8fafc"
-          >
-            Social Media
-          </text>
+          <text y={6} textAnchor="middle" fontSize={12} fontWeight={700} fill="#ffffff">L</text>
+          <text y={30} textAnchor="middle" fontSize={10} fontWeight={500} fill="#f8fafc">Library</text>
         </g>
+        {/* Mid ring: Games */}
         <g
           ref={el => (atomRefs[1].current = el)}
           onMouseEnter={handleEnter}
@@ -268,25 +254,10 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           className="pointer-events-auto cursor-pointer"
         >
           <circle r={15} fill="#22c55e" filter="url(#soft)" />
-          <text
-            y={6}
-            textAnchor="middle"
-            fontSize={11}
-            fontWeight={700}
-            fill="#f8fafc"
-          >
-            A
-          </text>
-          <text
-            y={28}
-            textAnchor="middle"
-            fontSize={9}
-            fontWeight={500}
-            fill="#f8fafc"
-          >
-            Authors
-          </text>
+          <text y={6} textAnchor="middle" fontSize={11} fontWeight={700} fill="#f8fafc">G</text>
+          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Games</text>
         </g>
+        {/* Inner ring: Authors */}
         <g
           ref={el => (atomRefs[2].current = el)}
           onMouseEnter={handleEnter}
@@ -294,25 +265,10 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           className="pointer-events-auto cursor-pointer"
         >
           <circle r={15} fill="#3b82f6" filter="url(#soft)" />
-          <text
-            y={6}
-            textAnchor="middle"
-            fontSize={11}
-            fontWeight={700}
-            fill="#f8fafc"
-          >
-            L
-          </text>
-          <text
-            y={28}
-            textAnchor="middle"
-            fontSize={9}
-            fontWeight={500}
-            fill="#f8fafc"
-          >
-            Library
-          </text>
+          <text y={6} textAnchor="middle" fontSize={11} fontWeight={700} fill="#f8fafc">A</text>
+          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Authors</text>
         </g>
+        {/* Core ring: Social Media */}
         <g
           ref={el => (atomRefs[3].current = el)}
           onMouseEnter={handleEnter}
@@ -320,24 +276,8 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           className="pointer-events-auto cursor-pointer"
         >
           <circle r={14} fill="#f59e0b" filter="url(#soft)" />
-          <text
-            y={5}
-            textAnchor="middle"
-            fontSize={11}
-            fontWeight={700}
-            fill="#ffffff"
-          >
-            G
-          </text>
-          <text
-            y={27}
-            textAnchor="middle"
-            fontSize={9}
-            fontWeight={500}
-            fill="#f8fafc"
-          >
-            Games
-          </text>
+          <text y={5} textAnchor="middle" fontSize={11} fontWeight={700} fill="#ffffff">S</text>
+          <text y={27} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Social Media</text>
         </g>
       </svg>
       {children && (
