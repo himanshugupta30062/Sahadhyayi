@@ -34,8 +34,8 @@ interface HeroAtomicRingsProps {
 
 export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRingsProps) {
   // ===== Visual config =====
-  const CORE  = 200;  // Social Media (innermost)
-  const INNER = 235;  // Authors
+  const CORE  = 190;  // Social Media (innermost)
+  const INNER = 230;  // Authors
   const MID   = 270;  // Games
   const OUTER = 305;  // Library (outermost)
 
