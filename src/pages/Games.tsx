@@ -454,13 +454,23 @@ export default function Games() {
 
                     {/* Quick Stats */}
                     <div className="flex items-center gap-3">
-                      <div className="text-center px-4 py-2 rounded-xl bg-background/50 backdrop-blur-sm">
-                        <p className="text-2xl font-bold text-primary">{stats?.total_points?.toLocaleString() || 0}</p>
-                        <p className="text-xs text-muted-foreground">Total Points</p>
+                      <div className="text-center px-4 py-3 rounded-xl bg-background/50 backdrop-blur-sm min-w-[90px]">
+                        <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                          <Trophy className="h-4 w-4 text-amber-500" />
+                          <p className="text-2xl font-bold text-primary">{(stats?.total_points || 0).toLocaleString()}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Points</p>
                       </div>
-                      <div className="text-center px-4 py-2 rounded-xl bg-background/50 backdrop-blur-sm">
-                        <p className="text-2xl">{currentRank.icon}</p>
-                        <p className="text-xs text-muted-foreground">{currentRank.name}</p>
+                      <div className="text-center px-4 py-3 rounded-xl bg-background/50 backdrop-blur-sm min-w-[90px]">
+                        <p className="text-2xl mb-0.5">{currentRank.icon}</p>
+                        <p className="text-xs text-muted-foreground font-medium">{currentRank.name}</p>
+                      </div>
+                      <div className="text-center px-4 py-3 rounded-xl bg-background/50 backdrop-blur-sm min-w-[90px]">
+                        <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                          <Flame className="h-4 w-4 text-red-500" />
+                          <p className="text-2xl font-bold text-primary">{stats?.games_played || 0}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Played</p>
                       </div>
                     </div>
                   </div>
