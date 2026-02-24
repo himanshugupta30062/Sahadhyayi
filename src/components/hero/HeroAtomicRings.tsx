@@ -34,47 +34,48 @@ interface HeroAtomicRingsProps {
 
 export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRingsProps) {
   // ===== Visual config =====
-  const INNER = 225;  // thinnest
-  const MID   = 255;  // medium
+  const CORE  = 195;  // thinnest (new innermost)
+  const INNER = 225;
+  const MID   = 255;
   const OUTER = 285;  // thickest
 
-  const STROKES = { inner: 10, mid: 14, outer: 20 } as const; // thicker outward
+  const STROKES = { core: 8, inner: 10, mid: 14, outer: 20 } as const;
 
   // Coloured arc coverage: ~65% of circumference
   const COVERAGE = 0.65;                 // try 0.60–0.70
   const SWEEP_DEG = 360 * COVERAGE;      // e.g. 234°
 
   // Rotating arc start angles + speeds
-  const ROTOR_START = { outer: -18, mid: 12, inner: -36 } as const; // degrees
-  const ROTOR_DUR   = { outer: 42,  mid: 36, inner: 30 } as const;  // slower: seconds per 360
-  const ROTOR_DIR   = { outer: 1,   mid: -1, inner: 1 } as const;   // +1 cw, -1 ccw
+  const ROTOR_START = { outer: -18, mid: 12, inner: -36, core: 24 } as const;
+  const ROTOR_DUR   = { outer: 42,  mid: 36, inner: 30,  core: 26 } as const;
+  const ROTOR_DIR   = { outer: 1,   mid: -1, inner: 1,   core: -1 } as const;
 
   // Atom motion — continuous path rotation
   const ATOM_SPEED = 30;  // deg/sec (~12s per lap). Lower = slower, higher = faster
 
   // ---------- Refs ----------
-  const ringRefs = [useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null)];
-  const atomRefs = [useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null)];
+  const ringRefs = [useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null)];
+  const atomRefs = [useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null)];
 
-  const ringAngles = useRef([0, 0, 0]); // dynamic ring arc rotations
-  const atomAngles = useRef([0, 120, 240]); // dynamic atom angles
-  const atomRings = useRef([0, 1, 2]); // fixed ring per atom: 0=outer,1=mid,2=inner
+  const ringAngles = useRef([0, 0, 0, 0]);
+  const atomAngles = useRef([0, 120, 240, 60]);
+  const atomRings = useRef([0, 1, 2, 3]); // 0=outer,1=mid,2=inner,3=core
 
   const paused = useRef(false);
   const last = useRef(performance.now());
 
-  const radii   = [OUTER, MID, INNER];
-  const rotorStart = [ROTOR_START.outer, ROTOR_START.mid, ROTOR_START.inner];
-  const rotorDur   = [ROTOR_DUR.outer,   ROTOR_DUR.mid,   ROTOR_DUR.inner];
-  const rotorDir   = [ROTOR_DIR.outer,   ROTOR_DIR.mid,   ROTOR_DIR.inner];
+  const radii   = [OUTER, MID, INNER, CORE];
+  const rotorStart = [ROTOR_START.outer, ROTOR_START.mid, ROTOR_START.inner, ROTOR_START.core];
+  const rotorDur   = [ROTOR_DUR.outer,   ROTOR_DUR.mid,   ROTOR_DUR.inner,   ROTOR_DUR.core];
+  const rotorDir   = [ROTOR_DIR.outer,   ROTOR_DIR.mid,   ROTOR_DIR.inner,   ROTOR_DIR.core];
 
   // Initial placement so nothing looks frozen pre-RAF
   useEffect(() => {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       const g = ringRefs[i].current;
       if (g) g.setAttribute("transform", `rotate(${ringAngles.current[i]} 0 0)`);
     }
-    for (let k = 0; k < 3; k++) {
+    for (let k = 0; k < 4; k++) {
       const ri = atomRings.current[k];
       const p = pos(radii[ri], atomAngles.current[k]);
       atomRefs[k].current?.setAttribute("transform", `translate(${p.x}, ${p.y})`);
@@ -92,14 +93,14 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
         const dt = Math.max(0, Math.min(0.05, dtRaw)); // clamp for background tabs
 
         // 1) advance ring arcs
-        for (let i = 0; i < 3; i++) {
-          const speed = (360 / rotorDur[i]) * rotorDir[i]; // deg/sec
+        for (let i = 0; i < 4; i++) {
+          const speed = (360 / rotorDur[i]) * rotorDir[i];
           ringAngles.current[i] = norm(ringAngles.current[i] + speed * dt);
           ringRefs[i].current?.setAttribute("transform", `rotate(${ringAngles.current[i]} 0 0)`);
         }
 
         // 2) move atoms; if they hit blank, SNAP to arc START on their ring
-        for (let k = 0; k < 3; k++) {
+        for (let k = 0; k < 4; k++) {
           atomAngles.current[k] = norm(atomAngles.current[k] + ATOM_SPEED * dt);
 
           const ringIndex = atomRings.current[k]; // fixed ring
@@ -176,6 +177,11 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
             <stop offset="50%"  stopColor="#3b82f6" />
             <stop offset="100%" stopColor="#1e3a8a" />
           </linearGradient>
+          <linearGradient id="g-core" gradientUnits="userSpaceOnUse" x1={-CORE} y1={-CORE} x2={CORE} y2={CORE}>
+            <stop offset="0%"   stopColor="#fbbf24" />
+            <stop offset="50%"  stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#b45309" />
+          </linearGradient>
         </defs>
 
         {/* Outer ring */}
@@ -209,6 +215,20 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
               fill="none"
               stroke="url(#g-inner)"
               strokeWidth={STROKES.inner}
+              strokeLinecap="round"
+            />
+          </g>
+        </g>
+
+        {/* Core ring (Games) */}
+        <g>
+          <circle r={CORE} cx={0} cy={0} fill="none" stroke={`rgba(255,255,255,0.10)`} strokeWidth={STROKES.core} />
+          <g ref={el => (ringRefs[3].current = el)}>
+            <path
+              d={COVER_SWEEP(CORE, ROTOR_START.core)}
+              fill="none"
+              stroke="url(#g-core)"
+              strokeWidth={STROKES.core}
               strokeLinecap="round"
             />
           </g>
@@ -291,6 +311,32 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
             fill="#f8fafc"
           >
             Library
+          </text>
+        </g>
+        <g
+          ref={el => (atomRefs[3].current = el)}
+          onMouseEnter={handleEnter}
+          onMouseLeave={handleLeave}
+          className="pointer-events-auto cursor-pointer"
+        >
+          <circle r={14} fill="#f59e0b" filter="url(#soft)" />
+          <text
+            y={5}
+            textAnchor="middle"
+            fontSize={11}
+            fontWeight={700}
+            fill="#ffffff"
+          >
+            G
+          </text>
+          <text
+            y={27}
+            textAnchor="middle"
+            fontSize={9}
+            fontWeight={500}
+            fill="#f8fafc"
+          >
+            Games
           </text>
         </g>
       </svg>
