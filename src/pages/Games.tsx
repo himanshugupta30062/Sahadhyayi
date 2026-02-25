@@ -444,7 +444,7 @@ export default function Games() {
                       </motion.div>
 
                       {/* Current Streak */}
-                      {stats?.current_streak && stats.current_streak >= 2 && (
+                      {stats?.current_streak != null && stats.current_streak >= 2 && (
                         <StreakBonus 
                           streak={stats.current_streak} 
                           multiplier={Math.floor(stats.current_streak / 3) + 1} 
