@@ -7,6 +7,9 @@ const NavLogo = () => (
       src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
       alt="Sahadhyayi home logo"
       className="w-8 h-8 flex-shrink-0"
+      width={32}
+      height={32}
+      loading="lazy"
     />
     <span className="whitespace-nowrap">Sahadhyayi</span>
   </Link>
