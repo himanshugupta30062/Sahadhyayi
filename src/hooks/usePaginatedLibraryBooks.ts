@@ -4,6 +4,9 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
 import { getBookCompletenessScore } from './useLibraryBooks';
 
+// Only select columns we actually use
+const PAGINATED_SELECT = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
+
 interface UsePaginatedLibraryBooksParams {
   searchQuery?: string;
   selectedGenre?: string;
@@ -23,218 +26,184 @@ interface PaginatedBooksResponse {
   hasPrevPage: boolean;
 }
 
+const isNcertOrCbseBook = (book: Book) => {
+  const t = (book.title || '').toLowerCase();
+  const a = (book.author || '').toLowerCase();
+  const g = (book.genre || '').toLowerCase();
+  const d = (book.description || '').toLowerCase();
+  return t.includes('ncert') || a.includes('ncert') || g.includes('ncert') || d.includes('ncert') ||
+         t.includes('cbse') || a.includes('cbse') || g.includes('cbse') || d.includes('cbse');
+};
+
+const mapBook = (book: any): Book => ({
+  id: book.id,
+  title: book.title,
+  author: book.author || 'Unknown Author',
+  genre: book.genre,
+  cover_image_url: book.cover_image_url,
+  description: book.description,
+  publication_year: book.publication_year,
+  language: book.language || 'English',
+  pdf_url: book.pdf_url,
+  created_at: book.created_at,
+  price: 0,
+  isbn: book.isbn,
+  pages: book.pages,
+  author_bio: book.author_bio,
+});
+
+/** Fetch all matching books in batches to avoid 1000-row limit */
+async function fetchFilteredBooks(
+  searchQuery?: string,
+  selectedGenre?: string,
+  selectedAuthor?: string,
+  selectedYear?: string,
+  selectedLanguage?: string,
+): Promise<Book[]> {
+  const BATCH = 500;
+  const all: any[] = [];
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    let query = supabase
+      .from('books_library')
+      .select(PAGINATED_SELECT)
+      .range(offset, offset + BATCH - 1);
+
+    if (searchQuery && searchQuery.trim()) {
+      query = query.or(
+        `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,genre.ilike.%${searchQuery}%`
+      );
+    }
+    if (selectedGenre && selectedGenre !== 'All') {
+      if (selectedGenre === 'Hindi') {
+        query = query.eq('language', 'Hindi');
+      } else {
+        query = query.eq('genre', selectedGenre);
+      }
+    }
+    if (selectedAuthor && selectedAuthor !== 'All') {
+      query = query.eq('author', selectedAuthor);
+    }
+    if (selectedYear && selectedYear.trim()) {
+      query = query.eq('publication_year', parseInt(selectedYear));
+    }
+    if (selectedLanguage && selectedLanguage !== 'All') {
+      query = query.eq('language', selectedLanguage);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    if (data && data.length > 0) {
+      all.push(...data);
+      offset += BATCH;
+      hasMore = data.length === BATCH;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  // Map, sort, dedup, spread — all in one pass
+  const mapped = all.map(mapBook);
+
+  mapped.sort((a, b) => {
+    const diff = getBookCompletenessScore(b) - getBookCompletenessScore(a);
+    if (diff !== 0) return diff;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  // Deduplicate by title
+  const seen = new Set<string>();
+  const deduped = mapped.filter(book => {
+    const key = book.title.trim().toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // Spread by author (round-robin)
+  const authorGroups = new Map<string, Book[]>();
+  for (const book of deduped) {
+    const k = (book.author || 'Unknown').trim().toLowerCase();
+    if (!authorGroups.has(k)) authorGroups.set(k, []);
+    authorGroups.get(k)!.push(book);
+  }
+  const queues = Array.from(authorGroups.values());
+  queues.sort((a, b) => b.length - a.length);
+  const spread: Book[] = [];
+  let rem = true;
+  while (rem) {
+    rem = false;
+    for (const q of queues) {
+      if (q.length > 0) {
+        spread.push(q.shift()!);
+        if (q.length > 0) rem = true;
+      }
+    }
+  }
+
+  // Push NCERT/CBSE to the very end
+  const priority = spread.filter(b => !isNcertOrCbseBook(b));
+  const demoted = spread.filter(isNcertOrCbseBook);
+  return [...priority, ...demoted];
+}
+
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
-  const [totalPages, setTotalPages] = React.useState(0);
 
-  const {
-    searchQuery,
-    selectedGenre,
-    selectedAuthor,
-    selectedYear,
-    selectedLanguage,
-    priceRange
-  } = params;
+  const { searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange } = params;
 
   // Reset page when filters change
   React.useEffect(() => {
     setPage(1);
   }, [searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
 
-  const fetchPaginatedBooks = React.useCallback(async (): Promise<PaginatedBooksResponse> => {
-    try {
-      // Order by pdf_url presence first (books with PDFs on top), then by created_at
-      let query = supabase
-        .from('books_library')
-        .select('*', { count: 'exact' })
-        .order('pdf_url', { ascending: false, nullsFirst: false })
-        .order('created_at', { ascending: false });
-
-      // Apply search filter
-      if (searchQuery && searchQuery.trim()) {
-        query = query.or(
-          `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,genre.ilike.%${searchQuery}%`
-        );
-      }
-
-      // Apply genre filter
-      if (selectedGenre && selectedGenre !== 'All') {
-        if (selectedGenre === 'Hindi') {
-          query = query.eq('language', 'Hindi');
-        } else {
-          query = query.eq('genre', selectedGenre);
-        }
-      }
-
-      // Apply author filter
-      if (selectedAuthor && selectedAuthor !== 'All') {
-        query = query.eq('author', selectedAuthor);
-      }
-
-      // Apply year filter
-      if (selectedYear && selectedYear.trim()) {
-        query = query.eq('publication_year', parseInt(selectedYear));
-      }
-
-      // Apply language filter
-      if (selectedLanguage && selectedLanguage !== 'All') {
-        query = query.eq('language', selectedLanguage);
-      }
-
-      const { data, error, count } = await query;
-
-      if (error) {
-        console.error('Error fetching paginated books:', error);
-        throw error;
-      }
-
-      const totalCount = count || 0;
-      const calculatedTotalPages = Math.ceil(totalCount / pageSize);
-      setTotalPages(calculatedTotalPages);
-
-      // Map and sort books by completeness before pagination
-      const allMappedBooks: Book[] = (data || []).map(book => ({
-        id: book.id,
-        title: book.title,
-        author: book.author || 'Unknown Author',
-        genre: book.genre,
-        cover_image_url: book.cover_image_url,
-        description: book.description,
-        publication_year: book.publication_year,
-        language: book.language || 'English',
-        pdf_url: book.pdf_url,
-        created_at: book.created_at,
-        price: 0,
-        isbn: book.isbn,
-        pages: book.pages,
-        author_bio: book.author_bio
-      }));
-
-      // Sort by shared completeness score (includes NCERT demotion, science/fiction boost)
-      const sortedBooks = allMappedBooks.sort((a, b) => {
-        const scoreA = getBookCompletenessScore(a);
-        const scoreB = getBookCompletenessScore(b);
-        if (scoreA !== scoreB) return scoreB - scoreA;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
-
-      // Deduplicate by title (case-insensitive) — keep the first (most complete) entry
-      const seen = new Set<string>();
-      const deduplicatedBooks = sortedBooks.filter(book => {
-        const key = book.title.trim().toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-
-      // Spread books by the same author across pages (round-robin by author)
-      const authorGroups = new Map<string, Book[]>();
-      for (const book of deduplicatedBooks) {
-        const authorKey = (book.author || 'Unknown').trim().toLowerCase();
-        if (!authorGroups.has(authorKey)) authorGroups.set(authorKey, []);
-        authorGroups.get(authorKey)!.push(book);
-      }
-      const queues = Array.from(authorGroups.values());
-      // Sort queues so authors with most books come first (better spread)
-      queues.sort((a, b) => b.length - a.length);
-      const spreadBooks: Book[] = [];
-      let remaining = true;
-      while (remaining) {
-        remaining = false;
-        for (const q of queues) {
-          if (q.length > 0) {
-            spreadBooks.push(q.shift()!);
-            if (q.length > 0) remaining = true;
-          }
-        }
-      }
-
-      // Force NCERT/CBSE books to the very end after author spreading
-      const isNcertOrCbseBook = (book: Book) => {
-        const title = (book.title || '').toLowerCase();
-        const author = (book.author || '').toLowerCase();
-        const genre = (book.genre || '').toLowerCase();
-        const description = (book.description || '').toLowerCase();
-        return (
-          title.includes('ncert') ||
-          author.includes('ncert') ||
-          genre.includes('ncert') ||
-          description.includes('ncert') ||
-          title.includes('cbse') ||
-          author.includes('cbse') ||
-          genre.includes('cbse') ||
-          description.includes('cbse')
-        );
-      };
-
-      const prioritizedBooks = spreadBooks.filter(book => !isNcertOrCbseBook(book));
-      const demotedBooks = spreadBooks.filter(isNcertOrCbseBook);
-      const finalOrderedBooks = [...prioritizedBooks, ...demotedBooks];
-
-      const dedupTotalCount = finalOrderedBooks.length;
-      const dedupTotalPages = Math.ceil(dedupTotalCount / pageSize);
-      setTotalPages(dedupTotalPages);
-
-      // Apply pagination to final ordered books
-      const startIndex = (page - 1) * pageSize;
-      const books = finalOrderedBooks.slice(startIndex, startIndex + pageSize);
-
-      return {
-        books,
-        totalCount: dedupTotalCount,
-        totalPages: dedupTotalPages,
-        currentPage: page,
-        pageSize,
-        hasNextPage: page < dedupTotalPages,
-        hasPrevPage: page > 1
-      };
-    } catch (error) {
-      console.error('Error in fetchPaginatedBooks:', error);
-      throw error;
-    }
-  }, [page, pageSize, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage]);
-
-  const query = useQuery({
-    queryKey: ['paginated-library-books', page, pageSize, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange],
-    queryFn: fetchPaginatedBooks,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  // Fetch ALL matching books once per filter set (cached 5 min).
+  // Page changes just slice this cached array — no new network request.
+  const allBooksQuery = useQuery({
+    queryKey: ['paginated-library-all', searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage],
+    queryFn: () => fetchFilteredBooks(searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 
-  const goToPage = React.useCallback((newPage: number) => {
-    if (newPage >= 1 && newPage <= (query.data?.totalPages || 1)) {
-      setPage(newPage);
-    }
-  }, [query.data?.totalPages]);
+  // Derive paginated view from cached data (instant, no fetch)
+  const paginatedData = React.useMemo((): PaginatedBooksResponse | undefined => {
+    const allBooks = allBooksQuery.data;
+    if (!allBooks) return undefined;
 
-  const goToNextPage = React.useCallback(() => {
-    if (query.data?.hasNextPage) {
-      setPage(prev => prev + 1);
-    }
-  }, [query.data?.hasNextPage]);
+    const totalCount = allBooks.length;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const books = allBooks.slice(startIndex, startIndex + pageSize);
 
-  const goToPrevPage = React.useCallback(() => {
-    if (query.data?.hasPrevPage) {
-      setPage(prev => prev - 1);
-    }
-  }, [query.data?.hasPrevPage]);
-
-  const changePageSize = React.useCallback((newPageSize: number) => {
-    setPageSize(newPageSize);
-    setPage(1); // Reset to first page when changing page size
-    setTotalPages(0); // Reset total pages
-  }, []);
+    return {
+      books,
+      totalCount,
+      totalPages,
+      currentPage: page,
+      pageSize,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+    };
+  }, [allBooksQuery.data, page, pageSize]);
 
   return {
-    ...query,
+    data: paginatedData,
+    isLoading: allBooksQuery.isLoading,
+    isError: allBooksQuery.isError,
+    error: allBooksQuery.error,
+    refetch: allBooksQuery.refetch,
     page,
     pageSize,
-    totalPages,
-    goToPage,
-    goToNextPage,
-    goToPrevPage,
-    changePageSize,
+    totalPages: paginatedData?.totalPages ?? 0,
+    goToPage: React.useCallback((p: number) => setPage(p), []),
+    goToNextPage: React.useCallback(() => setPage(p => p + 1), []),
+    goToPrevPage: React.useCallback(() => setPage(p => Math.max(1, p - 1)), []),
+    changePageSize: React.useCallback((s: number) => { setPageSize(s); setPage(1); }, []),
     setPage,
-    setPageSize
+    setPageSize,
   };
 };
