@@ -41,10 +41,22 @@ export const getBookCompletenessScore = (book: any): number => {
   const genre = (book.genre || '').toLowerCase();
   if (genre.includes('science') || genre.includes('physics') || genre.includes('cosmology') || genre.includes('astronomy')) score += 200;
   if (genre.includes('fiction') || genre.includes('novel') || genre.includes('fantasy') || genre.includes('sci-fi')) score += 150;
-  // Demote NCERT books to the bottom
+
+  // Hard-demote NCERT/CBSE books globally
   const title = (book.title || '').toLowerCase();
   const author = (book.author || '').toLowerCase();
-  if (title.includes('ncert') || author.includes('ncert')) score -= 2000;
+  const description = (book.description || '').toLowerCase();
+  const isNcertOrCbse =
+    title.includes('ncert') ||
+    author.includes('ncert') ||
+    genre.includes('ncert') ||
+    description.includes('ncert') ||
+    title.includes('cbse') ||
+    author.includes('cbse') ||
+    genre.includes('cbse') ||
+    description.includes('cbse');
+
+  if (isNcertOrCbse) score -= 100000;
   return score;
 };
 
