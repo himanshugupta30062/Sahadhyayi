@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
+import { getBookCompletenessScore } from './useLibraryBooks';
 
 interface UsePaginatedLibraryBooksParams {
   searchQuery?: string;
@@ -110,37 +111,11 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
         author_bio: book.author_bio
       }));
 
-      // Sort by completeness
+      // Sort by shared completeness score (includes NCERT demotion, science/fiction boost)
       const sortedBooks = allMappedBooks.sort((a, b) => {
-        let scoreA = 0;
-        let scoreB = 0;
-        
-        // PDF availability (highest priority)
-        if (a.pdf_url) scoreA += 100;
-        if (b.pdf_url) scoreB += 100;
-        
-        // Cover image availability
-        if (a.cover_image_url) scoreA += 50;
-        if (b.cover_image_url) scoreB += 50;
-        
-        // Complete details
-        if (a.description) scoreA += 20;
-        if (b.description) scoreB += 20;
-        if (a.author_bio) scoreA += 15;
-        if (b.author_bio) scoreB += 15;
-        if (a.genre) scoreA += 10;
-        if (b.genre) scoreB += 10;
-        if (a.publication_year) scoreA += 8;
-        if (b.publication_year) scoreB += 8;
-        if (a.pages) scoreA += 7;
-        if (b.pages) scoreB += 7;
-        if (a.isbn) scoreA += 5;
-        if (b.isbn) scoreB += 5;
-        
-        // Sort by completeness score (descending), then by creation date (newest first)
-        if (scoreA !== scoreB) {
-          return scoreB - scoreA;
-        }
+        const scoreA = getBookCompletenessScore(a);
+        const scoreB = getBookCompletenessScore(b);
+        if (scoreA !== scoreB) return scoreB - scoreA;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 

@@ -23,7 +23,7 @@ export interface Book {
 const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
 
 // Function to calculate book completeness score (higher score = better book)
-const getBookCompletenessScore = (book: any): number => {
+export const getBookCompletenessScore = (book: any): number => {
   let score = 0;
   // Tier 1: Essential fields — books with all three always land on page 1
   if (book.pdf_url) score += 1000;
@@ -48,7 +48,7 @@ const getBookCompletenessScore = (book: any): number => {
   return score;
 };
 
-const sortBooksByCompleteness = (books: any[]): any[] => {
+export const sortBooksByCompleteness = (books: any[]): any[] => {
   return books.sort((a, b) => {
     const scoreA = getBookCompletenessScore(a);
     const scoreB = getBookCompletenessScore(b);

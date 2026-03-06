@@ -214,24 +214,8 @@ const BooksCollection = ({
       return true;
     });
 
-    
 
-    // Sort to prioritize books that have both a cover image and PDF first,
-    // followed by those that only have a PDF, then the rest
-    filtered.sort((a, b) => {
-      const score = (book: Book) => {
-        const hasCover = Boolean(book.cover_image_url);
-        const hasPdf = Boolean(book.pdf_url);
-        if (hasCover && hasPdf) return 3;
-        if (hasPdf) return 2;
-        if (hasCover) return 1;
-        return 0;
-      };
-
-      const diff = score(b) - score(a);
-      if (diff !== 0) return diff;
-      return 0;
-    });
+    // Sorting is already handled by usePaginatedLibraryBooks via getBookCompletenessScore
 
     return filtered;
   };
