@@ -37,6 +37,10 @@ const getBookCompletenessScore = (book: any): number => {
   if (book.pages) score += 10;
   if (book.isbn) score += 8;
   if (book.language && book.language !== 'English') score += 5;
+  // Boost science & fiction genres
+  const genre = (book.genre || '').toLowerCase();
+  if (genre.includes('science') || genre.includes('physics') || genre.includes('cosmology') || genre.includes('astronomy')) score += 200;
+  if (genre.includes('fiction') || genre.includes('novel') || genre.includes('fantasy') || genre.includes('sci-fi')) score += 150;
   // Demote NCERT books to the bottom
   const title = (book.title || '').toLowerCase();
   const author = (book.author || '').toLowerCase();
