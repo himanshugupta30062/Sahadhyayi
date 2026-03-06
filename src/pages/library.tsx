@@ -42,7 +42,7 @@ export default function Library() {
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title="Enhanced Digital Library - Immersive Reading Experience | Sahadhyayi"
+        title="Digital Library | Sahadhyayi"
         description="Step into our immersive digital library with interactive features, personalized recommendations, and a vast collection of books across all genres."
         keywords={["digital library", "interactive reading", "book collection", "personalized recommendations", "reading experience", "online books"]}
       />
