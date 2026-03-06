@@ -37,6 +37,10 @@ const getBookCompletenessScore = (book: any): number => {
   if (book.pages) score += 10;
   if (book.isbn) score += 8;
   if (book.language && book.language !== 'English') score += 5;
+  // Demote NCERT books to the bottom
+  const title = (book.title || '').toLowerCase();
+  const author = (book.author || '').toLowerCase();
+  if (title.includes('ncert') || author.includes('ncert')) score -= 2000;
   return score;
 };
 
