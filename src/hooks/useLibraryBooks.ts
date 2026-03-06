@@ -25,15 +25,18 @@ const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,p
 // Function to calculate book completeness score (higher score = better book)
 const getBookCompletenessScore = (book: any): number => {
   let score = 0;
-  if (book.pdf_url) score += 100;
-  if (book.cover_image_url) score += 50;
-  if (book.description) score += 20;
-  if (book.author_bio) score += 15;
-  if (book.genre) score += 10;
-  if (book.publication_year) score += 8;
-  if (book.pages) score += 7;
-  if (book.isbn) score += 5;
-  if (book.language && book.language !== 'English') score += 3;
+  // Tier 1: Essential fields — books with all three always land on page 1
+  if (book.pdf_url) score += 1000;
+  if (book.cover_image_url) score += 500;
+  if (book.author && book.author.trim() && book.author !== 'Unknown Author') score += 300;
+  // Tier 2: Rich metadata
+  if (book.description) score += 40;
+  if (book.author_bio) score += 30;
+  if (book.genre) score += 20;
+  if (book.publication_year) score += 15;
+  if (book.pages) score += 10;
+  if (book.isbn) score += 8;
+  if (book.language && book.language !== 'English') score += 5;
   return score;
 };
 
