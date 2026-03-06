@@ -150,13 +150,35 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
         }
       }
 
-      const dedupTotalCount = spreadBooks.length;
+      // Force NCERT/CBSE books to the very end after author spreading
+      const isNcertOrCbseBook = (book: Book) => {
+        const title = (book.title || '').toLowerCase();
+        const author = (book.author || '').toLowerCase();
+        const genre = (book.genre || '').toLowerCase();
+        const description = (book.description || '').toLowerCase();
+        return (
+          title.includes('ncert') ||
+          author.includes('ncert') ||
+          genre.includes('ncert') ||
+          description.includes('ncert') ||
+          title.includes('cbse') ||
+          author.includes('cbse') ||
+          genre.includes('cbse') ||
+          description.includes('cbse')
+        );
+      };
+
+      const prioritizedBooks = spreadBooks.filter(book => !isNcertOrCbseBook(book));
+      const demotedBooks = spreadBooks.filter(isNcertOrCbseBook);
+      const finalOrderedBooks = [...prioritizedBooks, ...demotedBooks];
+
+      const dedupTotalCount = finalOrderedBooks.length;
       const dedupTotalPages = Math.ceil(dedupTotalCount / pageSize);
       setTotalPages(dedupTotalPages);
 
-      // Apply pagination to deduplicated books
+      // Apply pagination to final ordered books
       const startIndex = (page - 1) * pageSize;
-      const books = spreadBooks.slice(startIndex, startIndex + pageSize);
+      const books = finalOrderedBooks.slice(startIndex, startIndex + pageSize);
 
       return {
         books,
