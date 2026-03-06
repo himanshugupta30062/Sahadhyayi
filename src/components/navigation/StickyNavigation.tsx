@@ -40,9 +40,12 @@ const StickyNavigation = () => {
           {/* Logo */}
           <Link to={user ? '/dashboard' : '/'} className="flex items-center space-x-2">
             <img
-              src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
+              src="/lovable-uploads/logo-small.webp"
               alt="Sahadhyayi"
               className="w-8 h-8"
+              width={32}
+              height={32}
+              loading="lazy"
             />
             <span className="font-bold text-xl text-text-primary">Sahadhyayi</span>
           </Link>
