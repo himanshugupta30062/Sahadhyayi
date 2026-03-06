@@ -67,9 +67,12 @@ const GlobalFooter = () => {
             <div className="md:col-span-5">
               <div className="flex items-center gap-3">
                 <img
-                  src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
+                  src="/lovable-uploads/logo-small.webp"
                   alt="Sahadhyayi"
                   className="h-8 w-8 invert"
+                  width={32}
+                  height={32}
+                  loading="lazy"
                 />
                 <h3 className="text-2xl font-semibold tracking-tight">Sahadhyayi</h3>
               </div>

@@ -3,7 +3,8 @@ import { X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBookExpert } from '@/contexts/book-expert.utils';
 import { cn } from '@/lib/utils';
-import bookIcon from '@/components/book-expert/Sahadhyayi_Book_optimized.webp';
+// Use dynamic import so the 1.7MB image doesn't block initial load
+const bookIcon = new URL('./Sahadhyayi_Book_optimized.webp', import.meta.url).href;
 
 const BookExpert = () => {
   const { isOpen, toggleChat, closeChat, messages, sendMessage } = useBookExpert();
