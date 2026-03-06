@@ -23,9 +23,12 @@ const AppSidebar = () => {
       <SidebarContent>
         <div className="flex flex-col items-center py-6 space-y-4">
           <img
-            src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
+            src="/lovable-uploads/logo-small.webp"
             alt="Sahadhyayi dashboard icon"
             className="w-12 h-12"
+            width={48}
+            height={48}
+            loading="lazy"
           />
           <span className="font-extrabold text-lg text-amber-700 tracking-tight">Sahadhyayi</span>
         </div>

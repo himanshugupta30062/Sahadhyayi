@@ -63,9 +63,12 @@ const StructuredFooter = () => {
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-3 mb-4">
               <img
-                src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
+                src="/lovable-uploads/logo-small.webp"
                 alt="Sahadhyayi"
                 className="w-8 h-8"
+                width={32}
+                height={32}
+                loading="lazy"
               />
               <span className="text-xl font-bold">Sahadhyayi</span>
             </div>

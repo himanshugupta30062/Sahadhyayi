@@ -105,7 +105,7 @@ const Navigation = () => {
           {/* Logo */}
           <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-3 font-bold text-2xl text-gray-800">
             <EnhancedLazyImage
-              src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
+              src="/lovable-uploads/logo-small.webp"
               alt="Sahadhyayi navigation logo"
               className="w-8 h-8 flex-shrink-0"
               width={32}
