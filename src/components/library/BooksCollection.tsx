@@ -155,8 +155,11 @@ const BooksCollection = ({
       setLastSearchTerm(searchTerm);
       setShowSelectionModal(true);
     } else {
-      // Show message if no results found
-      alert('No books found for your search. Try different keywords or check your spelling.');
+      toast({
+        title: 'No books found',
+        description: 'Try different keywords or check your spelling.',
+        variant: 'destructive',
+      });
     }
   };
 
