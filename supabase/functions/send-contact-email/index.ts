@@ -32,8 +32,8 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Sahadhyayi Contact <onboarding@resend.dev>',
-        to: ['himanshugupta30062@gmail.com'],
+        from: 'Sahadhyayi Contact <noreply@sahadhyayi.com>',
+        to: ['gyan@sahadhyayi.com'],
         subject: `New Contact Message from ${name}`,
         html: `
           <h2>New Contact Form Submission</h2>
