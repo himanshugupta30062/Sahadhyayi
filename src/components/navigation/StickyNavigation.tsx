@@ -4,9 +4,10 @@ import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import {
   Search, Menu, X, ChevronDown, BookOpen, Gamepad2, Users, Radio,
-  FileText, User, LogOut, Settings, BookMarked, PenTool,
+  FileText, User, LogOut, Settings, BookMarked, PenTool, MessageCircle,
 } from 'lucide-react';
 import SignInLink from '@/components/SignInLink';
+import ContactFormDialog from '@/components/ContactFormDialog';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
