@@ -3,11 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import { useArticleBySlug } from '@/hooks/useArticles';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Clock, Heart, Eye, Calendar } from 'lucide-react';
+import { ArrowLeft, Clock, Eye, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
 import BookFlipLoader from '@/components/ui/BookFlipLoader';
 import MarkdownPreview from '@/components/articles/MarkdownPreview';
+import ArticleLikeButton from '@/components/articles/ArticleLikeButton';
+import ArticleComments from '@/components/articles/ArticleComments';
+import FollowAuthorButton from '@/components/articles/FollowAuthorButton';
 import { format } from 'date-fns';
 
 const ArticleDetail = () => {
@@ -45,7 +48,7 @@ const ArticleDetail = () => {
       <div className="min-h-screen bg-background">
         <div className="max-w-3xl mx-auto px-4 py-8">
           {/* Back */}
-          <Link to="/articles" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-brand-primary mb-8">
+          <Link to="/articles" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[hsl(var(--brand-primary))] mb-8">
             <ArrowLeft className="w-4 h-4" /> Back to Articles
           </Link>
 
@@ -74,8 +77,11 @@ const ArticleDetail = () => {
               <AvatarFallback>{article.author_name?.charAt(0) || 'A'}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <p className="font-semibold text-foreground">{article.author_name}</p>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-3 flex-wrap">
+                <p className="font-semibold text-foreground">{article.author_name}</p>
+                <FollowAuthorButton authorUserId={article.user_id} authorName={article.author_name} />
+              </div>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                 {article.published_at && (
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
@@ -84,9 +90,6 @@ const ArticleDetail = () => {
                 )}
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" /> {article.reading_time_minutes} min read
-                </span>
-                <span className="flex items-center gap-1">
-                  <Heart className="w-3 h-3" /> {article.likes_count}
                 </span>
                 <span className="flex items-center gap-1">
                   <Eye className="w-3 h-3" /> {article.views_count}
@@ -98,14 +101,21 @@ const ArticleDetail = () => {
           {/* Content — rendered as markdown */}
           <MarkdownPreview content={article.content} className="mb-8" />
 
-          {/* Tags */}
-          {article.tags && article.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-6 border-t border-border">
-              {article.tags.map((tag) => (
-                <Badge key={tag} variant="secondary">{tag}</Badge>
-              ))}
-            </div>
-          )}
+          {/* Like & Tags bar */}
+          <div className="flex items-center justify-between py-4 border-t border-b border-border mb-8">
+            <ArticleLikeButton articleId={article.id} />
+
+            {article.tags && article.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {article.tags.map((tag) => (
+                  <Badge key={tag} variant="secondary">{tag}</Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Comments Section */}
+          <ArticleComments articleId={article.id} />
         </div>
       </div>
     </>
