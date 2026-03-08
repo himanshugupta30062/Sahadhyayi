@@ -26,6 +26,8 @@ const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,p
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
+  { label: 'Supabase cover + PDF combo (e.g. Godan)', points: '+5000', priority: 'highest' },
+  { label: 'PDF from Supabase storage', points: '+3000', priority: 'highest' },
   { label: 'Cover image available', points: '+2000', priority: 'highest' },
   { label: 'High-res cover source (Supabase/OpenLibrary)', points: 'up to +500', priority: 'highest' },
   { label: 'PDF download available', points: '+1000', priority: 'high' },
