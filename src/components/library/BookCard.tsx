@@ -7,6 +7,7 @@ import { slugify } from '@/utils/slugify';
 import { useAuth } from '@/contexts/authHelpers';
 import { useAddToPersonalLibrary, usePersonalLibrary } from '@/hooks/usePersonalLibrary';
 import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
+import GeneratedBookCover from '@/components/library/GeneratedBookCover';
 import type { Book } from '@/hooks/useLibraryBooks';
 
 
