@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import {
   Search, Menu, X, ChevronDown, BookOpen, Gamepad2, Users, Radio,
-  FileText, User, LogOut, Settings, BookMarked, PenTool, MessageCircle,
+  FileText, User, LogOut, Settings, BookMarked, PenTool, MessageCircle, LogIn,
 } from 'lucide-react';
 import SignInLink from '@/components/SignInLink';
 import ContactFormDialog from '@/components/ContactFormDialog';
