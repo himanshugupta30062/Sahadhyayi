@@ -1,10 +1,8 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageCircle, MapPin, UsersIcon, Users } from 'lucide-react';
+import { MessageCircle, MapPin, UsersIcon, Users, Sparkles, BookOpen } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
@@ -17,141 +15,130 @@ import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManag
 const SocialMedia = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [showAuthModal, setShowAuthModal] = useState(!user);
-
-  useEffect(() => {
-    setShowAuthModal(!user);
-  }, [user]);
-
-  const handleModalClose = () => {
-    setShowAuthModal(false);
-    navigate('/', { replace: true });
-  };
+  const [activeTab, setActiveTab] = useState('feed');
 
   if (!user) {
     return (
       <>
         <SEO
-          title="Social Reading Community - Sign In Required | Sahadhyayi"
-          description="Join Sahadhyayi's social reading community. Sign in to connect with fellow readers and share your reading journey."
+          title="Social Reading Community | Sahadhyayi"
+          description="Join Sahadhyayi's social reading community. Connect with fellow readers and share your reading journey."
           canonical="https://sahadhyayi.com/social"
           url="https://sahadhyayi.com/social"
         />
-        
-        <Dialog open={showAuthModal} onOpenChange={handleModalClose}>
-          <DialogContent className="sm:max-w-md mx-4">
-            <DialogHeader>
-              <DialogTitle className="text-center text-xl font-bold text-gray-900">
-                Welcome to Sahadhyayi's Social Reading Community!
-              </DialogTitle>
-            </DialogHeader>
-            <div className="text-center space-y-6 py-4">
-              <p className="text-gray-600">
-                Please sign in to access Sahadhyayi's Social Reading Community!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <SignInLink>
-                  <Button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700">
-                    Sign In
-                  </Button>
-                </SignInLink>
-                <Link to="/signup">
-                  <Button variant="outline" className="w-full sm:w-auto border-orange-300 text-orange-700 hover:bg-orange-50">
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
+        <div className="min-h-screen bg-background flex items-center justify-center px-4">
+          <div className="text-center max-w-lg">
+            <div className="w-20 h-20 rounded-2xl bg-brand-primary/10 flex items-center justify-center mx-auto mb-6">
+              <Users className="w-10 h-10 text-brand-primary" />
             </div>
-          </DialogContent>
-        </Dialog>
+            <h1 className="text-3xl font-bold text-foreground mb-3">Social Reading Community</h1>
+            <p className="text-muted-foreground mb-8 leading-relaxed">
+              Connect with fellow readers, share what you're reading, join reading groups, and discover friends who love the same books.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <SignInLink>
+                <Button className="w-full sm:w-auto bg-gradient-button text-white shadow-[var(--shadow-button)] hover:shadow-[var(--shadow-elevated)] transition-all px-8">
+                  Sign In
+                </Button>
+              </SignInLink>
+              <Link to="/signup">
+                <Button variant="outline" className="w-full sm:w-auto border-brand-primary text-brand-primary hover:bg-brand-primary/5 px-8">
+                  Create Account
+                </Button>
+              </Link>
+            </div>
+            {/* Feature highlights */}
+            <div className="grid grid-cols-2 gap-4 mt-12">
+              {[
+                { icon: MessageCircle, label: 'Social Feed', desc: 'Share book updates' },
+                { icon: Users, label: 'Find Friends', desc: 'Connect with readers' },
+                { icon: MapPin, label: 'Reader Map', desc: 'Find nearby readers' },
+                { icon: BookOpen, label: 'Reading Groups', desc: 'Join book clubs' },
+              ].map((f, i) => (
+                <div key={i} className="p-4 rounded-xl bg-card border border-border text-left">
+                  <f.icon className="w-5 h-5 text-brand-primary mb-2" />
+                  <p className="text-sm font-semibold text-foreground">{f.label}</p>
+                  <p className="text-xs text-muted-foreground">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </>
     );
   }
+
+  const tabs = [
+    { value: 'feed', label: 'Feed', icon: MessageCircle },
+    { value: 'friends', label: 'Friends', icon: Users },
+    { value: 'map', label: 'Map', icon: MapPin },
+    { value: 'groups', label: 'Groups', icon: UsersIcon },
+  ];
 
   return (
     <>
       <SEO
         title="Social Reading Community | Sahadhyayi"
-        description="Connect with fellow readers, share your reading journey, and discover new books through our vibrant social community."
+        description="Connect with fellow readers, share your reading journey, and discover new books."
         canonical="https://sahadhyayi.com/social"
         url="https://sahadhyayi.com/social"
       />
-      
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        {/* Improved Header with better spacing */}
-        <div className="bg-white/90 backdrop-blur-md border-b border-orange-200 shadow-sm sticky top-0 z-50 pt-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="text-center">
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Social Community</h1>
-              <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto">
-                Connect with fellow readers and share your reading journey
-              </p>
+
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <div className="bg-gradient-to-br from-brand-primary/5 via-background to-brand-secondary/5 border-b border-border">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-brand-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Community</h1>
+                <p className="text-sm text-muted-foreground">Connect, share, and discover with fellow readers</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Main Content with improved layout */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Tabs defaultValue="feed" className="w-full">
-            {/* Improved tabs design */}
-            <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/90 backdrop-blur-sm border border-orange-200 rounded-2xl p-1 shadow-lg">
-              <TabsTrigger 
-                value="feed" 
-                className="flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-200 data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800 data-[state=active]:shadow-md"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Feed</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="friends" 
-                className="flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-200 data-[state=active]:bg-green-100 data-[state=active]:text-green-800 data-[state=active]:shadow-md"
-              >
-                <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">Friends</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="map" 
-                className="flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-200 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 data-[state=active]:shadow-md"
-              >
-                <MapPin className="w-4 h-4" />
-                <span className="hidden sm:inline">Map</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="groups" 
-                className="flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium rounded-xl transition-all duration-200 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-800 data-[state=active]:shadow-md"
-              >
-                <UsersIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">Groups</span>
-              </TabsTrigger>
+        {/* Main Content */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full max-w-lg bg-muted/50 rounded-xl p-1 mb-6">
+              {tabs.map(tab => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="flex-1 rounded-lg gap-1.5 text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-brand-primary transition-all"
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent value="feed" className="mt-0">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-orange-200 shadow-lg p-6">
+              <div className="max-w-2xl mx-auto">
                 <EnhancedSocialFeed />
               </div>
             </TabsContent>
 
             <TabsContent value="friends" className="mt-0">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-green-200 shadow-lg p-6">
-                <EnhancedFriendsManager />
-              </div>
+              <EnhancedFriendsManager />
             </TabsContent>
 
             <TabsContent value="map" className="mt-0">
               <div className="space-y-6">
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-blue-200 shadow-lg p-6">
+                <Card className="border-border overflow-hidden">
                   <EnhancedReadingMap />
-                </div>
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-blue-200 shadow-lg p-6">
+                </Card>
+                <Card className="border-border overflow-hidden">
                   <FriendsLocationMap />
-                </div>
+                </Card>
               </div>
             </TabsContent>
 
             <TabsContent value="groups" className="mt-0">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-purple-200 shadow-lg p-6">
-                <ReadingGroups />
-              </div>
+              <ReadingGroups />
             </TabsContent>
           </Tabs>
         </div>
@@ -159,5 +146,8 @@ const SocialMedia = () => {
     </>
   );
 };
+
+// Need Card import for map tab
+import { Card } from '@/components/ui/card';
 
 export default SocialMedia;
