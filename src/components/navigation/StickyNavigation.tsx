@@ -296,7 +296,7 @@ const StickyNavigation = () => {
                   <Link
                     key={item.key}
                     to={item.href}
-                    onClick={() => setIsOpen(false)}
+                    onClick={(e) => { handleNavClick(e, item); setIsOpen(false); }}
                     className={`block px-3 py-2.5 text-base font-medium rounded-md transition-colors ${
                       location.pathname === item.href
                         ? 'text-brand-primary bg-accent'
