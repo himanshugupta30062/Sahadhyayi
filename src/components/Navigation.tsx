@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
-import { Menu, X, ChevronDown, User, LogOut, Settings, Search } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Settings, Search, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/authHelpers";
+import ContactFormDialog from "@/components/ContactFormDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
