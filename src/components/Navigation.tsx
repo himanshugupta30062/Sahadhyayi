@@ -70,7 +70,6 @@ const Navigation = () => {
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
     { name: "Articles", href: "/articles" },
-    { name: "Publish", href: "/publish" },
     { name: "Games", href: "/games" },
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
