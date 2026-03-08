@@ -226,12 +226,11 @@ const BooksCollection = ({
 
   const handleDownloadPDF = async (book: Book) => {
     if (!book.pdf_url) {
-      alert('PDF not available for this book');
+      toast({ title: 'PDF not available', description: 'This book does not have a PDF file.', variant: 'destructive' });
       return;
     }
 
     try {
-      // Create a temporary link element to trigger download
       const link = document.createElement('a');
       link.href = book.pdf_url;
       link.download = `${book.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
@@ -240,7 +239,7 @@ const BooksCollection = ({
       link.click();
       document.body.removeChild(link);
     } catch {
-      alert('Failed to download PDF. Please try again.');
+      toast({ title: 'Download failed', description: 'Please try again.', variant: 'destructive' });
     }
   };
 
