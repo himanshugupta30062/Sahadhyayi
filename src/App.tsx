@@ -310,7 +310,43 @@ const App = memo(() => {
                           }
                         />
                         
-                        {/* Footer/Legal routes - lowest priority */}
+                        <Route
+                          path="/articles"
+                          element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <Articles />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/articles/write"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <ArticleWrite />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/articles/my"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <MyArticles />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/articles/:slug"
+                          element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <ArticleDetail />
+                            </Suspense>
+                          }
+                        />
+                        
                         <Route
                           path="/help-center"
                           element={
