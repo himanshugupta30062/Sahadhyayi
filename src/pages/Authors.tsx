@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, MapPin, AlertCircle, RefreshCw, Star, Users, BookOpen, Sparkles } from 'lucide-react';
+import { Search, AlertCircle, RefreshCw, Star, Users, BookOpen, Sparkles, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -54,7 +54,6 @@ const Authors = () => {
       return matchesSearch && matchesGenre;
     });
 
-    // Sort
     result = [...result].sort((a, b) => {
       switch (sortBy) {
         case 'popular': return (b.followers_count * b.rating) - (a.followers_count * a.rating);
@@ -74,7 +73,7 @@ const Authors = () => {
   const featuredAuthors = useMemo(() => {
     return [...authors]
       .sort((a, b) => (b.books_count * b.rating * b.followers_count) - (a.books_count * a.rating * a.followers_count))
-      .slice(0, 3);
+      .slice(0, 4);
   }, [authors]);
 
   useEffect(() => { setPage(1); }, [searchTerm, selectedGenre, sortBy]);
@@ -117,7 +116,7 @@ const Authors = () => {
       />
 
       <div className="min-h-screen bg-background">
-        {/* Hero Section */}
+        {/* Hero */}
         <div className="relative overflow-hidden bg-gradient-to-br from-brand-primary/5 via-background to-brand-secondary/5">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--brand-primary)/0.08),transparent_60%)]" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10 relative">
@@ -128,7 +127,7 @@ const Authors = () => {
                 Discover Authors
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Explore profiles, follow your favorites, and connect with {authors.length}+ writers in our community.
+                Explore profiles, follow your favorites, and browse books from {authors.length}+ writers.
               </p>
             </div>
 
@@ -177,7 +176,7 @@ const Authors = () => {
                 <Sparkles className="w-5 h-5 text-brand-primary" />
                 <h2 className="text-2xl font-bold text-foreground">Featured Authors</h2>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {featuredAuthors.map(author => (
                   <FeaturedAuthorCard key={author.id} author={author} books={booksByAuthor[author.name.toLowerCase().trim()] ?? []} />
                 ))}
@@ -190,9 +189,7 @@ const Authors = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-foreground">
                 All Authors
-                <span className="text-sm font-normal text-muted-foreground ml-2">
-                  ({filteredAuthors.length})
-                </span>
+                <span className="text-sm font-normal text-muted-foreground ml-2">({filteredAuthors.length})</span>
               </h2>
             </div>
 
@@ -228,123 +225,167 @@ const Authors = () => {
   );
 };
 
-// Featured Author Card — larger, more prominent
-const FeaturedAuthorCard = ({ author, books }: { author: Author; books: Book[] }) => (
-  <Link to={`/authors/${slugify(author.name)}`} className="block group">
-    <Card className="overflow-hidden border-border hover:shadow-[var(--shadow-elevated)] transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-card to-muted/30">
-      <CardContent className="p-6">
-        <div className="flex items-start gap-4 mb-4">
-          <Avatar className="w-16 h-16 ring-2 ring-brand-primary/20 group-hover:ring-brand-primary/50 transition-all">
-            <AvatarImage src={author.profile_image_url || ''} alt={author.name} />
-            <AvatarFallback className="text-lg font-bold bg-gradient-button text-white">
-              {author.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-bold text-foreground truncate">{author.name}</h3>
-              <VerificationBadge verified={author.verified || false} verificationType={author.verification_type} />
+/* ─── Featured Author Card ─── */
+const FeaturedAuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
+  const initials = author.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+  const topBooks = books.slice(0, 3);
+
+  return (
+    <Link to={`/authors/${slugify(author.name)}`} className="block group">
+      <Card className="overflow-hidden border-border hover:shadow-[var(--shadow-elevated)] transition-all duration-300 hover:-translate-y-1 h-full">
+        {/* Book covers strip */}
+        <div className="h-28 bg-gradient-to-br from-brand-primary/10 to-brand-secondary/10 relative overflow-hidden flex items-end justify-center gap-2 px-4 pt-3 pb-0">
+          {topBooks.length > 0 ? topBooks.map((book, i) => (
+            <div
+              key={book.id}
+              className="w-16 h-[88px] rounded-t-md overflow-hidden shadow-md border border-border/50 flex-shrink-0 bg-card"
+              style={{ transform: `translateY(${i === 1 ? -4 : 0}px)` }}
+            >
+              {book.cover_image_url ? (
+                <img src={book.cover_image_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-muted">
+                  <BookOpen className="w-5 h-5 text-muted-foreground/40" />
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <MapPin className="w-3 h-3" />
-              <span className="truncate">{author.location}</span>
+          )) : (
+            <div className="flex items-center justify-center h-full w-full">
+              <BookOpen className="w-8 h-8 text-brand-primary/30" />
+            </div>
+          )}
+        </div>
+
+        <CardContent className="p-5 pt-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Avatar className="w-11 h-11 ring-2 ring-border group-hover:ring-brand-primary/40 transition-all flex-shrink-0">
+              <AvatarImage src={author.profile_image_url || ''} alt={author.name} />
+              <AvatarFallback className="text-sm font-bold bg-gradient-button text-white">{initials}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h3 className="font-semibold text-foreground truncate">{author.name}</h3>
+                <VerificationBadge verified={author.verified || false} verificationType={author.verification_type} className="scale-90" />
+              </div>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" /> {author.books_count} books</span>
+                <span className="flex items-center gap-1"><Star className="w-3 h-3 text-amber-500" /> {author.rating}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {author.bio && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{author.bio}</p>
-        )}
+          {author.bio && (
+            <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{author.bio}</p>
+          )}
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-          <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {author.books_count} books</span>
-          <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {author.followers_count.toLocaleString()}</span>
-          <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-500" /> {author.rating}</span>
-        </div>
+          {author.genres.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {author.genres.slice(0, 3).map(g => (
+                <Badge key={g} variant="secondary" className="text-[10px] bg-brand-primary/10 text-brand-primary border-0 px-2 py-0.5">{g}</Badge>
+              ))}
+            </div>
+          )}
 
-        {author.genres.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {author.genres.slice(0, 3).map(g => (
-              <Badge key={g} variant="secondary" className="text-xs bg-brand-primary/10 text-brand-primary border-0">{g}</Badge>
-            ))}
+          <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
+            <FollowButton authorId={author.id} size="sm" showText={false} />
+            <Button variant="outline" size="sm" className="flex-1 text-xs border-border group-hover:border-brand-primary/40 group-hover:text-brand-primary transition-colors">
+              View Profile <ArrowRight className="w-3 h-3 ml-1" />
+            </Button>
           </div>
-        )}
+        </CardContent>
+      </Card>
+    </Link>
+  );
+};
 
-        <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
-          <FollowButton authorId={author.id} size="sm" variant="default" />
-          <Button variant="outline" size="sm" className="flex-1 border-border text-foreground hover:bg-accent">
-            View Profile
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  </Link>
-);
+/* ─── Standard Author Card ─── */
+const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
+  const initials = author.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+  const topBooks = books.slice(0, 4);
 
-// Standard Author Card
-const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => (
-  <Link to={`/authors/${slugify(author.name)}`} className="block group">
-    <Card className="h-full border-border hover:shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 bg-card">
-      <CardContent className="p-5">
-        <div className="text-center mb-3">
-          <Avatar className="w-14 h-14 mx-auto mb-3 ring-2 ring-border group-hover:ring-brand-primary/40 transition-all">
-            <AvatarImage src={author.profile_image_url || ''} alt={author.name} />
-            <AvatarFallback className="font-bold bg-gradient-button text-white">
-              {author.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            <h3 className="text-base font-semibold text-foreground truncate">{author.name}</h3>
-            {author.verified && (
-              <VerificationBadge verified={true} verificationType={author.verification_type} className="scale-90" />
+  return (
+    <Link to={`/authors/${slugify(author.name)}`} className="block group">
+      <Card className="h-full border-border hover:shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 bg-card overflow-hidden">
+        <CardContent className="p-0">
+          {/* Author header row */}
+          <div className="flex items-center gap-3 p-4 pb-3">
+            <Avatar className="w-12 h-12 ring-2 ring-border group-hover:ring-brand-primary/40 transition-all flex-shrink-0">
+              <AvatarImage src={author.profile_image_url || ''} alt={author.name} />
+              <AvatarFallback className="text-sm font-bold bg-gradient-button text-white">{initials}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-sm font-semibold text-foreground truncate">{author.name}</h3>
+                {author.verified && (
+                  <VerificationBadge verified={true} verificationType={author.verification_type} className="scale-[0.8]" />
+                )}
+              </div>
+              <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+                <span className="flex items-center gap-0.5"><Star className="w-3 h-3 text-amber-500" /> {author.rating}</span>
+                <span>{author.followers_count.toLocaleString()} followers</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bio */}
+          {author.bio && (
+            <p className="text-xs text-muted-foreground line-clamp-2 px-4 mb-3 leading-relaxed">{author.bio}</p>
+          )}
+
+          {/* Genre tags */}
+          {author.genres.length > 0 && (
+            <div className="flex flex-wrap gap-1 px-4 mb-3">
+              {author.genres.slice(0, 2).map(g => (
+                <Badge key={g} variant="outline" className="text-[10px] border-border text-muted-foreground px-2 py-0">{g}</Badge>
+              ))}
+              {author.genres.length > 2 && (
+                <Badge variant="outline" className="text-[10px] border-border text-muted-foreground px-2 py-0">+{author.genres.length - 2}</Badge>
+              )}
+            </div>
+          )}
+
+          {/* Book covers row */}
+          <div className="px-4 mb-3">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+              {author.books_count} {author.books_count === 1 ? 'Book' : 'Books'}
+            </p>
+            {topBooks.length > 0 ? (
+              <div className="flex gap-2">
+                {topBooks.map(book => (
+                  <div key={book.id} className="w-12 h-16 rounded overflow-hidden border border-border/60 bg-muted flex-shrink-0">
+                    {book.cover_image_url ? (
+                      <img src={book.cover_image_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <BookOpen className="w-4 h-4 text-muted-foreground/30" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {author.books_count > 4 && (
+                  <div className="w-12 h-16 rounded border border-dashed border-border flex items-center justify-center text-[10px] text-muted-foreground font-medium">
+                    +{author.books_count - 4}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="h-16 flex items-center">
+                <span className="text-xs text-muted-foreground/60 italic">Books available on profile</span>
+              </div>
             )}
           </div>
-          <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-            <MapPin className="w-3 h-3" /> {author.location}
-          </p>
-        </div>
 
-        {author.bio && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-3 text-center">{author.bio}</p>
-        )}
-
-        <div className="grid grid-cols-3 gap-1 text-center text-xs mb-3">
-          <div>
-            <span className="font-semibold text-foreground block">{author.books_count}</span>
-            <span className="text-muted-foreground">Books</span>
+          {/* Actions */}
+          <div className="flex gap-2 p-4 pt-0" onClick={(e) => e.preventDefault()}>
+            <FollowButton authorId={author.id} size="sm" showText={false} />
+            <Button variant="outline" size="sm" className="flex-1 text-xs border-border">
+              View Profile
+            </Button>
           </div>
-          <div>
-            <span className="font-semibold text-foreground block">{author.followers_count.toLocaleString()}</span>
-            <span className="text-muted-foreground">Followers</span>
-          </div>
-          <div>
-            <span className="font-semibold text-foreground block flex items-center justify-center gap-0.5">
-              <Star className="w-3 h-3 text-amber-500" /> {author.rating}
-            </span>
-            <span className="text-muted-foreground">Rating</span>
-          </div>
-        </div>
-
-        {author.genres.length > 0 && (
-          <div className="flex flex-wrap gap-1 justify-center mb-3">
-            {author.genres.slice(0, 2).map(g => (
-              <Badge key={g} variant="outline" className="text-[10px] border-border text-muted-foreground">{g}</Badge>
-            ))}
-            {author.genres.length > 2 && (
-              <Badge variant="outline" className="text-[10px] border-border text-muted-foreground">+{author.genres.length - 2}</Badge>
-            )}
-          </div>
-        )}
-
-        <div className="flex gap-2" onClick={(e) => e.preventDefault()}>
-          <FollowButton authorId={author.id} size="sm" showText={false} />
-          <Button variant="outline" size="sm" className="flex-1 text-xs border-border">
-            Profile
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  </Link>
-);
+        </CardContent>
+      </Card>
+    </Link>
+  );
+};
 
 export default Authors;
