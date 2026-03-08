@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useCreateArticle } from '@/hooks/useArticles';
 import { useAuth } from '@/contexts/authHelpers';
