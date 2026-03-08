@@ -31,9 +31,10 @@ const LibraryHero = ({
   const searchRef = useRef<HTMLDivElement>(null);
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   
-  // Fetch book suggestions based on search query
+  // Fetch only 6 book suggestions — lightweight query for autocomplete
   const { data: suggestions = [], isLoading } = useLibraryBooks(
-    debouncedSearchQuery && debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined
+    debouncedSearchQuery && debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined,
+    6
   );
 
   // Show only top 6 suggestions
