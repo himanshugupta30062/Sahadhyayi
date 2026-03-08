@@ -231,7 +231,7 @@ const FeaturedAuthorCard = ({ author, books }: { author: Author; books: Book[] }
   const topBooks = books.slice(0, 3);
 
   return (
-    <Link to={`/authors/${slugify(author.name)}`} className="block group">
+    <div className="block group">
       <Card className="overflow-hidden border-border hover:shadow-[var(--shadow-elevated)] transition-all duration-300 hover:-translate-y-1 h-full">
         {/* Book covers strip */}
         <div className="h-28 bg-gradient-to-br from-brand-primary/10 to-brand-secondary/10 relative overflow-hidden flex items-end justify-center gap-2 px-4 pt-3 pb-0">
@@ -296,7 +296,7 @@ const FeaturedAuthorCard = ({ author, books }: { author: Author; books: Book[] }
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </div>
   );
 };
 
@@ -306,7 +306,7 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
   const topBooks = books.slice(0, 4);
 
   return (
-    <Link to={`/authors/${slugify(author.name)}`} className="block group">
+    <div className="block group">
       <Card className="h-full border-border hover:shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 bg-card overflow-hidden">
         <CardContent className="p-0">
           {/* Author header row */}
@@ -388,7 +388,7 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </div>
   );
 };
 
