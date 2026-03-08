@@ -147,13 +147,13 @@ const Index = () => {
               const Icon = feature.icon;
               return (
                 <Link key={feature.title} to={feature.to} className="group block">
-                  <Card className={`h-full border-white/10 hover:border-white/25 transition-all duration-300 hover:-translate-y-1.5 overflow-hidden bg-gradient-to-br ${feature.gradient} backdrop-blur-sm`}>
+                  <Card className="h-full border border-orange-700/50 hover:border-orange-500 transition-all duration-300 hover:-translate-y-1.5 bg-zinc-900 hover:bg-zinc-800/90">
                     <CardContent className="p-6 sm:p-8 flex flex-col h-full">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 bg-white/10 backdrop-blur-sm ${feature.iconColor} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${feature.iconColor} bg-zinc-800 border border-orange-700/30 transition-transform group-hover:scale-110 group-hover:rotate-3`}>
                         <Icon className="w-7 h-7" />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-100 mb-2">{feature.title}</h3>
-                      <p className="text-sm text-gray-400 leading-relaxed mb-5 flex-1">{feature.description}</p>
+                      <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                      <p className="text-sm text-gray-300 leading-relaxed mb-5 flex-1">{feature.description}</p>
                       <span className="text-sm font-semibold text-orange-400 flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
                         {feature.cta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </span>
