@@ -21,7 +21,7 @@ const AuthSection = () => {
   };
 
   const handleSignUpClick = () => {
-    navigate('/signup');
+    navigate('/auth?tab=signup');
   };
 
   return user ? (
