@@ -40,6 +40,8 @@ const ArticleWrite = () => {
   const [coverUrl, setCoverUrl] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Restore draft from sessionStorage (after sign-in redirect)
   React.useEffect(() => {
