@@ -53,6 +53,10 @@ const Bookshelf = lazy(() => import('./pages/Bookshelf'));
 const Games = lazy(() => import('./pages/Games'));
 const PublishBook = lazy(() => import('./pages/PublishBook'));
 const MyPublications = lazy(() => import('./pages/MyPublications'));
+const Articles = lazy(() => import('./pages/Articles'));
+const ArticleWrite = lazy(() => import('./pages/ArticleWrite'));
+const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
+const MyArticles = lazy(() => import('./pages/MyArticles'));
 
 // Footer pages (lowest priority)
 const HelpCenter = lazy(() => import('./pages/HelpCenter'));
