@@ -123,6 +123,11 @@ const ArticleWrite = () => {
     }
   }, [handleInsert]);
 
+  if (!user) {
+    navigate('/signin');
+    return null;
+  }
+
   const addTag = () => {
     const tag = tagInput.trim().toLowerCase();
     if (tag && tags.length < 5 && !tags.includes(tag)) {
