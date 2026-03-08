@@ -125,8 +125,9 @@ const Index = () => {
       {/* Sahadhyayi Circuit Section */}
       <SahadhyayiCircuit />
 
+      <div className="bg-black text-white">
       {/* ─── NEW: What's New Feature Spotlight ─── */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 bg-black relative overflow-hidden">
+      <section className="py-12 sm:py-16 lg:py-20 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(234,88,12,0.08),transparent_60%)]" />
         <div className="max-w-6xl mx-auto relative">
           <div className="text-center mb-10 sm:mb-14">
@@ -170,7 +171,7 @@ const Index = () => {
       
       {/* Current Reads Section for Signed-in Users */}
       {user && (
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black/80 backdrop-blur-sm border-t border-b border-orange-900/30">
+        <section className="py-8 sm:py-12 lg:py-16 px-4 border-t border-b border-orange-900/30">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-100 mb-4">
@@ -190,8 +191,6 @@ const Index = () => {
           </div>
         </section>
       )}
-      
-      <div className="min-h-screen bg-black text-white">
 
         {/* What Sahadhyayi Means Section */}
         <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black/60 backdrop-blur-sm">
