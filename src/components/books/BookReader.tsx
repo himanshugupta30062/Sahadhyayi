@@ -761,45 +761,38 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 )}
               </>
             ) : isGoogleBooks && googleBooksId ? (
-              <div className="relative">
+              <div className="relative space-y-4">
+                <div className="bg-accent/50 border border-border rounded-lg p-4 text-center">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Some books have limited preview due to publisher restrictions.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    If the preview below appears blank, use the buttons to open it externally.
+                  </p>
+                </div>
                 <iframe
                   src={`https://books.google.com/books?id=${googleBooksId}&lpg=PP1&pg=PP1&output=embed`}
                   className={`w-full border-0 rounded-lg bg-white ${isFullscreen ? 'h-screen' : 'h-[700px]'}`}
                   style={{ width: '100%' }}
                   title={bookTitle}
                   allowFullScreen
-                  onError={() => {
-                    // If embed fails, show fallback
-                    const el = document.getElementById('google-books-fallback');
-                    if (el) el.style.display = 'flex';
-                  }}
                 />
-                <div 
-                  id="google-books-fallback"
-                  className="hidden absolute inset-0 flex-col items-center justify-center bg-muted/95 rounded-lg p-8 text-center"
-                >
-                  <BookOpen className="w-16 h-16 mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Preview Restricted by Publisher</h3>
-                  <p className="text-muted-foreground mb-4 max-w-md">
-                    This book's preview is restricted. You can read it directly on Google Books.
-                  </p>
-                </div>
-                <div className="mt-3 text-center space-y-2">
+                <div className="flex flex-wrap gap-2 justify-center">
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="sm"
                     onClick={() => window.open(`https://books.google.com/books?id=${googleBooksId}`, '_blank')}
-                    className="flex items-center gap-2 mx-auto"
+                    className="flex items-center gap-2"
                   >
                     <BookOpen className="w-4 h-4" />
-                    Open on Google Books
+                    Read on Google Books
                   </Button>
                   {pdfUrl && (
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => window.open(pdfUrl, '_blank')}
-                      className="flex items-center gap-2 mx-auto text-xs"
+                      className="flex items-center gap-2"
                     >
                       Open Original Link ↗
                     </Button>
