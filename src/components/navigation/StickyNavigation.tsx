@@ -55,11 +55,11 @@ const StickyNavigation = () => {
   const homeItem = { name: 'Home', href: user ? '/dashboard' : '/', key: 'home', icon: BookOpen };
 
   const primaryItems = user
-    ? [homeItem, ...allTabItems.filter((item) => visibleTabKeys.includes(item.key))]
+    ? [homeItem, ...allTabItems.filter((item) => visibleTabKeys.includes(item.key) || FORCE_PRIMARY_TABS.includes(item.key))]
     : [homeItem, ...allTabItems.filter((item) => ALWAYS_VISIBLE_TABS.includes(item.key))];
 
   const moreItems = user
-    ? allTabItems.filter((item) => !visibleTabKeys.includes(item.key))
+    ? allTabItems.filter((item) => !visibleTabKeys.includes(item.key) && !FORCE_PRIMARY_TABS.includes(item.key))
     : allTabItems.filter((item) => !ALWAYS_VISIBLE_TABS.includes(item.key));
 
   const allItems = [homeItem, ...allTabItems];
