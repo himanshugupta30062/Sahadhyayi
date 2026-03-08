@@ -43,21 +43,32 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <EnhancedLazyImage
-          src={book.cover_image_url || '/default-cover.jpg'}
-          alt={book.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          fallback={
-            <div className="w-full h-full flex items-center justify-center text-white p-4 bg-gradient-primary">
-              <div className="text-center">
-                <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
-                <div className="text-sm font-medium leading-tight">
-                  {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
+        {book.cover_image_url ? (
+          <EnhancedLazyImage
+            src={book.cover_image_url}
+            alt={book.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fallback={
+              <div className="w-full h-full flex items-center justify-center text-white p-4 bg-gradient-primary">
+                <div className="text-center">
+                  <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
+                  <div className="text-sm font-medium leading-tight">
+                    {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
+                  </div>
                 </div>
               </div>
+            }
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-white p-4 bg-gradient-primary">
+            <div className="text-center">
+              <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
+              <div className="text-sm font-medium leading-tight">
+                {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
+              </div>
             </div>
-          }
-        />
+          </div>
+        )}
 
         {/* Enhanced Action Buttons Overlay - Icon Only with Hover Text */}
         <div
