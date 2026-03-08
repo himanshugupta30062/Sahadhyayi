@@ -59,12 +59,14 @@ const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 p-0 bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/30 hover:shadow-orange-600/50 transition-all hover:scale-110 active:scale-95"
-          aria-label="Contact Us"
-        >
-          <MessageCircle className="w-6 h-6" />
-        </Button>
+        {trigger || (
+          <Button
+            className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 p-0 bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/30 hover:shadow-orange-600/50 transition-all hover:scale-110 active:scale-95"
+            aria-label="Contact Us"
+          >
+            <MessageCircle className="w-6 h-6" />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="bg-zinc-900 border-zinc-700/50 text-white sm:max-w-md p-0 overflow-hidden">
         {/* Header with gradient accent */}
