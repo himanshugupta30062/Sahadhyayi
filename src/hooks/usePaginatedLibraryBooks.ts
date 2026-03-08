@@ -219,6 +219,7 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
     });
   }, [paginatedData?.books]);
 
+  return {
     data: paginatedData,
     isLoading: allBooksQuery.isLoading,
     isError: allBooksQuery.isError,
