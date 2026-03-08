@@ -260,6 +260,14 @@ const App = memo(() => {
                           }
                         />
                         <Route
+                          path="/blog/:slug"
+                          element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <BlogPost />
+                            </Suspense>
+                          }
+                        />
+                        <Route
                           path="/bookshelf"
                           element={
                             <Suspense fallback={<LoadingFallback />}>
