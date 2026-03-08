@@ -77,7 +77,7 @@ const Navigation = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/signin');
+    navigate('/auth');
     setIsOpen(false);
   };
 
