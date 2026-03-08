@@ -53,6 +53,10 @@ const Bookshelf = lazy(() => import('./pages/Bookshelf'));
 const Games = lazy(() => import('./pages/Games'));
 const PublishBook = lazy(() => import('./pages/PublishBook'));
 const MyPublications = lazy(() => import('./pages/MyPublications'));
+const Articles = lazy(() => import('./pages/Articles'));
+const ArticleWrite = lazy(() => import('./pages/ArticleWrite'));
+const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
+const MyArticles = lazy(() => import('./pages/MyArticles'));
 
 // Footer pages (lowest priority)
 const HelpCenter = lazy(() => import('./pages/HelpCenter'));
@@ -306,7 +310,43 @@ const App = memo(() => {
                           }
                         />
                         
-                        {/* Footer/Legal routes - lowest priority */}
+                        <Route
+                          path="/articles"
+                          element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <Articles />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/articles/write"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <ArticleWrite />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/articles/my"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <MyArticles />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/articles/:slug"
+                          element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <ArticleDetail />
+                            </Suspense>
+                          }
+                        />
+                        
                         <Route
                           path="/help-center"
                           element={

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, X, ChevronDown, BookOpen, Gamepad2, Users, Radio } from 'lucide-react';
+import { Search, Menu, X, ChevronDown, BookOpen, Gamepad2, Users, Radio, FileText } from 'lucide-react';
 import SignInLink from '@/components/SignInLink';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -25,6 +25,7 @@ const StickyNavigation = () => {
   const primaryItems = [
     { name: 'Home', href: user ? '/dashboard' : '/' },
     { name: 'Library', href: '/library' },
+    { name: 'Articles', href: '/articles' },
     { name: 'My Books', href: '/bookshelf' },
   ];
 
