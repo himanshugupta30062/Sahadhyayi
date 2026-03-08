@@ -64,7 +64,10 @@ export default function Library() {
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb + Publish CTA */}
         <div className="flex items-center justify-between mb-6">
-          <Breadcrumb items={breadcrumbItems} />
+          <div className="flex items-center gap-3">
+            <Breadcrumb items={breadcrumbItems} />
+            <SortingInfoTooltip />
+          </div>
           <Button onClick={() => navigate('/publish')} className="gap-2">
             <PenTool className="h-4 w-4" /> Publish Your Book
           </Button>
