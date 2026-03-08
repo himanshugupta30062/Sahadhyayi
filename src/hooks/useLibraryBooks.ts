@@ -27,6 +27,7 @@ const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,p
 // Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
   { label: 'Cover image available', points: '+2000', priority: 'highest' },
+  { label: 'High-res cover source (Supabase/OpenLibrary)', points: 'up to +500', priority: 'highest' },
   { label: 'PDF download available', points: '+1000', priority: 'high' },
   { label: 'Verified author name', points: '+300', priority: 'high' },
   { label: 'Science/Physics/Cosmology genre', points: '+200', priority: 'medium' },
