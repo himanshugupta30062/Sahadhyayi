@@ -103,9 +103,23 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
     return () => window.removeEventListener('keydown', handleKey);
   }, [isOpen, handlePrevPage, handleNextPage, isFullscreen, onClose]);
 
+  // Detect URL type
+  const isGoogleBooksUrl = (url: string) => url.includes('books.google');
+  
+  const getGoogleBooksId = (url: string) => {
+    const match = url.match(/id=([^&]+)/);
+    return match ? match[1] : null;
+  };
+
   // Determine the best PDF embed URL
   const getPdfEmbedUrl = (url: string) => {
-    // Use Google Docs Viewer to proxy PDFs that block iframe embedding (e.g. archive.org)
+    if (isGoogleBooksUrl(url)) {
+      const bookId = getGoogleBooksId(url);
+      return bookId
+        ? `https://books.google.com/books?id=${bookId}&lpg=PP1&pg=PP1&output=embed`
+        : url;
+    }
+    // Use Google Docs Viewer to proxy direct PDFs that block iframe embedding (e.g. archive.org)
     return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
   };
 
@@ -138,9 +152,9 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
             href={book.pdf_url} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-sm text-blue-500 hover:underline"
+            className="text-sm text-primary hover:underline"
           >
-            Open PDF in new tab ↗
+            {isGoogleBooksUrl(book.pdf_url) ? 'Open in Google Books ↗' : 'Open PDF in new tab ↗'}
           </a>
         </div>
       </div>
