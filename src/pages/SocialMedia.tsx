@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
 import { MessageCircle, MapPin, UsersIcon, Users, Sparkles, BookOpen } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
