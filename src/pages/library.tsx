@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/Breadcrumb';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Sparkles, BookOpen, Users, Star } from 'lucide-react';
+import { RefreshCw, Sparkles, BookOpen, Users, Star, PenTool } from 'lucide-react';
 import LibraryHero from '@/components/library/LibraryHero';
 import BooksCollection from '@/components/library/BooksCollection';
 import ResponsiveBookGrid from '@/components/library/ResponsiveBookGrid';
