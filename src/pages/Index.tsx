@@ -381,6 +381,7 @@ const Index = () => {
           </div>
         </section>
       </div>
+      <ContactFormDialog />
     </>
   );
 };
