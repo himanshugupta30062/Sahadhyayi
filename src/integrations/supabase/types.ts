@@ -2513,51 +2513,84 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           description: string | null
+          downloads_count: number
+          file_size: number | null
           genre: string | null
           id: string
           isbn: string | null
           language: string | null
+          moderation_notes: string | null
           pages: number | null
           pdf_url: string | null
+          rating_avg: number | null
+          rating_count: number
+          reading_time_minutes: number | null
           rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string
+          subtitle: string | null
+          tags: string[] | null
           title: string
           updated_at: string
           user_id: string
+          views_count: number
         }
         Insert: {
           author_name: string
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          downloads_count?: number
+          file_size?: number | null
           genre?: string | null
           id?: string
           isbn?: string | null
           language?: string | null
+          moderation_notes?: string | null
           pages?: number | null
           pdf_url?: string | null
+          rating_avg?: number | null
+          rating_count?: number
+          reading_time_minutes?: number | null
           rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
+          subtitle?: string | null
+          tags?: string[] | null
           title: string
           updated_at?: string
           user_id: string
+          views_count?: number
         }
         Update: {
           author_name?: string
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          downloads_count?: number
+          file_size?: number | null
           genre?: string | null
           id?: string
           isbn?: string | null
           language?: string | null
+          moderation_notes?: string | null
           pages?: number | null
           pdf_url?: string | null
+          rating_avg?: number | null
+          rating_count?: number
+          reading_time_minutes?: number | null
           rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
+          subtitle?: string | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
           user_id?: string
+          views_count?: number
         }
         Relationships: []
       }
