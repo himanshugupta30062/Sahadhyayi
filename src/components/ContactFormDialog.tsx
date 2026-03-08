@@ -15,11 +15,7 @@ const contactSchema = z.object({
   message: z.string().trim().min(1, "Message is required").max(2000),
 });
 
-interface ContactFormDialogProps {
-  trigger?: React.ReactNode;
-}
-
-const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
+const ContactFormDialog = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', message: '' });
@@ -60,20 +56,14 @@ const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {trigger ? (
-        <DialogTrigger asChild>
-          {trigger}
-        </DialogTrigger>
-      ) : (
-        <DialogTrigger asChild>
-          <Button
-            className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 p-0 bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/30 hover:shadow-orange-600/50 transition-all hover:scale-105"
-            aria-label="Contact Us"
-          >
-            <MessageCircle className="w-6 h-6" />
-          </Button>
-        </DialogTrigger>
-      )}
+      <DialogTrigger asChild>
+        <Button
+          className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 p-0 bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/30 hover:shadow-orange-600/50 transition-all hover:scale-105"
+          aria-label="Contact Us"
+        >
+          <MessageCircle className="w-6 h-6" />
+        </Button>
+      </DialogTrigger>
       <DialogContent className="bg-zinc-900 border-zinc-700 text-white sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white">Get in Touch</DialogTitle>

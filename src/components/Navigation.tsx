@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
-import { Menu, X, ChevronDown, User, LogOut, Settings, Search, MessageCircle } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Settings, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/authHelpers";
-import ContactFormDialog from "@/components/ContactFormDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,7 +61,6 @@ const Navigation = () => {
   const navItems = user ? [
     { name: "Home", href: "/dashboard" },
     { name: "Library", href: "/library" },
-    { name: "Articles", href: "/articles" },
     { name: "Publish", href: "/publish" },
     { name: "Games", href: "/games" },
     { name: "Authors", href: "/authors" },
@@ -71,7 +69,6 @@ const Navigation = () => {
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
-    { name: "Articles", href: "/articles" },
     { name: "Games", href: "/games" },
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
@@ -191,12 +188,6 @@ const Navigation = () => {
                   </>
                 ) : (
                   <div className="flex items-center space-x-4">
-                    <ContactFormDialog trigger={
-                      <Button variant="outline" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-full">
-                        <MessageCircle className="w-4 h-4 mr-1" />
-                        Contact me
-                      </Button>
-                    } />
                     <SignInLink>
                       <Button variant="ghost" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                         Sign In
@@ -301,12 +292,6 @@ const Navigation = () => {
                 </div>
               ) : (
                 <div className="pt-4 space-y-3 border-t border-gray-200">
-                  <ContactFormDialog trigger={
-                    <Button variant="outline" size="sm" className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-full">
-                      <MessageCircle className="w-4 h-4 mr-1" />
-                      Contact me
-                    </Button>
-                  } />
                   <SignInLink onClick={() => setIsOpen(false)} className="block">
                     <Button variant="ghost" size="sm" className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                       Sign In
