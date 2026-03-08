@@ -130,7 +130,7 @@ async function fetchFilteredBooks(
   for (const book of deduped) {
     if (isNcertOrCbseBook(book)) {
       ncert.push(book);
-    } else if (book.cover_image_url) {
+    } else if (normalizeCoverUrl(book.cover_image_url)) {
       withCover.push(book);
     } else {
       noCover.push(book);
