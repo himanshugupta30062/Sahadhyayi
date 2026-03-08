@@ -12,6 +12,7 @@ import ResponsiveBookGrid from '@/components/library/ResponsiveBookGrid';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
 
 export default function Library() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedAuthor, setSelectedAuthor] = useState('All');
