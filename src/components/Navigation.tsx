@@ -297,14 +297,10 @@ const Navigation = () => {
                 </div>
               ) : (
                 <div className="pt-4 space-y-3 border-t border-gray-200">
-                  <SignInLink onClick={() => setIsOpen(false)} className="block">
-                    <Button variant="ghost" size="sm" className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
-                      Sign In
-                    </Button>
-                  </SignInLink>
-                  <Link to="/signup" onClick={() => setIsOpen(false)} className="block">
+                  <Link to="/auth" onClick={() => setIsOpen(false)} className="block">
                     <Button size="sm" className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
-                      Sign Up
+                      <LogIn className="w-4 h-4 mr-1.5" />
+                      Sign In
                     </Button>
                   </Link>
                 </div>
