@@ -81,11 +81,9 @@ const Articles = () => {
               <PenLine className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">No articles yet</h3>
               <p className="text-muted-foreground mb-4">Be the first to share your thoughts!</p>
-              {user && (
-                <Button onClick={() => navigate('/articles/write')} className="bg-brand-primary text-white">
+              <Button onClick={() => navigate('/articles/write')} className="bg-brand-primary text-white">
                   Write Your First Article
-                </Button>
-              )}
+              </Button>
             </div>
           ) : (
             <div className="space-y-8">
