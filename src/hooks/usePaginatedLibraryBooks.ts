@@ -206,7 +206,19 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
     };
   }, [allBooksQuery.data, page, pageSize]);
 
-  return {
+  // Preload first 8 cover images for instant rendering
+  React.useEffect(() => {
+    if (!paginatedData?.books) return;
+    const urls = paginatedData.books
+      .slice(0, 8)
+      .map(b => normalizeCoverUrl(b.cover_image_url))
+      .filter(Boolean) as string[];
+    urls.forEach(url => {
+      const img = new Image();
+      img.src = url;
+    });
+  }, [paginatedData?.books]);
+
     data: paginatedData,
     isLoading: allBooksQuery.isLoading,
     isError: allBooksQuery.isError,
