@@ -248,9 +248,10 @@ const StickyNavigation = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Link to="/signup">
-                    <Button size="sm" className="bg-gradient-button text-white shadow-button hover:shadow-elevated transition-all duration-200">
-                      Get Started
+                  <Link to="/auth">
+                    <Button variant="ghost" size="sm" className="text-foreground hover:text-brand-primary font-medium">
+                      <LogIn className="w-4 h-4 mr-1.5" />
+                      Sign In
                     </Button>
                   </Link>
                 )}
