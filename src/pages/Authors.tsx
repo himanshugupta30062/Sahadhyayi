@@ -306,7 +306,7 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
   const topBooks = books.slice(0, 4);
 
   return (
-    <Link to={`/authors/${slugify(author.name)}`} className="block group">
+    <div className="block group">
       <Card className="h-full border-border hover:shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 bg-card overflow-hidden">
         <CardContent className="p-0">
           {/* Author header row */}
