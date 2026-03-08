@@ -275,28 +275,30 @@ const ArticleWrite = () => {
                         return;
                       }
 
-                      // Allow non-logged-in users to draft with local preview image
-                      if (!user) {
-                        const reader = new FileReader();
-                        reader.onload = () => setCoverUrl(String(reader.result || ''));
-                        reader.readAsDataURL(file);
-                        return;
+                      // Show local preview immediately for everyone
+                      const reader = new FileReader();
+                      reader.onload = () => setCoverUrl(String(reader.result || ''));
+                      reader.readAsDataURL(file);
+
+                      // If logged in, also upload to cloud storage
+                      if (user) {
+                        setUploading(true);
+                        try {
+                          const ext = file.name.split('.').pop() || 'jpg';
+                          const path = `user-uploads/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                          const { error } = await supabase.storage.from('books').upload(path, file, { upsert: false });
+                          if (error) {
+                            console.error('Cover upload error:', error);
+                          } else {
+                            const { data: urlData } = supabase.storage.from('books').getPublicUrl(path);
+                            setCoverUrl(urlData.publicUrl);
+                          }
+                        } catch (err) {
+                          console.error('Cover upload exception:', err);
+                        } finally {
+                          setUploading(false);
+                        }
                       }
-
-                      setUploading(true);
-                      const ext = file.name.split('.').pop() || 'jpg';
-                      const path = `user-uploads/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-                      const { error } = await supabase.storage.from('books').upload(path, file, { upsert: false });
-
-                      if (error) {
-                        setErrors((prev) => ({ ...prev, cover: `Upload failed: ${error.message}` }));
-                        setUploading(false);
-                        return;
-                      }
-
-                      const { data: urlData } = supabase.storage.from('books').getPublicUrl(path);
-                      setCoverUrl(urlData.publicUrl);
-                      setUploading(false);
                     }}
                   />
                   <Button
