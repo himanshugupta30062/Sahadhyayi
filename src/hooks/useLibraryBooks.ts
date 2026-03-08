@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
+import { getCoverQualityScore } from '@/utils/getCoverQualityScore';
 
 export interface Book {
   id: string;
