@@ -7,6 +7,7 @@ import { slugify } from '@/utils/slugify';
 import { useAuth } from '@/contexts/authHelpers';
 import { useAddToPersonalLibrary, usePersonalLibrary } from '@/hooks/usePersonalLibrary';
 import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
+import GeneratedBookCover from '@/components/library/GeneratedBookCover';
 import type { Book } from '@/hooks/useLibraryBooks';
 
 
@@ -49,25 +50,11 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
             alt={book.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             fallback={
-              <div className="w-full h-full flex items-center justify-center text-white p-4 bg-gradient-primary">
-                <div className="text-center">
-                  <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
-                  <div className="text-sm font-medium leading-tight">
-                    {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
-                  </div>
-                </div>
-              </div>
+              <GeneratedBookCover title={book.title} author={book.author} genre={book.genre} />
             }
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-white p-4 bg-gradient-primary">
-            <div className="text-center">
-              <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-80" />
-              <div className="text-sm font-medium leading-tight">
-                {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
-              </div>
-            </div>
-          </div>
+          <GeneratedBookCover title={book.title} author={book.author} genre={book.genre} />
         )}
 
         {/* Enhanced Action Buttons Overlay - Icon Only with Hover Text */}
