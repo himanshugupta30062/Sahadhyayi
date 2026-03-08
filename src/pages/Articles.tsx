@@ -51,15 +51,13 @@ const Articles = () => {
                   className="pl-10"
                 />
               </div>
-              {user && (
-                <Button
-                  onClick={() => navigate('/articles/write')}
-                  className="bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 w-full sm:w-auto"
-                >
-                  <PenLine className="w-4 h-4" />
-                  Write Article
-                </Button>
-              )}
+              <Button
+                onClick={() => user ? navigate('/articles/write') : navigate('/articles/write')}
+                className="bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 w-full sm:w-auto"
+              >
+                <PenLine className="w-4 h-4" />
+                Write Article
+              </Button>
             </div>
           </div>
         </div>
