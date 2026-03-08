@@ -21,7 +21,6 @@ const DesktopNavItems = () => {
   ];
 
   const moreItems = [
-    { path: "/articles", label: "Articles", icon: FileText },
     { path: "/blog", label: "Publish", icon: BookOpen },
     { path: "/games", label: "Games", icon: Gamepad2 },
     { path: "/authors", label: "Authors", icon: Users },
