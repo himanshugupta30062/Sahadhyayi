@@ -188,15 +188,19 @@ const Navigation = () => {
                     </DropdownMenu>
                   </>
                 ) : (
-                  <div className="flex items-center space-x-4">
-                    <SignInLink>
-                      <Button variant="ghost" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
+                  <div className="flex items-center space-x-3">
+                    <ContactFormDialog
+                      trigger={
+                        <Button variant="outline" size="sm" className="border-amber-500 text-amber-600 hover:bg-amber-50 font-medium">
+                          <MessageCircle className="w-4 h-4 mr-1.5" />
+                          Contact me
+                        </Button>
+                      }
+                    />
+                    <Link to="/auth">
+                      <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-medium">
+                        <LogIn className="w-4 h-4 mr-1.5" />
                         Sign In
-                      </Button>
-                    </SignInLink>
-                    <Link to="/signup">
-                      <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
-                        Sign Up
                       </Button>
                     </Link>
                   </div>
