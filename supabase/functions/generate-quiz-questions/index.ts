@@ -1,14 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Auth check
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
+  const authClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: { user }, error: authError } = await authClient.auth.getUser();
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 
   try {
@@ -35,14 +48,13 @@ serve(async (req) => {
       .single();
 
     if (bookError || !book) {
-      console.error('Book fetch error:', bookError);
       return new Response(
         JSON.stringify({ error: 'Book not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Check if we already have enough questions for this book
+    // Check if we already have enough questions
     const { data: existingQuestions, error: questionsError } = await supabase
       .from('book_quiz_questions')
       .select('*')
@@ -50,7 +62,6 @@ serve(async (req) => {
       .eq('difficulty', difficulty);
 
     if (!questionsError && existingQuestions && existingQuestions.length >= count) {
-      // Return existing questions (shuffled)
       const shuffled = existingQuestions.sort(() => Math.random() - 0.5).slice(0, count);
       return new Response(
         JSON.stringify({ questions: shuffled, source: 'cached' }),
@@ -58,9 +69,7 @@ serve(async (req) => {
       );
     }
 
-    // Generate new questions using Gemini
     if (!geminiApiKey) {
-      // Return fallback questions if no API key
       const fallbackQuestions = generateFallbackQuestions(book, difficulty, count);
       return new Response(
         JSON.stringify({ questions: fallbackQuestions, source: 'fallback' }),
@@ -82,9 +91,6 @@ Requirements:
 2. Each question should have exactly 4 options (A, B, C, D)
 3. Only one answer should be correct
 4. Difficulty level: ${difficulty}
-   - Easy: Basic facts about the book, obvious answers
-   - Medium: Deeper understanding, some analysis required
-   - Hard: Expert-level, nuanced questions about themes and symbolism
 5. Include a helpful hint for each question
 6. Include an explanation for the correct answer
 
@@ -97,9 +103,7 @@ Return ONLY a valid JSON array with this exact structure (no markdown, no code b
     "hint": "A helpful hint",
     "explanation": "Why this is the correct answer"
   }
-]
-
-Make questions engaging and educational. Correct answer index should be 0-3.`;
+]`;
 
     const geminiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
@@ -108,10 +112,7 @@ Make questions engaging and educational. Correct answer index should be 0-3.`;
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 4096,
-          },
+          generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
         }),
       }
     );
@@ -128,17 +129,15 @@ Make questions engaging and educational. Correct answer index should be 0-3.`;
     const geminiData = await geminiResponse.json();
     const generatedText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    // Parse the JSON response
     let questions;
     try {
-      // Clean up the response - remove markdown code blocks if present
       const cleanedText = generatedText
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
         .trim();
       questions = JSON.parse(cleanedText);
     } catch (parseError) {
-      console.error('JSON parse error:', parseError, 'Text:', generatedText);
+      console.error('JSON parse error:', parseError);
       const fallbackQuestions = generateFallbackQuestions(book, difficulty, count);
       return new Response(
         JSON.stringify({ questions: fallbackQuestions, source: 'fallback' }),
@@ -146,7 +145,6 @@ Make questions engaging and educational. Correct answer index should be 0-3.`;
       );
     }
 
-    // Store questions in database for caching
     const questionsToInsert = questions.map((q: any) => ({
       book_id: bookId,
       question: q.question,

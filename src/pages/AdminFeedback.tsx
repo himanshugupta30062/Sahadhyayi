@@ -6,11 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SEO from '@/components/SEO';
 
-const ADMIN_EMAILS = ['gyan@sahadhyayi.com'];
-
 const AdminFeedback = () => {
   const { user } = useAuth();
-  const isAdmin = !!user && ADMIN_EMAILS.includes(user.email ?? '');
 
   const { data: feedback = [], refetch } = useQuery({
     queryKey: ['feedback'],
