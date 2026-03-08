@@ -388,8 +388,7 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
           </div>
         </CardContent>
       </Card>
-    </Link>
-  );
+    </div>
 };
 
 export default Authors;
