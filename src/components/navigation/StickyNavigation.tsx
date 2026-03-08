@@ -248,18 +248,11 @@ const StickyNavigation = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <div className="flex items-center space-x-3">
-                    <SignInLink>
-                      <Button variant="outline" size="sm" className="border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white">
-                        Sign In
-                      </Button>
-                    </SignInLink>
-                    <Link to="/signup">
-                      <Button size="sm" className="bg-gradient-button text-white shadow-button hover:shadow-elevated transition-all duration-200">
-                        Join Now
-                      </Button>
-                    </Link>
-                  </div>
+                  <Link to="/signup">
+                    <Button size="sm" className="bg-gradient-button text-white shadow-button hover:shadow-elevated transition-all duration-200">
+                      Get Started
+                    </Button>
+                  </Link>
                 )}
               </div>
             )}
@@ -338,15 +331,10 @@ const StickyNavigation = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="pt-3 space-y-2 border-t border-border">
-                    <SignInLink onClick={() => setIsOpen(false)} className="block">
-                      <Button variant="outline" size="sm" className="w-full border-brand-primary text-brand-primary">
-                        Sign In
-                      </Button>
-                    </SignInLink>
+                  <div className="pt-3 border-t border-border">
                     <Link to="/signup" onClick={() => setIsOpen(false)} className="block">
                       <Button size="sm" className="w-full bg-gradient-button text-white">
-                        Join Now
+                        Get Started
                       </Button>
                     </Link>
                   </div>
