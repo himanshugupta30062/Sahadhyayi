@@ -191,6 +191,12 @@ const Navigation = () => {
                   </>
                 ) : (
                   <div className="flex items-center space-x-4">
+                    <ContactFormDialog trigger={
+                      <Button variant="outline" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-full">
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        Contact me
+                      </Button>
+                    } />
                     <SignInLink>
                       <Button variant="ghost" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
                         Sign In
