@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import AudioSummaryButton from './AudioSummaryButton';
 import { LazyImage } from '@/components/ui/LazyImage';
+import { toast } from '@/hooks/use-toast';
 
 interface BookCoverProps {
   title: string;
