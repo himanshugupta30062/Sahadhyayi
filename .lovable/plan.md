@@ -1,69 +1,31 @@
 
-# Fix Google Analytics CSP Blocking Issue
 
-## Problem Summary
-The Content Security Policy (CSP) in `index.html` is blocking the Google Tag Manager script (`https://www.googletagmanager.com/gtag/js`). This is causing script loading failures that may prevent the site from fully loading on `sahadhyayi.com`.
+# Fix Missing Book Covers
 
-## Root Cause
-Line 77 of `index.html` has a CSP that doesn't include Google's domains in the `script-src` directive.
+## Problem
+Books with missing or broken `cover_image_url` values show a plain gradient with a small icon. The current fallback is too generic and doesn't help users identify books.
 
 ## Solution
+Create a visually distinct, colorful generated cover for books without images. Each book gets a unique color based on its title, displaying the book title prominently and the author name — mimicking a real book spine/cover design.
 
-### Step 1: Update CSP in index.html
-Modify the Content-Security-Policy meta tag to include Google Analytics domains:
+## Changes
 
-**Current:**
-```
-script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://static.cloudflareinsights.com
-```
+### 1. Update `src/components/library/BookCard.tsx`
+- Replace the plain gradient fallback with a **generated book cover** component
+- Use a deterministic color palette based on the book title (hash the title to pick a color pair)
+- Display: book title (large, centered), author name (smaller, bottom), and a decorative pattern
 
-**Updated:**
-```
-script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com
-```
+### 2. Create `src/components/library/GeneratedBookCover.tsx`
+A reusable component that renders a styled placeholder cover:
+- Deterministic gradient colors derived from the book title (so the same book always gets the same color)
+- Title displayed prominently in the center (up to ~60 chars)
+- Author at the bottom
+- Genre badge if available
+- Subtle decorative elements (lines, shapes via CSS) to look like a designed cover
+- 10+ color palettes to ensure visual variety across the grid
 
-Also update the `connect-src` directive to allow Google Analytics API calls:
+### 3. Update `EnhancedLazyImage` fallback usage
+- Pass the new `GeneratedBookCover` as the fallback prop so broken URLs also show the designed cover instead of "Failed to load"
 
-**Current:**
-```
-connect-src 'self' https://*.supabase.co ws: wss:
-```
+This approach requires no database changes — it's purely a frontend enhancement that makes the library look complete regardless of missing cover data.
 
-**Updated:**
-```
-connect-src 'self' https://*.supabase.co ws: wss: https://www.google-analytics.com https://analytics.google.com
-```
-
-### Step 2: Update 404.html (optional but recommended)
-The `404.html` file also loads Google Tag Manager but has no CSP, so it should work. However, for consistency, consider removing the gtag script from the 404 page since it's just a redirect page.
-
----
-
-## Technical Details
-
-### Files to Modify
-
-| File | Change |
-|------|--------|
-| `index.html` (line 77) | Update CSP meta tag to allow Google domains |
-
-### Complete Updated CSP
-
-```html
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co ws: wss: https://www.google-analytics.com https://analytics.google.com; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com">
-```
-
-### Alternative: Remove CSP Meta Tag
-Since the comment on line 76 states "CSP is normally set via HTTP headers in server.js", and this meta tag is just a "fallback for static preview only", you could also consider removing the CSP meta tag entirely and relying solely on the server-side CSP headers (which presumably already allow Google Analytics).
-
----
-
-## Expected Outcome
-After this fix:
-1. Google Tag Manager script will load without CSP violations
-2. No JavaScript errors from blocked scripts
-3. The React app should initialize properly
-4. The loader should hide once the app loads
-
-## Note
-If the site still doesn't load after this fix, the issue is likely DNS-related (as discussed earlier) rather than code-related. This fix ensures that once the correct HTML is served, Google Analytics won't cause blocking errors.
