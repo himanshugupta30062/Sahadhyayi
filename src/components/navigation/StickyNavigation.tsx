@@ -4,9 +4,10 @@ import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import {
   Search, Menu, X, ChevronDown, BookOpen, Gamepad2, Users, Radio,
-  FileText, User, LogOut, Settings, BookMarked, PenTool,
+  FileText, User, LogOut, Settings, BookMarked, PenTool, MessageCircle,
 } from 'lucide-react';
 import SignInLink from '@/components/SignInLink';
+import ContactFormDialog from '@/components/ContactFormDialog';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -47,15 +48,18 @@ const StickyNavigation = () => {
   // Tabs that should always be visible (even for non-signed-in users)
   const ALWAYS_VISIBLE_TABS = ['articles', 'blog'];
 
+  // Articles should always be in primary nav even for logged-in users
+  const FORCE_PRIMARY_TABS = ['articles'];
+
   // Home is always primary
   const homeItem = { name: 'Home', href: user ? '/dashboard' : '/', key: 'home', icon: BookOpen };
 
   const primaryItems = user
-    ? [homeItem, ...allTabItems.filter((item) => visibleTabKeys.includes(item.key))]
+    ? [homeItem, ...allTabItems.filter((item) => visibleTabKeys.includes(item.key) || FORCE_PRIMARY_TABS.includes(item.key))]
     : [homeItem, ...allTabItems.filter((item) => ALWAYS_VISIBLE_TABS.includes(item.key))];
 
   const moreItems = user
-    ? allTabItems.filter((item) => !visibleTabKeys.includes(item.key))
+    ? allTabItems.filter((item) => !visibleTabKeys.includes(item.key) && !FORCE_PRIMARY_TABS.includes(item.key))
     : allTabItems.filter((item) => !ALWAYS_VISIBLE_TABS.includes(item.key));
 
   const allItems = [homeItem, ...allTabItems];
@@ -196,6 +200,16 @@ const StickyNavigation = () => {
                     </form>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                {/* Contact Me Button */}
+                <ContactFormDialog
+                  trigger={
+                    <Button variant="outline" size="sm" className="border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white font-medium">
+                      <MessageCircle className="w-4 h-4 mr-1.5" />
+                      Contact me
+                    </Button>
+                  }
+                />
 
                 {/* Auth: Avatar dropdown or Sign In */}
                 {user ? (
