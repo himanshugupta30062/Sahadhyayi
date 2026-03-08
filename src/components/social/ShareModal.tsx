@@ -3,6 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Facebook, Instagram, Twitter, MessageCircle, Camera } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -15,6 +16,11 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
   const currentUrl = window.location.origin + '/social';
   const shareText = `Check out this post on Sahadhyayi: "${postContent.slice(0, 100)}${postContent.length > 100 ? '...' : ''}"`;
 
+  const copyToClipboard = (message: string) => {
+    navigator.clipboard.writeText(shareText + ' ' + currentUrl);
+    toast({ title: 'Copied!', description: message });
+  };
+
   const shareOptions = [
     {
       name: 'Facebook',
@@ -22,7 +28,7 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
       color: 'bg-blue-600 hover:bg-blue-700',
       action: () => {
         const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&quote=${encodeURIComponent(shareText)}`;
-        window.open(url, '_blank', 'width=600,height=400');
+        window.open(url, '_blank', 'noopener,noreferrer,width=600,height=400');
       }
     },
     {
@@ -31,7 +37,7 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
       color: 'bg-black hover:bg-gray-800',
       action: () => {
         const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`;
-        window.open(url, '_blank', 'width=600,height=400');
+        window.open(url, '_blank', 'noopener,noreferrer,width=600,height=400');
       }
     },
     {
@@ -40,28 +46,20 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
       color: 'bg-green-600 hover:bg-green-700',
       action: () => {
         const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + currentUrl)}`;
-        window.open(url, '_blank');
+        window.open(url, '_blank', 'noopener,noreferrer');
       }
     },
     {
       name: 'Instagram',
       icon: Instagram,
       color: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600',
-      action: () => {
-        // Instagram doesn't have a direct sharing API, so we'll copy to clipboard
-        navigator.clipboard.writeText(shareText + ' ' + currentUrl);
-        alert('Content copied to clipboard! You can now paste it on Instagram.');
-      }
+      action: () => copyToClipboard('Content copied! You can now paste it on Instagram.')
     },
     {
       name: 'Snapchat',
       icon: Camera,
       color: 'bg-yellow-400 hover:bg-yellow-500',
-      action: () => {
-        // Snapchat doesn't have a direct sharing API, so we'll copy to clipboard
-        navigator.clipboard.writeText(shareText + ' ' + currentUrl);
-        alert('Content copied to clipboard! You can now share it on Snapchat.');
-      }
+      action: () => copyToClipboard('Content copied! You can now share it on Snapchat.')
     }
   ];
 
@@ -98,14 +96,14 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
               type="text"
               value={currentUrl}
               readOnly
-              className="flex-1 px-3 py-2 text-sm bg-gray-50 border rounded-md"
+              className="flex-1 px-3 py-2 text-sm bg-muted border rounded-md"
             />
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
                 navigator.clipboard.writeText(currentUrl);
-                alert('Link copied to clipboard!');
+                toast({ title: 'Link copied!', description: 'URL copied to clipboard.' });
               }}
             >
               Copy Link
