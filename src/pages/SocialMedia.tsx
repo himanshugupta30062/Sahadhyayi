@@ -148,7 +148,4 @@ const SocialMedia = () => {
   );
 };
 
-// Need Card import for map tab
-import { Card } from '@/components/ui/card';
-
 export default SocialMedia;
