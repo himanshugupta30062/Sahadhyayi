@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
 import { getBookCompletenessScore } from './useLibraryBooks';
+import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 
 // Only select columns we actually use
 const PAGINATED_SELECT = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
