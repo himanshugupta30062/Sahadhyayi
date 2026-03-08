@@ -173,56 +173,8 @@ const BooksCollection = ({
   // The cleanup_unused_books() function is now admin-only and should be
   // triggered through admin dashboard or scheduled background jobs
 
-  const getFilteredBooks = (books: Book[]) => {
-
-    const filtered = books.filter(book => {
-      
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          book.title.toLowerCase().includes(query) ||
-          (book.author && book.author.toLowerCase().includes(query)) ||
-          (book.genre && book.genre.toLowerCase().includes(query));
-        if (!matchesSearch) {
-          return false;
-        }
-      }
-
-      // Genre filter - Handle Hindi specially
-      if (selectedGenre !== 'All') {
-        if (selectedGenre === 'Hindi') {
-          if (book.language !== 'Hindi') {
-            return false;
-          }
-        } else if (book.genre !== selectedGenre) {
-          return false;
-        }
-      }
-
-      // Author filter
-      if (selectedAuthor !== 'All' && book.author !== selectedAuthor) {
-        return false;
-      }
-
-      // Year filter
-      if (selectedYear && book.publication_year !== parseInt(selectedYear)) {
-        return false;
-      }
-
-      // Language filter
-      if (selectedLanguage !== 'All' && book.language !== selectedLanguage) {
-        return false;
-      }
-
-      return true;
-    });
-
-
-    // Sorting is already handled by usePaginatedLibraryBooks via getBookCompletenessScore
-
-    return filtered;
-  };
+  // Filtering is already done server-side by usePaginatedLibraryBooks
+  // No need for redundant client-side filtering
 
   const handleDownloadPDF = async (book: Book) => {
     if (!book.pdf_url) {
