@@ -119,13 +119,24 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
         ? `https://books.google.com/books?id=${bookId}&lpg=PP1&pg=PP1&output=embed`
         : url;
     }
-    // Use Google Docs Viewer to proxy direct PDFs that block iframe embedding (e.g. archive.org)
-    return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+    // Use our edge function proxy to bypass CORS/X-Frame-Options blocks
+    const SUPABASE_URL = 'https://rknxtatvlzunatpyqxro.supabase.co';
+    return `${SUPABASE_URL}/functions/v1/pdf-proxy?url=${encodeURIComponent(url)}`;
   };
+
+  const [pdfLoadFailed, setPdfLoadFailed] = useState(false);
+
+  // Reset load state when book changes
+  useEffect(() => {
+    setPdfLoadFailed(false);
+  }, [book?.pdf_url]);
 
   // PDF viewer component
   const renderPdfViewer = () => {
     if (!book?.pdf_url) return null;
+    
+    const embedUrl = getPdfEmbedUrl(book.pdf_url);
+    const isGBooks = isGoogleBooksUrl(book.pdf_url);
     
     return (
       <div 
@@ -135,18 +146,42 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
           height: isFullscreen ? 'calc(100vh - 160px)' : '70vh',
         }}
       >
-        <iframe
-          src={getPdfEmbedUrl(book.pdf_url)}
-          width="100%"
-          height="100%"
-          className="border-0 rounded-lg"
-          title={`${book.title} - PDF Viewer`}
-          allow="autoplay"
-          sandbox="allow-scripts allow-same-origin allow-popups"
-          onError={(e) => {
-            console.error('PDF loading error:', e);
-          }}
-        />
+        {pdfLoadFailed ? (
+          <div className="flex flex-col items-center justify-center h-full bg-muted/30 rounded-lg gap-4 p-6">
+            <BookOpen className="w-12 h-12 text-muted-foreground" />
+            <p className="text-muted-foreground text-center">
+              This PDF cannot be displayed inline due to hosting restrictions.
+            </p>
+            <a 
+              href={book.pdf_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+            >
+              Open PDF in new tab ↗
+            </a>
+          </div>
+        ) : isGBooks ? (
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            className="border-0 rounded-lg"
+            title={`${book.title} - Reader`}
+            allow="autoplay"
+            sandbox="allow-scripts allow-same-origin allow-popups"
+            onError={() => setPdfLoadFailed(true)}
+          />
+        ) : (
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            className="border-0 rounded-lg"
+            title={`${book.title} - PDF Viewer`}
+            onError={() => setPdfLoadFailed(true)}
+          />
+        )}
         <div className="text-center mt-2">
           <a 
             href={book.pdf_url} 
@@ -154,7 +189,7 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
             rel="noopener noreferrer"
             className="text-sm text-primary hover:underline"
           >
-            {isGoogleBooksUrl(book.pdf_url) ? 'Open in Google Books ↗' : 'Open PDF in new tab ↗'}
+            {isGBooks ? 'Open in Google Books ↗' : 'Open PDF in new tab ↗'}
           </a>
         </div>
       </div>
