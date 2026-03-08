@@ -1,11 +1,8 @@
-
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { BookOpen, Plus } from 'lucide-react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { BookOpen, Plus, ChevronRight } from 'lucide-react';
 import { useUserBookshelf } from '@/hooks/useUserBookshelf';
 import AddBookToCurrentReadsDialog from './AddBookToCurrentReadsDialog';
 
@@ -17,71 +14,87 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
   const navigate = useNavigate();
   const { data: bookshelf = [], isLoading, error } = useUserBookshelf();
   
-  // Filter books that are currently being read
-  const readingProgress = bookshelf.filter(item => item.status === 'reading').map(item => ({
-    id: item.id,
-    book_id: item.book_id,
-    book_title: item.books_library?.title || 'Unknown Title',
-    current_page: 0, // We can enhance this later with detailed progress
-    total_pages: (item.books_library as any)?.pages || 100, // Type assertion for pages field
-    cover_image_url: item.books_library?.cover_image_url,
-    user_id: item.user_id
-  }));
-
+  const readingBooks = bookshelf
+    .filter(item => item.status === 'reading')
+    .slice(0, 4)
+    .map(item => ({
+      id: item.id,
+      book_id: item.book_id,
+      title: item.books_library?.title || 'Unknown Title',
+      author: item.books_library?.author,
+      cover_image_url: item.books_library?.cover_image_url,
+    }));
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center text-base sm:text-lg">
-            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-amber-600" />
-            Your Current Reads
+      <Card className="border-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center text-base font-semibold">
+            <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
+            Currently Reading
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">Loading your books...</div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    console.error('Error loading reading progress:', error);
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center text-base sm:text-lg">
-            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-amber-600" />
-            Your Current Reads
-          </CardTitle>
-          <AddBookToCurrentReadsDialog />
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 sm:py-12">
-            <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-300 mb-3 sm:mb-4" />
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Error loading books</h3>
-            <p className="text-gray-500 mb-4 text-sm sm:text-base px-4">Please try refreshing the page</p>
+          <div className="flex gap-4 animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="w-24 space-y-2">
+                <div className="aspect-[2/3] rounded-lg bg-muted" />
+                <div className="h-3 bg-muted rounded" />
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!readingProgress || readingProgress.length === 0) {
+  if (error) {
     return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center text-base sm:text-lg">
-            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-amber-600" />
-            Your Current Reads
+      <Card className="border-border">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center text-base font-semibold">
+            <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
+            Currently Reading
           </CardTitle>
           <AddBookToCurrentReadsDialog />
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 sm:py-12">
-            <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-300 mb-3 sm:mb-4" />
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No books in progress</h3>
-            <p className="text-gray-500 mb-4 text-sm sm:text-base px-4">Start reading your first book to see your progress here</p>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground text-sm">Error loading books. Please refresh.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (readingBooks.length === 0) {
+    return (
+      <Card className="border-border">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center text-base font-semibold">
+            <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
+            Currently Reading
+          </CardTitle>
+          <AddBookToCurrentReadsDialog />
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-10 px-4">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted flex items-center justify-center">
+              <BookOpen className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="font-semibold text-foreground mb-1">No books in progress</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Start reading to track your progress here
+            </p>
+            <Link to="/library">
+              <Button 
+                size="sm" 
+                className="bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)]"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Find a Book
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
@@ -89,117 +102,65 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center text-base sm:text-lg">
-            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-amber-600" />
-            Your Current Reads
+    <Card className="border-border">
+      <CardHeader className="pb-3 flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center text-base font-semibold">
+          <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
+          Currently Reading ({readingBooks.length})
         </CardTitle>
-        <AddBookToCurrentReadsDialog />
+        <div className="flex items-center gap-2">
+          <AddBookToCurrentReadsDialog />
+          {bookshelf.filter(item => item.status === 'reading').length > 4 && (
+            <Link to="/bookshelf">
+              <Button variant="ghost" size="sm" className="text-muted-foreground">
+                View All <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <p className="text-sm text-gray-600">
-            You're currently reading {readingProgress.length} book{readingProgress.length !== 1 ? 's' : ''}.
-          </p>
-        </div>
-        <div className="block sm:hidden">
-          {/* Mobile: Stack layout */}
-          <div className="space-y-4">
-            {readingProgress.map((book) => {
-              const progressPercent = Math.round((book.current_page / book.total_pages) * 100);
-              return (
-                <Card key={book.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/book/${book.book_id}`)}>
-                  <div className="flex space-x-3">
-                    {book.cover_image_url ? (
-                      <img
-                        src={book.cover_image_url}
-                        alt={book.book_title}
-                        className="w-12 h-16 object-cover rounded shadow flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-12 h-16 bg-amber-100 rounded flex items-center justify-center flex-shrink-0">
-                        <BookOpen className="w-6 h-6 text-amber-600" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm truncate">{book.book_title}</h4>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                          Currently Reading
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600 mb-2">Started reading this book</p>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="w-full text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/book/${book.book_id}`);
-                        }}
-                      >
-                        Continue Reading
-                      </Button>
-                    </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {readingBooks.map((book) => (
+            <button
+              key={book.id}
+              onClick={() => navigate(`/book/${book.book_id}`)}
+              className="group text-left focus:outline-none focus:ring-2 focus:ring-[hsl(var(--brand-primary))] focus:ring-offset-2 rounded-lg"
+            >
+              <div className="aspect-[2/3] rounded-lg overflow-hidden bg-muted shadow-sm group-hover:shadow-md transition-all">
+                {book.cover_image_url ? (
+                  <img
+                    src={book.cover_image_url}
+                    alt={book.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--brand-primary)/0.2)] to-[hsl(var(--brand-secondary)/0.2)] flex items-center justify-center">
+                    <BookOpen className="w-8 h-8 text-[hsl(var(--brand-primary))]" />
                   </div>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-        
-        <div className="hidden sm:block">
-          {/* Desktop: Carousel layout */}
-          <Carousel className="w-full">
-            <CarouselContent>
-              {readingProgress.map((book) => {
-                return (
-                  <CarouselItem key={book.id} className="md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/book/${book.book_id}`)}>
-                      <CardContent className="p-4">
-                        <div className="flex space-x-4">
-                          {book.cover_image_url ? (
-                            <img
-                              src={book.cover_image_url}
-                              alt={book.book_title}
-                              className="w-16 h-24 object-cover rounded shadow"
-                            />
-                          ) : (
-                            <div className="w-16 h-24 bg-amber-100 rounded flex items-center justify-center">
-                              <BookOpen className="w-8 h-8 text-amber-600" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-sm truncate">{book.book_title}</h4>
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                Currently Reading
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-2">Started reading this book</p>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="mt-2 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/book/${book.book_id}`);
-                              }}
-                            >
-                              Continue Reading
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                );
-              })}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
+                )}
+              </div>
+              <div className="mt-2 space-y-0.5">
+                <h4 className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-[hsl(var(--brand-primary))] transition-colors">
+                  {book.title}
+                </h4>
+                {book.author && (
+                  <p className="text-xs text-muted-foreground line-clamp-1">{book.author}</p>
+                )}
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="w-full mt-2 text-xs h-8 border-border hover:border-[hsl(var(--brand-primary))] hover:text-[hsl(var(--brand-primary))]"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/book/${book.book_id}`);
+                }}
+              >
+                Continue
+              </Button>
+            </button>
+          ))}
         </div>
       </CardContent>
     </Card>
