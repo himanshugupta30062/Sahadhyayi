@@ -19,8 +19,11 @@ const StickyNavigation = () => {
   const navItems = [
     { name: 'Home', href: user ? '/dashboard' : '/' },
     { name: 'Library', href: '/library' },
+    { name: 'Publish', href: '/blog' },
+    { name: 'Games', href: '/games' },
     { name: 'Authors', href: '/authors' },
-    { name: 'Community', href: '/social' },
+    { name: 'Social Media', href: '/social' },
+    { name: 'My Books', href: '/bookshelf' },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
