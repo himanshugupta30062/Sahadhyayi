@@ -45,7 +45,7 @@ const StickyNavigation = () => {
   }));
 
   // Tabs that should always be visible (even for non-signed-in users)
-  const ALWAYS_VISIBLE_TABS = ['articles', 'publish'];
+  const ALWAYS_VISIBLE_TABS = ['articles', 'blog'];
 
   // Home is always primary
   const homeItem = { name: 'Home', href: user ? '/dashboard' : '/', key: 'home', icon: BookOpen };
