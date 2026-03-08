@@ -95,10 +95,8 @@ const ArticleDetail = () => {
             </div>
           </div>
 
-          {/* Content */}
-          <div className="prose prose-lg max-w-none text-foreground leading-relaxed whitespace-pre-wrap mb-8">
-            {article.content}
-          </div>
+          {/* Content — rendered as markdown */}
+          <MarkdownPreview content={article.content} className="mb-8" />
 
           {/* Tags */}
           {article.tags && article.tags.length > 0 && (
