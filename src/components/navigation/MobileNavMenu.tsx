@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Sheet,
@@ -6,15 +5,13 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/authHelpers";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LogOut, BookOpen, Users, Map, PenTool } from "lucide-react";
+import { LogOut, BookOpen, Users, Gamepad2, Radio, FileText, PenTool, Home, BookMarked } from "lucide-react";
 
 interface MobileNavMenuProps {
   isOpen: boolean;
@@ -22,15 +19,20 @@ interface MobileNavMenuProps {
 }
 
 const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
-  const navItems = [
+  const primaryItems = [
+    { path: "/dashboard", label: "Home", icon: Home },
     { path: "/library", label: "Library", icon: BookOpen },
-    { path: "/articles", label: "Articles", icon: PenTool },
-    { path: "/bookshelf", label: "My Books", icon: BookOpen },
-    { path: "/blog", label: "Publish", icon: PenTool },
-    { path: "/games", label: "Games", icon: BookOpen },
-    { path: "/authors", label: "Authors", icon: Users },
-    { path: "/social", label: "Social Media", icon: Users },
+    { path: "/bookshelf", label: "My Shelf", icon: BookMarked },
   ];
+
+  const secondaryItems = [
+    { path: "/articles", label: "Articles", icon: FileText },
+    { path: "/blog", label: "Publish", icon: PenTool },
+    { path: "/games", label: "Games", icon: Gamepad2 },
+    { path: "/authors", label: "Authors", icon: Users },
+    { path: "/social", label: "Social Media", icon: Radio },
+  ];
+
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -71,28 +73,49 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
                   </p>
                 </div>
               </div>
-              <Link to="/dashboard" className="block px-4 py-2 rounded-md hover:bg-gray-100">
-                Dashboard
-              </Link>
-              <Link to="/profile" className="block px-4 py-2 rounded-md hover:bg-gray-100">
+              <Link to="/profile" className="block px-4 py-2 rounded-md hover:bg-accent" onClick={onClose}>
                 Profile
               </Link>
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center px-4 py-2 rounded-md hover:bg-gray-100 ${
-                    isActive(item.path) ? "text-orange-600" : "text-gray-700"
-                  }`}
-                  onClick={onClose}
-                >
-                  <item.icon className="w-4 h-4 mr-2" />
-                  {item.label}
-                </Link>
-              ))}
+
+              {/* Primary nav */}
+              <div className="space-y-0.5">
+                <p className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Main</p>
+                {primaryItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center px-4 py-2 rounded-md hover:bg-accent ${
+                      isActive(item.path) ? "text-brand-primary bg-accent" : "text-foreground"
+                    }`}
+                    onClick={onClose}
+                  >
+                    <item.icon className="w-4 h-4 mr-2" />
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Secondary nav */}
+              <div className="space-y-0.5">
+                <p className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Explore</p>
+                {secondaryItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center px-4 py-2 rounded-md hover:bg-accent ${
+                      isActive(item.path) ? "text-brand-primary bg-accent" : "text-foreground"
+                    }`}
+                    onClick={onClose}
+                  >
+                    <item.icon className="w-4 h-4 mr-2" />
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
               <Button
                 variant="ghost"
-                className="justify-start"
+                className="justify-start text-destructive hover:bg-destructive/10"
                 onClick={handleSignOut}
               >
                 <LogOut className="w-4 h-4 mr-2" />
@@ -101,18 +124,18 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
             </>
           ) : (
             <>
-              <SignInLink className="block px-4 py-2 rounded-md hover:bg-gray-100">
+              <SignInLink className="block px-4 py-2 rounded-md hover:bg-accent">
                 Sign In
               </SignInLink>
-              <Link to="/signup" className="block px-4 py-2 rounded-md hover:bg-gray-100">
+              <Link to="/signup" className="block px-4 py-2 rounded-md hover:bg-accent">
                 Sign Up
               </Link>
-              {navItems.map((item) => (
+              {[...primaryItems, ...secondaryItems].map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center px-4 py-2 rounded-md hover:bg-gray-100 ${
-                    isActive(item.path) ? "text-orange-600" : "text-gray-700"
+                  className={`flex items-center px-4 py-2 rounded-md hover:bg-accent ${
+                    isActive(item.path) ? "text-brand-primary" : "text-foreground"
                   }`}
                   onClick={onClose}
                 >
