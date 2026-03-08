@@ -6,15 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SEO from '@/components/SEO';
 
-const ADMIN_EMAILS = ['gyan@sahadhyayi.com'];
-
 const AdminFeedback = () => {
   const { user } = useAuth();
-  const isAdmin = !!user && ADMIN_EMAILS.includes(user.email ?? '');
 
   const { data: feedback = [], refetch } = useQuery({
     queryKey: ['feedback'],
-    enabled: isAdmin,
+    enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('feedback')
@@ -25,7 +22,7 @@ const AdminFeedback = () => {
     },
   });
 
-  if (!isAdmin) {
+  if (!user) {
     return <Navigate to="/" />;
   }
 
@@ -42,9 +39,12 @@ const AdminFeedback = () => {
   return (
     <>
       <SEO title="Feedback Admin" description="Review user feedback" />
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-background to-orange-50 py-8">
         <div className="max-w-4xl mx-auto px-4 space-y-6">
-          <h1 className="text-3xl font-bold text-gray-900">User Feedback</h1>
+          <h1 className="text-3xl font-bold text-foreground">User Feedback</h1>
+          {feedback.length === 0 && (
+            <p className="text-muted-foreground">No feedback available or access denied.</p>
+          )}
           {feedback.map((item: any) => (
             <Card key={item.id}>
               <CardHeader>
@@ -58,7 +58,7 @@ const AdminFeedback = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-1">
-                <p className="text-sm text-gray-500">From: {item.name} ({item.email})</p>
+                <p className="text-sm text-muted-foreground">From: {item.name} ({item.email})</p>
                 {item.rating && <p className="text-sm">Rating: {item.rating}</p>}
                 <p>{item.message}</p>
               </CardContent>
