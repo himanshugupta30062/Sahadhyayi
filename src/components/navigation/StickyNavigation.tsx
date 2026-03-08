@@ -62,7 +62,7 @@ const StickyNavigation = () => {
   const isMoreActive = moreItems.some((item) => location.pathname === item.href);
 
   // For non-signed-in users, auth-required tabs redirect to sign-in
-  const AUTH_REQUIRED_TABS = ['articles', 'publish', 'bookshelf', 'games', 'authors', 'social'];
+  const AUTH_REQUIRED_TABS = ['bookshelf', 'games', 'authors', 'social'];
 
   const handleNavClick = (e: React.MouseEvent, item: { key: string; href: string }) => {
     if (!user && AUTH_REQUIRED_TABS.includes(item.key)) {
