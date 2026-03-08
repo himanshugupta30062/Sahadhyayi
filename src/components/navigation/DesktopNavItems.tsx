@@ -8,11 +8,11 @@ const DesktopNavItems = () => {
 
   const navItems = [
     { path: "/library", label: "Library" },
+    { path: "/blog", label: "Publish" },
+    { path: "/games", label: "Games" },
     { path: "/authors", label: "Authors" },
-    { path: "/groups", label: "Groups" },
-    { path: "/map", label: "Reader Map" },
-    { path: "/blog", label: "Blog" },
-    { path: "/community-stories", label: "Stories" },
+    { path: "/social", label: "Social Media" },
+    { path: "/bookshelf", label: "My Books" },
   ];
 
   return (

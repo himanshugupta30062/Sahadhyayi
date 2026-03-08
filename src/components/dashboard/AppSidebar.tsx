@@ -7,8 +7,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 // Updated sidebar items to match new navigation structure
 const items = [
   { title: "Home", url: "/dashboard", icon: Home },
-  { title: "Explore", url: "/library", icon: Compass },
-  { title: "Community", url: "/social", icon: Users },
+  { title: "Library", url: "/library", icon: Compass },
+  { title: "Publish", url: "/blog", icon: BookOpen },
+  { title: "Games", url: "/games", icon: Compass },
+  { title: "Authors", url: "/authors", icon: User },
+  { title: "Social Media", url: "/social", icon: Users },
   { title: "My Books", url: "/bookshelf", icon: BookOpen },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Account Settings", url: "/settings", icon: Settings },
