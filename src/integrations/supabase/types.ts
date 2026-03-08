@@ -3122,6 +3122,13 @@ export type Database = {
           username: string
         }[]
       }
+      get_top_visitor_countries: {
+        Args: { limit_count?: number }
+        Returns: {
+          country_code: string
+          visit_count: number
+        }[]
+      }
       get_total_users_count: { Args: never; Returns: number }
       get_user_bookshelf_stats: {
         Args: { user_uuid: string }
