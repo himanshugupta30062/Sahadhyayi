@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
 import { getBookCompletenessScore } from './useLibraryBooks';
+import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 
 // Only select columns we actually use
 const PAGINATED_SELECT = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
@@ -129,7 +130,7 @@ async function fetchFilteredBooks(
   for (const book of deduped) {
     if (isNcertOrCbseBook(book)) {
       ncert.push(book);
-    } else if (book.cover_image_url) {
+    } else if (normalizeCoverUrl(book.cover_image_url)) {
       withCover.push(book);
     } else {
       noCover.push(book);
@@ -204,6 +205,19 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
       hasPrevPage: page > 1,
     };
   }, [allBooksQuery.data, page, pageSize]);
+
+  // Preload first 8 cover images for instant rendering
+  React.useEffect(() => {
+    if (!paginatedData?.books) return;
+    const urls = paginatedData.books
+      .slice(0, 8)
+      .map(b => normalizeCoverUrl(b.cover_image_url))
+      .filter(Boolean) as string[];
+    urls.forEach(url => {
+      const img = new Image();
+      img.src = url;
+    });
+  }, [paginatedData?.books]);
 
   return {
     data: paginatedData,

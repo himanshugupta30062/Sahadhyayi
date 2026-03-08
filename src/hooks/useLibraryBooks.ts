@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
+import { getCoverQualityScore } from '@/utils/getCoverQualityScore';
 
 export interface Book {
   id: string;
@@ -25,6 +27,7 @@ const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,p
 // Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
   { label: 'Cover image available', points: '+2000', priority: 'highest' },
+  { label: 'High-res cover source (Supabase/OpenLibrary)', points: 'up to +500', priority: 'highest' },
   { label: 'PDF download available', points: '+1000', priority: 'high' },
   { label: 'Verified author name', points: '+300', priority: 'high' },
   { label: 'Science/Physics/Cosmology genre', points: '+200', priority: 'medium' },
@@ -44,7 +47,11 @@ export const SORTING_RULES = [
 export const getBookCompletenessScore = (book: any): number => {
   let score = 0;
   // Tier 0: Cover image is king — books with covers ALWAYS appear first
-  if (book.cover_image_url) score += 2000;
+  const cover = normalizeCoverUrl(book.cover_image_url);
+  if (cover) {
+    score += 2000;
+    score += getCoverQualityScore(cover);
+  }
   // Tier 1: Essential fields
   if (book.pdf_url) score += 1000;
   if (book.author && book.author.trim() && book.author !== 'Unknown Author') score += 300;
