@@ -25,6 +25,7 @@ export interface Author {
   availableSlots: string[];
   verified?: boolean;
   verification_type?: string;
+  is_authentic?: boolean;
 }
 
 // Mock fallback data for when API fails
