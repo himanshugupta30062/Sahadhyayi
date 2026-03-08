@@ -2475,6 +2475,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_nav_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          onboarding_completed: boolean
+          updated_at: string
+          user_id: string
+          visible_tabs: string[]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          onboarding_completed?: boolean
+          updated_at?: string
+          user_id: string
+          visible_tabs?: string[]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          onboarding_completed?: boolean
+          updated_at?: string
+          user_id?: string
+          visible_tabs?: string[]
+        }
+        Relationships: []
+      }
       user_personal_library: {
         Row: {
           added_at: string | null
