@@ -201,6 +201,16 @@ const StickyNavigation = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
+                {/* Contact Me Button */}
+                <ContactFormDialog
+                  trigger={
+                    <Button variant="outline" size="sm" className="border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white font-medium">
+                      <MessageCircle className="w-4 h-4 mr-1.5" />
+                      Contact me
+                    </Button>
+                  }
+                />
+
                 {/* Auth: Avatar dropdown or Sign In */}
                 {user ? (
                   <DropdownMenu>
