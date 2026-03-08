@@ -331,15 +331,10 @@ const StickyNavigation = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="pt-3 space-y-2 border-t border-border">
-                    <SignInLink onClick={() => setIsOpen(false)} className="block">
-                      <Button variant="outline" size="sm" className="w-full border-brand-primary text-brand-primary">
-                        Sign In
-                      </Button>
-                    </SignInLink>
+                  <div className="pt-3 border-t border-border">
                     <Link to="/signup" onClick={() => setIsOpen(false)} className="block">
                       <Button size="sm" className="w-full bg-gradient-button text-white">
-                        Join Now
+                        Get Started
                       </Button>
                     </Link>
                   </div>
