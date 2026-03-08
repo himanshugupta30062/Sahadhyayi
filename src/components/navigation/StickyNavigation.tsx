@@ -45,7 +45,7 @@ const StickyNavigation = () => {
   }));
 
   // Tabs that should always be visible (even for non-signed-in users)
-  const ALWAYS_VISIBLE_TABS = ['articles', 'publish'];
+  const ALWAYS_VISIBLE_TABS = ['articles', 'blog'];
 
   // Home is always primary
   const homeItem = { name: 'Home', href: user ? '/dashboard' : '/', key: 'home', icon: BookOpen };
@@ -62,7 +62,7 @@ const StickyNavigation = () => {
   const isMoreActive = moreItems.some((item) => location.pathname === item.href);
 
   // For non-signed-in users, auth-required tabs redirect to sign-in
-  const AUTH_REQUIRED_TABS = ['articles', 'publish', 'bookshelf', 'games', 'authors', 'social'];
+  const AUTH_REQUIRED_TABS = ['bookshelf', 'games', 'authors', 'social'];
 
   const handleNavClick = (e: React.MouseEvent, item: { key: string; href: string }) => {
     if (!user && AUTH_REQUIRED_TABS.includes(item.key)) {
