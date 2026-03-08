@@ -7,6 +7,7 @@ import { ArrowLeft, Clock, Heart, Eye, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
 import BookFlipLoader from '@/components/ui/BookFlipLoader';
+import MarkdownPreview from '@/components/articles/MarkdownPreview';
 import { format } from 'date-fns';
 
 const ArticleDetail = () => {
