@@ -2,10 +2,16 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, X } from 'lucide-react';
+import { Search, Menu, X, ChevronDown, BookOpen, Gamepad2, Users, Radio } from 'lucide-react';
 import SignInLink from '@/components/SignInLink';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const StickyNavigation = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -16,20 +22,26 @@ const StickyNavigation = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  const navItems = [
+  const primaryItems = [
     { name: 'Home', href: user ? '/dashboard' : '/' },
     { name: 'Library', href: '/library' },
-    { name: 'Publish', href: '/blog' },
-    { name: 'Games', href: '/games' },
-    { name: 'Authors', href: '/authors' },
-    { name: 'Social Media', href: '/social' },
     { name: 'My Books', href: '/bookshelf' },
   ];
+
+  const moreItems = [
+    { name: 'Publish', href: '/blog', icon: BookOpen },
+    { name: 'Games', href: '/games', icon: Gamepad2 },
+    { name: 'Authors', href: '/authors', icon: Users },
+    { name: 'Social Media', href: '/social', icon: Radio },
+  ];
+
+  const allItems = [...primaryItems, ...moreItems];
+
+  const isMoreActive = moreItems.some((item) => location.pathname === item.href);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Navigate to library with search using React Router
       navigate(`/library?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
       setIsOpen(false);
@@ -37,7 +49,7 @@ const StickyNavigation = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -50,27 +62,57 @@ const StickyNavigation = () => {
               height={32}
               loading="lazy"
             />
-            <span className="font-bold text-xl text-text-primary">Sahadhyayi</span>
+            <span className="font-bold text-xl text-foreground">Sahadhyayi</span>
           </Link>
 
           {/* Desktop Navigation */}
           {!isMobile && (
-            <div className="flex items-center space-x-8">
-              {/* Navigation Items */}
-              <div className="flex items-center space-x-6">
-                {navItems.map((item) => (
+            <div className="flex items-center space-x-6">
+              {/* Primary Nav Items */}
+              <div className="flex items-center space-x-5">
+                {primaryItems.map((item) => (
                   <Link
                     key={item.name}
                     to={item.href}
                     className={`text-sm font-medium transition-colors duration-200 hover:text-brand-primary ${
                       location.pathname === item.href
                         ? 'text-brand-primary border-b-2 border-brand-primary pb-1'
-                        : 'text-text-secondary'
+                        : 'text-muted-foreground'
                     }`}
                   >
                     {item.name}
                   </Link>
                 ))}
+
+                {/* More Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`flex items-center gap-1 text-sm font-medium transition-colors duration-200 hover:text-brand-primary ${
+                        isMoreActive
+                          ? 'text-brand-primary border-b-2 border-brand-primary pb-1'
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      More
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    {moreItems.map((item) => (
+                      <DropdownMenuItem
+                        key={item.name}
+                        onClick={() => navigate(item.href)}
+                        className={`cursor-pointer ${
+                          location.pathname === item.href ? 'text-brand-primary bg-accent' : ''
+                        }`}
+                      >
+                        <item.icon className="w-4 h-4 mr-2" />
+                        {item.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* Search Bar */}
@@ -80,20 +122,18 @@ const StickyNavigation = () => {
                   placeholder="Search books, authors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 pl-10 pr-4 py-2 text-sm border-2 border-gray-200 focus:border-brand-primary rounded-lg"
+                  className="w-56 pl-10 pr-4 py-2 text-sm border-2 border-border focus:border-brand-primary rounded-lg"
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               </form>
 
               {/* Auth Buttons */}
               {user ? (
-                <div className="flex items-center space-x-4">
-                  <Link to="/profile">
-                    <Button variant="ghost" size="sm" className="text-text-secondary hover:text-brand-primary">
-                      Profile
-                    </Button>
-                  </Link>
-                </div>
+                <Link to="/profile">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-brand-primary">
+                    Profile
+                  </Button>
+                </Link>
               ) : (
                 <div className="flex items-center space-x-3">
                   <SignInLink>
@@ -136,14 +176,14 @@ const StickyNavigation = () => {
 
         {/* Mobile Search */}
         {isMobile && searchOpen && (
-          <div className="py-3 border-t border-gray-200">
+          <div className="py-3 border-t border-border">
             <form onSubmit={handleSearch}>
               <Input
                 type="text"
                 placeholder="Search books, authors..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full border-2 border-gray-200 focus:border-brand-primary rounded-lg"
+                className="w-full border-2 border-border focus:border-brand-primary rounded-lg"
               />
             </form>
           </div>
@@ -151,25 +191,25 @@ const StickyNavigation = () => {
 
         {/* Mobile Menu */}
         {isMobile && isOpen && (
-          <div className="py-3 border-t border-gray-200">
-            <div className="space-y-3">
-              {navItems.map((item) => (
+          <div className="py-3 border-t border-border">
+            <div className="space-y-1">
+              {allItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${
+                  className={`block px-3 py-2.5 text-base font-medium rounded-md transition-colors ${
                     location.pathname === item.href
-                      ? 'text-brand-primary bg-brand-neutral'
-                      : 'text-text-secondary hover:text-brand-primary hover:bg-gray-50'
+                      ? 'text-brand-primary bg-accent'
+                      : 'text-muted-foreground hover:text-brand-primary hover:bg-accent/50'
                   }`}
                 >
                   {item.name}
                 </Link>
               ))}
-              
+
               {!user && (
-                <div className="pt-3 space-y-2 border-t border-gray-200">
+                <div className="pt-3 space-y-2 border-t border-border">
                   <SignInLink onClick={() => setIsOpen(false)} className="block">
                     <Button variant="outline" size="sm" className="w-full border-brand-primary text-brand-primary">
                       Sign In
