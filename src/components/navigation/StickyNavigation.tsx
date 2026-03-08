@@ -156,7 +156,13 @@ const StickyNavigation = () => {
                         {moreItems.map((item) => (
                           <DropdownMenuItem
                             key={item.key}
-                            onClick={() => navigate(item.href)}
+                            onClick={() => {
+                              if (!user && AUTH_REQUIRED_TABS.includes(item.key)) {
+                                navigate(`/signin?redirect=${encodeURIComponent(item.href)}`, { state: { from: item.href } });
+                              } else {
+                                navigate(item.href);
+                              }
+                            }}
                             className={`cursor-pointer ${
                               location.pathname === item.href ? 'text-brand-primary bg-accent' : ''
                             }`}
