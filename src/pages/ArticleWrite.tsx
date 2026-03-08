@@ -308,7 +308,7 @@ const ArticleWrite = () => {
                   placeholder="Article title..."
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="text-3xl font-bold border-none shadow-none focus-visible:ring-0 px-0 placeholder:text-muted-foreground/40 h-auto py-2"
+                  className="text-3xl font-bold border border-border shadow-none focus-visible:ring-1 focus-visible:ring-brand-primary px-3 placeholder:text-muted-foreground/40 h-auto py-3 rounded-lg"
                   maxLength={200}
                 />
                 {errors.title && <p className="text-sm text-destructive mt-1">{errors.title}</p>}
