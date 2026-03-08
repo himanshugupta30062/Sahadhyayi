@@ -17,7 +17,7 @@ const AuthSection = () => {
       sessionStorage.setItem('redirectScrollY', String(window.scrollY));
     }
     const redirect = `${location.pathname}${location.search}${location.hash}`;
-    navigate(`/signin?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
+    navigate(`/auth?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
   };
 
   const handleSignUpClick = () => {
