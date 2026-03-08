@@ -104,7 +104,7 @@ async function fetchFilteredBooks(
     }
   }
 
-  // Map, sort, dedup, spread — all in one pass
+  // Map, sort, dedup — then spread within tiers to preserve cover priority
   const mapped = all.map(mapBook);
 
   mapped.sort((a, b) => {
@@ -122,31 +122,46 @@ async function fetchFilteredBooks(
     return true;
   });
 
-  // Spread by author (round-robin)
-  const authorGroups = new Map<string, Book[]>();
+  // Split into 3 tiers: with-cover, no-cover, NCERT/CBSE
+  const withCover: Book[] = [];
+  const noCover: Book[] = [];
+  const ncert: Book[] = [];
   for (const book of deduped) {
-    const k = (book.author || 'Unknown').trim().toLowerCase();
-    if (!authorGroups.has(k)) authorGroups.set(k, []);
-    authorGroups.get(k)!.push(book);
-  }
-  const queues = Array.from(authorGroups.values());
-  queues.sort((a, b) => b.length - a.length);
-  const spread: Book[] = [];
-  let rem = true;
-  while (rem) {
-    rem = false;
-    for (const q of queues) {
-      if (q.length > 0) {
-        spread.push(q.shift()!);
-        if (q.length > 0) rem = true;
-      }
+    if (isNcertOrCbseBook(book)) {
+      ncert.push(book);
+    } else if (book.cover_image_url) {
+      withCover.push(book);
+    } else {
+      noCover.push(book);
     }
   }
 
-  // Push NCERT/CBSE to the very end
-  const priority = spread.filter(b => !isNcertOrCbseBook(b));
-  const demoted = spread.filter(isNcertOrCbseBook);
-  return [...priority, ...demoted];
+  // Round-robin spread by author within each tier to avoid author clustering
+  const spreadByAuthor = (books: Book[]): Book[] => {
+    const authorGroups = new Map<string, Book[]>();
+    for (const book of books) {
+      const k = (book.author || 'Unknown').trim().toLowerCase();
+      if (!authorGroups.has(k)) authorGroups.set(k, []);
+      authorGroups.get(k)!.push(book);
+    }
+    const queues = Array.from(authorGroups.values());
+    queues.sort((a, b) => b.length - a.length);
+    const result: Book[] = [];
+    let rem = true;
+    while (rem) {
+      rem = false;
+      for (const q of queues) {
+        if (q.length > 0) {
+          result.push(q.shift()!);
+          if (q.length > 0) rem = true;
+        }
+      }
+    }
+    return result;
+  };
+
+  // Books with covers ALWAYS come first, then no-cover, then NCERT/CBSE last
+  return [...spreadByAuthor(withCover), ...spreadByAuthor(noCover), ...spreadByAuthor(ncert)];
 }
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
