@@ -333,10 +333,8 @@ const StickyNavigation = () => {
                   </div>
                 ) : (
                   <div className="pt-3 border-t border-border">
-                    <Link to="/signup" onClick={() => setIsOpen(false)} className="block">
-                      <Button size="sm" className="w-full bg-gradient-button text-white">
-                        Get Started
-                      </Button>
+                    <Link to="/auth" onClick={() => setIsOpen(false)} className="block px-3 py-2.5 text-base font-medium rounded-md text-muted-foreground hover:text-brand-primary hover:bg-accent/50">
+                      Sign In
                     </Link>
                   </div>
                 )}
