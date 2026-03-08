@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import SignInLink from '@/components/SignInLink';
-import { Menu, X, ChevronDown, User, LogOut, Settings, Search } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Settings, Search, MessageCircle, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ContactFormDialog from "@/components/ContactFormDialog";
 import { useAuth } from "@/contexts/authHelpers";
 import {
   DropdownMenu,
@@ -76,7 +76,7 @@ const Navigation = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/signin');
+    navigate('/auth');
     setIsOpen(false);
   };
 
@@ -187,15 +187,19 @@ const Navigation = () => {
                     </DropdownMenu>
                   </>
                 ) : (
-                  <div className="flex items-center space-x-4">
-                    <SignInLink>
-                      <Button variant="ghost" size="sm" className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
+                  <div className="flex items-center space-x-3">
+                    <ContactFormDialog
+                      trigger={
+                        <Button variant="outline" size="sm" className="border-amber-500 text-amber-600 hover:bg-amber-50 font-medium">
+                          <MessageCircle className="w-4 h-4 mr-1.5" />
+                          Contact me
+                        </Button>
+                      }
+                    />
+                    <Link to="/auth">
+                      <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-medium">
+                        <LogIn className="w-4 h-4 mr-1.5" />
                         Sign In
-                      </Button>
-                    </SignInLink>
-                    <Link to="/signup">
-                      <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
-                        Sign Up
                       </Button>
                     </Link>
                   </div>
@@ -292,14 +296,10 @@ const Navigation = () => {
                 </div>
               ) : (
                 <div className="pt-4 space-y-3 border-t border-gray-200">
-                  <SignInLink onClick={() => setIsOpen(false)} className="block">
-                    <Button variant="ghost" size="sm" className="w-full justify-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50">
-                      Sign In
-                    </Button>
-                  </SignInLink>
-                  <Link to="/signup" onClick={() => setIsOpen(false)} className="block">
+                  <Link to="/auth" onClick={() => setIsOpen(false)} className="block">
                     <Button size="sm" className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
-                      Sign Up
+                      <LogIn className="w-4 h-4 mr-1.5" />
+                      Sign In
                     </Button>
                   </Link>
                 </div>
