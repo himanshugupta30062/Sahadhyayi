@@ -5,397 +5,282 @@ import { useAuthorBooks } from '@/hooks/useAuthorBooks';
 import { useAuth } from '@/contexts/authHelpers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { 
-  BookOpen, 
-  Download, 
-  MessageCircle, 
-  ChevronDown, 
-  ChevronUp,
-  User,
-  ExternalLink
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  BookOpen, Download, MessageCircle, User, ExternalLink,
+  MapPin, Star, Users, Calendar, ChevronDown, ChevronUp, ArrowLeft,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { FollowButton } from '@/components/authors/FollowButton';
+import { VerificationBadge } from '@/components/authors/VerificationBadge';
 import SEO from '@/components/SEO';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import BookFlipLoader from '@/components/ui/BookFlipLoader';
+import { useToast } from '@/hooks/use-toast';
 
-// Legacy author details page accessed via /author/:slug
 const AuthorDetails = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isFullBioExpanded, setIsFullBioExpanded] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [showMessageForm, setShowMessageForm] = useState(false);
-  const [messageText, setMessageText] = useState('');
+  const [bioExpanded, setBioExpanded] = useState(false);
 
-  const { data: author, isLoading: authorLoading, error: authorError } = useAuthorBySlug(slug);
+  const { data: author, isLoading, error } = useAuthorBySlug(slug);
   const { data: books = [], isLoading: booksLoading } = useAuthorBooks(author?.id || '');
 
-  const handleDownloadPDF = (book: any) => {
-    if (book.pdf_url) {
-      window.open(book.pdf_url, '_blank');
-      toast({
-        title: "Download Started",
-        description: `Downloading ${book.title}`,
-      });
-    } else {
-      toast({
-        title: "PDF Not Available",
-        description: "This book doesn't have a PDF version available.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSubmitComment = () => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to leave a comment.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newComment.trim()) {
-      // In a real app, this would submit to the backend
-      toast({
-        title: "Comment Added",
-        description: "Your comment has been posted successfully.",
-      });
-      setNewComment('');
-    }
-  };
-
-  const handleSendMessage = () => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to message the author.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (messageText.trim()) {
-      // In a real app, this would send the message to the author
-      toast({
-        title: "Message Sent",
-        description: "Your message has been sent to the author.",
-      });
-      setMessageText('');
-      setShowMessageForm(false);
-    }
-  };
-
-  if (authorLoading) {
-    return <LoadingSpinner />;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <BookFlipLoader size="md" text="Loading author..." />
+      </div>
+    );
   }
 
-  if (authorError || !author) {
+  if (error || !author) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Card>
-            <CardContent className="p-12 text-center">
-              <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Author Not Found</h3>
-              <p className="text-gray-600 mb-4">
-                The author you're looking for doesn't exist or has been removed.
-              </p>
-              <Link to="/authors">
-                <Button>Browse All Authors</Button>
-              </Link>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <User className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">Author Not Found</h1>
+          <p className="text-muted-foreground mb-6">The author you're looking for doesn't exist.</p>
+          <Link to="/authors">
+            <Button className="bg-gradient-button text-white">Browse Authors</Button>
+          </Link>
         </div>
       </div>
     );
   }
 
+  const initials = author.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
   return (
     <>
       <SEO
         title={`${author.name} - Author Profile | Sahadhyayi`}
-        description={author.bio || `Discover books and content by ${author.name}. Read author biography, explore published works, and connect with the reading community.`}
-        keywords={['author', author.name, 'books', 'biography', 'reading']}
+        description={author.bio || `Discover books by ${author.name} on Sahadhyayi.`}
       />
-      
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Author Profile Header */}
-          <Card className="mb-8">
-            <CardContent className="p-8">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-shrink-0">
-                  <Avatar className="w-32 h-32 border-4 border-amber-200">
-                    <AvatarImage 
-                      src={author.profile_image_url || ''} 
-                      alt={author.name}
-                    />
-                    <AvatarFallback className="text-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-                      {author.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                
-                <div className="flex-1">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div>
-                      <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        {author.name}
-                      </h1>
-                      {author.location && (
-                        <p className="text-gray-600 mb-2">📍 {author.location}</p>
-                      )}
-                      
-                      {/* Author Stats */}
-                      <div className="flex flex-wrap gap-4 mb-4">
-                        <div className="flex items-center gap-2">
-                          <BookOpen className="w-4 h-4 text-amber-600" />
-                          <span className="text-sm font-medium">
-                            {author.books_count || books.length} Books
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-blue-600" />
-                          <span className="text-sm font-medium">
-                            {author.followers_count || 0} Followers
-                          </span>
-                        </div>
-                        {author.rating && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">
-                              ⭐ {author.rating}/5
-                            </span>
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Genres */}
-                      {author.genres && author.genres.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {author.genres.map((genre, index) => (
-                            <Badge key={index} variant="secondary" className="bg-amber-100 text-amber-800">
-                              {genre}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+      <div className="min-h-screen bg-background">
+        {/* Hero/Profile Header */}
+        <div className="relative bg-gradient-to-br from-brand-primary/8 via-background to-brand-secondary/5">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,hsl(var(--brand-primary)/0.06),transparent_50%)]" />
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 relative">
+            <Link to="/authors" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-brand-primary mb-6 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to Authors
+            </Link>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col gap-2">
-                      {author.website_url && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          asChild
-                        >
-                          <a href={author.website_url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            Website
-                          </a>
-                        </Button>
-                      )}
-                      
-                      {user && (
-                        <Button 
-                          size="sm"
-                          onClick={() => setShowMessageForm(!showMessageForm)}
-                        >
-                          <MessageCircle className="w-4 h-4 mr-2" />
-                          Message Author
-                        </Button>
-                      )}
-                    </div>
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              {/* Avatar */}
+              <Avatar className="w-28 h-28 ring-4 ring-background shadow-[var(--shadow-elevated)]">
+                <AvatarImage src={author.profile_image_url || ''} alt={author.name} />
+                <AvatarFallback className="text-3xl font-bold bg-gradient-button text-white">{initials}</AvatarFallback>
+              </Avatar>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-3xl font-bold text-foreground">{author.name}</h1>
+                    <VerificationBadge verified={author.verified || false} verificationType={author.verification_type} />
                   </div>
+                  <div className="flex items-center gap-2">
+                    <FollowButton authorId={author.id} size="sm" />
+                    {author.website_url && (
+                      <Button variant="outline" size="sm" asChild className="border-border">
+                        <a href={author.website_url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-4 h-4 mr-1" /> Website
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
 
-                  {/* Short Bio */}
-                  {author.bio && (
-                    <div className="mt-4">
-                      <p className="text-gray-700 leading-relaxed">
-                        {isFullBioExpanded 
-                          ? author.bio 
-                          : `${author.bio.substring(0, 200)}${author.bio.length > 200 ? '...' : ''}`
-                        }
-                      </p>
-                      {author.bio.length > 200 && (
-                        <button
-                          onClick={() => setIsFullBioExpanded(!isFullBioExpanded)}
-                          className="text-amber-600 hover:text-amber-700 text-sm font-medium mt-2 flex items-center gap-1"
-                        >
-                          {isFullBioExpanded ? (
-                            <>Show Less <ChevronUp className="w-4 h-4" /></>
-                          ) : (
-                            <>Read More <ChevronDown className="w-4 h-4" /></>
-                          )}
-                        </button>
-                      )}
+                {author.location && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-1 mb-3">
+                    <MapPin className="w-4 h-4" /> {author.location}
+                  </p>
+                )}
+
+                {/* Stats */}
+                <div className="flex flex-wrap gap-5 mb-4">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <BookOpen className="w-4 h-4 text-brand-primary" />
+                    <span className="font-semibold text-foreground">{author.books_count || books.length}</span>
+                    <span className="text-muted-foreground">Books</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Users className="w-4 h-4 text-brand-primary" />
+                    <span className="font-semibold text-foreground">{(author.followers_count || 0).toLocaleString()}</span>
+                    <span className="text-muted-foreground">Followers</span>
+                  </div>
+                  {author.rating && (
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <Star className="w-4 h-4 text-amber-500" />
+                      <span className="font-semibold text-foreground">{author.rating}/5</span>
+                    </div>
+                  )}
+                  {author.upcoming_events > 0 && (
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <Calendar className="w-4 h-4 text-brand-primary" />
+                      <span className="font-semibold text-foreground">{author.upcoming_events}</span>
+                      <span className="text-muted-foreground">Events</span>
                     </div>
                   )}
                 </div>
-              </div>
 
-              {/* Message Form */}
-              {showMessageForm && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="text-lg font-semibold mb-3">Send Message to {author.name}</h3>
-                  <Textarea
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder="Write your message here..."
-                    className="mb-3"
-                    rows={4}
-                  />
-                  <div className="flex gap-2">
-                    <Button onClick={handleSendMessage} disabled={!messageText.trim()}>
-                      Send Message
-                    </Button>
-                    <Button variant="outline" onClick={() => setShowMessageForm(false)}>
-                      Cancel
-                    </Button>
+                {/* Genres */}
+                {author.genres && author.genres.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {author.genres.map((genre, i) => (
+                      <Badge key={i} variant="secondary" className="bg-brand-primary/10 text-brand-primary border-0">{genre}</Badge>
+                    ))}
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
 
-          {/* Author's Books */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-amber-600" />
-                Books by {author.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+                {/* Bio */}
+                {author.bio && (
+                  <div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {bioExpanded ? author.bio : `${author.bio.substring(0, 250)}${author.bio.length > 250 ? '...' : ''}`}
+                    </p>
+                    {author.bio.length > 250 && (
+                      <button
+                        onClick={() => setBioExpanded(!bioExpanded)}
+                        className="text-brand-primary hover:underline text-sm font-medium mt-1 flex items-center gap-1"
+                      >
+                        {bioExpanded ? <>Show Less <ChevronUp className="w-3 h-3" /></> : <>Read More <ChevronDown className="w-3 h-3" /></>}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Tabs */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Tabs defaultValue="books" className="w-full">
+            <TabsList className="w-full max-w-md bg-muted/50 rounded-xl p-1 mb-8">
+              <TabsTrigger value="books" className="flex-1 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <BookOpen className="w-4 h-4 mr-1.5" /> Books
+              </TabsTrigger>
+              <TabsTrigger value="about" className="flex-1 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <User className="w-4 h-4 mr-1.5" /> About
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="books">
               {booksLoading ? (
-                <div className="text-center py-8">
-                  <LoadingSpinner />
+                <div className="flex justify-center py-12">
+                  <BookFlipLoader size="sm" text="Loading books..." />
                 </div>
               ) : books.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {books.map((book) => (
-                    <Card key={book.id} className="group hover:shadow-lg transition-all duration-300">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-amber-500 to-orange-600 relative overflow-hidden">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                  {books.map(book => (
+                    <Card key={book.id} className="group border-border hover:shadow-[var(--shadow-card)] transition-all duration-300 overflow-hidden">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-brand-primary to-brand-secondary relative overflow-hidden">
                         {book.cover_image_url ? (
                           <img
                             src={book.cover_image_url}
                             alt={book.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              e.currentTarget.src = '/default-cover.jpg';
-                            }}
+                            loading="lazy"
                           />
                         ) : (
-                          <img
-                            src="/default-cover.jpg"
-                            alt={book.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
+                          <div className="w-full h-full flex items-center justify-center">
+                            <BookOpen className="w-12 h-12 text-white/60" />
+                          </div>
                         )}
                       </div>
-                      
                       <CardContent className="p-4">
-                        <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 mb-2">
-                          {book.title}
-                        </h3>
-                        
+                        <h3 className="font-semibold text-foreground line-clamp-2 mb-1">{book.title}</h3>
                         {book.genre && (
-                          <Badge variant="secondary" className="mb-2">
-                            {book.genre}
-                          </Badge>
+                          <Badge variant="outline" className="text-[10px] border-border text-muted-foreground mb-2">{book.genre}</Badge>
                         )}
-                        
                         {book.description && (
-                          <p className="text-gray-600 text-sm line-clamp-3 mb-3">
-                            {book.description}
-                          </p>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{book.description}</p>
                         )}
-                        
-                        <div className="flex gap-2">
-                          {book.pdf_url ? (
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleDownloadPDF(book)}
-                              className="flex-1"
-                            >
-                              <Download className="w-4 h-4 mr-2" />
-                              Download
-                            </Button>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              disabled
-                              className="flex-1"
-                            >
-                              PDF Not Available
-                            </Button>
-                          )}
-                        </div>
+                        {book.pdf_url ? (
+                          <Button
+                            size="sm"
+                            className="w-full bg-gradient-button text-white"
+                            onClick={() => window.open(book.pdf_url!, '_blank')}
+                          >
+                            <Download className="w-4 h-4 mr-1" /> Read / Download
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="outline" className="w-full border-border" disabled>
+                            Coming Soon
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No books available for this author yet.</p>
+                <div className="text-center py-16">
+                  <BookOpen className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+                  <p className="text-muted-foreground">No books available yet.</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </TabsContent>
 
-          {/* Reader Comments Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-blue-600" />
-                Reader Comments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {user ? (
-                <div className="mb-6">
-                  <Textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Share your thoughts about this author..."
-                    className="mb-3"
-                    rows={3}
-                  />
-                  <Button onClick={handleSubmitComment} disabled={!newComment.trim()}>
-                    Post Comment
-                  </Button>
-                </div>
-              ) : (
-                <div className="mb-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
-                  <p className="text-amber-800">
-                    <Link to="/signin" className="font-medium hover:underline">
-                      Sign in
-                    </Link>{' '}
-                    to leave a comment about this author.
-                  </p>
-                </div>
-              )}
+            <TabsContent value="about">
+              <div className="max-w-2xl space-y-6">
+                <Card className="border-border">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-foreground">Biography</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {author.bio || 'Bio will be updated by the author.'}
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Separator className="mb-6" />
+                {author.genres && author.genres.length > 0 && (
+                  <Card className="border-border">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-foreground">Genres</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {author.genres.map((g, i) => (
+                          <Badge key={i} className="bg-brand-primary/10 text-brand-primary border-0">{g}</Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-              {/* Sample comments - in a real app, these would come from the database */}
-              <div className="space-y-4">
-                <div className="text-center py-8 text-gray-500">
-                  <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>No comments yet. Be the first to share your thoughts!</p>
-                </div>
+                <Card className="border-border">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-foreground">Stats</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div className="text-center p-3 rounded-xl bg-muted/50">
+                        <span className="text-2xl font-bold text-foreground block">{author.books_count || books.length}</span>
+                        <span className="text-xs text-muted-foreground">Books</span>
+                      </div>
+                      <div className="text-center p-3 rounded-xl bg-muted/50">
+                        <span className="text-2xl font-bold text-foreground block">{(author.followers_count || 0).toLocaleString()}</span>
+                        <span className="text-xs text-muted-foreground">Followers</span>
+                      </div>
+                      <div className="text-center p-3 rounded-xl bg-muted/50">
+                        <span className="text-2xl font-bold text-foreground block">{author.rating || '—'}</span>
+                        <span className="text-xs text-muted-foreground">Rating</span>
+                      </div>
+                      <div className="text-center p-3 rounded-xl bg-muted/50">
+                        <span className="text-2xl font-bold text-foreground block">{author.upcoming_events || 0}</span>
+                        <span className="text-xs text-muted-foreground">Events</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </>
