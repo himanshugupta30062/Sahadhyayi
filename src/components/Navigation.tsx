@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ChevronDown, User, LogOut, Settings, Search, MessageCircle, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ContactFormDialog from "@/components/ContactFormDialog";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/authHelpers";
 import {
   DropdownMenu,
