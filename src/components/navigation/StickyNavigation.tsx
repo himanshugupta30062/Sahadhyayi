@@ -126,6 +126,7 @@ const StickyNavigation = () => {
                     <Link
                       key={item.key}
                       to={item.href}
+                      onClick={(e) => handleNavClick(e, item)}
                       className={`text-sm font-medium transition-colors duration-200 hover:text-brand-primary ${
                         location.pathname === item.href
                           ? 'text-brand-primary border-b-2 border-brand-primary pb-1'
