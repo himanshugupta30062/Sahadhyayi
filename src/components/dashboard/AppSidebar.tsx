@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { Home, Compass, Users, BookOpen, User, Settings } from "lucide-react";
+import { Home, Compass, Users, BookOpen, User, Settings, FileText } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 // Updated sidebar items to match new navigation structure
