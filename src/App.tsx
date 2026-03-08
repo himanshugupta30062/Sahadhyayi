@@ -51,6 +51,8 @@ const Blog = lazy(() => import('./pages/Blog'));
 const BlogPost = lazy(() => import('./pages/BlogPost'));
 const Bookshelf = lazy(() => import('./pages/Bookshelf'));
 const Games = lazy(() => import('./pages/Games'));
+const PublishBook = lazy(() => import('./pages/PublishBook'));
+const MyPublications = lazy(() => import('./pages/MyPublications'));
 
 // Footer pages (lowest priority)
 const HelpCenter = lazy(() => import('./pages/HelpCenter'));
@@ -281,6 +283,26 @@ const App = memo(() => {
                             <Suspense fallback={<LoadingFallback message="Loading games..." />}>
                               <Games />
                             </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/publish"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading publisher..." />}>
+                                <PublishBook />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/my-publications"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <MyPublications />
+                              </Suspense>
+                            </ProtectedRoute>
                           }
                         />
                         

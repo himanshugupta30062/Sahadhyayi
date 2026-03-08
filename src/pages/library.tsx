@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/Breadcrumb';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Sparkles, BookOpen, Users, Star } from 'lucide-react';
+import { RefreshCw, Sparkles, BookOpen, Users, Star, PenTool } from 'lucide-react';
 import LibraryHero from '@/components/library/LibraryHero';
 import BooksCollection from '@/components/library/BooksCollection';
 import ResponsiveBookGrid from '@/components/library/ResponsiveBookGrid';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
 
 export default function Library() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedAuthor, setSelectedAuthor] = useState('All');
@@ -59,9 +61,12 @@ export default function Library() {
       />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <div className="mb-6">
+        {/* Breadcrumb + Publish CTA */}
+        <div className="flex items-center justify-between mb-6">
           <Breadcrumb items={breadcrumbItems} />
+          <Button onClick={() => navigate('/publish')} className="gap-2">
+            <PenTool className="h-4 w-4" /> Publish Your Book
+          </Button>
         </div>
 
         {/* Main Books Collection */}
