@@ -195,10 +195,7 @@ const BooksCollection = ({
     }
   };
 
-  const filteredAllBooks = useMemo(
-    () => getFilteredBooks(paginatedData?.books ?? []),
-    [paginatedData, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]
-  );
+  const displayBooks = paginatedData?.books ?? [];
   
 
   if (isLoadingAll) {
