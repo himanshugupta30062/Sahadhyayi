@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useCreateArticle } from '@/hooks/useArticles';
 import { useAuth } from '@/contexts/authHelpers';
@@ -39,6 +40,8 @@ const ArticleWrite = () => {
   const [coverUrl, setCoverUrl] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Restore draft from sessionStorage (after sign-in redirect)
   React.useEffect(() => {
@@ -248,18 +251,52 @@ const ArticleWrite = () => {
             <div className="space-y-6">
               {/* Cover image */}
               <div>
-                <label className="text-sm font-medium text-muted-foreground mb-1 block">Cover Image URL (optional)</label>
+                <label className="text-sm font-medium text-muted-foreground mb-1 block">Cover Image (optional)</label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="https://example.com/image.jpg"
+                    placeholder="https://example.com/image.jpg or upload →"
                     value={coverUrl}
                     onChange={(e) => setCoverUrl(e.target.value)}
                     className="flex-1"
                   />
-                  <Button variant="outline" size="icon" className="shrink-0">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) {
+                        setErrors(prev => ({ ...prev, cover: 'Image must be under 5MB' }));
+                        return;
+                      }
+                      setUploading(true);
+                      const ext = file.name.split('.').pop();
+                      const path = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                      const { error } = await supabase.storage.from('books').upload(path, file);
+                      if (error) {
+                        setErrors(prev => ({ ...prev, cover: 'Upload failed. Try again.' }));
+                        setUploading(false);
+                        return;
+                      }
+                      const { data: urlData } = supabase.storage.from('books').getPublicUrl(path);
+                      setCoverUrl(urlData.publicUrl);
+                      setUploading(false);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0"
+                    disabled={uploading}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
                     <ImagePlus className="w-4 h-4" />
                   </Button>
                 </div>
+                {errors.cover && <p className="text-sm text-destructive mt-1">{errors.cover}</p>}
+                {uploading && <p className="text-sm text-muted-foreground mt-1">Uploading...</p>}
                 {coverUrl && (
                   <img src={coverUrl} alt="" className="mt-2 w-full h-48 object-cover rounded-lg" />
                 )}
@@ -271,7 +308,7 @@ const ArticleWrite = () => {
                   placeholder="Article title..."
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="text-3xl font-bold border-none shadow-none focus-visible:ring-0 px-0 placeholder:text-muted-foreground/40 h-auto py-2"
+                  className="text-3xl font-bold border border-border shadow-none focus-visible:ring-1 focus-visible:ring-brand-primary px-3 placeholder:text-muted-foreground/40 h-auto py-3 rounded-lg"
                   maxLength={200}
                 />
                 {errors.title && <p className="text-sm text-destructive mt-1">{errors.title}</p>}
