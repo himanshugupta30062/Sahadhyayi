@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
@@ -7,13 +6,10 @@ import { useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, TrendingUp, Users, Target, BookOpen } from 'lucide-react';
+import { Plus, BookOpen, Library, Users, ChevronRight, Flame } from 'lucide-react';
 import SEO from '@/components/SEO';
 import DashboardStats from '@/components/dashboard/DashboardStats';
-import EnhancedBookshelf from '@/components/dashboard/EnhancedBookshelf';
 import CurrentReads from '@/components/dashboard/CurrentReads';
-import ReadingTracker from '@/components/dashboard/ReadingTracker';
-import ReadingChallengesSection from '@/components/dashboard/ReadingChallengesSection';
 import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
 import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
 import BookRecommendations from '@/components/dashboard/BookRecommendations';
@@ -25,7 +21,6 @@ const Dashboard = () => {
   const [readingGoal, setReadingGoal] = useState(12);
   const [showGoalModal, setShowGoalModal] = useState(false);
 
-  // Load reading goal from localStorage and listen for updates
   useEffect(() => {
     const loadGoal = () => {
       const savedGoal = localStorage.getItem(`readingGoal${new Date().getFullYear()}`);
@@ -36,7 +31,6 @@ const Dashboard = () => {
 
     loadGoal();
 
-    // Listen for goal updates from the dialog
     const handleGoalUpdate = (event: CustomEvent) => {
       setReadingGoal(event.detail.goal);
     };
@@ -55,41 +49,38 @@ const Dashboard = () => {
   const userName =
     profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader';
 
-  // Calculate reading stats from user bookshelf
   const completedBooks = userBooks.filter(book => book.status === 'completed').length;
   const currentlyReading = userBooks.filter(book => book.status === 'reading').length;
-  const totalBooks = completedBooks + currentlyReading;
+  const wantToRead = userBooks.filter(book => book.status === 'want_to_read').length;
+  const totalBooks = completedBooks + currentlyReading + wantToRead;
   const progressPercentage = Math.min(100, Math.round((completedBooks / readingGoal) * 100));
+  
+  // Get the current book being read for the welcome message
+  const currentBook = userBooks.find(book => book.status === 'reading');
 
-  // Function to check reading goal before adding books
   const checkReadingGoal = useCallback(() => {
     if (totalBooks >= readingGoal) {
       setShowGoalModal(true);
-      return false; // Block adding book
+      return false;
     }
-    return true; // Allow adding book
+    return true;
   }, [totalBooks, readingGoal]);
 
-  // Expose function globally for other components to use
   useEffect(() => {
     (window as any).checkReadingGoal = checkReadingGoal;
   }, [checkReadingGoal]);
 
   if (authLoading || profileLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-4 sm:p-8">
-        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-          <Skeleton className="h-20 sm:h-24 w-full" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              <Skeleton className="h-48 sm:h-64 w-full" />
-              <Skeleton className="h-64 sm:h-96 w-full" />
-            </div>
-            <div className="space-y-4 sm:space-y-6">
-              <Skeleton className="h-32 w-full" />
-              <Skeleton className="h-48 w-full" />
-            </div>
+      <div className="min-h-screen bg-background p-4 sm:p-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-xl" />
+            ))}
           </div>
+          <Skeleton className="h-64 w-full rounded-xl" />
         </div>
       </div>
     );
@@ -104,141 +95,197 @@ const Dashboard = () => {
         url="https://sahadhyayi.com/dashboard"
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-          {/* Welcome Header */}
-          <div className="mb-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-amber-200 shadow-lg p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                    Welcome back, {userName}! 📚
+      <div className="min-h-screen bg-background">
+        <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+          
+          {/* Welcome Header - Clean & Contextual */}
+          <Card className="border-0 bg-gradient-to-r from-[hsl(var(--brand-primary))] to-[hsl(var(--brand-secondary))] text-white overflow-hidden relative">
+            <CardContent className="p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+                <div className="space-y-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold">
+                    {currentBook 
+                      ? `Continue reading, ${userName}` 
+                      : `Welcome back, ${userName}!`}
                   </h1>
-                  <p className="text-gray-600 text-sm sm:text-base">
-                    Continue your reading journey and discover new books in your personal library.
+                  <p className="text-white/90 text-sm sm:text-base max-w-md">
+                    {currentBook 
+                      ? `Pick up where you left off with "${currentBook.books_library?.title}"`
+                      : currentlyReading === 0 
+                        ? "Start your reading journey by adding a book to your shelf"
+                        : `You have ${totalBooks} books in your collection`}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Link to="/library">
-                    <Button className="bg-amber-600 hover:bg-amber-700 shadow-lg">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Books
-                    </Button>
-                  </Link>
-                  <Link to="/social?tab=groups">
-                    <Button variant="outline" className="border-amber-200 hover:bg-amber-50">
-                      <Users className="w-4 h-4 mr-2" />
-                      Community
-                    </Button>
-                  </Link>
+                <div className="flex gap-3">
+                  {currentBook ? (
+                    <Link to={`/book/${currentBook.book_id}`}>
+                      <Button className="bg-white text-[hsl(var(--brand-primary))] hover:bg-white/90 shadow-lg font-semibold">
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Continue Reading
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link to="/library">
+                      <Button className="bg-white text-[hsl(var(--brand-primary))] hover:bg-white/90 shadow-lg font-semibold">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Book
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
+              {/* Decorative element */}
+              <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute right-16 bottom-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2" />
+            </CardContent>
+          </Card>
 
           {/* Stats Overview */}
           <DashboardStats />
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Main Content Area */}
-            <div className="lg:col-span-3 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content - 2 columns */}
+            <div className="lg:col-span-2 space-y-6">
               {/* Current Reading Section */}
               <CurrentReads userId={user?.id} />
               
-              {/* Reading Progress Tracker */}
-              {user?.id && <ReadingTracker userId={user.id} />}
-
-              {/* Reading Challenges */}
-              <ReadingChallengesSection />
-
-              {/* My Library Section */}
-              <EnhancedBookshelf />
-              
               {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
-                    <TrendingUp className="w-5 h-5 mr-2 text-amber-600" />
-                    Discover & Connect
+              <Card className="border-border">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                    <Library className="w-4 h-4 text-[hsl(var(--brand-primary))]" />
+                    Quick Actions
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Link to="/library">
-                      <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
-                        <BookOpen className="w-5 h-5 text-amber-600" />
-                        <span className="text-sm">Browse Library</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <Link to="/library" className="block">
+                      <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2 border-border hover:border-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.05)] transition-colors">
+                        <BookOpen className="w-5 h-5 text-[hsl(var(--brand-primary))]" />
+                        <span className="text-xs font-medium">Browse Library</span>
                       </Button>
                     </Link>
-                    <Link to="/social">
-                      <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
-                        <Users className="w-5 h-5 text-amber-600" />
-                        <span className="text-sm">Social Feed</span>
+                    <Link to="/bookshelf" className="block">
+                      <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2 border-border hover:border-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.05)] transition-colors">
+                        <Library className="w-5 h-5 text-[hsl(var(--brand-primary))]" />
+                        <span className="text-xs font-medium">My Bookshelf</span>
                       </Button>
                     </Link>
-                    <Link to="/social?tab=groups">
-                      <Button variant="outline" className="w-full h-16 flex flex-col gap-2 border-amber-200 hover:bg-amber-50">
-                        <Target className="w-5 h-5 text-amber-600" />
-                        <span className="text-sm">Reading Groups</span>
+                    <Link to="/social" className="block">
+                      <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2 border-border hover:border-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.05)] transition-colors">
+                        <Users className="w-5 h-5 text-[hsl(var(--brand-primary))]" />
+                        <span className="text-xs font-medium">Community</span>
                       </Button>
                     </Link>
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Recent Books from Shelf */}
+              {userBooks.length > 0 && (
+                <Card className="border-border">
+                  <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                    <CardTitle className="text-base font-semibold">Recent Additions</CardTitle>
+                    <Link to="/bookshelf">
+                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                        View All <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </Link>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {userBooks.slice(0, 5).map((item) => (
+                        <Link 
+                          key={item.id} 
+                          to={`/book/${item.book_id}`}
+                          className="group"
+                        >
+                          <div className="aspect-[2/3] rounded-lg overflow-hidden bg-muted shadow-sm group-hover:shadow-md transition-shadow">
+                            {item.books_library?.cover_image_url ? (
+                              <img
+                                src={item.books_library.cover_image_url}
+                                alt={item.books_library?.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--brand-primary)/0.2)] to-[hsl(var(--brand-secondary)/0.2)] flex items-center justify-center">
+                                <BookOpen className="w-6 h-6 text-[hsl(var(--brand-primary))]" />
+                              </div>
+                            )}
+                          </div>
+                          <p className="mt-2 text-xs font-medium line-clamp-1 text-foreground group-hover:text-[hsl(var(--brand-primary))] transition-colors">
+                            {item.books_library?.title || 'Untitled'}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Reading Goal */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">{new Date().getFullYear()} Reading Goal</CardTitle>
+              {/* Reading Goal - Clean Circular Progress */}
+              <Card className="border-border overflow-hidden">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-[hsl(var(--brand-primary))]" />
+                    {new Date().getFullYear()} Reading Goal
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{completedBooks} / {readingGoal}</div>
-                    <div className="text-sm text-gray-600">Books This Year</div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full transition-all duration-300" 
-                        style={{ width: `${progressPercentage}%` }}
-                      ></div>
+                  {/* Circular Progress */}
+                  <div className="flex justify-center py-4">
+                    <div className="relative w-32 h-32">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle
+                          cx="64"
+                          cy="64"
+                          r="56"
+                          stroke="currentColor"
+                          strokeWidth="12"
+                          fill="none"
+                          className="text-muted"
+                        />
+                        <circle
+                          cx="64"
+                          cy="64"
+                          r="56"
+                          stroke="currentColor"
+                          strokeWidth="12"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeDasharray={`${2 * Math.PI * 56}`}
+                          strokeDashoffset={`${2 * Math.PI * 56 * (1 - progressPercentage / 100)}`}
+                          className="text-[hsl(var(--brand-primary))] transition-all duration-500"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-foreground">{completedBooks}</span>
+                        <span className="text-xs text-muted-foreground">of {readingGoal}</span>
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">{progressPercentage}% Complete</div>
                   </div>
-                  
-                  {/* Reading Progress Details */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Currently Reading:</span>
-                      <span className="font-medium">{currentlyReading} books</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Total Progress:</span>
-                      <span className="font-medium">{totalBooks} books</span>
-                    </div>
-                  </div>
-                  
-                  <ReadingGoalDialog onGoalUpdate={handleGoalUpdate} />
-                </CardContent>
-              </Card>
 
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-sm mb-4">No recent activity</p>
-                    <Link to="/social">
-                      <Button size="sm" variant="outline">
-                        Join Community
-                      </Button>
-                    </Link>
+                  {/* Stats Row */}
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 rounded-lg bg-muted/50">
+                      <div className="text-sm font-semibold text-foreground">{currentlyReading}</div>
+                      <div className="text-[10px] text-muted-foreground">Reading</div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-muted/50">
+                      <div className="text-sm font-semibold text-foreground">{completedBooks}</div>
+                      <div className="text-[10px] text-muted-foreground">Finished</div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-muted/50">
+                      <div className="text-sm font-semibold text-foreground">{wantToRead}</div>
+                      <div className="text-[10px] text-muted-foreground">To Read</div>
+                    </div>
                   </div>
+
+                  <ReadingGoalDialog onGoalUpdate={handleGoalUpdate} />
                 </CardContent>
               </Card>
 
@@ -248,7 +295,6 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Reading Goal Modal */}
         <ReadingGoalModal
           isOpen={showGoalModal}
           onClose={() => setShowGoalModal(false)}
