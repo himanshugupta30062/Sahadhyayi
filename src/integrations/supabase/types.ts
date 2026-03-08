@@ -346,6 +346,7 @@ export type Database = {
           followers_count: number | null
           genres: string[] | null
           id: string
+          is_authentic: boolean
           location: string | null
           name: string
           profile_image_url: string | null
@@ -364,6 +365,7 @@ export type Database = {
           followers_count?: number | null
           genres?: string[] | null
           id?: string
+          is_authentic?: boolean
           location?: string | null
           name: string
           profile_image_url?: string | null
@@ -382,6 +384,7 @@ export type Database = {
           followers_count?: number | null
           genres?: string[] | null
           id?: string
+          is_authentic?: boolean
           location?: string | null
           name?: string
           profile_image_url?: string | null
@@ -2929,6 +2932,8 @@ export type Database = {
           social_links: Json
           upcoming_events: number
           updated_at: string
+          verification_type: string
+          verified: boolean
           website_url: string
         }[]
       }
