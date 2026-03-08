@@ -42,11 +42,6 @@ const ArticleWrite = () => {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  if (!user) {
-    navigate('/signin');
-    return null;
-  }
-
   // Insert text around selection (for inline formatting)
   const handleInsert = useCallback((before: string, after: string, placeholder?: string) => {
     const textarea = textareaRef.current;
