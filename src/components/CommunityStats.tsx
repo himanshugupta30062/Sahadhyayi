@@ -1,256 +1,261 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Eye, Loader2, AlertTriangle } from 'lucide-react';
+import { Users, Eye, Loader2, AlertTriangle, Globe, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { logger } from '@/utils/consoleOptimizer';
+
+/** Maps ISO 3166-1 alpha-2 country codes to flag emoji + name */
+const COUNTRY_MAP: Record<string, { flag: string; name: string }> = {
+  IN: { flag: '🇮🇳', name: 'India' },
+  US: { flag: '🇺🇸', name: 'United States' },
+  FR: { flag: '🇫🇷', name: 'France' },
+  CA: { flag: '🇨🇦', name: 'Canada' },
+  GB: { flag: '🇬🇧', name: 'United Kingdom' },
+  DE: { flag: '🇩🇪', name: 'Germany' },
+  SG: { flag: '🇸🇬', name: 'Singapore' },
+  ES: { flag: '🇪🇸', name: 'Spain' },
+  NL: { flag: '🇳🇱', name: 'Netherlands' },
+  ID: { flag: '🇮🇩', name: 'Indonesia' },
+  BR: { flag: '🇧🇷', name: 'Brazil' },
+  CN: { flag: '🇨🇳', name: 'China' },
+  SE: { flag: '🇸🇪', name: 'Sweden' },
+  VN: { flag: '🇻🇳', name: 'Vietnam' },
+  NG: { flag: '🇳🇬', name: 'Nigeria' },
+  UA: { flag: '🇺🇦', name: 'Ukraine' },
+  AU: { flag: '🇦🇺', name: 'Australia' },
+  PL: { flag: '🇵🇱', name: 'Poland' },
+  AR: { flag: '🇦🇷', name: 'Argentina' },
+  LK: { flag: '🇱🇰', name: 'Sri Lanka' },
+  JP: { flag: '🇯🇵', name: 'Japan' },
+  KR: { flag: '🇰🇷', name: 'South Korea' },
+  RU: { flag: '🇷🇺', name: 'Russia' },
+  MX: { flag: '🇲🇽', name: 'Mexico' },
+  IT: { flag: '🇮🇹', name: 'Italy' },
+  AE: { flag: '🇦🇪', name: 'UAE' },
+  SA: { flag: '🇸🇦', name: 'Saudi Arabia' },
+  PK: { flag: '🇵🇰', name: 'Pakistan' },
+  BD: { flag: '🇧🇩', name: 'Bangladesh' },
+  NP: { flag: '🇳🇵', name: 'Nepal' },
+  MY: { flag: '🇲🇾', name: 'Malaysia' },
+  PH: { flag: '🇵🇭', name: 'Philippines' },
+  TH: { flag: '🇹🇭', name: 'Thailand' },
+  ZA: { flag: '🇿🇦', name: 'South Africa' },
+  KE: { flag: '🇰🇪', name: 'Kenya' },
+};
+
+function getCountryInfo(code: string) {
+  return COUNTRY_MAP[code] || { flag: '🏳️', name: code };
+}
 
 interface CommunityStatsData {
   registeredMembers: number;
   totalVisitors: number;
-  loading: {
-    members: boolean;
-    visitors: boolean;
-  };
-  errors: {
-    members: string | null;
-    visitors: string | null;
-  };
+  last24hVisits: number;
+  topCountries: { code: string; count: number }[];
+  loading: boolean;
+  error: string | null;
 }
 
 const CommunityStats = () => {
   const [stats, setStats] = React.useState<CommunityStatsData>({
     registeredMembers: 0,
     totalVisitors: 0,
-    loading: {
-      members: true,
-      visitors: true,
-    },
-    errors: {
-      members: null,
-      visitors: null,
-    },
+    last24hVisits: 0,
+    topCountries: [],
+    loading: true,
+    error: null,
   });
 
-  const getCommunityUserCount = async () => {
+  const fetchAllStats = React.useCallback(async () => {
+    setStats(prev => ({ ...prev, loading: true, error: null }));
     try {
-      setStats(prev => ({
-        ...prev,
-        loading: { ...prev.loading, members: true },
-        errors: { ...prev.errors, members: null },
-      }));
+      const { data, error } = await supabase.functions.invoke('community-stats');
+      if (error) throw error;
 
-      // Use secure function to get total users count
-      const { data, error } = await supabase.rpc('get_total_users_count');
+      setStats({
+        registeredMembers: data.totalSignups ?? 0,
+        totalVisitors: data.totalVisits ?? 0,
+        last24hVisits: data.last24hVisits ?? 0,
+        topCountries: data.topCountries ?? [],
+        loading: false,
+        error: null,
+      });
+    } catch (err) {
+      console.error('Error fetching community stats:', err);
 
-      if (error) {
-        console.error('Error fetching user count:', error);
-        throw error;
-      }
+      // Fallback to direct RPC calls
+      try {
+        const [usersRes, visitsRes] = await Promise.all([
+          supabase.rpc('get_total_users_count'),
+          supabase.rpc('get_website_visit_count'),
+        ]);
 
-      logger.log('✅ Successfully fetched user count:', data);
-      setStats(prev => ({
-        ...prev,
-        registeredMembers: Number(data) || 0,
-        loading: { ...prev.loading, members: false },
-      }));
-    } catch (error) {
-      console.error('Error fetching user count:', error);
-      setStats(prev => ({
-        ...prev,
-        registeredMembers: 0, // Fallback to 0
-        loading: { ...prev.loading, members: false },
-        errors: { ...prev.errors, members: 'Unable to load member count' },
-      }));
-    }
-  };
-
-  const getTotalPageViews = async () => {
-    try {
-      setStats(prev => ({
-        ...prev,
-        loading: { ...prev.loading, visitors: true },
-        errors: { ...prev.errors, visitors: null },
-      }));
-
-      // Try the RPC function first
-      const { data, error } = await supabase.rpc('get_website_visit_count');
-
-      if (error) {
-        console.error('RPC function error:', error);
-        // Fallback to direct table query
-        const { count: fallbackCount, error: fallbackError } = await supabase
-          .from('website_visits')
-          .select('*', { count: 'exact', head: true });
-
-        if (fallbackError) {
-          console.error('Fallback query error:', fallbackError);
-          throw fallbackError;
-        }
-
-        logger.log('⚠️ Used fallback query, visit count:', fallbackCount);
+        setStats({
+          registeredMembers: Number(usersRes.data) || 0,
+          totalVisitors: Number(visitsRes.data) || 0,
+          last24hVisits: 0,
+          topCountries: [],
+          loading: false,
+          error: null,
+        });
+      } catch {
         setStats(prev => ({
           ...prev,
-          totalVisitors: fallbackCount || 0,
-          loading: { ...prev.loading, visitors: false },
+          loading: false,
+          error: 'Unable to load community stats',
         }));
-        return;
       }
-
-      logger.log('✅ Successfully fetched visit count:', data);
-      setStats(prev => ({
-        ...prev,
-        totalVisitors: Number(data) || 0,
-        loading: { ...prev.loading, visitors: false },
-      }));
-    } catch (error) {
-      console.error('Error fetching page views:', error);
-      setStats(prev => ({
-        ...prev,
-        totalVisitors: 0, // Fallback to 0
-        loading: { ...prev.loading, visitors: false },
-        errors: { ...prev.errors, visitors: 'Unable to load visit data' },
-      }));
     }
-  };
+  }, []);
 
   React.useEffect(() => {
-    getCommunityUserCount();
-    getTotalPageViews();
+    fetchAllStats();
 
-    // Set up real-time updates for user registrations
+    // Real-time updates
     const profilesChannel = supabase
       .channel('profiles-changes')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'profiles' }, 
-        () => {
-          getCommunityUserCount();
-        }
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => fetchAllStats())
       .subscribe();
 
-    // Set up real-time updates for page visits
     const visitsChannel = supabase
       .channel('visits-changes')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'website_visits' }, 
-        () => {
-          getTotalPageViews();
-        }
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'website_visits' }, () => fetchAllStats())
       .subscribe();
 
     return () => {
       supabase.removeChannel(profilesChannel);
       supabase.removeChannel(visitsChannel);
     };
-  }, []);
+  }, [fetchAllStats]);
 
-  const handleRetry = () => {
-    getCommunityUserCount();
-    getTotalPageViews();
-  };
+  if (stats.loading) {
+    return (
+      <div className="w-full max-w-5xl mx-auto p-4 flex items-center justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-white/70" />
+        <span className="ml-2 text-white/70 text-sm">Loading community stats...</span>
+      </div>
+    );
+  }
+
+  if (stats.error) {
+    return (
+      <div className="w-full max-w-5xl mx-auto p-4 text-center">
+        <div className="flex items-center justify-center gap-2 text-red-300 mb-2">
+          <AlertTriangle className="w-4 h-4" />
+          <span className="text-sm">{stats.error}</span>
+        </div>
+        <button onClick={fetchAllStats} className="text-sm text-blue-300 hover:text-blue-100 underline">
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  const maxCountryCount = stats.topCountries[0]?.count || 1;
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
+    <div className="w-full max-w-5xl mx-auto p-4">
       <div className="text-center mb-6">
         <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-2">
           📊 Sahadhyayi Community Stats
         </h2>
-        <p className="text-white/90 text-sm md:text-base">Real-time community growth metrics</p>
+        <p className="text-white/80 text-sm md:text-base">Real-time community growth metrics</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {/* Registered Members Card */}
-        <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20 hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="pb-3 md:pb-4">
-            <CardTitle className="flex items-center gap-2 md:gap-3 text-base md:text-lg font-semibold text-gray-800">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Users className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
+      {/* Top row: 3 stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        {/* Registered Members */}
+        <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+              <div className="p-1.5 bg-orange-100 rounded-lg">
+                <Users className="w-4 h-4 text-orange-600" />
               </div>
-              <span className="text-sm md:text-base">📚 Registered Members</span>
+              Registered Members
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            {stats.loading.members ? (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">Loading members...</span>
-              </div>
-            ) : stats.errors.members ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-red-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  <p className="font-medium text-sm">{stats.errors.members}</p>
-                </div>
-                <button 
-                  onClick={handleRetry}
-                  className="text-sm text-blue-600 hover:text-blue-800 underline"
-                >
-                  Try again
-                </button>
-              </div>
-            ) : (
-              <div>
-                <div className="text-xl md:text-2xl font-bold text-orange-600 mb-1">
-                  {stats.registeredMembers.toLocaleString()}
-                </div>
-                <p className="text-gray-700 text-sm md:text-base">
-                  {stats.registeredMembers === 1 
-                    ? '1 person has joined Sahadhyayi' 
-                    : `${stats.registeredMembers.toLocaleString()} people have joined Sahadhyayi`
-                  }
-                </p>
-              </div>
-            )}
+            <div className="text-2xl md:text-3xl font-bold text-orange-600">
+              {stats.registeredMembers.toLocaleString()}
+            </div>
+            <p className="text-gray-500 text-xs mt-1">Total sign-ups</p>
           </CardContent>
         </Card>
 
-        {/* Site Visitors Card */}
-        <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20 hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="pb-3 md:pb-4">
-            <CardTitle className="flex items-center gap-2 md:gap-3 text-base md:text-lg font-semibold text-gray-800">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <Eye className="w-4 h-4 md:w-5 md:h-5 text-amber-600" />
+        {/* Total Visitors */}
+        <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+              <div className="p-1.5 bg-amber-100 rounded-lg">
+                <Eye className="w-4 h-4 text-amber-600" />
               </div>
-              <span className="text-sm md:text-base">👀 Visitors to Site</span>
+              Total Visitors
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            {stats.loading.visitors ? (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">Tracking visits...</span>
+            <div className="text-2xl md:text-3xl font-bold text-amber-600">
+              {stats.totalVisitors.toLocaleString()}
+            </div>
+            <p className="text-gray-500 text-xs mt-1">All-time page views</p>
+          </CardContent>
+        </Card>
+
+        {/* Last 24h */}
+        <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+              <div className="p-1.5 bg-green-100 rounded-lg">
+                <Clock className="w-4 h-4 text-green-600" />
               </div>
-            ) : stats.errors.visitors ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-red-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  <p className="font-medium text-sm">{stats.errors.visitors}</p>
-                </div>
-                <button 
-                  onClick={handleRetry}
-                  className="text-sm text-blue-600 hover:text-blue-800 underline"
-                >
-                  Try again
-                </button>
-              </div>
-            ) : (
-              <div>
-                <div className="text-xl md:text-2xl font-bold text-amber-600 mb-1">
-                  {stats.totalVisitors.toLocaleString()}
-                </div>
-                <p className="text-gray-700 text-sm md:text-base">
-                  {stats.totalVisitors === 1 
-                    ? '1 person has visited this site' 
-                    : `${stats.totalVisitors.toLocaleString()} people have visited this site`
-                  }
-                </p>
-              </div>
-            )}
+              Last 24 Hours
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="text-2xl md:text-3xl font-bold text-green-600">
+              {stats.last24hVisits.toLocaleString()}
+            </div>
+            <p className="text-gray-500 text-xs mt-1">Recent visitors</p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Country visitors card */}
+      {stats.topCountries.length > 0 && (
+        <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+              <div className="p-1.5 bg-blue-100 rounded-lg">
+                <Globe className="w-4 h-4 text-blue-600" />
+              </div>
+              Visitors by Country
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+              {stats.topCountries.map(({ code, count }) => {
+                const { flag, name } = getCountryInfo(code);
+                const pct = Math.round((count / maxCountryCount) * 100);
+                return (
+                  <div key={code} className="flex items-center gap-2">
+                    <span className="text-lg leading-none w-6 text-center flex-shrink-0">{flag}</span>
+                    <span className="text-xs text-gray-700 w-24 truncate flex-shrink-0">{name}</span>
+                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(pct, 4)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-gray-600 w-10 text-right flex-shrink-0">
+                      {count.toLocaleString()}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
