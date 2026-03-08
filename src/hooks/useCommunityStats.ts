@@ -4,9 +4,16 @@ import { supabase } from '@/integrations/supabase/client-universal';
 
 const LOCAL_STORAGE_KEY = 'community-stats';
 
+interface CountryVisit {
+  code: string;
+  count: number;
+}
+
 interface CommunityStats {
   totalSignups: number;
   totalVisits: number;
+  last24hVisits: number;
+  topCountries: CountryVisit[];
   lastUpdated: string;
 }
 
@@ -45,6 +52,8 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
       cached || {
         totalSignups: 0,
         totalVisits: 0,
+        last24hVisits: 0,
+        topCountries: [],
         lastUpdated: new Date().toISOString(),
       }
     );
@@ -62,14 +71,15 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     }
 
     try {
-      // Use the edge function instead of direct database queries for consistency
       const { data, error } = await supabase.functions.invoke('community-stats');
 
       if (error) throw error;
 
-      const updated = {
+      const updated: CommunityStats = {
         totalSignups: data.totalSignups ?? 0,
         totalVisits: data.totalVisits ?? 0,
+        last24hVisits: data.last24hVisits ?? 0,
+        topCountries: data.topCountries ?? [],
         lastUpdated: data.lastUpdated ?? new Date().toISOString(),
       };
 
@@ -77,9 +87,11 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
       safeSetItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
     } catch (err) {
       console.error('Failed to fetch community stats:', err);
-      const fallback = {
+      const fallback: CommunityStats = {
         totalSignups: 0,
         totalVisits: 0,
+        last24hVisits: 0,
+        topCountries: [],
         lastUpdated: new Date().toISOString(),
       };
       setStats(fallback);
