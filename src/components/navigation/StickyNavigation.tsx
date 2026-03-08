@@ -44,18 +44,33 @@ const StickyNavigation = () => {
     icon: ICON_MAP[tab.icon] || BookOpen,
   }));
 
+  // Tabs that should always be visible (even for non-signed-in users)
+  const ALWAYS_VISIBLE_TABS = ['articles', 'publish'];
+
   // Home is always primary
   const homeItem = { name: 'Home', href: user ? '/dashboard' : '/', key: 'home', icon: BookOpen };
 
-  const primaryItems = [
-    homeItem,
-    ...allTabItems.filter((item) => visibleTabKeys.includes(item.key)),
-  ];
+  const primaryItems = user
+    ? [homeItem, ...allTabItems.filter((item) => visibleTabKeys.includes(item.key))]
+    : [homeItem, ...allTabItems.filter((item) => ALWAYS_VISIBLE_TABS.includes(item.key))];
 
-  const moreItems = allTabItems.filter((item) => !visibleTabKeys.includes(item.key));
+  const moreItems = user
+    ? allTabItems.filter((item) => !visibleTabKeys.includes(item.key))
+    : allTabItems.filter((item) => !ALWAYS_VISIBLE_TABS.includes(item.key));
 
   const allItems = [homeItem, ...allTabItems];
   const isMoreActive = moreItems.some((item) => location.pathname === item.href);
+
+  // For non-signed-in users, auth-required tabs redirect to sign-in
+  const AUTH_REQUIRED_TABS = ['articles', 'publish', 'bookshelf', 'games', 'authors', 'social'];
+
+  const handleNavClick = (e: React.MouseEvent, item: { key: string; href: string }) => {
+    if (!user && AUTH_REQUIRED_TABS.includes(item.key)) {
+      e.preventDefault();
+      const redirect = item.href;
+      navigate(`/signin?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,6 +126,7 @@ const StickyNavigation = () => {
                     <Link
                       key={item.key}
                       to={item.href}
+                      onClick={(e) => handleNavClick(e, item)}
                       className={`text-sm font-medium transition-colors duration-200 hover:text-brand-primary ${
                         location.pathname === item.href
                           ? 'text-brand-primary border-b-2 border-brand-primary pb-1'
@@ -140,7 +156,13 @@ const StickyNavigation = () => {
                         {moreItems.map((item) => (
                           <DropdownMenuItem
                             key={item.key}
-                            onClick={() => navigate(item.href)}
+                            onClick={() => {
+                              if (!user && AUTH_REQUIRED_TABS.includes(item.key)) {
+                                navigate(`/signin?redirect=${encodeURIComponent(item.href)}`, { state: { from: item.href } });
+                              } else {
+                                navigate(item.href);
+                              }
+                            }}
                             className={`cursor-pointer ${
                               location.pathname === item.href ? 'text-brand-primary bg-accent' : ''
                             }`}
@@ -274,7 +296,7 @@ const StickyNavigation = () => {
                   <Link
                     key={item.key}
                     to={item.href}
-                    onClick={() => setIsOpen(false)}
+                    onClick={(e) => { handleNavClick(e, item); setIsOpen(false); }}
                     className={`block px-3 py-2.5 text-base font-medium rounded-md transition-colors ${
                       location.pathname === item.href
                         ? 'text-brand-primary bg-accent'
