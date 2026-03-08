@@ -30,13 +30,19 @@ const ContactFormDialog = () => {
 
     setLoading(true);
     try {
+      // Save to database
       const { error } = await supabase.from('contact_messages').insert({
         name: parsed.data.name,
         email: parsed.data.email,
         message: parsed.data.message,
       });
-
       if (error) throw error;
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+        body: { name: parsed.data.name, email: parsed.data.email, message: parsed.data.message },
+      });
+      if (emailError) console.error('Email notification failed:', emailError);
 
       toast.success("Message sent! We'll get back to you soon.");
       setForm({ name: '', email: '', message: '' });
