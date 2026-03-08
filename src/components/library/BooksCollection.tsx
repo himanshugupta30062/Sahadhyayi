@@ -332,7 +332,7 @@ const BooksCollection = ({
               <LoadingSpinner />
             ) : (
               <>
-                <BooksGrid books={filteredAllBooks} onDownloadPDF={handleDownloadPDF} />
+                <BooksGrid books={displayBooks} onDownloadPDF={handleDownloadPDF} />
                 
                 <LibraryPagination
                   totalCount={paginatedData?.totalCount ?? 0}

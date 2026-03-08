@@ -137,7 +137,7 @@ const LibraryHero = ({
                       setIsSearchFocused(true);
                       setShowSuggestions(true);
                     }}
-                    onKeyPress={(e) => {
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         onSearch();
                         setShowSuggestions(false);

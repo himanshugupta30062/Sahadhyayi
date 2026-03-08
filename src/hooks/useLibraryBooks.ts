@@ -131,9 +131,9 @@ export const useAllLibraryBooks = () => {
   });
 };
 
-export const useLibraryBooks = (searchQuery?: string) => {
+export const useLibraryBooks = (searchQuery?: string, limit?: number) => {
   return useQuery({
-    queryKey: ['library-books', searchQuery],
+    queryKey: ['library-books', searchQuery, limit],
     queryFn: async (): Promise<Book[]> => {
       let query = supabase.from('books_library').select(BOOK_SELECT_COLUMNS);
 
@@ -141,6 +141,10 @@ export const useLibraryBooks = (searchQuery?: string) => {
         query = query.or(
           `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,genre.ilike.%${searchQuery}%`
         );
+      }
+
+      if (limit) {
+        query = query.limit(limit);
       }
 
       const { data, error } = await query;
