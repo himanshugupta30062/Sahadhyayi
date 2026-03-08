@@ -25,6 +25,7 @@ const StickyNavigation = () => {
   const primaryItems = [
     { name: 'Home', href: user ? '/dashboard' : '/' },
     { name: 'Library', href: '/library' },
+    { name: 'Articles', href: '/articles' },
     { name: 'My Books', href: '/bookshelf' },
   ];
 

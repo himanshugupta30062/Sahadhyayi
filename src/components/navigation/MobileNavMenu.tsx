@@ -24,6 +24,7 @@ interface MobileNavMenuProps {
 const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
   const navItems = [
     { path: "/library", label: "Library", icon: BookOpen },
+    { path: "/articles", label: "Articles", icon: PenTool },
     { path: "/bookshelf", label: "My Books", icon: BookOpen },
     { path: "/blog", label: "Publish", icon: PenTool },
     { path: "/games", label: "Games", icon: BookOpen },

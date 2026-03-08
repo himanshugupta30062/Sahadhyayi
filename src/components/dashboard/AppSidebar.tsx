@@ -8,6 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 const items = [
   { title: "Home", url: "/dashboard", icon: Home },
   { title: "Library", url: "/library", icon: Compass },
+  { title: "Articles", url: "/articles", icon: FileText },
   { title: "Publish", url: "/blog", icon: BookOpen },
   { title: "Games", url: "/games", icon: Compass },
   { title: "Authors", url: "/authors", icon: User },
