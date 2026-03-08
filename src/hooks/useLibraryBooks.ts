@@ -53,7 +53,11 @@ export const getBookCompletenessScore = (book: any): number => {
     score += getCoverQualityScore(cover);
   }
   // Tier 1: Essential fields
-  if (book.pdf_url) score += 1000;
+  if (book.pdf_url) {
+    score += 1000;
+    // Extra boost for books hosted directly in our Supabase storage
+    if ((book.pdf_url as string).includes('supabase')) score += 3000;
+  }
   if (book.author && book.author.trim() && book.author !== 'Unknown Author') score += 300;
   // Tier 2: Rich metadata
   if (book.description) score += 40;
