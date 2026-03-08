@@ -15,7 +15,11 @@ const contactSchema = z.object({
   message: z.string().trim().min(1, "Message is required").max(2000),
 });
 
-const ContactFormDialog = () => {
+interface ContactFormDialogProps {
+  trigger?: React.ReactNode;
+}
+
+const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', message: '' });
