@@ -267,19 +267,33 @@ const ArticleWrite = () => {
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
+
+                      setErrors((prev) => ({ ...prev, cover: '' }));
+
                       if (file.size > 5 * 1024 * 1024) {
-                        setErrors(prev => ({ ...prev, cover: 'Image must be under 5MB' }));
+                        setErrors((prev) => ({ ...prev, cover: 'Image must be under 5MB' }));
                         return;
                       }
+
+                      // Allow non-logged-in users to draft with local preview image
+                      if (!user) {
+                        const reader = new FileReader();
+                        reader.onload = () => setCoverUrl(String(reader.result || ''));
+                        reader.readAsDataURL(file);
+                        return;
+                      }
+
                       setUploading(true);
-                      const ext = file.name.split('.').pop();
-                      const path = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-                      const { error } = await supabase.storage.from('books').upload(path, file);
+                      const ext = file.name.split('.').pop() || 'jpg';
+                      const path = `user-uploads/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                      const { error } = await supabase.storage.from('books').upload(path, file, { upsert: false });
+
                       if (error) {
-                        setErrors(prev => ({ ...prev, cover: 'Upload failed. Try again.' }));
+                        setErrors((prev) => ({ ...prev, cover: `Upload failed: ${error.message}` }));
                         setUploading(false);
                         return;
                       }
+
                       const { data: urlData } = supabase.storage.from('books').getPublicUrl(path);
                       setCoverUrl(urlData.publicUrl);
                       setUploading(false);
