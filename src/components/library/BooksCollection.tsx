@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { useMemo, useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Library, Search } from 'lucide-react';
 import PersonalLibrary from '@/components/PersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
@@ -20,6 +20,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import LibraryPagination from './LibraryPagination';
 import { searchExternalSources, type ExternalBook } from '@/utils/searchExternalSources';
 import { searchLibgen, type LibgenBook } from '@/utils/libgenApi';
+import { toast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -154,8 +155,11 @@ const BooksCollection = ({
       setLastSearchTerm(searchTerm);
       setShowSelectionModal(true);
     } else {
-      // Show message if no results found
-      alert('No books found for your search. Try different keywords or check your spelling.');
+      toast({
+        title: 'No books found',
+        description: 'Try different keywords or check your spelling.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -169,65 +173,16 @@ const BooksCollection = ({
   // The cleanup_unused_books() function is now admin-only and should be
   // triggered through admin dashboard or scheduled background jobs
 
-  const getFilteredBooks = (books: Book[]) => {
-
-    const filtered = books.filter(book => {
-      
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          book.title.toLowerCase().includes(query) ||
-          (book.author && book.author.toLowerCase().includes(query)) ||
-          (book.genre && book.genre.toLowerCase().includes(query));
-        if (!matchesSearch) {
-          return false;
-        }
-      }
-
-      // Genre filter - Handle Hindi specially
-      if (selectedGenre !== 'All') {
-        if (selectedGenre === 'Hindi') {
-          if (book.language !== 'Hindi') {
-            return false;
-          }
-        } else if (book.genre !== selectedGenre) {
-          return false;
-        }
-      }
-
-      // Author filter
-      if (selectedAuthor !== 'All' && book.author !== selectedAuthor) {
-        return false;
-      }
-
-      // Year filter
-      if (selectedYear && book.publication_year !== parseInt(selectedYear)) {
-        return false;
-      }
-
-      // Language filter
-      if (selectedLanguage !== 'All' && book.language !== selectedLanguage) {
-        return false;
-      }
-
-      return true;
-    });
-
-
-    // Sorting is already handled by usePaginatedLibraryBooks via getBookCompletenessScore
-
-    return filtered;
-  };
+  // Filtering is already done server-side by usePaginatedLibraryBooks
+  // No need for redundant client-side filtering
 
   const handleDownloadPDF = async (book: Book) => {
     if (!book.pdf_url) {
-      alert('PDF not available for this book');
+      toast({ title: 'PDF not available', description: 'This book does not have a PDF file.', variant: 'destructive' });
       return;
     }
 
     try {
-      // Create a temporary link element to trigger download
       const link = document.createElement('a');
       link.href = book.pdf_url;
       link.download = `${book.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
@@ -236,14 +191,11 @@ const BooksCollection = ({
       link.click();
       document.body.removeChild(link);
     } catch {
-      alert('Failed to download PDF. Please try again.');
+      toast({ title: 'Download failed', description: 'Please try again.', variant: 'destructive' });
     }
   };
 
-  const filteredAllBooks = useMemo(
-    () => getFilteredBooks(paginatedData?.books ?? []),
-    [paginatedData, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]
-  );
+  const displayBooks = paginatedData?.books ?? [];
   
 
   if (isLoadingAll) {
@@ -380,7 +332,7 @@ const BooksCollection = ({
               <LoadingSpinner />
             ) : (
               <>
-                <BooksGrid books={filteredAllBooks} onDownloadPDF={handleDownloadPDF} />
+                <BooksGrid books={displayBooks} onDownloadPDF={handleDownloadPDF} />
                 
                 <LibraryPagination
                   totalCount={paginatedData?.totalCount ?? 0}
