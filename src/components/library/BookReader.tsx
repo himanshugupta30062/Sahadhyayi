@@ -119,8 +119,9 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
         ? `https://books.google.com/books?id=${bookId}&lpg=PP1&pg=PP1&output=embed`
         : url;
     }
-    // Use Google Docs Viewer to proxy direct PDFs that block iframe embedding (e.g. archive.org)
-    return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+    // Use our edge function proxy to bypass CORS/X-Frame-Options blocks
+    const SUPABASE_URL = 'https://rknxtatvlzunatpyqxro.supabase.co';
+    return `${SUPABASE_URL}/functions/v1/pdf-proxy?url=${encodeURIComponent(url)}`;
   };
 
   // PDF viewer component
