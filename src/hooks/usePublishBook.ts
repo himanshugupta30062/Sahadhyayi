@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -7,6 +6,7 @@ export interface PublishedBook {
   id: string;
   user_id: string;
   title: string;
+  subtitle: string | null;
   author_name: string;
   description: string | null;
   genre: string | null;
@@ -15,22 +15,31 @@ export interface PublishedBook {
   isbn: string | null;
   cover_image_url: string | null;
   pdf_url: string | null;
+  file_size: number | null;
+  reading_time_minutes: number | null;
+  tags: string[] | null;
   status: string;
   rejection_reason: string | null;
+  views_count: number;
+  downloads_count: number;
   created_at: string;
   updated_at: string;
 }
 
 export interface PublishBookInput {
   title: string;
+  subtitle?: string;
   author_name: string;
   description?: string;
   genre?: string;
   language?: string;
   pages?: number;
   isbn?: string;
+  tags?: string[];
   cover_image_url?: string;
   pdf_url?: string;
+  file_size?: number;
+  reading_time_minutes?: number;
 }
 
 export function useMyPublications() {
@@ -115,16 +124,55 @@ export function usePublishBook() {
   return { createBook, submitForReview, deleteBook };
 }
 
-export async function uploadPublishFile(file: File, userId: string, type: 'cover' | 'pdf'): Promise<string> {
+const MAX_COVER_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_PDF_SIZE = 50 * 1024 * 1024; // 50MB
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+export function validateCoverFile(file: File): string | null {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) return 'Cover must be JPG, PNG, or WebP';
+  if (file.size > MAX_COVER_SIZE) return 'Cover image must be under 5MB';
+  return null;
+}
+
+export function validatePdfFile(file: File): string | null {
+  if (file.type !== 'application/pdf') return 'File must be a PDF';
+  if (file.size > MAX_PDF_SIZE) return 'PDF must be under 50MB';
+  return null;
+}
+
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function estimateReadingTime(pages: number): number {
+  // Average 2 minutes per page
+  return Math.max(1, Math.round(pages * 2));
+}
+
+export async function uploadPublishFile(
+  file: File,
+  userId: string,
+  bookId: string,
+  type: 'cover' | 'pdf',
+  onProgress?: (percent: number) => void,
+): Promise<string> {
   const ext = file.name.split('.').pop();
-  const path = `user-uploads/${userId}/${type}-${Date.now()}.${ext}`;
+  const path = `user-uploads/${userId}/${bookId}/${type === 'cover' ? 'cover' : 'book'}.${ext}`;
+
+  // Simulate progress since Supabase JS doesn't expose upload progress natively
+  onProgress?.(10);
 
   const { error } = await supabase.storage
     .from('books')
     .upload(path, file, { upsert: true });
 
+  onProgress?.(90);
+
   if (error) throw error;
 
   const { data } = supabase.storage.from('books').getPublicUrl(path);
+  onProgress?.(100);
   return data.publicUrl;
 }

@@ -4,8 +4,8 @@ import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/Breadcrumb';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useMyPublications, usePublishBook } from '@/hooks/usePublishBook';
-import { BookOpen, Plus, Trash2, Send, Clock, CheckCircle, XCircle, FileText, Loader2 } from 'lucide-react';
+import { useMyPublications, usePublishBook, formatFileSize } from '@/hooks/usePublishBook';
+import { BookOpen, Plus, Trash2, Send, Clock, CheckCircle, XCircle, FileText, Loader2, Eye, Download, Edit } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
   draft: { label: 'Draft', icon: <FileText className="h-3 w-3" />, className: 'bg-muted text-muted-foreground' },
@@ -54,6 +54,8 @@ export default function MyPublications() {
           <div className="space-y-4">
             {books.map(book => {
               const status = STATUS_CONFIG[book.status] || STATUS_CONFIG.draft;
+              const canEdit = book.status === 'draft' || book.status === 'rejected';
+              const canDelete = book.status !== 'approved';
               return (
                 <Card key={book.id} className="overflow-hidden">
                   <CardContent className="p-4">
@@ -69,16 +71,35 @@ export default function MyPublications() {
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <h3 className="font-semibold text-foreground truncate">{book.title}</h3>
+                            {book.subtitle && <p className="text-xs text-muted-foreground italic truncate">{book.subtitle}</p>}
                             <p className="text-sm text-muted-foreground">by {book.author_name}</p>
                           </div>
                           <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full whitespace-nowrap ${status.className}`}>
                             {status.icon} {status.label}
                           </span>
                         </div>
-                        {book.genre && <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded mt-1">{book.genre}</span>}
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          {book.genre && <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">{book.genre}</span>}
+                          {book.file_size && <span className="text-xs text-muted-foreground">{formatFileSize(book.file_size)}</span>}
+                          {book.reading_time_minutes && <span className="text-xs text-muted-foreground">~{book.reading_time_minutes} min</span>}
+                        </div>
+                        {book.tags && book.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {book.tags.slice(0, 5).map(tag => (
+                              <span key={tag} className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">#{tag}</span>
+                            ))}
+                          </div>
+                        )}
                         {book.description && <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{book.description}</p>}
                         {book.status === 'rejected' && book.rejection_reason && (
                           <p className="text-sm text-destructive mt-2">Reason: {book.rejection_reason}</p>
+                        )}
+                        {/* Analytics for approved books */}
+                        {book.status === 'approved' && (
+                          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                            <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" /> {book.views_count} views</span>
+                            <span className="inline-flex items-center gap-1"><Download className="h-3 w-3" /> {book.downloads_count} downloads</span>
+                          </div>
                         )}
                         <div className="flex items-center gap-2 mt-3">
                           {book.status === 'draft' && (
@@ -86,9 +107,16 @@ export default function MyPublications() {
                               <Send className="mr-1 h-3 w-3" /> Submit
                             </Button>
                           )}
-                          <Button size="sm" variant="destructive" onClick={() => deleteBook.mutate(book.id)} disabled={deleteBook.isPending}>
-                            <Trash2 className="mr-1 h-3 w-3" /> Delete
-                          </Button>
+                          {book.status === 'rejected' && (
+                            <Button size="sm" onClick={() => submitForReview.mutate(book.id)} disabled={submitForReview.isPending}>
+                              <Send className="mr-1 h-3 w-3" /> Resubmit
+                            </Button>
+                          )}
+                          {canDelete && (
+                            <Button size="sm" variant="destructive" onClick={() => deleteBook.mutate(book.id)} disabled={deleteBook.isPending}>
+                              <Trash2 className="mr-1 h-3 w-3" /> Delete
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>

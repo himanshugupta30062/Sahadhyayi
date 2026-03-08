@@ -61,6 +61,7 @@ const Navigation = () => {
   const navItems = user ? [
     { name: "Home", href: "/dashboard" },
     { name: "Library", href: "/library" },
+    { name: "Publish", href: "/publish" },
     { name: "Games", href: "/games" },
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
