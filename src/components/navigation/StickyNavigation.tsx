@@ -44,18 +44,33 @@ const StickyNavigation = () => {
     icon: ICON_MAP[tab.icon] || BookOpen,
   }));
 
+  // Tabs that should always be visible (even for non-signed-in users)
+  const ALWAYS_VISIBLE_TABS = ['articles', 'publish'];
+
   // Home is always primary
   const homeItem = { name: 'Home', href: user ? '/dashboard' : '/', key: 'home', icon: BookOpen };
 
-  const primaryItems = [
-    homeItem,
-    ...allTabItems.filter((item) => visibleTabKeys.includes(item.key)),
-  ];
+  const primaryItems = user
+    ? [homeItem, ...allTabItems.filter((item) => visibleTabKeys.includes(item.key))]
+    : [homeItem, ...allTabItems.filter((item) => ALWAYS_VISIBLE_TABS.includes(item.key))];
 
-  const moreItems = allTabItems.filter((item) => !visibleTabKeys.includes(item.key));
+  const moreItems = user
+    ? allTabItems.filter((item) => !visibleTabKeys.includes(item.key))
+    : allTabItems.filter((item) => !ALWAYS_VISIBLE_TABS.includes(item.key));
 
   const allItems = [homeItem, ...allTabItems];
   const isMoreActive = moreItems.some((item) => location.pathname === item.href);
+
+  // For non-signed-in users, auth-required tabs redirect to sign-in
+  const AUTH_REQUIRED_TABS = ['articles', 'publish', 'bookshelf', 'games', 'authors', 'social'];
+
+  const handleNavClick = (e: React.MouseEvent, item: { key: string; href: string }) => {
+    if (!user && AUTH_REQUIRED_TABS.includes(item.key)) {
+      e.preventDefault();
+      const redirect = item.href;
+      navigate(`/signin?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
