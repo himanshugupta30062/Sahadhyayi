@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, BookOpen, Gamepad2, Users, Radio } from "lucide-react";
+import { ChevronDown, BookOpen, Gamepad2, Users, Radio, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,11 +16,11 @@ const DesktopNavItems = () => {
 
   const primaryItems = [
     { path: "/library", label: "Library" },
-    { path: "/articles", label: "Articles" },
-    { path: "/bookshelf", label: "My Books" },
+    { path: "/bookshelf", label: "My Shelf" },
   ];
 
   const moreItems = [
+    { path: "/articles", label: "Articles", icon: FileText },
     { path: "/blog", label: "Publish", icon: BookOpen },
     { path: "/games", label: "Games", icon: Gamepad2 },
     { path: "/authors", label: "Authors", icon: Users },

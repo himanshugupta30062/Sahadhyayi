@@ -2,14 +2,16 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, X, ChevronDown, BookOpen, Gamepad2, Users, Radio, FileText } from 'lucide-react';
+import { Search, Menu, X, ChevronDown, BookOpen, Gamepad2, Users, Radio, FileText, User, LogOut, Settings } from 'lucide-react';
 import SignInLink from '@/components/SignInLink';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -17,7 +19,7 @@ const StickyNavigation = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -25,11 +27,11 @@ const StickyNavigation = () => {
   const primaryItems = [
     { name: 'Home', href: user ? '/dashboard' : '/' },
     { name: 'Library', href: '/library' },
-    { name: 'Articles', href: '/articles' },
-    { name: 'My Books', href: '/bookshelf' },
+    { name: 'My Shelf', href: '/bookshelf' },
   ];
 
   const moreItems = [
+    { name: 'Articles', href: '/articles', icon: FileText },
     { name: 'Publish', href: '/blog', icon: BookOpen },
     { name: 'Games', href: '/games', icon: Gamepad2 },
     { name: 'Authors', href: '/authors', icon: Users },
@@ -48,6 +50,15 @@ const StickyNavigation = () => {
       setIsOpen(false);
     }
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/signin');
+  };
+
+  const userInitial = user?.user_metadata?.full_name?.charAt(0)?.toUpperCase()
+    || user?.email?.charAt(0)?.toUpperCase()
+    || 'U';
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
@@ -68,7 +79,7 @@ const StickyNavigation = () => {
 
           {/* Desktop Navigation */}
           {!isMobile && (
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
               {/* Primary Nav Items */}
               <div className="flex items-center space-x-5">
                 {primaryItems.map((item) => (
@@ -116,25 +127,63 @@ const StickyNavigation = () => {
                 </DropdownMenu>
               </div>
 
-              {/* Search Bar */}
-              <form onSubmit={handleSearch} className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search books, authors..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-56 pl-10 pr-4 py-2 text-sm border-2 border-border focus:border-brand-primary rounded-lg"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              </form>
-
-              {/* Auth Buttons */}
-              {user ? (
-                <Link to="/profile">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-brand-primary">
-                    Profile
+              {/* Compact Search Icon */}
+              <DropdownMenu open={searchOpen} onOpenChange={setSearchOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-brand-primary">
+                    <Search className="w-4.5 h-4.5" />
                   </Button>
-                </Link>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-72 p-2">
+                  <form onSubmit={handleSearch}>
+                    <Input
+                      type="text"
+                      placeholder="Search books, authors..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full border-2 border-border focus:border-brand-primary rounded-lg"
+                      autoFocus
+                    />
+                  </form>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Auth: Avatar dropdown or Sign In */}
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2">
+                      <Avatar className="w-8 h-8 cursor-pointer">
+                        <AvatarImage src={user.user_metadata?.avatar_url || ''} />
+                        <AvatarFallback className="bg-brand-primary/10 text-brand-primary text-sm font-semibold">
+                          {userInitial}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <div className="px-2 py-1.5">
+                      <p className="text-sm font-medium truncate">
+                        {user.user_metadata?.full_name || user.email || 'User'}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <div className="flex items-center space-x-3">
                   <SignInLink>
@@ -209,7 +258,23 @@ const StickyNavigation = () => {
                 </Link>
               ))}
 
-              {!user && (
+              {user ? (
+                <div className="pt-3 space-y-1 border-t border-border">
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-2.5 text-base font-medium rounded-md text-muted-foreground hover:text-brand-primary hover:bg-accent/50"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => { handleSignOut(); setIsOpen(false); }}
+                    className="block w-full text-left px-3 py-2.5 text-base font-medium rounded-md text-destructive hover:bg-destructive/10"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
                 <div className="pt-3 space-y-2 border-t border-border">
                   <SignInLink onClick={() => setIsOpen(false)} className="block">
                     <Button variant="outline" size="sm" className="w-full border-brand-primary text-brand-primary">
