@@ -125,18 +125,19 @@ const Index = () => {
       {/* Sahadhyayi Circuit Section */}
       <SahadhyayiCircuit />
 
+      <div className="bg-black text-white">
       {/* ─── NEW: What's New Feature Spotlight ─── */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 bg-gradient-to-br from-brand-primary/5 via-background to-brand-secondary/5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,hsl(var(--brand-primary)/0.06),transparent_60%)]" />
+      <section className="py-12 sm:py-16 lg:py-20 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(234,88,12,0.08),transparent_60%)]" />
         <div className="max-w-6xl mx-auto relative">
           <div className="text-center mb-10 sm:mb-14">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-brand-primary bg-brand-primary/10 px-3 py-1.5 rounded-full mb-4">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-orange-400 bg-orange-900/40 px-3 py-1.5 rounded-full mb-4">
               <Star className="w-3.5 h-3.5" /> What's New
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-100 mb-3">
               More Than Just Reading
             </h2>
-            <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
+            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
               Write, play, discover, and connect — Sahadhyayi is your complete literary world.
             </p>
           </div>
@@ -146,14 +147,14 @@ const Index = () => {
               const Icon = feature.icon;
               return (
                 <Link key={feature.title} to={feature.to} className="group block">
-                  <Card className={`h-full border-border hover:shadow-[var(--shadow-elevated)] transition-all duration-300 hover:-translate-y-1.5 overflow-hidden bg-gradient-to-br ${feature.gradient}`}>
+                  <Card className={`h-full border-white/10 hover:border-white/25 transition-all duration-300 hover:-translate-y-1.5 overflow-hidden bg-gradient-to-br ${feature.gradient} backdrop-blur-sm`}>
                     <CardContent className="p-6 sm:p-8 flex flex-col h-full">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 bg-background/80 backdrop-blur-sm shadow-sm ${feature.iconColor} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 bg-white/10 backdrop-blur-sm ${feature.iconColor} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
                         <Icon className="w-7 h-7" />
                       </div>
-                      <h3 className="text-xl font-bold text-foreground mb-2">{feature.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">{feature.description}</p>
-                      <span className="text-sm font-semibold text-brand-primary flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+                      <h3 className="text-xl font-bold text-gray-100 mb-2">{feature.title}</h3>
+                      <p className="text-sm text-gray-400 leading-relaxed mb-5 flex-1">{feature.description}</p>
+                      <span className="text-sm font-semibold text-orange-400 flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
                         {feature.cta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </span>
                     </CardContent>
@@ -170,19 +171,19 @@ const Index = () => {
       
       {/* Current Reads Section for Signed-in Users */}
       {user && (
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <section className="py-8 sm:py-12 lg:py-16 px-4 border-t border-b border-orange-900/30">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-100 mb-4">
                 Welcome back, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader'}! 
               </h2>
-              <p className="text-gray-700 text-lg">Continue your reading journey</p>
+              <p className="text-gray-400 text-lg">Continue your reading journey</p>
             </div>
             <CurrentReads />
             
             <div className="text-center mt-8">
               <Link to="/dashboard">
-                <Button className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3">
+                <Button className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3">
                   Go to Full Dashboard
                 </Button>
               </Link>
@@ -190,8 +191,6 @@ const Index = () => {
           </div>
         </section>
       )}
-      
-      <div className="min-h-screen bg-black text-white">
 
         {/* What Sahadhyayi Means Section */}
         <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black/60 backdrop-blur-sm">
