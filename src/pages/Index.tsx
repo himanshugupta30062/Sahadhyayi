@@ -12,6 +12,7 @@ import AnimatedHero from "@/components/AnimatedHero";
 import SahadhyayiCapabilities from "@/components/SahadhyayiCapabilities";
 import SahadhyayiCircuit from "@/components/SahadhyayiCircuit";
 import CurrentReads from "@/components/library/CurrentReads";
+import ContactFormDialog from "@/components/ContactFormDialog";
 
 const Index = () => {
   const { user } = useAuth();
@@ -380,6 +381,7 @@ const Index = () => {
           </div>
         </section>
       </div>
+      <ContactFormDialog />
     </>
   );
 };
