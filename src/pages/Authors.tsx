@@ -72,7 +72,8 @@ const Authors = () => {
 
   const featuredAuthors = useMemo(() => {
     return [...authors]
-      .sort((a, b) => (b.books_count * b.rating * b.followers_count) - (a.books_count * a.rating * a.followers_count))
+      .filter(a => a.books_count > 0)
+      .sort((a, b) => (b.books_count * b.rating * (b.followers_count + 1)) - (a.books_count * a.rating * (a.followers_count + 1)))
       .slice(0, 4);
   }, [authors]);
 
