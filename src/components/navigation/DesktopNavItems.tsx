@@ -16,6 +16,7 @@ const DesktopNavItems = () => {
 
   const primaryItems = [
     { path: "/library", label: "Library" },
+    { path: "/articles", label: "Articles" },
     { path: "/bookshelf", label: "My Shelf" },
   ];
 
