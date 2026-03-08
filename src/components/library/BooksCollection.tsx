@@ -317,7 +317,7 @@ const BooksCollection = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-2 border-gray-200 shadow-lg z-50">
-                      {[10, 20, 40, 100].map((size) => (
+                      {[12, 24, 48, 96].map((size) => (
                         <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
                       ))}
                     </SelectContent>
