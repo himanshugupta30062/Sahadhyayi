@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      articles: {
+        Row: {
+          content: string
+          cover_image_url: string | null
+          created_at: string
+          id: string
+          is_published: boolean
+          likes_count: number
+          published_at: string | null
+          reading_time_minutes: number | null
+          slug: string | null
+          subtitle: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          views_count: number
+        }
+        Insert: {
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          likes_count?: number
+          published_at?: string | null
+          reading_time_minutes?: number | null
+          slug?: string | null
+          subtitle?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          views_count?: number
+        }
+        Update: {
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          likes_count?: number
+          published_at?: string | null
+          reading_time_minutes?: number | null
+          slug?: string | null
+          subtitle?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
       author_event_attendees: {
         Row: {
           created_at: string
