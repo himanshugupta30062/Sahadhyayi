@@ -285,6 +285,26 @@ const App = memo(() => {
                             </Suspense>
                           }
                         />
+                        <Route
+                          path="/publish"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading publisher..." />}>
+                                <PublishBook />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/my-publications"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <MyPublications />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
                         
                         {/* Footer/Legal routes - lowest priority */}
                         <Route
