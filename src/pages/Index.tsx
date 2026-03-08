@@ -1,64 +1,27 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus, User, PenTool, Gamepad2, Newspaper, ArrowRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import SignInLink from '@/components/SignInLink';
+import { Card, CardContent } from "@/components/ui/card";
+import { BookOpen, Users, Map, Calendar, Star, PenTool, Gamepad2, Newspaper, ArrowRight, UserPlus, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/authHelpers";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
 import AnimatedHero from "@/components/AnimatedHero";
-import SahadhyayiCapabilities from "@/components/SahadhyayiCapabilities";
-import SahadhyayiCircuit from "@/components/SahadhyayiCircuit";
 import CurrentReads from "@/components/library/CurrentReads";
 import ContactFormDialog from "@/components/ContactFormDialog";
 
 const Index = () => {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const navigate = useNavigate();
-
-  const features = [
-    {
-      icon: BookOpen,
-      title: "Personal Bookshelf",
-      description: "Track and manage your reading journey effortlessly."
-    },
-    {
-      icon: Users,
-      title: "Global Reading Groups",
-      description: "Engage in book discussions worldwide."
-    },
-    {
-      icon: Map,
-      title: "Find Local Readers",
-      description: "Discover local book lovers through our interactive map."
-    },
-    {
-      icon: Calendar,
-      title: "Author Connect",
-      description: "Participate in live sessions with your favorite authors."
-    },
-    {
-      icon: Star,
-      title: "Community Reviews",
-      description: "Read authentic book reviews from fellow readers."
-    },
-    {
-      icon: Headphones,
-      title: "AI Reading Assistant",
-      description: "Instant definitions and explanations as you read."
-    }
-  ];
 
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Sahadhyayi",
-    "alternateName": ["Sahadhyayi Reading Community", "Sahadhyayi Digital Library", "Fellow Reader Platform"],
+    "alternateName": ["Sahadhyayi Reading Community", "Fellow Reader Platform"],
     "url": "https://sahadhyayi.com",
-    "description": "Sahadhyayi means 'fellow reader' in Sanskrit. Join our digital reading community platform connecting readers and authors worldwide for deep reading experiences.",
+    "description": "Digital reading community connecting readers and authors worldwide.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": "https://sahadhyayi.com/library?search={search_term_string}",
@@ -69,317 +32,170 @@ const Index = () => {
       "name": "Sahadhyayi",
       "url": "https://sahadhyayi.com",
       "logo": "https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png",
-      "foundingDate": "2024",
-      "mission": "To revive deep reading culture and connect readers worldwide as fellow study companions (Sahadhyayi)",
-      "sameAs": [
-        "https://sahadhyayi.com/library",
-        "https://sahadhyayi.com/authors",
-        "https://sahadhyayi.com/about"
-      ]
     }
   };
 
   const newFeatures = [
-    {
-      icon: PenTool,
-      title: "Publish & Blog",
-      description: "Write articles, share book reviews, and build your voice in the reading community.",
-      to: "/blog",
-      gradient: "from-purple-500/20 to-violet-500/20",
-      iconColor: "text-purple-500",
-      cta: "Start Writing"
-    },
-    {
-      icon: Gamepad2,
-      title: "Book Quizzes & Games",
-      description: "Test your knowledge, earn badges, and compete on leaderboards with fellow readers.",
-      to: "/games",
-      gradient: "from-amber-500/20 to-orange-500/20",
-      iconColor: "text-amber-500",
-      cta: "Play Now"
-    },
-    {
-      icon: Newspaper,
-      title: "Articles & Insights",
-      description: "Discover curated articles, reading tips, and literary analysis from the community.",
-      to: "/articles",
-      gradient: "from-emerald-500/20 to-teal-500/20",
-      iconColor: "text-emerald-500",
-      cta: "Browse Articles"
-    }
+    { icon: PenTool, title: "Publish & Blog", description: "Write articles and share book reviews with the community.", to: "/blog", iconColor: "text-purple-400", cta: "Start Writing" },
+    { icon: Gamepad2, title: "Book Quizzes", description: "Test your knowledge, earn badges, and compete on leaderboards.", to: "/games", iconColor: "text-amber-400", cta: "Play Now" },
+    { icon: Newspaper, title: "Articles & Insights", description: "Discover curated articles, reading tips, and literary analysis.", to: "/articles", iconColor: "text-emerald-400", cta: "Browse Articles" },
+  ];
+
+  const quickLinks = [
+    { to: "/library", icon: BookOpen, label: "Library" },
+    { to: "/groups", icon: Users, label: "Groups" },
+    { to: "/map", icon: Map, label: "Reader Map" },
+    { to: "/authors", icon: Calendar, label: "Authors" },
   ];
 
   return (
     <>
       <SEO
-        title="Sahadhyayi - Digital Reading Community & Book Library | Fellow Readers Platform"
-        description="Sahadhyayi means 'fellow reader' in Sanskrit. Join our vibrant digital reading community and book reader social media platform. Discover thousands of books, connect with fellow readers, track your progress, and explore our comprehensive digital library with your study companions."
+        title="Sahadhyayi - Digital Reading Community & Book Library"
+        description="Join Sahadhyayi, a vibrant digital reading community. Discover books, connect with fellow readers, track progress, and explore our digital library."
         url="https://sahadhyayi.com/"
-        keywords={['Sahadhyayi', 'fellow reader', 'Sanskrit meaning', 'digital reading community', 'book library', 'reading platform', 'study companions', 'book lovers']}
+        keywords={['Sahadhyayi', 'digital reading community', 'book library', 'reading platform', 'book lovers']}
       />
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
-      {/* Animated Hero Section */}
+      <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+
       <AnimatedHero />
-      
-      {/* Sahadhyayi Circuit Section */}
-      <SahadhyayiCircuit />
 
       <div className="bg-black text-white">
-      {/* ─── NEW: What's New Feature Spotlight ─── */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(234,88,12,0.08),transparent_60%)]" />
-        <div className="max-w-6xl mx-auto relative">
-          <div className="text-center mb-10 sm:mb-14">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-orange-400 bg-orange-900/40 px-3 py-1.5 rounded-full mb-4">
-              <Star className="w-3.5 h-3.5" /> What's New
-            </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-100 mb-3">
-              More Than Just Reading
-            </h2>
-            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
-              Write, play, discover, and connect — Sahadhyayi is your complete literary world.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {newFeatures.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <Link key={feature.title} to={feature.to} className="group block">
-                  <Card className="h-full border border-orange-700/50 hover:border-orange-500 transition-all duration-300 hover:-translate-y-1.5 bg-zinc-900 hover:bg-zinc-800/90">
-                    <CardContent className="p-6 sm:p-8 flex flex-col h-full">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${feature.iconColor} bg-zinc-800 border border-orange-700/30 transition-transform group-hover:scale-110 group-hover:rotate-3`}>
-                        <Icon className="w-7 h-7" />
-                      </div>
-                      <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                      <p className="text-sm text-gray-300 leading-relaxed mb-5 flex-1">{feature.description}</p>
-                      <span className="text-sm font-semibold text-orange-400 flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
-                        {feature.cta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                      </span>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-      
-      {/* Sahadhyayi Capabilities Section */}
-      <SahadhyayiCapabilities />
-      
-      {/* Current Reads Section for Signed-in Users */}
-      {user && (
-        <section className="py-8 sm:py-12 lg:py-16 px-4 border-t border-b border-orange-900/30">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-100 mb-4">
-                Welcome back, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader'}! 
-              </h2>
-              <p className="text-gray-400 text-lg">Continue your reading journey</p>
-            </div>
-            <CurrentReads />
-            
-            <div className="text-center mt-8">
-              <Link to="/dashboard">
-                <Button className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3">
-                  Go to Full Dashboard
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-        {/* What Sahadhyayi Means Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black/60 backdrop-blur-sm">
-          <div className="max-w-6xl mx-auto text-center">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-100 mb-4 sm:mb-6 lg:mb-8">What is Sahadhyayi? Understanding Our Name</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-center">
-              <div className="text-left order-2 lg:order-1">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-100 mb-2 sm:mb-3 lg:mb-4">The Sanskrit Meaning of Sahadhyayi</h3>
-                <p className="text-sm sm:text-base lg:text-lg text-gray-300 leading-relaxed mb-3 sm:mb-4 lg:mb-6">
-                  <strong>Sahadhyayi</strong> (सहाध्यायी) is a beautiful Sanskrit word meaning "fellow reader" or "study companion."
-                  It comes from "saha" (together) and "adhyayi" (one who reads or studies). In ancient tradition,
-                  a Sahadhyayi was someone who studied alongside you, shared knowledge, and deepened understanding together.
-                </p>
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-100 mb-2 sm:mb-3 lg:mb-4">Why We Chose the Name Sahadhyayi</h3>
-                <p className="text-sm sm:text-base lg:text-lg text-gray-300 leading-relaxed">
-                  Sahadhyayi creates a digital home for readers to connect, share insights, and support each other's reading journey.
-                  <Link to="/about" className="text-orange-400 hover:text-orange-500 font-medium ml-1">Learn more about our mission</Link>.
-                </p>
-              </div>
-              <div className="bg-black p-4 sm:p-6 lg:p-8 rounded-2xl backdrop-blur-sm border border-orange-700 shadow-lg order-1 lg:order-2">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-100 mb-3 sm:mb-4">Why Choose Sahadhyayi for Reading</h3>
-                <div className="space-y-2 sm:space-y-3 text-gray-300 text-xs sm:text-sm lg:text-base">
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="text-base sm:text-lg lg:text-xl flex-shrink-0">🌎</span>
-                    <div><strong>Global Community:</strong> Meet readers who share your passion.</div>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="text-base sm:text-lg lg:text-xl flex-shrink-0">📚</span>
-                    <div><strong>Deep Reading:</strong> Rediscover focused, meaningful reading.</div>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="text-base sm:text-lg lg:text-xl flex-shrink-0">🤝</span>
-                    <div><strong>Collaborative Learning:</strong> Grow through shared insights.</div>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="text-base sm:text-lg lg:text-xl flex-shrink-0">🕯️</span>
-                    <div><strong>Ancient Wisdom, Modern Tech:</strong> Blending tradition with innovation.</div>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="text-base sm:text-lg lg:text-xl flex-shrink-0">🗣️</span>
-                    <div><strong>Shared Perspectives:</strong> Gain diverse insights from readers worldwide.</div>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="text-base sm:text-lg lg:text-xl flex-shrink-0">💬</span>
-                    <div><strong>Lasting Connections:</strong> Build friendships through shared reading.</div>
-                  </div>
+        {/* ─── Logged-in: Current Reads (shown early) ─── */}
+        {user && (
+          <section className="py-10 sm:py-14 px-4 border-b border-orange-900/30">
+            <div className="max-w-6xl mx-auto">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-100">
+                    Welcome back, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader'}!
+                  </h2>
+                  <p className="text-gray-400 mt-1">Continue your reading journey</p>
                 </div>
+                <Link to="/dashboard">
+                  <Button variant="outline" className="border-orange-700 text-orange-400 hover:bg-orange-900/30">
+                    Dashboard <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </Link>
               </div>
+              <CurrentReads />
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Mission Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black">
-          <div className="max-w-6xl mx-auto text-center">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-100 mb-4 sm:mb-6 lg:mb-8">How Sahadhyayi Revives Reading Culture</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-center">
-              <div className="text-left order-2 lg:order-1">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-100 mb-2 sm:mb-3 lg:mb-4">The Digital Reading Challenge</h3>
-                <p className="text-sm sm:text-base lg:text-lg text-gray-300 leading-relaxed mb-3 sm:mb-4 lg:mb-6">
-                  Modern digital consumption habits are shifting away from deep reading toward passive content like videos and podcasts.
-                  This change impacts our ability to focus deeply, comprehend complex ideas, and engage in meaningful reflection.
-                </p>
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-100 mb-2 sm:mb-3 lg:mb-4">Sahadhyayi's Revolutionary Solution</h3>
-                <p className="text-sm sm:text-base lg:text-lg text-gray-300 leading-relaxed">
-                  Sahadhyayi creates a social reading platform that makes books more accessible, interactive, and community-driven.
-                  We combine traditional reading with modern technology to build healthier intellectual habits among fellow readers.
-                  <Link to="/blog" className="text-orange-400 hover:text-orange-500 font-medium ml-1">Read our blog posts</Link> about reading culture.
-                </p>
-              </div>
-              <div className="bg-black p-4 sm:p-6 lg:p-8 rounded-2xl backdrop-blur-sm border border-orange-700 shadow-lg order-1 lg:order-2">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-100 mb-3 sm:mb-4">Benefits of the Sahadhyayi Approach</h3>
-                <ul className="space-y-2 sm:space-y-3 text-gray-300 text-xs sm:text-sm lg:text-base">
-                  <li>• <strong>Improved Focus:</strong> Deep reading enhances attention span significantly</li>
-                  <li>• <strong>Better Comprehension:</strong> Fellow readers help deepen understanding</li>
-                  <li>• <strong>Community Support:</strong> Study companions motivate consistent reading</li>
-                  <li>• <strong>Knowledge Retention:</strong> Collaborative learning builds lasting memories</li>
-                  <li>• <strong>Critical Thinking:</strong> Discussions with fellow readers enhance analysis</li>
-                  <li>• <strong>Intellectual Growth:</strong> Sahadhyayi connections foster lifelong learning</li>
-                </ul>
-              </div>
+        {/* ─── What's New ─── */}
+        <section className="py-12 sm:py-16 px-4 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(234,88,12,0.08),transparent_60%)]" />
+          <div className="max-w-6xl mx-auto relative">
+            <div className="text-center mb-10">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-orange-400 bg-orange-900/40 px-3 py-1.5 rounded-full mb-4">
+                <Star className="w-3.5 h-3.5" /> What's New
+              </span>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-100 mb-3">More Than Just Reading</h2>
+              <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">Write, play, discover, and connect — your complete literary world.</p>
             </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-center text-gray-100 mb-2 sm:mb-3 lg:mb-4">Explore Sahadhyayi's Powerful Tools</h2>
-            <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-gray-300 text-center mb-6 sm:mb-8 lg:mb-12 max-w-3xl mx-auto px-4">
-              Our features are designed to help you read better, understand deeper, and connect meaningfully.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {features.map((feature, index) => {
-                const Icon = feature.icon;
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {newFeatures.map(f => {
+                const Icon = f.icon;
                 return (
-                  <Card key={index} className="bg-black/80 backdrop-blur-sm border-orange-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    <CardHeader className="pb-3 sm:pb-4">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-orange-900 rounded-lg flex items-center justify-center mb-2 sm:mb-3 lg:mb-4">
-                        <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-orange-400" />
-                      </div>
-                      <CardTitle className="text-base sm:text-lg lg:text-xl text-gray-100">{feature.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-300">{feature.description}</p>
-                    </CardContent>
-                  </Card>
+                  <Link key={f.title} to={f.to} className="group block">
+                    <Card className="h-full border border-orange-700/50 hover:border-orange-500 transition-all duration-300 hover:-translate-y-1.5 bg-zinc-900 hover:bg-zinc-800/90">
+                      <CardContent className="p-6 sm:p-8 flex flex-col h-full">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${f.iconColor} bg-zinc-800 border border-orange-700/30 transition-transform group-hover:scale-110`}>
+                          <Icon className="w-7 h-7" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">{f.title}</h3>
+                        <p className="text-sm text-gray-300 leading-relaxed mb-5 flex-1">{f.description}</p>
+                        <span className="text-sm font-semibold text-orange-400 flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+                          {f.cta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                        </span>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 );
               })}
             </div>
           </div>
         </section>
 
-        {/* Updated Internal Links Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black">
-          <div className="max-w-6xl mx-auto text-center">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-100 mb-4 sm:mb-6 lg:mb-8">Explore the Sahadhyayi Platform</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-              <Link to="/library" className="block">
-                <Card className="bg-black border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
-                  <CardContent className="p-4 sm:p-6 lg:p-8 text-center flex flex-col justify-between h-full">
-                    <div>
-                      <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-orange-600 mx-auto mb-3 sm:mb-4 lg:mb-6" />
-                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-100 mb-2 sm:mb-3 lg:mb-4">Digital Library</h3>
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-300 leading-relaxed">Browse thousands of books with fellow readers in our comprehensive digital collection</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link to="/groups" className="block">
-                <Card className="bg-black border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
-                  <CardContent className="p-4 sm:p-6 lg:p-8 text-center flex flex-col justify-between h-full">
-                    <div>
-                      <Users className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-orange-600 mx-auto mb-3 sm:mb-4 lg:mb-6" />
-                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-100 mb-2 sm:mb-3 lg:mb-4">Reading Groups</h3>
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-300 leading-relaxed">Join meaningful discussions with fellow Sahadhyayi readers who share your literary interests</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link to="/map" className="block">
-                <Card className="bg-black border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
-                  <CardContent className="p-4 sm:p-6 lg:p-8 text-center flex flex-col justify-between h-full">
-                    <div>
-                      <Map className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-orange-600 mx-auto mb-3 sm:mb-4 lg:mb-6" />
-                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-100 mb-2 sm:mb-3 lg:mb-4">Reader Map</h3>
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-300 leading-relaxed">Find and connect with local Sahadhyayi members and book communities in your area</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link to="/authors" className="block">
-                <Card className="bg-black border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
-                  <CardContent className="p-4 sm:p-6 lg:p-8 text-center flex flex-col justify-between h-full">
-                    <div>
-                      <Calendar className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-orange-600 mx-auto mb-3 sm:mb-4 lg:mb-6" />
-                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-100 mb-2 sm:mb-3 lg:mb-4">Meet Authors</h3>
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-300 leading-relaxed">Connect directly with inspiring authors through live Sahadhyayi sessions and Q&As</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+        {/* ─── Quick Navigation Strip (replaces 4-card "Explore Platform" grid) ─── */}
+        <section className="py-8 px-4 border-t border-b border-orange-900/20">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+              {quickLinks.map(link => {
+                const Icon = link.icon;
+                return (
+                  <Link key={link.to} to={link.to}>
+                    <Button variant="outline" className="border-orange-800/40 text-gray-300 hover:bg-orange-900/30 hover:text-orange-300 hover:border-orange-600 gap-2 px-5 py-2.5">
+                      <Icon className="w-4 h-4" />
+                      {link.label}
+                    </Button>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-black text-white">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold mb-3 sm:mb-4 lg:mb-6">Ready to Start Your Reading Journey?</h2>
-            <p className="text-sm sm:text-base lg:text-lg xl:text-xl mb-4 sm:mb-6 lg:mb-8 opacity-90 px-4">
-              Join Sahadhyayi today and experience the joy of reading together.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-              <Link to="/signup" className="w-full sm:w-auto">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg">
-                  <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2" />
-                  Get Started Free
-                </Button>
-              </Link>
-              <Link to="/about" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white font-semibold px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg">
-                  Learn More About Sahadhyayi
-                </Button>
-              </Link>
+        {/* ─── Condensed About Section (merged from 3 redundant sections) ─── */}
+        <section className="py-12 sm:py-16 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-100 mb-4">What is Sahadhyayi?</h2>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                  <strong className="text-orange-400">Sahadhyayi</strong> (सहाध्यायी) means "fellow reader" in Sanskrit — from <em>saha</em> (together) and <em>adhyayi</em> (one who reads). We're building a digital home where readers connect, share insights, and grow together.
+                </p>
+                <p className="text-gray-400 leading-relaxed mb-6">
+                  In a world shifting toward passive content, we help you rediscover deep, focused reading through community support, collaborative learning, and modern tools.
+                </p>
+                <Link to="/about" className="text-orange-400 hover:text-orange-300 font-medium text-sm inline-flex items-center gap-1">
+                  Learn more about our mission <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+              <div className="bg-zinc-900/80 p-6 rounded-2xl border border-orange-800/30">
+                <h3 className="text-lg font-semibold text-gray-100 mb-4">Why readers choose us</h3>
+                <div className="space-y-3 text-sm text-gray-300">
+                  {[
+                    { emoji: '🌎', text: 'Global community of passionate readers' },
+                    { emoji: '📚', text: 'Deep reading tools for focused comprehension' },
+                    { emoji: '🤝', text: 'Collaborative learning through shared insights' },
+                    { emoji: '🕯️', text: 'Ancient wisdom meets modern technology' },
+                    { emoji: '💬', text: 'Lasting connections through shared reading' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span className="text-lg flex-shrink-0">{item.emoji}</span>
+                      <span>{item.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
+
+        {/* ─── CTA (only for logged-out users) ─── */}
+        {!user && (
+          <section className="py-12 sm:py-16 px-4 border-t border-orange-900/20">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4">Ready to Start Reading?</h2>
+              <p className="text-gray-400 mb-8 text-lg">Join thousands of readers building better reading habits together.</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link to="/signup">
+                  <Button size="lg" variant="secondary" className="px-8">
+                    <UserPlus className="w-5 h-5 mr-2" /> Get Started Free
+                  </Button>
+                </Link>
+                <Link to="/library">
+                  <Button size="lg" variant="outline" className="border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white px-8">
+                    Browse Library
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
       <ContactFormDialog />
     </>
