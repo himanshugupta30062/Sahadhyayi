@@ -248,18 +248,11 @@ const StickyNavigation = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <div className="flex items-center space-x-3">
-                    <SignInLink>
-                      <Button variant="outline" size="sm" className="border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white">
-                        Sign In
-                      </Button>
-                    </SignInLink>
-                    <Link to="/signup">
-                      <Button size="sm" className="bg-gradient-button text-white shadow-button hover:shadow-elevated transition-all duration-200">
-                        Join Now
-                      </Button>
-                    </Link>
-                  </div>
+                  <Link to="/signup">
+                    <Button size="sm" className="bg-gradient-button text-white shadow-button hover:shadow-elevated transition-all duration-200">
+                      Get Started
+                    </Button>
+                  </Link>
                 )}
               </div>
             )}
