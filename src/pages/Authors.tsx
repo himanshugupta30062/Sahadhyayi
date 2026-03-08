@@ -378,11 +378,13 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 p-4 pt-0" onClick={(e) => e.preventDefault()}>
+          <div className="flex gap-2 p-4 pt-0" onClick={(e) => e.stopPropagation()}>
             <FollowButton authorId={author.id} size="sm" showText={false} />
-            <Button variant="outline" size="sm" className="flex-1 text-xs border-border">
-              View Profile
-            </Button>
+            <Link to={`/authors/${slugify(author.name)}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
+              <Button variant="outline" size="sm" className="w-full text-xs border-border">
+                View Profile
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
