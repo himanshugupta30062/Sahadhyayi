@@ -22,12 +22,31 @@ export interface Book {
 // Only select columns we actually use — avoids transferring unnecessary data
 const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
 
+// Sorting rules (displayed to users via SortingInfoTooltip)
+export const SORTING_RULES = [
+  { label: 'Cover image available', points: '+2000', priority: 'highest' },
+  { label: 'PDF download available', points: '+1000', priority: 'high' },
+  { label: 'Verified author name', points: '+300', priority: 'high' },
+  { label: 'Science/Physics/Cosmology genre', points: '+200', priority: 'medium' },
+  { label: 'Fiction/Novel/Fantasy genre', points: '+150', priority: 'medium' },
+  { label: 'Has description', points: '+40', priority: 'low' },
+  { label: 'Has author bio', points: '+30', priority: 'low' },
+  { label: 'Has genre tag', points: '+20', priority: 'low' },
+  { label: 'Has publication year', points: '+15', priority: 'low' },
+  { label: 'Has page count', points: '+10', priority: 'low' },
+  { label: 'Has ISBN', points: '+8', priority: 'low' },
+  { label: 'Non-English language', points: '+5', priority: 'low' },
+  { label: 'NCERT/CBSE textbooks', points: '−100k', priority: 'demoted' },
+  { label: 'Tie-breaker', points: 'newest first', priority: 'info' },
+];
+
 // Function to calculate book completeness score (higher score = better book)
 export const getBookCompletenessScore = (book: any): number => {
   let score = 0;
-  // Tier 1: Essential fields — books with all three always land on page 1
+  // Tier 0: Cover image is king — books with covers ALWAYS appear first
+  if (book.cover_image_url) score += 2000;
+  // Tier 1: Essential fields
   if (book.pdf_url) score += 1000;
-  if (book.cover_image_url) score += 500;
   if (book.author && book.author.trim() && book.author !== 'Unknown Author') score += 300;
   // Tier 2: Rich metadata
   if (book.description) score += 40;
