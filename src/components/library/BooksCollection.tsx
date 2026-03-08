@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { useMemo, useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Library, Search } from 'lucide-react';
 import PersonalLibrary from '@/components/PersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
@@ -20,6 +20,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import LibraryPagination from './LibraryPagination';
 import { searchExternalSources, type ExternalBook } from '@/utils/searchExternalSources';
 import { searchLibgen, type LibgenBook } from '@/utils/libgenApi';
+import { toast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
