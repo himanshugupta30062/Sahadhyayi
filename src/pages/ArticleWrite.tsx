@@ -40,6 +40,22 @@ const ArticleWrite = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState(false);
 
+  // Restore draft from sessionStorage (after sign-in redirect)
+  React.useEffect(() => {
+    const draft = sessionStorage.getItem('article_draft');
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        if (parsed.title) setTitle(parsed.title);
+        if (parsed.subtitle) setSubtitle(parsed.subtitle);
+        if (parsed.content) setContent(parsed.content);
+        if (parsed.tags) setTags(parsed.tags);
+        if (parsed.coverUrl) setCoverUrl(parsed.coverUrl);
+      } catch { /* ignore */ }
+      sessionStorage.removeItem('article_draft');
+    }
+  }, []);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Insert text around selection (for inline formatting)
@@ -142,6 +158,13 @@ const ArticleWrite = () => {
   const readingTime = Math.max(1, Math.round(wordCount / 200));
 
   const handleSave = async (publish: boolean) => {
+    if (!user) {
+      // Store draft in sessionStorage and redirect to sign in
+      sessionStorage.setItem('article_draft', JSON.stringify({ title, subtitle, content, tags, coverUrl }));
+      navigate(`/signin?redirect=${encodeURIComponent('/articles/write')}`);
+      return;
+    }
+
     const result = articleSchema.safeParse({ title, subtitle, content, tags });
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};

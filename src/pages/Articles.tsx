@@ -51,15 +51,13 @@ const Articles = () => {
                   className="pl-10"
                 />
               </div>
-              {user && (
-                <Button
-                  onClick={() => navigate('/articles/write')}
-                  className="bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 w-full sm:w-auto"
-                >
-                  <PenLine className="w-4 h-4" />
-                  Write Article
-                </Button>
-              )}
+              <Button
+                onClick={() => user ? navigate('/articles/write') : navigate('/articles/write')}
+                className="bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 w-full sm:w-auto"
+              >
+                <PenLine className="w-4 h-4" />
+                Write Article
+              </Button>
             </div>
           </div>
         </div>
@@ -83,11 +81,9 @@ const Articles = () => {
               <PenLine className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">No articles yet</h3>
               <p className="text-muted-foreground mb-4">Be the first to share your thoughts!</p>
-              {user && (
-                <Button onClick={() => navigate('/articles/write')} className="bg-brand-primary text-white">
+              <Button onClick={() => navigate('/articles/write')} className="bg-brand-primary text-white">
                   Write Your First Article
-                </Button>
-              )}
+              </Button>
             </div>
           ) : (
             <div className="space-y-8">
