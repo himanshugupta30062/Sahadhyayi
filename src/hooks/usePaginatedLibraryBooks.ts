@@ -167,7 +167,7 @@ async function fetchFilteredBooks(
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
   const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(10);
+  const [pageSize, setPageSize] = React.useState(12);
 
   const { searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange } = params;
 
