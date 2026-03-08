@@ -400,6 +400,30 @@ export type Database = {
           },
         ]
       }
+      book_events: {
+        Row: {
+          book_id: string
+          created_at: string
+          event_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       book_quiz_questions: {
         Row: {
           book_id: string | null
