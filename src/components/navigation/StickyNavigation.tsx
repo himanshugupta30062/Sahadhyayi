@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import {
   Search, Menu, X, ChevronDown, BookOpen, Gamepad2, Users, Radio,
-  FileText, User, LogOut, Settings, BookMarked, PenTool, MessageCircle,
+  FileText, User, LogOut, Settings, BookMarked, PenTool, MessageCircle, LogIn,
 } from 'lucide-react';
 import SignInLink from '@/components/SignInLink';
 import ContactFormDialog from '@/components/ContactFormDialog';
@@ -248,9 +248,10 @@ const StickyNavigation = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Link to="/signup">
-                    <Button size="sm" className="bg-gradient-button text-white shadow-button hover:shadow-elevated transition-all duration-200">
-                      Get Started
+                  <Link to="/auth">
+                    <Button variant="ghost" size="sm" className="text-foreground hover:text-brand-primary font-medium">
+                      <LogIn className="w-4 h-4 mr-1.5" />
+                      Sign In
                     </Button>
                   </Link>
                 )}
@@ -332,10 +333,8 @@ const StickyNavigation = () => {
                   </div>
                 ) : (
                   <div className="pt-3 border-t border-border">
-                    <Link to="/signup" onClick={() => setIsOpen(false)} className="block">
-                      <Button size="sm" className="w-full bg-gradient-button text-white">
-                        Get Started
-                      </Button>
+                    <Link to="/auth" onClick={() => setIsOpen(false)} className="block px-3 py-2.5 text-base font-medium rounded-md text-muted-foreground hover:text-brand-primary hover:bg-accent/50">
+                      Sign In
                     </Link>
                   </div>
                 )}

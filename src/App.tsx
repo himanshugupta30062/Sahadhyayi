@@ -25,8 +25,7 @@ import BookFlipLoader from "./components/ui/BookFlipLoader";
 
 // Immediate load pages (critical path)
 import Index from "./pages/Index";
-import SignUp from "./pages/SignUp";
-import SignIn from "./pages/SignIn";
+import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import NotFound from "./pages/NotFound";
@@ -148,8 +147,9 @@ const App = memo(() => {
                       <Routes>
                         {/* Critical routes - no lazy loading */}
                         <Route path="/" element={<Index />} />
-                        <Route path="/signup" element={<SignUp />} />
-                        <Route path="/signin" element={<SignIn />} />
+                        <Route path="/auth" element={<Auth />} />
+                        <Route path="/signup" element={<Auth />} />
+                        <Route path="/signin" element={<Auth />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/confirm-email" element={<ConfirmEmail />} />
                         <Route path="*" element={<NotFound />} />
