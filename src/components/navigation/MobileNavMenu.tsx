@@ -24,11 +24,11 @@ interface MobileNavMenuProps {
 const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
   const navItems = [
     { path: "/library", label: "Library", icon: BookOpen },
+    { path: "/bookshelf", label: "My Books", icon: BookOpen },
     { path: "/blog", label: "Publish", icon: PenTool },
     { path: "/games", label: "Games", icon: BookOpen },
     { path: "/authors", label: "Authors", icon: Users },
     { path: "/social", label: "Social Media", icon: Users },
-    { path: "/bookshelf", label: "My Books", icon: BookOpen },
   ];
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
