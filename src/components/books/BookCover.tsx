@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import AudioSummaryButton from './AudioSummaryButton';
 import { LazyImage } from '@/components/ui/LazyImage';
+import { toast } from '@/hooks/use-toast';
 
 interface BookCoverProps {
   title: string;
@@ -30,11 +31,11 @@ const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl, o
         document.body.removeChild(link);
       } else {
         // Preview link (Google Books, etc.)
-        window.open(pdfUrl, '_blank');
+        window.open(pdfUrl, '_blank', 'noopener,noreferrer');
       }
       onDownload?.();
     } else {
-      alert('PDF not available for this book');
+      toast({ title: 'PDF not available', description: 'This book does not have a PDF file.', variant: 'destructive' });
     }
   };
 

@@ -157,7 +157,7 @@ const SocialBookCard: React.FC<SocialBookCardProps> = ({ book }) => {
                   size="sm" 
                   variant="outline"
                   className="w-full"
-                  onClick={() => window.open(book.podcastUrl!, '_blank')}
+                  onClick={() => window.open(book.podcastUrl!, '_blank', 'noopener,noreferrer')}
                 >
                   Listen Now
                 </Button>

@@ -48,6 +48,7 @@ const GroupDetails = lazy(() => import('./pages/GroupDetails'));
 const Map = lazy(() => import('./pages/Map'));
 const About = lazy(() => import('./pages/About'));
 const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
 const Bookshelf = lazy(() => import('./pages/Bookshelf'));
 const Games = lazy(() => import('./pages/Games'));
 
@@ -255,6 +256,14 @@ const App = memo(() => {
                           element={
                             <Suspense fallback={<LoadingFallback />}>
                               <Blog />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/blog/:slug"
+                          element={
+                            <Suspense fallback={<LoadingFallback />}>
+                              <BlogPost />
                             </Suspense>
                           }
                         />
