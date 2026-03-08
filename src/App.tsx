@@ -25,8 +25,7 @@ import BookFlipLoader from "./components/ui/BookFlipLoader";
 
 // Immediate load pages (critical path)
 import Index from "./pages/Index";
-import SignUp from "./pages/SignUp";
-import SignIn from "./pages/SignIn";
+import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import NotFound from "./pages/NotFound";
