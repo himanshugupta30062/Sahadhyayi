@@ -2844,26 +2844,56 @@ export type Database = {
       }
       website_visits: {
         Row: {
+          browser: string | null
+          browser_version: string | null
+          city: string | null
           country_code: string | null
+          device_model: string | null
+          device_type: string | null
           id: number
           ip_address: string | null
+          language: string | null
+          os: string | null
           page_url: string | null
+          referrer: string | null
+          region: string | null
+          screen_resolution: string | null
           user_agent: string | null
           visited_at: string
         }
         Insert: {
+          browser?: string | null
+          browser_version?: string | null
+          city?: string | null
           country_code?: string | null
+          device_model?: string | null
+          device_type?: string | null
           id?: number
           ip_address?: string | null
+          language?: string | null
+          os?: string | null
           page_url?: string | null
+          referrer?: string | null
+          region?: string | null
+          screen_resolution?: string | null
           user_agent?: string | null
           visited_at?: string
         }
         Update: {
+          browser?: string | null
+          browser_version?: string | null
+          city?: string | null
           country_code?: string | null
+          device_model?: string | null
+          device_type?: string | null
           id?: number
           ip_address?: string | null
+          language?: string | null
+          os?: string | null
           page_url?: string | null
+          referrer?: string | null
+          region?: string | null
+          screen_resolution?: string | null
           user_agent?: string | null
           visited_at?: string
         }
