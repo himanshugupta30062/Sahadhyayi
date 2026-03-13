@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 export interface RecommendedBook {
   id: string;
@@ -9,19 +10,16 @@ export interface RecommendedBook {
   description?: string;
 }
 
-const BASE_URL = 'https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/recommendations';
-
 export const useBookRecommendations = (userId?: string) => {
   return useQuery({
     queryKey: ['book-recommendations', userId],
     queryFn: async (): Promise<RecommendedBook[]> => {
       if (!userId) return [];
-      const response = await fetch(`${BASE_URL}/${userId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch recommendations');
-      }
-      const data = await response.json();
-      return data.recommendations || [];
+      const { data, error } = await supabase.functions.invoke('recommendations', {
+        method: 'POST',
+      });
+      if (error) throw new Error('Failed to fetch recommendations');
+      return data?.recommendations || [];
     },
     enabled: !!userId,
   });
