@@ -50,7 +50,8 @@ const Authors = () => {
     let result = authors.filter(author => {
       const matchesSearch = !searchTerm ||
         author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        author.bio?.toLowerCase().includes(searchTerm.toLowerCase());
+        author.bio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        author.genres.some(g => g.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesGenre = selectedGenre === 'all' || author.genres.includes(selectedGenre);
       return matchesSearch && matchesGenre;
     });

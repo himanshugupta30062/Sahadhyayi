@@ -130,7 +130,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-sm font-medium text-gray-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
           Showing <span className="font-bold text-blue-600">{start}-{end}</span> of{' '}
-          <span className="font-bold text-blue-600">{totalCount}</span> books
+          <span className="font-bold text-blue-600">{totalCount}</span> {itemLabel}
         </div>
         
         <div className="flex items-center gap-3">
