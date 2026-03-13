@@ -296,6 +296,7 @@ const Authors = () => {
                     onPageChange={setPage}
                     onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
                     scrollTargetRef={scrollTargetRef}
+                    itemLabel="authors"
                   />
                 )}
               </>
