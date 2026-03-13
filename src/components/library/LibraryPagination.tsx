@@ -25,6 +25,7 @@ interface LibraryPaginationProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   scrollTargetRef?: React.RefObject<HTMLElement>;
+  itemLabel?: string;
 }
 
 const LibraryPagination: React.FC<LibraryPaginationProps> = ({
