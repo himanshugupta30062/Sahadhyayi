@@ -50,7 +50,7 @@ serve(async (req) => {
       .select('*', { count: 'exact', head: true })
       .gte('visited_at', twentyFourHoursAgo)
 
-    // Top countries - use efficient DB function instead of fetching all rows
+    // Top countries
     const { data: countryData } = await supabase.rpc('get_top_visitor_countries', { limit_count: 15 })
 
     const topCountries = (countryData || []).map((row: any) => ({
@@ -58,11 +58,45 @@ serve(async (req) => {
       count: Number(row.visit_count),
     }))
 
+    // Fetch device/browser/OS/city breakdowns from website_visits
+    // We'll query the last 10,000 rows for breakdown stats
+    const { data: visitRows } = await supabase
+      .from('website_visits')
+      .select('browser, os, device_type, city, region')
+      .not('browser', 'is', null)
+      .order('visited_at', { ascending: false })
+      .limit(10000)
+
+    const browserCounts: Record<string, number> = {}
+    const osCounts: Record<string, number> = {}
+    const deviceCounts: Record<string, number> = {}
+    const cityCounts: Record<string, number> = {}
+
+    for (const row of (visitRows || [])) {
+      if (row.browser) browserCounts[row.browser] = (browserCounts[row.browser] || 0) + 1
+      if (row.os) osCounts[row.os] = (osCounts[row.os] || 0) + 1
+      if (row.device_type) deviceCounts[row.device_type] = (deviceCounts[row.device_type] || 0) + 1
+      if (row.city && row.city !== 'Unknown') {
+        const label = row.region ? `${row.city}, ${row.region}` : row.city
+        cityCounts[label] = (cityCounts[label] || 0) + 1
+      }
+    }
+
+    const toSorted = (obj: Record<string, number>, limit = 10) =>
+      Object.entries(obj)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([name, count]) => ({ name, count }))
+
     const stats = {
       totalSignups,
       totalVisits: Number(visits) || 0,
       last24hVisits: last24hCount || 0,
       topCountries,
+      topBrowsers: toSorted(browserCounts, 6),
+      topOS: toSorted(osCounts, 6),
+      deviceTypes: toSorted(deviceCounts, 5),
+      topCities: toSorted(cityCounts, 10),
       lastUpdated: new Date().toISOString()
     }
 
