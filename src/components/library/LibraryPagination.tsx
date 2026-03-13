@@ -35,6 +35,7 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
   onPageChange,
   onPageSizeChange,
   scrollTargetRef,
+  itemLabel = 'books',
 }) => {
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const [goInput, setGoInput] = useState('');
