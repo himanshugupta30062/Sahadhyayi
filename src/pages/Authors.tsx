@@ -211,25 +211,25 @@ const Authors = () => {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
           {/* Featured Authors */}
           {featuredAuthors.length > 0 && !searchTerm && selectedGenre === 'all' && (
             <motion.section 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               transition={{ duration: 0.4, delay: 0.25 }}
-              className="mb-14"
+              className="mb-8 sm:mb-14"
             >
-              <div className="flex items-center gap-2.5 mb-7">
-                <div className="p-2 rounded-lg bg-[hsl(var(--brand-primary)/0.1)]">
-                  <TrendingUp className="w-5 h-5 text-[hsl(var(--brand-primary))]" />
+              <div className="flex items-center gap-2 sm:gap-2.5 mb-4 sm:mb-7">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-[hsl(var(--brand-primary)/0.1)]">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--brand-primary))]" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">Featured Authors</h2>
-                  <p className="text-sm text-muted-foreground">Top writers in our community</p>
+                  <h2 className="text-lg sm:text-2xl font-bold text-foreground">Featured Authors</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Top writers in our community</p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
                 {featuredAuthors.map((author, i) => (
                   <motion.div
                     key={author.id}
@@ -246,16 +246,16 @@ const Authors = () => {
 
           {/* All Authors */}
           <section>
-            <div className="flex items-center justify-between mb-7">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-muted">
-                  <Library className="w-5 h-5 text-muted-foreground" />
+            <div className="flex items-center justify-between mb-4 sm:mb-7">
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-muted">
+                  <Library className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-lg sm:text-2xl font-bold text-foreground">
                     {searchTerm || selectedGenre !== 'all' ? 'Search Results' : 'All Authors'}
                   </h2>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {filteredAuthors.length} author{filteredAuthors.length !== 1 ? 's' : ''} found
                   </p>
                 </div>
