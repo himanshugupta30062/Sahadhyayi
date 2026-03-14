@@ -127,42 +127,42 @@ const Authors = () => {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--brand-primary)/0.1),transparent_60%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--brand-secondary)/0.08),transparent_60%)]" />
           
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 relative">
-            <Breadcrumb items={breadcrumbItems} className="mb-6" />
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-8 sm:pb-12 relative">
+            <Breadcrumb items={breadcrumbItems} className="mb-4 sm:mb-6" />
             <div ref={scrollTargetRef} />
             
             <motion.div 
               initial={{ opacity: 0, y: 20 }} 
               animate={{ opacity: 1, y: 0 }} 
               transition={{ duration: 0.5 }}
-              className="text-center mb-10"
+              className="text-center mb-6 sm:mb-10"
             >
-              <div className="inline-flex items-center gap-2 bg-[hsl(var(--brand-primary)/0.1)] text-[hsl(var(--brand-primary))] px-4 py-1.5 rounded-full text-sm font-medium mb-5">
-                <Sparkles className="w-4 h-4" />
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-[hsl(var(--brand-primary)/0.1)] text-[hsl(var(--brand-primary))] px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-5">
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Literary Community
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-2 sm:mb-4 tracking-tight leading-tight">
                 Discover <span className="bg-clip-text text-transparent bg-gradient-button">Authors</span>
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              <p className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2">
                 Explore profiles, follow your favorites, and browse books from our community of writers.
               </p>
 
               {/* Stats row */}
-              <div className="flex items-center justify-center gap-6 md:gap-10 mt-8">
+              <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-10 mt-5 sm:mt-8">
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-foreground">{authors.length}</div>
-                  <div className="text-xs md:text-sm text-muted-foreground mt-0.5">Authors</div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">{authors.length}</div>
+                  <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-0.5">Authors</div>
                 </div>
-                <div className="w-px h-10 bg-border" />
+                <div className="w-px h-8 sm:h-10 bg-border" />
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-foreground">{totalBooks}</div>
-                  <div className="text-xs md:text-sm text-muted-foreground mt-0.5">Books</div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">{totalBooks}</div>
+                  <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-0.5">Books</div>
                 </div>
-                <div className="w-px h-10 bg-border" />
+                <div className="w-px h-8 sm:h-10 bg-border" />
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-foreground">{genres.length}</div>
-                  <div className="text-xs md:text-sm text-muted-foreground mt-0.5">Genres</div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">{genres.length}</div>
+                  <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-0.5">Genres</div>
                 </div>
               </div>
             </motion.div>
@@ -174,19 +174,19 @@ const Authors = () => {
               transition={{ duration: 0.5, delay: 0.15 }}
               className="max-w-4xl mx-auto"
             >
-              <div className="bg-card/80 backdrop-blur-md rounded-2xl shadow-[var(--shadow-card)] border border-border/60 p-4 md:p-5">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <div className="md:col-span-2 relative">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <div className="bg-card/80 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-[var(--shadow-card)] border border-border/60 p-3 sm:p-4 md:p-5">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+                  <div className="col-span-2 relative">
+                    <Search className="absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                       placeholder="Search by name, bio, or genre..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 h-11 bg-muted/40 border-border/60 rounded-xl focus:ring-2 focus:ring-[hsl(var(--brand-primary)/0.2)] transition-all"
+                      className="pl-9 sm:pl-10 h-10 sm:h-11 bg-muted/40 border-border/60 rounded-lg sm:rounded-xl text-sm focus:ring-2 focus:ring-[hsl(var(--brand-primary)/0.2)] transition-all"
                     />
                   </div>
                   <Select value={selectedGenre} onValueChange={setSelectedGenre}>
-                    <SelectTrigger className="h-11 bg-muted/40 border-border/60 rounded-xl">
+                    <SelectTrigger className="h-10 sm:h-11 bg-muted/40 border-border/60 rounded-lg sm:rounded-xl text-xs sm:text-sm">
                       <SelectValue placeholder="Genre" />
                     </SelectTrigger>
                     <SelectContent>
@@ -195,7 +195,7 @@ const Authors = () => {
                     </SelectContent>
                   </Select>
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="h-11 bg-muted/40 border-border/60 rounded-xl">
+                    <SelectTrigger className="h-10 sm:h-11 bg-muted/40 border-border/60 rounded-lg sm:rounded-xl text-xs sm:text-sm">
                       <SelectValue placeholder="Sort" />
                     </SelectTrigger>
                     <SelectContent>
