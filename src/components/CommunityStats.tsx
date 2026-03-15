@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Eye, Loader2, AlertTriangle, Globe, Clock, Activity, Monitor, Smartphone, Tablet, MapPin, Chrome } from 'lucide-react';
+import { Users, Eye, Loader2, AlertTriangle, Globe, Clock, Activity, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
 
 /** Maps ISO 3166-1 alpha-2 country codes to flag emoji + name */
