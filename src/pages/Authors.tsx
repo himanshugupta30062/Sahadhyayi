@@ -463,7 +463,7 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-1.5 sm:gap-2 p-3 sm:p-4 pt-2 border-t border-border/30" onClick={(e) => e.preventDefault()}>
+          <div className="flex gap-1.5 sm:gap-2 p-3 sm:p-4 pt-2 border-t border-border/30">
             <div onClick={(e) => e.stopPropagation()} className="hidden sm:block">
               <FollowButton authorId={author.id} size="sm" showText={false} />
             </div>
