@@ -172,7 +172,7 @@ const CommunityStats = () => {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
         <StatCard icon={Users} label="Members" value={stats.registeredMembers} subtitle="Total sign-ups" gradient="bg-gradient-to-br from-orange-500 to-amber-600" />
         <StatCard icon={Eye} label="Visitors" value={stats.totalVisitors} subtitle="All-time views" gradient="bg-gradient-to-br from-blue-500 to-indigo-600" />
         <StatCard icon={TrendingUp} label="Last 24h" value={stats.last24hVisits} subtitle="Recent activity" gradient="bg-gradient-to-br from-emerald-500 to-teal-600" />
