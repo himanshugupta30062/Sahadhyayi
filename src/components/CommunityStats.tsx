@@ -57,9 +57,6 @@ interface CommunityStatsData {
   totalVisitors: number;
   last24hVisits: number;
   topCountries: { code: string; count: number }[];
-  topBrowsers: BreakdownItem[];
-  topOS: BreakdownItem[];
-  deviceTypes: BreakdownItem[];
   topCities: BreakdownItem[];
   lastUpdated: string | null;
   loading: boolean;
