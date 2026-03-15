@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Eye, Loader2, AlertTriangle, Globe, Clock, Activity, Monitor, Smartphone, Tablet, MapPin, Chrome } from 'lucide-react';
+import { Users, Eye, Loader2, AlertTriangle, Globe, Clock, Activity, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
 
 /** Maps ISO 3166-1 alpha-2 country codes to flag emoji + name */
@@ -57,86 +57,12 @@ interface CommunityStatsData {
   totalVisitors: number;
   last24hVisits: number;
   topCountries: { code: string; count: number }[];
-  topBrowsers: BreakdownItem[];
-  topOS: BreakdownItem[];
-  deviceTypes: BreakdownItem[];
   topCities: BreakdownItem[];
   lastUpdated: string | null;
   loading: boolean;
   error: string | null;
 }
 
-const DEVICE_ICONS: Record<string, React.ReactNode> = {
-  Desktop: <Monitor className="w-4 h-4" />,
-  Mobile: <Smartphone className="w-4 h-4" />,
-  Tablet: <Tablet className="w-4 h-4" />,
-};
-
-const DEVICE_COLORS: Record<string, string> = {
-  Desktop: '#3b82f6',
-  Mobile: '#f59e0b',
-  Tablet: '#10b981',
-};
-
-const BROWSER_COLORS = ['#4285F4', '#FF5722', '#FF9800', '#0078D7', '#7B1FA2', '#607D8B'];
-const OS_COLORS = ['#00A4EF', '#A4C639', '#999999', '#FF6B00', '#FCC624', '#607D8B'];
-
-/** Donut chart for device/browser/OS breakdown */
-const MiniDonut = ({ items, colors, size = 100 }: { items: BreakdownItem[]; colors: string[]; size?: number }) => {
-  const total = items.reduce((s, i) => s + i.count, 0);
-  if (total === 0) return null;
-
-  const radius = (size - 8) / 2;
-  const circumference = 2 * Math.PI * radius;
-  let offset = 0;
-
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
-      {items.map((item, i) => {
-        const pct = item.count / total;
-        const dashLen = pct * circumference;
-        const dashOffset = -offset;
-        offset += dashLen;
-        return (
-          <circle
-            key={item.name}
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke={colors[i % colors.length]}
-            strokeWidth={10}
-            strokeDasharray={`${dashLen} ${circumference - dashLen}`}
-            strokeDashoffset={dashOffset}
-            strokeLinecap="round"
-            className="transition-all duration-700"
-          />
-        );
-      })}
-      <text x="50%" y="50%" textAnchor="middle" dy="0.35em" className="fill-foreground font-bold text-sm">
-        {total.toLocaleString()}
-      </text>
-    </svg>
-  );
-};
-
-/** Small legend list */
-const LegendList = ({ items, colors, total }: { items: BreakdownItem[]; colors: string[]; total: number }) => (
-  <div className="space-y-1.5 flex-1 min-w-0">
-    {items.map((item, i) => (
-      <div key={item.name} className="flex items-center gap-2 text-xs sm:text-sm">
-        <span
-          className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-          style={{ backgroundColor: colors[i % colors.length] }}
-        />
-        <span className="text-foreground/80 truncate flex-1">{item.name}</span>
-        <span className="text-muted-foreground tabular-nums text-xs">
-          {((item.count / total) * 100).toFixed(0)}%
-        </span>
-      </div>
-    ))}
-  </div>
-);
 
 const CommunityStats = () => {
   const [stats, setStats] = React.useState<CommunityStatsData>({
@@ -144,9 +70,6 @@ const CommunityStats = () => {
     totalVisitors: 0,
     last24hVisits: 0,
     topCountries: [],
-    topBrowsers: [],
-    topOS: [],
-    deviceTypes: [],
     topCities: [],
     lastUpdated: null,
     loading: true,
@@ -163,9 +86,6 @@ const CommunityStats = () => {
         totalVisitors: data.totalVisits ?? 0,
         last24hVisits: data.last24hVisits ?? 0,
         topCountries: data.topCountries ?? [],
-        topBrowsers: data.topBrowsers ?? [],
-        topOS: data.topOS ?? [],
-        deviceTypes: data.deviceTypes ?? [],
         topCities: data.topCities ?? [],
         lastUpdated: data.lastUpdated ?? new Date().toISOString(),
         loading: false,
@@ -240,9 +160,6 @@ const CommunityStats = () => {
 
   const maxCountryCount = stats.topCountries[0]?.count || 1;
   const totalCountryVisits = stats.topCountries.reduce((sum, c) => sum + c.count, 0);
-  const totalDevices = stats.deviceTypes.reduce((s, d) => s + d.count, 0);
-  const totalBrowsers = stats.topBrowsers.reduce((s, b) => s + b.count, 0);
-  const totalOS = stats.topOS.reduce((s, o) => s + o.count, 0);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-3 sm:px-4">
@@ -308,80 +225,6 @@ const CommunityStats = () => {
         </Card>
       </div>
 
-      {/* Device / Browser / OS breakdown - vertical stack on mobile */}
-      {(stats.deviceTypes.length > 0 || stats.topBrowsers.length > 0 || stats.topOS.length > 0) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
-          {/* Device Types */}
-          {stats.deviceTypes.length > 0 && (
-            <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                  <div className="p-1 sm:p-1.5 bg-blue-100 rounded-lg">
-                    <Monitor className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
-                  </div>
-                  <span className="text-xs sm:text-sm font-semibold text-foreground/80">Device Types</span>
-                </div>
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <MiniDonut
-                    items={stats.deviceTypes}
-                    colors={stats.deviceTypes.map(d => DEVICE_COLORS[d.name] || '#94a3b8')}
-                    size={72}
-                  />
-                  <div className="space-y-1.5 sm:space-y-2 flex-1">
-                    {stats.deviceTypes.map((d) => (
-                      <div key={d.name} className="flex items-center gap-1.5 sm:gap-2">
-                        <span style={{ color: DEVICE_COLORS[d.name] || '#94a3b8' }} className="flex-shrink-0">
-                          {DEVICE_ICONS[d.name] || <Monitor className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        </span>
-                        <span className="text-xs sm:text-sm text-foreground/80 flex-1">{d.name}</span>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground tabular-nums">
-                          {totalDevices ? ((d.count / totalDevices) * 100).toFixed(0) : 0}%
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Browsers */}
-          {stats.topBrowsers.length > 0 && (
-            <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                  <div className="p-1 sm:p-1.5 bg-purple-100 rounded-lg">
-                    <Chrome className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600" />
-                  </div>
-                  <span className="text-xs sm:text-sm font-semibold text-foreground/80">Top Browsers</span>
-                </div>
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <MiniDonut items={stats.topBrowsers} colors={BROWSER_COLORS} size={72} />
-                  <LegendList items={stats.topBrowsers} colors={BROWSER_COLORS} total={totalBrowsers} />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Operating Systems */}
-          {stats.topOS.length > 0 && (
-            <Card className="bg-white/95 backdrop-blur-sm shadow-lg rounded-xl border border-white/20 sm:col-span-2 md:col-span-1">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                  <div className="p-1 sm:p-1.5 bg-teal-100 rounded-lg">
-                    <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600" />
-                  </div>
-                  <span className="text-xs sm:text-sm font-semibold text-foreground/80">Operating Systems</span>
-                </div>
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <MiniDonut items={stats.topOS} colors={OS_COLORS} size={72} />
-                  <LegendList items={stats.topOS} colors={OS_COLORS} total={totalOS} />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
 
       {/* Country visitors + Top Cities row */}
       <div className={`grid grid-cols-1 ${stats.topCities.length > 0 ? 'lg:grid-cols-3' : ''} gap-2 sm:gap-4`}>
