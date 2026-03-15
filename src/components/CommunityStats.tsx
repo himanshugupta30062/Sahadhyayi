@@ -160,9 +160,6 @@ const CommunityStats = () => {
 
   const maxCountryCount = stats.topCountries[0]?.count || 1;
   const totalCountryVisits = stats.topCountries.reduce((sum, c) => sum + c.count, 0);
-  const totalDevices = stats.deviceTypes.reduce((s, d) => s + d.count, 0);
-  const totalBrowsers = stats.topBrowsers.reduce((s, b) => s + b.count, 0);
-  const totalOS = stats.topOS.reduce((s, o) => s + o.count, 0);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-3 sm:px-4">
