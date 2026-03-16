@@ -51,7 +51,14 @@ export const useCreateGroup = () => {
   
   return useMutation({
     mutationFn: async ({ name, description }: { name: string; description?: string }) => {
-      console.log('Creating group:', { name, description });
+      const sanitizedName = name.trim();
+      const sanitizedDescription = description?.trim() || null;
+
+      if (!sanitizedName) {
+        throw new Error('Group name is required');
+      }
+
+      console.log('Creating group:', { name: sanitizedName, description: sanitizedDescription });
       
       // Check authentication first
       const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -66,30 +73,33 @@ export const useCreateGroup = () => {
       }
       
       console.log('User authenticated:', user.id);
+
+      const groupId = crypto.randomUUID();
       
-      // Create group
-      const { data: group, error: groupError } = await supabase
+      // Create group first without selecting immediately.
+      // Group visibility policy is membership-based, so selecting here can fail
+      // before the creator membership row is inserted.
+      const { error: groupError } = await supabase
         .from('group_chats')
         .insert([{
-          name,
-          description,
+          id: groupId,
+          name: sanitizedName,
+          description: sanitizedDescription,
           created_by: user.id
-        }])
-        .select()
-        .single();
+        }]);
       
       if (groupError) {
         console.error('Group creation error:', groupError);
         throw new Error('Failed to create group: ' + groupError.message);
       }
       
-      console.log('Group created:', group);
+      console.log('Group created with id:', groupId);
       
       // Add creator as admin
       const { error: memberError } = await supabase
         .from('group_chat_members')
         .insert([{
-          group_id: group.id,
+          group_id: groupId,
           user_id: user.id,
           role: 'admin'
         }]);
@@ -100,7 +110,12 @@ export const useCreateGroup = () => {
       }
       
       console.log('Creator added as admin');
-      return group;
+      return {
+        id: groupId,
+        name: sanitizedName,
+        description: sanitizedDescription,
+        created_by: user.id,
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-groups'] });
