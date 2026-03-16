@@ -42,6 +42,7 @@ export function useQuizGame() {
   const [gameStatus, setGameStatus] = useState<'idle' | 'playing' | 'finished'>('idle');
   const [hiddenOptions, setHiddenOptions] = useState<number[]>([]);
   const [showHint, setShowHint] = useState(false);
+  const [questionStartedAt, setQuestionStartedAt] = useState<number | null>(null);
 
   const startGame = useCallback(async (bookId: string, difficulty: string = 'medium') => {
     if (!user) {
@@ -89,6 +90,7 @@ export function useQuizGame() {
       setLifelinesUsed([]);
       setHiddenOptions([]);
       setShowHint(false);
+      setQuestionStartedAt(Date.now());
       setGameStatus('playing');
       toast.success('Game started! Good luck! 🎮');
     } catch (err: any) {
@@ -105,6 +107,9 @@ export function useQuizGame() {
     const currentQuestion = questions[currentQuestionIndex];
     const isCorrect = answerIndex === currentQuestion.correct_answer;
     const pointsEarned = isCorrect ? currentQuestion.points : 0;
+    const timeTakenSeconds = questionStartedAt
+      ? Math.max(1, Math.round((Date.now() - questionStartedAt) / 1000))
+      : null;
 
     // Record the answer
     await supabase.from('game_answers').insert({
@@ -113,7 +118,7 @@ export function useQuizGame() {
       user_answer: answerIndex,
       is_correct: isCorrect,
       points_earned: pointsEarned,
-      time_taken_seconds: 30, // TODO: Implement actual timer
+      time_taken_seconds: timeTakenSeconds,
     });
 
     if (isCorrect) {
@@ -135,11 +140,13 @@ export function useQuizGame() {
         .eq('id', session.id);
 
       setGameStatus('finished');
+      setQuestionStartedAt(null);
     } else {
       // Next question
       setCurrentQuestionIndex(prev => prev + 1);
       setHiddenOptions([]);
       setShowHint(false);
+      setQuestionStartedAt(Date.now());
 
       await supabase
         .from('game_sessions')
@@ -151,7 +158,7 @@ export function useQuizGame() {
     }
 
     return { isCorrect, pointsEarned };
-  }, [session, gameStatus, questions, currentQuestionIndex, score]);
+  }, [session, gameStatus, questions, currentQuestionIndex, score, questionStartedAt]);
 
   const useLifeline = useCallback((lifeline: Lifeline) => {
     if (lifelinesUsed.includes(lifeline)) {
@@ -180,6 +187,7 @@ export function useQuizGame() {
           setCurrentQuestionIndex(prev => prev + 1);
           setHiddenOptions([]);
           setShowHint(false);
+          setQuestionStartedAt(Date.now());
         }
         break;
     }
@@ -198,6 +206,7 @@ export function useQuizGame() {
     setLifelinesUsed([]);
     setHiddenOptions([]);
     setShowHint(false);
+    setQuestionStartedAt(null);
     setGameStatus('idle');
   }, []);
 
