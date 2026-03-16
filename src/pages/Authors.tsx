@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, AlertCircle, RefreshCw, Star, Users, BookOpen, Sparkles, ArrowRight, TrendingUp, Library } from 'lucide-react';
+import { Search, AlertCircle, RefreshCw, Star, Users, BookOpen, Sparkles, ArrowRight, TrendingUp, Library, SlidersHorizontal, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -71,6 +71,7 @@ const Authors = () => {
 
   const totalPages = Math.ceil(filteredAuthors.length / pageSize) || 1;
   const paginatedAuthors = filteredAuthors.slice((page - 1) * pageSize, page * pageSize);
+  const hasActiveFilters = Boolean(searchTerm) || selectedGenre !== 'all' || sortBy !== 'popular';
 
   const featuredAuthors = useMemo(() => {
     return [...authors]
@@ -175,6 +176,26 @@ const Authors = () => {
               className="max-w-4xl mx-auto"
             >
               <div className="bg-card/80 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-[var(--shadow-card)] border border-border/60 p-3 sm:p-4 md:p-5">
+                <div className="flex items-center justify-between gap-3 mb-2.5 sm:mb-3.5">
+                  <div className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground font-medium">
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    Refine results
+                  </div>
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedGenre('all');
+                        setSortBy('popular');
+                      }}
+                      className="h-7 sm:h-8 px-2.5 text-[10px] sm:text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="w-3 h-3 mr-1" /> Clear all
+                    </Button>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                   <div className="col-span-2 relative">
                     <Search className="absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -206,6 +227,25 @@ const Authors = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                {hasActiveFilters && (
+                  <div className="mt-2.5 sm:mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    {searchTerm && (
+                      <Badge variant="secondary" className="text-[10px] sm:text-xs font-normal rounded-full px-2 py-0.5">
+                        Query: {searchTerm}
+                      </Badge>
+                    )}
+                    {selectedGenre !== 'all' && (
+                      <Badge variant="secondary" className="text-[10px] sm:text-xs font-normal rounded-full px-2 py-0.5">
+                        Genre: {selectedGenre}
+                      </Badge>
+                    )}
+                    {sortBy !== 'popular' && (
+                      <Badge variant="secondary" className="text-[10px] sm:text-xs font-normal rounded-full px-2 py-0.5">
+                        Sort: {sortBy === 'books' ? 'Most Books' : sortBy === 'rating' ? 'Highest Rated' : 'A-Z'}
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -256,9 +296,13 @@ const Authors = () => {
                     {searchTerm || selectedGenre !== 'all' ? 'Search Results' : 'All Authors'}
                   </h2>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    {filteredAuthors.length} author{filteredAuthors.length !== 1 ? 's' : ''} found
+                    Showing {paginatedAuthors.length} of {filteredAuthors.length} author{filteredAuthors.length !== 1 ? 's' : ''}
                   </p>
                 </div>
+              </div>
+              <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground bg-muted/60 border border-border/50 rounded-full px-3 py-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[hsl(var(--brand-primary))]" />
+                Updated ranking based on engagement and ratings
               </div>
             </div>
 
