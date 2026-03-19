@@ -31,7 +31,7 @@ const SocialMedia = () => {
             <div className="w-20 h-20 rounded-2xl bg-brand-primary/10 flex items-center justify-center mx-auto mb-6">
               <Users className="w-10 h-10 text-brand-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-3">Social Reading Community</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-3">Social Media</h1>
             <p className="text-muted-foreground mb-8 leading-relaxed">
               Connect with fellow readers, share what you're reading, join reading groups, and discover friends who love the same books.
             </p>
@@ -93,7 +93,7 @@ const SocialMedia = () => {
                 <Sparkles className="w-5 h-5 text-brand-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Community</h1>
+                <h1 className="text-2xl font-bold text-foreground">Social Media</h1>
                 <p className="text-sm text-muted-foreground">Connect, share, and discover with fellow readers</p>
               </div>
             </div>
