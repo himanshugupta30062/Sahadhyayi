@@ -39,7 +39,7 @@ const CurrentReads: React.FC = () => {
         <CardContent className="text-center space-y-4">
           <p className="text-sm text-gray-600">Sign in to track your reading progress.</p>
           <Button asChild>
-            <Link to="/sign-in">Sign In</Link>
+            <Link to="/signin">Sign In</Link>
           </Button>
         </CardContent>
       </Card>

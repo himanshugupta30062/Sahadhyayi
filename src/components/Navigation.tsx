@@ -174,9 +174,9 @@ const Navigation = () => {
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link to="/settings" className="flex items-center">
+                          <Link to="/profile" className="flex items-center">
                             <Settings className="mr-2 h-4 w-4" />
-                            Settings
+                            Account Settings
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -280,12 +280,12 @@ const Navigation = () => {
                     Profile
                   </Link>
                   <Link
-                    to="/settings"
+                    to="/profile"
                     onClick={() => setIsOpen(false)}
                     className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
                   >
                     <Settings className="inline mr-2 h-4 w-4" />
-                    Settings
+                    Account Settings
                   </Link>
                   <button
                     onClick={handleSignOut}
