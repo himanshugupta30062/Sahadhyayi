@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, AlertCircle, RefreshCw, Star, Users, BookOpen, Sparkles, ArrowRight, TrendingUp, Library, SlidersHorizontal, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -313,7 +313,11 @@ const Authors = () => {
                 <p className="text-sm text-muted-foreground mb-4 sm:mb-6">Try adjusting your search or filters</p>
                 <Button 
                   variant="outline" 
-                  onClick={() => { setSearchTerm(''); setSelectedGenre('all'); }}
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedGenre('all');
+                    setSortBy('popular');
+                  }}
                   className="border-border"
                 >
                   Clear Filters
@@ -355,12 +359,27 @@ const Authors = () => {
 
 /* ─── Featured Author Card ─── */
 const FeaturedAuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
+  const navigate = useNavigate();
+  const authorPath = `/authors/${slugify(author.name)}`;
   const initials = author.name.split(' ').map(n => n[0]).join('').slice(0, 2);
   const topBooks = books.slice(0, 3);
 
+  const openAuthorProfile = () => navigate(authorPath);
+
   return (
-    <Link to={`/authors/${slugify(author.name)}`} className="block group">
-      <Card className="overflow-hidden border-border/60 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 hover:-translate-y-1.5 h-full bg-card">
+    <Card
+      className="overflow-hidden border-border/60 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 hover:-translate-y-1.5 h-full bg-card group cursor-pointer"
+      role="link"
+      tabIndex={0}
+      onClick={openAuthorProfile}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openAuthorProfile();
+        }
+      }}
+    >
+
         {/* Book covers strip */}
         <div className="h-24 sm:h-32 bg-gradient-to-br from-[hsl(var(--brand-primary)/0.08)] to-[hsl(var(--brand-secondary)/0.12)] relative overflow-hidden flex items-end justify-center gap-1.5 sm:gap-2.5 px-2 sm:px-4 pt-2 sm:pt-3 pb-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--brand-primary)/0.06),transparent_70%)]" />
@@ -415,28 +434,57 @@ const FeaturedAuthorCard = ({ author, books }: { author: Author; books: Book[] }
             </div>
           )}
 
-          <div className="flex items-center gap-1.5 sm:gap-2" onClick={(e) => e.preventDefault()}>
-            <div onClick={(e) => e.stopPropagation()} className="hidden sm:block">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+              onKeyDown={(event) => event.stopPropagation()}
+              className="hidden sm:block"
+            >
               <FollowButton authorId={author.id} size="sm" showText={false} />
             </div>
-            <Button variant="outline" size="sm" className="flex-1 text-[10px] sm:text-xs h-7 sm:h-8 border-border/60 group-hover:border-[hsl(var(--brand-primary)/0.4)] group-hover:text-[hsl(var(--brand-primary))] transition-colors">
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                openAuthorProfile();
+              }}
+              className="flex-1 text-[10px] sm:text-xs h-7 sm:h-8 border-border/60 group-hover:border-[hsl(var(--brand-primary)/0.4)] group-hover:text-[hsl(var(--brand-primary))] transition-colors"
+            >
               View <span className="hidden sm:inline ml-1">Profile</span> <ArrowRight className="w-3 h-3 ml-1 transition-transform group-hover:translate-x-0.5" />
             </Button>
           </div>
         </CardContent>
-      </Card>
-    </Link>
+    </Card>
   );
 };
 
 /* ─── Standard Author Card ─── */
 const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
+  const navigate = useNavigate();
+  const authorPath = `/authors/${slugify(author.name)}`;
   const initials = author.name.split(' ').map(n => n[0]).join('').slice(0, 2);
   const topBooks = books.slice(0, 4);
 
+  const openAuthorProfile = () => navigate(authorPath);
+
   return (
-    <Link to={`/authors/${slugify(author.name)}`} className="block group">
-      <Card className="h-full border-border/50 hover:shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 bg-card overflow-hidden">
+    <Card
+      className="h-full border-border/50 hover:shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 bg-card overflow-hidden group cursor-pointer"
+      role="link"
+      tabIndex={0}
+      onClick={openAuthorProfile}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openAuthorProfile();
+        }
+      }}
+    >
         <CardContent className="p-0">
           {/* Author header */}
           <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 pb-2 sm:pb-3">
@@ -508,16 +556,31 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
 
           {/* Actions */}
           <div className="flex gap-1.5 sm:gap-2 p-3 sm:p-4 pt-2 border-t border-border/30">
-            <div onClick={(e) => e.stopPropagation()} className="hidden sm:block">
+            <div
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+              onKeyDown={(event) => event.stopPropagation()}
+              className="hidden sm:block"
+            >
               <FollowButton authorId={author.id} size="sm" showText={false} />
             </div>
-            <Button variant="outline" size="sm" className="flex-1 text-[10px] sm:text-xs h-7 sm:h-8 border-border/60 group-hover:border-[hsl(var(--brand-primary)/0.3)] group-hover:text-[hsl(var(--brand-primary))] transition-colors">
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                openAuthorProfile();
+              }}
+              className="flex-1 text-[10px] sm:text-xs h-7 sm:h-8 border-border/60 group-hover:border-[hsl(var(--brand-primary)/0.3)] group-hover:text-[hsl(var(--brand-primary))] transition-colors"
+            >
               View Profile
             </Button>
           </div>
         </CardContent>
-      </Card>
-    </Link>
+    </Card>
   );
 };
 
