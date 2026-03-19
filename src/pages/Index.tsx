@@ -2,9 +2,8 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus, User, PenTool, Gamepad2, Newspaper, ArrowRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import SignInLink from '@/components/SignInLink';
+import { BookOpen, Users, Map, Calendar, Star, Headphones, UserPlus, PenTool, Gamepad2, Newspaper, ArrowRight, LayoutDashboard } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/authHelpers";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
@@ -17,7 +16,6 @@ import ContactFormDialog from "@/components/ContactFormDialog";
 const Index = () => {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const navigate = useNavigate();
 
   const features = [
     {
@@ -108,6 +106,20 @@ const Index = () => {
       cta: "Browse Articles"
     }
   ];
+
+  const primaryCta = user
+    ? {
+        to: "/dashboard",
+        label: "Go to Dashboard",
+        icon: LayoutDashboard,
+      }
+    : {
+        to: "/signup",
+        label: "Get Started Free",
+        icon: UserPlus,
+      };
+
+  const PrimaryCtaIcon = primaryCta.icon;
 
   return (
     <>
@@ -366,10 +378,10 @@ const Index = () => {
               Join Sahadhyayi today and experience the joy of reading together.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-              <Link to="/signup" className="w-full sm:w-auto">
+              <Link to={primaryCta.to} className="w-full sm:w-auto">
                 <Button size="lg" variant="secondary" className="w-full sm:w-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg">
-                  <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2" />
-                  Get Started Free
+                  <PrimaryCtaIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2" />
+                  {primaryCta.label}
                 </Button>
               </Link>
               <Link to="/about" className="w-full sm:w-auto">
