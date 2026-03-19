@@ -43,6 +43,7 @@ export const useGroups = () => {
       
       return data || [];
     },
+    enabled: !!user?.id,
   });
 };
 

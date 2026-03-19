@@ -1,5 +1,4 @@
 
-import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Users, Plus, Search, Calendar, MapPin, Book, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
-import { useCreateGroup, useGroups, useJoinGroup, useLeaveGroup } from '@/hooks/useGroupManagement';
+import { type GroupChat, useCreateGroup, useGroups, useJoinGroup, useLeaveGroup } from '@/hooks/useGroupManagement';
 
 interface ReadingGroup {
   id: string;
@@ -29,7 +28,11 @@ interface ReadingGroup {
   createdAt?: string;
 }
 
-const toReadingGroup = (group: any, joinedGroupIds: Set<string>): ReadingGroup => ({
+type GroupListItem = GroupChat & {
+  group_members?: Array<{ count?: number | null }> | null;
+};
+
+const toReadingGroup = (group: GroupListItem, joinedGroupIds: Set<string>): ReadingGroup => ({
   id: group.id,
   name: group.name || 'Untitled group',
   description: group.description || 'No description available.',
@@ -91,10 +94,8 @@ export const ReadingGroups = () => {
     try {
       if (group.isJoined) {
         await leaveGroupMutation.mutateAsync(group.id);
-        toast({ title: 'Left group successfully!' });
       } else {
         await joinGroupMutation.mutateAsync(group.id);
-        toast({ title: 'Joined group successfully!' });
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Please try again.';
