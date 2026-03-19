@@ -142,8 +142,13 @@ const ArticleWrite = () => {
     }
   }, [handleInsert]);
 
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/signin?redirect=%2Farticles%2Fwrite', { replace: true });
+    }
+  }, [user, navigate]);
+
   if (!user) {
-    navigate('/signin');
     return null;
   }
 

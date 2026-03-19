@@ -47,7 +47,7 @@ export function useQuizGame() {
   const startGame = useCallback(async (bookId: string, difficulty: string = 'medium') => {
     if (!user) {
       toast.error('Please sign in to play');
-      return;
+      return false;
     }
 
     setLoading(true);
@@ -62,7 +62,7 @@ export function useQuizGame() {
       const generatedQuestions = response.data?.questions || [];
       if (generatedQuestions.length === 0) {
         toast.error('Could not generate questions for this book');
-        return;
+        return false;
       }
 
       // Create game session
@@ -93,9 +93,11 @@ export function useQuizGame() {
       setQuestionStartedAt(Date.now());
       setGameStatus('playing');
       toast.success('Game started! Good luck! 🎮');
+      return true;
     } catch (err: any) {
       console.error('Error starting game:', err);
       toast.error('Failed to start game');
+      return false;
     } finally {
       setLoading(false);
     }
