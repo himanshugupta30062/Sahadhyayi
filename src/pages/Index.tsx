@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { lazy } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, Map, Calendar, Star, Headphones, LogIn, UserPlus, User, PenTool, Gamepad2, Newspaper, ArrowRight } from "lucide-react";
@@ -8,11 +8,13 @@ import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/authHelpers";
 import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
+import DeferredSection from "@/components/DeferredSection";
 import AnimatedHero from "@/components/AnimatedHero";
-import SahadhyayiCapabilities from "@/components/SahadhyayiCapabilities";
-import SahadhyayiCircuit from "@/components/SahadhyayiCircuit";
-import CurrentReads from "@/components/library/CurrentReads";
-import ContactFormDialog from "@/components/ContactFormDialog";
+
+const SahadhyayiCapabilities = lazy(() => import("@/components/SahadhyayiCapabilities"));
+const SahadhyayiCircuit = lazy(() => import("@/components/SahadhyayiCircuit"));
+const CurrentReads = lazy(() => import("@/components/library/CurrentReads"));
+const ContactFormDialog = lazy(() => import("@/components/ContactFormDialog"));
 
 const Index = () => {
   const { user } = useAuth();
@@ -124,7 +126,9 @@ const Index = () => {
       <AnimatedHero />
       
       {/* Sahadhyayi Circuit Section */}
-      <SahadhyayiCircuit />
+      <DeferredSection fallback={<div className="min-h-[320px] bg-black" aria-hidden="true" />} minHeightClassName="min-h-[320px]">
+        <SahadhyayiCircuit />
+      </DeferredSection>
 
       <div className="bg-black text-white">
       {/* ─── NEW: What's New Feature Spotlight ─── */}
@@ -168,7 +172,9 @@ const Index = () => {
       </section>
       
       {/* Sahadhyayi Capabilities Section */}
-      <SahadhyayiCapabilities />
+      <DeferredSection fallback={<div className="min-h-[280px] bg-black" aria-hidden="true" />} minHeightClassName="min-h-[280px]">
+        <SahadhyayiCapabilities />
+      </DeferredSection>
       
       {/* Current Reads Section for Signed-in Users */}
       {user && (
@@ -180,7 +186,9 @@ const Index = () => {
               </h2>
               <p className="text-gray-400 text-lg">Continue your reading journey</p>
             </div>
-            <CurrentReads />
+            <DeferredSection fallback={<div className="min-h-[220px] rounded-2xl border border-orange-900/20 bg-black/20" aria-hidden="true" />} minHeightClassName="min-h-[220px]">
+              <CurrentReads />
+            </DeferredSection>
             
             <div className="text-center mt-8">
               <Link to="/dashboard">
@@ -381,7 +389,9 @@ const Index = () => {
           </div>
         </section>
       </div>
-      <ContactFormDialog />
+      <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
+        <ContactFormDialog />
+      </DeferredSection>
     </>
   );
 };
