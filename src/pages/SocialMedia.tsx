@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { MessageCircle, MapPin, UsersIcon, Users, Sparkles, BookOpen } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { EnhancedSocialFeed } from '@/components/social/EnhancedSocialFeed';
@@ -15,7 +15,6 @@ import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManag
 
 const SocialMedia = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('feed');
 
   if (!user) {
