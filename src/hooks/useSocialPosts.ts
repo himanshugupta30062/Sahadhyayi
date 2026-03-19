@@ -44,6 +44,7 @@ export const useSocialPosts = () => {
         .from('posts')
         .select(`
           *,
+          profiles!posts_user_id_fkey(id, full_name, username, profile_photo_url),
           books_library(id, title, author, cover_image_url)
         `)
         .order('created_at', { ascending: false })
@@ -92,6 +93,7 @@ export const useSocialPosts = () => {
             .from('posts')
             .select(`
               *,
+              profiles!posts_user_id_fkey(id, full_name, username, profile_photo_url),
               books_library(id, title, author, cover_image_url)
             `)
             .eq('id', payload.new.id)
@@ -164,6 +166,7 @@ export const useCreatePost = () => {
         .insert([payload])
         .select(`
           *,
+          profiles!posts_user_id_fkey(id, full_name, username, profile_photo_url),
           books_library(id, title, author, cover_image_url)
         `)
         .single();
@@ -244,7 +247,8 @@ export const usePostComments = (postId: string) => {
       const { data, error } = await supabase
         .from('post_comments')
         .select(`
-          *
+          *,
+          profiles!post_comments_user_id_fkey(id, full_name, username, profile_photo_url)
         `)
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
@@ -269,7 +273,8 @@ export const useCreateComment = () => {
         .from('post_comments')
         .insert([{ post_id: postId, content, user_id: user.id }])
         .select(`
-          *
+          *,
+          profiles!post_comments_user_id_fkey(id, full_name, username, profile_photo_url)
         `)
         .single();
 
