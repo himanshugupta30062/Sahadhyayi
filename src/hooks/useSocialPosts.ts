@@ -157,22 +157,26 @@ export const useCreatePost = () => {
       if (!user?.id) throw new Error('Not authenticated');
 
       const payload = {
-        ...postData,
+        content: postData.content,
         user_id: user.id,
+        book_id: postData.book_id ?? null,
+        feeling_emoji: postData.feeling_emoji ?? null,
+        feeling_label: postData.feeling_label ?? null,
+        image_url: postData.image_url ?? null,
       };
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('posts')
-        .insert([payload])
-        .select(`
-          *,
-          profiles!posts_user_id_fkey(id, full_name, username, profile_photo_url),
-          books_library(id, title, author, cover_image_url)
-        `)
-        .single();
+        .insert(payload);
 
       if (error) throw error;
-      return data;
+
+      return {
+        ...payload,
+        likes_count: 0,
+        comments_count: 0,
+        user_liked: false,
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
@@ -181,11 +185,11 @@ export const useCreatePost = () => {
         description: 'Your post has been shared!',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error creating post:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create post. Please try again.',
+        description: error.message || 'Failed to create post. Please try again.',
         variant: 'destructive',
       });
     },
@@ -262,8 +266,8 @@ export const usePostComments = (postId: string) => {
 
 export const useCreateComment = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
@@ -281,15 +285,19 @@ export const useCreateComment = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['post-comments', data.post_id] });
+    onSuccess: (_, { postId }) => {
+      queryClient.invalidateQueries({ queryKey: ['post-comments', postId] });
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+      toast({
+        title: 'Comment added',
+        description: 'Your comment has been posted.',
+      });
     },
     onError: (error) => {
       console.error('Error creating comment:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create comment. Please try again.',
+        description: 'Failed to post comment. Please try again.',
         variant: 'destructive',
       });
     },
