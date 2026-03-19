@@ -1,12 +1,44 @@
 // src/utils/trustAndSafety.ts
 var bannedWords = [
-  "nigger", "nigga", "faggot", "fag", "retard", "retarded",
-  "kike", "spic", "chink", "wetback", "beaner", "gook",
-  "tranny", "shemale",
-  "fuck", "shit", "bitch", "asshole", "cunt", "dick", "cock", "pussy",
-  "kill yourself", "kys", "go die", "neck yourself",
-  "porn", "hentai", "xxx", "nsfw",
-  "buy now", "click here", "free money", "make money fast"
+  // Slurs and hate speech
+  "nigger",
+  "nigga",
+  "faggot",
+  "fag",
+  "retard",
+  "retarded",
+  "kike",
+  "spic",
+  "chink",
+  "wetback",
+  "beaner",
+  "gook",
+  "tranny",
+  "shemale",
+  // Severe profanity
+  "fuck",
+  "shit",
+  "bitch",
+  "asshole",
+  "cunt",
+  "dick",
+  "cock",
+  "pussy",
+  // Violence and threats
+  "kill yourself",
+  "kys",
+  "go die",
+  "neck yourself",
+  // Sexual content
+  "porn",
+  "hentai",
+  "xxx",
+  "nsfw",
+  // Spam/scam indicators
+  "buy now",
+  "click here",
+  "free money",
+  "make money fast"
 ];
 var containsInappropriateLanguage = (text) => {
   const lower = text.toLowerCase();

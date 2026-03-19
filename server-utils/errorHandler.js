@@ -101,6 +101,68 @@ function toast({ ...props }) {
   };
 }
 
+// src/sentry.ts
+import * as Sentry from "@sentry/react";
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration({
+      maskAllText: false,
+      blockAllMedia: false
+    })
+  ],
+  // Performance monitoring
+  tracesSampleRate: import.meta.env.PROD ? 0.1 : 1,
+  // Session replay for error debugging
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1,
+  // Environment configuration
+  environment: import.meta.env.MODE,
+  // Release tracking
+  release: import.meta.env.VITE_APP_VERSION || "1.0.0",
+  // Filter out known non-actionable errors
+  beforeSend(event, hint) {
+    const error = hint.originalException;
+    if (error instanceof Error) {
+      if (error.message.includes("ResizeObserver")) {
+        return null;
+      }
+      if (error.message.includes("extension") || error.message.includes("Extension")) {
+        return null;
+      }
+      if (error.message.includes("Failed to fetch") && !navigator.onLine) {
+        return null;
+      }
+    }
+    return event;
+  },
+  // Add extra context to errors
+  initialScope: {
+    tags: {
+      app: "sahadhyayi"
+    }
+  }
+});
+var addSentryBreadcrumb = (category, message, level = "info", data) => {
+  Sentry.addBreadcrumb({
+    category,
+    message,
+    level,
+    data,
+    timestamp: Date.now() / 1e3
+  });
+};
+var captureError = (error, context, level = "error") => {
+  Sentry.withScope((scope) => {
+    if (context) {
+      scope.setExtras(context);
+    }
+    scope.setLevel(level);
+    Sentry.captureException(error);
+  });
+};
+
 // src/utils/errorHandler.ts
 var ErrorHandler = class _ErrorHandler {
   static instance;
@@ -155,6 +217,15 @@ var ErrorHandler = class _ErrorHandler {
     if (this.errorQueue.length > this.maxErrors) {
       this.errorQueue.shift();
     }
+    addSentryBreadcrumb(
+      "error",
+      errorReport.message,
+      this.mapSeverityToSentryLevel(errorReport.severity),
+      {
+        type: errorReport.type,
+        ...errorReport.context
+      }
+    );
     if (import.meta.env.DEV) {
       console.group(`\u{1F6A8} Runtime Error [${errorReport.severity}]`);
       console.error("Message:", errorReport.message);
@@ -166,7 +237,19 @@ var ErrorHandler = class _ErrorHandler {
       console.groupEnd();
     }
     this.showUserNotification(errorReport);
-    this.reportToService(errorReport);
+    this.reportToSentry(errorReport);
+  }
+  mapSeverityToSentryLevel(severity) {
+    switch (severity) {
+      case "critical":
+        return "fatal";
+      case "high":
+        return "error";
+      case "medium":
+        return "warning";
+      case "low":
+        return "info";
+    }
   }
   createContext(additional = {}) {
     return {
@@ -218,8 +301,17 @@ var ErrorHandler = class _ErrorHandler {
       });
     }
   }
-  reportToService(errorReport) {
-    if (import.meta.env.PROD) {
+  reportToSentry(errorReport) {
+    if (import.meta.env.PROD || import.meta.env.VITE_SENTRY_DSN) {
+      const error = new Error(errorReport.message);
+      if (errorReport.stack) {
+        error.stack = errorReport.stack;
+      }
+      captureError(error, {
+        errorType: errorReport.type,
+        severity: errorReport.severity,
+        ...errorReport.context
+      }, this.mapSeverityToSentryLevel(errorReport.severity));
     }
   }
   // Method to manually report custom errors

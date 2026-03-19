@@ -164,17 +164,19 @@ export const useCreatePost = () => {
       const { data, error } = await supabase
         .from('posts')
         .insert([payload])
-        .select(`
-          *,
-          profiles!posts_user_id_fkey(id, full_name, username, profile_photo_url),
-          books_library(id, title, author, cover_image_url)
-        `)
+        .select('*')
         .single();
 
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        profiles: undefined,
+        books_library: undefined,
+        user_liked: false,
+      };
     },
-    onSuccess: () => {
+    onSuccess: (createdPost) => {
+      queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => [createdPost as SocialPost, ...old]);
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({
         title: 'Success',

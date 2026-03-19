@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Users, Plus, Search, Calendar, MapPin, Book, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
-import { useCreateGroup } from '@/hooks/useGroupManagement';
+import { useCreateGroup, useGroups, useJoinGroup, useLeaveGroup } from '@/hooks/useGroupManagement';
 
 interface ReadingGroup {
   id: string;
@@ -26,66 +26,28 @@ interface ReadingGroup {
   isJoined: boolean;
   isPrivate: boolean;
   genre: string[];
+  createdAt?: string;
 }
 
-const mockGroups: ReadingGroup[] = [
-  {
-    id: '1',
-    name: 'NYC Fiction Lovers',
-    description: 'A community for fiction enthusiasts in New York City. We meet monthly to discuss contemporary fiction and classics.',
-    coverImage: 'https://via.placeholder.com/100/60/orange/white?text=Fiction',
-    members: 45,
-    maxMembers: 50,
-    currentBook: 'The Seven Husbands of Evelyn Hugo',
-    nextMeeting: 'Dec 15, 2024',
-    location: 'Central Park Library',
-    isJoined: true,
-    isPrivate: false,
-    genre: ['Fiction', 'Contemporary']
-  },
-  {
-    id: '2',
-    name: 'Self-Improvement Circle',
-    description: 'Transform your life one book at a time. We focus on personal development, productivity, and mindfulness.',
-    coverImage: 'https://via.placeholder.com/100/60/orange/white?text=SelfHelp',
-    members: 32,
-    maxMembers: 40,
-    currentBook: 'Atomic Habits',
-    nextMeeting: 'Dec 20, 2024',
-    location: 'Online',
-    isJoined: false,
-    isPrivate: false,
-    genre: ['Self-Help', 'Productivity']
-  },
-  {
-    id: '3',
-    name: 'Sci-Fi Adventures',
-    description: 'Explore new worlds and future possibilities. From classic Asimov to modern space operas.',
-    coverImage: 'https://via.placeholder.com/100/60/orange/white?text=SciFi',
-    members: 28,
-    maxMembers: 35,
-    currentBook: 'Dune',
-    nextMeeting: 'Jan 5, 2025',
-    location: 'Brooklyn Public Library',
-    isJoined: false,
-    isPrivate: true,
-    genre: ['Sci-Fi', 'Fantasy']
-  }
-];
+const toReadingGroup = (group: any, joinedGroupIds: Set<string>): ReadingGroup => ({
+  id: group.id,
+  name: group.name || 'Untitled group',
+  description: group.description || 'No description available.',
+  coverImage: group.image_url || '',
+  members: Array.isArray(group.group_members) ? (group.group_members[0]?.count ?? 0) : 0,
+  maxMembers: 50,
+  currentBook: '',
+  nextMeeting: '',
+  location: 'Online',
+  isJoined: joinedGroupIds.has(group.id),
+  isPrivate: false,
+  genre: [],
+  createdAt: group.created_at,
+});
 
 export const ReadingGroups = () => {
   const navigate = useNavigate();
-  const [groups, setGroups] = useState<ReadingGroup[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('reading-groups');
-        return stored ? JSON.parse(stored) : mockGroups;
-      } catch {
-        return mockGroups;
-      }
-    }
-    return mockGroups;
-  });
+  const [groups, setGroups] = useState<ReadingGroup[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newGroup, setNewGroup] = useState({
@@ -98,7 +60,26 @@ export const ReadingGroups = () => {
   
   // Use real data from database
   const { data: userGroups = [] } = useUserJoinedGroups();
+  const { data: allGroups = [], isLoading: isLoadingGroups } = useGroups();
   const createGroupMutation = useCreateGroup();
+  const joinGroupMutation = useJoinGroup();
+  const leaveGroupMutation = useLeaveGroup();
+
+  useEffect(() => {
+    const joinedGroupIds = new Set(userGroups.map((membership) => membership.group_id));
+
+    const normalizedGroups = allGroups.map((group) => toReadingGroup(group, joinedGroupIds));
+    const joinedOnlyGroups = userGroups
+      .map((membership) => membership.groups)
+      .filter(Boolean)
+      .map((group) => toReadingGroup(group, joinedGroupIds));
+
+    const mergedGroups = [...joinedOnlyGroups, ...normalizedGroups].filter((group, index, array) =>
+      array.findIndex(candidate => candidate.id === group.id) === index
+    );
+
+    setGroups(mergedGroups);
+  }, [allGroups, userGroups]);
 
   const filteredGroups = groups.filter(group =>
     (group.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -106,21 +87,23 @@ export const ReadingGroups = () => {
     group.genre?.some(g => (g || '').toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('reading-groups', JSON.stringify(groups));
+  const handleJoinGroup = async (group: ReadingGroup) => {
+    try {
+      if (group.isJoined) {
+        await leaveGroupMutation.mutateAsync(group.id);
+        toast({ title: 'Left group successfully!' });
+      } else {
+        await joinGroupMutation.mutateAsync(group.id);
+        toast({ title: 'Joined group successfully!' });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Please try again.';
+      toast({
+        title: group.isJoined ? 'Failed to leave group' : 'Failed to join group',
+        description: message,
+        variant: 'destructive'
+      });
     }
-  }, [groups]);
-
-  const handleJoinGroup = (groupId: string) => {
-    setGroups(prev =>
-      prev.map(group =>
-        group.id === groupId
-          ? { ...group, isJoined: !group.isJoined, members: group.isJoined ? group.members - 1 : group.members + 1 }
-          : group
-      )
-    );
-    toast({ title: 'Group membership updated!' });
   };
 
   const handleCreateGroup = async () => {
@@ -370,7 +353,11 @@ export const ReadingGroups = () => {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Discover Groups</h3>
         <div className="grid gap-4">
-          {filteredGroups.map((group) => (
+          {isLoadingGroups ? (
+            <Card className="bg-white shadow-sm border-0 rounded-xl">
+              <CardContent className="p-8 text-center text-gray-500">Loading groups...</CardContent>
+            </Card>
+          ) : filteredGroups.map((group) => (
           <Card key={group.id} className="bg-white shadow-sm border-0 rounded-xl">
             <CardContent className="p-4">
               <div className="flex gap-4">
@@ -416,7 +403,7 @@ export const ReadingGroups = () => {
                       </div>
                     </div>
                     <Button
-                      onClick={() => handleJoinGroup(group.id)}
+                      onClick={() => handleJoinGroup(group)}
                       variant={group.isJoined ? "outline" : "default"}
                       className={`${group.isJoined 
                         ? "border-orange-300 text-orange-700 hover:bg-orange-50" 
@@ -471,7 +458,7 @@ export const ReadingGroups = () => {
         </div>
       </div>
 
-      {filteredGroups.length === 0 && (
+      {!isLoadingGroups && filteredGroups.length === 0 && (
         <Card className="bg-white shadow-sm border-0 rounded-xl">
           <CardContent className="p-8 text-center">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />

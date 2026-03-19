@@ -34,16 +34,15 @@ export const useUserSearch = (searchTerm: string) => {
       
       try {
         const { data, error } = await supabase
-          .rpc('get_public_profiles_for_search', { search_term: debouncedSearchTerm })
-          .neq('id', user?.id || '');
+          .rpc('get_public_profiles_for_search', { search_term: debouncedSearchTerm });
         
         if (error) {
           console.error('User search API error:', error);
           // Return empty array on error rather than throwing
           return [];
         }
-        
-        return data as SearchUser[];
+
+        return (data as SearchUser[]).filter(profile => profile.id !== user?.id);
       } catch (err) {
         console.error('User search exception:', err);
         return [];
@@ -89,19 +88,19 @@ export const useAllUsers = () => {
         });
 
         // Combine all IDs to exclude (friends + pending requests + current user)
-        const excludeIds = [...friendIds, ...pendingIds, user?.id || ''];
+        const excludeIds = new Set([...friendIds, ...pendingIds, user?.id || '']);
 
         const { data, error } = await supabase
-          .rpc('get_public_profiles_for_search', { search_term: '' })
-          .not('id', 'in', `(${excludeIds.map(id => `"${id}"`).join(',')})`)
-          .limit(50);
+          .rpc('get_public_profiles_for_search', { search_term: '' });
         
         if (error) {
           console.error('All users API error:', error);
           return [];
         }
-        
-        return data as SearchUser[];
+
+        return (data as SearchUser[])
+          .filter(profile => !excludeIds.has(profile.id))
+          .slice(0, 50);
       } catch (err) {
         console.error('All users exception:', err);
         return [];
