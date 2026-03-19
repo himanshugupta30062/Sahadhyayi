@@ -49,6 +49,7 @@ const About = lazy(() => import('./pages/About'));
 const Blog = lazy(() => import('./pages/Blog'));
 const BlogPost = lazy(() => import('./pages/BlogPost'));
 const Bookshelf = lazy(() => import('./pages/Bookshelf'));
+const Discovery = lazy(() => import('./pages/Discovery'));
 const Games = lazy(() => import('./pages/Games'));
 const PublishBook = lazy(() => import('./pages/PublishBook'));
 const MyPublications = lazy(() => import('./pages/MyPublications'));
@@ -198,6 +199,14 @@ const App = memo(() => {
                           element={
                             <Suspense fallback={<LoadingFallback />}>
                               <SocialMedia />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/discovery"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading discovery..." />}>
+                              <Discovery />
                             </Suspense>
                           }
                         />

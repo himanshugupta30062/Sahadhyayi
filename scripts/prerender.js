@@ -7,6 +7,7 @@ const template = fs.readFileSync('index.html', 'utf8');
 const basePages = [
   { path: '/', title: 'Sahadhyayi - Digital Reading Community & Book Library | Fellow Readers Platform', description: 'Sahadhyayi means \"fellow reader\" in Sanskrit. Join our vibrant digital reading community and explore thousands of books.' },
   { path: '/library', title: 'Library - Sahadhyayi', description: 'Browse thousands of free books in our online library.' },
+  { path: '/discovery', title: 'Book Discovery - Sahadhyayi', description: 'Discover trending books, curated recommendation lists, and community reviews on Sahadhyayi.' },
   { path: '/authors', title: 'Authors - Sahadhyayi', description: 'Discover authors on the Sahadhyayi reading platform.' },
   { path: '/about', title: 'About Sahadhyayi', description: 'Learn about the Sahadhyayi mission and community.' }
 ];
