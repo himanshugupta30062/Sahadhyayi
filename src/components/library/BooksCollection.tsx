@@ -302,7 +302,9 @@ const BooksCollection = ({
               
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <div className="text-sm text-gray-600 font-medium">
-                  Showing {((page - 1) * pageSize) + 1}-{Math.min(page * pageSize, paginatedData?.totalCount ?? 0)} of {paginatedData?.totalCount ?? 0} books
+                  {paginatedData?.totalCount
+                    ? `Showing ${((page - 1) * pageSize) + 1}-${Math.min(page * pageSize, paginatedData.totalCount)} of ${paginatedData.totalCount} books`
+                    : 'No books match the current filters'}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-gray-700">Books per page:</span>
