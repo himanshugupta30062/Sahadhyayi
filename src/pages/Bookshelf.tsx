@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import SEO from '@/components/SEO';
+import { trackUiEvent } from '@/lib/analytics';
 
 type StatusFilter = 'all' | 'reading' | 'completed' | 'want_to_read';
 
@@ -237,14 +238,31 @@ const Bookshelf = () => {
                 <Library className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
                 <h3 className="text-xl font-semibold text-foreground mb-2">Your bookshelf is empty</h3>
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Start building your personal library by adding books from our collection.
+                  Start building your personal library by adding books from our collection. You will start getting continue-reading and recommended-next suggestions after your first save.
                 </p>
-                <Link to="/library">
-                  <Button className="bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)]">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Explore Books
-                  </Button>
-                </Link>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Link to="/library">
+                    <Button
+                      className="bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)]"
+                      onClick={() => {
+                        void trackUiEvent('bookshelf_empty_cta_clicked', { cta: 'explore_books' });
+                      }}
+                    >
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Explore Books
+                    </Button>
+                  </Link>
+                  <Link to="/discovery">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        void trackUiEvent('bookshelf_empty_cta_clicked', { cta: 'recommended_next' });
+                      }}
+                    >
+                      Recommended Next Reads
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           )}

@@ -8,6 +8,7 @@ import { Users, MessageCircle, Calendar, Settings } from 'lucide-react';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import GroupMessaging from './GroupMessaging';
 import { formatDistanceToNow } from 'date-fns';
+import { trackUiEvent } from '@/lib/analytics';
 
 const MyGroups: React.FC = () => {
   const navigate = useNavigate();
@@ -35,19 +36,33 @@ const MyGroups: React.FC = () => {
 
   if (joinedGroups.length === 0) {
     return (
-      <Card className="text-center py-12">
+      <Card className="text-center py-12 border-dashed border-2">
         <CardContent>
           <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-medium text-gray-600 mb-2">No groups joined yet</h3>
           <p className="text-gray-500 mb-4">
-            Join reading groups to start engaging with fellow book lovers!
+            Join reading groups to start engaging with fellow book lovers. Your feed and recommendations improve once you join your first community.
           </p>
-          <Button 
-            onClick={() => navigate('/groups')}
-            className="bg-amber-600 hover:bg-amber-700"
-          >
-            Browse Groups
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button 
+              onClick={() => {
+                void trackUiEvent('groups_empty_cta_clicked', { cta: 'browse_groups' });
+                navigate('/groups');
+              }}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              Browse Groups
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                void trackUiEvent('groups_empty_cta_clicked', { cta: 'open_discovery' });
+                navigate('/discovery');
+              }}
+            >
+              Discover Trending Books
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
