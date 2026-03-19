@@ -88,12 +88,15 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
     setIsPosting(true);
     try {
       // Create post in database
+      if (selectedImage) {
+        throw new Error('Photo uploads are not available yet. Please remove the photo and try again.');
+      }
+
       await createPost.mutateAsync({
         content: postText.trim(),
         book_id: selectedBook?.id,
         feeling_emoji: selectedFeeling?.emoji,
         feeling_label: selectedFeeling?.label,
-        image_url: imagePreview || undefined, // Use preview URL for now
       });
 
       // Legacy callback for compatibility
@@ -113,6 +116,11 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
       
     } catch (error) {
       console.error('Error creating post:', error);
+      toast({
+        title: 'Unable to create post',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsPosting(false);
     }
