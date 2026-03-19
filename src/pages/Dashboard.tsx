@@ -3,21 +3,24 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import { useProfile } from '@/hooks/useProfile';
 import { useUserBookshelf } from '@/hooks/useUserBookshelf';
+import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, BookOpen, Library, Users, ChevronRight, Flame } from 'lucide-react';
+import { Plus, BookOpen, Library, Users, ChevronRight, Flame, Circle, CheckCircle2 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import CurrentReads from '@/components/dashboard/CurrentReads';
 import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
 import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
 import BookRecommendations from '@/components/dashboard/BookRecommendations';
+import { trackUiEvent } from '@/lib/analytics';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: userBooks = [] } = useUserBookshelf();
+  const { data: joinedGroups = [] } = useUserJoinedGroups();
   const [readingGoal, setReadingGoal] = useState(12);
   const [showGoalModal, setShowGoalModal] = useState(false);
 
@@ -57,6 +60,14 @@ const Dashboard = () => {
   
   // Get the current book being read for the welcome message
   const currentBook = userBooks.find(book => book.status === 'reading');
+  const onboardingChecklist = [
+    { key: 'profile', label: 'Complete your profile', done: Boolean(profile?.full_name?.trim()) },
+    { key: 'shelf', label: 'Save your first book', done: userBooks.length > 0 },
+    { key: 'reading', label: 'Start your first read', done: currentlyReading > 0 || completedBooks > 0 },
+    { key: 'group', label: 'Join your first group', done: joinedGroups.length > 0 },
+  ];
+  const onboardingDone = onboardingChecklist.filter(step => step.done).length;
+  const onboardingStepTotal = onboardingChecklist.length;
 
   const checkReadingGoal = useCallback(() => {
     if (totalBooks >= readingGoal) {
@@ -69,6 +80,13 @@ const Dashboard = () => {
   useEffect(() => {
     (window as any).checkReadingGoal = checkReadingGoal;
   }, [checkReadingGoal]);
+
+  useEffect(() => {
+    void trackUiEvent('dashboard_onboarding_progress', {
+      completed: onboardingDone,
+      total: onboardingStepTotal,
+    });
+  }, [onboardingDone, onboardingStepTotal]);
 
   if (authLoading || profileLoading) {
     return (
@@ -151,6 +169,31 @@ const Dashboard = () => {
               <CurrentReads userId={user?.id} />
               
               {/* Quick Actions */}
+              <Card className="border-border">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-semibold">Getting Started Checklist</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    {onboardingDone === onboardingStepTotal
+                      ? 'Awesome! You have completed all first-run steps.'
+                      : `${onboardingDone}/${onboardingStepTotal} steps completed — finish setup to unlock better recommendations.`}
+                  </p>
+                  <div className="space-y-2">
+                    {onboardingChecklist.map((step) => (
+                      <div key={step.key} className="flex items-center gap-2 text-sm">
+                        {step.done ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Circle className="w-4 h-4 text-muted-foreground" />
+                        )}
+                        <span className={step.done ? 'text-foreground' : 'text-muted-foreground'}>{step.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="border-border">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-semibold flex items-center gap-2">

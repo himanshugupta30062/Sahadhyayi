@@ -1,7 +1,7 @@
 export const trendingBooks = [
-  { id: 1, title: 'Project Hail Mary', author: 'Andy Weir', rating: 4.7 },
-  { id: 2, title: 'The Midnight Library', author: 'Matt Haig', rating: 4.6 },
-  { id: 3, title: 'Educated', author: 'Tara Westover', rating: 4.5 },
+  { id: 1, title: 'Project Hail Mary', author: 'Andy Weir', rating: 4.7, language: 'English', genre: 'Sci-Fi', level: 'Intermediate', length: 'Long', available: true },
+  { id: 2, title: 'The Midnight Library', author: 'Matt Haig', rating: 4.6, language: 'English', genre: 'Fiction', level: 'Beginner', length: 'Medium', available: true },
+  { id: 3, title: 'Educated', author: 'Tara Westover', rating: 4.5, language: 'English', genre: 'Memoir', level: 'Intermediate', length: 'Long', available: false },
 ];
 
 export const curatedLists = [
