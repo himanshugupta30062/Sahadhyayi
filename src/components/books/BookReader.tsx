@@ -34,6 +34,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { useReadingProgress, useUpdateReadingProgress } from '@/hooks/useReadingProgress';
 import { useAudioSummary } from '@/hooks/useAudioSummaries';
 import { useChapterProgress, useMarkChapterAsRead } from '@/hooks/useChapterProgress';
+import { searchExternalSources } from '@/utils/searchExternalSources';
 
 interface BookReaderProps {
   bookId: string;
@@ -72,14 +73,62 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const { data: audioSummary } = useAudioSummary(bookId);
   const { data: chapterProgress = [] } = useChapterProgress(bookId);
   const markChapterRead = useMarkChapterAsRead(bookId);
+  const [isResolvingSources, setIsResolvingSources] = useState(false);
+  const [sourceSearchDone, setSourceSearchDone] = useState(false);
+  const [readUrls, setReadUrls] = useState<string[]>(pdfUrl ? [pdfUrl] : []);
+  const [activeReadUrlIndex, setActiveReadUrlIndex] = useState(0);
+
+  useEffect(() => {
+    setReadUrls(pdfUrl ? [pdfUrl] : []);
+    setActiveReadUrlIndex(0);
+    setSourceSearchDone(false);
+  }, [bookId, pdfUrl]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadReadSources = async () => {
+      setIsResolvingSources(true);
+      try {
+        const externalBooks = await searchExternalSources(bookTitle);
+        if (cancelled || !externalBooks.length) return;
+
+        const externalUrls = externalBooks
+          .map((book) => book.downloadUrl)
+          .filter((url): url is string => Boolean(url));
+
+        if (!externalUrls.length) return;
+
+        setReadUrls((prev) => {
+          const merged = [...prev, ...externalUrls];
+          return [...new Set(merged)];
+        });
+      } catch (error) {
+        console.error('Failed to resolve external reading sources:', error);
+      } finally {
+        if (!cancelled) {
+          setSourceSearchDone(true);
+          setIsResolvingSources(false);
+        }
+      }
+    };
+
+    void loadReadSources();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bookTitle]);
+
+  const activeReadUrl = readUrls[activeReadUrlIndex];
 
   // Determine book type and URLs
   const isEpub = epubUrl && epubUrl.length > 0;
-  const isGoogleBooks = pdfUrl?.includes('books.google');
-  const isDirectPdf = pdfUrl && !isGoogleBooks && (pdfUrl.endsWith('.pdf') || pdfUrl.includes('/pdf/'));
+  const isGoogleBooks = activeReadUrl?.includes('books.google');
+  const isDirectPdf = activeReadUrl && !isGoogleBooks && (activeReadUrl.endsWith('.pdf') || activeReadUrl.includes('/pdf/'));
   const isPdf = isDirectPdf;
-  
-  const bookUrl = isEpub ? epubUrl : pdfUrl;
+
+  const bookUrl = isEpub ? epubUrl : activeReadUrl;
   
   // Extract Google Books ID from URL for embedding
   const getGoogleBooksId = (url: string | undefined) => {
@@ -88,7 +137,17 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     return match ? match[1] : null;
   };
   
-  const googleBooksId = isGoogleBooks ? getGoogleBooksId(pdfUrl) : null;
+  const googleBooksId = isGoogleBooks ? getGoogleBooksId(activeReadUrl) : null;
+
+  const handleReaderLoadError = () => {
+    if (activeReadUrlIndex >= readUrls.length - 1) return;
+    const nextIndex = activeReadUrlIndex + 1;
+    setActiveReadUrlIndex(nextIndex);
+    toast({
+      title: 'Trying another source',
+      description: `This link is restricted. Switching to source ${nextIndex + 1} of ${readUrls.length}.`,
+    });
+  };
 
   // Calculate reading progress percentage
   const progressPercentage = totalPages > 0 ? (currentPage / totalPages) * 100 : 0;
@@ -461,7 +520,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     return `${hours}h ${mins}m`;
   };
 
-  if (!bookUrl && !isGoogleBooks) {
+  if (!bookUrl && !isGoogleBooks && sourceSearchDone) {
     return (
       <div className="text-center py-12">
         <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -478,6 +537,16 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
         <p className="text-sm text-gray-400 mt-4">
           Looking for the full book? Try searching for "{bookTitle}" on online bookstores.
         </p>
+      </div>
+    );
+  }
+
+  if (!bookUrl && isResolvingSources) {
+    return (
+      <div className="text-center py-12">
+        <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400 animate-pulse" />
+        <h3 className="text-xl font-semibold text-gray-700 mb-2">Finding available reading sources...</h3>
+        <p className="text-gray-500">Checking Open Library, Google Books, Project Gutenberg, and Internet Archive.</p>
       </div>
     );
   }
@@ -570,7 +639,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open(pdfUrl, '_blank')}
+                  onClick={() => activeReadUrl && window.open(activeReadUrl, '_blank')}
                   className="flex items-center gap-1"
                 >
                   <Download className="w-4 h-4" />
@@ -787,11 +856,11 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                     <BookOpen className="w-4 h-4" />
                     Read on Google Books
                   </Button>
-                  {pdfUrl && (
+                  {activeReadUrl && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(pdfUrl, '_blank')}
+                      onClick={() => window.open(activeReadUrl, '_blank')}
                       className="flex items-center gap-2"
                     >
                       Open Original Link ↗
@@ -802,11 +871,12 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
             ) : isPdf ? (
               <div className="relative">
                 <iframe
-                  key={currentPage}
-                  src={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&page=${currentPage}`}
+                  key={`${activeReadUrl}-${currentPage}`}
+                  src={`${activeReadUrl}#toolbar=1&navpanes=1&scrollbar=1&page=${currentPage}`}
                   className={`w-full border rounded-lg ${isFullscreen ? 'h-screen' : 'h-[600px]'}`}
                   style={{ width: '100%', height: '100%' }}
                   title={bookTitle}
+                  onError={handleReaderLoadError}
                 />
                 {/* PDF Navigation Helper */}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
