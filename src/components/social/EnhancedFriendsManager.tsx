@@ -88,7 +88,13 @@ export const EnhancedFriendsManager = () => {
   const { user } = useAuth();
   const incomingRequests = friendRequests.filter(req => req.addressee_id === user?.id && req.status === 'pending');
   const outgoingRequests = friendRequests.filter(req => req.requester_id === user?.id && req.status === 'pending');
+  const pendingUserIds = new Set([
+    ...incomingRequests.map(req => req.requester_id),
+    ...outgoingRequests.map(req => req.addressee_id),
+  ]);
 
+  const visibleSearchResults = searchResults.filter(result => result.id !== user?.id);
+  const visibleAllUsers = allUsers.filter(result => result.id !== user?.id);
 
   return (
     <>
@@ -137,7 +143,7 @@ export const EnhancedFriendsManager = () => {
                   ) : searchError ? (
                     <span className="text-red-600">Search failed. Please try again.</span>
                   ) : (
-                    <span>Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{searchTerm}"</span>
+                    <span>Found {visibleSearchResults.length} result{visibleSearchResults.length !== 1 ? 's' : ''} for "{searchTerm}"</span>
                   )}
                 </div>
               )}
@@ -146,14 +152,15 @@ export const EnhancedFriendsManager = () => {
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {searchTerm ? (
                   // Show search results
-                  searchResults.length > 0 ? (
-                    searchResults.map((user) => (
+                  visibleSearchResults.length > 0 ? (
+                    visibleSearchResults.map((user) => (
                       <UserCard
                         key={user.id}
                         user={user}
                         onSendRequest={handleSendFriendRequest}
                         getInitials={getInitials}
                         isFriend={friends.some(f => f.friend_profile?.id === user.id)}
+                        hasPendingRequest={pendingUserIds.has(user.id)}
                         onMessage={(id) => setChatId(id)}
                       />
                     ))
@@ -172,14 +179,15 @@ export const EnhancedFriendsManager = () => {
                         <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                         <span className="ml-2 text-gray-500">Loading users...</span>
                       </div>
-                    ) : allUsers.length > 0 ? (
-                      allUsers.map((user) => (
+                    ) : visibleAllUsers.length > 0 ? (
+                      visibleAllUsers.map((user) => (
                         <UserCard
                           key={user.id}
                           user={user}
                           onSendRequest={handleSendFriendRequest}
                           getInitials={getInitials}
                           isFriend={friends.some(f => f.friend_profile?.id === user.id)}
+                          hasPendingRequest={pendingUserIds.has(user.id)}
                           onMessage={(id) => setChatId(id)}
                         />
                       ))
@@ -384,10 +392,11 @@ interface UserCardProps {
   onSendRequest: (userId: string, userName: string) => void;
   getInitials: (name: string) => string;
   isFriend?: boolean;
+  hasPendingRequest?: boolean;
   onMessage?: (userId: string) => void;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, onMessage }) => (
+const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, hasPendingRequest = false, onMessage }) => (
   <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
     <div className="flex items-center gap-3">
       <Avatar className="w-10 h-10">
@@ -411,7 +420,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
       </div>
     </div>
     <div className="flex gap-2">
-      {!isFriend ? (
+      {!isFriend && !hasPendingRequest ? (
         <Button
           size="sm"
           variant="outline"
@@ -421,11 +430,15 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
           <UserPlus className="w-4 h-4 mr-1" />
           Add
         </Button>
-      ) : (
+      ) : isFriend ? (
         <Button size="sm" variant="ghost" aria-label="Message user" onClick={() => onMessage?.(user.id)}>
           <MessageCircle className="w-4 h-4 mr-1" />
           Message
         </Button>
+      ) : (
+        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+          Pending
+        </Badge>
       )}
     </div>
   </div>
