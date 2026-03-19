@@ -69,7 +69,6 @@ const BookExpert = () => {
             className="h-6 w-6 object-contain"
           />
           <span className="font-bold text-lg">AI Book Expert</span>
-          <Sparkles className="h-4 w-4 animate-pulse" />
         </div>
         <button onClick={closeChat} aria-label="Close chat" className="relative p-1 hover:bg-white/20 rounded transition-colors">
           <X className="h-5 w-5" />
