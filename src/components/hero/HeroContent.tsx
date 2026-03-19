@@ -4,23 +4,15 @@ import { Link } from "react-router-dom";
 export const HeroContent: React.FC = () => {
   return (
     <div className="relative z-10 text-center max-w-sm sm:max-w-sm px-4 sm:px-6 py-6 sm:py-8 mx-auto pointer-events-none hero-container">
-      <h1 className="text-base sm:text-3xl md:text-5xl font-bold mb-1.5 sm:mb-4">
-        <span
-          className="text-transparent bg-clip-text animate-gradient-shift"
-          style={{
-            backgroundImage: "linear-gradient(135deg, #ef4444, #22c55e, #3b82f6)",
-            backgroundSize: "200% 200%",
-          }}
-        >
-          Sahadhyayi
-        </span>
+      <h1 className="text-base sm:text-3xl md:text-5xl font-bold mb-1.5 sm:mb-4 text-slate-50">
+        Sahadhyayi
       </h1>
 
-      <h2 className="text-xs sm:text-lg md:text-2xl font-semibold text-white mb-1.5 sm:mb-4 leading-tight">
+      <p className="text-xs sm:text-lg md:text-2xl font-semibold text-slate-100 mb-1.5 sm:mb-4 leading-tight">
         The Book Readers Social Media
-      </h2>
+      </p>
 
-      <p className="text-[10px] sm:text-sm md:text-lg mb-3 sm:mb-8 leading-relaxed text-white">
+      <p className="text-[10px] sm:text-sm md:text-lg mb-3 sm:mb-8 leading-relaxed text-slate-100">
         Find new books, connect with readers, and share your love of reading—all in one friendly community.
       </p>
 
