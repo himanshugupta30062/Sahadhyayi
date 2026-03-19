@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,8 +19,14 @@ type AuthTab = 'signin' | 'signup';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get('tab') === 'signup' ? 'signup' : 'signin';
-  const [activeTab, setActiveTab] = useState<AuthTab>(initialTab);
+  const location = useLocation();
+  const defaultTab = useMemo<AuthTab>(() => {
+    if (searchParams.get('tab') === 'signup' || location.pathname === '/signup') {
+      return 'signup';
+    }
+    return 'signin';
+  }, [location.pathname, searchParams]);
+  const [activeTab, setActiveTab] = useState<AuthTab>(defaultTab);
 
   const [signinData, setSigninData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
@@ -31,17 +37,28 @@ const Auth = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
+  const redirectParam = searchParams.get('redirect');
+  const redirectPath = redirectParam || location.state?.from || '/dashboard';
   const { user, signIn, signUp, signInWithOAuth } = useAuth();
   const { toast } = useToast();
 
-  React.useEffect(() => {
-    if (user) navigate('/dashboard');
-  }, [user, navigate]);
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
+
+  useEffect(() => {
+    if (user) navigate(redirectPath, { replace: true });
+  }, [user, navigate, redirectPath]);
 
   const switchTab = (tab: AuthTab) => {
     setActiveTab(tab);
     setError('');
     setSuccess('');
+    const nextPath = tab === 'signup' ? '/signup' : '/signin';
+    const nextSearch = redirectParam ? `?redirect=${encodeURIComponent(redirectParam)}` : '';
+    if (location.pathname !== nextPath || location.search !== nextSearch) {
+      navigate(`${nextPath}${nextSearch}`, { replace: true, state: location.state });
+    }
   };
 
   // Sign In handler
@@ -65,7 +82,7 @@ const Auth = () => {
     }
     try {
       await signIn(sanitizeInput(signinData.email.trim().toLowerCase(), 254), signinData.password);
-      navigate('/dashboard');
+      navigate(redirectPath, { replace: true });
     } catch (err: any) {
       const msg = err.message || '';
       if (msg.includes('Invalid login') || msg.includes('invalid credentials')) setError('Invalid email or password.');

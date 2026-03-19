@@ -17,6 +17,8 @@ const Articles = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
+  const articleWritePath = user ? '/articles/write' : '/signin?redirect=%2Farticles%2Fwrite';
+
   const filtered = (articles || []).filter(
     (a) =>
       a.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -52,7 +54,7 @@ const Articles = () => {
                 />
               </div>
               <Button
-                onClick={() => user ? navigate('/articles/write') : navigate('/articles/write')}
+                onClick={() => navigate(articleWritePath)}
                 className="bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 w-full sm:w-auto"
               >
                 <PenLine className="w-4 h-4" />
@@ -81,7 +83,7 @@ const Articles = () => {
               <PenLine className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">No articles yet</h3>
               <p className="text-muted-foreground mb-4">Be the first to share your thoughts!</p>
-              <Button onClick={() => navigate('/articles/write')} className="bg-brand-primary text-white">
+              <Button onClick={() => navigate(articleWritePath)} className="bg-brand-primary text-white">
                   Write Your First Article
               </Button>
             </div>

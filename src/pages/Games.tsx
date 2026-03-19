@@ -1,4 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGameStats, getRankForPoints, getNextRank } from '@/hooks/useGameStats';
@@ -40,6 +41,7 @@ const FriendChallenge = lazy(() => import('@/components/games/FriendChallenge'))
 type GameView = 'home' | 'select-mode' | 'select-book' | 'playing' | 'results';
 
 export default function Games() {
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { stats, loading: statsLoading, addPoints, refetch: refetchStats } = useGameStats();
   const { 
@@ -84,15 +86,17 @@ export default function Games() {
   }, [user, bookQuotes]);
 
   const handleBookSelect = async (bookId: string) => {
-    await startGame(bookId, selectedDifficulty);
-    setView('playing');
+    const started = await startGame(bookId, selectedDifficulty);
+    if (started) {
+      setView('playing');
+    }
   };
 
   const handleAnswer = async (answerIndex: number) => {
     const result = await answerQuestion(answerIndex);
     
     if (gameStatus === 'finished' || !result?.isCorrect) {
-      setLastGameResult({ score, correct: correctAnswers + (result?.isCorrect ? 1 : 0), total: totalQuestions });
+      setLastGameResult({ score: score + (result?.pointsEarned || 0), correct: correctAnswers + (result?.isCorrect ? 1 : 0), total: totalQuestions });
       const isPerfect = correctAnswers + (result?.isCorrect ? 1 : 0) === totalQuestions;
       await addPoints(score + (result?.pointsEarned || 0), isPerfect);
       await checkAndAwardBadges({
@@ -280,7 +284,7 @@ export default function Games() {
                     <Button 
                       size="lg" 
                       className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg"
-                      onClick={() => window.location.href = '/signin'}
+                      onClick={() => navigate('/signin?redirect=%2Fgames')}
                     >
                       Sign In to Play
                       <ChevronRight className="ml-2 h-5 w-5" />
