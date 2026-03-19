@@ -153,10 +153,10 @@ const MobileQuestionList: React.FC = () => {
   return (
     <div className="w-full px-4 py-8 space-y-4">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-4">
+        <h3 className="text-2xl font-bold text-emerald-300 mb-4">
           Sahadhyayi Features
-        </h2>
-        <p className="text-blue-100">Discover what you can do in our reading community</p>
+        </h3>
+        <p className="text-slate-100">Discover what you can do in our reading community</p>
       </div>
       
       <div className="space-y-3">
@@ -261,10 +261,10 @@ const SahadhyayiCircuit: React.FC = () => {
         
         <div className="relative z-10">
           <div className="text-center px-4 py-8">
-            <h1 className="text-2xl font-bold leading-tight bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent mb-2">
+            <h2 className="text-2xl font-bold leading-tight text-slate-50 mb-2">
               Want an intellectual friend from reading community?
-            </h1>
-            <p className="text-blue-100 font-medium mb-6">
+            </h2>
+            <p className="text-slate-100 font-medium mb-6">
               Let's Explore Sahadhyayi!
             </p>
           </div>
@@ -284,10 +284,10 @@ const SahadhyayiCircuit: React.FC = () => {
       {/* Left column: enhanced headline and call-to-action */}
       <div className="w-full lg:w-2/5 flex flex-col justify-center px-6 md:px-8 lg:px-12 py-12 lg:py-0 space-y-8 z-10 relative">
         <div className="space-y-6">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-slate-50">
             Want an intellectual friend from reading community?
-          </h1>
-          <p className="text-lg md:text-xl text-blue-100 font-medium">
+          </h2>
+          <p className="text-lg md:text-xl text-slate-100 font-medium">
             Let's Explore Sahadhyayi!
           </p>
         </div>
