@@ -27,11 +27,12 @@ const SignIn = () => {
   const { user, signIn, signInWithOAuth } = useAuth();
   const { toast } = useToast();
 
-  const redirectPath = '/dashboard';
+  const redirectParam = new URLSearchParams(location.search).get('redirect');
+  const redirectPath = redirectParam || location.state?.from || '/dashboard';
 
   React.useEffect(() => {
     if (user) {
-      navigate(redirectPath);
+      navigate(redirectPath, { replace: true });
     }
   }, [user, navigate, redirectPath]);
 
@@ -72,7 +73,7 @@ const SignIn = () => {
     try {
       const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
       await signIn(sanitizedEmail, formData.password);
-      navigate('/dashboard');
+      navigate(redirectPath, { replace: true });
     } catch (error: any) {
       console.error('Sign-in error:', error);
       let errorMessage = error.message || 'Sign-in failed';
