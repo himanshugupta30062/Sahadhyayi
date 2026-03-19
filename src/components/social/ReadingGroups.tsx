@@ -124,24 +124,30 @@ export const ReadingGroups = () => {
   };
 
   const handleCreateGroup = async () => {
-    if (!newGroup.name.trim() || !newGroup.description.trim()) {
+    const trimmedName = newGroup.name.trim();
+    const trimmedDescription = newGroup.description.trim();
+    const normalizedMaxMembers = Number.isFinite(newGroup.maxMembers)
+      ? Math.min(100, Math.max(5, newGroup.maxMembers))
+      : 25;
+
+    if (!trimmedName || !trimmedDescription) {
       toast({ title: 'Please fill in all required fields', variant: 'destructive' });
       return;
     }
 
     try {
-      await createGroupMutation.mutateAsync({
-        name: newGroup.name,
-        description: newGroup.description
+      const createdGroupRecord = await createGroupMutation.mutateAsync({
+        name: trimmedName,
+        description: trimmedDescription
       });
 
       const createdGroup: ReadingGroup = {
-        id: Date.now().toString(),
-        name: newGroup.name,
-        description: newGroup.description,
+        id: createdGroupRecord.id,
+        name: createdGroupRecord.name,
+        description: createdGroupRecord.description || '',
         coverImage: '',
         members: 1,
-        maxMembers: newGroup.maxMembers,
+        maxMembers: normalizedMaxMembers,
         currentBook: '',
         nextMeeting: '',
         location: 'Online',
@@ -150,12 +156,20 @@ export const ReadingGroups = () => {
         genre: []
       };
 
-      setGroups(prev => [createdGroup, ...prev]);
+      setGroups(prev => {
+        const remainingGroups = prev.filter(group => group.id !== createdGroup.id);
+        return [createdGroup, ...remainingGroups];
+      });
       setNewGroup({ name: '', description: '', maxMembers: 25, isPrivate: false });
       setShowCreateDialog(false);
       toast({ title: 'Reading group created successfully!' });
     } catch (error) {
-      toast({ title: 'Failed to create group', variant: 'destructive' });
+      const message = error instanceof Error ? error.message : 'Please try again.';
+      toast({
+        title: 'Failed to create group',
+        description: message,
+        variant: 'destructive'
+      });
     }
   };
 
@@ -211,7 +225,10 @@ export const ReadingGroups = () => {
                       min="5"
                       max="100"
                       value={newGroup.maxMembers}
-                      onChange={(e) => setNewGroup({ ...newGroup, maxMembers: parseInt(e.target.value) })}
+                      onChange={(e) => setNewGroup({
+                        ...newGroup,
+                        maxMembers: Number.parseInt(e.target.value, 10)
+                      })}
                       className="rounded-xl"
                     />
                   </div>
@@ -230,9 +247,10 @@ export const ReadingGroups = () => {
                   <div className="flex gap-2 pt-4">
                     <Button
                       onClick={handleCreateGroup}
+                      disabled={createGroupMutation.isPending}
                       className="flex-1 bg-orange-600 hover:bg-orange-700 rounded-xl"
                     >
-                      Create Group
+                      {createGroupMutation.isPending ? 'Creating...' : 'Create Group'}
                     </Button>
                     <Button
                       variant="outline"
