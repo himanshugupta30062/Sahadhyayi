@@ -20,6 +20,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import Navigation from "./components/Navigation";
 import ProtectedRoute from "./components/ProtectedRoute";
 import StructuredFooter from "./components/footer/StructuredFooter";
+import DeferredSection from "./components/DeferredSection";
 import ScrollToTop from "./components/ScrollToTop";
 import BookFlipLoader from "./components/ui/BookFlipLoader";
 
@@ -408,10 +409,10 @@ const App = memo(() => {
                     <StructuredFooter />
                   </div>
                   
-                  {/* Book Expert - lowest priority loading */}
-                  <Suspense fallback={null}>
+                  {/* Book Expert - load only after idle time so it does not compete with the initial route */}
+                  <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
                     <BookExpert />
-                  </Suspense>
+                  </DeferredSection>
                   
                   <Toaster />
                 </BookExpertProvider>
