@@ -132,7 +132,7 @@ const App = memo(() => {
           <TooltipProvider>
             <AuthProvider>
               <QuotesProvider>
-                <BookExpertProvider>
+                
                   <ScrollToTop />
                   <div className="min-h-screen bg-background text-foreground flex flex-col">
                     {/* Skip to content link for accessibility */}
