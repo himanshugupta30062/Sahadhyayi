@@ -35,7 +35,7 @@ import NotFound from "./pages/NotFound";
 const Library = lazy(() => import('./pages/library'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
+
 
 // Secondary pages (can be loaded later)
 const Profile = lazy(() => import('./pages/Profile'));
