@@ -12,7 +12,7 @@ import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRF
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
 import QuotesProvider from "./contexts/QuotesContext";
-import BookExpertProvider from "./contexts/BookExpertContext";
+
 
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
@@ -35,7 +35,7 @@ import NotFound from "./pages/NotFound";
 const Library = lazy(() => import('./pages/library'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
+
 
 // Secondary pages (can be loaded later)
 const Profile = lazy(() => import('./pages/Profile'));
@@ -132,7 +132,7 @@ const App = memo(() => {
           <TooltipProvider>
             <AuthProvider>
               <QuotesProvider>
-                <BookExpertProvider>
+                
                   <ScrollToTop />
                   <div className="min-h-screen bg-background text-foreground flex flex-col">
                     {/* Skip to content link for accessibility */}
@@ -409,13 +409,9 @@ const App = memo(() => {
                     <StructuredFooter />
                   </div>
                   
-                  {/* Book Expert - load only after idle time so it does not compete with the initial route */}
-                  <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
-                    <BookExpert />
-                  </DeferredSection>
                   
                   <Toaster />
-                </BookExpertProvider>
+                
               </QuotesProvider>
             </AuthProvider>
           </TooltipProvider>
