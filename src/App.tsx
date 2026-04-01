@@ -12,7 +12,7 @@ import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRF
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
 import QuotesProvider from "./contexts/QuotesContext";
-import BookExpertProvider from "./contexts/BookExpertContext";
+
 
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
