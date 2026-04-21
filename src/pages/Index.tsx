@@ -13,7 +13,7 @@ import AnimatedHero from "@/components/AnimatedHero";
 const SahadhyayiCapabilities = lazy(() => import("@/components/SahadhyayiCapabilities"));
 const SahadhyayiCircuit = lazy(() => import("@/components/SahadhyayiCircuit"));
 const CurrentReads = lazy(() => import("@/components/library/CurrentReads"));
-const ContactFormDialog = lazy(() => import("@/components/ContactFormDialog"));
+
 
 const Index = () => {
   const { user } = useAuth();
