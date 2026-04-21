@@ -804,57 +804,6 @@ export type Database = {
           },
         ]
       }
-      books_test: {
-        Row: {
-          author: string | null
-          author_bio: string | null
-          cover_image_url: string | null
-          created_at: string | null
-          description: string | null
-          genre: string | null
-          id: string
-          isbn: string | null
-          language: string | null
-          pages: number | null
-          pdf_url: string | null
-          publication_year: number | null
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          author?: string | null
-          author_bio?: string | null
-          cover_image_url?: string | null
-          created_at?: string | null
-          description?: string | null
-          genre?: string | null
-          id?: string
-          isbn?: string | null
-          language?: string | null
-          pages?: number | null
-          pdf_url?: string | null
-          publication_year?: number | null
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          author?: string | null
-          author_bio?: string | null
-          cover_image_url?: string | null
-          created_at?: string | null
-          description?: string | null
-          genre?: string | null
-          id?: string
-          isbn?: string | null
-          language?: string | null
-          pages?: number | null
-          pdf_url?: string | null
-          publication_year?: number | null
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       chat_participants: {
         Row: {
           chat_room_id: string
@@ -2645,8 +2594,6 @@ export type Database = {
           location: string | null
           name: string | null
           phone_number: string | null
-          phone_verification_code: string | null
-          phone_verification_expires_at: string | null
           phone_verified: boolean | null
           profile_picture_url: string | null
           social_links: Json | null
@@ -2671,8 +2618,6 @@ export type Database = {
           location?: string | null
           name?: string | null
           phone_number?: string | null
-          phone_verification_code?: string | null
-          phone_verification_expires_at?: string | null
           phone_verified?: boolean | null
           profile_picture_url?: string | null
           social_links?: Json | null
@@ -2697,8 +2642,6 @@ export type Database = {
           location?: string | null
           name?: string | null
           phone_number?: string | null
-          phone_verification_code?: string | null
-          phone_verification_expires_at?: string | null
           phone_verified?: boolean | null
           profile_picture_url?: string | null
           social_links?: Json | null
