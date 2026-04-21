@@ -401,9 +401,6 @@ const Index = () => {
           </div>
         </section>
       </div>
-      <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
-        <ContactFormDialog />
-      </DeferredSection>
     </>
   );
 };
