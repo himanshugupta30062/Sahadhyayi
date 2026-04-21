@@ -409,11 +409,6 @@ const App = memo(() => {
                     <StructuredFooter />
                   </div>
                   
-                  {/* Book Expert - load only after idle time so it does not compete with the initial route */}
-                  <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
-                    <BookExpert />
-                  </DeferredSection>
-                  
                   <Toaster />
                 </BookExpertProvider>
               </QuotesProvider>
