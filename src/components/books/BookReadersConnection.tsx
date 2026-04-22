@@ -1,106 +1,168 @@
-
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import SignInLink from '@/components/SignInLink';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Users, MessageCircle, Heart, Share, AtSign, Send, User } from 'lucide-react';
+import { Users, MessageCircle, Heart, Share, Send, User, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 interface BookReadersConnectionProps {
   bookId: string;
   bookTitle: string;
 }
 
-interface Comment {
+type CommentKind = 'comment' | 'quote';
+
+interface CommentPayload {
+  bookId: string;
+  kind: CommentKind;
+  text: string;
+}
+
+interface FeedbackRow {
   id: string;
-  user: string;
-  content: string;
-  type: 'comment' | 'quote';
-  timestamp: string;
+  user_id: string;
+  feedback_type: string;
+  comment: string | null;
+  created_at: string;
+}
+
+interface ReaderComment {
+  id: string;
+  user_id: string;
+  kind: CommentKind;
+  text: string;
+  created_at: string;
+  authorName: string;
   likes: number;
   isLiked: boolean;
 }
 
+const FEEDBACK_TYPE = 'reader_comment';
+
+const parsePayload = (raw: string | null): CommentPayload | null => {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as CommentPayload;
+    if (parsed && parsed.bookId && parsed.text) return parsed;
+  } catch {
+    /* ignore */
+  }
+  return null;
+};
+
 const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
-  const [commentType, setCommentType] = useState<'comment' | 'quote'>('comment');
-  const [taggedFriends, setTaggedFriends] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
+  const [commentType, setCommentType] = useState<CommentKind>('comment');
 
-  // Mock data - replace with real data from your backend
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: '1',
-      user: 'Sarah M.',
-      content: 'This book completely changed my perspective on life. The author\'s writing style is so engaging!',
-      type: 'comment',
-      timestamp: '2 hours ago',
-      likes: 12,
-      isLiked: false
+  const queryKey = ['book_reader_comments', bookId];
+
+  const { data: comments = [], isLoading } = useQuery({
+    queryKey,
+    queryFn: async (): Promise<ReaderComment[]> => {
+      const { data, error } = await supabase
+        .from('content_feedback')
+        .select('id, user_id, feedback_type, comment, created_at')
+        .eq('feedback_type', FEEDBACK_TYPE)
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+
+      const matching = (data as FeedbackRow[])
+        .map((row) => ({ row, payload: parsePayload(row.comment) }))
+        .filter((x) => x.payload && x.payload.bookId === bookId);
+
+      if (matching.length === 0) return [];
+
+      const userIds = [...new Set(matching.map((m) => m.row.user_id))];
+      const ids = matching.map((m) => m.row.id);
+
+      const [profilesRes, votesRes] = await Promise.all([
+        supabase.from('profiles').select('id, full_name, username').in('id', userIds),
+        supabase.from('content_votes').select('content_id, user_id, vote_type').in('content_id', ids),
+      ]);
+
+      const profiles = profilesRes.data || [];
+      const votes = votesRes.data || [];
+
+      return matching.map(({ row, payload }) => {
+        const profile = profiles.find((p) => p.id === row.user_id);
+        const rowVotes = votes.filter((v) => v.content_id === row.id);
+        const likes = rowVotes.filter((v) => v.vote_type === 'like').length;
+        const isLiked = !!user && rowVotes.some((v) => v.user_id === user.id && v.vote_type === 'like');
+        return {
+          id: row.id,
+          user_id: row.user_id,
+          kind: payload!.kind || 'comment',
+          text: payload!.text,
+          created_at: row.created_at,
+          authorName: profile?.full_name || profile?.username || 'Reader',
+          likes,
+          isLiked,
+        };
+      });
     },
-    {
-      id: '2',
-      user: 'Michael R.',
-      content: '"The only way to do great work is to love what you do." - This quote from the book really resonated with me.',
-      type: 'quote',
-      timestamp: '5 hours ago',
-      likes: 8,
-      isLiked: true
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('Not authenticated');
+      const payload: CommentPayload = { bookId, kind: commentType, text: newComment.trim() };
+      const { error } = await supabase.from('content_feedback').insert({
+        user_id: user.id,
+        feedback_type: FEEDBACK_TYPE,
+        comment: JSON.stringify(payload),
+      });
+      if (error) throw error;
     },
-    {
-      id: '3',
-      user: 'Emma L.',
-      content: 'Currently on chapter 7 and loving every page. Anyone else reading this?',
-      type: 'comment',
-      timestamp: '1 day ago',
-      likes: 5,
-      isLiked: false
-    }
-  ]);
+    onSuccess: () => {
+      setNewComment('');
+      toast({ title: commentType === 'comment' ? 'Comment posted' : 'Quote posted' });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Could not post', description: err.message, variant: 'destructive' });
+    },
+  });
 
-  const readersCount = 247; // Mock data
+  const likeMutation = useMutation({
+    mutationFn: async ({ commentId, isLiked }: { commentId: string; isLiked: boolean }) => {
+      if (!user) throw new Error('Not authenticated');
+      if (isLiked) {
+        const { error } = await supabase
+          .from('content_votes')
+          .delete()
+          .eq('content_id', commentId)
+          .eq('user_id', user.id)
+          .eq('vote_type', 'like');
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('content_votes').insert({
+          user_id: user.id,
+          content_id: commentId,
+          vote_type: 'like',
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+    onError: (err: Error) => toast({ title: 'Like failed', description: err.message, variant: 'destructive' }),
+  });
 
-  const handleSubmitComment = () => {
+  const handleSubmit = () => {
     if (!newComment.trim() || !user) return;
-
-    const comment: Comment = {
-      id: Date.now().toString(),
-      user: user.email?.split('@')[0] || 'Anonymous',
-      content: newComment,
-      type: commentType,
-      timestamp: 'Just now',
-      likes: 0,
-      isLiked: false
-    };
-
-    setComments([comment, ...comments]);
-    setNewComment('');
-    setTaggedFriends([]);
+    submitMutation.mutate();
   };
 
-  const handleLikeComment = (commentId: string) => {
-    setComments(comments.map(comment => 
-      comment.id === commentId 
-        ? { ...comment, likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1, isLiked: !comment.isLiked }
-        : comment
-    ));
-  };
-
-  const handleTagFriend = () => {
-    if (tagInput.trim() && !taggedFriends.includes(tagInput.trim())) {
-      setTaggedFriends([...taggedFriends, tagInput.trim()]);
-      setTagInput('');
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setTaggedFriends(taggedFriends.filter(t => t !== tag));
-  };
+  const readersCount = comments.length;
 
   return (
     <div className="space-y-6">
@@ -113,8 +175,8 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
         <p className="text-blue-700">Share your thoughts and connect with other readers of "{bookTitle}"</p>
         <div className="mt-3">
           <Badge className="bg-blue-100 text-blue-800 text-sm px-3 py-1">
-            <Users className="w-4 h-4 mr-1" />
-            {readersCount} readers
+            <MessageCircle className="w-4 h-4 mr-1" />
+            {readersCount} {readersCount === 1 ? 'post' : 'posts'}
           </Badge>
         </div>
       </div>
@@ -123,7 +185,6 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
       {user ? (
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-blue-200 shadow-sm">
           <div className="space-y-4">
-            {/* Comment Type Toggle */}
             <div className="flex gap-2">
               <Button
                 variant={commentType === 'comment' ? 'default' : 'outline'}
@@ -145,47 +206,25 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
               </Button>
             </div>
 
-            {/* Text Area */}
             <Textarea
-              placeholder={commentType === 'comment' 
-                ? "Share your thoughts about this book..." 
-                : "Share a memorable quote from the book..."
+              placeholder={
+                commentType === 'comment'
+                  ? 'Share your thoughts about this book...'
+                  : 'Share a memorable quote from the book...'
               }
               value={newComment}
+              maxLength={2000}
               onChange={(e) => setNewComment(e.target.value)}
               className="min-h-[100px] resize-none"
             />
 
-            {/* Tag Friends */}
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Tag friends (@username)"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleTagFriend()}
-                  className="flex-1"
-                />
-                <Button variant="outline" size="sm" onClick={handleTagFriend}>
-                  <AtSign className="w-4 h-4" />
-                </Button>
-              </div>
-              
-              {taggedFriends.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {taggedFriends.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="cursor-pointer" onClick={() => removeTag(tag)}>
-                      @{tag} ×
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Submit Button */}
             <div className="flex justify-end">
-              <Button onClick={handleSubmitComment} disabled={!newComment.trim()}>
-                <Send className="w-4 h-4 mr-2" />
+              <Button onClick={handleSubmit} disabled={!newComment.trim() || submitMutation.isPending}>
+                {submitMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
                 Post {commentType === 'comment' ? 'Comment' : 'Quote'}
               </Button>
             </div>
@@ -205,8 +244,13 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
       {/* Comments List */}
       <div className="space-y-4">
         <h4 className="text-lg font-semibold text-gray-900">Reader Comments & Quotes</h4>
-        
-        {comments.length === 0 ? (
+
+        {isLoading ? (
+          <div className="text-center py-8 text-gray-500">
+            <Loader2 className="w-6 h-6 mx-auto mb-2 animate-spin" />
+            <p>Loading...</p>
+          </div>
+        ) : comments.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>No comments yet. Be the first to share your thoughts!</p>
@@ -221,33 +265,38 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
                       <User className="w-4 h-4" />
                     </AvatarFallback>
                   </Avatar>
-                  
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{comment.user}</span>
-                      <Badge variant={comment.type === 'quote' ? 'secondary' : 'outline'} className="text-xs">
-                        {comment.type === 'quote' ? 'Quote' : 'Comment'}
+
+                  <div className="flex-1 space-y-2 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-gray-900">{comment.authorName}</span>
+                      <Badge variant={comment.kind === 'quote' ? 'secondary' : 'outline'} className="text-xs">
+                        {comment.kind === 'quote' ? 'Quote' : 'Comment'}
                       </Badge>
-                      <span className="text-xs text-gray-500">{comment.timestamp}</span>
+                      <span className="text-xs text-gray-500">
+                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                      </span>
                     </div>
-                    
-                    <p className={`text-gray-700 ${comment.type === 'quote' ? 'italic border-l-2 border-purple-300 pl-3' : ''}`}>
-                      {comment.content}
+
+                    <p
+                      className={`text-gray-700 whitespace-pre-wrap break-words ${
+                        comment.kind === 'quote' ? 'italic border-l-2 border-purple-300 pl-3' : ''
+                      }`}
+                    >
+                      {comment.text}
                     </p>
-                    
+
                     <div className="flex items-center gap-4">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleLikeComment(comment.id)}
+                        disabled={!user || likeMutation.isPending}
+                        onClick={() =>
+                          likeMutation.mutate({ commentId: comment.id, isLiked: comment.isLiked })
+                        }
                         className={`text-xs ${comment.isLiked ? 'text-red-600' : 'text-gray-500'}`}
                       >
                         <Heart className={`w-4 h-4 mr-1 ${comment.isLiked ? 'fill-current' : ''}`} />
                         {comment.likes}
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-xs text-gray-500">
-                        <MessageCircle className="w-4 h-4 mr-1" />
-                        Reply
                       </Button>
                     </div>
                   </div>

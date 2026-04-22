@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import SignInLink from '@/components/SignInLink';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,110 +10,172 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Edit3, Upload, ThumbsUp, MessageCircle, Eye, User, Crown } from 'lucide-react';
+import { Edit3, Upload, ThumbsUp, User, Crown, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 interface CreateYourVersionSectionProps {
   bookId: string;
   bookTitle: string;
 }
 
-interface UserVersion {
+type VersionType = 'summary' | 'alternate_ending' | 'chapter' | 'complete_rewrite';
+
+interface VersionRow {
   id: string;
-  user: string;
+  user_id: string;
   title: string;
   content: string;
-  type: 'summary' | 'alternate_ending' | 'chapter' | 'complete_rewrite';
+  content_type: string;
+  is_published: boolean;
+  created_at: string;
+}
+
+interface DisplayVersion {
+  id: string;
+  user_id: string;
+  authorName: string;
+  title: string;
+  content: string;
+  type: VersionType;
   isPublished: boolean;
   upvotes: number;
-  comments: number;
-  views: number;
-  timestamp: string;
   isUpvoted: boolean;
+  created_at: string;
 }
 
 const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectionProps) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [versionType, setVersionType] = useState<'summary' | 'alternate_ending' | 'chapter' | 'complete_rewrite'>('summary');
+  const [versionType, setVersionType] = useState<VersionType>('summary');
   const [isPublic, setIsPublic] = useState(true);
 
-  // Mock data - replace with real data from your backend
-  const [userVersions, setUserVersions] = useState<UserVersion[]>([
-    {
-      id: '1',
-      user: 'Alex Chen',
-      title: 'Alternative Happy Ending',
-      content: 'In this version, the protagonist makes a different choice in chapter 15 that leads to a completely different outcome...',
-      type: 'alternate_ending',
-      isPublished: true,
-      upvotes: 23,
-      comments: 7,
-      views: 156,
-      timestamp: '3 days ago',
-      isUpvoted: false
-    },
-    {
-      id: '2',
-      user: 'Maria Santos',
-      title: 'Quick Summary for Busy Readers',
-      content: 'A comprehensive 5-minute summary covering all the key plot points and character developments...',
-      type: 'summary',
-      isPublished: true,
-      upvotes: 41,
-      comments: 12,
-      views: 289,
-      timestamp: '1 week ago',
-      isUpvoted: true
-    },
-    {
-      id: '3',
-      user: 'David Kumar',
-      title: 'Missing Chapter: The Backstory',
-      content: 'This chapter explores what happened to the main character before the events of the original book...',
-      type: 'chapter',
-      isPublished: true,
-      upvotes: 18,
-      comments: 5,
-      views: 98,
-      timestamp: '2 weeks ago',
-      isUpvoted: false
-    }
-  ]);
+  const queryKey = ['book_user_versions', bookId, user?.id];
 
-  const handleSubmitVersion = () => {
+  const { data: userVersions = [], isLoading } = useQuery({
+    queryKey,
+    queryFn: async (): Promise<DisplayVersion[]> => {
+      // Show all published versions for this book + the current user's own (incl. private).
+      const { data: publicData, error: pubErr } = await supabase
+        .from('user_generated_content')
+        .select('id, user_id, title, content, content_type, is_published, created_at')
+        .eq('book_id', bookId)
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+        .limit(200);
+      if (pubErr) throw pubErr;
+
+      let mine: VersionRow[] = [];
+      if (user) {
+        const { data: myData, error: myErr } = await supabase
+          .from('user_generated_content')
+          .select('id, user_id, title, content, content_type, is_published, created_at')
+          .eq('book_id', bookId)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(200);
+        if (myErr) throw myErr;
+        mine = (myData as VersionRow[]) || [];
+      }
+
+      const all = [...(publicData as VersionRow[] || []), ...mine];
+      const dedup = Array.from(new Map(all.map((v) => [v.id, v])).values());
+
+      if (dedup.length === 0) return [];
+
+      const userIds = [...new Set(dedup.map((v) => v.user_id))];
+      const ids = dedup.map((v) => v.id);
+
+      const [profilesRes, votesRes] = await Promise.all([
+        supabase.from('profiles').select('id, full_name, username').in('id', userIds),
+        supabase.from('content_votes').select('content_id, user_id, vote_type').in('content_id', ids),
+      ]);
+
+      const profiles = profilesRes.data || [];
+      const votes = votesRes.data || [];
+
+      return dedup
+        .map((v) => {
+          const profile = profiles.find((p) => p.id === v.user_id);
+          const rowVotes = votes.filter((vote) => vote.content_id === v.id);
+          const upvotes = rowVotes.filter((vote) => vote.vote_type === 'upvote').length;
+          const isUpvoted =
+            !!user && rowVotes.some((vote) => vote.user_id === user.id && vote.vote_type === 'upvote');
+          return {
+            id: v.id,
+            user_id: v.user_id,
+            authorName: profile?.full_name || profile?.username || 'Author',
+            title: v.title,
+            content: v.content,
+            type: (v.content_type as VersionType) || 'summary',
+            isPublished: v.is_published,
+            upvotes,
+            isUpvoted,
+            created_at: v.created_at,
+          };
+        })
+        .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    },
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('Not authenticated');
+      const { error } = await supabase.from('user_generated_content').insert({
+        user_id: user.id,
+        book_id: bookId,
+        title: title.trim(),
+        content: content.trim(),
+        content_type: versionType,
+        is_published: isPublic,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setTitle('');
+      setContent('');
+      toast({
+        title: isPublic ? 'Version published' : 'Saved privately',
+        description: isPublic ? 'Your version is now visible to readers.' : 'Only you can see this.',
+      });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Could not save version', description: err.message, variant: 'destructive' });
+    },
+  });
+
+  const upvoteMutation = useMutation({
+    mutationFn: async ({ versionId, isUpvoted }: { versionId: string; isUpvoted: boolean }) => {
+      if (!user) throw new Error('Not authenticated');
+      if (isUpvoted) {
+        const { error } = await supabase
+          .from('content_votes')
+          .delete()
+          .eq('content_id', versionId)
+          .eq('user_id', user.id)
+          .eq('vote_type', 'upvote');
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('content_votes').insert({
+          user_id: user.id,
+          content_id: versionId,
+          vote_type: 'upvote',
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+    onError: (err: Error) => toast({ title: 'Vote failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const handleSubmit = () => {
     if (!title.trim() || !content.trim() || !user) return;
-
-    const newVersion: UserVersion = {
-      id: Date.now().toString(),
-      user: user.email?.split('@')[0] || 'Anonymous',
-      title: title.trim(),
-      content: content.trim(),
-      type: versionType,
-      isPublished: isPublic,
-      upvotes: 0,
-      comments: 0,
-      views: 0,
-      timestamp: 'Just now',
-      isUpvoted: false
-    };
-
-    setUserVersions([newVersion, ...userVersions]);
-    setTitle('');
-    setContent('');
-  };
-
-  const handleUpvote = (versionId: string) => {
-    setUserVersions(userVersions.map(version => 
-      version.id === versionId 
-        ? { 
-            ...version, 
-            upvotes: version.isUpvoted ? version.upvotes - 1 : version.upvotes + 1, 
-            isUpvoted: !version.isUpvoted 
-          }
-        : version
-    ));
+    submitMutation.mutate();
   };
 
   const getTypeColor = (type: string) => {
@@ -154,30 +216,29 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
             <CardTitle className="text-lg text-purple-900">Create Your Version</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Title Input */}
             <div>
               <Label htmlFor="version-title">Title</Label>
               <Input
                 id="version-title"
                 placeholder="Give your version a title..."
                 value={title}
+                maxLength={150}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
 
-            {/* Version Type Selection */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {[
                 { value: 'summary', label: 'Summary' },
                 { value: 'alternate_ending', label: 'Alt. Ending' },
                 { value: 'chapter', label: 'New Chapter' },
-                { value: 'complete_rewrite', label: 'Rewrite' }
+                { value: 'complete_rewrite', label: 'Rewrite' },
               ].map((type) => (
                 <Button
                   key={type.value}
                   variant={versionType === type.value ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setVersionType(type.value as any)}
+                  onClick={() => setVersionType(type.value as VersionType)}
                   className={versionType === type.value ? 'bg-purple-600 hover:bg-purple-700' : ''}
                 >
                   {type.label}
@@ -185,34 +246,33 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
               ))}
             </div>
 
-            {/* Content Textarea */}
             <div>
               <Label htmlFor="version-content">Content</Label>
               <Textarea
                 id="version-content"
                 placeholder="Write your version here..."
                 value={content}
+                maxLength={20000}
                 onChange={(e) => setContent(e.target.value)}
                 className="min-h-[200px] resize-none"
               />
             </div>
 
-            {/* Privacy Toggle */}
             <div className="flex items-center space-x-2">
-              <Switch
-                id="public-version"
-                checked={isPublic}
-                onCheckedChange={setIsPublic}
-              />
-              <Label htmlFor="public-version">
-                {isPublic ? 'Publish publicly' : 'Save as private'}
-              </Label>
+              <Switch id="public-version" checked={isPublic} onCheckedChange={setIsPublic} />
+              <Label htmlFor="public-version">{isPublic ? 'Publish publicly' : 'Save as private'}</Label>
             </div>
 
-            {/* Submit Button */}
             <div className="flex justify-end">
-              <Button onClick={handleSubmitVersion} disabled={!title.trim() || !content.trim()}>
-                <Upload className="w-4 h-4 mr-2" />
+              <Button
+                onClick={handleSubmit}
+                disabled={!title.trim() || !content.trim() || submitMutation.isPending}
+              >
+                {submitMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4 mr-2" />
+                )}
                 {isPublic ? 'Publish Version' : 'Save Private'}
               </Button>
             </div>
@@ -234,8 +294,13 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
       {/* User Versions List */}
       <div className="space-y-4">
         <h4 className="text-lg font-semibold text-gray-900">Community Versions</h4>
-        
-        {userVersions.length === 0 ? (
+
+        {isLoading ? (
+          <div className="text-center py-8 text-gray-500">
+            <Loader2 className="w-6 h-6 mx-auto mb-2 animate-spin" />
+            <p>Loading versions...</p>
+          </div>
+        ) : userVersions.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <Edit3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>No versions yet. Be the first to create one!</p>
@@ -243,54 +308,48 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
         ) : (
           <div className="grid gap-4">
             {userVersions.map((version) => (
-              <Card key={version.id} className="bg-white/60 backdrop-blur-sm border-gray-200 hover:shadow-md transition-shadow">
+              <Card
+                key={version.id}
+                className="bg-white/60 backdrop-blur-sm border-gray-200 hover:shadow-md transition-shadow"
+              >
                 <CardContent className="p-4">
                   <div className="space-y-3">
-                    {/* Header */}
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-2 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Avatar className="w-6 h-6">
                             <AvatarFallback>
                               <User className="w-3 h-3" />
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-gray-900">{version.user}</span>
+                          <span className="font-medium text-gray-900">{version.authorName}</span>
                           {version.upvotes > 20 && <Crown className="w-4 h-4 text-yellow-500" />}
+                          {!version.isPublished && (
+                            <Badge variant="outline" className="text-xs">Private</Badge>
+                          )}
+                          <span className="text-xs text-gray-500">
+                            {formatDistanceToNow(new Date(version.created_at), { addSuffix: true })}
+                          </span>
                         </div>
-                        <h5 className="font-semibold text-lg text-gray-900">{version.title}</h5>
+                        <h5 className="font-semibold text-lg text-gray-900 break-words">{version.title}</h5>
                       </div>
-                      <Badge className={getTypeColor(version.type)}>
-                        {getTypeLabel(version.type)}
-                      </Badge>
+                      <Badge className={getTypeColor(version.type)}>{getTypeLabel(version.type)}</Badge>
                     </div>
 
-                    {/* Content Preview */}
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                      {version.content.length > 150 
-                        ? `${version.content.substring(0, 150)}...` 
-                        : version.content
-                      }
+                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                      {version.content.length > 280
+                        ? `${version.content.substring(0, 280)}...`
+                        : version.content}
                     </p>
 
-                    {/* Stats and Actions */}
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <Eye className="w-4 h-4" />
-                          {version.views}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MessageCircle className="w-4 h-4" />
-                          {version.comments}
-                        </span>
-                        <span className="text-xs">{version.timestamp}</span>
-                      </div>
-                      
+                    <div className="flex items-center justify-end pt-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleUpvote(version.id)}
+                        disabled={!user || upvoteMutation.isPending}
+                        onClick={() =>
+                          upvoteMutation.mutate({ versionId: version.id, isUpvoted: version.isUpvoted })
+                        }
                         className={`${version.isUpvoted ? 'text-purple-600' : 'text-gray-500'}`}
                       >
                         <ThumbsUp className={`w-4 h-4 mr-1 ${version.isUpvoted ? 'fill-current' : ''}`} />
