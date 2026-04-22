@@ -589,13 +589,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
 
       {/* Enhanced Reader Controls */}
       <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-orange-900 flex items-center gap-2">
-              <BookOpen className="w-5 h-5" />
-              {bookTitle}
+        <CardHeader className="pb-3 px-3 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="text-base sm:text-lg text-orange-900 flex items-center gap-2 min-w-0">
+              <BookOpen className="w-5 h-5 shrink-0" />
+              <span className="truncate">{bookTitle}</span>
             </CardTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {/* Audio Summary Button */}
               {audioSummary && (
                 <Button
@@ -604,10 +604,10 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   className="flex items-center gap-1"
                 >
                   <Volume2 className="w-4 h-4" />
-                  Audio
+                  <span className="hidden sm:inline">Audio</span>
                 </Button>
               )}
-              
+
               {/* Bookmark Button */}
               {user && isEpub && (
                 <Button
@@ -617,10 +617,10 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   className="flex items-center gap-1"
                 >
                   <Bookmark className="w-4 h-4" />
-                  Save
+                  <span className="hidden sm:inline">Save</span>
                 </Button>
               )}
-              
+
               {/* Table of Contents */}
               {isEpub && (
                 <Button
@@ -630,7 +630,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   className="flex items-center gap-1"
                 >
                   <List className="w-4 h-4" />
-                  TOC
+                  <span className="hidden sm:inline">TOC</span>
                 </Button>
               )}
 
@@ -643,10 +643,10 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   className="flex items-center gap-1"
                 >
                   <Download className="w-4 h-4" />
-                  Open
+                  <span className="hidden sm:inline">Open</span>
                 </Button>
               )}
-              
+
               {/* Settings */}
               <Button
                 variant="outline"
@@ -655,7 +655,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 className="flex items-center gap-1"
               >
                 <Settings className="w-4 h-4" />
-                Settings
+                <span className="hidden sm:inline">Settings</span>
               </Button>
 
               {/* Share Button */}
@@ -666,7 +666,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 className="flex items-center gap-1"
               >
                 <Share2 className="w-4 h-4" />
-                Share
+                <span className="hidden sm:inline">Share</span>
               </Button>
 
               {/* Fullscreen Toggle */}
@@ -682,7 +682,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-3 sm:px-6">
           {/* Settings Panel */}
           {showSettings && (
             <Card className="bg-gray-50 border-gray-200">

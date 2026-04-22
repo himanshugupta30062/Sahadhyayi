@@ -359,7 +359,7 @@ const BookDetails = () => {
 
               <TabsContent value="connect" className="mt-0">
                 <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200 shadow-lg">
-                  <CardContent className="p-6">
+                  <CardContent className="p-3 sm:p-6">
                     <BookReadersConnection 
                       bookId={book.id}
                       bookTitle={book.title}
@@ -370,7 +370,7 @@ const BookDetails = () => {
 
               <TabsContent value="create" className="mt-0">
                 <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 shadow-lg">
-                  <CardContent className="p-6">
+                  <CardContent className="p-3 sm:p-6">
                     <CreateYourVersionSection 
                       bookId={book.id}
                       bookTitle={book.title}
@@ -381,7 +381,7 @@ const BookDetails = () => {
 
               <TabsContent value="feedback" className="mt-0">
                 <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-lg">
-                  <CardContent className="p-6">
+                  <CardContent className="p-3 sm:p-6">
                     <BookIdeasSection 
                       bookId={book.id} 
                       bookTitle={book.title}
@@ -392,7 +392,7 @@ const BookDetails = () => {
 
               <TabsContent value="read" className="mt-0">
                 <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-lg">
-                  <CardContent className="p-6">
+                  <CardContent className="p-2 sm:p-6">
                     <BookReader 
                       bookId={book.id}
                       bookTitle={book.title}
