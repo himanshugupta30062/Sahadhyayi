@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import SignInLink from '@/components/SignInLink';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,110 +10,183 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Lightbulb, Bug, ThumbsUp, MessageCircle, AlertTriangle, User, Send } from 'lucide-react';
+import { Lightbulb, Bug, ThumbsUp, AlertTriangle, User, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 interface BookIdeasSectionProps {
   bookId: string;
   bookTitle: string;
 }
 
-interface Feedback {
-  id: string;
-  user: string;
+type FeedbackType = 'idea' | 'issue' | 'improvement';
+type Priority = 'low' | 'medium' | 'high';
+
+interface FeedbackPayload {
+  bookId: string;
   title: string;
-  content: string;
-  type: 'idea' | 'issue' | 'improvement';
-  priority: 'low' | 'medium' | 'high';
-  upvotes: number;
-  comments: number;
-  timestamp: string;
-  isUpvoted: boolean;
-  status: 'open' | 'under_review' | 'resolved';
+  body: string;
+  priority: Priority;
 }
+
+interface FeedbackRow {
+  id: string;
+  user_id: string;
+  feedback_type: string;
+  comment: string | null;
+  created_at: string;
+}
+
+interface ParsedFeedback {
+  id: string;
+  user_id: string;
+  type: FeedbackType;
+  title: string;
+  body: string;
+  priority: Priority;
+  created_at: string;
+  authorName: string;
+  upvotes: number;
+  isUpvoted: boolean;
+}
+
+const parseComment = (raw: string | null): { bookId?: string; title: string; body: string; priority: Priority } => {
+  if (!raw) return { title: '(no title)', body: '', priority: 'medium' };
+  try {
+    const parsed = JSON.parse(raw) as FeedbackPayload;
+    if (parsed && typeof parsed === 'object' && 'title' in parsed) {
+      return {
+        bookId: parsed.bookId,
+        title: parsed.title || '(no title)',
+        body: parsed.body || '',
+        priority: parsed.priority || 'medium',
+      };
+    }
+  } catch {
+    // legacy / plain text
+  }
+  return { title: '(no title)', body: raw, priority: 'medium' };
+};
 
 const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [feedbackType, setFeedbackType] = useState<'idea' | 'issue' | 'improvement'>('idea');
-  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>('idea');
+  const [priority, setPriority] = useState<Priority>('medium');
 
-  // Mock data - replace with real data from your backend
-  const [feedbackList, setFeedbackList] = useState<Feedback[]>([
-    {
-      id: '1',
-      user: 'Jennifer Kim',
-      title: 'Add audio narration',
-      content: 'It would be great to have an audio version of this book for people who prefer listening while commuting.',
-      type: 'idea',
-      priority: 'medium',
-      upvotes: 34,
-      comments: 8,
-      timestamp: '2 days ago',
-      isUpvoted: true,
-      status: 'under_review'
+  const { data: feedbackList = [], isLoading } = useQuery({
+    queryKey: ['book_feedback', bookId],
+    queryFn: async (): Promise<ParsedFeedback[]> => {
+      // Fetch all feedback (table doesn't track book_id, we filter via JSON payload)
+      const { data, error } = await supabase
+        .from('content_feedback')
+        .select('id, user_id, feedback_type, comment, created_at')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+
+      const matching = (data as FeedbackRow[]).filter((row) => {
+        const parsed = parseComment(row.comment);
+        return parsed.bookId === bookId;
+      });
+
+      if (matching.length === 0) return [];
+
+      const userIds = [...new Set(matching.map((m) => m.user_id))];
+      const ids = matching.map((m) => m.id);
+
+      const [profilesRes, votesRes] = await Promise.all([
+        supabase.from('profiles').select('id, full_name, username').in('id', userIds),
+        supabase.from('content_votes').select('content_id, user_id, vote_type').in('content_id', ids),
+      ]);
+
+      const profiles = profilesRes.data || [];
+      const votes = votesRes.data || [];
+
+      return matching.map((row) => {
+        const parsed = parseComment(row.comment);
+        const profile = profiles.find((p) => p.id === row.user_id);
+        const rowVotes = votes.filter((v) => v.content_id === row.id);
+        const upvotes = rowVotes.filter((v) => v.vote_type === 'upvote').length;
+        const isUpvoted = !!user && rowVotes.some((v) => v.user_id === user.id && v.vote_type === 'upvote');
+        return {
+          id: row.id,
+          user_id: row.user_id,
+          type: (row.feedback_type as FeedbackType) || 'idea',
+          title: parsed.title,
+          body: parsed.body,
+          priority: parsed.priority,
+          created_at: row.created_at,
+          authorName: profile?.full_name || profile?.username || 'Reader',
+          upvotes,
+          isUpvoted,
+        };
+      });
     },
-    {
-      id: '2',
-      user: 'Robert Wilson',
-      title: 'Typo in Chapter 3',
-      content: 'Found a typo on page 45, third paragraph: "recieve" should be "receive".',
-      type: 'issue',
-      priority: 'low',
-      upvotes: 5,
-      comments: 2,
-      timestamp: '5 days ago',
-      isUpvoted: false,
-      status: 'resolved'
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('Not authenticated');
+      const payload: FeedbackPayload = {
+        bookId,
+        title: title.trim(),
+        body: content.trim(),
+        priority,
+      };
+      const { error } = await supabase.from('content_feedback').insert({
+        user_id: user.id,
+        feedback_type: feedbackType,
+        comment: JSON.stringify(payload),
+      });
+      if (error) throw error;
     },
-    {
-      id: '3',
-      user: 'Lisa Chen',
-      title: 'Character development suggestions',
-      content: 'The supporting characters could use more backstory. Maybe add a few more scenes showing their motivations?',
-      type: 'improvement',
-      priority: 'medium',
-      upvotes: 18,
-      comments: 12,
-      timestamp: '1 week ago',
-      isUpvoted: false,
-      status: 'open'
-    }
-  ]);
+    onSuccess: () => {
+      setTitle('');
+      setContent('');
+      toast({ title: 'Feedback submitted', description: 'Thanks for sharing!' });
+      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Could not submit feedback', description: err.message, variant: 'destructive' });
+    },
+  });
+
+  const upvoteMutation = useMutation({
+    mutationFn: async ({ feedbackId, isUpvoted }: { feedbackId: string; isUpvoted: boolean }) => {
+      if (!user) throw new Error('Not authenticated');
+      if (isUpvoted) {
+        const { error } = await supabase
+          .from('content_votes')
+          .delete()
+          .eq('content_id', feedbackId)
+          .eq('user_id', user.id)
+          .eq('vote_type', 'upvote');
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('content_votes').insert({
+          user_id: user.id,
+          content_id: feedbackId,
+          vote_type: 'upvote',
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Vote failed', description: err.message, variant: 'destructive' });
+    },
+  });
 
   const handleSubmitFeedback = () => {
     if (!title.trim() || !content.trim() || !user) return;
-
-    const newFeedback: Feedback = {
-      id: Date.now().toString(),
-      user: user.email?.split('@')[0] || 'Anonymous',
-      title: title.trim(),
-      content: content.trim(),
-      type: feedbackType,
-      priority: priority,
-      upvotes: 0,
-      comments: 0,
-      timestamp: 'Just now',
-      isUpvoted: false,
-      status: 'open'
-    };
-
-    setFeedbackList([newFeedback, ...feedbackList]);
-    setTitle('');
-    setContent('');
-  };
-
-  const handleUpvote = (feedbackId: string) => {
-    setFeedbackList(feedbackList.map(feedback => 
-      feedback.id === feedbackId 
-        ? { 
-            ...feedback, 
-            upvotes: feedback.isUpvoted ? feedback.upvotes - 1 : feedback.upvotes + 1, 
-            isUpvoted: !feedback.isUpvoted 
-          }
-        : feedback
-    ));
+    submitMutation.mutate();
   };
 
   const getTypeIcon = (type: string) => {
@@ -143,15 +216,6 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open': return 'bg-blue-100 text-blue-800';
-      case 'under_review': return 'bg-orange-100 text-orange-800';
-      case 'resolved': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -170,22 +234,21 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
             <CardTitle className="text-lg text-green-900">Share Your Feedback</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Title Input */}
             <div>
               <Label htmlFor="feedback-title">Title</Label>
               <Input
                 id="feedback-title"
                 placeholder="Brief description of your feedback..."
                 value={title}
+                maxLength={120}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
 
-            {/* Type and Priority Selection */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="feedback-type">Type</Label>
-                <Select value={feedbackType} onValueChange={(value: any) => setFeedbackType(value)}>
+                <Select value={feedbackType} onValueChange={(value: FeedbackType) => setFeedbackType(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -199,7 +262,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
 
               <div>
                 <Label htmlFor="feedback-priority">Priority</Label>
-                <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
+                <Select value={priority} onValueChange={(value: Priority) => setPriority(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -212,22 +275,28 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
               </div>
             </div>
 
-            {/* Content Textarea */}
             <div>
               <Label htmlFor="feedback-content">Details</Label>
               <Textarea
                 id="feedback-content"
                 placeholder="Provide more details about your feedback..."
                 value={content}
+                maxLength={2000}
                 onChange={(e) => setContent(e.target.value)}
                 className="min-h-[120px] resize-none"
               />
             </div>
 
-            {/* Submit Button */}
             <div className="flex justify-end">
-              <Button onClick={handleSubmitFeedback} disabled={!title.trim() || !content.trim()}>
-                <Send className="w-4 h-4 mr-2" />
+              <Button
+                onClick={handleSubmitFeedback}
+                disabled={!title.trim() || !content.trim() || submitMutation.isPending}
+              >
+                {submitMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
                 Submit Feedback
               </Button>
             </div>
@@ -250,20 +319,17 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-lg font-semibold text-gray-900">Community Feedback</h4>
-          <div className="flex gap-2">
-            <Badge variant="outline" className="text-xs">
-              {feedbackList.filter(f => f.status === 'open').length} Open
-            </Badge>
-            <Badge variant="outline" className="text-xs">
-              {feedbackList.filter(f => f.status === 'under_review').length} Under Review
-            </Badge>
-            <Badge variant="outline" className="text-xs">
-              {feedbackList.filter(f => f.status === 'resolved').length} Resolved
-            </Badge>
-          </div>
+          <Badge variant="outline" className="text-xs">
+            {feedbackList.length} {feedbackList.length === 1 ? 'entry' : 'entries'}
+          </Badge>
         </div>
-        
-        {feedbackList.length === 0 ? (
+
+        {isLoading ? (
+          <div className="text-center py-8 text-gray-500">
+            <Loader2 className="w-6 h-6 mx-auto mb-2 animate-spin" />
+            <p>Loading feedback...</p>
+          </div>
+        ) : feedbackList.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>No feedback yet. Be the first to share your ideas!</p>
@@ -274,54 +340,43 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
               <Card key={feedback.id} className="bg-white/60 backdrop-blur-sm border-gray-200 hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="space-y-3">
-                    {/* Header */}
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-2 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Avatar className="w-6 h-6">
                             <AvatarFallback>
                               <User className="w-3 h-3" />
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-gray-900">{feedback.user}</span>
-                          <span className="text-xs text-gray-500">{feedback.timestamp}</span>
+                          <span className="font-medium text-gray-900">{feedback.authorName}</span>
+                          <span className="text-xs text-gray-500">
+                            {formatDistanceToNow(new Date(feedback.created_at), { addSuffix: true })}
+                          </span>
                         </div>
-                        <h5 className="font-semibold text-lg text-gray-900">{feedback.title}</h5>
+                        <h5 className="font-semibold text-lg text-gray-900 break-words">{feedback.title}</h5>
                       </div>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1 shrink-0">
                         <Badge className={getTypeColor(feedback.type)}>
                           {getTypeIcon(feedback.type)}
                           <span className="ml-1 capitalize">{feedback.type}</span>
                         </Badge>
-                        <Badge className={getStatusColor(feedback.status)}>
-                          {feedback.status.replace('_', ' ')}
-                        </Badge>
                       </div>
                     </div>
 
-                    {/* Priority Badge */}
                     <Badge variant="outline" className={`${getPriorityColor(feedback.priority)} w-fit`}>
                       {feedback.priority.toUpperCase()} Priority
                     </Badge>
 
-                    {/* Content */}
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                      {feedback.content}
+                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                      {feedback.body}
                     </p>
 
-                    {/* Actions */}
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <MessageCircle className="w-4 h-4" />
-                          {feedback.comments}
-                        </span>
-                      </div>
-                      
+                    <div className="flex items-center justify-end pt-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleUpvote(feedback.id)}
+                        disabled={!user || upvoteMutation.isPending}
+                        onClick={() => upvoteMutation.mutate({ feedbackId: feedback.id, isUpvoted: feedback.isUpvoted })}
                         className={`${feedback.isUpvoted ? 'text-green-600' : 'text-gray-500'}`}
                       >
                         <ThumbsUp className={`w-4 h-4 mr-1 ${feedback.isUpvoted ? 'fill-current' : ''}`} />
