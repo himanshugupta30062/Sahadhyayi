@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useArticleBySlug } from '@/hooks/useArticles';
+import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Clock, Eye, Calendar } from 'lucide-react';
@@ -16,6 +17,15 @@ import { format } from 'date-fns';
 const ArticleDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: article, isLoading, error } = useArticleBySlug(slug);
+
+  // Increment view count once per article load (deduped per session)
+  useEffect(() => {
+    if (!article?.id) return;
+    const key = `article-viewed-${article.id}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+    (supabase as any).rpc('increment_article_views', { _article_id: article.id });
+  }, [article?.id]);
 
   if (isLoading) {
     return (
