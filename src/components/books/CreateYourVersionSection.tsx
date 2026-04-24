@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Edit3, Upload, ThumbsUp, User, Crown, Loader2 } from 'lucide-react';
+import { Edit3, Upload, ThumbsUp, User, Crown, Loader2, Pencil, Trash2, X, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
