@@ -373,13 +373,43 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
                       <Badge className={getTypeColor(version.type)}>{getTypeLabel(version.type)}</Badge>
                     </div>
 
-                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                      {version.content.length > 280
-                        ? `${version.content.substring(0, 280)}...`
-                        : version.content}
-                    </p>
+                    {editingId === version.id ? (
+                      <div className="space-y-2">
+                        <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={150} />
+                        <Textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} maxLength={20000} className="min-h-[150px]" />
+                      </div>
+                    ) : (
+                      <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                        {version.content.length > 280
+                          ? `${version.content.substring(0, 280)}...`
+                          : version.content}
+                      </p>
+                    )}
 
-                    <div className="flex items-center justify-end pt-2">
+                    <div className="flex items-center justify-between pt-2 gap-2 flex-wrap">
+                      <div className="flex items-center gap-1">
+                        {user?.id === version.user_id && (
+                          editingId === version.id ? (
+                            <>
+                              <Button variant="ghost" size="sm" disabled={editMutation.isPending || !editTitle.trim() || !editContent.trim()} onClick={() => editMutation.mutate(version.id)}>
+                                <Check className="w-4 h-4 mr-1" /> Save
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>
+                                <X className="w-4 h-4 mr-1" /> Cancel
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button variant="ghost" size="sm" onClick={() => startEdit(version)} className="text-gray-500">
+                                <Pencil className="w-4 h-4 mr-1" /> Edit
+                              </Button>
+                              <Button variant="ghost" size="sm" disabled={deleteMutation.isPending} onClick={() => { if (confirm('Delete this version?')) deleteMutation.mutate(version.id); }} className="text-red-500 hover:text-red-700">
+                                <Trash2 className="w-4 h-4 mr-1" /> Delete
+                              </Button>
+                            </>
+                          )
+                        )}
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
