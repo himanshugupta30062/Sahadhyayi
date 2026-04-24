@@ -157,6 +157,27 @@ export function useCreateComment() {
   });
 }
 
+export function useUpdateComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ commentId, articleId, content }: { commentId: string; articleId: string; content: string }) => {
+      const { error } = await (supabase as any)
+        .from('article_comments')
+        .update({ content, updated_at: new Date().toISOString() })
+        .eq('id', commentId);
+      if (error) throw error;
+      return articleId;
+    },
+    onSuccess: (articleId) => {
+      queryClient.invalidateQueries({ queryKey: ['article-comments', articleId] });
+    },
+    onError: (err: any) => {
+      toast({ title: 'Error updating comment', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
 export function useDeleteComment() {
   const queryClient = useQueryClient();
 
