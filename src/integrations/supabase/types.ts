@@ -1001,15 +1001,7 @@ export type Database = {
           user_id?: string
           vote_type?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "content_votes_content_id_fkey"
-            columns: ["content_id"]
-            isOneToOne: false
-            referencedRelation: "user_generated_content"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       detailed_reading_progress: {
         Row: {
@@ -2485,15 +2477,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_generated_content_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_locations: {
         Row: {
