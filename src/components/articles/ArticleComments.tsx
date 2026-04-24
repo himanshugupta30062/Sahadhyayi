@@ -1,10 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { useArticleComments, useCreateComment, useDeleteComment, ArticleComment } from '@/hooks/useArticleSocial';
+import {
+  useArticleComments,
+  useCreateComment,
+  useDeleteComment,
+  useUpdateComment,
+  ArticleComment,
+} from '@/hooks/useArticleSocial';
 import { useAuth } from '@/contexts/authHelpers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, Reply, Trash2, Send } from 'lucide-react';
+import { MessageCircle, Reply, Trash2, Send, Pencil, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Props {
