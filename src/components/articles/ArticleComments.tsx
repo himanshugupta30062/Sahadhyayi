@@ -218,7 +218,8 @@ const ArticleComments: React.FC<Props> = ({ articleId }) => {
         ))}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
