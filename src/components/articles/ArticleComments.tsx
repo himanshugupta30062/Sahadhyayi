@@ -26,6 +26,9 @@ const ArticleComments: React.FC<Props> = ({ articleId }) => {
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const updateComment = useUpdateComment();
 
   // Build thread structure
   const { topLevel, replies } = useMemo(() => {
