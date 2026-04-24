@@ -410,11 +410,41 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
                       {feedback.priority.toUpperCase()} Priority
                     </Badge>
 
-                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                      {feedback.body}
-                    </p>
+                    {editingId === feedback.id ? (
+                      <div className="space-y-2">
+                        <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={120} />
+                        <Textarea value={editBody} onChange={(e) => setEditBody(e.target.value)} maxLength={2000} className="min-h-[100px]" />
+                      </div>
+                    ) : (
+                      <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                        {feedback.body}
+                      </p>
+                    )}
 
-                    <div className="flex items-center justify-end pt-2">
+                    <div className="flex items-center justify-between pt-2 gap-2 flex-wrap">
+                      <div className="flex items-center gap-1">
+                        {user?.id === feedback.user_id && (
+                          editingId === feedback.id ? (
+                            <>
+                              <Button variant="ghost" size="sm" disabled={editMutation.isPending} onClick={() => editMutation.mutate({ id: feedback.id, current: feedback })}>
+                                <Check className="w-4 h-4 mr-1" /> Save
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>
+                                <X className="w-4 h-4 mr-1" /> Cancel
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button variant="ghost" size="sm" onClick={() => startEdit(feedback)} className="text-gray-500">
+                                <Pencil className="w-4 h-4 mr-1" /> Edit
+                              </Button>
+                              <Button variant="ghost" size="sm" disabled={deleteMutation.isPending} onClick={() => { if (confirm('Delete this feedback?')) deleteMutation.mutate(feedback.id); }} className="text-red-500 hover:text-red-700">
+                                <Trash2 className="w-4 h-4 mr-1" /> Delete
+                              </Button>
+                            </>
+                          )
+                        )}
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
