@@ -62,6 +62,8 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [commentType, setCommentType] = useState<CommentKind>('comment');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
 
   const queryKey = ['book_reader_comments', bookId];
 
@@ -156,6 +158,40 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
     onError: (err: Error) => toast({ title: 'Like failed', description: err.message, variant: 'destructive' }),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('content_feedback').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Deleted' });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const editMutation = useMutation({
+    mutationFn: async ({ id, current }: { id: string; current: ReaderComment }) => {
+      const payload: CommentPayload = { bookId, kind: current.kind, text: editText.trim() };
+      const { error } = await supabase
+        .from('content_feedback')
+        .update({ comment: JSON.stringify(payload) })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setEditingId(null);
+      toast({ title: 'Updated' });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const startEdit = (c: ReaderComment) => {
+    setEditingId(c.id);
+    setEditText(c.text);
+  };
 
   const handleSubmit = () => {
     if (!newComment.trim() || !user) return;
