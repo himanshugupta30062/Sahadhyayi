@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Lightbulb, Bug, ThumbsUp, AlertTriangle, User, Send, Loader2 } from 'lucide-react';
+import { Lightbulb, Bug, ThumbsUp, AlertTriangle, User, Send, Loader2, Pencil, Trash2, X, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -77,6 +77,9 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
   const [content, setContent] = useState('');
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('idea');
   const [priority, setPriority] = useState<Priority>('medium');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editBody, setEditBody] = useState('');
 
   const { data: feedbackList = [], isLoading } = useQuery({
     queryKey: ['book_feedback', bookId],
@@ -183,6 +186,46 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
       toast({ title: 'Vote failed', description: err.message, variant: 'destructive' });
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('content_feedback').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Deleted' });
+      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+    },
+    onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const editMutation = useMutation({
+    mutationFn: async ({ id, current }: { id: string; current: ParsedFeedback }) => {
+      const payload: FeedbackPayload = {
+        bookId,
+        title: editTitle.trim() || current.title,
+        body: editBody.trim() || current.body,
+        priority: current.priority,
+      };
+      const { error } = await supabase
+        .from('content_feedback')
+        .update({ comment: JSON.stringify(payload) })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setEditingId(null);
+      toast({ title: 'Updated' });
+      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+    },
+    onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const startEdit = (f: ParsedFeedback) => {
+    setEditingId(f.id);
+    setEditTitle(f.title);
+    setEditBody(f.body);
+  };
 
   const handleSubmitFeedback = () => {
     if (!title.trim() || !content.trim() || !user) return;
@@ -367,11 +410,41 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
                       {feedback.priority.toUpperCase()} Priority
                     </Badge>
 
-                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                      {feedback.body}
-                    </p>
+                    {editingId === feedback.id ? (
+                      <div className="space-y-2">
+                        <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={120} />
+                        <Textarea value={editBody} onChange={(e) => setEditBody(e.target.value)} maxLength={2000} className="min-h-[100px]" />
+                      </div>
+                    ) : (
+                      <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                        {feedback.body}
+                      </p>
+                    )}
 
-                    <div className="flex items-center justify-end pt-2">
+                    <div className="flex items-center justify-between pt-2 gap-2 flex-wrap">
+                      <div className="flex items-center gap-1">
+                        {user?.id === feedback.user_id && (
+                          editingId === feedback.id ? (
+                            <>
+                              <Button variant="ghost" size="sm" disabled={editMutation.isPending} onClick={() => editMutation.mutate({ id: feedback.id, current: feedback })}>
+                                <Check className="w-4 h-4 mr-1" /> Save
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>
+                                <X className="w-4 h-4 mr-1" /> Cancel
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button variant="ghost" size="sm" onClick={() => startEdit(feedback)} className="text-gray-500">
+                                <Pencil className="w-4 h-4 mr-1" /> Edit
+                              </Button>
+                              <Button variant="ghost" size="sm" disabled={deleteMutation.isPending} onClick={() => { if (confirm('Delete this feedback?')) deleteMutation.mutate(feedback.id); }} className="text-red-500 hover:text-red-700">
+                                <Trash2 className="w-4 h-4 mr-1" /> Delete
+                              </Button>
+                            </>
+                          )
+                        )}
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"

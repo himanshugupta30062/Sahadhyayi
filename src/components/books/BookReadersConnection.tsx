@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Users, MessageCircle, Heart, Share, Send, User, Loader2 } from 'lucide-react';
+import { Users, MessageCircle, Heart, Share, Send, User, Loader2, Pencil, Trash2, X, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -62,6 +62,8 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [commentType, setCommentType] = useState<CommentKind>('comment');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
 
   const queryKey = ['book_reader_comments', bookId];
 
@@ -156,6 +158,40 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
     onError: (err: Error) => toast({ title: 'Like failed', description: err.message, variant: 'destructive' }),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('content_feedback').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Deleted' });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const editMutation = useMutation({
+    mutationFn: async ({ id, current }: { id: string; current: ReaderComment }) => {
+      const payload: CommentPayload = { bookId, kind: current.kind, text: editText.trim() };
+      const { error } = await supabase
+        .from('content_feedback')
+        .update({ comment: JSON.stringify(payload) })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setEditingId(null);
+      toast({ title: 'Updated' });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const startEdit = (c: ReaderComment) => {
+    setEditingId(c.id);
+    setEditText(c.text);
+  };
 
   const handleSubmit = () => {
     if (!newComment.trim() || !user) return;
@@ -277,27 +313,56 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
                       </span>
                     </div>
 
-                    <p
-                      className={`text-gray-700 whitespace-pre-wrap break-words ${
-                        comment.kind === 'quote' ? 'italic border-l-2 border-purple-300 pl-3' : ''
-                      }`}
-                    >
-                      {comment.text}
-                    </p>
-
-                    <div className="flex items-center gap-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={!user || likeMutation.isPending}
-                        onClick={() =>
-                          likeMutation.mutate({ commentId: comment.id, isLiked: comment.isLiked })
-                        }
-                        className={`text-xs ${comment.isLiked ? 'text-red-600' : 'text-gray-500'}`}
+                    {editingId === comment.id ? (
+                      <Textarea value={editText} onChange={(e) => setEditText(e.target.value)} maxLength={2000} className="min-h-[80px]" />
+                    ) : (
+                      <p
+                        className={`text-gray-700 whitespace-pre-wrap break-words ${
+                          comment.kind === 'quote' ? 'italic border-l-2 border-purple-300 pl-3' : ''
+                        }`}
                       >
-                        <Heart className={`w-4 h-4 mr-1 ${comment.isLiked ? 'fill-current' : ''}`} />
-                        {comment.likes}
-                      </Button>
+                        {comment.text}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!user || likeMutation.isPending}
+                          onClick={() =>
+                            likeMutation.mutate({ commentId: comment.id, isLiked: comment.isLiked })
+                          }
+                          className={`text-xs ${comment.isLiked ? 'text-red-600' : 'text-gray-500'}`}
+                        >
+                          <Heart className={`w-4 h-4 mr-1 ${comment.isLiked ? 'fill-current' : ''}`} />
+                          {comment.likes}
+                        </Button>
+                      </div>
+                      {user?.id === comment.user_id && (
+                        <div className="flex items-center gap-1">
+                          {editingId === comment.id ? (
+                            <>
+                              <Button variant="ghost" size="sm" disabled={editMutation.isPending || !editText.trim()} onClick={() => editMutation.mutate({ id: comment.id, current: comment })}>
+                                <Check className="w-4 h-4 mr-1" /> Save
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>
+                                <X className="w-4 h-4 mr-1" /> Cancel
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button variant="ghost" size="sm" onClick={() => startEdit(comment)} className="text-xs text-gray-500">
+                                <Pencil className="w-4 h-4 mr-1" /> Edit
+                              </Button>
+                              <Button variant="ghost" size="sm" disabled={deleteMutation.isPending} onClick={() => { if (confirm('Delete this post?')) deleteMutation.mutate(comment.id); }} className="text-xs text-red-500 hover:text-red-700">
+                                <Trash2 className="w-4 h-4 mr-1" /> Delete
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
