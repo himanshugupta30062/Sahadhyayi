@@ -53,6 +53,9 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
   const [content, setContent] = useState('');
   const [versionType, setVersionType] = useState<VersionType>('summary');
   const [isPublic, setIsPublic] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
 
   const queryKey = ['book_user_versions', bookId, user?.id];
 
@@ -172,6 +175,40 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
     onError: (err: Error) => toast({ title: 'Vote failed', description: err.message, variant: 'destructive' }),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('user_generated_content').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Version deleted' });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const editMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('user_generated_content')
+        .update({ title: editTitle.trim(), content: editContent.trim() })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setEditingId(null);
+      toast({ title: 'Version updated' });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const startEdit = (v: DisplayVersion) => {
+    setEditingId(v.id);
+    setEditTitle(v.title);
+    setEditContent(v.content);
+  };
 
   const handleSubmit = () => {
     if (!title.trim() || !content.trim() || !user) return;
