@@ -77,6 +77,9 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
   const [content, setContent] = useState('');
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('idea');
   const [priority, setPriority] = useState<Priority>('medium');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editBody, setEditBody] = useState('');
 
   const { data: feedbackList = [], isLoading } = useQuery({
     queryKey: ['book_feedback', bookId],
@@ -183,6 +186,46 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
       toast({ title: 'Vote failed', description: err.message, variant: 'destructive' });
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('content_feedback').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Deleted' });
+      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+    },
+    onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const editMutation = useMutation({
+    mutationFn: async ({ id, current }: { id: string; current: ParsedFeedback }) => {
+      const payload: FeedbackPayload = {
+        bookId,
+        title: editTitle.trim() || current.title,
+        body: editBody.trim() || current.body,
+        priority: current.priority,
+      };
+      const { error } = await supabase
+        .from('content_feedback')
+        .update({ comment: JSON.stringify(payload) })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setEditingId(null);
+      toast({ title: 'Updated' });
+      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+    },
+    onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const startEdit = (f: ParsedFeedback) => {
+    setEditingId(f.id);
+    setEditTitle(f.title);
+    setEditBody(f.body);
+  };
 
   const handleSubmitFeedback = () => {
     if (!title.trim() || !content.trim() || !user) return;
