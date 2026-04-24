@@ -73,7 +73,28 @@ const ArticleComments: React.FC<Props> = ({ articleId }) => {
     deleteComment.mutate({ commentId, articleId });
   };
 
-  const CommentItem = ({ comment, isReply = false }: { comment: ArticleComment; isReply?: boolean }) => (
+  const startEdit = (comment: ArticleComment) => {
+    setEditingId(comment.id);
+    setEditContent(comment.content);
+  };
+
+  const handleSaveEdit = (commentId: string) => {
+    if (!editContent.trim()) return;
+    updateComment.mutate(
+      { commentId, articleId, content: editContent.trim() },
+      {
+        onSuccess: () => {
+          setEditingId(null);
+          setEditContent('');
+        },
+      }
+    );
+  };
+
+  const CommentItem = ({ comment, isReply = false }: { comment: ArticleComment; isReply?: boolean }) => {
+    const isEditing = editingId === comment.id;
+    const wasEdited = comment.updated_at && comment.updated_at !== comment.created_at;
+    return (
     <div className={`flex gap-3 ${isReply ? 'ml-10 mt-3' : ''}`}>
       <Avatar className="w-8 h-8 shrink-0">
         <AvatarImage src={comment.author_avatar} />
@@ -87,10 +108,42 @@ const ArticleComments: React.FC<Props> = ({ articleId }) => {
             <span className="text-sm font-medium text-foreground">{comment.author_name}</span>
             <span className="text-xs text-muted-foreground shrink-0">
               {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+              {wasEdited && <span className="ml-1 italic">· edited</span>}
             </span>
           </div>
-          <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words">{comment.content}</p>
+          {isEditing ? (
+            <div className="space-y-2">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="text-sm min-h-[60px] resize-none"
+                rows={2}
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => { setEditingId(null); setEditContent(''); }}
+                  className="text-xs"
+                >
+                  <X className="w-3 h-3 mr-1" /> Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleSaveEdit(comment.id)}
+                  disabled={!editContent.trim() || updateComment.isPending}
+                  className="bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white text-xs"
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words">{comment.content}</p>
+          )}
         </div>
+        {!isEditing && (
         <div className="flex items-center gap-2 mt-1">
           {user && !isReply && (
             <Button
@@ -104,17 +157,29 @@ const ArticleComments: React.FC<Props> = ({ articleId }) => {
             </Button>
           )}
           {user?.id === comment.user_id && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs text-muted-foreground hover:text-destructive"
-              onClick={() => handleDelete(comment.id)}
-            >
-              <Trash2 className="w-3 h-3 mr-1" />
-              Delete
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => startEdit(comment)}
+              >
+                <Pencil className="w-3 h-3 mr-1" />
+                Edit
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                onClick={() => handleDelete(comment.id)}
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                Delete
+              </Button>
+            </>
           )}
         </div>
+        )}
 
         {/* Reply input */}
         {replyingTo === comment.id && (
