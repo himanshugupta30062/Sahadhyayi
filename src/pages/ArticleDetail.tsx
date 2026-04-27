@@ -27,6 +27,7 @@ const ArticleDetail = () => {
   const { data: article, isLoading, error } = useArticleBySlug(slug);
   const articleRef = useRef<HTMLElement>(null);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Increment view count once per article load (deduped per session)
   useEffect(() => {
