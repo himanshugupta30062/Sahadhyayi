@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useArticleBySlug } from '@/hooks/useArticles';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,6 +24,7 @@ const ArticleDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: article, isLoading, error } = useArticleBySlug(slug);
   const articleRef = useRef<HTMLElement>(null);
+  const queryClient = useQueryClient();
 
   // Increment view count once per article load (deduped per session)
   useEffect(() => {
@@ -30,8 +32,13 @@ const ArticleDetail = () => {
     const key = `article-viewed-${article.id}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, '1');
-    (supabase as any).rpc('increment_article_views', { _article_id: article.id });
-  }, [article?.id]);
+    (supabase as any)
+      .rpc('increment_article_views', { _article_id: article.id })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ['article', slug] });
+        queryClient.invalidateQueries({ queryKey: ['articles'] });
+      });
+  }, [article?.id, slug, queryClient]);
 
   if (isLoading) {
     return (
