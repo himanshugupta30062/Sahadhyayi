@@ -177,6 +177,12 @@ const ArticleDetail = () => {
                     content={article.content}
                     variant="full"
                   />
+                  <CopyArticleButton
+                    title={article.title}
+                    subtitle={article.subtitle}
+                    content={article.content}
+                    variant="full"
+                  />
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {article.reading_time_minutes} min read
