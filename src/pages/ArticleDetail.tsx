@@ -15,6 +15,7 @@ import ArticleComments from '@/components/articles/ArticleComments';
 import FollowAuthorButton from '@/components/articles/FollowAuthorButton';
 import BookmarkButton from '@/components/articles/BookmarkButton';
 import ShareButton from '@/components/articles/ShareButton';
+import CopyArticleButton from '@/components/articles/CopyArticleButton';
 import ReadingProgress from '@/components/articles/ReadingProgress';
 import TableOfContents from '@/components/articles/TableOfContents';
 import RelatedArticles from '@/components/articles/RelatedArticles';
@@ -176,6 +177,12 @@ const ArticleDetail = () => {
                     content={article.content}
                     variant="full"
                   />
+                  <CopyArticleButton
+                    title={article.title}
+                    subtitle={article.subtitle}
+                    content={article.content}
+                    variant="full"
+                  />
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {article.reading_time_minutes} min read
@@ -220,6 +227,11 @@ const ArticleDetail = () => {
                   <BookmarkButton articleId={article.id} />
                   <ShareButton
                     url={articleUrl}
+                    title={article.title}
+                    subtitle={article.subtitle}
+                    content={article.content}
+                  />
+                  <CopyArticleButton
                     title={article.title}
                     subtitle={article.subtitle}
                     content={article.content}
