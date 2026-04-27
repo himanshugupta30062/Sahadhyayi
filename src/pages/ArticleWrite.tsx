@@ -209,9 +209,9 @@ const ArticleWrite = () => {
 
   const handleSave = async (publish: boolean) => {
     if (!user) {
-      // Store draft in sessionStorage and redirect to sign in
       sessionStorage.setItem('article_draft', JSON.stringify({ title, subtitle, content, tags, coverUrl }));
-      navigate(`/signin?redirect=${encodeURIComponent('/articles/write')}`);
+      const redirectTo = isEditMode ? `/articles/edit/${editId}` : '/articles/write';
+      navigate(`/signin?redirect=${encodeURIComponent(redirectTo)}`);
       return;
     }
 
@@ -225,6 +225,21 @@ const ArticleWrite = () => {
       return;
     }
     setErrors({});
+
+    if (isEditMode && editId) {
+      const updated = await updateArticle.mutateAsync({
+        id: editId,
+        title: DOMPurify.sanitize(title.trim()),
+        subtitle: subtitle.trim() ? DOMPurify.sanitize(subtitle.trim()) : null,
+        content: DOMPurify.sanitize(content.trim()),
+        tags,
+        cover_image_url: coverUrl.trim() || null,
+        is_published: publish,
+        // preserve published_at if it was already published; useUpdateArticle only sets it on first publish
+      } as any);
+      navigate(publish ? `/articles/${updated.slug}` : '/articles/my');
+      return;
+    }
 
     await createArticle.mutateAsync({
       title: DOMPurify.sanitize(title.trim()),
