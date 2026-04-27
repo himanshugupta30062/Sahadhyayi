@@ -106,9 +106,10 @@ const ShareButton: React.FC<Props> = ({
           `https://twitter.com/intent/tweet?text=${encodeURIComponent(caption)}&url=${encodedUrl}`,
         );
       } else if (platform === 'facebook') {
-        // Facebook ignores text in sharer; copy caption then open share dialog
+        // Facebook ignores `quote` now and rejects non-public URLs.
+        // Copy caption + URL, then open the sharer with just the URL.
         try {
-          await navigator.clipboard.writeText(caption);
+          await navigator.clipboard.writeText(`${caption}\n\n${fullUrl}`);
           toast({
             title: 'Caption copied!',
             description: 'Paste it in the Facebook share dialog.',
@@ -116,9 +117,7 @@ const ShareButton: React.FC<Props> = ({
         } catch {
           // ignore
         }
-        openShareWindow(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodeURIComponent(caption)}`,
-        );
+        openShareWindow(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`);
       } else if (platform === 'linkedin') {
         // LinkedIn no longer supports prefilled text; copy caption + open dialog
         try {
