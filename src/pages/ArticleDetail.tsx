@@ -15,6 +15,7 @@ import ArticleComments from '@/components/articles/ArticleComments';
 import FollowAuthorButton from '@/components/articles/FollowAuthorButton';
 import BookmarkButton from '@/components/articles/BookmarkButton';
 import ShareButton from '@/components/articles/ShareButton';
+import CopyArticleButton from '@/components/articles/CopyArticleButton';
 import ReadingProgress from '@/components/articles/ReadingProgress';
 import TableOfContents from '@/components/articles/TableOfContents';
 import RelatedArticles from '@/components/articles/RelatedArticles';
