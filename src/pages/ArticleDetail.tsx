@@ -169,7 +169,13 @@ const ArticleDetail = () => {
                 <div className="flex items-center gap-1">
                   <ArticleLikeButton articleId={article.id} />
                   <BookmarkButton articleId={article.id} variant="full" />
-                  <ShareButton url={articleUrl} title={article.title} variant="full" />
+                  <ShareButton
+                    url={articleUrl}
+                    title={article.title}
+                    subtitle={article.subtitle}
+                    content={article.content}
+                    variant="full"
+                  />
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {article.reading_time_minutes} min read
@@ -212,7 +218,12 @@ const ArticleDetail = () => {
                 <div className="flex items-center gap-1 pt-4 border-t border-border">
                   <ArticleLikeButton articleId={article.id} variant="compact" />
                   <BookmarkButton articleId={article.id} />
-                  <ShareButton url={articleUrl} title={article.title} />
+                  <ShareButton
+                    url={articleUrl}
+                    title={article.title}
+                    subtitle={article.subtitle}
+                    content={article.content}
+                  />
                 </div>
               </div>
             </aside>
