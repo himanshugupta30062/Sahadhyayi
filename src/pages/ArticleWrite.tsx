@@ -29,8 +29,11 @@ const articleSchema = z.object({
 
 const ArticleWrite = () => {
   const navigate = useNavigate();
+  const { id: editId } = useParams<{ id: string }>();
+  const isEditMode = !!editId;
   const { user } = useAuth();
   const createArticle = useCreateArticle();
+  const updateArticle = useUpdateArticle();
 
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
@@ -41,10 +44,43 @@ const ArticleWrite = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [loadingArticle, setLoadingArticle] = useState(isEditMode);
+  const [originalIsPublished, setOriginalIsPublished] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Restore draft from sessionStorage (after sign-in redirect)
+  // Load existing article when editing
+  useEffect(() => {
+    if (!isEditMode || !editId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await (supabase as any)
+        .from('articles')
+        .select('*')
+        .eq('id', editId)
+        .single();
+      if (cancelled) return;
+      if (error || !data) {
+        navigate('/articles/my', { replace: true });
+        return;
+      }
+      if (user && data.user_id !== user.id) {
+        navigate(`/articles/${data.slug}`, { replace: true });
+        return;
+      }
+      setTitle(data.title || '');
+      setSubtitle(data.subtitle || '');
+      setContent(data.content || '');
+      setTags(data.tags || []);
+      setCoverUrl(data.cover_image_url || '');
+      setOriginalIsPublished(!!data.is_published);
+      setLoadingArticle(false);
+    })();
+    return () => { cancelled = true; };
+  }, [isEditMode, editId, user, navigate]);
+
+  // Restore draft from sessionStorage (after sign-in redirect) — create mode only
   React.useEffect(() => {
+    if (isEditMode) return;
     const draft = sessionStorage.getItem('article_draft');
     if (draft) {
       try {
@@ -57,7 +93,7 @@ const ArticleWrite = () => {
       } catch { /* ignore */ }
       sessionStorage.removeItem('article_draft');
     }
-  }, []);
+  }, [isEditMode]);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
