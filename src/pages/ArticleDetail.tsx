@@ -186,9 +186,18 @@ const ArticleDetail = () => {
                     variant="full"
                   />
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {article.reading_time_minutes} min read
-                </span>
+                <div className="flex items-center gap-3">
+                  {user?.id === article.user_id && (
+                    <Link to={`/articles/edit/${article.id}`}>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Pencil className="w-4 h-4" /> Edit
+                      </Button>
+                    </Link>
+                  )}
+                  <span className="text-xs text-muted-foreground">
+                    {article.reading_time_minutes} min read
+                  </span>
+                </div>
               </div>
 
               {/* Author footer card */}
