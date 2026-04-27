@@ -1,7 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import { useCreateArticle } from '@/hooks/useArticles';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useCreateArticle, useUpdateArticle } from '@/hooks/useArticles';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
