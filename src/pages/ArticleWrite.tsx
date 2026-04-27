@@ -180,12 +180,18 @@ const ArticleWrite = () => {
 
   React.useEffect(() => {
     if (!user) {
-      navigate('/signin?redirect=%2Farticles%2Fwrite', { replace: true });
+      const redirectTo = isEditMode ? `/articles/edit/${editId}` : '/articles/write';
+      navigate(`/signin?redirect=${encodeURIComponent(redirectTo)}`, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, isEditMode, editId]);
 
-  if (!user) {
-    return null;
+  if (!user) return null;
+  if (loadingArticle) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Loading article...
+      </div>
+    );
   }
 
   const addTag = () => {
