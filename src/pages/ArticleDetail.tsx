@@ -231,6 +231,11 @@ const ArticleDetail = () => {
                     subtitle={article.subtitle}
                     content={article.content}
                   />
+                  <CopyArticleButton
+                    title={article.title}
+                    subtitle={article.subtitle}
+                    content={article.content}
+                  />
                 </div>
               </div>
             </aside>
