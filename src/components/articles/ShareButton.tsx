@@ -1,30 +1,59 @@
 import React, { useState } from 'react';
-import { Share2, Link as LinkIcon, Twitter, Facebook, Linkedin, Check } from 'lucide-react';
+import {
+  Share2,
+  Link as LinkIcon,
+  Twitter,
+  Facebook,
+  Linkedin,
+  Instagram,
+  Check,
+  Sparkles,
+  Loader2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+
+type Platform = 'twitter' | 'facebook' | 'linkedin' | 'instagram';
 
 interface Props {
   url: string;
   title: string;
+  subtitle?: string;
+  content?: string;
   variant?: 'icon' | 'full';
   className?: string;
 }
 
-const ShareButton: React.FC<Props> = ({ url, title, variant = 'icon', className }) => {
+const ShareButton: React.FC<Props> = ({
+  url,
+  title,
+  subtitle,
+  content,
+  variant = 'icon',
+  className,
+}) => {
   const [copied, setCopied] = useState(false);
+  const [generating, setGenerating] = useState<Platform | null>(null);
 
   const fullUrl = url.startsWith('http')
     ? url
     : `${typeof window !== 'undefined' ? window.location.origin : ''}${url}`;
   const encodedUrl = encodeURIComponent(fullUrl);
   const encodedTitle = encodeURIComponent(title);
+
+  const openShareWindow = (shareUrl: string) => {
+    window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=600');
+  };
 
   const handleNativeShare = async () => {
     if (navigator.share) {
@@ -47,6 +76,77 @@ const ShareButton: React.FC<Props> = ({ url, title, variant = 'icon', className 
     }
   };
 
+  const generateCaption = async (platform: Platform): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-share-caption', {
+        body: { platform, title, subtitle, content, url: fullUrl },
+      });
+      if (error) throw error;
+      const caption = (data as any)?.caption?.trim();
+      if (!caption) throw new Error('No caption returned');
+      return caption;
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to generate caption';
+      toast({ title: 'AI caption failed', description: msg, variant: 'destructive' });
+      return null;
+    }
+  };
+
+  const shareWithAI = async (platform: Platform) => {
+    setGenerating(platform);
+    try {
+      const caption = await generateCaption(platform);
+      if (!caption) return;
+
+      if (platform === 'twitter') {
+        // Tweet text + URL appended automatically via &url
+        openShareWindow(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(caption)}&url=${encodedUrl}`,
+        );
+      } else if (platform === 'facebook') {
+        // Facebook ignores text in sharer; copy caption then open share dialog
+        try {
+          await navigator.clipboard.writeText(caption);
+          toast({
+            title: 'Caption copied!',
+            description: 'Paste it in the Facebook share dialog.',
+          });
+        } catch {
+          // ignore
+        }
+        openShareWindow(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodeURIComponent(caption)}`,
+        );
+      } else if (platform === 'linkedin') {
+        // LinkedIn no longer supports prefilled text; copy caption + open dialog
+        try {
+          await navigator.clipboard.writeText(`${caption}\n\n${fullUrl}`);
+          toast({
+            title: 'Caption copied!',
+            description: 'Paste it into your LinkedIn post.',
+          });
+        } catch {
+          // ignore
+        }
+        openShareWindow(`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`);
+      } else if (platform === 'instagram') {
+        // Instagram has no web share intent — copy and open Instagram
+        try {
+          await navigator.clipboard.writeText(`${caption}\n\n${fullUrl}`);
+          toast({
+            title: 'Caption copied!',
+            description: 'Open Instagram and paste it into your post or story.',
+          });
+        } catch {
+          toast({ title: 'Failed to copy caption', variant: 'destructive' });
+        }
+        window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+      }
+    } finally {
+      setGenerating(null);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -60,23 +160,86 @@ const ShareButton: React.FC<Props> = ({ url, title, variant = 'icon', className 
           {variant === 'full' && <span className="text-sm font-medium">Share</span>}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-64">
         {typeof navigator !== 'undefined' && 'share' in navigator && (
           <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer">
             <Share2 className="w-4 h-4 mr-2" /> Share...
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={copyLink} className="cursor-pointer">
-          {copied ? <Check className="w-4 h-4 mr-2 text-green-600" /> : <LinkIcon className="w-4 h-4 mr-2" />}
+          {copied ? (
+            <Check className="w-4 h-4 mr-2 text-green-600" />
+          ) : (
+            <LinkIcon className="w-4 h-4 mr-2" />
+          )}
           {copied ? 'Copied!' : 'Copy link'}
         </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--brand-primary))]">
+          <Sparkles className="w-3.5 h-3.5" /> Share with AI caption
+        </DropdownMenuLabel>
+
+        <DropdownMenuItem
+          onClick={() => shareWithAI('twitter')}
+          disabled={generating !== null}
+          className="cursor-pointer"
+        >
+          {generating === 'twitter' ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Twitter className="w-4 h-4 mr-2" />
+          )}
+          X / Twitter
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => shareWithAI('facebook')}
+          disabled={generating !== null}
+          className="cursor-pointer"
+        >
+          {generating === 'facebook' ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Facebook className="w-4 h-4 mr-2" />
+          )}
+          Facebook
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => shareWithAI('linkedin')}
+          disabled={generating !== null}
+          className="cursor-pointer"
+        >
+          {generating === 'linkedin' ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Linkedin className="w-4 h-4 mr-2" />
+          )}
+          LinkedIn
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => shareWithAI('instagram')}
+          disabled={generating !== null}
+          className="cursor-pointer"
+        >
+          {generating === 'instagram' ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Instagram className="w-4 h-4 mr-2" />
+          )}
+          Instagram
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+          Quick share (link only)
+        </DropdownMenuLabel>
         <DropdownMenuItem asChild className="cursor-pointer">
           <a
             href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Twitter className="w-4 h-4 mr-2" /> Twitter / X
+            <Twitter className="w-4 h-4 mr-2" /> X / Twitter
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="cursor-pointer">
