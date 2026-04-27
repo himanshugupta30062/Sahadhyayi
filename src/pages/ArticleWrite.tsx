@@ -1,7 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import { useCreateArticle } from '@/hooks/useArticles';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useCreateArticle, useUpdateArticle } from '@/hooks/useArticles';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,8 +29,11 @@ const articleSchema = z.object({
 
 const ArticleWrite = () => {
   const navigate = useNavigate();
+  const { id: editId } = useParams<{ id: string }>();
+  const isEditMode = !!editId;
   const { user } = useAuth();
   const createArticle = useCreateArticle();
+  const updateArticle = useUpdateArticle();
 
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
@@ -41,10 +44,43 @@ const ArticleWrite = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [loadingArticle, setLoadingArticle] = useState(isEditMode);
+  const [originalIsPublished, setOriginalIsPublished] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Restore draft from sessionStorage (after sign-in redirect)
+  // Load existing article when editing
+  useEffect(() => {
+    if (!isEditMode || !editId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await (supabase as any)
+        .from('articles')
+        .select('*')
+        .eq('id', editId)
+        .single();
+      if (cancelled) return;
+      if (error || !data) {
+        navigate('/articles/my', { replace: true });
+        return;
+      }
+      if (user && data.user_id !== user.id) {
+        navigate(`/articles/${data.slug}`, { replace: true });
+        return;
+      }
+      setTitle(data.title || '');
+      setSubtitle(data.subtitle || '');
+      setContent(data.content || '');
+      setTags(data.tags || []);
+      setCoverUrl(data.cover_image_url || '');
+      setOriginalIsPublished(!!data.is_published);
+      setLoadingArticle(false);
+    })();
+    return () => { cancelled = true; };
+  }, [isEditMode, editId, user, navigate]);
+
+  // Restore draft from sessionStorage (after sign-in redirect) — create mode only
   React.useEffect(() => {
+    if (isEditMode) return;
     const draft = sessionStorage.getItem('article_draft');
     if (draft) {
       try {
@@ -57,7 +93,7 @@ const ArticleWrite = () => {
       } catch { /* ignore */ }
       sessionStorage.removeItem('article_draft');
     }
-  }, []);
+  }, [isEditMode]);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -144,12 +180,18 @@ const ArticleWrite = () => {
 
   React.useEffect(() => {
     if (!user) {
-      navigate('/signin?redirect=%2Farticles%2Fwrite', { replace: true });
+      const redirectTo = isEditMode ? `/articles/edit/${editId}` : '/articles/write';
+      navigate(`/signin?redirect=${encodeURIComponent(redirectTo)}`, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, isEditMode, editId]);
 
-  if (!user) {
-    return null;
+  if (!user) return null;
+  if (loadingArticle) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Loading article...
+      </div>
+    );
   }
 
   const addTag = () => {
@@ -167,9 +209,9 @@ const ArticleWrite = () => {
 
   const handleSave = async (publish: boolean) => {
     if (!user) {
-      // Store draft in sessionStorage and redirect to sign in
       sessionStorage.setItem('article_draft', JSON.stringify({ title, subtitle, content, tags, coverUrl }));
-      navigate(`/signin?redirect=${encodeURIComponent('/articles/write')}`);
+      const redirectTo = isEditMode ? `/articles/edit/${editId}` : '/articles/write';
+      navigate(`/signin?redirect=${encodeURIComponent(redirectTo)}`);
       return;
     }
 
@@ -183,6 +225,21 @@ const ArticleWrite = () => {
       return;
     }
     setErrors({});
+
+    if (isEditMode && editId) {
+      const updated = await updateArticle.mutateAsync({
+        id: editId,
+        title: DOMPurify.sanitize(title.trim()),
+        subtitle: subtitle.trim() ? DOMPurify.sanitize(subtitle.trim()) : null,
+        content: DOMPurify.sanitize(content.trim()),
+        tags,
+        cover_image_url: coverUrl.trim() || null,
+        is_published: publish,
+        // preserve published_at if it was already published; useUpdateArticle only sets it on first publish
+      } as any);
+      navigate(publish ? `/articles/${updated.slug}` : '/articles/my');
+      return;
+    }
 
     await createArticle.mutateAsync({
       title: DOMPurify.sanitize(title.trim()),
@@ -198,7 +255,10 @@ const ArticleWrite = () => {
 
   return (
     <>
-      <SEO title="Write Article - Sahadhyayi" description="Write and share your article with the Sahadhyayi community." />
+      <SEO
+        title={isEditMode ? 'Edit Article - Sahadhyayi' : 'Write Article - Sahadhyayi'}
+        description={isEditMode ? 'Update your article on Sahadhyayi.' : 'Write and share your article with the Sahadhyayi community.'}
+      />
       <div className="min-h-screen bg-background">
         {/* Top bar */}
         <div className="sticky top-16 z-40 bg-background/95 backdrop-blur border-b border-border">
@@ -208,7 +268,7 @@ const ArticleWrite = () => {
             </Button>
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground hidden sm:inline">
-                {wordCount} words · {readingTime} min read
+                {isEditMode ? 'Editing · ' : ''}{wordCount} words · {readingTime} min read
               </span>
               <Button variant="ghost" size="sm" onClick={() => setPreview(!preview)} className="gap-1">
                 {preview ? <PenLine className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -218,7 +278,7 @@ const ArticleWrite = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => handleSave(false)}
-                disabled={createArticle.isPending}
+                disabled={createArticle.isPending || updateArticle.isPending}
                 className="gap-1"
               >
                 <Save className="w-4 h-4" /> <span className="hidden sm:inline">Save Draft</span>
@@ -226,10 +286,10 @@ const ArticleWrite = () => {
               <Button
                 size="sm"
                 onClick={() => handleSave(true)}
-                disabled={createArticle.isPending}
+                disabled={createArticle.isPending || updateArticle.isPending}
                 className="bg-brand-primary text-white gap-1"
               >
-                <Send className="w-4 h-4" /> Publish
+                <Send className="w-4 h-4" /> {isEditMode && originalIsPublished ? 'Update' : 'Publish'}
               </Button>
             </div>
           </div>

@@ -337,6 +337,16 @@ const App = memo(() => {
                           }
                         />
                         <Route
+                          path="/articles/edit/:id"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <ArticleWrite />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
                           path="/articles/my"
                           element={
                             <ProtectedRoute>

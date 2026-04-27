@@ -5,7 +5,8 @@ import { useArticleBySlug } from '@/hooks/useArticles';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Clock, Eye, Calendar } from 'lucide-react';
+import { ArrowLeft, Clock, Eye, Calendar, Pencil } from 'lucide-react';
+import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
 import BookFlipLoader from '@/components/ui/BookFlipLoader';
@@ -26,6 +27,7 @@ const ArticleDetail = () => {
   const { data: article, isLoading, error } = useArticleBySlug(slug);
   const articleRef = useRef<HTMLElement>(null);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Increment view count once per article load (deduped per session)
   useEffect(() => {
@@ -184,9 +186,18 @@ const ArticleDetail = () => {
                     variant="full"
                   />
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {article.reading_time_minutes} min read
-                </span>
+                <div className="flex items-center gap-3">
+                  {user?.id === article.user_id && (
+                    <Link to={`/articles/edit/${article.id}`}>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Pencil className="w-4 h-4" /> Edit
+                      </Button>
+                    </Link>
+                  )}
+                  <span className="text-xs text-muted-foreground">
+                    {article.reading_time_minutes} min read
+                  </span>
+                </div>
               </div>
 
               {/* Author footer card */}
