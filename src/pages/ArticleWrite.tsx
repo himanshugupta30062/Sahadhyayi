@@ -255,7 +255,10 @@ const ArticleWrite = () => {
 
   return (
     <>
-      <SEO title="Write Article - Sahadhyayi" description="Write and share your article with the Sahadhyayi community." />
+      <SEO
+        title={isEditMode ? 'Edit Article - Sahadhyayi' : 'Write Article - Sahadhyayi'}
+        description={isEditMode ? 'Update your article on Sahadhyayi.' : 'Write and share your article with the Sahadhyayi community.'}
+      />
       <div className="min-h-screen bg-background">
         {/* Top bar */}
         <div className="sticky top-16 z-40 bg-background/95 backdrop-blur border-b border-border">
@@ -265,7 +268,7 @@ const ArticleWrite = () => {
             </Button>
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground hidden sm:inline">
-                {wordCount} words · {readingTime} min read
+                {isEditMode ? 'Editing · ' : ''}{wordCount} words · {readingTime} min read
               </span>
               <Button variant="ghost" size="sm" onClick={() => setPreview(!preview)} className="gap-1">
                 {preview ? <PenLine className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -275,7 +278,7 @@ const ArticleWrite = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => handleSave(false)}
-                disabled={createArticle.isPending}
+                disabled={createArticle.isPending || updateArticle.isPending}
                 className="gap-1"
               >
                 <Save className="w-4 h-4" /> <span className="hidden sm:inline">Save Draft</span>
@@ -283,10 +286,10 @@ const ArticleWrite = () => {
               <Button
                 size="sm"
                 onClick={() => handleSave(true)}
-                disabled={createArticle.isPending}
+                disabled={createArticle.isPending || updateArticle.isPending}
                 className="bg-brand-primary text-white gap-1"
               >
-                <Send className="w-4 h-4" /> Publish
+                <Send className="w-4 h-4" /> {isEditMode && originalIsPublished ? 'Update' : 'Publish'}
               </Button>
             </div>
           </div>
