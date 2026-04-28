@@ -93,7 +93,7 @@ const SocialMedia = () => {
                 <Sparkles className="w-5 h-5 text-brand-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Community</h1>
+                <h1 className="text-2xl font-bold text-foreground">Social Media</h1>
                 <p className="text-sm text-muted-foreground">Connect, share, and discover with fellow readers</p>
               </div>
             </div>
