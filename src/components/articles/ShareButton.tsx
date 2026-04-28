@@ -212,6 +212,22 @@ const ShareButton: React.FC<Props> = ({
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => shareWithAI('sahadhyayi')}
+          disabled={generating !== null}
+          className="cursor-pointer bg-[hsl(var(--brand-primary))]/5 focus:bg-[hsl(var(--brand-primary))]/10"
+        >
+          {generating === 'sahadhyayi' ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin text-[hsl(var(--brand-primary))]" />
+          ) : (
+            <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
+          )}
+          <span className="font-semibold text-[hsl(var(--brand-primary))]">
+            Post on Sahadhyayi
+          </span>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
         <DropdownMenuLabel className="flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--brand-primary))]">
           <Sparkles className="w-3.5 h-3.5" /> Share with AI caption
         </DropdownMenuLabel>
