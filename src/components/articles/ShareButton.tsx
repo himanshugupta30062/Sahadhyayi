@@ -9,6 +9,7 @@ import {
   Check,
   Sparkles,
   Loader2,
+  BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,14 +23,17 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/authHelpers';
+import { useNavigate } from 'react-router-dom';
 
-type Platform = 'twitter' | 'facebook' | 'linkedin' | 'instagram';
+type Platform = 'twitter' | 'facebook' | 'linkedin' | 'instagram' | 'sahadhyayi';
 
 interface Props {
   url: string;
   title: string;
   subtitle?: string;
   content?: string;
+  coverImageUrl?: string;
   variant?: 'icon' | 'full';
   className?: string;
 }
