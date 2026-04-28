@@ -43,11 +43,14 @@ const ShareButton: React.FC<Props> = ({
   title,
   subtitle,
   content,
+  coverImageUrl,
   variant = 'icon',
   className,
 }) => {
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState<Platform | null>(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Always use the production domain for share URLs so external crawlers
   // (Facebook, LinkedIn, X) can fetch the page — preview/localhost URLs
