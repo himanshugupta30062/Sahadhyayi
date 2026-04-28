@@ -177,6 +177,7 @@ const ArticleDetail = () => {
                     title={article.title}
                     subtitle={article.subtitle}
                     content={article.content}
+                    coverImageUrl={article.cover_image_url}
                     variant="full"
                   />
                   <CopyArticleButton
@@ -241,6 +242,7 @@ const ArticleDetail = () => {
                     title={article.title}
                     subtitle={article.subtitle}
                     content={article.content}
+                    coverImageUrl={article.cover_image_url}
                   />
                   <CopyArticleButton
                     title={article.title}

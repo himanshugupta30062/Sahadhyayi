@@ -9,6 +9,7 @@ import {
   Check,
   Sparkles,
   Loader2,
+  BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,14 +23,17 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/authHelpers';
+import { useNavigate } from 'react-router-dom';
 
-type Platform = 'twitter' | 'facebook' | 'linkedin' | 'instagram';
+type Platform = 'twitter' | 'facebook' | 'linkedin' | 'instagram' | 'sahadhyayi';
 
 interface Props {
   url: string;
   title: string;
   subtitle?: string;
   content?: string;
+  coverImageUrl?: string;
   variant?: 'icon' | 'full';
   className?: string;
 }
@@ -39,11 +43,14 @@ const ShareButton: React.FC<Props> = ({
   title,
   subtitle,
   content,
+  coverImageUrl,
   variant = 'icon',
   className,
 }) => {
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState<Platform | null>(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Always use the production domain for share URLs so external crawlers
   // (Facebook, LinkedIn, X) can fetch the page — preview/localhost URLs
@@ -142,6 +149,34 @@ const ShareButton: React.FC<Props> = ({
           toast({ title: 'Failed to copy caption', variant: 'destructive' });
         }
         window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+      } else if (platform === 'sahadhyayi') {
+        if (!user?.id) {
+          toast({
+            title: 'Sign in required',
+            description: 'Please sign in to share on Sahadhyayi.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        const postContent = `📖 ${title}\n\n${caption}\n\n🔗 Read here: ${fullUrl}`;
+        const { error } = await supabase.from('posts').insert({
+          user_id: user.id,
+          content: postContent,
+          image_url: coverImageUrl ?? null,
+        });
+        if (error) {
+          toast({
+            title: 'Failed to share',
+            description: error.message,
+            variant: 'destructive',
+          });
+          return;
+        }
+        toast({
+          title: 'Shared on Sahadhyayi! 🎉',
+          description: 'Your article post is now live on the social feed.',
+        });
+        setTimeout(() => navigate('/social'), 800);
       }
     } finally {
       setGenerating(null);
@@ -174,6 +209,22 @@ const ShareButton: React.FC<Props> = ({
             <LinkIcon className="w-4 h-4 mr-2" />
           )}
           {copied ? 'Copied!' : 'Copy link'}
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => shareWithAI('sahadhyayi')}
+          disabled={generating !== null}
+          className="cursor-pointer bg-[hsl(var(--brand-primary))]/5 focus:bg-[hsl(var(--brand-primary))]/10"
+        >
+          {generating === 'sahadhyayi' ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin text-[hsl(var(--brand-primary))]" />
+          ) : (
+            <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
+          )}
+          <span className="font-semibold text-[hsl(var(--brand-primary))]">
+            Post on Sahadhyayi
+          </span>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
