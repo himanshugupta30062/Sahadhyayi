@@ -149,6 +149,34 @@ const ShareButton: React.FC<Props> = ({
           toast({ title: 'Failed to copy caption', variant: 'destructive' });
         }
         window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+      } else if (platform === 'sahadhyayi') {
+        if (!user?.id) {
+          toast({
+            title: 'Sign in required',
+            description: 'Please sign in to share on Sahadhyayi.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        const postContent = `📖 ${title}\n\n${caption}\n\n🔗 Read here: ${fullUrl}`;
+        const { error } = await supabase.from('posts').insert({
+          user_id: user.id,
+          content: postContent,
+          image_url: coverImageUrl ?? null,
+        });
+        if (error) {
+          toast({
+            title: 'Failed to share',
+            description: error.message,
+            variant: 'destructive',
+          });
+          return;
+        }
+        toast({
+          title: 'Shared on Sahadhyayi! 🎉',
+          description: 'Your article post is now live on the social feed.',
+        });
+        setTimeout(() => navigate('/social'), 800);
       }
     } finally {
       setGenerating(null);
