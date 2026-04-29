@@ -546,6 +546,89 @@ export const ReadingGroups = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Group Chat */}
+      {chatGroupId && (
+        <GroupChatWindow
+          groupId={chatGroupId}
+          isOpen={!!chatGroupId}
+          onClose={() => setChatGroupId(null)}
+        />
+      )}
+
+      {/* Edit Group Dialog */}
+      <Dialog open={!!editGroup} onOpenChange={(open) => !open && setEditGroup(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Group</DialogTitle>
+          </DialogHeader>
+          {editGroup && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-group-name">Group Name</Label>
+                <Input
+                  id="edit-group-name"
+                  value={editGroup.name}
+                  onChange={(e) => setEditGroup({ ...editGroup, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-group-description">Description</Label>
+                <Textarea
+                  id="edit-group-description"
+                  value={editGroup.description}
+                  onChange={(e) => setEditGroup({ ...editGroup, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditGroup(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-orange-600 hover:bg-orange-700"
+                  disabled={updateGroupMutation.isPending || !editGroup.name.trim()}
+                  onClick={async () => {
+                    await updateGroupMutation.mutateAsync({
+                      groupId: editGroup.id,
+                      name: editGroup.name,
+                      description: editGroup.description,
+                    });
+                    setEditGroup(null);
+                  }}
+                >
+                  Save changes
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Group Confirm */}
+      <AlertDialog open={!!deleteGroupId} onOpenChange={(open) => !open && setDeleteGroupId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this group?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the group and all its memberships. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={async () => {
+                if (!deleteGroupId) return;
+                await deleteGroupMutation.mutateAsync(deleteGroupId);
+                setDeleteGroupId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
