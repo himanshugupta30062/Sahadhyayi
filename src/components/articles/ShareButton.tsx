@@ -87,8 +87,10 @@ const ShareButton: React.FC<Props> = ({
 
   const generateCaption = async (platform: Platform): Promise<string | null> => {
     try {
+      // The edge function only supports external platforms; map internal "sahadhyayi" to facebook-style copy.
+      const apiPlatform = platform === 'sahadhyayi' ? 'facebook' : platform;
       const { data, error } = await supabase.functions.invoke('generate-share-caption', {
-        body: { platform, title, subtitle, content, url: fullUrl },
+        body: { platform: apiPlatform, title, subtitle, content, url: fullUrl },
       });
       if (error) throw error;
       const caption = (data as any)?.caption?.trim();
