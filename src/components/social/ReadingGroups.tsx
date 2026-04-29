@@ -116,8 +116,16 @@ export const ReadingGroups = () => {
   const { toast } = useToast();
   
   // Use real data from database
+  const { user } = useAuth();
   const { data: userGroups = [] } = useUserJoinedGroups();
   const createGroupMutation = useCreateGroup();
+  const updateGroupMutation = useUpdateGroup();
+  const deleteGroupMutation = useDeleteGroup();
+
+  // Chat & admin dialogs
+  const [chatGroupId, setChatGroupId] = useState<string | null>(null);
+  const [editGroup, setEditGroup] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
 
   const filteredGroups = groups.filter(group =>
     (group.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
