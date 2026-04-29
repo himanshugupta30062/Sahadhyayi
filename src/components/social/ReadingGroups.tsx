@@ -356,13 +356,45 @@ export const ReadingGroups = () => {
                               {group.description || 'No description available'}
                             </p>
                           </div>
-                          <Button
-                            variant="outline"
-                            className="border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl w-full sm:w-auto whitespace-nowrap"
-                            onClick={() => navigate(`/groups/${group.id}`)}
-                          >
-                            View Group
-                          </Button>
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <Button
+                              variant="outline"
+                              className="border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl flex-1 sm:flex-none whitespace-nowrap"
+                              onClick={() => navigate(`/groups/${group.id}`)}
+                            >
+                              View Group
+                            </Button>
+                            {(membership.role === 'admin' || group.created_by === user?.id) && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="icon" className="rounded-xl" aria-label="Group settings">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      setEditGroup({
+                                        id: group.id,
+                                        name: group.name || '',
+                                        description: group.description || '',
+                                      })
+                                    }
+                                  >
+                                    <Pencil className="w-4 h-4 mr-2" /> Edit group
+                                  </DropdownMenuItem>
+                                  {group.created_by === user?.id && (
+                                    <DropdownMenuItem
+                                      className="text-red-600 focus:text-red-700"
+                                      onClick={() => setDeleteGroupId(group.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" /> Delete group
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
                         </div>
                         
                         {/* Group Stats */}
@@ -378,7 +410,12 @@ export const ReadingGroups = () => {
                         </div>
                         
                         <div className="flex gap-2 mt-3">
-                          <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-orange-600 hover:text-orange-700"
+                            onClick={() => setChatGroupId(group.id)}
+                          >
                             <MessageCircle className="w-4 h-4 mr-1" />
                             Group Chat
                           </Button>
