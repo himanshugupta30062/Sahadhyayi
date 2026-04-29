@@ -8,10 +8,29 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, Plus, Search, Calendar, MapPin, Book, MessageCircle } from 'lucide-react';
+import { Users, Plus, Search, Calendar, MapPin, Book, MessageCircle, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
-import { useCreateGroup } from '@/hooks/useGroupManagement';
+import { useCreateGroup, useDeleteGroup, useUpdateGroup } from '@/hooks/useGroupManagement';
+import { useAuth } from '@/contexts/authHelpers';
+import { GroupChatWindow } from './GroupChatWindow';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Label } from '@/components/ui/label';
 
 interface ReadingGroup {
   id: string;
