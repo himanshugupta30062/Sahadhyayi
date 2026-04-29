@@ -8,10 +8,29 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, Plus, Search, Calendar, MapPin, Book, MessageCircle } from 'lucide-react';
+import { Users, Plus, Search, Calendar, MapPin, Book, MessageCircle, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
-import { useCreateGroup } from '@/hooks/useGroupManagement';
+import { useCreateGroup, useDeleteGroup, useUpdateGroup } from '@/hooks/useGroupManagement';
+import { useAuth } from '@/contexts/authHelpers';
+import { GroupChatWindow } from './GroupChatWindow';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Label } from '@/components/ui/label';
 
 interface ReadingGroup {
   id: string;
@@ -97,8 +116,16 @@ export const ReadingGroups = () => {
   const { toast } = useToast();
   
   // Use real data from database
+  const { user } = useAuth();
   const { data: userGroups = [] } = useUserJoinedGroups();
   const createGroupMutation = useCreateGroup();
+  const updateGroupMutation = useUpdateGroup();
+  const deleteGroupMutation = useDeleteGroup();
+
+  // Chat & admin dialogs
+  const [chatGroupId, setChatGroupId] = useState<string | null>(null);
+  const [editGroup, setEditGroup] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
 
   const filteredGroups = groups.filter(group =>
     (group.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -329,13 +356,45 @@ export const ReadingGroups = () => {
                               {group.description || 'No description available'}
                             </p>
                           </div>
-                          <Button
-                            variant="outline"
-                            className="border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl w-full sm:w-auto whitespace-nowrap"
-                            onClick={() => navigate(`/groups/${group.id}`)}
-                          >
-                            View Group
-                          </Button>
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <Button
+                              variant="outline"
+                              className="border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl flex-1 sm:flex-none whitespace-nowrap"
+                              onClick={() => navigate(`/groups/${group.id}`)}
+                            >
+                              View Group
+                            </Button>
+                            {(membership.role === 'admin' || group.created_by === user?.id) && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="icon" className="rounded-xl" aria-label="Group settings">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      setEditGroup({
+                                        id: group.id,
+                                        name: group.name || '',
+                                        description: group.description || '',
+                                      })
+                                    }
+                                  >
+                                    <Pencil className="w-4 h-4 mr-2" /> Edit group
+                                  </DropdownMenuItem>
+                                  {group.created_by === user?.id && (
+                                    <DropdownMenuItem
+                                      className="text-red-600 focus:text-red-700"
+                                      onClick={() => setDeleteGroupId(group.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" /> Delete group
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
                         </div>
                         
                         {/* Group Stats */}
@@ -351,7 +410,12 @@ export const ReadingGroups = () => {
                         </div>
                         
                         <div className="flex gap-2 mt-3">
-                          <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-orange-600 hover:text-orange-700"
+                            onClick={() => setChatGroupId(group.id)}
+                          >
                             <MessageCircle className="w-4 h-4 mr-1" />
                             Group Chat
                           </Button>
@@ -482,6 +546,89 @@ export const ReadingGroups = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Group Chat */}
+      {chatGroupId && (
+        <GroupChatWindow
+          groupId={chatGroupId}
+          isOpen={!!chatGroupId}
+          onClose={() => setChatGroupId(null)}
+        />
+      )}
+
+      {/* Edit Group Dialog */}
+      <Dialog open={!!editGroup} onOpenChange={(open) => !open && setEditGroup(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Group</DialogTitle>
+          </DialogHeader>
+          {editGroup && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-group-name">Group Name</Label>
+                <Input
+                  id="edit-group-name"
+                  value={editGroup.name}
+                  onChange={(e) => setEditGroup({ ...editGroup, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-group-description">Description</Label>
+                <Textarea
+                  id="edit-group-description"
+                  value={editGroup.description}
+                  onChange={(e) => setEditGroup({ ...editGroup, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditGroup(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-orange-600 hover:bg-orange-700"
+                  disabled={updateGroupMutation.isPending || !editGroup.name.trim()}
+                  onClick={async () => {
+                    await updateGroupMutation.mutateAsync({
+                      groupId: editGroup.id,
+                      name: editGroup.name,
+                      description: editGroup.description,
+                    });
+                    setEditGroup(null);
+                  }}
+                >
+                  Save changes
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Group Confirm */}
+      <AlertDialog open={!!deleteGroupId} onOpenChange={(open) => !open && setDeleteGroupId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this group?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the group and all its memberships. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={async () => {
+                if (!deleteGroupId) return;
+                await deleteGroupMutation.mutateAsync(deleteGroupId);
+                setDeleteGroupId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

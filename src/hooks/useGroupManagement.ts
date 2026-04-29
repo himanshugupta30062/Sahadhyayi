@@ -209,3 +209,40 @@ export const useAddGroupMember = () => {
     },
   });
 };
+
+export const useUpdateGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, name, description }: { groupId: string; name?: string; description?: string | null }) => {
+      const updates: Record<string, unknown> = {};
+      if (name !== undefined) updates.name = name.trim();
+      if (description !== undefined) updates.description = (description ?? '').toString().trim() || null;
+      const { error } = await supabase.from('group_chats').update(updates).eq('id', groupId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Group updated');
+      queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+    },
+    onError: (error: Error) => toast.error(`Failed to update group: ${error.message}`),
+  });
+};
+
+export const useDeleteGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (groupId: string) => {
+      // Remove members first to clean up
+      await supabase.from('group_chat_members').delete().eq('group_id', groupId);
+      const { error } = await supabase.from('group_chats').delete().eq('id', groupId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Group deleted');
+      queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+    },
+    onError: (error: Error) => toast.error(`Failed to delete group: ${error.message}`),
+  });
+};
