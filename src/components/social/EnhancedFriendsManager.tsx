@@ -168,9 +168,11 @@ export const EnhancedFriendsManager = () => {
                       />
                     ))
                   ) : !isSearching ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <Search className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No users found matching "{searchTerm}"</p>
+                    <div className="text-center py-12 text-muted-foreground">
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-muted flex items-center justify-center">
+                        <Search className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground">No users found matching "{searchTerm}"</p>
                       <p className="text-xs">Try searching with different keywords</p>
                     </div>
                   ) : null
