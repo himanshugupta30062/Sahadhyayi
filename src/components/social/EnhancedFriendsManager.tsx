@@ -179,8 +179,8 @@ export const EnhancedFriendsManager = () => {
                   <>
                     {isLoadingUsers ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                        <span className="ml-2 text-gray-500">Loading users...</span>
+                        <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
+                        <span className="ml-2 text-muted-foreground">Loading users...</span>
                       </div>
                     ) : visibleAllUsers.length > 0 ? (
                       visibleAllUsers.map((user) => (
@@ -195,9 +195,11 @@ export const EnhancedFriendsManager = () => {
                         />
                       ))
                     ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">No users found</p>
+                      <div className="text-center py-12 text-muted-foreground">
+                        <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+                          <Users className="w-8 h-8 text-brand-primary" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">No users found</p>
                       </div>
                     )}
                   </>
