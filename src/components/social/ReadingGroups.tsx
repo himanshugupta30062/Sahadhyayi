@@ -203,22 +203,24 @@ export const ReadingGroups = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
-        <CardHeader className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="w-5 h-5 text-orange-600" />
-                Reading Groups
-              </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                Join or create reading groups to discuss books with fellow enthusiasts
-              </p>
+      <Card className="bg-gradient-to-br from-brand-primary/10 via-card to-brand-secondary/5 border-brand-primary/20 rounded-2xl overflow-hidden">
+        <CardHeader className="p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-button flex items-center justify-center shadow-[var(--shadow-button)] flex-shrink-0">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg text-foreground">Reading Groups</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Join or create groups to discuss books with fellow readers
+                </p>
+              </div>
             </div>
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>
-                <Button className="bg-orange-600 hover:bg-orange-700 rounded-xl">
-                  <Plus className="w-4 h-4 mr-1" />
+                <Button className="bg-gradient-button text-white shadow-[var(--shadow-button)] hover:shadow-[var(--shadow-elevated)] hover:opacity-95 rounded-xl w-full sm:w-auto">
+                  <Plus className="w-4 h-4 mr-1.5" />
                   Create Group
                 </Button>
               </DialogTrigger>
@@ -227,8 +229,8 @@ export const ReadingGroups = () => {
                   <DialogTitle>Create Reading Group</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Group Name</label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Group Name</Label>
                     <Input
                       placeholder="Enter group name"
                       value={newGroup.name}
@@ -236,17 +238,17 @@ export const ReadingGroups = () => {
                       className="rounded-xl"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Description</Label>
                     <Textarea
                       placeholder="Describe your reading group"
                       value={newGroup.description}
                       onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-                      className="rounded-xl"
+                      className="rounded-xl min-h-[90px]"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Members</label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Max Members</Label>
                     <Input
                       type="number"
                       min="5"
@@ -259,23 +261,23 @@ export const ReadingGroups = () => {
                       className="rounded-xl"
                     />
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 pt-1">
                     <input
                       type="checkbox"
                       id="private"
                       checked={newGroup.isPrivate}
                       onChange={(e) => setNewGroup({ ...newGroup, isPrivate: e.target.checked })}
-                      className="rounded"
+                      className="rounded accent-brand-primary"
                     />
-                    <label htmlFor="private" className="text-sm text-gray-700">
+                    <Label htmlFor="private" className="text-sm text-foreground cursor-pointer">
                       Private group (invitation only)
-                    </label>
+                    </Label>
                   </div>
-                  <div className="flex gap-2 pt-4">
+                  <div className="flex gap-2 pt-2">
                     <Button
                       onClick={handleCreateGroup}
                       disabled={createGroupMutation.isPending}
-                      className="flex-1 bg-orange-600 hover:bg-orange-700 rounded-xl"
+                      className="flex-1 bg-gradient-button text-white hover:opacity-95 rounded-xl"
                     >
                       {createGroupMutation.isPending ? 'Creating...' : 'Create Group'}
                     </Button>
@@ -295,15 +297,15 @@ export const ReadingGroups = () => {
       </Card>
 
       {/* Search */}
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
-        <CardContent className="p-4">
+      <Card className="bg-card border-border rounded-2xl">
+        <CardContent className="p-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search groups by name, description, or genre..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-gray-50 border-0 rounded-xl"
+              className="pl-10 bg-muted/40 border-border focus-visible:border-brand-primary focus-visible:ring-2 focus-visible:ring-brand-primary/20 rounded-xl"
             />
           </div>
         </CardContent>
@@ -312,23 +314,26 @@ export const ReadingGroups = () => {
       {/* User's Real Groups */}
       {userGroups.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Your Groups</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-foreground">Your Groups</h3>
+            <Badge variant="secondary" className="bg-brand-primary/10 text-brand-primary border-0">{userGroups.length}</Badge>
+          </div>
           <div className="grid gap-4">
             {userGroups.map((membership) => {
               const group = membership.groups;
               if (!group) return null;
-              
+
               return (
-                <Card key={group.id} className="bg-white shadow-sm border-0 rounded-xl">
+                <Card key={group.id} className="bg-card border-border rounded-2xl hover:shadow-[var(--shadow-elevated)] hover:border-brand-primary/30 transition-all">
                   <CardContent className="p-4">
                     <div className="flex gap-4">
                       {/* Group Image/Avatar */}
-                      <div className="w-20 h-12 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-button flex-shrink-0 flex items-center justify-center text-white font-bold text-xl shadow-[var(--shadow-button)] overflow-hidden">
                         {group.image_url ? (
                           <img
                             src={group.image_url}
                             alt={`${group.name} cover`}
-                            className="w-full h-full rounded-lg object-cover"
+                            className="w-full h-full object-cover"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                               e.currentTarget.parentElement!.querySelector('.fallback-text')?.classList.remove('hidden');
@@ -339,27 +344,28 @@ export const ReadingGroups = () => {
                           {group.name?.charAt(0)?.toUpperCase() || 'G'}
                         </div>
                       </div>
-                      
+
                       {/* Group Info */}
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h3 className="font-semibold text-foreground">{group.name}</h3>
                               {membership.role === 'admin' && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="outline" className="text-[10px] border-brand-primary/40 text-brand-primary">
                                   Admin
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                               {group.description || 'No description available'}
                             </p>
                           </div>
                           <div className="flex items-center gap-2 w-full sm:w-auto">
                             <Button
                               variant="outline"
-                              className="border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl flex-1 sm:flex-none whitespace-nowrap"
+                              size="sm"
+                              className="border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg flex-1 sm:flex-none whitespace-nowrap"
                               onClick={() => navigate(`/groups/${group.id}`)}
                             >
                               View Group
@@ -367,7 +373,7 @@ export const ReadingGroups = () => {
                             {(membership.role === 'admin' || group.created_by === user?.id) && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="icon" className="rounded-xl" aria-label="Group settings">
+                                  <Button variant="outline" size="icon" className="rounded-lg h-9 w-9" aria-label="Group settings">
                                     <MoreVertical className="w-4 h-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -385,7 +391,7 @@ export const ReadingGroups = () => {
                                   </DropdownMenuItem>
                                   {group.created_by === user?.id && (
                                     <DropdownMenuItem
-                                      className="text-red-600 focus:text-red-700"
+                                      className="text-destructive focus:text-destructive"
                                       onClick={() => setDeleteGroupId(group.id)}
                                     >
                                       <Trash2 className="w-4 h-4 mr-2" /> Delete group
@@ -396,27 +402,27 @@ export const ReadingGroups = () => {
                             )}
                           </div>
                         </div>
-                        
+
                         {/* Group Stats */}
-                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500 mt-3">
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-2">
                           <span className="flex items-center gap-1 whitespace-nowrap">
-                            <Users className="w-4 h-4 flex-shrink-0" />
-                            <span className="truncate">Member since {new Date(membership.joined_at).toLocaleDateString()}</span>
+                            <Users className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span>Member since {new Date(membership.joined_at).toLocaleDateString()}</span>
                           </span>
                           <span className="flex items-center gap-1 whitespace-nowrap">
-                            <Calendar className="w-4 h-4 flex-shrink-0" />
-                            <span className="truncate">{new Date(group.created_at).toLocaleDateString()}</span>
+                            <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
                           </span>
                         </div>
-                        
+
                         <div className="flex gap-2 mt-3">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-orange-600 hover:text-orange-700"
+                            className="text-brand-primary hover:bg-brand-primary/10 rounded-lg"
                             onClick={() => setChatGroupId(group.id)}
                           >
-                            <MessageCircle className="w-4 h-4 mr-1" />
+                            <MessageCircle className="w-4 h-4 mr-1.5" />
                             Group Chat
                           </Button>
                         </div>
@@ -430,21 +436,21 @@ export const ReadingGroups = () => {
         </div>
       )}
 
-      {/* Mock Groups List */}
+      {/* Discover Groups */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Discover Groups</h3>
+        <h3 className="text-lg font-semibold text-foreground">Discover Groups</h3>
         <div className="grid gap-4">
           {filteredGroups.map((group) => (
-          <Card key={group.id} className="bg-white shadow-sm border-0 rounded-xl">
+          <Card key={group.id} className="bg-card border-border rounded-2xl hover:shadow-[var(--shadow-elevated)] hover:border-brand-primary/30 transition-all">
             <CardContent className="p-4">
               <div className="flex gap-4">
                 {/* Group Image/Avatar */}
-                <div className="w-20 h-12 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-14 h-14 rounded-xl bg-gradient-button flex-shrink-0 flex items-center justify-center text-white font-bold text-xl shadow-[var(--shadow-button)] overflow-hidden">
                   {group.coverImage && group.coverImage.startsWith('http') ? (
                     <img
                       src={group.coverImage}
                       alt={`${group.name} cover`}
-                      className="w-full h-full rounded-lg object-cover"
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                         e.currentTarget.nextElementSibling?.classList.remove('hidden');
@@ -455,25 +461,25 @@ export const ReadingGroups = () => {
                     {group.name?.charAt(0)?.toUpperCase() || 'G'}
                   </div>
                 </div>
-                
+
                 {/* Group Info */}
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <h3 className="font-semibold text-foreground">{group.name}</h3>
                         {group.isPrivate && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-[10px]">
                             Private
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                         {group.description}
                       </p>
                       <div className="flex flex-wrap gap-1 mb-2">
                         {group.genre.map((g, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                          <Badge key={index} variant="secondary" className="text-[10px] bg-brand-primary/10 text-brand-primary border-0">
                             {g}
                           </Badge>
                         ))}
@@ -482,45 +488,46 @@ export const ReadingGroups = () => {
                     <Button
                       onClick={() => handleJoinGroup(group.id)}
                       variant={group.isJoined ? "outline" : "default"}
-                      className={`${group.isJoined 
-                        ? "border-orange-300 text-orange-700 hover:bg-orange-50" 
-                        : "bg-orange-600 hover:bg-orange-700"
-                      } rounded-xl w-full sm:w-auto whitespace-nowrap`}
+                      size="sm"
+                      className={`${group.isJoined
+                        ? "border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10"
+                        : "bg-gradient-button text-white shadow-[var(--shadow-button)] hover:opacity-95"
+                      } rounded-lg w-full sm:w-auto whitespace-nowrap`}
                     >
                       {group.isJoined ? 'Leave' : 'Join'}
                     </Button>
                   </div>
-                  
+
                   {/* Group Stats */}
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 mt-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground mt-2">
                     <span className="flex items-center gap-1 whitespace-nowrap">
-                      <Users className="w-4 h-4 flex-shrink-0" />
-                      <span className="truncate">{group.members}/{group.maxMembers} members</span>
+                      <Users className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>{group.members}/{group.maxMembers} members</span>
                     </span>
-                    <span className="flex items-center gap-1 whitespace-nowrap">
-                      <Book className="w-4 h-4 flex-shrink-0" />
+                    <span className="flex items-center gap-1 whitespace-nowrap min-w-0">
+                      <Book className="w-3.5 h-3.5 flex-shrink-0" />
                       <span className="truncate">{group.currentBook}</span>
                     </span>
                     <span className="flex items-center gap-1 whitespace-nowrap">
-                      <Calendar className="w-4 h-4 flex-shrink-0" />
-                      <span className="truncate">{group.nextMeeting}</span>
+                      <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>{group.nextMeeting}</span>
                     </span>
                     <span className="flex items-center gap-1 whitespace-nowrap">
-                      <MapPin className="w-4 h-4 flex-shrink-0" />
-                      <span className="truncate">{group.location}</span>
+                      <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>{group.location}</span>
                     </span>
                   </div>
-                  
+
                   {group.isJoined && (
                     <div className="flex gap-2 mt-3">
-                      <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
-                        <MessageCircle className="w-4 h-4 mr-1" />
+                      <Button variant="ghost" size="sm" className="text-brand-primary hover:bg-brand-primary/10 rounded-lg">
+                        <MessageCircle className="w-4 h-4 mr-1.5" />
                         Group Chat
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-orange-600 hover:text-orange-700"
+                        className="text-brand-primary hover:bg-brand-primary/10 rounded-lg"
                         onClick={() => navigate(`/groups/${group.id}`)}
                       >
                         View Details
@@ -536,11 +543,13 @@ export const ReadingGroups = () => {
       </div>
 
       {filteredGroups.length === 0 && (
-        <Card className="bg-white shadow-sm border-0 rounded-xl">
-          <CardContent className="p-8 text-center">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="font-medium text-gray-900 mb-2">No groups found</h3>
-            <p className="text-gray-500">
+        <Card className="bg-card border-border rounded-2xl">
+          <CardContent className="p-10 text-center">
+            <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+              <Users className="w-8 h-8 text-brand-primary" />
+            </div>
+            <h3 className="font-semibold text-foreground mb-1">No groups found</h3>
+            <p className="text-sm text-muted-foreground">
               Try adjusting your search or create a new reading group to get started.
             </p>
           </CardContent>

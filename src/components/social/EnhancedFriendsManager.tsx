@@ -99,51 +99,54 @@ export const EnhancedFriendsManager = () => {
   return (
     <>
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900">Friends & Connections</CardTitle>
+      <Card className="bg-card border-border rounded-2xl shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+            <Users className="w-5 h-5 text-brand-primary" />
+            Friends & Connections
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="discover" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="discover" className="flex items-center gap-2">
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-muted/60 rounded-xl p-1">
+              <TabsTrigger value="discover" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <Search className="w-4 h-4" />
-                Discover
+                <span className="hidden sm:inline">Discover</span>
               </TabsTrigger>
-              <TabsTrigger value="friends" className="flex items-center gap-2">
+              <TabsTrigger value="friends" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <Users className="w-4 h-4" />
-                Friends ({friends.length})
+                <span className="hidden sm:inline">Friends</span> ({friends.length})
               </TabsTrigger>
-              <TabsTrigger value="requests" className="flex items-center gap-2">
+              <TabsTrigger value="requests" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <UserPlus className="w-4 h-4" />
-                Requests ({incomingRequests.length + outgoingRequests.length})
+                <span className="hidden sm:inline">Requests</span> ({incomingRequests.length + outgoingRequests.length})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="discover" className="space-y-4">
               {/* Search Bar */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Search for friends by name, username, or bio..."
+                  placeholder="Search readers by name, username, or bio..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400"
+                  className="pl-10 h-11 bg-muted/40 border-border focus-visible:border-brand-primary focus-visible:ring-2 focus-visible:ring-brand-primary/20 rounded-xl"
                 />
               </div>
 
               {/* Search Status */}
               {searchTerm && (
-                <div className="text-sm text-gray-600 bg-orange-50 px-4 py-2 rounded-lg border border-orange-200">
+                <div className="text-sm text-muted-foreground bg-brand-primary/5 px-4 py-2 rounded-lg border border-brand-primary/20">
                   {isSearching ? (
                     <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin text-brand-primary" />
                       <span>Searching for "{searchTerm}"...</span>
                     </div>
                   ) : searchError ? (
-                    <span className="text-red-600">Search failed. Please try again.</span>
+                    <span className="text-destructive">Search failed. Please try again.</span>
                   ) : (
-                    <span>Found {visibleSearchResults.length} result{visibleSearchResults.length !== 1 ? 's' : ''} for "{searchTerm}"</span>
+                    <span>Found <strong className="text-foreground">{visibleSearchResults.length}</strong> result{visibleSearchResults.length !== 1 ? 's' : ''} for "{searchTerm}"</span>
                   )}
                 </div>
               )}
@@ -165,9 +168,11 @@ export const EnhancedFriendsManager = () => {
                       />
                     ))
                   ) : !isSearching ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <Search className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No users found matching "{searchTerm}"</p>
+                    <div className="text-center py-12 text-muted-foreground">
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-muted flex items-center justify-center">
+                        <Search className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground">No users found matching "{searchTerm}"</p>
                       <p className="text-xs">Try searching with different keywords</p>
                     </div>
                   ) : null
@@ -176,8 +181,8 @@ export const EnhancedFriendsManager = () => {
                   <>
                     {isLoadingUsers ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                        <span className="ml-2 text-gray-500">Loading users...</span>
+                        <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
+                        <span className="ml-2 text-muted-foreground">Loading users...</span>
                       </div>
                     ) : visibleAllUsers.length > 0 ? (
                       visibleAllUsers.map((user) => (
@@ -192,9 +197,11 @@ export const EnhancedFriendsManager = () => {
                         />
                       ))
                     ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">No users found</p>
+                      <div className="text-center py-12 text-muted-foreground">
+                        <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+                          <Users className="w-8 h-8 text-brand-primary" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">No users found</p>
                       </div>
                     )}
                   </>
@@ -212,23 +219,23 @@ export const EnhancedFriendsManager = () => {
                       : friendship.user1_profile;
                     
                     return (
-                      <div key={friendship.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div key={friendship.id} className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
                         <div className="flex items-center gap-3">
-                          <Avatar className="w-10 h-10">
+                          <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
                             <AvatarImage src={friendProfile?.profile_photo_url || ''} />
-                            <AvatarFallback className="bg-gradient-to-r from-green-400 to-blue-500 text-white">
+                            <AvatarFallback className="bg-gradient-button text-white font-semibold">
                               {getInitials(friendProfile?.full_name || '')}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-semibold text-foreground">
                               {friendProfile?.full_name || 'Unknown User'}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               @{friendProfile?.username || 'username'}
                             </p>
                             {friendProfile?.bio && (
-                              <p className="text-xs text-gray-400 truncate">
+                              <p className="text-xs text-muted-foreground/80 truncate max-w-[180px]">
                                 {friendProfile.bio}
                               </p>
                             )}
@@ -238,18 +245,20 @@ export const EnhancedFriendsManager = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => setChatId(friendProfile?.id || '')}
-                          className="text-blue-600 hover:text-blue-700"
+                          className="border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg"
                         >
-                          <MessageCircle className="w-4 h-4 mr-2" />
+                          <MessageCircle className="w-4 h-4 mr-1.5" />
                           Message
                         </Button>
                       </div>
                     );
                   })
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No friends yet</p>
+                  <div className="text-center py-12 text-muted-foreground">
+                    <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+                      <Users className="w-8 h-8 text-brand-primary" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground">No friends yet</p>
                     <p className="text-xs">Search for users to send friend requests</p>
                   </div>
                 )}
@@ -259,34 +268,34 @@ export const EnhancedFriendsManager = () => {
             <TabsContent value="requests" className="space-y-4">
               {isLoadingRequests ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                  <span className="ml-2 text-gray-500">Loading requests...</span>
+                  <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
+                  <span className="ml-2 text-muted-foreground">Loading requests...</span>
                 </div>
               ) : (
                 <>
                   {/* Incoming Friend Requests */}
                   {incomingRequests.length > 0 && (
                     <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-gray-700 px-2">
+                      <h3 className="text-sm font-semibold text-foreground px-2">
                         Incoming Requests ({incomingRequests.length})
                       </h3>
                       {incomingRequests.map((request) => (
-                        <div key={request.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div key={request.id} className="flex items-center justify-between p-3 bg-card border border-brand-primary/20 rounded-xl">
                           <div className="flex items-center gap-3">
-                            <Avatar className="w-10 h-10">
+                            <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
                               <AvatarImage src={request.requester_profile?.profile_photo_url || ''} />
-                              <AvatarFallback>
+                              <AvatarFallback className="bg-gradient-button text-white font-semibold">
                                 {getInitials(request.requester_profile?.full_name || '')}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium text-gray-900">
+                              <p className="font-semibold text-foreground">
                                 {request.requester_profile?.full_name || 'Unknown User'}
                               </p>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-muted-foreground">
                                 @{request.requester_profile?.username || 'username'}
                               </p>
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-muted-foreground/80">
                                 Sent {new Date(request.created_at).toLocaleDateString()}
                               </p>
                             </div>
@@ -296,7 +305,7 @@ export const EnhancedFriendsManager = () => {
                               size="sm"
                               onClick={() => handleRespondToRequest(request.id, 'accepted', request.requester_profile?.full_name || 'User')}
                               disabled={respondToFriendRequest.isPending}
-                              className="bg-green-600 hover:bg-green-700 text-white"
+                              className="bg-gradient-button text-white hover:opacity-95 rounded-lg"
                             >
                               <Check className="w-4 h-4 mr-1" />
                               Accept
@@ -306,7 +315,7 @@ export const EnhancedFriendsManager = () => {
                               variant="outline"
                               onClick={() => handleRespondToRequest(request.id, 'rejected', request.requester_profile?.full_name || 'User')}
                               disabled={respondToFriendRequest.isPending}
-                              className="border-red-300 text-red-700 hover:bg-red-50"
+                              className="border-destructive/40 text-destructive hover:bg-destructive/10 rounded-lg"
                             >
                               <X className="w-4 h-4 mr-1" />
                               Decline
@@ -320,32 +329,32 @@ export const EnhancedFriendsManager = () => {
                   {/* Outgoing Friend Requests */}
                   {outgoingRequests.length > 0 && (
                     <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-gray-700 px-2">
+                      <h3 className="text-sm font-semibold text-foreground px-2">
                         Sent Requests ({outgoingRequests.length})
                       </h3>
                       {outgoingRequests.map((request) => (
-                        <div key={request.id} className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div key={request.id} className="flex items-center justify-between p-3 bg-muted/40 border border-border rounded-xl">
                           <div className="flex items-center gap-3">
-                            <Avatar className="w-10 h-10">
+                            <Avatar className="w-11 h-11">
                               <AvatarImage src={request.addressee_profile?.profile_photo_url || ''} />
-                              <AvatarFallback>
+                              <AvatarFallback className="bg-gradient-button text-white font-semibold">
                                 {getInitials(request.addressee_profile?.full_name || '')}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium text-gray-900">
+                              <p className="font-semibold text-foreground">
                                 {request.addressee_profile?.full_name || 'Unknown User'}
                               </p>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-muted-foreground">
                                 @{request.addressee_profile?.username || 'username'}
                               </p>
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-muted-foreground/80">
                                 Sent {new Date(request.created_at).toLocaleDateString()}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
                               Pending
                             </Badge>
                             <Button
@@ -353,7 +362,7 @@ export const EnhancedFriendsManager = () => {
                               variant="outline"
                               onClick={() => handleCancelRequest(request.id, request.addressee_profile?.full_name || 'User')}
                               disabled={cancelFriendRequest.isPending}
-                              className="border-red-300 text-red-700 hover:bg-red-50"
+                              className="border-destructive/40 text-destructive hover:bg-destructive/10 rounded-lg"
                             >
                               <X className="w-4 h-4 mr-1" />
                               Cancel
@@ -366,9 +375,11 @@ export const EnhancedFriendsManager = () => {
 
                   {/* No Requests State */}
                   {incomingRequests.length === 0 && outgoingRequests.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <UserPlus className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No pending requests</p>
+                    <div className="text-center py-12 text-muted-foreground">
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+                        <UserPlus className="w-8 h-8 text-brand-primary" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground">No pending requests</p>
                       <p className="text-xs">Friend requests will appear here</p>
                     </div>
                   )}
@@ -397,46 +408,47 @@ interface UserCardProps {
 }
 
 const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, hasPendingRequest = false, onMessage }) => (
-  <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
-    <div className="flex items-center gap-3">
-      <Avatar className="w-10 h-10">
+  <div className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
+    <div className="flex items-center gap-3 min-w-0">
+      <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
         <AvatarImage src={user.profile_photo_url || ''} />
-        <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white">
+        <AvatarFallback className="bg-gradient-button text-white font-semibold">
           {getInitials(user.full_name || '')}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 truncate">
+        <p className="font-semibold text-foreground truncate">
           {user.full_name || 'Unknown User'}
         </p>
-        <p className="text-sm text-gray-500 truncate">
+        <p className="text-sm text-muted-foreground truncate">
           @{user.username || 'username'}
         </p>
         {user.bio && (
-          <p className="text-xs text-gray-400 truncate mt-1">
+          <p className="text-xs text-muted-foreground/80 truncate mt-0.5">
             {user.bio}
           </p>
         )}
       </div>
     </div>
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-shrink-0">
       {!isFriend && !hasPendingRequest ? (
         <Button
           size="sm"
           variant="outline"
           aria-label="Add friend"
           onClick={() => onSendRequest(user.id, user.full_name || 'User')}
+          className="border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg"
         >
           <UserPlus className="w-4 h-4 mr-1" />
           Add
         </Button>
       ) : isFriend ? (
-        <Button size="sm" variant="ghost" aria-label="Message user" onClick={() => onMessage?.(user.id)}>
+        <Button size="sm" variant="ghost" aria-label="Message user" onClick={() => onMessage?.(user.id)} className="text-brand-primary hover:bg-brand-primary/10 rounded-lg">
           <MessageCircle className="w-4 h-4 mr-1" />
           Message
         </Button>
       ) : (
-        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+        <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
           Pending
         </Badge>
       )}

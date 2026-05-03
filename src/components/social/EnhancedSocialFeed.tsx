@@ -60,44 +60,44 @@ export const EnhancedSocialFeed = () => {
       <FeedComposer />
 
       {posts.length === 0 ? (
-        <Card className="bg-white shadow-sm border-0 rounded-xl">
-          <CardContent className="p-8 text-center">
-            <div className="text-gray-500">
-              <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium mb-2">No posts yet</h3>
-              <p>Be the first to share something with the community!</p>
+        <Card className="bg-card border-border rounded-2xl">
+          <CardContent className="p-10 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+              <MessageCircle className="w-8 h-8 text-brand-primary" />
             </div>
+            <h3 className="text-lg font-semibold text-foreground mb-1">No posts yet</h3>
+            <p className="text-sm text-muted-foreground">Be the first to share something with the community.</p>
           </CardContent>
         </Card>
       ) : (
         posts.map((post) => (
-          <Card key={post.id} className="bg-white shadow-sm border-0 rounded-xl hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
+          <Card key={post.id} className="bg-card border-border rounded-2xl hover:shadow-[var(--shadow-elevated)] transition-all duration-200 overflow-hidden">
+            <CardContent className="p-5">
               {/* Post Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <Avatar className="w-10 h-10">
+                  <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
                     <AvatarImage src={post.profiles?.profile_photo_url} />
-                    <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white">
+                    <AvatarFallback className="bg-gradient-button text-white font-semibold">
                       {post.profiles?.full_name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-gray-900">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-semibold text-foreground">
                         {post.user_id === user?.id ? 'You' : (post.profiles?.full_name || 'Anonymous')}
                       </h4>
                       {post.feeling_emoji && post.feeling_label && (
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-muted-foreground">
                           is feeling {post.feeling_emoji} {post.feeling_label}
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                       <Clock className="w-3 h-3" />
                       <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                       {post.profiles?.username && (
-                        <span>• @{post.profiles.username}</span>
+                        <span className="text-muted-foreground/70">• @{post.profiles.username}</span>
                       )}
                     </div>
                   </div>
@@ -105,7 +105,7 @@ export const EnhancedSocialFeed = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-foreground rounded-full h-9 w-9 p-0"
                   aria-label="More options"
                 >
                   •••
@@ -113,19 +113,19 @@ export const EnhancedSocialFeed = () => {
               </div>
 
               {/* Post Content */}
-              <div 
-                className="mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+              <div
+                className="mb-4 cursor-pointer hover:bg-muted/40 rounded-xl p-2 -m-2 transition-colors"
                 onClick={() => handlePostClick(post)}
               >
-                <p className="text-gray-800 mb-3 whitespace-pre-wrap">{post.content}</p>
-                
+                <p className="text-foreground leading-relaxed mb-3 whitespace-pre-wrap">{post.content}</p>
+
                 {/* Book Card */}
                 {post.books_library && (
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-xl p-3 flex items-center space-x-3">
-                    <div className="w-12 h-16 bg-gradient-to-br from-orange-400 to-amber-500 rounded flex-shrink-0 overflow-hidden">
+                  <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-xl p-3 flex items-center gap-3">
+                    <div className="w-12 h-16 bg-gradient-button rounded-md flex-shrink-0 overflow-hidden shadow-sm">
                       {post.books_library.cover_image_url ? (
-                        <img 
-                          src={post.books_library.cover_image_url} 
+                        <img
+                          src={post.books_library.cover_image_url}
                           alt={post.books_library.title}
                           className="w-full h-full object-cover"
                         />
@@ -135,12 +135,12 @@ export const EnhancedSocialFeed = () => {
                         </div>
                       )}
                     </div>
-                    <div>
-                      <h5 className="font-medium text-gray-900 text-sm">{post.books_library.title}</h5>
+                    <div className="min-w-0">
+                      <h5 className="font-semibold text-foreground text-sm truncate">{post.books_library.title}</h5>
                       {post.books_library.author && (
-                        <p className="text-xs text-gray-600">{post.books_library.author}</p>
+                        <p className="text-xs text-muted-foreground truncate">{post.books_library.author}</p>
                       )}
-                      <Badge variant="outline" className="mt-1 text-xs border-orange-300 text-orange-700">
+                      <Badge variant="outline" className="mt-1.5 text-[10px] border-brand-primary/40 text-brand-primary bg-background">
                         Currently Reading
                       </Badge>
                     </div>
@@ -149,54 +149,45 @@ export const EnhancedSocialFeed = () => {
 
                 {/* Image */}
                 {post.image_url && (
-                  <div className="mt-3">
-                    <img 
-                      src={post.image_url} 
-                      alt="Post image" 
-                      className="w-full max-h-96 object-cover rounded-xl border"
+                  <div className="mt-3 rounded-xl overflow-hidden border border-border">
+                    <img
+                      src={post.image_url}
+                      alt="Post image"
+                      className="w-full max-h-96 object-cover"
                     />
                   </div>
                 )}
               </div>
 
               {/* Post Actions */}
-              <div className="flex items-center space-x-6 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-around gap-1 pt-3 border-t border-border">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLike(post);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); handleLike(post); }}
                   disabled={toggleLike.isPending}
-                  className={`${post.user_liked ? 'text-red-500 hover:text-red-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`flex-1 rounded-lg gap-2 ${post.user_liked ? 'text-rose-500 hover:text-rose-600 hover:bg-rose-50' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
                 >
-                  <Heart className={`w-4 h-4 mr-1 ${post.user_liked ? 'fill-current' : ''}`} />
-                  {post.likes_count}
+                  <Heart className={`w-4 h-4 ${post.user_liked ? 'fill-current' : ''}`} />
+                  <span className="text-sm font-medium">{post.likes_count}</span>
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleComments(post.id);
-                  }}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 rounded-lg gap-2 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  onClick={(e) => { e.stopPropagation(); toggleComments(post.id); }}
                 >
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  {post.comments_count}
+                  <MessageCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">{post.comments_count}</span>
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleShare(post);
-                  }}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 rounded-lg gap-2 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  onClick={(e) => { e.stopPropagation(); handleShare(post); }}
                 >
-                  <Share2 className="w-4 h-4 mr-1" />
-                  Share
+                  <Share2 className="w-4 h-4" />
+                  <span className="text-sm font-medium">Share</span>
                 </Button>
               </div>
 

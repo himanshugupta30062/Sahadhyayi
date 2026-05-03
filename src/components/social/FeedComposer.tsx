@@ -128,12 +128,12 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
 
   return (
     <>
-      <Card className="bg-white shadow-sm border-0 rounded-xl mb-6">
+      <Card className="bg-card border-border rounded-2xl mb-6 shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-4">
           <div className="flex items-start space-x-3 mb-4">
-            <Avatar className="w-10 h-10">
+            <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
               <AvatarImage src={user?.user_metadata?.avatar_url} />
-              <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white">
+              <AvatarFallback className="bg-gradient-button text-white font-semibold">
                 {user?.user_metadata?.full_name?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
@@ -142,21 +142,21 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                 placeholder="What's on your mind?"
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
-                className="min-h-[80px] border-0 bg-gray-50 rounded-xl resize-none focus:bg-white"
+                className="min-h-[80px] border-0 bg-muted/50 rounded-xl resize-none focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-brand-primary/30 transition-colors text-base placeholder:text-muted-foreground"
               />
             </div>
           </div>
 
           {/* Attachment Previews */}
           {(imagePreview || selectedBook || selectedFeeling) && (
-            <div className="mb-4 p-3 bg-gray-50 rounded-xl">
+            <div className="mb-4 p-3 bg-muted/40 rounded-xl border border-border">
               {imagePreview && (
                 <div className="relative mb-3">
                   <img src={imagePreview} alt="Preview" className="w-full max-h-60 object-cover rounded-lg" />
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="absolute top-2 right-2 bg-black/50 text-white hover:bg-black/70"
+                    className="absolute top-2 right-2 bg-foreground/60 text-background hover:bg-foreground/80 rounded-full h-8 w-8 p-0"
                     onClick={() => {
                       setSelectedImage(null);
                       setImagePreview(null);
@@ -169,57 +169,48 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               )}
 
               {selectedBook && (
-                <div className="flex items-start space-x-3 mb-3 p-3 bg-white rounded-lg border">
-                  <div className="w-16 h-20 bg-gradient-to-br from-orange-400 to-amber-500 rounded flex-shrink-0 flex items-center justify-center">
+                <div className="flex items-start space-x-3 mb-3 p-3 bg-card rounded-lg border border-border">
+                  <div className="w-16 h-20 bg-gradient-button rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
                     {selectedBook.cover ? (
-                      <img 
-                        src={selectedBook.cover} 
-                        alt={selectedBook.title} 
-                        className="w-full h-full object-cover rounded" 
+                      <img
+                        src={selectedBook.cover}
+                        alt={selectedBook.title}
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       <BookOpen className="w-8 h-8 text-white" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h5 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1">
+                    <h5 className="font-semibold text-foreground text-sm line-clamp-2 mb-1">
                       {selectedBook.title}
                     </h5>
-                    <p className="text-xs text-gray-600 mb-1">
+                    <p className="text-xs text-muted-foreground mb-1">
                       by {selectedBook.author}
                     </p>
                     {selectedBook.description && (
-                      <p className="text-xs text-gray-500 line-clamp-2">
-                        {selectedBook.description.length > 120 
+                      <p className="text-xs text-muted-foreground/80 line-clamp-2">
+                        {selectedBook.description.length > 120
                           ? selectedBook.description.substring(0, 120) + '...'
                           : selectedBook.description
                         }
                       </p>
                     )}
-                    <Badge variant="outline" className="mt-2 text-xs">
+                    <Badge variant="outline" className="mt-2 text-xs border-brand-primary/40 text-brand-primary">
                       Reading
                     </Badge>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setSelectedBook(null)}
-                    className="ml-2"
-                  >
+                  <Button size="sm" variant="ghost" onClick={() => setSelectedBook(null)} className="ml-2 rounded-full h-8 w-8 p-0">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               )}
 
               {selectedFeeling && (
-                <div className="flex items-center space-x-2 mb-3">
+                <div className="flex items-center space-x-2 p-2 bg-card rounded-lg border border-border">
                   <span className="text-2xl">{selectedFeeling.emoji}</span>
-                  <span className="text-sm text-gray-600">feeling {selectedFeeling.label}</span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setSelectedFeeling(null)}
-                  >
+                  <span className="text-sm text-foreground">feeling <span className="font-medium">{selectedFeeling.label}</span></span>
+                  <Button size="sm" variant="ghost" onClick={() => setSelectedFeeling(null)} className="ml-auto rounded-full h-8 w-8 p-0">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -228,8 +219,8 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap sm:flex-nowrap gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
+            <div className="flex flex-wrap sm:flex-nowrap gap-1">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -240,37 +231,37 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-500 hover:text-gray-700"
+                className="text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10 rounded-lg gap-1.5"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <Image className="w-4 h-4 mr-1" />
-                Photo
+                <Image className="w-4 h-4" />
+                <span className="text-sm">Photo</span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-500 hover:text-gray-700"
+                className="text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10 rounded-lg gap-1.5"
                 onClick={() => setShowBookModal(true)}
               >
-                <BookOpen className="w-4 h-4 mr-1" />
-                Book
+                <BookOpen className="w-4 h-4" />
+                <span className="text-sm">Book</span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-500 hover:text-gray-700"
+                className="text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10 rounded-lg gap-1.5"
                 onClick={() => setShowEmojiPicker(true)}
               >
-                <Smile className="w-4 h-4 mr-1" />
-                Feeling
+                <Smile className="w-4 h-4" />
+                <span className="text-sm">Feeling</span>
               </Button>
             </div>
             <Button
               onClick={handlePost}
               disabled={(!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting || createPost.isPending}
-              className="bg-orange-600 hover:bg-orange-700 rounded-xl w-full sm:w-auto mt-2 sm:mt-0"
+              className="bg-gradient-button text-white shadow-[var(--shadow-button)] hover:shadow-[var(--shadow-elevated)] hover:opacity-95 rounded-xl w-full sm:w-auto mt-2 sm:mt-0 transition-all"
             >
-              <Send className="w-4 h-4 mr-1" />
+              <Send className="w-4 h-4 mr-1.5" />
               {isPosting || createPost.isPending ? 'Posting...' : 'Post'}
             </Button>
           </div>
