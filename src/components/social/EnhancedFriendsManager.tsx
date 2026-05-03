@@ -264,15 +264,15 @@ export const EnhancedFriendsManager = () => {
             <TabsContent value="requests" className="space-y-4">
               {isLoadingRequests ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                  <span className="ml-2 text-gray-500">Loading requests...</span>
+                  <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
+                  <span className="ml-2 text-muted-foreground">Loading requests...</span>
                 </div>
               ) : (
                 <>
                   {/* Incoming Friend Requests */}
                   {incomingRequests.length > 0 && (
                     <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-gray-700 px-2">
+                      <h3 className="text-sm font-semibold text-foreground px-2">
                         Incoming Requests ({incomingRequests.length})
                       </h3>
                       {incomingRequests.map((request) => (
