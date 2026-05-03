@@ -496,6 +496,17 @@ app.use((err, req, res, _next) => {
   return jsonError(res, status, msg, code, err.details);
 });
 
+// Explicitly return 404 for disallowed well-known/proxy probing routes.
+const blockedRoutes = new Set([
+  '/.well-known/apple-app-site-association',
+  '/apple-app-site-association',
+  '/cdn-cgi/content',
+]);
+
+app.get([...blockedRoutes], (_req, res) => {
+  res.status(404).type('text/plain').send('Not Found');
+});
+
 // Handle client-side routing by returning the main index.html for other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
