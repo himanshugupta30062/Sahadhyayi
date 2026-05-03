@@ -203,22 +203,24 @@ export const ReadingGroups = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
-        <CardHeader className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="w-5 h-5 text-orange-600" />
-                Reading Groups
-              </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                Join or create reading groups to discuss books with fellow enthusiasts
-              </p>
+      <Card className="bg-gradient-to-br from-brand-primary/10 via-card to-brand-secondary/5 border-brand-primary/20 rounded-2xl overflow-hidden">
+        <CardHeader className="p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-button flex items-center justify-center shadow-[var(--shadow-button)] flex-shrink-0">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg text-foreground">Reading Groups</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Join or create groups to discuss books with fellow readers
+                </p>
+              </div>
             </div>
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>
-                <Button className="bg-orange-600 hover:bg-orange-700 rounded-xl">
-                  <Plus className="w-4 h-4 mr-1" />
+                <Button className="bg-gradient-button text-white shadow-[var(--shadow-button)] hover:shadow-[var(--shadow-elevated)] hover:opacity-95 rounded-xl w-full sm:w-auto">
+                  <Plus className="w-4 h-4 mr-1.5" />
                   Create Group
                 </Button>
               </DialogTrigger>
@@ -227,8 +229,8 @@ export const ReadingGroups = () => {
                   <DialogTitle>Create Reading Group</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Group Name</label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Group Name</Label>
                     <Input
                       placeholder="Enter group name"
                       value={newGroup.name}
@@ -236,17 +238,17 @@ export const ReadingGroups = () => {
                       className="rounded-xl"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Description</Label>
                     <Textarea
                       placeholder="Describe your reading group"
                       value={newGroup.description}
                       onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-                      className="rounded-xl"
+                      className="rounded-xl min-h-[90px]"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Members</label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Max Members</Label>
                     <Input
                       type="number"
                       min="5"
@@ -259,23 +261,23 @@ export const ReadingGroups = () => {
                       className="rounded-xl"
                     />
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 pt-1">
                     <input
                       type="checkbox"
                       id="private"
                       checked={newGroup.isPrivate}
                       onChange={(e) => setNewGroup({ ...newGroup, isPrivate: e.target.checked })}
-                      className="rounded"
+                      className="rounded accent-brand-primary"
                     />
-                    <label htmlFor="private" className="text-sm text-gray-700">
+                    <Label htmlFor="private" className="text-sm text-foreground cursor-pointer">
                       Private group (invitation only)
-                    </label>
+                    </Label>
                   </div>
-                  <div className="flex gap-2 pt-4">
+                  <div className="flex gap-2 pt-2">
                     <Button
                       onClick={handleCreateGroup}
                       disabled={createGroupMutation.isPending}
-                      className="flex-1 bg-orange-600 hover:bg-orange-700 rounded-xl"
+                      className="flex-1 bg-gradient-button text-white hover:opacity-95 rounded-xl"
                     >
                       {createGroupMutation.isPending ? 'Creating...' : 'Create Group'}
                     </Button>
@@ -295,15 +297,15 @@ export const ReadingGroups = () => {
       </Card>
 
       {/* Search */}
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
-        <CardContent className="p-4">
+      <Card className="bg-card border-border rounded-2xl">
+        <CardContent className="p-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search groups by name, description, or genre..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-gray-50 border-0 rounded-xl"
+              className="pl-10 bg-muted/40 border-border focus-visible:border-brand-primary focus-visible:ring-2 focus-visible:ring-brand-primary/20 rounded-xl"
             />
           </div>
         </CardContent>
