@@ -137,16 +137,16 @@ export const EnhancedFriendsManager = () => {
 
               {/* Search Status */}
               {searchTerm && (
-                <div className="text-sm text-gray-600 bg-orange-50 px-4 py-2 rounded-lg border border-orange-200">
+                <div className="text-sm text-muted-foreground bg-brand-primary/5 px-4 py-2 rounded-lg border border-brand-primary/20">
                   {isSearching ? (
                     <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin text-brand-primary" />
                       <span>Searching for "{searchTerm}"...</span>
                     </div>
                   ) : searchError ? (
-                    <span className="text-red-600">Search failed. Please try again.</span>
+                    <span className="text-destructive">Search failed. Please try again.</span>
                   ) : (
-                    <span>Found {visibleSearchResults.length} result{visibleSearchResults.length !== 1 ? 's' : ''} for "{searchTerm}"</span>
+                    <span>Found <strong className="text-foreground">{visibleSearchResults.length}</strong> result{visibleSearchResults.length !== 1 ? 's' : ''} for "{searchTerm}"</span>
                   )}
                 </div>
               )}
