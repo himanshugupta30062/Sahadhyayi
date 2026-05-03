@@ -314,23 +314,26 @@ export const ReadingGroups = () => {
       {/* User's Real Groups */}
       {userGroups.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Your Groups</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-foreground">Your Groups</h3>
+            <Badge variant="secondary" className="bg-brand-primary/10 text-brand-primary border-0">{userGroups.length}</Badge>
+          </div>
           <div className="grid gap-4">
             {userGroups.map((membership) => {
               const group = membership.groups;
               if (!group) return null;
-              
+
               return (
-                <Card key={group.id} className="bg-white shadow-sm border-0 rounded-xl">
+                <Card key={group.id} className="bg-card border-border rounded-2xl hover:shadow-[var(--shadow-elevated)] hover:border-brand-primary/30 transition-all">
                   <CardContent className="p-4">
                     <div className="flex gap-4">
                       {/* Group Image/Avatar */}
-                      <div className="w-20 h-12 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-button flex-shrink-0 flex items-center justify-center text-white font-bold text-xl shadow-[var(--shadow-button)] overflow-hidden">
                         {group.image_url ? (
                           <img
                             src={group.image_url}
                             alt={`${group.name} cover`}
-                            className="w-full h-full rounded-lg object-cover"
+                            className="w-full h-full object-cover"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                               e.currentTarget.parentElement!.querySelector('.fallback-text')?.classList.remove('hidden');
@@ -341,27 +344,28 @@ export const ReadingGroups = () => {
                           {group.name?.charAt(0)?.toUpperCase() || 'G'}
                         </div>
                       </div>
-                      
+
                       {/* Group Info */}
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h3 className="font-semibold text-foreground">{group.name}</h3>
                               {membership.role === 'admin' && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="outline" className="text-[10px] border-brand-primary/40 text-brand-primary">
                                   Admin
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                               {group.description || 'No description available'}
                             </p>
                           </div>
                           <div className="flex items-center gap-2 w-full sm:w-auto">
                             <Button
                               variant="outline"
-                              className="border-orange-300 text-orange-700 hover:bg-orange-50 rounded-xl flex-1 sm:flex-none whitespace-nowrap"
+                              size="sm"
+                              className="border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg flex-1 sm:flex-none whitespace-nowrap"
                               onClick={() => navigate(`/groups/${group.id}`)}
                             >
                               View Group
@@ -369,7 +373,7 @@ export const ReadingGroups = () => {
                             {(membership.role === 'admin' || group.created_by === user?.id) && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="icon" className="rounded-xl" aria-label="Group settings">
+                                  <Button variant="outline" size="icon" className="rounded-lg h-9 w-9" aria-label="Group settings">
                                     <MoreVertical className="w-4 h-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -387,7 +391,7 @@ export const ReadingGroups = () => {
                                   </DropdownMenuItem>
                                   {group.created_by === user?.id && (
                                     <DropdownMenuItem
-                                      className="text-red-600 focus:text-red-700"
+                                      className="text-destructive focus:text-destructive"
                                       onClick={() => setDeleteGroupId(group.id)}
                                     >
                                       <Trash2 className="w-4 h-4 mr-2" /> Delete group
@@ -398,27 +402,27 @@ export const ReadingGroups = () => {
                             )}
                           </div>
                         </div>
-                        
+
                         {/* Group Stats */}
-                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500 mt-3">
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-2">
                           <span className="flex items-center gap-1 whitespace-nowrap">
-                            <Users className="w-4 h-4 flex-shrink-0" />
-                            <span className="truncate">Member since {new Date(membership.joined_at).toLocaleDateString()}</span>
+                            <Users className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span>Member since {new Date(membership.joined_at).toLocaleDateString()}</span>
                           </span>
                           <span className="flex items-center gap-1 whitespace-nowrap">
-                            <Calendar className="w-4 h-4 flex-shrink-0" />
-                            <span className="truncate">{new Date(group.created_at).toLocaleDateString()}</span>
+                            <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
                           </span>
                         </div>
-                        
+
                         <div className="flex gap-2 mt-3">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-orange-600 hover:text-orange-700"
+                            className="text-brand-primary hover:bg-brand-primary/10 rounded-lg"
                             onClick={() => setChatGroupId(group.id)}
                           >
-                            <MessageCircle className="w-4 h-4 mr-1" />
+                            <MessageCircle className="w-4 h-4 mr-1.5" />
                             Group Chat
                           </Button>
                         </div>
