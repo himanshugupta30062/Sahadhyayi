@@ -408,46 +408,47 @@ interface UserCardProps {
 }
 
 const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, hasPendingRequest = false, onMessage }) => (
-  <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
-    <div className="flex items-center gap-3">
-      <Avatar className="w-10 h-10">
+  <div className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
+    <div className="flex items-center gap-3 min-w-0">
+      <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
         <AvatarImage src={user.profile_photo_url || ''} />
-        <AvatarFallback className="bg-gradient-to-r from-orange-400 to-amber-500 text-white">
+        <AvatarFallback className="bg-gradient-button text-white font-semibold">
           {getInitials(user.full_name || '')}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 truncate">
+        <p className="font-semibold text-foreground truncate">
           {user.full_name || 'Unknown User'}
         </p>
-        <p className="text-sm text-gray-500 truncate">
+        <p className="text-sm text-muted-foreground truncate">
           @{user.username || 'username'}
         </p>
         {user.bio && (
-          <p className="text-xs text-gray-400 truncate mt-1">
+          <p className="text-xs text-muted-foreground/80 truncate mt-0.5">
             {user.bio}
           </p>
         )}
       </div>
     </div>
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-shrink-0">
       {!isFriend && !hasPendingRequest ? (
         <Button
           size="sm"
           variant="outline"
           aria-label="Add friend"
           onClick={() => onSendRequest(user.id, user.full_name || 'User')}
+          className="border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg"
         >
           <UserPlus className="w-4 h-4 mr-1" />
           Add
         </Button>
       ) : isFriend ? (
-        <Button size="sm" variant="ghost" aria-label="Message user" onClick={() => onMessage?.(user.id)}>
+        <Button size="sm" variant="ghost" aria-label="Message user" onClick={() => onMessage?.(user.id)} className="text-brand-primary hover:bg-brand-primary/10 rounded-lg">
           <MessageCircle className="w-4 h-4 mr-1" />
           Message
         </Button>
       ) : (
-        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+        <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
           Pending
         </Badge>
       )}
