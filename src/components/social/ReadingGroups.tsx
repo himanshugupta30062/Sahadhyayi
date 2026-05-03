@@ -436,21 +436,21 @@ export const ReadingGroups = () => {
         </div>
       )}
 
-      {/* Mock Groups List */}
+      {/* Discover Groups */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Discover Groups</h3>
+        <h3 className="text-lg font-semibold text-foreground">Discover Groups</h3>
         <div className="grid gap-4">
           {filteredGroups.map((group) => (
-          <Card key={group.id} className="bg-white shadow-sm border-0 rounded-xl">
+          <Card key={group.id} className="bg-card border-border rounded-2xl hover:shadow-[var(--shadow-elevated)] hover:border-brand-primary/30 transition-all">
             <CardContent className="p-4">
               <div className="flex gap-4">
                 {/* Group Image/Avatar */}
-                <div className="w-20 h-12 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-14 h-14 rounded-xl bg-gradient-button flex-shrink-0 flex items-center justify-center text-white font-bold text-xl shadow-[var(--shadow-button)] overflow-hidden">
                   {group.coverImage && group.coverImage.startsWith('http') ? (
                     <img
                       src={group.coverImage}
                       alt={`${group.name} cover`}
-                      className="w-full h-full rounded-lg object-cover"
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                         e.currentTarget.nextElementSibling?.classList.remove('hidden');
@@ -461,25 +461,25 @@ export const ReadingGroups = () => {
                     {group.name?.charAt(0)?.toUpperCase() || 'G'}
                   </div>
                 </div>
-                
+
                 {/* Group Info */}
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <h3 className="font-semibold text-foreground">{group.name}</h3>
                         {group.isPrivate && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-[10px]">
                             Private
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                         {group.description}
                       </p>
                       <div className="flex flex-wrap gap-1 mb-2">
                         {group.genre.map((g, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                          <Badge key={index} variant="secondary" className="text-[10px] bg-brand-primary/10 text-brand-primary border-0">
                             {g}
                           </Badge>
                         ))}
@@ -488,45 +488,46 @@ export const ReadingGroups = () => {
                     <Button
                       onClick={() => handleJoinGroup(group.id)}
                       variant={group.isJoined ? "outline" : "default"}
-                      className={`${group.isJoined 
-                        ? "border-orange-300 text-orange-700 hover:bg-orange-50" 
-                        : "bg-orange-600 hover:bg-orange-700"
-                      } rounded-xl w-full sm:w-auto whitespace-nowrap`}
+                      size="sm"
+                      className={`${group.isJoined
+                        ? "border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10"
+                        : "bg-gradient-button text-white shadow-[var(--shadow-button)] hover:opacity-95"
+                      } rounded-lg w-full sm:w-auto whitespace-nowrap`}
                     >
                       {group.isJoined ? 'Leave' : 'Join'}
                     </Button>
                   </div>
-                  
+
                   {/* Group Stats */}
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 mt-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground mt-2">
                     <span className="flex items-center gap-1 whitespace-nowrap">
-                      <Users className="w-4 h-4 flex-shrink-0" />
-                      <span className="truncate">{group.members}/{group.maxMembers} members</span>
+                      <Users className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>{group.members}/{group.maxMembers} members</span>
                     </span>
-                    <span className="flex items-center gap-1 whitespace-nowrap">
-                      <Book className="w-4 h-4 flex-shrink-0" />
+                    <span className="flex items-center gap-1 whitespace-nowrap min-w-0">
+                      <Book className="w-3.5 h-3.5 flex-shrink-0" />
                       <span className="truncate">{group.currentBook}</span>
                     </span>
                     <span className="flex items-center gap-1 whitespace-nowrap">
-                      <Calendar className="w-4 h-4 flex-shrink-0" />
-                      <span className="truncate">{group.nextMeeting}</span>
+                      <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>{group.nextMeeting}</span>
                     </span>
                     <span className="flex items-center gap-1 whitespace-nowrap">
-                      <MapPin className="w-4 h-4 flex-shrink-0" />
-                      <span className="truncate">{group.location}</span>
+                      <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>{group.location}</span>
                     </span>
                   </div>
-                  
+
                   {group.isJoined && (
                     <div className="flex gap-2 mt-3">
-                      <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
-                        <MessageCircle className="w-4 h-4 mr-1" />
+                      <Button variant="ghost" size="sm" className="text-brand-primary hover:bg-brand-primary/10 rounded-lg">
+                        <MessageCircle className="w-4 h-4 mr-1.5" />
                         Group Chat
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-orange-600 hover:text-orange-700"
+                        className="text-brand-primary hover:bg-brand-primary/10 rounded-lg"
                         onClick={() => navigate(`/groups/${group.id}`)}
                       >
                         View Details
@@ -542,11 +543,13 @@ export const ReadingGroups = () => {
       </div>
 
       {filteredGroups.length === 0 && (
-        <Card className="bg-white shadow-sm border-0 rounded-xl">
-          <CardContent className="p-8 text-center">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="font-medium text-gray-900 mb-2">No groups found</h3>
-            <p className="text-gray-500">
+        <Card className="bg-card border-border rounded-2xl">
+          <CardContent className="p-10 text-center">
+            <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+              <Users className="w-8 h-8 text-brand-primary" />
+            </div>
+            <h3 className="font-semibold text-foreground mb-1">No groups found</h3>
+            <p className="text-sm text-muted-foreground">
               Try adjusting your search or create a new reading group to get started.
             </p>
           </CardContent>
