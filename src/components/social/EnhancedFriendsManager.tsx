@@ -99,36 +99,39 @@ export const EnhancedFriendsManager = () => {
   return (
     <>
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900">Friends & Connections</CardTitle>
+      <Card className="bg-card border-border rounded-2xl shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+            <Users className="w-5 h-5 text-brand-primary" />
+            Friends & Connections
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="discover" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="discover" className="flex items-center gap-2">
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-muted/60 rounded-xl p-1">
+              <TabsTrigger value="discover" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <Search className="w-4 h-4" />
-                Discover
+                <span className="hidden sm:inline">Discover</span>
               </TabsTrigger>
-              <TabsTrigger value="friends" className="flex items-center gap-2">
+              <TabsTrigger value="friends" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <Users className="w-4 h-4" />
-                Friends ({friends.length})
+                <span className="hidden sm:inline">Friends</span> ({friends.length})
               </TabsTrigger>
-              <TabsTrigger value="requests" className="flex items-center gap-2">
+              <TabsTrigger value="requests" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <UserPlus className="w-4 h-4" />
-                Requests ({incomingRequests.length + outgoingRequests.length})
+                <span className="hidden sm:inline">Requests</span> ({incomingRequests.length + outgoingRequests.length})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="discover" className="space-y-4">
               {/* Search Bar */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Search for friends by name, username, or bio..."
+                  placeholder="Search readers by name, username, or bio..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-12 bg-gray-50 border-2 border-gray-200 focus:border-orange-400"
+                  className="pl-10 h-11 bg-muted/40 border-border focus-visible:border-brand-primary focus-visible:ring-2 focus-visible:ring-brand-primary/20 rounded-xl"
                 />
               </div>
 
