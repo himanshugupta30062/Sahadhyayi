@@ -5,13 +5,24 @@ import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SEO from '@/components/SEO';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const AdminFeedback = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+
+  const { data: isAdmin, isLoading: roleLoading } = useQuery({
+    queryKey: ['is-admin', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('is_admin');
+      if (error) throw error;
+      return Boolean(data);
+    },
+  });
 
   const { data: feedback = [], refetch } = useQuery({
     queryKey: ['feedback'],
-    enabled: !!user,
+    enabled: !!user && isAdmin === true,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('feedback')
@@ -22,8 +33,17 @@ const AdminFeedback = () => {
     },
   });
 
-  if (!user) {
-    return <Navigate to="/" />;
+  if (authLoading || (user && roleLoading)) {
+    return (
+      <div className="min-h-screen p-8 max-w-4xl mx-auto space-y-4">
+        <Skeleton className="h-12 w-64" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!user || isAdmin !== true) {
+    return <Navigate to="/" replace />;
   }
 
   const markResponded = async (id: string) => {
@@ -43,7 +63,7 @@ const AdminFeedback = () => {
         <div className="max-w-4xl mx-auto px-4 space-y-6">
           <h1 className="text-3xl font-bold text-foreground">User Feedback</h1>
           {feedback.length === 0 && (
-            <p className="text-muted-foreground">No feedback available or access denied.</p>
+            <p className="text-muted-foreground">No feedback available.</p>
           )}
           {feedback.map((item: any) => (
             <Card key={item.id}>
