@@ -276,22 +276,22 @@ export const EnhancedFriendsManager = () => {
                         Incoming Requests ({incomingRequests.length})
                       </h3>
                       {incomingRequests.map((request) => (
-                        <div key={request.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div key={request.id} className="flex items-center justify-between p-3 bg-card border border-brand-primary/20 rounded-xl">
                           <div className="flex items-center gap-3">
-                            <Avatar className="w-10 h-10">
+                            <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
                               <AvatarImage src={request.requester_profile?.profile_photo_url || ''} />
-                              <AvatarFallback>
+                              <AvatarFallback className="bg-gradient-button text-white font-semibold">
                                 {getInitials(request.requester_profile?.full_name || '')}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium text-gray-900">
+                              <p className="font-semibold text-foreground">
                                 {request.requester_profile?.full_name || 'Unknown User'}
                               </p>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-muted-foreground">
                                 @{request.requester_profile?.username || 'username'}
                               </p>
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-muted-foreground/80">
                                 Sent {new Date(request.created_at).toLocaleDateString()}
                               </p>
                             </div>
@@ -301,7 +301,7 @@ export const EnhancedFriendsManager = () => {
                               size="sm"
                               onClick={() => handleRespondToRequest(request.id, 'accepted', request.requester_profile?.full_name || 'User')}
                               disabled={respondToFriendRequest.isPending}
-                              className="bg-green-600 hover:bg-green-700 text-white"
+                              className="bg-gradient-button text-white hover:opacity-95 rounded-lg"
                             >
                               <Check className="w-4 h-4 mr-1" />
                               Accept
@@ -311,7 +311,7 @@ export const EnhancedFriendsManager = () => {
                               variant="outline"
                               onClick={() => handleRespondToRequest(request.id, 'rejected', request.requester_profile?.full_name || 'User')}
                               disabled={respondToFriendRequest.isPending}
-                              className="border-red-300 text-red-700 hover:bg-red-50"
+                              className="border-destructive/40 text-destructive hover:bg-destructive/10 rounded-lg"
                             >
                               <X className="w-4 h-4 mr-1" />
                               Decline
@@ -325,32 +325,32 @@ export const EnhancedFriendsManager = () => {
                   {/* Outgoing Friend Requests */}
                   {outgoingRequests.length > 0 && (
                     <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-gray-700 px-2">
+                      <h3 className="text-sm font-semibold text-foreground px-2">
                         Sent Requests ({outgoingRequests.length})
                       </h3>
                       {outgoingRequests.map((request) => (
-                        <div key={request.id} className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div key={request.id} className="flex items-center justify-between p-3 bg-muted/40 border border-border rounded-xl">
                           <div className="flex items-center gap-3">
-                            <Avatar className="w-10 h-10">
+                            <Avatar className="w-11 h-11">
                               <AvatarImage src={request.addressee_profile?.profile_photo_url || ''} />
-                              <AvatarFallback>
+                              <AvatarFallback className="bg-gradient-button text-white font-semibold">
                                 {getInitials(request.addressee_profile?.full_name || '')}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium text-gray-900">
+                              <p className="font-semibold text-foreground">
                                 {request.addressee_profile?.full_name || 'Unknown User'}
                               </p>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-muted-foreground">
                                 @{request.addressee_profile?.username || 'username'}
                               </p>
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-muted-foreground/80">
                                 Sent {new Date(request.created_at).toLocaleDateString()}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
                               Pending
                             </Badge>
                             <Button
@@ -358,7 +358,7 @@ export const EnhancedFriendsManager = () => {
                               variant="outline"
                               onClick={() => handleCancelRequest(request.id, request.addressee_profile?.full_name || 'User')}
                               disabled={cancelFriendRequest.isPending}
-                              className="border-red-300 text-red-700 hover:bg-red-50"
+                              className="border-destructive/40 text-destructive hover:bg-destructive/10 rounded-lg"
                             >
                               <X className="w-4 h-4 mr-1" />
                               Cancel
@@ -371,9 +371,11 @@ export const EnhancedFriendsManager = () => {
 
                   {/* No Requests State */}
                   {incomingRequests.length === 0 && outgoingRequests.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <UserPlus className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No pending requests</p>
+                    <div className="text-center py-12 text-muted-foreground">
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+                        <UserPlus className="w-8 h-8 text-brand-primary" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground">No pending requests</p>
                       <p className="text-xs">Friend requests will appear here</p>
                     </div>
                   )}
