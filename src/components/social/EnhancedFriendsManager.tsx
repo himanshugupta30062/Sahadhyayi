@@ -215,23 +215,23 @@ export const EnhancedFriendsManager = () => {
                       : friendship.user1_profile;
                     
                     return (
-                      <div key={friendship.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div key={friendship.id} className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
                         <div className="flex items-center gap-3">
-                          <Avatar className="w-10 h-10">
+                          <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
                             <AvatarImage src={friendProfile?.profile_photo_url || ''} />
-                            <AvatarFallback className="bg-gradient-to-r from-green-400 to-blue-500 text-white">
+                            <AvatarFallback className="bg-gradient-button text-white font-semibold">
                               {getInitials(friendProfile?.full_name || '')}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-semibold text-foreground">
                               {friendProfile?.full_name || 'Unknown User'}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               @{friendProfile?.username || 'username'}
                             </p>
                             {friendProfile?.bio && (
-                              <p className="text-xs text-gray-400 truncate">
+                              <p className="text-xs text-muted-foreground/80 truncate max-w-[180px]">
                                 {friendProfile.bio}
                               </p>
                             )}
@@ -241,18 +241,20 @@ export const EnhancedFriendsManager = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => setChatId(friendProfile?.id || '')}
-                          className="text-blue-600 hover:text-blue-700"
+                          className="border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg"
                         >
-                          <MessageCircle className="w-4 h-4 mr-2" />
+                          <MessageCircle className="w-4 h-4 mr-1.5" />
                           Message
                         </Button>
                       </div>
                     );
                   })
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No friends yet</p>
+                  <div className="text-center py-12 text-muted-foreground">
+                    <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+                      <Users className="w-8 h-8 text-brand-primary" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground">No friends yet</p>
                     <p className="text-xs">Search for users to send friend requests</p>
                   </div>
                 )}
