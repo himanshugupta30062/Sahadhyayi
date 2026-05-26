@@ -30,7 +30,7 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
       .select('genre')
       .not('genre', 'is', null);
 
-    const genres = [...new Set(genreData?.map(item => item.genre).filter(Boolean))];
+    const genres = [...new Set(genreData?.map((item: { genre: string }) => item.genre).filter(Boolean))] as string[];
 
     // Get recent books
     const { data: recentBooks } = await supabase

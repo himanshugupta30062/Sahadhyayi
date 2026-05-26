@@ -161,15 +161,32 @@ const ReadingGroups = () => {
           {!isLoading && groups.length === 0 && (
             <div className="text-center py-12">
               <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-gray-600 mb-2">No groups found</h3>
-              <p className="text-gray-500 mb-4">Be the first to create a reading group!</p>
-              <Button 
-                onClick={() => setShowCreateGroup(true)}
-                className="bg-amber-600 hover:bg-amber-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create First Group
-              </Button>
+              <h3 className="text-xl font-medium text-gray-600 mb-2">
+                {user ? 'No groups found' : 'Sign in to discover reading groups'}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {user
+                  ? 'Be the first to create a reading group!'
+                  : 'Join Sahadhyayi to browse, join, and create reading groups with fellow readers.'}
+              </p>
+              {user ? (
+                <Button
+                  onClick={() => setShowCreateGroup(true)}
+                  className="bg-amber-600 hover:bg-amber-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Group
+                </Button>
+              ) : (
+                <div className="flex gap-2 justify-center">
+                  <Button asChild className="bg-amber-600 hover:bg-amber-700">
+                    <a href="/signin?redirect=%2Fgroups">Sign In</a>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <a href="/signup">Create Account</a>
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
