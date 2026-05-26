@@ -35,11 +35,17 @@ const Articles = () => {
 
   const articleWritePath = user ? '/articles/write' : '/signin?redirect=%2Farticles%2Fwrite';
 
+  // Normalize tags (strip leading # so we don't double-prefix when rendering)
+  const cleanTag = (t: string) => t.replace(/^#+/, '').trim();
+
   // Top tags by frequency
   const topTags = useMemo(() => {
     const counts = new Map<string, number>();
     (articles || []).forEach((a) =>
-      (a.tags || []).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)),
+      (a.tags || []).forEach((t) => {
+        const c = cleanTag(t);
+        if (c) counts.set(c, (counts.get(c) || 0) + 1);
+      }),
     );
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([t]) => t);
   }, [articles]);
@@ -57,7 +63,7 @@ const Articles = () => {
       );
     }
     if (activeTag) {
-      list = list.filter((a) => a.tags?.includes(activeTag));
+      list = list.filter((a) => a.tags?.some((t) => cleanTag(t) === activeTag));
     }
     if (sortMode === 'popular') {
       list = [...list].sort(
