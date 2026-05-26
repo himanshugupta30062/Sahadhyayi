@@ -284,7 +284,7 @@ const Articles = () => {
                               variant="secondary"
                               className="text-[10px] uppercase tracking-wider font-semibold"
                             >
-                              {tag}
+                              #{cleanTag(tag)}
                             </Badge>
                           ))}
                         </div>
@@ -357,7 +357,7 @@ const Articles = () => {
                               variant="secondary"
                               className="text-[10px] uppercase tracking-wider font-semibold"
                             >
-                              {tag}
+                              #{cleanTag(tag)}
                             </Badge>
                           ))}
                         </div>
