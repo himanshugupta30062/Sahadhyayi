@@ -162,11 +162,11 @@ const About = () => {
   return (
     <>
       <SEO
-        title="About Sahadhyayi - What Sahadhyayi Means | Reviving Reading Culture Worldwide"
-        description="Learn about Sahadhyayi's mission to revive deep reading culture. Discover the Sanskrit meaning of Sahadhyayi (fellow reader) and how we connect readers globally through our digital community platform."
+        title="About Sahadhyayi - Reviving Reading Culture"
+        description="Learn about Sahadhyayi's mission to revive deep reading and connect readers globally. Sahadhyayi means 'fellow reader' in Sanskrit."
         canonical="https://sahadhyayi.com/about"
         url="https://sahadhyayi.com/about"
-        keywords={['About Sahadhyayi', 'what is Sahadhyayi', 'Sahadhyayi meaning', 'fellow reader', 'Sanskrit', 'reading community', 'digital library', 'book lovers']}
+        keywords={['About Sahadhyayi', 'Sahadhyayi meaning', 'fellow reader', 'reading community', 'digital library']}
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
