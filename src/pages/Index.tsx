@@ -126,10 +126,10 @@ const Index = () => {
   return (
     <>
       <SEO
-        title="Sahadhyayi - Digital Reading Community & Book Library | Fellow Readers Platform"
-        description="Sahadhyayi means 'fellow reader' in Sanskrit. Join our vibrant digital reading community and book reader social media platform. Discover thousands of books, connect with fellow readers, track your progress, and explore our comprehensive digital library with your study companions."
+        title="Sahadhyayi - Digital Reading Community & Book Library"
+        description="Sahadhyayi means 'fellow reader' in Sanskrit. Join our reading community, discover books, and connect with fellow readers worldwide."
         url="https://sahadhyayi.com/"
-        keywords={['Sahadhyayi', 'fellow reader', 'Sanskrit meaning', 'digital reading community', 'book library', 'reading platform', 'study companions', 'book lovers']}
+        keywords={['Sahadhyayi', 'fellow reader', 'digital reading community', 'book library', 'reading platform', 'book lovers']}
       />
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}

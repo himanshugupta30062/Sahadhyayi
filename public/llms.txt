@@ -1,0 +1,37 @@
+# Sahadhyayi
+
+> Sahadhyayi (Sanskrit for "fellow reader") is a digital reading community and online book library. Readers discover books, track reading progress, join reading groups, write articles, and connect with fellow book lovers worldwide.
+
+## Pages
+
+- [Home](/): Overview of the Sahadhyayi reading community and features.
+- [About](/about): Mission, values, and the meaning of Sahadhyayi.
+- [Library](/library): Browse thousands of books in the digital library.
+- [Authors](/authors): Verified authors directory with profiles and works.
+- [Articles](/articles): Community-written articles, essays, and reading insights.
+- [Blog](/blog): Editorial blog covering reading culture and book recommendations.
+- [Reading Groups](/groups): Book-specific discussion groups and clubs.
+- [Reader Map](/map): Discover readers and reading groups near you.
+- [Games](/games): Book quizzes, badges, and leaderboards.
+- [Discovery](/discovery): Personalized book and reader discovery feed.
+- [Social](/social): Social feed, friends, and groups for readers.
+
+## Articles & Authors (dynamic)
+
+- [Article example](/articles/sahadhyayi-is-a-book-readers-social-media): Example community article.
+- [Author profile example](/author/rabindranath-tagore): Example author profile page.
+- [Book detail example](/book/): Individual book detail pages live under /book/:id.
+
+## Legal & Help
+
+- [Help Center](/help-center): Help articles and FAQs.
+- [Community Guidelines](/community-guidelines): Posting and conduct rules.
+- [Privacy Policy](/privacy-policy): How we handle user data.
+- [Terms of Service](/terms-of-service): Terms governing use of the platform.
+- [Cookie Policy](/cookie-policy): Cookie usage and consent details.
+- [Feedback](/feedback): Submit feedback or contact the team.
+
+## Optional
+
+- [Publish a Book](/publish): Submit your own book to the library (auth required).
+- [Write an Article](/articles/write): Compose and publish an article (auth required).
