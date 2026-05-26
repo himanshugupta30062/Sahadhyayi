@@ -227,10 +227,10 @@ export const useGenres = () => {
 
       if (error) throw error;
 
-      const uniqueGenres = [...new Set(data.map(item => item.genre))];
+      const uniqueGenres = [...new Set((data as Array<{ genre: string }>).map(item => item.genre))];
       return uniqueGenres.map((genre, index) => ({
         id: index.toString(),
-        name: genre,
+        name: genre as string,
       }));
     },
   });
