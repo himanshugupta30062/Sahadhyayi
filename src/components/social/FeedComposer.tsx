@@ -87,9 +87,19 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
 
     setIsPosting(true);
     try {
-      // Create post in database
-      if (selectedImage) {
-        throw new Error('Photo uploads are not available yet. Please remove the photo and try again.');
+      let uploadedImageUrl: string | undefined;
+
+      // Upload image to Supabase Storage if present
+      if (selectedImage && user) {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const ext = selectedImage.name.split('.').pop() || 'jpg';
+        const path = `social-posts/${user.id}/${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('books')
+          .upload(path, selectedImage, { cacheControl: '3600', upsert: false });
+        if (uploadError) throw uploadError;
+        const { data: pub } = supabase.storage.from('books').getPublicUrl(path);
+        uploadedImageUrl = pub.publicUrl;
       }
 
       await createPost.mutateAsync({
@@ -97,6 +107,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
         book_id: selectedBook?.id,
         feeling_emoji: selectedFeeling?.emoji,
         feeling_label: selectedFeeling?.label,
+        image_url: uploadedImageUrl,
       });
 
       // Legacy callback for compatibility
