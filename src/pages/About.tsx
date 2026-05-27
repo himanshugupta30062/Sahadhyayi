@@ -119,8 +119,7 @@ const About = () => {
     }
   };
 
-  const structuredData = {
-    "@context": "https://schema.org",
+  const aboutSchema = {
     "@type": "AboutPage",
     "name": "About Sahadhyayi - What Sahadhyayi Means",
     "description": "Learn about Sahadhyayi's mission to revive reading culture. Discover what Sahadhyayi means in Sanskrit and how we connect readers worldwide through our digital community platform.",
@@ -131,7 +130,6 @@ const About = () => {
       "description": "Sahadhyayi means 'fellow reader' in Sanskrit. Our digital platform is dedicated to reviving deep reading culture and connecting readers worldwide.",
       "url": "https://sahadhyayi.com",
       "foundingDate": "2024",
-      "mission": "To revive deep reading culture and connect readers worldwide as fellow study companions",
       "founder": {
         "@type": "Person",
         "name": "Himanshu Gupta",
@@ -139,25 +137,27 @@ const About = () => {
         "email": "gyan@sahadhyayi.com",
         "telephone": "8264135459"
       }
-    },
-    "breadcrumb": {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://sahadhyayi.com"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "About",
-          "item": "https://sahadhyayi.com/about"
-        }
-      ]
     }
   };
+
+  const faqSchema = {
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  };
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [aboutSchema, faqSchema]
+  };
+
+  const aboutBreadcrumbs = [
+    { name: "Home", url: "https://sahadhyayi.com" },
+    { name: "About", url: "https://sahadhyayi.com/about" }
+  ];
 
   return (
     <>
@@ -167,10 +167,9 @@ const About = () => {
         canonical="https://sahadhyayi.com/about"
         url="https://sahadhyayi.com/about"
         keywords={['About Sahadhyayi', 'Sahadhyayi meaning', 'fellow reader', 'reading community', 'digital library']}
+        schema={structuredData}
+        breadcrumbs={aboutBreadcrumbs}
       />
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
       <div className="min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
