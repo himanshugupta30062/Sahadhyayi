@@ -64,14 +64,46 @@ const ArticleDetail = () => {
   }
 
   const articleUrl = `/articles/${article.slug}`;
+  const fullArticleUrl = `https://sahadhyayi.com/articles/${article.slug}`;
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.subtitle || article.content.slice(0, 155),
+    image: article.cover_image_url ? [article.cover_image_url] : undefined,
+    datePublished: (article as any).published_at || (article as any).created_at,
+    dateModified: (article as any).updated_at || (article as any).published_at || (article as any).created_at,
+    author: {
+      "@type": "Person",
+      name: (article as any).author?.full_name || (article as any).author_name || "Sahadhyayi Author"
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Sahadhyayi",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png"
+      }
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": fullArticleUrl },
+    url: fullArticleUrl
+  };
 
   return (
     <>
       <SEO
         title={`${article.title} - Sahadhyayi`}
         description={article.subtitle || article.content.slice(0, 155)}
-        canonical={`https://sahadhyayi.com/articles/${article.slug}`}
-        url={`https://sahadhyayi.com/articles/${article.slug}`}
+        canonical={fullArticleUrl}
+        url={fullArticleUrl}
+        type="article"
+        image={article.cover_image_url || undefined}
+        schema={articleSchema}
+        breadcrumbs={[
+          { name: "Home", url: "https://sahadhyayi.com" },
+          { name: "Articles", url: "https://sahadhyayi.com/articles" },
+          { name: article.title, url: fullArticleUrl }
+        ]}
       />
 
       {/* Reading progress bar across the top */}
