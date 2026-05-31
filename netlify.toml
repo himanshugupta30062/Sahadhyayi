@@ -5,6 +5,22 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Block unnecessary probing routes
+[[redirects]]
+  from = "/.well-known/apple-app-site-association"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/apple-app-site-association"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/cdn-cgi/*"
+  to = "/404"
+  status = 404
+
 # SPA routing - redirect all paths to index.html
 [[redirects]]
   from = "/*"
