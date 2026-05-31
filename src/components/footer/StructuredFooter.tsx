@@ -92,7 +92,7 @@ const StructuredFooter = () => {
           {/* Footer Links */}
           {footerSections.map((section) => (
             <div key={section.title}>
-              <h4 className="text-sm font-semibold text-white mb-4">{section.title}</h4>
+              <h3 className="text-sm font-semibold text-white mb-4">{section.title}</h3>
               <ul className="space-y-3">
                 {section.links.map((link) => (
                   <li key={link.name}>
@@ -113,7 +113,7 @@ const StructuredFooter = () => {
         <div className="border-t border-gray-700 pt-8 mb-8">
           <div className="flex flex-col sm:flex-row items-center justify-between">
             <div className="mb-4 sm:mb-0">
-              <h4 className="text-sm font-semibold mb-3">Follow Us</h4>
+              <h3 className="text-sm font-semibold mb-3">Follow Us</h3>
               <div className="flex space-x-4">
                 {socialLinks.map((social) => {
                   const Icon = social.icon;
