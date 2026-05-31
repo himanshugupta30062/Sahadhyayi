@@ -2948,6 +2948,36 @@ export type Database = {
         }
         Relationships: []
       }
+      social_connections_safe: {
+        Row: {
+          connected_at: string | null
+          id: string | null
+          last_synced_at: string | null
+          platform: Database["public"]["Enums"]["social_platform"] | null
+          platform_user_id: string | null
+          platform_username: string | null
+          user_id: string | null
+        }
+        Insert: {
+          connected_at?: string | null
+          id?: string | null
+          last_synced_at?: string | null
+          platform?: Database["public"]["Enums"]["social_platform"] | null
+          platform_user_id?: string | null
+          platform_username?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          connected_at?: string | null
+          id?: string | null
+          last_synced_at?: string | null
+          platform?: Database["public"]["Enums"]["social_platform"] | null
+          platform_user_id?: string | null
+          platform_username?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       are_friends: {
