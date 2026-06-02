@@ -35,10 +35,7 @@ export const useAuth = () => {
     return { error };
   };
 
-  // Backward compatibility: expose a loading flag if callers expect it
-  const loading = false as const;
-
-  return { ...base, signUp, signInWithOAuth, resetPassword, loading } as const;
+  return { ...base, signUp, signInWithOAuth, resetPassword } as const;
 };
 
 export type { AuthError };
