@@ -14,8 +14,12 @@ import { ReadingGroups } from '@/components/social/ReadingGroups';
 import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
 
 const SocialMedia = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('feed');
+
+  if (loading) {
+    return <div className="min-h-screen bg-background" aria-hidden />;
+  }
 
   if (!user) {
     return (
