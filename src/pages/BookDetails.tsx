@@ -25,9 +25,11 @@ import { logBookEvent } from '@/lib/supabase/events';
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const { data: book, isLoading, error } = useBookById(id);
   const { data: ratingData, isLoading: ratingLoading } = useBookRatings(id);
   const rateMutation = useRateBook(id);
+
 
   useEffect(() => {
     if (book?.id) {
