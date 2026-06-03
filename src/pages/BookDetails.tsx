@@ -331,8 +331,39 @@ const BookDetails = () => {
 
           <Separator className="my-8" />
 
+          {/* Guest CTA */}
+          {!user && (
+            <Card className="mb-8 border-[hsl(var(--brand-primary))]/30 bg-gradient-to-r from-amber-50 to-orange-50">
+              <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                <div className="flex-1 text-center sm:text-left">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                    Sign in to unlock the full experience
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Save this book to your shelf, rate it, join reader discussions, and track your reading progress.
+                  </p>
+                </div>
+                <div className="flex gap-3 shrink-0">
+                  <Link to={`/signin?redirect=/book/${id}`}>
+                    <Button className="bg-amber-700 hover:bg-amber-800 text-white">
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to={`/signup?redirect=/book/${id}`}>
+                    <Button variant="outline" className="border-amber-700 text-amber-700 hover:bg-amber-50">
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Create Account
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Interactive Tabs Section - Mobile Responsive */}
           <div className="w-full">
+
             <Tabs defaultValue="connect" className="w-full">
               <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 mb-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl h-auto p-2">
                 <TabsTrigger
