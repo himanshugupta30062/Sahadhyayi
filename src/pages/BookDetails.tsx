@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, BookOpen, Globe, User } from 'lucide-react';
+import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,9 +17,11 @@ import BookIdeasSection from '@/components/books/BookIdeasSection';
 import BookReader from '@/components/books/BookReader';
 import { useBookById } from '@/hooks/useBookById';
 import { useBookRatings, useRateBook } from '@/hooks/useBookRatings';
+import { useAuth } from '@/contexts/authHelpers';
 import StarRating from '@/components/StarRating';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import { logBookEvent } from '@/lib/supabase/events';
+
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
