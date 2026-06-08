@@ -125,8 +125,11 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   // Determine book type and URLs
   const isEpub = epubUrl && epubUrl.length > 0;
   const isGoogleBooks = activeReadUrl?.includes('books.google');
-  const isDirectPdf = activeReadUrl && !isGoogleBooks && (activeReadUrl.endsWith('.pdf') || activeReadUrl.includes('/pdf/'));
-  const isPdf = isDirectPdf;
+  const isArchive = !!activeReadUrl && /archive\.org/i.test(activeReadUrl);
+  const isExplicitPdf = !!activeReadUrl && (/\.pdf($|\?)/i.test(activeReadUrl) || /\/pdf\//i.test(activeReadUrl));
+  // Treat any non-Google reading URL as a PDF/embed candidate so books with
+  // unusual extensions still get a viewer instead of "Unsupported format".
+  const isPdf = !!activeReadUrl && !isGoogleBooks && (isExplicitPdf || isArchive || !!pdfUrl);
 
   const bookUrl = isEpub ? epubUrl : activeReadUrl;
   
