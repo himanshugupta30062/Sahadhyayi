@@ -527,9 +527,15 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     return (
       <div className="text-center py-12">
         <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-        <h3 className="text-xl font-semibold text-gray-700 mb-2">Book Not Available for Online Reading</h3>
-        <p className="text-gray-500 mb-4">This book doesn't have a direct reading link yet.</p>
-        <div className="flex gap-3 justify-center mt-6">
+        <h3 className="text-xl font-semibold text-gray-700 mb-2">No reading link available yet</h3>
+        <p className="text-gray-500 mb-4">We couldn't find an online copy of this book. Try a search below.</p>
+        <div className="flex flex-wrap gap-2 justify-center mt-6">
+          <Button variant="outline" onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(bookTitle + ' read online')}`, '_blank', 'noopener,noreferrer')}>
+            Search Google
+          </Button>
+          <Button variant="outline" onClick={() => window.open(`https://archive.org/search.php?query=${encodeURIComponent(bookTitle)}`, '_blank', 'noopener,noreferrer')}>
+            Search Internet Archive
+          </Button>
           {audioSummary && (
             <Button variant="outline" className="flex items-center gap-2">
               <Volume2 className="w-4 h-4" />
@@ -537,9 +543,6 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
             </Button>
           )}
         </div>
-        <p className="text-sm text-gray-400 mt-4">
-          Looking for the full book? Try searching for "{bookTitle}" on online bookstores.
-        </p>
       </div>
     );
   }
