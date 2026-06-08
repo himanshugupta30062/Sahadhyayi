@@ -1,6 +1,8 @@
 
 # Sahadhyayi — App Improvement Plan
 
+**Sprint 1 status: shipped.** Bookshelf redesign, BookDetails guest CTA, book data fix, and Home page consolidation (logged-in/out split, compressed marketing sections, compact explore strip) are live. Phase 2 items (search filters, recommendations, onboarding checklist) remain.
+
 Based on a sweep of the codebase (45+ pages, hooks, Supabase functions, prior `.lovable/plan.md`, and the roadmap in `docs/Sahadhyayi-Improvement-Implementation-Plan.md`), here is a prioritized plan focused on real, observable gaps rather than rewrites.
 
 ## Phase 1 — Quick wins (1–2 sprints)
