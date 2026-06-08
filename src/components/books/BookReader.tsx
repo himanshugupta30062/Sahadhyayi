@@ -890,8 +890,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 </div>
               </div>
             ) : (
-              <div className="text-center py-12 border border-gray-300 rounded-lg">
-                <p className="text-gray-500">Unsupported book format</p>
+              <div className="text-center py-12 border border-gray-300 rounded-lg space-y-3">
+                <p className="text-gray-500">This book's format can't be previewed inline.</p>
+                {activeReadUrl && (
+                  <Button onClick={() => window.open(activeReadUrl, '_blank', 'noopener,noreferrer')}>
+                    Open in new tab
+                  </Button>
+                )}
               </div>
             )}
 
