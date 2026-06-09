@@ -7,16 +7,25 @@ import GenreSelector from '@/components/library/GenreSelector';
 import SEO from '@/components/SEO';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
-const BookLibrary = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState<string>('All');
-  const [selectedAuthor, setSelectedAuthor] = useState<string>('All');
-  const [selectedYear, setSelectedYear] = useState<string>('');
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
+const BookLibrary = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
+  const [selectedGenre, setSelectedGenre] = useState<string>(() => cap(searchParams.get('genre') || '') || 'All');
+  const [selectedAuthor, setSelectedAuthor] = useState<string>(() => searchParams.get('author') || 'All');
+  const [selectedYear, setSelectedYear] = useState<string>(() => searchParams.get('year') || '');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => cap(searchParams.get('language') || '') || 'All');
+  const [priceRange, setPriceRange] = useState<[number, number]>(() => {
+    const p = searchParams.get('price');
+    if (p) {
+      const [lo, hi] = p.split('-').map(Number);
+      if (!Number.isNaN(lo) && !Number.isNaN(hi)) return [lo, hi];
+    }
+    return [0, 100];
+  });
 
   useEffect(() => {
     const stored = sessionStorage.getItem('scroll-/library');
@@ -29,18 +38,17 @@ const BookLibrary = () => {
     };
   }, []);
 
+  // Sync filter state -> URL for shareable searches
   useEffect(() => {
-    const genreParam = searchParams.get('genre');
-    const languageParam = searchParams.get('language');
-
-    if (genreParam) {
-      setSelectedGenre(genreParam.charAt(0).toUpperCase() + genreParam.slice(1));
-    }
-
-    if (languageParam) {
-      setSelectedLanguage(languageParam.charAt(0).toUpperCase() + languageParam.slice(1));
-    }
-  }, [searchParams]);
+    const next = new URLSearchParams();
+    if (searchQuery.trim()) next.set('q', searchQuery.trim());
+    if (selectedGenre && selectedGenre !== 'All') next.set('genre', selectedGenre);
+    if (selectedAuthor && selectedAuthor !== 'All') next.set('author', selectedAuthor);
+    if (selectedYear) next.set('year', selectedYear);
+    if (selectedLanguage && selectedLanguage !== 'All') next.set('language', selectedLanguage);
+    if (priceRange[0] !== 0 || priceRange[1] !== 100) next.set('price', `${priceRange[0]}-${priceRange[1]}`);
+    setSearchParams(next, { replace: true });
+  }, [searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange, setSearchParams]);
 
   const handleClearFilters = () => {
     setSelectedGenre('All');
