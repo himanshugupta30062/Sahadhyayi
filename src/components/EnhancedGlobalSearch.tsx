@@ -116,42 +116,51 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl p-0 gap-0 max-h-[80vh]">
-        <div className="flex items-center gap-3 px-4 py-3 border-b">
-          <Search className="w-5 h-5 text-muted-foreground" />
+      <DialogContent
+        className="sm:max-w-2xl p-0 gap-0 max-h-[80vh] bg-amber-50 border border-amber-200/60 rounded-2xl shadow-2xl overflow-hidden"
+      >
+        {/* Search Input Header */}
+        <div className="relative flex items-center border-b border-amber-100 px-6 py-4">
+          <Search className="w-5 h-5 text-amber-500 flex-shrink-0" />
           <Input
             ref={inputRef}
-            placeholder="Search books, authors, or keywords... (Cmd+K)"
+            placeholder="Search books, authors, or articles..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setActiveIndex(-1);
             }}
             onKeyDown={handleKeyDown}
-            className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
+            className="flex-1 ml-4 bg-transparent border-0 outline-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg text-amber-900 placeholder:text-amber-400 font-medium h-auto p-0"
           />
-          {searchQuery && (
+          {searchQuery ? (
             <button
               onClick={() => setSearchQuery('')}
-              className="text-muted-foreground hover:text-foreground"
+              className="ml-3 text-amber-500 hover:text-amber-700 transition-colors"
+              aria-label="Clear search"
             >
               <X className="w-4 h-4" />
             </button>
+          ) : (
+            <span className="hidden sm:inline-block ml-3 px-2 py-1 text-[10px] font-bold text-amber-600 bg-amber-100 border border-amber-200 rounded uppercase tracking-wider">
+              Esc
+            </span>
           )}
         </div>
 
+        {/* Scrollable Results Area */}
         <ScrollArea className="max-h-[60vh]">
-          <div className="p-4">
+          <div className="p-2 space-y-4">
             {showRecent && (
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                    <Clock className="w-4 h-4" />
+                <div className="flex items-center justify-between px-4 py-2">
+                  <h3 className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5" />
                     Recent Searches
-                  </div>
+                  </h3>
                   <button
                     onClick={clearRecentSearches}
-                    className="text-xs text-muted-foreground hover:text-foreground"
+                    className="text-[11px] font-medium text-amber-600 hover:text-amber-800 transition-colors"
                   >
                     Clear
                   </button>
@@ -165,14 +174,18 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
                         handleSearch(search);
                       }}
                       className={cn(
-                        'w-full text-left px-3 py-2 rounded-lg hover:bg-accent transition-colors',
-                        activeIndex === index && 'bg-accent'
+                        'w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-colors text-left',
+                        activeIndex === index
+                          ? 'bg-amber-100/80 border border-amber-200/50 shadow-sm'
+                          : 'hover:bg-amber-100/40 border border-transparent'
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <Search className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{search}</span>
+                      <div className="w-10 h-10 bg-amber-100 rounded-full flex-shrink-0 flex items-center justify-center text-amber-500">
+                        <Search className="w-4 h-4" />
                       </div>
+                      <span className="text-sm font-medium text-amber-900 truncate">
+                        {search}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -180,23 +193,23 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
             )}
 
             {isLoading && searchQuery.trim().length >= 2 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <div className="animate-pulse">Searching...</div>
+              <div className="text-center py-10 text-amber-600">
+                <div className="animate-pulse text-sm font-medium">Searching the library…</div>
               </div>
             )}
 
             {searchQuery.trim().length > 0 && searchQuery.trim().length < 2 && (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-10 text-amber-500">
                 <p className="text-sm">Type at least 2 characters to search</p>
               </div>
             )}
 
             {showResults && (
               <div>
-                <div className="flex items-center gap-2 mb-3 text-sm font-medium text-muted-foreground">
-                  <TrendingUp className="w-4 h-4" />
+                <h3 className="px-4 py-2 text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                  <TrendingUp className="w-3.5 h-3.5" />
                   Books
-                </div>
+                </h3>
                 <div className="space-y-1">
                   {results.map((book, index) => (
                     <button
@@ -207,34 +220,49 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
                         onClose();
                       }}
                       className={cn(
-                        'w-full text-left px-3 py-3 rounded-lg hover:bg-accent transition-colors',
-                        activeIndex === index && 'bg-accent'
+                        'group w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-colors text-left',
+                        activeIndex === index
+                          ? 'bg-amber-100/80 border border-amber-200/50 shadow-sm'
+                          : 'hover:bg-amber-100/40 border border-transparent'
                       )}
                     >
-                      <div className="flex items-start gap-3">
-                        <BookOpen className="w-5 h-5 text-primary mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm truncate">
-                            {book.title}
-                          </h4>
-                          {book.author && (
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              by {book.author}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-2 mt-1">
-                            {book.genre && (
-                              <Badge variant="secondary" className="text-xs">
-                                {book.genre}
-                              </Badge>
-                            )}
-                            {book.language && (
-                              <span className="text-xs text-muted-foreground">
-                                {book.language}
-                              </span>
-                            )}
-                          </div>
+                      <div
+                        className={cn(
+                          'w-10 h-14 rounded shadow-sm flex-shrink-0 flex items-center justify-center transition-colors',
+                          activeIndex === index
+                            ? 'bg-amber-200 text-amber-600'
+                            : 'bg-amber-100 text-amber-400 group-hover:bg-amber-200'
+                        )}
+                      >
+                        <BookOpen className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm text-amber-950 truncate">
+                          {book.title}
                         </div>
+                        {book.author && (
+                          <div className="text-sm text-amber-700 truncate">
+                            by {book.author}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          {book.genre && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100"
+                            >
+                              {book.genre}
+                            </Badge>
+                          )}
+                          {book.language && (
+                            <span className="text-[11px] text-amber-600">
+                              {book.language}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="hidden sm:block text-xs font-medium text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Open →
                       </div>
                     </button>
                   ))}
@@ -243,35 +271,53 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
             )}
 
             {showNoResults && (
-              <div className="text-center py-8 text-muted-foreground">
-                <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">No books found for "{searchQuery}"</p>
-                <p className="text-xs mt-2">Try different keywords or browse our library</p>
+              <div className="text-center py-12 px-6">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center text-amber-500">
+                  <Search className="w-7 h-7" />
+                </div>
+                <p className="text-sm font-semibold text-amber-900">
+                  No books found for "{searchQuery}"
+                </p>
+                <p className="text-xs mt-2 text-amber-600">
+                  Try different keywords or browse the full library
+                </p>
+              </div>
+            )}
+
+            {!searchQuery && !showRecent && (
+              <div className="text-center py-12 px-6">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center text-amber-500">
+                  <BookOpen className="w-7 h-7" />
+                </div>
+                <p className="text-sm font-semibold text-amber-900">
+                  Start typing to search Sahadhyayi
+                </p>
+                <p className="text-xs mt-2 text-amber-600">
+                  Books, authors, articles and more
+                </p>
               </div>
             )}
           </div>
         </ScrollArea>
 
-        <div className="px-4 py-3 border-t bg-muted/50">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-background border rounded">↑</kbd>
-                <kbd className="px-1.5 py-0.5 bg-background border rounded">↓</kbd>
-                Navigate
-              </span>
-              <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-background border rounded">Enter</kbd>
-                Select
-              </span>
-              <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-background border rounded">Esc</kbd>
-                Close
-              </span>
-            </div>
+        {/* Command Footer */}
+        <div className="flex items-center gap-6 px-6 py-3 bg-amber-100/30 border-t border-amber-100 text-[11px] font-medium text-amber-700">
+          <div className="flex items-center gap-1.5">
+            <kbd className="min-w-[18px] h-[18px] flex items-center justify-center bg-white border border-amber-200 rounded text-amber-900">↑</kbd>
+            <kbd className="min-w-[18px] h-[18px] flex items-center justify-center bg-white border border-amber-200 rounded text-amber-900">↓</kbd>
+            <span>Navigate</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <kbd className="px-1.5 h-[18px] flex items-center justify-center bg-white border border-amber-200 rounded text-amber-900">Enter</kbd>
+            <span>Select</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <kbd className="px-1.5 h-[18px] flex items-center justify-center bg-white border border-amber-200 rounded text-amber-900">Esc</kbd>
+            <span>Close</span>
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+
