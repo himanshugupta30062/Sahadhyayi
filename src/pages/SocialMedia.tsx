@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
-import { MessageCircle, MapPin, UsersIcon, Users, Sparkles, BookOpen } from 'lucide-react';
+import { MessageCircle, MapPin, UsersIcon, Users, Sparkles, BookOpen, Radio, Lock, Quote, Dna } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
@@ -12,6 +12,10 @@ import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
 import { FriendsLocationMap } from '@/components/social/FriendsLocationMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
 import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
+import MarginNotesFeed from '@/components/social/margins/MarginNotesFeed';
+import SpoilerThreadsFeed from '@/components/social/threads/SpoilerThreadsFeed';
+import ReadingRoomsPanel from '@/components/social/rooms/ReadingRoomsPanel';
+import ReadingDnaPanel from '@/components/social/dna/ReadingDnaPanel';
 
 const SocialMedia = () => {
   const { user, loading } = useAuth();
@@ -74,6 +78,10 @@ const SocialMedia = () => {
 
   const tabs = [
     { value: 'feed', label: 'Feed', icon: MessageCircle },
+    { value: 'rooms', label: 'Rooms', icon: Radio },
+    { value: 'threads', label: 'Threads', icon: Lock },
+    { value: 'margins', label: 'Margins', icon: Quote },
+    { value: 'dna', label: 'DNA', icon: Dna },
     { value: 'friends', label: 'Friends', icon: Users },
     { value: 'map', label: 'Map', icon: MapPin },
     { value: 'groups', label: 'Groups', icon: UsersIcon },
@@ -107,12 +115,12 @@ const SocialMedia = () => {
         {/* Main Content */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full max-w-lg bg-muted/50 rounded-xl p-1 mb-6">
+            <TabsList className="w-full bg-muted/50 rounded-xl p-1 mb-6 flex-wrap h-auto justify-start gap-1">
               {tabs.map(tab => (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="flex-1 rounded-lg gap-1.5 text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-brand-primary transition-all"
+                  className="rounded-lg gap-1.5 text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-brand-primary transition-all"
                 >
                   <tab.icon className="w-4 h-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
@@ -124,6 +132,22 @@ const SocialMedia = () => {
               <div className="max-w-2xl mx-auto">
                 <EnhancedSocialFeed />
               </div>
+            </TabsContent>
+
+            <TabsContent value="rooms" className="mt-0">
+              <div className="max-w-3xl mx-auto"><ReadingRoomsPanel /></div>
+            </TabsContent>
+
+            <TabsContent value="threads" className="mt-0">
+              <div className="max-w-2xl mx-auto"><SpoilerThreadsFeed /></div>
+            </TabsContent>
+
+            <TabsContent value="margins" className="mt-0">
+              <div className="max-w-2xl mx-auto"><MarginNotesFeed /></div>
+            </TabsContent>
+
+            <TabsContent value="dna" className="mt-0">
+              <div className="max-w-2xl mx-auto"><ReadingDnaPanel /></div>
             </TabsContent>
 
             <TabsContent value="friends" className="mt-0">
