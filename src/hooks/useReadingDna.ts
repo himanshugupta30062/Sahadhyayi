@@ -16,7 +16,7 @@ export const useReadingDna = (userId?: string) => {
         .eq("user_id", target!)
         .maybeSingle();
       if (error) throw error;
-      return (data ?? null) as ReadingDna | null;
+      return (data ?? null) as unknown as ReadingDna | null;
     },
     staleTime: 5 * 60 * 1000,
   });
