@@ -14,6 +14,7 @@ import CurrentReads from '@/components/dashboard/CurrentReads';
 import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
 import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
 import BookRecommendations from '@/components/dashboard/BookRecommendations';
+import ReadingStreakCard from '@/components/dashboard/ReadingStreakCard';
 import { trackUiEvent } from '@/lib/analytics';
 
 const Dashboard = () => {
@@ -331,6 +332,9 @@ const Dashboard = () => {
                   <ReadingGoalDialog onGoalUpdate={handleGoalUpdate} />
                 </CardContent>
               </Card>
+
+              {/* Reading Streak */}
+              <ReadingStreakCard />
 
               {/* Recommendations */}
               <BookRecommendations />

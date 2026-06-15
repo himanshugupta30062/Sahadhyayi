@@ -1,7 +1,7 @@
 
 # Sahadhyayi — App Improvement Plan
 
-**Sprint 1 status: shipped.** Bookshelf redesign, BookDetails guest CTA, book data fix, and Home page consolidation are live. **Phase 2 progress:** onboarding checklist (Dashboard) and URL-persisted library filters shipped. Remaining: typo-tolerant ranking, personalized "For you" rail, reading streaks.
+**Sprint 1 status: shipped.** Bookshelf redesign, BookDetails guest CTA, book data fix, and Home page consolidation are live. **Phase 2 progress:** onboarding checklist (Dashboard), URL-persisted library filters, and Dashboard reading streak card shipped. Remaining: typo-tolerant ranking, personalized "For you" rail.
 
 Based on a sweep of the codebase (45+ pages, hooks, Supabase functions, prior `.lovable/plan.md`, and the roadmap in `docs/Sahadhyayi-Improvement-Implementation-Plan.md`), here is a prioritized plan focused on real, observable gaps rather than rewrites.
 
