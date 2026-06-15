@@ -1621,6 +1621,120 @@ export type Database = {
         }
         Relationships: []
       }
+      margin_note_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          margin_note_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          margin_note_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          margin_note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "margin_note_reactions_margin_note_id_fkey"
+            columns: ["margin_note_id"]
+            isOneToOne: false
+            referencedRelation: "margin_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      margin_note_replies: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          margin_note_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          margin_note_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          margin_note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "margin_note_replies_margin_note_id_fkey"
+            columns: ["margin_note_id"]
+            isOneToOne: false
+            referencedRelation: "margin_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      margin_notes: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          note: string
+          page: number
+          quote: string
+          reactions_count: number
+          replies_count: number
+          updated_at: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          note: string
+          page?: number
+          quote: string
+          reactions_count?: number
+          replies_count?: number
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          page?: number
+          quote?: string
+          reactions_count?: number
+          replies_count?: number
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "margin_notes_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_reactions: {
         Row: {
           created_at: string | null
@@ -2135,6 +2249,42 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_dna: {
+        Row: {
+          generated_at: string
+          genres: Json
+          moods: Json
+          pace: string | null
+          signature_color: string | null
+          summary: string | null
+          themes: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          generated_at?: string
+          genres?: Json
+          moods?: Json
+          pace?: string | null
+          signature_color?: string | null
+          summary?: string | null
+          themes?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          generated_at?: string
+          genres?: Json
+          moods?: Json
+          pace?: string | null
+          signature_color?: string | null
+          summary?: string | null
+          themes?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reading_progress: {
         Row: {
           book_title: string
@@ -2161,6 +2311,105 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      reading_room_events: {
+        Row: {
+          chapter: number | null
+          created_at: string
+          id: string
+          kind: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          chapter?: number | null
+          created_at?: string
+          id?: string
+          kind: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          chapter?: number | null
+          created_at?: string
+          id?: string
+          kind?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_room_events_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "reading_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reading_room_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_room_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "reading_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reading_rooms: {
+        Row: {
+          book_id: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_rooms_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: true
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reading_summaries: {
         Row: {
@@ -2268,6 +2517,89 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      spoiler_thread_comments: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          min_chapter: number
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          min_chapter?: number
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          min_chapter?: number
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spoiler_thread_comments_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "spoiler_threads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spoiler_thread_comments_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "spoiler_threads_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spoiler_threads: {
+        Row: {
+          body: string
+          book_id: string
+          created_at: string
+          id: string
+          min_chapter: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          book_id: string
+          created_at?: string
+          id?: string
+          min_chapter?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          book_id?: string
+          created_at?: string
+          id?: string
+          min_chapter?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spoiler_threads_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stories: {
         Row: {
@@ -3020,6 +3352,50 @@ export type Database = {
         }
         Relationships: []
       }
+      spoiler_threads_safe: {
+        Row: {
+          body: string | null
+          book_id: string | null
+          created_at: string | null
+          id: string | null
+          is_unlocked: boolean | null
+          min_chapter: number | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          body?: never
+          book_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_unlocked?: never
+          min_chapter?: number | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          body?: never
+          book_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_unlocked?: never
+          min_chapter?: number | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spoiler_threads_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       are_friends: {
@@ -3260,6 +3636,10 @@ export type Database = {
         Returns: string
       }
       update_author_book_counts: { Args: never; Returns: undefined }
+      user_chapter_progress: {
+        Args: { _book: string; _user: string }
+        Returns: number
+      }
       user_has_location_sharing: { Args: never; Returns: boolean }
     }
     Enums: {
