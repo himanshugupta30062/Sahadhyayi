@@ -332,3 +332,95 @@ export const useCreateComment = () => {
     },
   });
 };
+
+export const useToggleRepost = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ post, isReposted, comment }: { post: SocialPost; isReposted: boolean; comment?: string }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      const targetId = post.repost_of_id || post.id;
+
+      if (isReposted) {
+        const { error } = await supabase
+          .from('posts')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('repost_of_id', targetId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('posts').insert({
+          user_id: user.id,
+          content: comment?.trim() || '',
+          repost_of_id: targetId,
+        });
+        if (error) throw error;
+      }
+      return { targetId, isReposted: !isReposted };
+    },
+    onSuccess: ({ isReposted }) => {
+      queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+      toast({
+        title: isReposted ? 'Reposted' : 'Repost removed',
+        description: isReposted ? 'Shared with your followers.' : '',
+      });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+};
+
+export const useToggleCommentLike = (postId: string) => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ commentId, isLiked }: { commentId: string; isLiked: boolean }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      if (isLiked) {
+        const { error } = await supabase
+          .from('post_comment_likes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('comment_id', commentId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('post_comment_likes')
+          .insert({ user_id: user.id, comment_id: commentId });
+        if (error) throw error;
+      }
+      return { commentId, isLiked: !isLiked };
+    },
+    onSuccess: ({ commentId, isLiked }) => {
+      queryClient.setQueryData<any[]>(['post-comments', postId], (old = []) =>
+        (old || []).map((c) =>
+          c.id === commentId
+            ? { ...c, user_liked: isLiked, likes_count: Math.max(0, (c.likes_count || 0) + (isLiked ? 1 : -1)) }
+            : c
+        )
+      );
+    },
+  });
+};
+
+export const useDeletePost = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      const { error } = await supabase.from('posts').delete().eq('id', postId).eq('user_id', user.id);
+      if (error) throw error;
+      return postId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+      toast({ title: 'Post deleted' });
+    },
+  });
+};
