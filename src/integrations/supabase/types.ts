@@ -1904,6 +1904,35 @@ export type Database = {
         }
         Relationships: []
       }
+      post_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_comments: {
         Row: {
           content: string
@@ -2017,6 +2046,8 @@ export type Database = {
           id: string
           image_url: string | null
           likes_count: number
+          repost_of_id: string | null
+          reposts_count: number
           updated_at: string
           user_id: string
         }
@@ -2030,6 +2061,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           likes_count?: number
+          repost_of_id?: string | null
+          reposts_count?: number
           updated_at?: string
           user_id: string
         }
@@ -2043,6 +2076,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           likes_count?: number
+          repost_of_id?: string | null
+          reposts_count?: number
           updated_at?: string
           user_id?: string
         }
@@ -2052,6 +2087,13 @@ export type Database = {
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_repost_of_id_fkey"
+            columns: ["repost_of_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
             referencedColumns: ["id"]
           },
           {
