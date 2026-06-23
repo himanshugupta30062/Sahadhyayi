@@ -299,12 +299,12 @@ export const useCreateComment = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
+    mutationFn: async ({ postId, content, parentCommentId }: { postId: string; content: string; parentCommentId?: string | null }) => {
       if (!user?.id) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
         .from('post_comments')
-        .insert([{ post_id: postId, content, user_id: user.id }])
+        .insert([{ post_id: postId, content, user_id: user.id, parent_comment_id: parentCommentId ?? null }])
         .select(`
           *,
           profiles!post_comments_user_id_profiles_fkey(id, full_name, username, profile_photo_url)
