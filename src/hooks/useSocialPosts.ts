@@ -49,27 +49,32 @@ export const useSocialPosts = () => {
         .select(`
           *,
           profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
-          books_library(id, title, author, cover_image_url)
+          books_library(id, title, author, cover_image_url),
+          reposted_post:posts!posts_repost_of_id_fkey(
+            id, user_id, content, image_url, book_id, feeling_emoji, feeling_label, created_at,
+            profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
+            books_library(id, title, author, cover_image_url)
+          )
         `)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
 
-      // Check which posts the current user has liked
       if (user?.id && data?.length) {
         const postIds = data.map(post => post.id);
-        const { data: userLikes } = await supabase
-          .from('post_likes')
-          .select('post_id')
-          .eq('user_id', user.id)
-          .in('post_id', postIds);
+        const [{ data: userLikes }, { data: userReposts }] = await Promise.all([
+          supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', postIds),
+          supabase.from('posts').select('repost_of_id').eq('user_id', user.id).not('repost_of_id', 'is', null).in('repost_of_id', postIds),
+        ]);
 
-        const likedPostIds = new Set(userLikes?.map(like => like.post_id) || []);
-        
+        const likedPostIds = new Set(userLikes?.map(l => l.post_id) || []);
+        const repostedIds = new Set(userReposts?.map(r => r.repost_of_id as string) || []);
+
         return data.map(post => ({
           ...post,
-          user_liked: likedPostIds.has(post.id)
+          user_liked: likedPostIds.has(post.id),
+          user_reposted: repostedIds.has(post.id),
         }));
       }
 
