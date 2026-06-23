@@ -16,6 +16,8 @@ export interface SocialPost {
   updated_at: string;
   likes_count: number;
   comments_count: number;
+  reposts_count?: number;
+  repost_of_id?: string | null;
   profiles?: {
     id: string;
     full_name?: string;
@@ -28,7 +30,9 @@ export interface SocialPost {
     author?: string;
     cover_image_url?: string;
   };
+  reposted_post?: SocialPost | null;
   user_liked?: boolean;
+  user_reposted?: boolean;
 }
 
 export const useSocialPosts = () => {
