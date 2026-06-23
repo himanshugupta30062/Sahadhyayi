@@ -254,6 +254,7 @@ export const useTogglePostLike = () => {
 };
 
 export const usePostComments = (postId: string) => {
+  const { user } = useAuth();
   return useQuery({
     queryKey: ['post-comments', postId],
     queryFn: async () => {
@@ -267,7 +268,26 @@ export const usePostComments = (postId: string) => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      const comments = data || [];
+      if (!comments.length) return [];
+
+      const commentIds = comments.map((c: any) => c.id);
+      const [{ data: likesRows }, { data: myLikes }] = await Promise.all([
+        supabase.from('post_comment_likes').select('comment_id').in('comment_id', commentIds),
+        user?.id
+          ? supabase.from('post_comment_likes').select('comment_id').eq('user_id', user.id).in('comment_id', commentIds)
+          : Promise.resolve({ data: [] as { comment_id: string }[] }),
+      ]);
+
+      const counts = new Map<string, number>();
+      (likesRows || []).forEach((r: any) => counts.set(r.comment_id, (counts.get(r.comment_id) || 0) + 1));
+      const liked = new Set((myLikes || []).map((r: any) => r.comment_id));
+
+      return comments.map((c: any) => ({
+        ...c,
+        likes_count: counts.get(c.id) || 0,
+        user_liked: liked.has(c.id),
+      }));
     },
     enabled: !!postId,
   });
