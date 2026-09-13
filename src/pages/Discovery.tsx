@@ -22,9 +22,8 @@ const Discovery = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [languageFilter, setLanguageFilter] = useState('all');
   const [genreFilter, setGenreFilter] = useState('all');
-  const [levelFilter, setLevelFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
-  const [sortBy, setSortBy] = useState<'relevance' | 'rating_desc' | 'title_asc'>('relevance');
+  const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc'>('relevance');
 
   const filteredTrendingBooks = useMemo(() => {
     let list = [...books];
@@ -40,14 +39,13 @@ const Discovery = () => {
 
     if (languageFilter !== 'all') list = list.filter(book => book.language === languageFilter);
     if (genreFilter !== 'all') list = list.filter(book => book.genre === genreFilter);
-    if (levelFilter !== 'all') list = list.filter(book => book.level === levelFilter);
     if (availabilityFilter === 'readable') list = list.filter(book => Boolean(book.pdf_url));
 
     if (sortBy === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
 
     return list.slice(0, 24);
-  }, [availabilityFilter, books, genreFilter, languageFilter, levelFilter, searchQuery, sortBy]);
+  }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy]);
 
   const genres = useMemo(() => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort(), [books]);
   const languages = useMemo(() => [...new Set(books.map((book) => book.language).filter(Boolean))].sort(), [books]);
@@ -63,7 +61,7 @@ const Discovery = () => {
 
       <Card className="mb-8 border-border">
         <CardContent className="pt-6 space-y-4">
-          <div className="grid md:grid-cols-3 gap-3">
+          <div className="grid md:grid-cols-2 gap-3">
             <Input
               placeholder="Search by title, author, or keyword"
               value={searchQuery}
@@ -118,17 +116,6 @@ const Discovery = () => {
               <SelectContent>
                 <SelectItem value="all">All genres</SelectItem>
                 {genres.map((genre) => <SelectItem key={genre} value={genre}>{genre}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={levelFilter} onValueChange={(value) => {
-              setLevelFilter(value);
-              void trackUiEvent('discovery_filter_changed', { filter: 'level', value });
-            }}>
-              <SelectTrigger><SelectValue placeholder="Reading level" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All reading levels</SelectItem>
-                <SelectItem value="Beginner">Beginner</SelectItem>
-                <SelectItem value="Intermediate">Intermediate</SelectItem>
               </SelectContent>
             </Select>
           </div>
