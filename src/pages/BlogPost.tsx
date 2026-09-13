@@ -220,7 +220,7 @@ const BlogPost = () => {
       <SEO
         title={`${post.title} | Sahadhyayi Blog`}
         description={post.content.substring(0, 160)}
-        canonical={`https://sahadhyayi.com/blog/${slug}`}
+        canonical={`https://sahadhyayi.app/blog/${slug}`}
         keywords={['Sahadhyayi', 'reading community', 'digital library', 'book lovers']}
       />
       

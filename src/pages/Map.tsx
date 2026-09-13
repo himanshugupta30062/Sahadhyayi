@@ -139,7 +139,7 @@ const MapPage = () => {
 
   return (
     <>
-      <SEO title="Map" description="Readers and friends map" canonical="https://sahadhyayi.com/map" url="https://sahadhyayi.com/map" />
+      <SEO title="Map" description="Readers and friends map" canonical="https://sahadhyayi.app/map" url="https://sahadhyayi.app/map" />
       <div className="min-h-screen pt-8 pb-12 px-4">
         <div className="max-w-5xl mx-auto">
           <Tabs value={tab} onValueChange={value => setTab(value as 'readers' | 'friends')} className="w-full">

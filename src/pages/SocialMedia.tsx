@@ -31,8 +31,8 @@ const SocialMedia = () => {
         <SEO
           title="Social Reading Community | Sahadhyayi"
           description="Join Sahadhyayi's social reading community. Connect with fellow readers and share your reading journey."
-          canonical="https://sahadhyayi.com/social"
-          url="https://sahadhyayi.com/social"
+          canonical="https://sahadhyayi.app/social"
+          url="https://sahadhyayi.app/social"
         />
         <div className="min-h-screen bg-background flex items-center justify-center px-4">
           <div className="text-center max-w-lg">
@@ -92,8 +92,8 @@ const SocialMedia = () => {
       <SEO
         title="Social Reading Community | Sahadhyayi"
         description="Connect with fellow readers, share your reading journey, and discover new books."
-        canonical="https://sahadhyayi.com/social"
-        url="https://sahadhyayi.com/social"
+        canonical="https://sahadhyayi.app/social"
+        url="https://sahadhyayi.app/social"
       />
 
       <div className="min-h-screen bg-background">

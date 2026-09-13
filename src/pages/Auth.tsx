@@ -148,8 +148,8 @@ const Auth = () => {
       <SEO
         title={activeTab === 'signin' ? 'Sign In - Sahadhyayi' : 'Sign Up - Sahadhyayi'}
         description="Sign in or create your Sahadhyayi account to join the reading community."
-        canonical="https://sahadhyayi.com/auth"
-        url="https://sahadhyayi.com/auth"
+        canonical="https://sahadhyayi.app/auth"
+        url="https://sahadhyayi.app/auth"
       />
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50/60 to-yellow-50">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">

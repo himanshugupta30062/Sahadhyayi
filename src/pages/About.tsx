@@ -123,12 +123,12 @@ const About = () => {
     "@type": "AboutPage",
     "name": "About Sahadhyayi - What Sahadhyayi Means",
     "description": "Learn about Sahadhyayi's mission to revive reading culture. Discover what Sahadhyayi means in Sanskrit and how we connect readers worldwide through our digital community platform.",
-    "url": "https://sahadhyayi.com/about",
+    "url": "https://sahadhyayi.app/about",
     "mainEntity": {
       "@type": "Organization",
       "name": "Sahadhyayi",
       "description": "Sahadhyayi means 'fellow reader' in Sanskrit. Our digital platform is dedicated to reviving deep reading culture and connecting readers worldwide.",
-      "url": "https://sahadhyayi.com",
+      "url": "https://sahadhyayi.app",
       "foundingDate": "2024",
       "founder": {
         "@type": "Person",
@@ -155,8 +155,8 @@ const About = () => {
   };
 
   const aboutBreadcrumbs = [
-    { name: "Home", url: "https://sahadhyayi.com" },
-    { name: "About", url: "https://sahadhyayi.com/about" }
+    { name: "Home", url: "https://sahadhyayi.app" },
+    { name: "About", url: "https://sahadhyayi.app/about" }
   ];
 
   return (
@@ -164,8 +164,8 @@ const About = () => {
       <SEO
         title="About Sahadhyayi - Reviving Reading Culture"
         description="Learn about Sahadhyayi's mission to revive deep reading and connect readers globally. Sahadhyayi means 'fellow reader' in Sanskrit."
-        canonical="https://sahadhyayi.com/about"
-        url="https://sahadhyayi.com/about"
+        canonical="https://sahadhyayi.app/about"
+        url="https://sahadhyayi.app/about"
         keywords={['About Sahadhyayi', 'Sahadhyayi meaning', 'fellow reader', 'reading community', 'digital library']}
         schema={structuredData}
         breadcrumbs={aboutBreadcrumbs}

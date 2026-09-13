@@ -101,7 +101,7 @@ const BookDetails = () => {
   const averageRating = ratingData?.average || 0;
   const ratingCount = ratingData?.count || 0;
   const userRating = ratingData?.userRating ?? 0;
-  const canonicalUrl = `https://sahadhyayi.com/book/${id}`;
+  const canonicalUrl = `https://sahadhyayi.app/book/${id}`;
   
   const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} - Read Online`;
   const seoDescription = book.description 
@@ -142,7 +142,7 @@ const BookDetails = () => {
   });
 
   const breadcrumbSchema = generateBreadcrumbSchema(
-    breadcrumbItems.map(item => ({ name: item.name, url: `https://sahadhyayi.com${item.path}` }))
+    breadcrumbItems.map(item => ({ name: item.name, url: `https://sahadhyayi.app${item.path}` }))
   );
 
   const combinedSchema = [bookSchema, breadcrumbSchema] as any;

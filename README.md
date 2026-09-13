@@ -8,7 +8,7 @@
 
 ## Live Website
 
-This project is deployed using **GitHub Pages**. You can access it at [https://www.sahadhyayi.com](https://www.sahadhyayi.com).
+This project is deployed using **GitHub Pages**. You can access it at [https://www.sahadhyayi.app](https://www.sahadhyayi.app).
 Changes pushed to the `main` branch will automatically update the site.
 
 ## How can I edit this code?

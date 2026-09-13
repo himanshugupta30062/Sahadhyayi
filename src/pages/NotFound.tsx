@@ -29,8 +29,8 @@ const NotFound = () => {
       <SEO
         title="Page Not Found - Sahadhyayi"
         description="Sorry, the page you're looking for doesn't exist. Return to the Sahadhyayi home page."
-        canonical="https://sahadhyayi.com/404"
-        url="https://sahadhyayi.com/404"
+        canonical="https://sahadhyayi.app/404"
+        url="https://sahadhyayi.app/404"
         noIndex={true}
       />
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-16">

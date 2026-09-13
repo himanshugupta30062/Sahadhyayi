@@ -83,8 +83,8 @@ const AuthorConnect = () => {
       <SEO
         title="Connect with Authors - Schedule Sessions & Get Guidance | Sahadhyayi"
         description="Connect directly with published authors on Sahadhyayi. Schedule one-on-one sessions, get writing guidance, and learn from experienced writers in our author community."
-        canonical="https://sahadhyayi.com/authors"
-        url="https://sahadhyayi.com/authors"
+        canonical="https://sahadhyayi.app/authors"
+        url="https://sahadhyayi.app/authors"
       />
       
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">

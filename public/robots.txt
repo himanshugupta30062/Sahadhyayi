@@ -41,7 +41,7 @@ Allow: /cookie-policy
 Allow: /community-guidelines
 
 # Sitemap location
-Sitemap: https://sahadhyayi.com/sitemap.xml
+Sitemap: https://sahadhyayi.app/sitemap.xml
 
 # Crawl delay
 Crawl-delay: 1

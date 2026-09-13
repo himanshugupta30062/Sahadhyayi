@@ -19,7 +19,7 @@ const CommunityStories = () => {
       <SEO
         title="Community Stories - Share Your Creative Writing | Sahadhyayi"
         description="Share your creative stories, alternative book endings, and chapter reimaginings with the Sahadhyayi community. Read and vote on stories from fellow readers."
-        canonical="https://sahadhyayi.com/community-stories"
+        canonical="https://sahadhyayi.app/community-stories"
         keywords={['community stories', 'creative writing', 'user generated content', 'book community', 'alternative endings', 'story sharing']}
       />
       
