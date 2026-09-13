@@ -31,7 +31,7 @@ import {
   Share2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
-import { useReadingProgress, useUpdateReadingProgress } from '@/hooks/useReadingProgress';
+import { useReadingProgress, useSaveReadingProgress } from '@/hooks/useReadingProgress';
 import { useAudioSummary } from '@/hooks/useAudioSummaries';
 import { useChapterProgress, useMarkChapterAsRead } from '@/hooks/useChapterProgress';
 import { searchExternalSources } from '@/utils/searchExternalSources';
@@ -69,7 +69,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
 
   // Hooks for data management
   const { data: readingProgress } = useReadingProgress();
-  const updateProgress = useUpdateReadingProgress();
+  const saveProgress = useSaveReadingProgress();
   const { data: audioSummary } = useAudioSummary(bookId);
   const { data: chapterProgress = [] } = useChapterProgress(bookId);
   const markChapterRead = useMarkChapterAsRead(bookId);
@@ -121,6 +121,14 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   }, [bookTitle]);
 
   const activeReadUrl = readUrls[activeReadUrlIndex];
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const saved = readingProgress?.find((item) => item.book_id === bookId);
+    const localPage = Number(localStorage.getItem(`book-${bookId}-page`));
+    const resumePage = saved?.current_page || (Number.isFinite(localPage) ? localPage : 1);
+    if (resumePage > 1) setCurrentPage(resumePage);
+  }, [bookId, readingProgress, user?.id]);
 
   // Determine book type and URLs
   const isEpub = epubUrl && epubUrl.length > 0;
@@ -356,24 +364,29 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   };
 
   const saveReadingProgress = async (page: number) => {
-    if (!user) return;
+    if (!user || totalPages <= 0) return;
 
     try {
-      // Find existing progress entry for this book
-      const existingProgress = readingProgress?.find(p => 
-        p.book_title.toLowerCase() === bookTitle.toLowerCase()
-      );
-
-      if (existingProgress) {
-        await updateProgress.mutateAsync({
-          id: existingProgress.id,
-          current_page: page
-        });
-      }
+      localStorage.setItem(`book-${bookId}-page`, String(page));
+      await saveProgress.mutateAsync({
+        bookId,
+        bookTitle,
+        currentPage: page,
+        totalPages,
+      });
     } catch (error) {
       console.error('Error saving reading progress:', error);
     }
   };
+
+  useEffect(() => {
+    if (!user?.id || totalPages <= 0 || currentPage <= 0) return;
+    localStorage.setItem(`book-${bookId}-page`, String(currentPage));
+    const timer = window.setTimeout(() => {
+      void saveReadingProgress(currentPage);
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [bookId, currentPage, totalPages, user?.id]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -645,7 +658,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => activeReadUrl && window.open(activeReadUrl, '_blank')}
+                  onClick={() => activeReadUrl && window.open(activeReadUrl, '_blank', 'noopener,noreferrer')}
                   className="flex items-center gap-1"
                 >
                   <Download className="w-4 h-4" />
@@ -856,7 +869,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   <Button
                     variant="default"
                     size="sm"
-                    onClick={() => window.open(`https://books.google.com/books?id=${googleBooksId}`, '_blank')}
+                    onClick={() => window.open(`https://books.google.com/books?id=${googleBooksId}`, '_blank', 'noopener,noreferrer')}
                     className="flex items-center gap-2"
                   >
                     <BookOpen className="w-4 h-4" />
@@ -866,7 +879,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(activeReadUrl, '_blank')}
+                      onClick={() => window.open(activeReadUrl, '_blank', 'noopener,noreferrer')}
                       className="flex items-center gap-2"
                     >
                       Open Original Link ↗
@@ -977,7 +990,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
             ) : isPdf ? (
               <div>
                 <p>Use the navigation buttons or built-in PDF controls to move through the book.</p>
-                <p className="text-xs">Zoom, search, and download features are available in the PDF toolbar.</p>
+                 <p className="text-xs">Your page is saved automatically. Zoom, search, and download are available in the PDF toolbar.</p>
               </div>
             ) : null}
             {user && !isGoogleBooks && (

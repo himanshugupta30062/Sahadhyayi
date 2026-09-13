@@ -1,16 +1,24 @@
 import { useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SEO from '@/components/SEO';
-import { trendingBooks, curatedLists, type Review } from './discoveryHelpers';
 import { trackUiEvent } from '@/lib/analytics';
+import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useBookRecommendations } from '@/hooks/useBookRecommendations';
+import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
+import { useAuth } from '@/contexts/authHelpers';
+import { BookOpen, Plus, Search, Sparkles } from 'lucide-react';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Discovery = () => {
-  const [reviews, setReviews] = useState<Record<number, Review[]>>({});
-  const [newReview, setNewReview] = useState('');
+  const { user } = useAuth();
+  const { data: books = [], isLoading, isError } = useAllLibraryBooks();
+  const { data: recommendations = [] } = useBookRecommendations(user?.id);
+  const addToShelf = useAddToBookshelf();
   const [searchQuery, setSearchQuery] = useState('');
   const [languageFilter, setLanguageFilter] = useState('all');
   const [genreFilter, setGenreFilter] = useState('all');
@@ -19,7 +27,7 @@ const Discovery = () => {
   const [sortBy, setSortBy] = useState<'relevance' | 'rating_desc' | 'title_asc'>('relevance');
 
   const filteredTrendingBooks = useMemo(() => {
-    let list = [...trendingBooks];
+    let list = [...books];
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -33,43 +41,22 @@ const Discovery = () => {
     if (languageFilter !== 'all') list = list.filter(book => book.language === languageFilter);
     if (genreFilter !== 'all') list = list.filter(book => book.genre === genreFilter);
     if (levelFilter !== 'all') list = list.filter(book => book.level === levelFilter);
-    if (availabilityFilter !== 'all') list = list.filter(book => String(book.available) === availabilityFilter);
+    if (availabilityFilter === 'readable') list = list.filter(book => Boolean(book.pdf_url));
 
-    if (sortBy === 'rating_desc') list.sort((a, b) => b.rating - a.rating);
+    if (sortBy === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
 
-    return list;
-  }, [availabilityFilter, genreFilter, languageFilter, levelFilter, searchQuery, sortBy]);
+    return list.slice(0, 24);
+  }, [availabilityFilter, books, genreFilter, languageFilter, levelFilter, searchQuery, sortBy]);
 
-  const addReview = (bookId: number) => {
-    const entry = reviews[bookId] || [];
-    const newEntry: Review = {
-      id: Date.now(),
-      user: 'Guest',
-      text: newReview,
-      votes: 0,
-    };
-    setReviews({ ...reviews, [bookId]: [newEntry, ...entry] });
-    setNewReview('');
-    void trackUiEvent('discovery_review_submitted', { bookId });
-  };
-
-  const voteReview = (bookId: number, reviewId: number) => {
-    const list = reviews[bookId] || [];
-    setReviews({
-      ...reviews,
-      [bookId]: list.map((r) =>
-        r.id === reviewId ? { ...r, votes: r.votes + 1 } : r
-      ),
-    });
-    void trackUiEvent('discovery_review_voted', { bookId });
-  };
+  const genres = useMemo(() => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort(), [books]);
+  const languages = useMemo(() => [...new Set(books.map((book) => book.language).filter(Boolean))].sort(), [books]);
 
   return (
     <div className="min-h-screen pt-20 pb-10 px-4">
       <SEO
         title="Book Discovery"
-        description="Discover books through trending lists and community reviews"
+        description="Discover books from the Sahadhyayi library with personalized recommendations and reader-friendly filters."
         url="https://sahadhyayi.app/discovery"
       />
       <h1 className="text-3xl font-bold mb-6 text-center">Discover New Books</h1>
@@ -85,7 +72,7 @@ const Discovery = () => {
                 void trackUiEvent('discovery_filter_changed', { filter: 'search' });
               }}
             />
-            <Select value={sortBy} onValueChange={(value: 'relevance' | 'rating_desc' | 'title_asc') => {
+            <Select value={sortBy} onValueChange={(value: 'relevance' | 'newest' | 'title_asc') => {
               setSortBy(value);
               void trackUiEvent('discovery_filter_changed', { filter: 'sort', value });
             }}>
@@ -94,7 +81,7 @@ const Discovery = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="relevance">Sort: Relevance</SelectItem>
-                <SelectItem value="rating_desc">Sort: Highest rating</SelectItem>
+                <SelectItem value="newest">Sort: Newest added</SelectItem>
                 <SelectItem value="title_asc">Sort: Title A-Z</SelectItem>
               </SelectContent>
             </Select>
@@ -107,8 +94,7 @@ const Discovery = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All availability</SelectItem>
-                <SelectItem value="true">Available now</SelectItem>
-                <SelectItem value="false">Waitlist</SelectItem>
+                <SelectItem value="readable">Readable online</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -121,7 +107,7 @@ const Discovery = () => {
               <SelectTrigger><SelectValue placeholder="Language" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All languages</SelectItem>
-                <SelectItem value="English">English</SelectItem>
+                {languages.map((language) => <SelectItem key={language} value={language}>{language}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={genreFilter} onValueChange={(value) => {
@@ -131,9 +117,7 @@ const Discovery = () => {
               <SelectTrigger><SelectValue placeholder="Genre" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All genres</SelectItem>
-                <SelectItem value="Sci-Fi">Sci-Fi</SelectItem>
-                <SelectItem value="Fiction">Fiction</SelectItem>
-                <SelectItem value="Memoir">Memoir</SelectItem>
+                {genres.map((genre) => <SelectItem key={genre} value={genre}>{genre}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={levelFilter} onValueChange={(value) => {
@@ -151,54 +135,60 @@ const Discovery = () => {
         </CardContent>
       </Card>
 
-      {/* Trending Section */}
+      {user && recommendations.length > 0 && (
+        <section className="mb-10" aria-labelledby="recommended-heading">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-brand-primary" />
+            <h2 id="recommended-heading" className="text-2xl font-semibold">Recommended for you</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {recommendations.slice(0, 4).map((book) => (
+              <Link key={book.id} to={`/book/${book.id}`} className="block">
+                <Card className="h-full border-border hover:border-brand-primary/50 transition-colors">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-brand-primary font-medium mb-2">Based on your bookshelf</p>
+                    <h3 className="font-semibold line-clamp-2">{book.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{book.author || 'Unknown author'}</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4">Trending</h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          {filteredTrendingBooks.map((b) => (
-            <Card key={b.id} className="bg-white/90 backdrop-blur-sm border-amber-200">
-              <CardHeader>
-                <CardTitle className="text-lg">{b.title}</CardTitle>
-                <p className="text-sm text-gray-600">{b.author}</p>
-                <Badge className="mt-2">Rating {b.rating}</Badge>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge variant="outline">{b.language}</Badge>
-                  <Badge variant="outline">{b.genre}</Badge>
-                  <Badge variant="outline">{b.level}</Badge>
-                  <Badge variant={b.available ? 'default' : 'secondary'}>{b.available ? 'Available' : 'Waitlist'}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Write a review"
-                    value={newReview}
-                    onChange={(e) => setNewReview(e.target.value)}
-                  />
-                  <Button size="sm" onClick={() => addReview(b.id)}>
-                    Submit Review
-                  </Button>
-                  <div className="space-y-2 mt-4">
-                    {(reviews[b.id] || [])
-                      .sort((a, b) => b.votes - a.votes)
-                      .map((r) => (
-                        <div key={r.id} className="border p-2 rounded">
-                          <p className="text-sm mb-1">{r.text}</p>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => voteReview(b.id, r.id)}
-                          >
-                            Vote ({r.votes})
-                          </Button>
-                        </div>
-                      ))}
+        <h2 className="text-2xl font-semibold mb-4">Explore the library</h2>
+        {isLoading && <div className="flex justify-center py-16"><LoadingSpinner /></div>}
+        {isError && <p className="text-center text-destructive py-12">Books could not be loaded. Please try again.</p>}
+        {!isLoading && !isError && <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredTrendingBooks.map((book) => (
+            <Card key={book.id} className="border-border overflow-hidden">
+              <CardContent className="p-4 flex gap-4">
+                <Link to={`/book/${book.id}`} className="w-20 h-28 bg-muted rounded overflow-hidden shrink-0 flex items-center justify-center">
+                  {book.cover_image_url ? <img src={book.cover_image_url} alt="" loading="lazy" className="w-full h-full object-cover" /> : <BookOpen className="w-7 h-7 text-muted-foreground" />}
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <Link to={`/book/${book.id}`} onClick={() => void trackUiEvent('discovery_book_opened', { bookId: book.id })}>
+                    <h3 className="font-semibold line-clamp-2 hover:text-brand-primary">{book.title}</h3>
+                  </Link>
+                  <p className="text-sm text-muted-foreground truncate mt-1">{book.author}</p>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {book.genre && <Badge variant="outline" className="text-xs">{book.genre}</Badge>}
+                    {book.pdf_url && <Badge variant="secondary" className="text-xs">Read online</Badge>}
                   </div>
+                  {user ? (
+                    <Button size="sm" variant="ghost" className="mt-2 px-0 text-brand-primary" disabled={addToShelf.isPending} onClick={() => addToShelf.mutate({ bookId: book.id, status: 'want_to_read' })}>
+                      <Plus className="w-4 h-4 mr-1" /> Save to shelf
+                    </Button>
+                  ) : (
+                    <Link to={`/signin?redirect=${encodeURIComponent(`/book/${book.id}`)}`} className="inline-flex text-sm text-brand-primary mt-3">Sign in to save</Link>
+                  )}
                 </div>
               </CardContent>
             </Card>
           ))}
-        </div>
+        </div>}
         {filteredTrendingBooks.length === 0 && (
           <Card className="border-dashed border-2 border-border">
             <CardContent className="py-12 text-center space-y-2">
@@ -209,25 +199,9 @@ const Discovery = () => {
         )}
       </section>
 
-      {/* Curated Lists */}
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Curated Lists</h2>
-        {curatedLists.map((list) => (
-          <div key={list.title} className="mb-6">
-            <h3 className="text-xl font-medium mb-2">{list.title}</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              {list.books.map((b) => (
-                <Card key={b.id} className="bg-white/90 backdrop-blur-sm border-amber-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{b.title}</CardTitle>
-                    <p className="text-sm text-gray-600">{b.author}</p>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ))}
-      </section>
+      <div className="text-center">
+        <Button asChild variant="outline"><Link to="/library"><Search className="w-4 h-4 mr-2" />Browse the full library</Link></Button>
+      </div>
     </div>
   );
 };
