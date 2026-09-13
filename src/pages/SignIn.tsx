@@ -118,8 +118,8 @@ const SignIn = () => {
       <SEO
         title="Sign In - Sahadhyayi"
         description="Sign in to your Sahadhyayi account to access your reading community."
-        canonical="https://sahadhyayi.com/signin"
-        url="https://sahadhyayi.com/signin"
+        canonical="https://sahadhyayi.app/signin"
+        url="https://sahadhyayi.app/signin"
       />
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50/60 to-yellow-50">
         {/* Decorative background elements */}

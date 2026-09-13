@@ -1,110 +1,110 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://sahadhyayi.com/</loc>
+    <loc>https://sahadhyayi.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png</image:loc>
+      <image:loc>https://sahadhyayi.app/lovable-uploads/sahadhyayi-logo-digital-reading.png</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/about</loc>
+    <loc>https://sahadhyayi.app/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/library</loc>
+    <loc>https://sahadhyayi.app/library</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/authors</loc>
+    <loc>https://sahadhyayi.app/authors</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/articles</loc>
+    <loc>https://sahadhyayi.app/articles</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/blog</loc>
+    <loc>https://sahadhyayi.app/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/groups</loc>
+    <loc>https://sahadhyayi.app/groups</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/map</loc>
+    <loc>https://sahadhyayi.app/map</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/games</loc>
+    <loc>https://sahadhyayi.app/games</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/social</loc>
+    <loc>https://sahadhyayi.app/social</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/discovery</loc>
+    <loc>https://sahadhyayi.app/discovery</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/auth</loc>
+    <loc>https://sahadhyayi.app/auth</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/reset-password</loc>
+    <loc>https://sahadhyayi.app/reset-password</loc>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/confirm-email</loc>
+    <loc>https://sahadhyayi.app/confirm-email</loc>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/help-center</loc>
+    <loc>https://sahadhyayi.app/help-center</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/community-guidelines</loc>
+    <loc>https://sahadhyayi.app/community-guidelines</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/privacy-policy</loc>
+    <loc>https://sahadhyayi.app/privacy-policy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/terms-of-service</loc>
+    <loc>https://sahadhyayi.app/terms-of-service</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/cookie-policy</loc>
+    <loc>https://sahadhyayi.app/cookie-policy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/feedback</loc>
+    <loc>https://sahadhyayi.app/feedback</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/publish</loc>
+    <loc>https://sahadhyayi.app/publish</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

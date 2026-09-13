@@ -120,8 +120,8 @@ const Authors = () => {
       <SEO
         title="Authors Directory - Discover Writers | Sahadhyayi"
         description="Explore talented authors, discover their works, and connect with writers who inspire you on Sahadhyayi."
-        canonical="https://sahadhyayi.com/authors"
-        url="https://sahadhyayi.com/authors"
+        canonical="https://sahadhyayi.app/authors"
+        url="https://sahadhyayi.app/authors"
       />
 
       <div className="min-h-screen bg-background">

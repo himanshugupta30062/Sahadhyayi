@@ -70,7 +70,7 @@ const Discovery = () => {
       <SEO
         title="Book Discovery"
         description="Discover books through trending lists and community reviews"
-        url="https://sahadhyayi.com/discovery"
+        url="https://sahadhyayi.app/discovery"
       />
       <h1 className="text-3xl font-bold mb-6 text-center">Discover New Books</h1>
 

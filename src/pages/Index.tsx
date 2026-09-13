@@ -33,18 +33,18 @@ const Index = () => {
     "@type": "WebSite",
     "name": "Sahadhyayi",
     "alternateName": ["Sahadhyayi Reading Community", "Sahadhyayi Digital Library", "Fellow Reader Platform"],
-    "url": "https://sahadhyayi.com",
+    "url": "https://sahadhyayi.app",
     "description": "Sahadhyayi means 'fellow reader' in Sanskrit. Join our digital reading community platform connecting readers and authors worldwide for deep reading experiences.",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://sahadhyayi.com/library?search={search_term_string}",
+      "target": "https://sahadhyayi.app/library?search={search_term_string}",
       "query-input": "required name=search_term_string"
     },
     "publisher": {
       "@type": "Organization",
       "name": "Sahadhyayi",
-      "url": "https://sahadhyayi.com",
-      "logo": "https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png",
+      "url": "https://sahadhyayi.app",
+      "logo": "https://sahadhyayi.app/lovable-uploads/sahadhyayi-logo-digital-reading.png",
       "foundingDate": "2024"
     }
   };
@@ -74,7 +74,7 @@ const Index = () => {
       <SEO
         title="Sahadhyayi - Digital Reading Community & Book Library"
         description="Sahadhyayi means 'fellow reader' in Sanskrit. Join our reading community, discover books, and connect with fellow readers worldwide."
-        url="https://sahadhyayi.com/"
+        url="https://sahadhyayi.app/"
         keywords={['Sahadhyayi', 'fellow reader', 'digital reading community', 'book library', 'reading platform', 'book lovers']}
       />
       <script type="application/ld+json">

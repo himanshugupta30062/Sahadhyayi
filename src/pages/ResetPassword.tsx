@@ -114,8 +114,8 @@ const ResetPassword = () => {
         <SEO
           title="Password Reset Success - Sahadhyayi"
           description="Your password has been successfully reset."
-          canonical="https://sahadhyayi.com/reset-password"
-          url="https://sahadhyayi.com/reset-password"
+          canonical="https://sahadhyayi.app/reset-password"
+          url="https://sahadhyayi.app/reset-password"
         />
         <div className="min-h-screen flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
@@ -139,8 +139,8 @@ const ResetPassword = () => {
       <SEO
         title="Reset Password - Sahadhyayi"
         description="Reset your Sahadhyayi account password."
-        canonical="https://sahadhyayi.com/reset-password"
-        url="https://sahadhyayi.com/reset-password"
+        canonical="https://sahadhyayi.app/reset-password"
+        url="https://sahadhyayi.app/reset-password"
       />
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md">

@@ -68,7 +68,7 @@ const ReadingGroups = () => {
       <SEO
         title="Reading Groups - Join Book Discussion Communities | Sahadhyayi"
         description="Join vibrant reading groups and book clubs. Engage in meaningful discussions, share insights, and connect with passionate readers who share your literary interests."
-        canonical="https://sahadhyayi.com/groups"
+        canonical="https://sahadhyayi.app/groups"
         keywords={['reading groups', 'book clubs', 'book discussions', 'reading community', 'literary discussions', 'book lovers']}
       />
       <div className="min-h-screen py-8 px-4">

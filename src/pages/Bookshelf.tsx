@@ -114,7 +114,7 @@ const Bookshelf = () => {
     '@type': 'CollectionPage',
     name: 'My Bookshelf',
     description: 'Manage your books, track reading progress, and get AI-powered assistance in your personal digital bookshelf.',
-    url: 'https://sahadhyayi.com/bookshelf',
+    url: 'https://sahadhyayi.app/bookshelf',
   };
 
   if (!user) {
@@ -159,8 +159,8 @@ const Bookshelf = () => {
       <SEO
         title="My Bookshelf - Track Your Reading | Sahadhyayi"
         description="Manage your books, track reading progress, and get AI-powered assistance in your personal digital bookshelf."
-        canonical="https://sahadhyayi.com/bookshelf"
-        url="https://sahadhyayi.com/bookshelf"
+        canonical="https://sahadhyayi.app/bookshelf"
+        url="https://sahadhyayi.app/bookshelf"
       />
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
       

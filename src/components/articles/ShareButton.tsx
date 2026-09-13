@@ -55,7 +55,7 @@ const ShareButton: React.FC<Props> = ({
   // Always use the production domain for share URLs so external crawlers
   // (Facebook, LinkedIn, X) can fetch the page — preview/localhost URLs
   // are not publicly reachable and cause "link can't be shared" errors.
-  const PROD_ORIGIN = 'https://sahadhyayi.com';
+  const PROD_ORIGIN = 'https://sahadhyayi.app';
   const fullUrl = url.startsWith('http') ? url : `${PROD_ORIGIN}${url}`;
   const encodedUrl = encodeURIComponent(fullUrl);
   const encodedTitle = encodeURIComponent(title);

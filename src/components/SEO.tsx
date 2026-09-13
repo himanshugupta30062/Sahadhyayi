@@ -17,9 +17,9 @@ interface SEOProps {
   breadcrumbs?: { name: string; url: string }[];
 }
 
-const DEFAULT_IMAGE = 'https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png';
+const DEFAULT_IMAGE = 'https://sahadhyayi.app/lovable-uploads/sahadhyayi-logo-digital-reading.png';
 const SITE_NAME = 'Sahadhyayi';
-const SITE_URL = 'https://sahadhyayi.com';
+const SITE_URL = 'https://sahadhyayi.app';
 
 const SEO = ({
   title,

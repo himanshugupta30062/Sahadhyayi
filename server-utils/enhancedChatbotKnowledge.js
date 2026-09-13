@@ -1,29 +1,17 @@
+import {
+  supabase
+} from "./chunk-I5QU6NVE.js";
+
 // src/integrations/supabase/client-universal.ts
-import { createClient } from "@supabase/supabase-js";
-var SUPABASE_URL = "https://rknxtatvlzunatpyqxro.supabase.co";
-var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U";
-var supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    storage: typeof window !== "undefined" ? window.localStorage : void 0,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: "pkce"
-  },
-  global: {
-    headers: {
-      "X-Client-Info": "sahadhyayi-app"
-    }
-  }
-});
+var supabase2 = supabase;
 
 // src/utils/enhancedChatbotKnowledge.ts
 var getWebsiteContext = async () => {
   try {
-    const { count: totalBooks } = await supabase.from("books_library").select("*", { count: "exact", head: true });
-    const { data: genreData } = await supabase.from("books_library").select("genre").not("genre", "is", null);
+    const { count: totalBooks } = await supabase2.from("books_library").select("*", { count: "exact", head: true });
+    const { data: genreData } = await supabase2.from("books_library").select("genre").not("genre", "is", null);
     const genres = [...new Set(genreData == null ? void 0 : genreData.map((item) => item.genre).filter(Boolean))];
-    const { data: recentBooks } = await supabase.from("books_library").select("id, title, author, genre, description, language").order("created_at", { ascending: false }).limit(10);
+    const { data: recentBooks } = await supabase2.from("books_library").select("id, title, author, genre, description, language").order("created_at", { ascending: false }).limit(10);
     return {
       totalBooks: totalBooks || 0,
       genres,
@@ -76,7 +64,7 @@ User query: ${userMessage}
 };
 var searchRelevantBooks = async (query, limit = 5) => {
   try {
-    const { data, error } = await supabase.from("books_library").select("id, title, author, genre, description, language").or(`title.ilike.%${query}%,author.ilike.%${query}%,description.ilike.%${query}%,genre.ilike.%${query}%`).limit(limit);
+    const { data, error } = await supabase2.from("books_library").select("id, title, author, genre, description, language").or(`title.ilike.%${query}%,author.ilike.%${query}%,description.ilike.%${query}%,genre.ilike.%${query}%`).limit(limit);
     if (error)
       throw error;
     return data || [];
@@ -87,7 +75,7 @@ var searchRelevantBooks = async (query, limit = 5) => {
 };
 var getBookSummaries = async (bookIds) => {
   try {
-    const { data, error } = await supabase.from("book_summaries").select("content, book_id, books_library(title, author)").in("book_id", bookIds).limit(3);
+    const { data, error } = await supabase2.from("book_summaries").select("content, book_id, books_library(title, author)").in("book_id", bookIds).limit(3);
     if (error)
       throw error;
     return data || [];
@@ -205,7 +193,7 @@ var populateInitialTrainingData = async (userId) => {
   ];
   try {
     for (const data of trainingData) {
-      await supabase.from("gemini_training_data").insert({
+      await supabase2.from("gemini_training_data").insert({
         user_id: userId,
         prompt: data.prompt,
         completion: data.completion

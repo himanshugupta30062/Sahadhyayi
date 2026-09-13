@@ -31,7 +31,7 @@ const GroupDetails = () => {
       <SEO
         title={`${group.name} | Reading Group`}
         description={group.description || 'Reading group details'}
-        canonical={`https://sahadhyayi.com/groups/${group.id}`}
+        canonical={`https://sahadhyayi.app/groups/${group.id}`}
       />
       <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
         <Link to="/groups">

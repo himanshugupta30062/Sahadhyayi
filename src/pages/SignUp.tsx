@@ -137,8 +137,8 @@ const SignUp = () => {
       <SEO
         title="Sign Up - Sahadhyayi"
         description="Create your free Sahadhyayi account to join the reading community."
-        canonical="https://sahadhyayi.com/signup"
-        url="https://sahadhyayi.com/signup"
+        canonical="https://sahadhyayi.app/signup"
+        url="https://sahadhyayi.app/signup"
       />
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50/60 to-yellow-50">
         {/* Decorative background elements */}

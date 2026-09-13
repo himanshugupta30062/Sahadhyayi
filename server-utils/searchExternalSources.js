@@ -1,21 +1,6 @@
-// src/integrations/supabase/client.ts
-import { createClient } from "@supabase/supabase-js";
-var SUPABASE_URL = "https://rknxtatvlzunatpyqxro.supabase.co";
-var SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U";
-var supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: typeof window !== "undefined" ? localStorage : void 0,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: "pkce"
-  },
-  global: {
-    headers: {
-      "X-Client-Info": "sahadhyayi-app"
-    }
-  }
-});
+import {
+  supabase
+} from "./chunk-I5QU6NVE.js";
 
 // src/utils/searchExternalSources.ts
 async function searchExternalSources(query) {

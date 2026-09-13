@@ -56,10 +56,10 @@ const AuthorSlugPage = () => {
 
   const social = (author as any).social_links || {};
 
-  const authorUrl = `https://sahadhyayi.com/authors/${slug}`;
+  const authorUrl = `https://sahadhyayi.app/authors/${slug}`;
   const breadcrumbItems = [
-    { name: 'Home', url: 'https://sahadhyayi.com/' },
-    { name: 'Authors', url: 'https://sahadhyayi.com/authors' },
+    { name: 'Home', url: 'https://sahadhyayi.app/' },
+    { name: 'Authors', url: 'https://sahadhyayi.app/authors' },
     { name: author.name, url: authorUrl }
   ];
 
@@ -83,8 +83,8 @@ const AuthorSlugPage = () => {
       <SEO
         title={`Author Profile - ${author.name} | Sahadhyayi`}
         description={author.bio || `Learn more about ${author.name}`}
-        canonical={`https://sahadhyayi.com/authors/${slug}`}
-        url={`https://sahadhyayi.com/authors/${slug}`}
+        canonical={`https://sahadhyayi.app/authors/${slug}`}
+        url={`https://sahadhyayi.app/authors/${slug}`}
         type="profile"
         author={author.name}
         schema={combinedSchema}

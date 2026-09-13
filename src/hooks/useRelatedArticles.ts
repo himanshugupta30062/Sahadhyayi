@@ -14,13 +14,14 @@ export function useRelatedArticles(
     queryKey: ['related-articles', article?.id, article?.tags?.join(',') || ''],
     enabled: !!article?.id,
     queryFn: async () => {
+      if (!article?.id) return [];
       const tags = article?.tags || [];
 
       let query = (supabase as any)
         .from('articles')
         .select('*')
         .eq('is_published', true)
-        .neq('id', article!.id)
+        .neq('id', article.id)
         .order('published_at', { ascending: false })
         .limit(limit * 4); // Over-fetch then filter/score
 
@@ -28,7 +29,9 @@ export function useRelatedArticles(
         query = query.overlaps('tags', tags);
       }
 
-      let { data, error } = await query;
+      const result = await query;
+      let data = result.data;
+      const error = result.error;
       if (error) throw error;
 
       // Fallback: if no tag matches, just grab recent
@@ -37,7 +40,7 @@ export function useRelatedArticles(
           .from('articles')
           .select('*')
           .eq('is_published', true)
-          .neq('id', article!.id)
+          .neq('id', article.id)
           .order('published_at', { ascending: false })
           .limit(limit);
         data = fb.data || [];

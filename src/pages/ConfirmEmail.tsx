@@ -137,8 +137,8 @@ const ConfirmEmail = () => {
       <SEO
         title="Confirm Email - Sahadhyayi"
         description="Confirm your email to activate your Sahadhyayi account."
-        canonical="https://sahadhyayi.com/confirm-email"
-        url="https://sahadhyayi.com/confirm-email"
+        canonical="https://sahadhyayi.app/confirm-email"
+        url="https://sahadhyayi.app/confirm-email"
       />
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md">

@@ -75,13 +75,12 @@ const slugify = text =>
   );
 
 const urls = [];
-const today = new Date().toISOString().split('T')[0];
 
 function addUrl(loc, changefreq='weekly', priority='0.6', image) {
-  urls.push({ loc: `https://sahadhyayi.com${loc}`, lastmod: today, changefreq, priority, image });
+  urls.push({ loc: `https://sahadhyayi.app${loc}`, changefreq, priority, image });
 }
 
-const HOME_IMAGE = 'https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png';
+const HOME_IMAGE = 'https://sahadhyayi.app/lovable-uploads/sahadhyayi-logo-digital-reading.png';
 
 addUrl('/', 'weekly', '1.0', HOME_IMAGE);
 staticPages.forEach(p => addUrl(p, 'monthly', '0.5'));
@@ -95,7 +94,7 @@ const xml =
       const imageTag = u.image
         ? `\n    <image:image>\n      <image:loc>${u.image}</image:loc>\n    </image:image>`
         : '';
-      return `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>${imageTag}\n  </url>`;
+      return `  <url>\n    <loc>${u.loc}</loc>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>${imageTag}\n  </url>`;
     })
     .join('\n') +
   '\n</urlset>\n';

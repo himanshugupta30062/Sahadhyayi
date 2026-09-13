@@ -110,8 +110,8 @@ const Dashboard = () => {
       <SEO
         title="My Library - Personal Reading Dashboard | Sahadhyayi"
         description="Manage your personal reading collection, track progress, and discover new books in your customized library."
-        canonical="https://sahadhyayi.com/dashboard"
-        url="https://sahadhyayi.com/dashboard"
+        canonical="https://sahadhyayi.app/dashboard"
+        url="https://sahadhyayi.app/dashboard"
       />
       
       <div className="min-h-screen bg-background">

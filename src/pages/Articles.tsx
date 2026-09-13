@@ -83,8 +83,8 @@ const Articles = () => {
       <SEO
         title="Articles - Sahadhyayi"
         description="Read and write articles on books, reading, and stories. Discover writing from the Sahadhyayi community."
-        canonical="https://sahadhyayi.com/articles"
-        url="https://sahadhyayi.com/articles"
+        canonical="https://sahadhyayi.app/articles"
+        url="https://sahadhyayi.app/articles"
       />
       <div className="min-h-screen bg-background">
         {/* Hero */}

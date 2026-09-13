@@ -90,18 +90,18 @@ var generateWebsiteSchema = () => {
     "@type": "WebSite",
     "name": "Sahadhyayi",
     "alternateName": "Sahadhyayi Reading Community",
-    "url": "https://sahadhyayi.com",
+    "url": "https://sahadhyayi.app",
     "description": "Join Sahadhyayi's vibrant reading community. Discover books, connect with readers, and explore our digital library.",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://sahadhyayi.com/library?search={search_term_string}",
+      "target": "https://sahadhyayi.app/library?search={search_term_string}",
       "query-input": "required name=search_term_string"
     },
     "publisher": {
       "@type": "Organization",
       "name": "Sahadhyayi",
-      "url": "https://sahadhyayi.com",
-      "logo": "https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png"
+      "url": "https://sahadhyayi.app",
+      "logo": "https://sahadhyayi.app/lovable-uploads/sahadhyayi-logo-digital-reading.png"
     }
   };
 };
@@ -110,12 +110,12 @@ var generateOrganizationSchema = () => {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Sahadhyayi",
-    "url": "https://sahadhyayi.com",
-    "logo": "https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png",
+    "url": "https://sahadhyayi.app",
+    "logo": "https://sahadhyayi.app/lovable-uploads/sahadhyayi-logo-digital-reading.png",
     "description": "Digital reading community platform connecting readers and authors worldwide",
     "foundingDate": "2024",
     "sameAs": [
-      "https://sahadhyayi.com/about"
+      "https://sahadhyayi.app/about"
     ]
   };
 };

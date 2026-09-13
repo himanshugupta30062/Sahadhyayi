@@ -89,7 +89,7 @@ const Blog = () => {
       <SEO
         title="Sahadhyayi Blog - Reading Insights, Community Stories & Tips"
         description="Explore Sahadhyayi's blog for reading insights, community stories, book recommendations, and tips to enhance your reading journey. Learn what Sahadhyayi means and join the conversation with fellow book lovers."
-        canonical="https://sahadhyayi.com/blog"
+        canonical="https://sahadhyayi.app/blog"
         keywords={['Sahadhyayi blog', 'reading insights', 'book community', 'reading tips', 'what is Sahadhyayi', 'Sahadhyayi meaning', 'reading culture']}
       />
       

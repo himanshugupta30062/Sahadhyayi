@@ -85,8 +85,8 @@ const ReaderMap = () => {
       <SEO
         title="Reader Map"
         description="Readers currently on this book"
-        canonical={`https://sahadhyayi.com/map/${bookId ?? ''}`}
-        url={`https://sahadhyayi.com/map/${bookId ?? ''}`}
+        canonical={`https://sahadhyayi.app/map/${bookId ?? ''}`}
+        url={`https://sahadhyayi.app/map/${bookId ?? ''}`}
       />
       <div ref={mapRef} style={{ height: '500px', width: '100%' }} />
       {readers.length === 0 && (

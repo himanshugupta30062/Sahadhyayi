@@ -64,7 +64,7 @@ const ArticleDetail = () => {
   }
 
   const articleUrl = `/articles/${article.slug}`;
-  const fullArticleUrl = `https://sahadhyayi.com/articles/${article.slug}`;
+  const fullArticleUrl = `https://sahadhyayi.app/articles/${article.slug}`;
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -82,7 +82,7 @@ const ArticleDetail = () => {
       name: "Sahadhyayi",
       logo: {
         "@type": "ImageObject",
-        url: "https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png"
+        url: "https://sahadhyayi.app/lovable-uploads/sahadhyayi-logo-digital-reading.png"
       }
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": fullArticleUrl },
@@ -100,8 +100,8 @@ const ArticleDetail = () => {
         image={article.cover_image_url || undefined}
         schema={articleSchema}
         breadcrumbs={[
-          { name: "Home", url: "https://sahadhyayi.com" },
-          { name: "Articles", url: "https://sahadhyayi.com/articles" },
+          { name: "Home", url: "https://sahadhyayi.app" },
+          { name: "Articles", url: "https://sahadhyayi.app/articles" },
           { name: article.title, url: fullArticleUrl }
         ]}
       />
