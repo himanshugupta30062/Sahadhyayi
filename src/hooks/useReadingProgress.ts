@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/authHelpers';
 
 export interface ReadingProgressItem {
   id: number;
+  book_id?: string | null;
   book_title: string;
   current_page: number;
   total_pages: number;
@@ -54,6 +55,53 @@ export const useUpdateReadingProgress = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
+    },
+  });
+};
+
+export const useSaveReadingProgress = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bookId,
+      bookTitle,
+      currentPage,
+      totalPages,
+      coverImageUrl,
+    }: {
+      bookId: string;
+      bookTitle: string;
+      currentPage: number;
+      totalPages: number;
+      coverImageUrl?: string;
+    }) => {
+      if (!user?.id) throw new Error('Sign in to save reading progress');
+
+      const safeTotal = Math.max(1, totalPages);
+      const safePage = Math.min(safeTotal, Math.max(1, currentPage));
+      const { data, error } = await supabase
+        .from('reading_progress')
+        .upsert(
+          {
+            user_id: user.id,
+            book_id: bookId,
+            book_title: bookTitle,
+            current_page: safePage,
+            total_pages: safeTotal,
+            cover_image_url: coverImageUrl ?? null,
+          },
+          { onConflict: 'user_id,book_id' },
+        )
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as ReadingProgressItem;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id] });
     },
   });
 };
