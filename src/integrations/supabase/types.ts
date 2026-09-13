@@ -2329,6 +2329,7 @@ export type Database = {
       }
       reading_progress: {
         Row: {
+          book_id: string | null
           book_title: string
           cover_image_url: string | null
           current_page: number
@@ -2337,6 +2338,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          book_id?: string | null
           book_title: string
           cover_image_url?: string | null
           current_page?: number
@@ -2345,6 +2347,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          book_id?: string | null
           book_title?: string
           cover_image_url?: string | null
           current_page?: number
@@ -2352,7 +2355,15 @@ export type Database = {
           total_pages?: number
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reading_progress_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reading_room_events: {
         Row: {
