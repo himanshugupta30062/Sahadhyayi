@@ -33,7 +33,7 @@ const Discovery = () => {
       list = list.filter((book) =>
         book.title.toLowerCase().includes(query) ||
         book.author.toLowerCase().includes(query) ||
-        book.genre.toLowerCase().includes(query)
+        book.genre?.toLowerCase().includes(query)
       );
     }
 
