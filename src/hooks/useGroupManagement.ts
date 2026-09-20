@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
@@ -6,12 +7,13 @@ import { toast } from 'sonner';
 export interface Group {
   id: string;
   name: string;
-  description?: string;
-  image_url?: string;
-  created_by: string;
-  created_at: string;
+  description?: string | null;
+  image_url?: string | null;
+  created_by: string | null;
+  created_at: string | null;
   member_count?: number;
   user_role?: 'admin' | 'member';
+  group_members?: { count: number }[];
 }
 
 export interface GroupChat {
@@ -27,7 +29,25 @@ export interface GroupChat {
 
 export const useGroups = () => {
   const { user } = useAuth();
-  
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const refreshGroups = () => {
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+    };
+    const channel = supabase
+      .channel(`reading-groups-directory-${user?.id ?? 'guest'}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'group_chats' }, refreshGroups)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'group_chat_members' }, refreshGroups)
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [queryClient, user?.id]);
+
   return useQuery({
     queryKey: ['all-groups', user?.id],
     queryFn: async () => {
@@ -58,21 +78,14 @@ export const useCreateGroup = () => {
         throw new Error('Group name is required');
       }
 
-      console.log('Creating group:', { name: sanitizedName, description: sanitizedDescription });
-      
-      // Check authentication first
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) {
-        console.error('Auth error:', authError);
         throw new Error('Authentication error: ' + authError.message);
       }
       
       if (!user?.id) {
-        console.error('No user found');
         throw new Error('Please sign in to create a group');
       }
-      
-      console.log('User authenticated:', user.id);
 
       const groupId = crypto.randomUUID();
       
@@ -93,8 +106,6 @@ export const useCreateGroup = () => {
         throw new Error('Failed to create group: ' + groupError.message);
       }
       
-      console.log('Group created with id:', groupId);
-      
       // Add creator as admin
       const { error: memberError } = await supabase
         .from('group_chat_members')
@@ -105,11 +116,16 @@ export const useCreateGroup = () => {
         }]);
       
       if (memberError) {
-        console.error('Member creation error:', memberError);
+        const { error: rollbackError } = await supabase
+          .from('group_chats')
+          .delete()
+          .eq('id', groupId)
+          .eq('created_by', user.id);
+        if (rollbackError) {
+          throw new Error(`Failed to finish group setup: ${memberError.message}. The incomplete group could not be removed.`);
+        }
         throw new Error('Failed to add creator as admin: ' + memberError.message);
       }
-      
-      console.log('Creator added as admin');
       return {
         id: groupId,
         name: sanitizedName,
@@ -215,14 +231,20 @@ export const useUpdateGroup = () => {
   return useMutation({
     mutationFn: async ({ groupId, name, description }: { groupId: string; name?: string; description?: string | null }) => {
       const updates: Record<string, unknown> = {};
-      if (name !== undefined) updates.name = name.trim();
+      if (name !== undefined) {
+        const sanitizedName = name.trim();
+        if (!sanitizedName) throw new Error('Group name is required');
+        updates.name = sanitizedName;
+      }
       if (description !== undefined) updates.description = (description ?? '').toString().trim() || null;
+      if (Object.keys(updates).length === 0) return;
       const { error } = await supabase.from('group_chats').update(updates).eq('id', groupId);
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Group updated');
       queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['user-groups'] });
       queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
     },
     onError: (error: Error) => toast.error(`Failed to update group: ${error.message}`),
@@ -233,14 +255,13 @@ export const useDeleteGroup = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (groupId: string) => {
-      // Remove members first to clean up
-      await supabase.from('group_chat_members').delete().eq('group_id', groupId);
       const { error } = await supabase.from('group_chats').delete().eq('id', groupId);
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Group deleted');
       queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['user-groups'] });
       queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
     },
     onError: (error: Error) => toast.error(`Failed to delete group: ${error.message}`),
