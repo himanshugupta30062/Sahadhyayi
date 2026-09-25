@@ -655,12 +655,48 @@ export type Database = {
         }
         Relationships: []
       }
+      social_posts: {
+        Row: {
+          caption: string
+          comments: number
+          created_at: string
+          id: string
+          image_url: string | null
+          likes: number
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          caption: string
+          comments?: number
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes?: number
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          caption?: string
+          comments?: number
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes?: number
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_social_post_likes: {
+        Args: { delta: number; post_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       gender_type: "male" | "female" | "other"

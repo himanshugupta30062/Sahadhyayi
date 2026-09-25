@@ -26,6 +26,9 @@ export const useSocialPosts = () => {
       if (error) throw error;
       return (data || []) as SocialPost[];
     },
+    // Re-fetch automatically so posts published by others appear without
+    // a manual reload.
+    refetchInterval: 15000,
   });
 };
 
@@ -40,21 +43,35 @@ export const useCreateSocialPost = () => {
       const trimmed = caption.trim();
       if (!trimmed) throw new Error('Caption is required');
 
-      // Resolve display name from profile if available
+      // Resolve display name from profile if available. user_profile is
+      // owner-visible only under RLS and may not exist yet for new accounts,
+      // so fall back to profiles.full_name / email prefix — never null.
       const { data: profile } = await supabase
         .from('user_profile')
         .select('username, name')
         .eq('id', user.id)
         .maybeSingle();
 
-      const emailPrefix = user.email ? user.email.split('@')[0] : 'reader';
-      const username = profile?.username || profile?.name || emailPrefix;
+      let username = profile?.username || profile?.name || '';
+
+      if (!username.trim()) {
+        const { data: legacyProfile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .maybeSingle();
+        username = legacyProfile?.full_name || '';
+      }
+
+      if (!username.trim()) {
+        username = user.email ? user.email.split('@')[0] : 'reader';
+      }
 
       const { data, error } = await supabase
         .from('social_posts')
         .insert({
           user_id: user.id,
-          username,
+          username: username.trim() || 'reader',
           caption: trimmed,
           image_url: imageUrl?.trim() ? imageUrl.trim() : null,
         })

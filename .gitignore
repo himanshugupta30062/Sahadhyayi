@@ -1,5 +1,6 @@
+# Dependencies
 node_modules/
+
+# Build Output
 dist/
-.env
-*.local
-.DS_Store
+build/
