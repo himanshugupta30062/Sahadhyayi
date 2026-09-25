@@ -165,29 +165,100 @@ export const useCreatePost = () => {
     }) => {
       if (!user?.id) throw new Error('Not authenticated');
 
+      // 1. Ensure user has a profile record to satisfy posts_user_id_profiles_fkey
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!profile) {
+          const fallbackName =
+            user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            user.email?.split('@')[0] ||
+            'Reader';
+          const fallbackUsername =
+            user.user_metadata?.username ||
+            user.email?.split('@')[0] ||
+            `user_${user.id.slice(0, 6)}`;
+          await supabase.from('profiles').upsert(
+            {
+              id: user.id,
+              full_name: fallbackName,
+              username: fallbackUsername,
+              profile_photo_url: user.user_metadata?.avatar_url || null,
+            },
+            { onConflict: 'id' }
+          );
+        }
+      } catch (err) {
+        console.warn('Profile pre-check failed (continuing post creation):', err);
+      }
+
+      // Ensure empty string is converted to null to prevent invalid UUID syntax error
+      const validBookId =
+        postData.book_id && postData.book_id.trim() !== ''
+          ? postData.book_id.trim()
+          : null;
+
       const payload = {
-        content: postData.content,
+        content: postData.content.trim(),
         user_id: user.id,
-        book_id: postData.book_id ?? null,
-        feeling_emoji: postData.feeling_emoji ?? null,
-        feeling_label: postData.feeling_label ?? null,
-        image_url: postData.image_url ?? null,
+        book_id: validBookId,
+        feeling_emoji: postData.feeling_emoji?.trim() || null,
+        feeling_label: postData.feeling_label?.trim() || null,
+        image_url: postData.image_url?.trim() || null,
       };
 
-      const { error } = await supabase
+      let createdPost: any = null;
+
+      // Try insert with relations for immediate rich display
+      const { data, error } = await supabase
         .from('posts')
-        .insert(payload);
+        .insert(payload)
+        .select(`
+          *,
+          profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
+          books_library(id, title, author, cover_image_url)
+        `)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.warn('Rich insert select failed, falling back to standard insert:', error);
+        const fallback = await supabase
+          .from('posts')
+          .insert(payload)
+          .select()
+          .single();
 
-      return {
-        ...payload,
-        likes_count: 0,
-        comments_count: 0,
-        user_liked: false,
-      };
+        if (fallback.error) throw fallback.error;
+        createdPost = fallback.data;
+      } else {
+        createdPost = data;
+      }
+
+      return (
+        createdPost || {
+          ...payload,
+          id: crypto.randomUUID(),
+          created_at: new Date().toISOString(),
+          likes_count: 0,
+          comments_count: 0,
+          reposts_count: 0,
+          user_liked: false,
+          user_reposted: false,
+        }
+      );
     },
-    onSuccess: () => {
+    onSuccess: (newPost) => {
+      if (newPost) {
+        queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => {
+          if (old.some((p) => p.id === newPost.id)) return old;
+          return [{ ...newPost, user_liked: false, user_reposted: false }, ...old];
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({
         title: 'Success',
