@@ -1,3 +1,7 @@
+import {
+  supabase
+} from "./chunk-C3VIU2YM.js";
+
 // src/security/useSecureApi.ts
 import { useCallback } from "react";
 var CSRF_KEY = "csrfToken";
@@ -24,11 +28,22 @@ function setCsrfToken(token) {
 
 // src/security/sessionClient.ts
 async function sessionClientLogin() {
+  var _a;
+  let token;
+  try {
+    const { data: data2 } = await supabase.auth.getSession();
+    token = (_a = data2 == null ? void 0 : data2.session) == null ? void 0 : _a.access_token;
+  } catch {
+  }
+  const headers = { "Content-Type": "application/json" };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
   const res = await fetch("/api/session", {
     method: "POST",
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: "{}"
+    headers,
+    body: token ? JSON.stringify({ access_token: token }) : "{}"
   });
   if (!res.ok)
     throw new Error(`/api/session failed: ${res.status}`);

@@ -1,6 +1,6 @@
 import {
   supabase
-} from "./chunk-I5QU6NVE.js";
+} from "./chunk-C3VIU2YM.js";
 
 // src/utils/searchExternalSources.ts
 async function searchExternalSources(query) {

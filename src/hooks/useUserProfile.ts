@@ -54,7 +54,19 @@ export const useUserProfile = () => {
           throw error;
         }
         
-        return data as UserProfile;
+        if (!data) return null;
+
+        const normalized: UserProfile = {
+          ...data,
+          name: (data as any).name || data.full_name || '',
+          full_name: data.full_name || (data as any).name || '',
+          profile_picture_url: (data as any).profile_picture_url || data.profile_photo_url || null,
+          profile_photo_url: data.profile_photo_url || (data as any).profile_picture_url || null,
+          life_tags: (data as any).life_tags || (Array.isArray(data.tags_used) ? data.tags_used : []),
+          tags_used: data.tags_used || (data as any).life_tags || null,
+        };
+
+        return normalized;
       } catch (error) {
         console.error('Failed to fetch user profile:', error);
         toast({
@@ -81,12 +93,27 @@ export const useUpsertUserProfile = () => {
       if (!user) throw new Error('No authenticated user');
       
       try {
+        const fullName = updates.full_name ?? updates.name;
+        const photoUrl = updates.profile_photo_url ?? updates.profile_picture_url;
+        const tags = updates.tags_used ?? updates.life_tags;
+
         // Ensure we don't send undefined values
-        const cleanUpdates = Object.fromEntries(
+        const cleanUpdates: Record<string, unknown> = Object.fromEntries(
           Object.entries(updates).filter(([_, value]) => value !== undefined)
         );
+
+        if (fullName !== undefined) {
+          cleanUpdates.full_name = fullName;
+          cleanUpdates.name = fullName;
+        }
+        if (photoUrl !== undefined) {
+          cleanUpdates.profile_photo_url = photoUrl;
+        }
+        if (tags !== undefined) {
+          cleanUpdates.tags_used = tags;
+        }
         
-        const { data, error } = await supabase
+        let res = await supabase
           .from('profiles')
           .upsert({ 
             ...cleanUpdates, 
@@ -96,12 +123,45 @@ export const useUpsertUserProfile = () => {
           .select()
           .single();
           
-        if (error) {
-          console.error('Error upserting user profile:', error);
-          throw error;
+        // Fallback to core profiles schema if database hasn't applied extended columns
+        if (res.error && res.error.message?.includes('does not exist')) {
+          const coreColumns: Record<string, unknown> = {
+            id: user.id,
+            full_name: fullName,
+            username: cleanUpdates.username,
+            bio: cleanUpdates.bio,
+            profile_photo_url: photoUrl,
+            writing_frequency: cleanUpdates.writing_frequency,
+            location_sharing: cleanUpdates.location_sharing,
+            location_lat: cleanUpdates.location_lat,
+            location_lng: cleanUpdates.location_lng,
+            tags_used: tags,
+            updated_at: new Date().toISOString()
+          };
+          const coreFiltered = Object.fromEntries(
+            Object.entries(coreColumns).filter(([_, v]) => v !== undefined)
+          );
+          res = await supabase
+            .from('profiles')
+            .upsert(coreFiltered, { onConflict: 'id' })
+            .select()
+            .single();
+        }
+
+        if (res.error) {
+          console.error('Error upserting user profile:', res.error);
+          throw res.error;
         }
         
-        return data as UserProfile;
+        const saved = res.data;
+        return {
+          ...saved,
+          name: (saved as any).name || saved.full_name || '',
+          full_name: saved.full_name || (saved as any).name || '',
+          profile_picture_url: (saved as any).profile_picture_url || saved.profile_photo_url || null,
+          profile_photo_url: saved.profile_photo_url || (saved as any).profile_picture_url || null,
+          life_tags: (saved as any).life_tags || (Array.isArray(saved.tags_used) ? saved.tags_used : []),
+        } as UserProfile;
       } catch (error) {
         console.error('Failed to save profile:', error);
         throw error;
@@ -110,6 +170,7 @@ export const useUpsertUserProfile = () => {
     onSuccess: (data) => {
       queryClient.setQueryData(['user_profile', user?.id], data);
       queryClient.invalidateQueries({ queryKey: ['user_profile'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast({
         title: "Success",
         description: "Profile updated successfully",

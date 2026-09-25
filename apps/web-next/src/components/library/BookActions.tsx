@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { getStatus, setStatus, toggleWishlist, touchLastOpened } from '@/lib/supabase/userBooks';
-import { getNote, upsertNote } from '@/lib/supabase/notes';
-import type { ReadingStatus } from '@/lib/types';
+import { getStatus, setStatus, toggleWishlist, touchLastOpened } from '../../lib/supabase/userBooks';
+import { getNote, upsertNote } from '../../lib/supabase/notes';
+import type { ReadingStatus } from '../../lib/types';
 import { supabase } from '../../integrations/supabase/client';
 const supabaseClient: any = supabase;
 
