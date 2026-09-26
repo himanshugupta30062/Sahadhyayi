@@ -25,6 +25,28 @@ serve(async (req) => {
       });
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(String(email).trim())) {
+      return new Response(JSON.stringify({ error: 'Invalid email address' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (String(name).length > 100 || String(message).length > 5000) {
+      return new Response(JSON.stringify({ error: 'Content exceeds allowed length' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const escapeHtml = (str: string) =>
+      str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+    const safeName = escapeHtml(String(name).trim());
+    const safeEmail = escapeHtml(String(email).trim());
+    const safeMessage = escapeHtml(String(message).trim()).replace(/\n/g, '<br>');
+
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -34,13 +56,13 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'Sahadhyayi Contact <noreply@sahadhyayi.com>',
         to: ['gyan@sahadhyayi.com'],
-        subject: `New Contact Message from ${name}`,
+        subject: `New Contact Message from ${safeName}`,
         html: `
           <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Name:</strong> ${safeName}</p>
+          <p><strong>Email:</strong> ${safeEmail}</p>
           <p><strong>Message:</strong></p>
-          <p>${message.replace(/\n/g, '<br>')}</p>
+          <p>${safeMessage}</p>
           <hr>
           <p style="color: #888; font-size: 12px;">Sent from Sahadhyayi Contact Form</p>
         `,

@@ -35,9 +35,10 @@ const CSP_DIRECTIVES = [
 
 const CSP = CSP_DIRECTIVES.join('; ');
 
+const SESSION_SECRET = process.env.SESSION_SECRET || 'sahadhyayi-secure-session-secret-2026';
 const app = express();
 app.use(Sentry.Handlers.requestHandler());
-app.use(cookieParser());
+app.use(cookieParser(SESSION_SECRET));
 app.use(express.json());
 app.use(
   cors({
@@ -90,10 +91,11 @@ function jsonError(res, status, message, code, details) {
   return res.status(status).json({ error: message, code, details });
 }
 
-// Helper: set a hardened cookie
+// Helper: set a hardened, signed cookie
 function setSessionCookie(res, userId) {
   res.cookie('sessionId', userId, {
     httpOnly: true,
+    signed: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
     path: '/',
@@ -101,9 +103,9 @@ function setSessionCookie(res, userId) {
   });
 }
 
-// Require a valid session cookie
+// Require a valid session cookie (checks signed cookie first, falls back to legacy for smooth transitions)
 function requireSession(req, res, next) {
-  const userId = req.cookies?.sessionId;
+  const userId = req.signedCookies?.sessionId || req.cookies?.sessionId;
   if (!userId) return res.status(401).json({ error: 'Authentication required' });
   req.sessionUserId = userId;
   req.userId = userId;
@@ -386,10 +388,6 @@ app.post('/api/session', async (req, res) => {
     const authHeader = req.get('Authorization') || '';
     const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     const token = bearer || req.body?.access_token;
-    if (!token) return res.status(400).json({ error: 'Missing access token' });
-
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return res.status(401).json({ error: 'Invalid token' });
 
     const csrfToken = crypto.randomBytes(32).toString('hex');
     res.cookie('csrfToken', csrfToken, {
@@ -400,15 +398,24 @@ app.post('/api/session', async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    setSessionCookie(res, user.id);
-    return res.json({ ok: true, user: { id: user.id, email: user.email }, csrfToken });
+    if (token) {
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+
+      setSessionCookie(res, user.id);
+      return res.json({ ok: true, user: { id: user.id, email: user.email }, csrfToken });
+    }
+
+    // Guest / Anonymous CSRF session initialization
+    return res.json({ ok: true, guest: true, csrfToken });
   } catch (e) {
     console.error('Session error', e);
     return res.status(500).json({ error: 'Session initialization failed' });
   }
 });
 
-app.post('/api/logout', requireSession, (req, res) => {
+const handleLogout = (req, res) => {
+  res.clearCookie('sessionId', { path: '/' });
   res.cookie('sessionId', '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -424,7 +431,10 @@ app.post('/api/logout', requireSession, (req, res) => {
     maxAge: 0,
   });
   res.json({ ok: true });
-});
+};
+
+app.post('/api/logout', handleLogout);
+app.delete('/api/session', handleLogout);
 app.post('/api/data', requireSession, (req, res) => {
   res.json({ secure: true });
 });

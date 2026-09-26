@@ -14,6 +14,7 @@
     "build:server:utils": "tsup src/utils/*.ts --format esm --out-dir server-utils --clean",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview",
     "start:server": "node server.js",
     "generate:sitemap": "node scripts/generateSitemap.js",

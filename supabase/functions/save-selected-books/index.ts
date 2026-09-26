@@ -35,6 +35,29 @@ serve(async (req) => {
       )
     }
 
+    if (selectedBooks.length > 100) {
+      return new Response(
+        JSON.stringify({ error: 'Batch limit exceeded. Maximum 100 books per request.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const authHeader = req.headers.get('Authorization')
+    if (authHeader) {
+      const authClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        { global: { headers: { Authorization: authHeader } } }
+      )
+      const { error: authError } = await authClient.auth.getUser()
+      if (authError) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid authentication credentials' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''

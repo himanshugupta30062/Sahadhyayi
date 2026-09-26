@@ -1,3 +1,5 @@
+/** @vitest-environment jsdom */
+
 import { render, screen, fireEvent, waitFor, cleanup, act } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import BookActions from '../components/library/BookActions';
