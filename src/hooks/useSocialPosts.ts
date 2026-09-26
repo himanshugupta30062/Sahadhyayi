@@ -41,10 +41,13 @@ export const useSocialPosts = () => {
   const { toast } = useToast();
 
   // Fetch posts with user info and book details
-  const { data: posts = [], isLoading } = useQuery({
+  const { data: posts = [], isLoading, error: postsError, refetch } = useQuery({
     queryKey: ['social-posts'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let data: any[] | null = null;
+
+      // 1. Try full relational query with reposts
+      const res1 = await supabase
         .from('posts')
         .select(`
           *,
@@ -59,19 +62,48 @@ export const useSocialPosts = () => {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (res1.error) {
+        console.warn('Full relational posts query failed, trying standard fallback:', res1.error);
+        // 2. Fallback: query without nested repost relation
+        const res2 = await supabase
+          .from('posts')
+          .select(`
+            *,
+            profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
+            books_library(id, title, author, cover_image_url)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        if (res2.error) {
+          console.warn('Standard fallback failed, trying plain posts query:', res2.error);
+          // 3. Fallback: plain select to ensure posts are always retrieved
+          const res3 = await supabase
+            .from('posts')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+          if (res3.error) throw res3.error;
+          data = res3.data;
+        } else {
+          data = res2.data;
+        }
+      } else {
+        data = res1.data;
+      }
 
       if (user?.id && data?.length) {
-        const postIds = data.map(post => post.id);
+        const postIds = data.map((post: any) => post.id);
         const [{ data: userLikes }, { data: userReposts }] = await Promise.all([
           supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', postIds),
           supabase.from('posts').select('repost_of_id').eq('user_id', user.id).not('repost_of_id', 'is', null).in('repost_of_id', postIds),
         ]);
 
-        const likedPostIds = new Set(userLikes?.map(l => l.post_id) || []);
-        const repostedIds = new Set(userReposts?.map(r => r.repost_of_id as string) || []);
+        const likedPostIds = new Set(userLikes?.map((l: any) => l.post_id) || []);
+        const repostedIds = new Set(userReposts?.map((r: any) => r.repost_of_id as string) || []);
 
-        return data.map(post => ({
+        return data.map((post: any) => ({
           ...post,
           user_liked: likedPostIds.has(post.id),
           user_reposted: repostedIds.has(post.id),
@@ -147,7 +179,7 @@ export const useSocialPosts = () => {
     };
   }, [user?.id, queryClient, toast]);
 
-  return { posts, isLoading };
+  return { posts, isLoading, error: postsError, refetch };
 };
 
 export const useCreatePost = () => {

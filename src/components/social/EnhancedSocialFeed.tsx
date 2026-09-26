@@ -62,7 +62,7 @@ const EmbeddedOriginalPost: React.FC<{ post: NonNullable<SocialPost['reposted_po
 
 export const EnhancedSocialFeed = () => {
   const { user } = useAuth();
-  const { posts, isLoading } = useSocialPosts();
+  const { posts, isLoading, error, refetch } = useSocialPosts();
   const toggleLike = useTogglePostLike();
   const toggleRepost = useToggleRepost();
   const deletePost = useDeletePost();
@@ -107,7 +107,18 @@ export const EnhancedSocialFeed = () => {
     <div className="space-y-6">
       <FeedComposer />
 
-      {posts.length === 0 ? (
+      {error ? (
+        <Card className="bg-card border-destructive/20 rounded-2xl">
+          <CardContent className="p-8 text-center">
+            <p className="text-sm text-destructive font-medium mb-3">
+              Unable to load feed posts: {(error as Error)?.message || 'Unknown network error'}
+            </p>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      ) : posts.length === 0 ? (
         <Card className="bg-card border-border rounded-2xl">
           <CardContent className="p-10 text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
