@@ -212,6 +212,10 @@ export const useCreatePost = () => {
         image_url: postData.image_url?.trim() || null,
       };
 
+      // Debug log to help surface issues when inserting posts
+      // eslint-disable-next-line no-console
+      console.debug('Creating social post', { payload, userId: user?.id });
+
       let createdPost: any = null;
 
       // Try insert with relations for immediate rich display
@@ -266,6 +270,7 @@ export const useCreatePost = () => {
       });
     },
     onError: (error: Error) => {
+      // eslint-disable-next-line no-console
       console.error('Error creating post:', error);
       toast({
         title: 'Error',
