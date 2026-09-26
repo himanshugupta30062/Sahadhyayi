@@ -174,20 +174,23 @@ export const useCreatePost = () => {
         image_url: postData.image_url ?? null,
       };
 
-      const { error } = await supabase
+      // Debug log to help surface issues when inserting posts
+      // eslint-disable-next-line no-console
+      console.debug('Creating social post', { payload, userId: user?.id });
+
+      // Use select().single() so Supabase returns the created row and any DB-side defaults/errors
+      const { data, error } = await supabase
         .from('posts')
-        .insert(payload);
+        .insert(payload)
+        .select()
+        .single();
 
       if (error) throw error;
 
-      return {
-        ...payload,
-        likes_count: 0,
-        comments_count: 0,
-        user_liked: false,
-      };
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Optionally update cache optimistically with returned data
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({
         title: 'Success',
@@ -195,6 +198,7 @@ export const useCreatePost = () => {
       });
     },
     onError: (error: Error) => {
+      // eslint-disable-next-line no-console
       console.error('Error creating post:', error);
       toast({
         title: 'Error',
