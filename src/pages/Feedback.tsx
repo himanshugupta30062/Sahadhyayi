@@ -58,6 +58,23 @@ const Feedback = () => {
 
       if (error) throw error;
 
+      // Best-effort email notification via the deployed edge function
+      const emailMessage = [
+        formData.subject ? `Subject: ${formData.subject}` : null,
+        `Type: ${formData.type}`,
+        '',
+        formData.message,
+      ].filter(Boolean).join('\n');
+
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+          body: { name: formData.name, email: formData.email, message: emailMessage },
+        });
+        if (emailError) console.error('Email notification failed:', emailError);
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError);
+      }
+
       toast({
         title: 'Feedback Submitted!',
         description: "Thank you for your feedback. We'll review it and get back to you soon.",
