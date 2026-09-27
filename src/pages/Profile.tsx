@@ -13,8 +13,8 @@ const ProfilePage: React.FC = () => {
       <SEO
         title="User Profile - Sahadhyayi"
         description="View and manage your reader profile, update information, and explore your reading activity."
-        canonical="https://sahadhyayi.app/profile"
-        url="https://sahadhyayi.app/profile"
+        canonical="https://sahadhyayi.com/profile"
+        url="https://sahadhyayi.com/profile"
       />
       <div className="container mx-auto px-4 py-6">
         <Breadcrumb items={breadcrumbItems} className="mb-6" />
