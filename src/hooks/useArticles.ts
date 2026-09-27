@@ -109,7 +109,7 @@ export function useArticleBySlug(slug: string | undefined) {
         .from('profiles')
         .select('id, full_name, profile_photo_url')
         .eq('id', (data as Article).user_id)
-        .single();
+        .maybeSingle();
 
       return {
         ...(data as Article),

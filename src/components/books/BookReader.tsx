@@ -28,8 +28,11 @@ import {
   Clock,
   Eye,
   Download,
-  Share2
+  Share2,
+  Quote
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { AddMarginNoteDialog } from '@/components/social/margins/AddMarginNoteDialog';
 import { useAuth } from '@/contexts/authHelpers';
 import { useReadingProgress, useSaveReadingProgress } from '@/hooks/useReadingProgress';
 import { useAudioSummary } from '@/hooks/useAudioSummaries';
@@ -47,12 +50,14 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const { user } = useAuth();
   const { toast } = useToast();
   const { addQuote } = useQuotes();
+  const [searchParams] = useSearchParams();
+  const pageParam = searchParams.get('page');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState(16);
   const [showToc, setShowToc] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(pageParam ? parseInt(pageParam, 10) || 1 : 1);
   const [totalPages, setTotalPages] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
@@ -638,6 +643,26 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   <Bookmark className="w-4 h-4" />
                   <span className="hidden sm:inline">Save</span>
                 </Button>
+              )}
+
+              {/* Margin Note Button */}
+              {user && (
+                <AddMarginNoteDialog
+                  initialBookId={bookId}
+                  initialBookTitle={bookTitle}
+                  initialPage={currentPage || 1}
+                  initialQuote={selectedText || ""}
+                  trigger={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1 text-amber-700 border-amber-400/40 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-950/40"
+                    >
+                      <Quote className="w-4 h-4 text-amber-500" />
+                      <span className="hidden sm:inline">Margin Note</span>
+                    </Button>
+                  }
+                />
               )}
 
               {/* Table of Contents */}

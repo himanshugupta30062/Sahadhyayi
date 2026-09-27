@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Quote } from 'lucide-react';
 import AudioSummaryButton from './AudioSummaryButton';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { toast } from '@/hooks/use-toast';
+import { AddMarginNoteDialog } from '@/components/social/margins/AddMarginNoteDialog';
 
 interface BookCoverProps {
   title: string;
@@ -87,6 +88,20 @@ const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl, o
             <AudioSummaryButton
               bookId={bookId}
               bookContent={description}
+            />
+          </div>
+
+          {/* Add Margin Note Button */}
+          <div className="w-full">
+            <AddMarginNoteDialog
+              initialBookId={bookId}
+              initialBookTitle={title}
+              trigger={
+                <Button variant="outline" className="w-full h-11 text-sm border-amber-500/40 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/30 gap-2">
+                  <Quote className="w-4 h-4 text-amber-500" />
+                  Add Margin Note
+                </Button>
+              }
             />
           </div>
         </div>

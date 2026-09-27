@@ -12,6 +12,7 @@ import { useFriends, useSendFriendRequest, useFriendRequests, useRespondToFriend
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/authHelpers';
 import { ChatWindow } from '@/components/social/ChatWindow';
+import { DnaMatchChip } from '@/components/social/dna/DnaMatchChip';
 
 export const EnhancedFriendsManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -228,9 +229,14 @@ export const EnhancedFriendsManager = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-semibold text-foreground">
-                              {friendProfile?.full_name || 'Unknown User'}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-foreground">
+                                {friendProfile?.full_name || 'Unknown User'}
+                              </p>
+                              {friendProfile?.id && (
+                                <DnaMatchChip userId={friendProfile.id} userName={friendProfile.full_name || 'Friend'} />
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground">
                               @{friendProfile?.username || 'username'}
                             </p>
@@ -417,9 +423,14 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-foreground truncate">
-          {user.full_name || 'Unknown User'}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="font-semibold text-foreground truncate">
+            {user.full_name || 'Unknown User'}
+          </p>
+          {user.id && (
+            <DnaMatchChip userId={user.id} userName={user.full_name || 'User'} />
+          )}
+        </div>
         <p className="text-sm text-muted-foreground truncate">
           @{user.username || 'username'}
         </p>
