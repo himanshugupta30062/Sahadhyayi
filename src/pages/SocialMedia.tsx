@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { MessageCircle, MapPin, UsersIcon, Users, Sparkles, BookOpen, Radio, Lock, Quote, Dna, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { EnhancedSocialFeed } from '@/components/social/EnhancedSocialFeed';
@@ -19,9 +19,29 @@ const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/Spoile
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
 
+const VALID_SOCIAL_TABS = ['feed', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
+
 const SocialMedia = () => {
   const { user, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('feed');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab = VALID_SOCIAL_TABS.includes(tabParam as any) ? (tabParam as string) : 'feed';
+  const [mapView, setMapView] = useState<'readers' | 'friends'>('readers');
+
+  const handleTabChange = (value: string) => {
+    setSearchParams(
+      prev => {
+        const next = new URLSearchParams(prev);
+        if (value === 'feed') {
+          next.delete('tab');
+        } else {
+          next.set('tab', value);
+        }
+        return next;
+      },
+      { replace: true }
+    );
+  };
 
   if (loading) {
     return <div className="min-h-screen bg-background" aria-hidden />;
@@ -116,7 +136,7 @@ const SocialMedia = () => {
 
         {/* Main Content */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="w-full bg-muted/50 rounded-xl p-1 mb-6 flex-wrap h-auto justify-start gap-1">
               {tabs.map(tab => (
                 <TabsTrigger
@@ -173,13 +193,37 @@ const SocialMedia = () => {
             </TabsContent>
 
             <TabsContent value="map" className="mt-0">
-              <div className="space-y-6">
-                <Card className="border-border overflow-hidden">
-                  <EnhancedReadingMap />
-                </Card>
-                <Card className="border-border overflow-hidden">
-                  <FriendsLocationMap />
-                </Card>
+              <div className="space-y-4">
+                <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border w-fit">
+                  <Button
+                    size="sm"
+                    variant={mapView === 'readers' ? 'default' : 'ghost'}
+                    className={mapView === 'readers' ? 'h-8 px-3 text-xs bg-brand-primary text-white shadow-sm' : 'h-8 px-3 text-xs text-muted-foreground'}
+                    onClick={() => setMapView('readers')}
+                  >
+                    <MapPin className="w-3.5 h-3.5 mr-1.5" />
+                    Readers Near Me
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={mapView === 'friends' ? 'default' : 'ghost'}
+                    className={mapView === 'friends' ? 'h-8 px-3 text-xs bg-brand-primary text-white shadow-sm' : 'h-8 px-3 text-xs text-muted-foreground'}
+                    onClick={() => setMapView('friends')}
+                  >
+                    <Users className="w-3.5 h-3.5 mr-1.5" />
+                    Friends on Map
+                  </Button>
+                </div>
+
+                {mapView === 'readers' ? (
+                  <Card className="border-border overflow-hidden">
+                    <EnhancedReadingMap />
+                  </Card>
+                ) : (
+                  <Card className="border-border overflow-hidden">
+                    <FriendsLocationMap />
+                  </Card>
+                )}
               </div>
             </TabsContent>
 

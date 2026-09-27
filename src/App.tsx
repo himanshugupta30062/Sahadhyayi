@@ -1,6 +1,6 @@
 import React, { useEffect, lazy, Suspense, memo } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams } from "react-router-dom";
 
 import { toast } from '@/hooks/use-toast';
 import { errorHandler } from '@/utils/errorHandler';
@@ -110,6 +110,13 @@ const queryClient = new QueryClient({
   }
 });
 
+const ReaderRedirect = () => {
+  const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const query = searchParams.toString();
+  return <Navigate to={`/book/${id}?tab=read${query ? `&${query}` : ''}`} replace />;
+};
+
 const App = memo(() => {
   usePageVisitTracker();
 
@@ -182,6 +189,10 @@ const App = memo(() => {
                               <BookDetails />
                             </Suspense>
                           }
+                        />
+                        <Route
+                          path="/reader/:id"
+                          element={<ReaderRedirect />}
                         />
                         
                         {/* Secondary routes */}

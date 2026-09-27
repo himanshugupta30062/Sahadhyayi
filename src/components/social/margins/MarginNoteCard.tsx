@@ -77,7 +77,7 @@ export const MarginNoteCard: React.FC<MarginNoteCardProps> = ({ note }) => {
         {/* Book & Author Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex gap-3 min-w-0">
-            <Link to={`/reader/${note.book_id}?page=${note.page}`} className="shrink-0 group">
+            <Link to={`/book/${note.book_id}?tab=read&page=${note.page}`} className="shrink-0 group">
               <div className="w-12 h-16 rounded bg-muted overflow-hidden relative shadow-sm group-hover:ring-2 ring-brand-primary transition-all">
                 {note.books_library?.cover_image_url ? (
                   <img src={note.books_library.cover_image_url} alt="" className="w-full h-full object-cover" />
@@ -124,7 +124,7 @@ export const MarginNoteCard: React.FC<MarginNoteCardProps> = ({ note }) => {
 
           {/* Action buttons */}
           <div className="flex items-center gap-1 shrink-0">
-            <Link to={`/reader/${note.book_id}?page=${note.page}`}>
+            <Link to={`/book/${note.book_id}?tab=read&page=${note.page}`}>
               <Button size="sm" variant="ghost" className="h-8 px-2 text-xs text-brand-primary gap-1">
                 <ExternalLink className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Open at page</span>

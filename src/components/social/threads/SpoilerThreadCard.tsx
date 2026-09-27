@@ -150,7 +150,7 @@ export const SpoilerThreadCard: React.FC<SpoilerThreadCardProps> = ({ thread }) 
                 <span>{showComments ? "Hide Discussion" : "Join Discussion"}</span>
               </Button>
 
-              <Link to={`/reader/${thread.book_id}`}>
+              <Link to={`/book/${thread.book_id}?tab=read`}>
                 <Button size="sm" variant="ghost" className="h-8 px-2 text-xs text-muted-foreground gap-1">
                   <ExternalLink className="w-3.5 h-3.5" />
                   <span>Reader</span>
@@ -240,7 +240,7 @@ export const SpoilerThreadCard: React.FC<SpoilerThreadCardProps> = ({ thread }) 
               </p>
 
               <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
-                <Link to={`/reader/${thread.book_id}`}>
+                <Link to={`/book/${thread.book_id}?tab=read`}>
                   <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
                     <BookOpen className="w-3 h-3" />
                     Read in Reader

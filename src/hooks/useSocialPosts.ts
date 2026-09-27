@@ -120,7 +120,7 @@ export const useSocialPosts = () => {
     if (!user?.id) return;
 
     const channel = supabase
-      .channel('social-posts-realtime')
+      .channel(`social-posts-realtime-${user.id}`)
       .on(
         'postgres_changes',
         {

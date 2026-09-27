@@ -7,6 +7,7 @@ import { usePostComments, useCreateComment, useToggleCommentLike } from '@/hooks
 import { useAuth } from '@/contexts/authHelpers';
 import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useToast } from '@/hooks/use-toast';
 
 interface CommentRow {
   id: string;
@@ -31,6 +32,7 @@ interface CommentSectionProps {
 
 export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
   const { data: comments = [], isLoading } = usePostComments(postId);
@@ -57,8 +59,13 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
       });
       setNewComment('');
       setReplyingTo(null);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      toast({
+        title: 'Failed to post comment',
+        description: e?.message || 'Please check your connection and try again.',
+        variant: 'destructive',
+      });
     }
   };
 
