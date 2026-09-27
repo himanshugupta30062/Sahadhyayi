@@ -67,7 +67,7 @@ const BookLibrary = () => {
     "@type": "CollectionPage",
     "name": "Sahadhyayi Digital Library",
     "description": "Comprehensive digital book collection with thousands of titles",
-    "url": "https://sahadhyayi.app/library",
+    "url": "https://sahadhyayi.com/library",
     "mainEntity": {
       "@type": "ItemList",
       "name": "Book Collection",
@@ -80,13 +80,13 @@ const BookLibrary = () => {
           "@type": "ListItem",
           "position": 1,
           "name": "Home",
-          "item": "https://sahadhyayi.app"
+          "item": "https://sahadhyayi.com"
         },
         {
           "@type": "ListItem",
           "position": 2,
           "name": "Library",
-          "item": "https://sahadhyayi.app/library"
+          "item": "https://sahadhyayi.com/library"
         }
       ]
     }
@@ -97,7 +97,7 @@ const BookLibrary = () => {
       <SEO
         title="Digital Book Library - Discover & Read Books Online | Sahadhyayi"
         description="Explore our comprehensive digital library with thousands of books across all genres. Read online, track progress, and join discussions with fellow readers worldwide."
-        canonical="https://sahadhyayi.app/library"
+        canonical="https://sahadhyayi.com/library"
         keywords={['digital library', 'online books', 'read books online', 'ebooks', 'book collection', 'reading platform']}
       />
       <script type="application/ld+json">

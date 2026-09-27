@@ -55,7 +55,7 @@ const Discovery = () => {
       <SEO
         title="Book Discovery"
         description="Discover books from the Sahadhyayi library with personalized recommendations and reader-friendly filters."
-        url="https://sahadhyayi.app/discovery"
+        url="https://sahadhyayi.com/discovery"
       />
       <h1 className="text-3xl font-bold mb-6 text-center">Discover New Books</h1>
 
