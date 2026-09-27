@@ -8,7 +8,7 @@ import SortingInfoTooltip from '@/components/library/SortingInfoTooltip';
 import LibraryHero from '@/components/library/LibraryHero';
 import BooksCollection from '@/components/library/BooksCollection';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
-import { supabase } from '@/integrations/supabase/client-universal';
+import { useLibraryBookCount } from '@/hooks/useLibraryBookCount';
 
 export default function Library() {
   const navigate = useNavigate();
@@ -21,35 +21,7 @@ export default function Library() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
 
   const { stats: communityStats } = useCommunityStats();
-  const [totalBooks, setTotalBooks] = useState(0);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadTotalBooks = async () => {
-      try {
-        const { count, error } = await supabase
-          .from('books_library')
-          .select('id', { count: 'exact', head: true });
-
-        if (!mounted) return;
-        if (error) {
-          setTotalBooks(0);
-          return;
-        }
-
-        setTotalBooks(count ?? 0);
-      } catch {
-        if (mounted) setTotalBooks(0);
-      }
-    };
-
-    void loadTotalBooks();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const { data: totalBooks } = useLibraryBookCount();
 
   const normalizedParams = useMemo(
     () => ({
@@ -141,7 +113,7 @@ export default function Library() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onSearch={handleSearch}
-        totalBooks={totalBooks || 0}
+        totalBooks={totalBooks}
         activeReaders={communityStats?.totalSignups || 3200}
         avgRating={4.8}
         booksAddedToday={47}

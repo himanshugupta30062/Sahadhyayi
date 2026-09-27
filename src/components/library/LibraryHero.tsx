@@ -11,7 +11,7 @@ interface LibraryHeroProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onSearch: () => void;
-  totalBooks?: number;
+  totalBooks?: number | null;
   activeReaders?: number;
   avgRating?: number;
   booksAddedToday?: number;
@@ -21,7 +21,7 @@ const LibraryHero = ({
   searchQuery, 
   onSearchChange, 
   onSearch, 
-  totalBooks = 10000,
+  totalBooks,
   activeReaders = 2847,
   avgRating = 4.8,
   booksAddedToday = 47
@@ -61,7 +61,12 @@ const LibraryHero = ({
   };
 
   const stats = [
-    { icon: BookOpen, label: 'Books Available', value: totalBooks.toLocaleString(), color: 'text-library-primary' },
+    {
+      icon: BookOpen,
+      label: 'Books Available',
+      value: totalBooks?.toLocaleString() ?? '—',
+      color: 'text-library-primary',
+    },
     { icon: Users, label: 'Active Readers', value: activeReaders.toLocaleString(), color: 'text-library-secondary' },
     { icon: Star, label: 'Avg Rating', value: avgRating.toString(), color: 'text-yellow-600' },
     { icon: TrendingUp, label: 'Books Added Today', value: booksAddedToday.toString(), color: 'text-green-600' },

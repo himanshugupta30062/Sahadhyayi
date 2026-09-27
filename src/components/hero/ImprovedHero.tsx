@@ -4,9 +4,14 @@ import { ArrowRight, BookOpen, Users, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import SignInLink from '@/components/SignInLink';
+import { useLibraryBookCount } from '@/hooks/useLibraryBookCount';
 
 const ImprovedHero = () => {
   const { user } = useAuth();
+  const { data: totalBooks, isLoading, isError } = useLibraryBookCount();
+  const booksAvailable = isLoading || isError || totalBooks == null
+    ? '—'
+    : totalBooks.toLocaleString();
 
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center bg-gradient-hero overflow-hidden">
@@ -71,7 +76,7 @@ const ImprovedHero = () => {
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <BookOpen className="w-6 h-6 text-white/80 mr-2" />
-                <span className="text-2xl font-bold text-white">12,500+</span>
+                <span className="text-2xl font-bold text-white">{booksAvailable}</span>
               </div>
               <p className="text-white/70">Books Available</p>
             </div>
