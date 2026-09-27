@@ -35,7 +35,10 @@ const CSP_DIRECTIVES = [
 
 const CSP = CSP_DIRECTIVES.join('; ');
 
-const SESSION_SECRET = process.env.SESSION_SECRET || 'sahadhyayi-secure-session-secret-2026';
+const SESSION_SECRET = process.env.SESSION_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'dev-local-session-secret');
+if (process.env.NODE_ENV === 'production' && !SESSION_SECRET) {
+  throw new Error('SESSION_SECRET must be configured in production');
+}
 const app = express();
 app.use(Sentry.Handlers.requestHandler());
 app.use(cookieParser(SESSION_SECRET));

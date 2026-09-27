@@ -100,11 +100,13 @@ export class SecurityMiddleware {
 
   static validateReferer(referer: string): boolean {
     if (!referer) return true; // Allow empty referer
-    
+
     try {
       const url = new URL(referer);
-      return SECURITY_CONFIG.TRUSTED_DOMAINS.includes(url.hostname) ||
-             url.hostname === window.location.hostname;
+      const isTrustedDomain = SECURITY_CONFIG.TRUSTED_DOMAINS.includes(url.hostname);
+      const isSameOrigin = typeof window !== 'undefined' && url.hostname === window.location.hostname;
+
+      return isTrustedDomain || isSameOrigin;
     } catch {
       return false;
     }
@@ -132,13 +134,13 @@ export class SecurityMiddleware {
       violation,
       details,
       timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-      referer: document.referrer
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+      url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+      referer: typeof document !== 'undefined' ? document.referrer : ''
     };
 
     console.warn('[SECURITY]', event);
-    
+
     // In production, send to security monitoring service
     if (import.meta.env.PROD) {
       // Example: sendToSecurityService(event);
@@ -156,7 +158,7 @@ export class SecurityMonitor {
       event,
       data,
       timestamp: Date.now(),
-      url: window.location.href
+      url: typeof window !== 'undefined' ? window.location.href : 'unknown'
     };
 
     this.events.push(record);

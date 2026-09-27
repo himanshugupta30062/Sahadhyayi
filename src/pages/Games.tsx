@@ -605,10 +605,10 @@ export default function Games() {
                   <TabsContent value="social" className="mt-6">
                     <FriendChallenge 
                       onStartChallenge={(friendId, bookId) => {
-                        // TODO: Implement friend challenge
+                        console.info('Friend challenge requested', { friendId, bookId });
                       }}
                       onAcceptChallenge={(challengeId) => {
-                        // TODO: Implement accept challenge
+                        console.info('Challenge accept requested', { challengeId });
                       }}
                     />
                   </TabsContent>

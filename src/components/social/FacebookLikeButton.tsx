@@ -12,6 +12,12 @@ export const FacebookLikeButton: React.FC<FacebookLikeButtonProps> = ({ width, h
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
+    if (!appId) {
+      setSdkFailed(true);
+      return;
+    }
+
     if (!document.getElementById('fb-root')) {
       const fbRoot = document.createElement('div');
       fbRoot.id = 'fb-root';
@@ -25,7 +31,7 @@ export const FacebookLikeButton: React.FC<FacebookLikeButtonProps> = ({ width, h
 
     (window as any).fbAsyncInit = function () {
       (window as any).FB.init({
-        appId: import.meta.env.VITE_FACEBOOK_APP_ID || 'YOUR_FACEBOOK_APP_ID',
+        appId,
         xfbml: true,
         version: 'v17.0',
       });
