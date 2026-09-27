@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { requirePersistedSocialPost } from '@/lib/socialPosts';
 
 export interface SocialPost {
   id: string;
@@ -42,7 +43,7 @@ export const useSocialPosts = () => {
 
   // Fetch posts with user info and book details
   const { data: posts = [], isLoading, error: postsError, refetch } = useQuery({
-    queryKey: ['social-posts'],
+    queryKey: ['social-posts', user?.id],
     queryFn: async () => {
       let data: any[] | null = null;
 
@@ -130,7 +131,7 @@ export const useSocialPosts = () => {
         },
         async (payload) => {
           // Fetch the complete post with user details
-          const { data: newPost } = await supabase
+          const { data: newPost, error: fetchError } = await supabase
             .from('posts')
             .select(`
               *,
@@ -140,8 +141,14 @@ export const useSocialPosts = () => {
             .eq('id', payload.new.id)
             .single();
 
+          if (fetchError) {
+            console.warn('Unable to load the new social post from realtime:', fetchError);
+            void queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+            return;
+          }
+
           if (newPost) {
-            queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => {
+            queryClient.setQueryData<SocialPost[]>(['social-posts', user.id], (old = []) => {
               return [{ ...newPost, user_liked: false }, ...old];
             });
 
@@ -163,7 +170,7 @@ export const useSocialPosts = () => {
           table: 'posts'
         },
         (payload) => {
-          queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => {
+          queryClient.setQueryData<SocialPost[]>(['social-posts', user.id], (old = []) => {
             return old.map(post => 
               post.id === payload.new.id 
                 ? { ...post, ...payload.new }
@@ -197,36 +204,39 @@ export const useCreatePost = () => {
     }) => {
       if (!user?.id) throw new Error('Not authenticated');
 
-      // 1. Ensure user has a profile record to satisfy posts_user_id_profiles_fkey
-      try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .maybeSingle();
+      // Ensure user has a profile record to satisfy posts_user_id_profiles_fkey.
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
 
-        if (!profile) {
-          const fallbackName =
-            user.user_metadata?.full_name ||
-            user.user_metadata?.name ||
-            user.email?.split('@')[0] ||
-            'Reader';
-          const fallbackUsername =
-            user.user_metadata?.username ||
-            user.email?.split('@')[0] ||
-            `user_${user.id.slice(0, 6)}`;
-          await supabase.from('profiles').upsert(
-            {
-              id: user.id,
-              full_name: fallbackName,
-              username: fallbackUsername,
-              profile_photo_url: user.user_metadata?.avatar_url || null,
-            },
-            { onConflict: 'id' }
-          );
+      if (profileError) {
+        throw new Error(`Could not verify your profile before posting: ${profileError.message}`);
+      }
+
+      if (!profile) {
+        const fallbackName =
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          user.email?.split('@')[0] ||
+          'Reader';
+        const fallbackUsername =
+          user.user_metadata?.username ||
+          `reader_${user.id.slice(0, 8)}`;
+        const { error: profileInsertError } = await supabase.from('profiles').upsert(
+          {
+            id: user.id,
+            full_name: fallbackName,
+            username: fallbackUsername,
+            profile_photo_url: user.user_metadata?.avatar_url || null,
+          },
+          { onConflict: 'id' }
+        );
+
+        if (profileInsertError) {
+          throw new Error(`Could not prepare your profile before posting: ${profileInsertError.message}`);
         }
-      } catch (err) {
-        console.warn('Profile pre-check failed (continuing post creation):', err);
       }
 
       // Ensure empty string is converted to null to prevent invalid UUID syntax error
@@ -244,53 +254,38 @@ export const useCreatePost = () => {
         image_url: postData.image_url?.trim() || null,
       };
 
-      // Debug log to help surface issues when inserting posts
-      // eslint-disable-next-line no-console
-      console.debug('Creating social post', { payload, userId: user?.id });
-
-      let createdPost: any = null;
-
-      // Try insert with relations for immediate rich display
+      // Persist and confirm the row before reporting success. Relationship
+      // embeds are fetched separately so an embed/schema-cache issue cannot
+      // cause a duplicate insert on retry.
       const { data, error } = await supabase
         .from('posts')
         .insert(payload)
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      const persistedPost = requirePersistedSocialPost(data);
+
+      const { data: richPost, error: richPostError } = await supabase
+        .from('posts')
         .select(`
           *,
           profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
           books_library(id, title, author, cover_image_url)
         `)
-        .maybeSingle();
+        .eq('id', persistedPost.id)
+        .single();
 
-      if (error) {
-        console.warn('Rich insert select failed, falling back to standard insert:', error);
-        const fallback = await supabase
-          .from('posts')
-          .insert(payload)
-          .select()
-          .single();
-
-        if (fallback.error) throw fallback.error;
-        createdPost = fallback.data;
-      } else {
-        createdPost = data;
+      if (richPostError) {
+        console.warn('Post was saved, but related profile or book details could not be loaded:', richPostError);
+        return persistedPost;
       }
 
-      return (
-        createdPost || {
-          ...payload,
-          id: crypto.randomUUID(),
-          created_at: new Date().toISOString(),
-          likes_count: 0,
-          comments_count: 0,
-          reposts_count: 0,
-          user_liked: false,
-          user_reposted: false,
-        }
-      );
+      return richPost ?? persistedPost;
     },
     onSuccess: (newPost) => {
       if (newPost) {
-        queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => {
+        queryClient.setQueryData<SocialPost[]>(['social-posts', user?.id], (old = []) => {
           if (old.some((p) => p.id === newPost.id)) return old;
           return [{ ...newPost, user_liked: false, user_reposted: false }, ...old];
         });
@@ -343,7 +338,7 @@ export const useTogglePostLike = () => {
     },
     onSuccess: ({ postId, isLiked }) => {
       // Update the posts in cache
-      queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => {
+      queryClient.setQueryData<SocialPost[]>(['social-posts', user?.id], (old = []) => {
         return old.map(post => 
           post.id === postId 
             ? { 
