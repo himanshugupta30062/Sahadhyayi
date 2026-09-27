@@ -125,7 +125,9 @@ export const useUnlockChapter = () => {
             book_id: bookId,
             chapter_number: chapter,
             completion_percentage: 100,
-            status: "completed",
+            total_pages: 1,
+            pages_read: 1,
+            completed_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id,book_id,chapter_number" }
