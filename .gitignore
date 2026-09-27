@@ -26,3 +26,5 @@ public/prerender
 .env
 .env.local
 .env.*.local
+* 2.*
+* 3.*

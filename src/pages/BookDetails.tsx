@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,12 +23,42 @@ import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import { logBookEvent } from '@/lib/supabase/events';
 
 
+const VALID_BOOK_TABS = ['connect', 'create', 'feedback', 'read'] as const;
+
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(
+    VALID_BOOK_TABS.includes(tabParam as any) ? (tabParam as string) : 'connect'
+  );
   const { user } = useAuth();
   const { data: book, isLoading, error } = useBookById(id);
   const { data: ratingData, isLoading: ratingLoading } = useBookRatings(id);
   const rateMutation = useRateBook(id);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && VALID_BOOK_TABS.includes(tab as any)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams(
+      prev => {
+        const next = new URLSearchParams(prev);
+        if (value === 'connect') {
+          next.delete('tab');
+        } else {
+          next.set('tab', value);
+        }
+        return next;
+      },
+      { replace: true }
+    );
+  };
 
 
   useEffect(() => {
@@ -364,7 +394,7 @@ const BookDetails = () => {
           {/* Interactive Tabs Section - Mobile Responsive */}
           <div className="w-full">
 
-            <Tabs defaultValue="connect" className="w-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 mb-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl h-auto p-2">
                 <TabsTrigger
                   value="connect"

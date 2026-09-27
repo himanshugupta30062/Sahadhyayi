@@ -81,7 +81,7 @@ export const ReadingRoom: React.FC<ReadingRoomProps> = ({ room, onLeave }) => {
 
           {/* Reader Controls: Page Sharing & Reader shortcut */}
           <div className="flex items-center gap-3">
-            <Link to={`/reader/${room.book_id}?page=${page}`}>
+            <Link to={`/book/${room.book_id}?tab=read&page=${page}`}>
               <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-brand-primary/30">
                 <ExternalLink className="w-3.5 h-3.5" />
                 <span>Open Reader</span>
