@@ -1,162 +1,106 @@
-import { useState } from "react";
-import { useMarginNotes, useCreateMarginNote, useToggleMarginReaction } from "@/hooks/useMarginNotes";
+import React, { useState } from "react";
+import { useMarginNotes } from "@/hooks/useMarginNotes";
 import { useAuth } from "@/contexts/authHelpers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useUserBookshelf } from "@/hooks/useUserBookshelf";
-import { Quote, Heart, BookOpen, Plus, Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { formatDistanceToNow } from "date-fns";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpen, Globe, Users, Loader2 } from "lucide-react";
+import { AddMarginNoteDialog } from "./AddMarginNoteDialog";
+import { MarginNoteCard } from "./MarginNoteCard";
 
-const EMOJIS = ["❤️", "👏", "🤔", "🔥"];
-
-const AddDialog = ({ onDone }: { onDone?: () => void }) => {
-  const { data: shelf = [] } = useUserBookshelf();
-  const [open, setOpen] = useState(false);
-  const [bookId, setBookId] = useState("");
-  const [page, setPage] = useState(1);
-  const [quote, setQuote] = useState("");
-  const [note, setNote] = useState("");
-  const [visibility, setVisibility] = useState<"public" | "friends">("public");
-  const create = useCreateMarginNote();
-  const { toast } = useToast();
-
-  const submit = async () => {
-    if (!bookId || !quote.trim() || !note.trim()) return;
-    try {
-      await create.mutateAsync({ book_id: bookId, page, quote: quote.trim(), note: note.trim(), visibility });
-      toast({ title: "Margin note posted" });
-      setOpen(false); setQuote(""); setNote(""); setPage(1);
-      onDone?.();
-    } catch (e: any) {
-      toast({ title: "Couldn't post", description: e.message, variant: "destructive" });
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="gap-2"><Plus className="w-4 h-4" /> Margin note</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Share a margin note</DialogTitle></DialogHeader>
-        <div className="space-y-3">
-          <div>
-            <Label className="text-xs">Book</Label>
-            <Select value={bookId} onValueChange={setBookId}>
-              <SelectTrigger><SelectValue placeholder="Pick a book from your shelf" /></SelectTrigger>
-              <SelectContent>
-                {shelf.map((b: any) => (
-                  <SelectItem key={b.book_id} value={b.book_id}>{b.books_library?.title ?? "Untitled"}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-1">
-              <Label className="text-xs">Page</Label>
-              <Input type="number" min={1} value={page} onChange={(e) => setPage(parseInt(e.target.value || "1"))} />
-            </div>
-            <div className="col-span-2">
-              <Label className="text-xs">Visibility</Label>
-              <Select value={visibility} onValueChange={(v: any) => setVisibility(v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Public</SelectItem>
-                  <SelectItem value="friends">Friends only</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div>
-            <Label className="text-xs">Quoted passage</Label>
-            <Textarea placeholder="Type or paste the passage…" value={quote} onChange={(e) => setQuote(e.target.value)} rows={3} />
-          </div>
-          <div>
-            <Label className="text-xs">Your thought</Label>
-            <Textarea placeholder="What struck you about this?" value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={submit} disabled={create.isPending || !bookId || !quote || !note}>
-            {create.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Post note
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const MarginNotesFeed = () => {
+export const MarginNotesFeed: React.FC = () => {
   const { user } = useAuth();
-  const { data: notes = [], isLoading } = useMarginNotes();
-  const react = useToggleMarginReaction();
+  const [filter, setFilter] = useState<"all" | "friends">("all");
+  const { data: notes = [], isLoading, error } = useMarginNotes({ filter });
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-4 rounded-xl border border-border">
         <div>
-          <h2 className="text-lg font-semibold">Margins</h2>
-          <p className="text-sm text-muted-foreground">Passages that struck other readers — react, reply, build a living margin.</p>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-amber-500" />
+            Margin Notes
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            A living margin around books. Highlights, thoughts, and reflections from the community.
+          </p>
         </div>
-        {user && <AddDialog />}
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {/* Friends vs Global Toggle */}
+          {user && (
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as "all" | "friends")} className="h-8">
+              <TabsList className="h-8 p-0.5 bg-muted/60">
+                <TabsTrigger value="all" className="h-7 text-xs px-2.5 gap-1">
+                  <Globe className="w-3 h-3" /> Global
+                </TabsTrigger>
+                <TabsTrigger value="friends" className="h-7 text-xs px-2.5 gap-1">
+                  <Users className="w-3 h-3" /> Friends
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+
+          {user && <AddMarginNoteDialog />}
+        </div>
       </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Loading notes…</p>}
-      {!isLoading && notes.length === 0 && (
-        <Card className="border-dashed"><CardContent className="py-10 text-center text-muted-foreground text-sm">
-          No margin notes yet. Be the first to post one.
-        </CardContent></Card>
+      {/* Loading & Error States */}
+      {isLoading && (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
+        </div>
       )}
 
-      <div className="space-y-3">
-        {notes.map((n) => (
-          <Card key={n.id} className="overflow-hidden hover:shadow-md transition-shadow">
-            <CardContent className="p-4 sm:p-5 space-y-3">
-              <div className="flex gap-3">
-                <Link to={`/book/${n.book_id}`} className="shrink-0">
-                  <div className="w-12 h-16 rounded bg-muted overflow-hidden">
-                    {n.books_library?.cover_image_url
-                      ? <img src={n.books_library.cover_image_url} alt="" className="w-full h-full object-cover" />
-                      : <div className="w-full h-full flex items-center justify-center"><BookOpen className="w-4 h-4 text-muted-foreground" /></div>}
-                  </div>
-                </Link>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">{n.books_library?.title ?? "Book"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {n.profiles?.full_name ?? "Reader"} · p.{n.page} · {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                  </p>
-                </div>
-              </div>
+      {error && (
+        <Card className="border-destructive/30">
+          <CardContent className="py-6 text-center text-sm text-destructive">
+            Failed to load margin notes. Please try again.
+          </CardContent>
+        </Card>
+      )}
 
-              <blockquote className="border-l-4 border-amber-400 bg-amber-50/60 px-3 py-2 italic text-sm text-foreground/90 rounded-r">
-                <Quote className="w-3 h-3 inline mr-1 text-amber-500" />{n.quote}
-              </blockquote>
-              <p className="text-sm leading-relaxed">{n.note}</p>
-
-              <div className="flex items-center gap-2 pt-1">
-                {EMOJIS.map((e) => (
-                  <Button key={e} size="sm" variant="ghost" className="h-7 px-2 text-sm"
-                    onClick={() => react.mutate({ noteId: n.id, emoji: e })}>
-                    <span className="mr-1">{e}</span>
-                  </Button>
-                ))}
-                <span className="text-xs text-muted-foreground ml-auto flex items-center gap-1">
-                  <Heart className="w-3 h-3" /> {n.reactions_count}
-                </span>
+      {!isLoading && !error && notes.length === 0 && (
+        <Card className="border-dashed bg-card/60">
+          <CardContent className="py-12 text-center space-y-3">
+            <div className="w-12 h-12 mx-auto rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600">
+              <BookOpen className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {filter === "friends" ? "No margin notes from friends yet" : "No margin notes yet"}
+              </p>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
+                {filter === "friends"
+                  ? "When your friends highlight book passages and write margin notes, they will appear here."
+                  : "Highlight a meaningful passage in any book and share your thoughts to build the living margin."}
+              </p>
+            </div>
+            {user && (
+              <div className="pt-2">
+                <AddMarginNoteDialog
+                  trigger={
+                    <Button size="sm" variant="outline" className="text-xs">
+                      Post First Margin Note
+                    </Button>
+                  }
+                />
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Feed of Notes */}
+      {!isLoading && notes.length > 0 && (
+        <div className="space-y-4">
+          {notes.map((note) => (
+            <MarginNoteCard key={note.id} note={note} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
-
 export default MarginNotesFeed;

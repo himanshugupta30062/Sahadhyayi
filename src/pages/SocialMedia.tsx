@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
-import { MessageCircle, MapPin, UsersIcon, Users, Sparkles, BookOpen, Radio, Lock, Quote, Dna } from 'lucide-react';
+import { MessageCircle, MapPin, UsersIcon, Users, Sparkles, BookOpen, Radio, Lock, Quote, Dna, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
@@ -12,10 +12,12 @@ import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
 import { FriendsLocationMap } from '@/components/social/FriendsLocationMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
 import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
-import MarginNotesFeed from '@/components/social/margins/MarginNotesFeed';
-import SpoilerThreadsFeed from '@/components/social/threads/SpoilerThreadsFeed';
-import ReadingRoomsPanel from '@/components/social/rooms/ReadingRoomsPanel';
-import ReadingDnaPanel from '@/components/social/dna/ReadingDnaPanel';
+
+// Lazy-load the 4 book-native feature panels
+const MarginNotesFeed = lazy(() => import('@/components/social/margins/MarginNotesFeed'));
+const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/SpoilerThreadsFeed'));
+const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
+const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
 
 const SocialMedia = () => {
   const { user, loading } = useAuth();
@@ -135,19 +137,35 @@ const SocialMedia = () => {
             </TabsContent>
 
             <TabsContent value="rooms" className="mt-0">
-              <div className="max-w-3xl mx-auto"><ReadingRoomsPanel /></div>
+              <div className="max-w-3xl mx-auto">
+                <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-brand-primary" /></div>}>
+                  <ReadingRoomsPanel />
+                </Suspense>
+              </div>
             </TabsContent>
 
             <TabsContent value="threads" className="mt-0">
-              <div className="max-w-2xl mx-auto"><SpoilerThreadsFeed /></div>
+              <div className="max-w-2xl mx-auto">
+                <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-brand-primary" /></div>}>
+                  <SpoilerThreadsFeed />
+                </Suspense>
+              </div>
             </TabsContent>
 
             <TabsContent value="margins" className="mt-0">
-              <div className="max-w-2xl mx-auto"><MarginNotesFeed /></div>
+              <div className="max-w-2xl mx-auto">
+                <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-brand-primary" /></div>}>
+                  <MarginNotesFeed />
+                </Suspense>
+              </div>
             </TabsContent>
 
             <TabsContent value="dna" className="mt-0">
-              <div className="max-w-2xl mx-auto"><ReadingDnaPanel /></div>
+              <div className="max-w-2xl mx-auto">
+                <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-brand-primary" /></div>}>
+                  <ReadingDnaPanel />
+                </Suspense>
+              </div>
             </TabsContent>
 
             <TabsContent value="friends" className="mt-0">
