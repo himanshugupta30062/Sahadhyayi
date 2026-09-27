@@ -77,10 +77,10 @@ const slugify = text =>
 const urls = [];
 
 function addUrl(loc, changefreq='weekly', priority='0.6', image) {
-  urls.push({ loc: `https://sahadhyayi.app${loc}`, changefreq, priority, image });
+  urls.push({ loc: `https://sahadhyayi.com${loc}`, changefreq, priority, image });
 }
 
-const HOME_IMAGE = 'https://sahadhyayi.app/lovable-uploads/sahadhyayi-logo-digital-reading.png';
+const HOME_IMAGE = 'https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png';
 
 addUrl('/', 'weekly', '1.0', HOME_IMAGE);
 staticPages.forEach(p => addUrl(p, 'monthly', '0.5'));
