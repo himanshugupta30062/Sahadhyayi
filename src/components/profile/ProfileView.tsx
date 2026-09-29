@@ -24,6 +24,10 @@ import UserBadges from "./UserBadges";
 import EditProfileDialog from "./EditProfileDialog";
 import DeleteProfileDialog from "./DeleteProfileDialog";
 import { openPopupWindow } from "./openPopupWindow";
+import { useNavigate } from "react-router-dom";
+import { useReadingDna } from "@/hooks/useReadingDna";
+import { ReadingDnaCard } from "@/components/social/dna/ReadingDnaCard";
+import { Dna, Quote, Radio, Sparkles, ArrowRight } from "lucide-react";
 
 // Options for gender
 const GENDER_OPTIONS = [
@@ -47,8 +51,10 @@ const SOCIAL_FIELDS = [
 type EditMode = "view" | "edit" | "delete";
 
 export const ProfileView: React.FC = () => {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { data: profile, isLoading } = useUserProfile();
+  const { data: myDna } = useReadingDna(user?.id);
   const upsertProfile = useUpsertUserProfile();
   const deleteProfile = useDeleteUserProfile();
 
@@ -199,6 +205,81 @@ export const ProfileView: React.FC = () => {
             </div>
           </div>
         </Card>
+
+        {/* Reading DNA & Literary Identity Showcase */}
+        <div className="mt-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Dna className="w-5 h-5 text-brand-primary" />
+              Literary & Social Identity
+            </h3>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-xs text-brand-primary gap-1"
+              onClick={() => navigate('/social?tab=dna')}
+            >
+              Explore DNA Matches <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+
+          {myDna ? (
+            <ReadingDnaCard dna={myDna} mine />
+          ) : (
+            <Card className="rounded-2xl border-border bg-white/90 p-5 text-center">
+              <Sparkles className="w-8 h-8 text-brand-primary mx-auto mb-2" />
+              <h4 className="text-sm font-semibold text-foreground mb-1">Generate Your Reading DNA</h4>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto mb-4">
+                Calculate your literary fingerprint, discover your reading archetype, and find fellow readers with high taste compatibility.
+              </p>
+              <Button
+                size="sm"
+                className="bg-brand-primary text-white"
+                onClick={() => navigate('/social?tab=dna')}
+              >
+                <Dna className="w-3.5 h-3.5 mr-1.5" />
+                Build My Reading DNA
+              </Button>
+            </Card>
+          )}
+
+          {/* Social Quick Shortcuts */}
+          <div className="grid grid-cols-2 gap-3">
+            <Card
+              onClick={() => navigate('/social?tab=margins')}
+              className="rounded-xl border-border bg-white/80 hover:bg-white p-3.5 cursor-pointer transition-all hover:shadow-xs group"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                  <Quote className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-foreground group-hover:text-amber-600 transition-colors">
+                    Margin Notes
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">Your book annotations & quotes</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card
+              onClick={() => navigate('/social?tab=rooms')}
+              className="rounded-xl border-border bg-white/80 hover:bg-white p-3.5 cursor-pointer transition-all hover:shadow-xs group"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                  <Radio className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-foreground group-hover:text-emerald-600 transition-colors">
+                    Reading Rooms
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">Join or host co-reading rooms</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
         {/* Edit Profile Dialog */}
         <EditProfileDialog
           open={editMode === "edit"}

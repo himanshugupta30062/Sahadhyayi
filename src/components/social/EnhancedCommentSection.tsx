@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
+import { DnaMatchChip } from './dna/DnaMatchChip';
 
 interface CommentRow {
   id: string;
@@ -83,9 +84,14 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
           <div className="flex-1 min-w-0">
             <div className="bg-muted/60 rounded-2xl px-3 py-2">
               <div className="flex items-center justify-between gap-2">
-                <h5 className="font-medium text-sm text-foreground truncate">
-                  {c.user_id === user?.id ? 'You' : (c.profiles?.full_name || 'Anonymous')}
-                </h5>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <h5 className="font-medium text-sm text-foreground truncate">
+                    {c.user_id === user?.id ? 'You' : (c.profiles?.full_name || 'Anonymous')}
+                  </h5>
+                  {c.user_id !== user?.id && (
+                    <DnaMatchChip userId={c.user_id} userName={c.profiles?.full_name || 'Reader'} />
+                  )}
+                </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" />
                   <span>{formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}</span>

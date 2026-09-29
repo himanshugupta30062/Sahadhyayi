@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { AddMarginNoteDialog } from '@/components/social/margins/AddMarginNoteDialog';
+import { ReaderMarginDrawer } from './ReaderMarginDrawer';
 import { useAuth } from '@/contexts/authHelpers';
 import { useReadingProgress, useSaveReadingProgress } from '@/hooks/useReadingProgress';
 import { useAudioSummary } from '@/hooks/useAudioSummaries';
@@ -645,25 +646,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 </Button>
               )}
 
-              {/* Margin Note Button */}
-              {user && (
-                <AddMarginNoteDialog
-                  initialBookId={bookId}
-                  initialBookTitle={bookTitle}
-                  initialPage={currentPage || 1}
-                  initialQuote={selectedText || ""}
-                  trigger={
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-1 text-amber-700 border-amber-400/40 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-950/40"
-                    >
-                      <Quote className="w-4 h-4 text-amber-500" />
-                      <span className="hidden sm:inline">Margin Note</span>
-                    </Button>
-                  }
-                />
-              )}
+              {/* Community Margins Drawer & Add Note */}
+              <ReaderMarginDrawer
+                bookId={bookId}
+                bookTitle={bookTitle}
+                currentPage={currentPage || 1}
+                selectedText={selectedText || ""}
+              />
 
               {/* Table of Contents */}
               {isEpub && (
@@ -867,8 +856,25 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   style={{ fontSize: `${fontSize}px` }}
                 />
                 {showSaveQuote && (
-                  <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded shadow flex gap-2">
+                  <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-border flex items-center gap-2 z-20">
                     <Button size="sm" onClick={saveSelectedQuote}>Save Quote</Button>
+                    {user && (
+                      <AddMarginNoteDialog
+                        initialBookId={bookId}
+                        initialBookTitle={bookTitle}
+                        initialPage={currentPage || 1}
+                        initialQuote={selectedText}
+                        onDone={() => {
+                          setSelectedText('');
+                          setShowSaveQuote(false);
+                        }}
+                        trigger={
+                          <Button size="sm" variant="outline" className="text-amber-700 dark:text-amber-300 border-amber-300 gap-1">
+                            <Quote className="w-3.5 h-3.5" /> Margin Note
+                          </Button>
+                        }
+                      />
+                    )}
                     <Button size="sm" variant="ghost" onClick={() => setShowSaveQuote(false)}>Cancel</Button>
                   </div>
                 )}

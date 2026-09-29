@@ -15,6 +15,7 @@ import BookReadersConnection from '@/components/books/BookReadersConnection';
 import CreateYourVersionSection from '@/components/books/CreateYourVersionSection';
 import BookIdeasSection from '@/components/books/BookIdeasSection';
 import BookReader from '@/components/books/BookReader';
+import { BookSocialStrip } from '@/components/books/BookSocialStrip';
 import { useBookById } from '@/hooks/useBookById';
 import { useBookRatings, useRateBook } from '@/hooks/useBookRatings';
 import { useAuth } from '@/contexts/authHelpers';
@@ -393,6 +394,12 @@ const BookDetails = () => {
 
           {/* Interactive Tabs Section - Mobile Responsive */}
           <div className="w-full">
+            {/* Book Social Strip: Active Rooms, Margins, Threads */}
+            <BookSocialStrip
+              bookId={book.id}
+              bookTitle={book.title}
+              onTabSelect={handleTabChange}
+            />
 
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 mb-6 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl h-auto p-2">
