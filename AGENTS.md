@@ -1,5 +1,8 @@
 # AGENTS Instructions
 
+## Sequel vote privacy
+- Fetch community sequel tallies through the counts-only RPC, never by opening feedback row visibility; individual feedback must remain private.
+
 ## Testing
 - Always run `npm install` if dependencies are missing.
 - Run `npm run lint` and `npm run build` before committing.

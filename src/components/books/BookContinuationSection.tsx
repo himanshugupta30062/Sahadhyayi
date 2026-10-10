@@ -57,6 +57,7 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
 
   const continuationQueryKey = ['book-continuations', bookId];
   const sequelVotesQueryKey = ['book-sequel-votes', bookId, user?.id];
+  const voteCountsQueryKey = ['book-sequel-vote-counts', bookId];
 
   const { data: continuations = [], isLoading: continuationsLoading } = useQuery({
     queryKey: continuationQueryKey,
@@ -75,11 +76,16 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
 
   const { data: sequelVotes = [] } = useQuery({
     queryKey: sequelVotesQueryKey,
+    enabled: !!user,
     queryFn: async (): Promise<SequelVoteRow[]> => {
+      if (!user) return [];
       const { data, error } = await supabase
         .from('content_feedback')
         .select('id, user_id, comment')
         .eq('feedback_type', 'sequel_vote')
+        .eq('user_id', user.id)
+        .like('comment', `%${bookId}%`)
+        .order('created_at', { ascending: false })
         .limit(1000);
       if (error) throw error;
       return ((data as SequelVoteRow[]) || []).filter((row) => parseSequelVote(row.comment)?.bookId === bookId);
@@ -92,14 +98,16 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
     return parseSequelVote(ownVote?.comment ?? null)?.vote ?? null;
   }, [sequelVotes, user]);
 
-  const voteCounts = useMemo(() => sequelVotes.reduce(
-    (counts, row) => {
-      const vote = parseSequelVote(row.comment)?.vote;
-      if (vote) counts[vote] += 1;
-      return counts;
+  const { data: voteCounts, isError: voteCountsError } = useQuery({
+    queryKey: voteCountsQueryKey,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_sequel_vote_counts', { p_book_id: bookId });
+      if (error) throw error;
+      const counts = data?.[0];
+      return { yes: Number(counts?.yes_count ?? 0), no: Number(counts?.no_count ?? 0) };
     },
-    { yes: 0, no: 0 },
-  ), [sequelVotes]);
+    refetchInterval: 30_000,
+  });
 
   const submitContinuation = useMutation({
     mutationFn: async (content: string) => {
@@ -150,6 +158,7 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
     },
     onSuccess: (_, vote) => {
       queryClient.invalidateQueries({ queryKey: sequelVotesQueryKey });
+      queryClient.invalidateQueries({ queryKey: voteCountsQueryKey });
       toast({
         title: 'Vote recorded!',
         description: `Your vote for ${vote === 'yes' ? 'wanting' : 'not wanting'} a sequel has been saved.`,
@@ -264,6 +273,7 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
 
           {/* Voting results */}
           <div className="bg-white p-3 rounded border border-purple-100">
+            {voteCountsError ? <p className="text-sm text-muted-foreground">Vote totals are temporarily unavailable.</p> : !voteCounts ? <p className="text-sm text-muted-foreground">Loading vote totals…</p> : (
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-green-600 flex-shrink-0" />
@@ -274,6 +284,7 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
                 <span className="text-red-700 font-medium">{voteCounts.no} satisfied</span>
               </div>
             </div>
+            )}
           </div>
         </div>
 

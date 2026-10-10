@@ -9,6 +9,8 @@ import { useCreateMarginNote } from "@/hooks/useMarginNotes";
 import { useUserBookshelf } from "@/hooks/useUserBookshelf";
 import { Plus, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/authHelpers";
+import { Link, useLocation } from "react-router-dom";
 
 interface AddMarginNoteDialogProps {
   initialBookId?: string;
@@ -44,6 +46,9 @@ export const AddMarginNoteDialog: React.FC<AddMarginNoteDialogProps> = ({
   const [visibility, setVisibility] = useState<"public" | "friends">("public");
   const create = useCreateMarginNote();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const location = useLocation();
+  const returnTo = `${location.pathname}${location.search}${location.hash}`;
 
   // Reset when dialog opens
   const handleOpenChange = (nextOpen: boolean) => {
@@ -56,6 +61,7 @@ export const AddMarginNoteDialog: React.FC<AddMarginNoteDialogProps> = ({
   };
 
   const submit = async () => {
+    if (!user) return;
     const targetBookId = bookId || initialBookId;
     if (!targetBookId || !quote.trim() || !note.trim()) {
       toast({
@@ -103,6 +109,16 @@ export const AddMarginNoteDialog: React.FC<AddMarginNoteDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Share a margin note</DialogTitle>
         </DialogHeader>
+        {!user ? (
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">Sign in to share a margin note.</p>
+            <Button asChild>
+              <Link to={`/signin?redirect=${encodeURIComponent(returnTo)}`} state={{ from: returnTo }}>
+                Sign in to add a margin note
+              </Link>
+            </Button>
+          </div>
+        ) : (
         <div className="space-y-3 py-2">
           {!initialBookId ? (
             <div>
@@ -174,8 +190,9 @@ export const AddMarginNoteDialog: React.FC<AddMarginNoteDialogProps> = ({
             />
           </div>
         </div>
+        )}
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        {user && <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
@@ -183,7 +200,7 @@ export const AddMarginNoteDialog: React.FC<AddMarginNoteDialogProps> = ({
             {create.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Post Note
           </Button>
-        </DialogFooter>
+        </DialogFooter>}
       </DialogContent>
     </Dialog>
   );

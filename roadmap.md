@@ -8,3 +8,5 @@
 - [ ] Add regression coverage for the changed journeys.
 - [x] Prevent Discovery search crashes when a book has no genre.
 - [x] Persist fiction continuations and sequel votes across reloads.
+- [ ] Verify and fix rejected sequel votes and private-only community tallies.
+- [ ] Prevent guest margin-note dead ends and silent photo attachment loss.
