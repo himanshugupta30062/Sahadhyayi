@@ -3634,6 +3634,13 @@ export type Database = {
           username: string
         }[]
       }
+      get_sequel_vote_counts: {
+        Args: { p_book_id: string }
+        Returns: {
+          no_count: number
+          yes_count: number
+        }[]
+      }
       get_top_visitor_countries: {
         Args: { limit_count?: number }
         Returns: {
