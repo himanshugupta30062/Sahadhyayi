@@ -88,13 +88,13 @@ const Articles = () => {
       />
       <div className="min-h-screen bg-background">
         {/* Hero */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-b border-border">
-          <div className="absolute inset-0 opacity-40 pointer-events-none [background-image:radial-gradient(circle_at_1px_1px,hsl(var(--brand-primary)/0.15)_1px,transparent_0)] [background-size:24px_24px]" />
+        <div className="relative overflow-hidden bg-gradient-to-br from-brand-primary/10 via-background to-brand-secondary/10 border-b border-border">
+          <div className="absolute inset-0 opacity-25 pointer-events-none [background-image:radial-gradient(circle_at_1px_1px,hsl(var(--brand-primary)/0.2)_1px,transparent_0)] [background-size:24px_24px]" />
           <div className="relative max-w-6xl mx-auto px-4 py-14 md:py-20">
             <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur-sm border border-amber-200 text-xs font-semibold text-brand-primary mb-5">
-                <Sparkles className="w-3.5 h-3.5" />
-                Stories worth reading, by readers like you
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs font-semibold text-brand-primary mb-5 shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-brand-primary" />
+                Stories, essays, and reading culture
               </div>
               <h1 className="font-serif text-4xl md:text-6xl font-bold text-foreground mb-4 leading-tight tracking-tight">
                 Articles on Sahadhyayi
@@ -111,7 +111,7 @@ const Articles = () => {
                     placeholder="Search articles, authors, or tags…"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-11 h-12 bg-white/80 backdrop-blur-sm border-amber-200 focus-visible:ring-brand-primary"
+                    className="pl-11 h-12 bg-card/80 backdrop-blur-sm border-border focus-visible:ring-brand-primary"
                   />
                   {search && (
                     <button
@@ -125,7 +125,7 @@ const Articles = () => {
                 </div>
                 <Button
                   onClick={() => navigate(articleWritePath)}
-                  className="h-12 px-6 bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 shadow-md shadow-amber-200/50"
+                  className="h-12 px-6 bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 shadow-md shadow-brand-primary/20"
                 >
                   <PenLine className="w-4 h-4" />
                   Start Writing
@@ -146,7 +146,7 @@ const Articles = () => {
 
         {/* Tag filter bar */}
         {topTags.length > 0 && (
-          <div className="border-b border-border bg-white/50 sticky top-16 z-20 backdrop-blur-md">
+          <div className="border-b border-border bg-background/80 sticky top-16 z-20 backdrop-blur-md">
             <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2 overflow-x-auto scrollbar-hide">
               <Button
                 variant={!activeTag ? 'default' : 'outline'}
@@ -157,7 +157,7 @@ const Articles = () => {
                   !activeTag && 'bg-brand-primary text-white hover:bg-brand-primary/90',
                 )}
               >
-                All
+                All Topics
               </Button>
               {topTags.map((tag) => (
                 <Button
@@ -187,7 +187,7 @@ const Articles = () => {
                 className={cn(
                   'px-4 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5',
                   sortMode === 'latest'
-                    ? 'bg-white text-foreground shadow-sm'
+                    ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -198,7 +198,7 @@ const Articles = () => {
                 className={cn(
                   'px-4 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5',
                   sortMode === 'popular'
-                    ? 'bg-white text-foreground shadow-sm'
+                    ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -253,10 +253,10 @@ const Articles = () => {
               {featured && (
                 <Link
                   to={`/articles/${featured.slug}`}
-                  className="group block mb-12 rounded-3xl overflow-hidden border border-border bg-card hover:shadow-xl hover:shadow-amber-100/50 hover:border-amber-200 transition-all"
+                  className="group block mb-12 rounded-3xl overflow-hidden border border-border bg-card hover:shadow-xl hover:border-brand-primary/40 transition-all"
                 >
                   <div className="grid md:grid-cols-2 gap-0">
-                    <div className="relative aspect-[16/10] md:aspect-auto md:min-h-[320px] bg-gradient-to-br from-amber-100 to-orange-100 overflow-hidden">
+                    <div className="relative aspect-[16/10] md:aspect-auto md:min-h-[320px] bg-gradient-to-br from-brand-primary/10 via-muted to-brand-secondary/10 overflow-hidden">
                       {featured.cover_image_url ? (
                         <img
                           src={featured.cover_image_url}
@@ -266,7 +266,7 @@ const Articles = () => {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <BookOpen className="w-20 h-20 text-amber-300" />
+                          <BookOpen className="w-20 h-20 text-brand-primary/40" />
                         </div>
                       )}
                       <div className="absolute top-4 left-4">
@@ -300,7 +300,7 @@ const Articles = () => {
                       <div className="flex items-center gap-3 mt-auto">
                         <Avatar className="w-9 h-9">
                           <AvatarImage src={featured.author_avatar} />
-                          <AvatarFallback className="text-xs bg-amber-100 text-brand-primary">
+                          <AvatarFallback className="text-xs bg-brand-primary/10 text-brand-primary">
                             {featured.author_name?.charAt(0) || 'A'}
                           </AvatarFallback>
                         </Avatar>
@@ -313,7 +313,7 @@ const Articles = () => {
                               <span>{format(new Date(featured.published_at), 'MMM d, yyyy')}</span>
                             )}
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" /> {featured.reading_time_minutes} min
+                              <Clock className="w-3 h-3" /> {featured.reading_time_minutes || 5} min
                             </span>
                           </div>
                         </div>
@@ -329,10 +329,10 @@ const Articles = () => {
                   <Link
                     key={article.id}
                     to={`/articles/${article.slug}`}
-                    className="group block rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-amber-100/40 hover:border-amber-200 hover:-translate-y-0.5 transition-all"
+                    className="group block rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:border-brand-primary/40 hover:-translate-y-0.5 transition-all"
                   >
                     {/* Cover */}
-                    <div className="relative aspect-[16/9] bg-gradient-to-br from-amber-100 to-orange-100 overflow-hidden">
+                    <div className="relative aspect-[16/9] bg-gradient-to-br from-brand-primary/10 via-muted to-brand-secondary/10 overflow-hidden">
                       {article.cover_image_url ? (
                         <img
                           src={article.cover_image_url}
@@ -342,7 +342,7 @@ const Articles = () => {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <BookOpen className="w-12 h-12 text-amber-300" />
+                          <BookOpen className="w-12 h-12 text-brand-primary/40" />
                         </div>
                       )}
                     </div>
@@ -378,7 +378,7 @@ const Articles = () => {
                         <div className="flex items-center gap-2 min-w-0">
                           <Avatar className="w-7 h-7 shrink-0">
                             <AvatarImage src={article.author_avatar} />
-                            <AvatarFallback className="text-[10px] bg-amber-100 text-brand-primary">
+                            <AvatarFallback className="text-[10px] bg-brand-primary/10 text-brand-primary">
                               {article.author_name?.charAt(0) || 'A'}
                             </AvatarFallback>
                           </Avatar>
@@ -395,19 +395,37 @@ const Articles = () => {
                         </div>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
                           <span className="flex items-center gap-0.5">
-                            <Clock className="w-3 h-3" /> {article.reading_time_minutes}m
+                            <Clock className="w-3 h-3" /> {article.reading_time_minutes || 5}m
                           </span>
                           <span className="flex items-center gap-0.5">
-                            <Heart className="w-3 h-3" /> {article.likes_count}
+                            <Heart className="w-3 h-3" /> {article.likes_count || 0}
                           </span>
                           <span className="flex items-center gap-0.5">
-                            <Eye className="w-3 h-3" /> {article.views_count}
+                            <Eye className="w-3 h-3" /> {article.views_count || 0}
                           </span>
                         </div>
                       </div>
                     </div>
                   </Link>
                 ))}
+              </div>
+
+              {/* Library Spotlight Bridge */}
+              <div className="mt-16 p-8 rounded-3xl bg-gradient-to-r from-brand-primary/10 via-card to-brand-secondary/10 border border-border flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="space-y-2 text-center md:text-left">
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold text-brand-primary">
+                    <BookOpen className="w-4 h-4" /> Digital Library
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground">Inspired by these articles?</h3>
+                  <p className="text-sm text-muted-foreground max-w-xl">
+                    Discover and read thousands of classics, non-fiction, and literature titles in Sahadhyayi's distraction-free online reader.
+                  </p>
+                </div>
+                <Link to="/library">
+                  <Button className="bg-brand-primary text-white hover:bg-brand-primary/90 gap-2 shrink-0 px-6 h-11">
+                    Explore 12,500+ Books <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
             </>
           )}
