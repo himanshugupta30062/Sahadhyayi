@@ -12,11 +12,37 @@ export interface TrainingDataPoint {
   metadata?: Record<string, any>;
 }
 
+export const AI_TRAINING_CONSENT_KEY = 'sahadhyayi_ai_training_consent';
+
+export function getAiTrainingConsent(): boolean {
+  try {
+    return localStorage.getItem(AI_TRAINING_CONSENT_KEY) === 'granted';
+  } catch {
+    return false;
+  }
+}
+
+export function setAiTrainingConsent(granted: boolean): void {
+  try {
+    localStorage.setItem(AI_TRAINING_CONSENT_KEY, granted ? 'granted' : 'declined');
+  } catch (err) {
+    // Ignore storage write error in private mode or quota exceeded
+    console.debug('Failed to persist AI consent preference:', err);
+  }
+}
+
 export const useEnhancedGeminiTraining = () => {
   const { user } = useAuth();
+  const [hasConsent, setHasConsent] = React.useState<boolean>(getAiTrainingConsent());
+
+  const updateConsent = React.useCallback((granted: boolean) => {
+    setAiTrainingConsent(granted);
+    setHasConsent(granted);
+  }, []);
 
   const saveTrainingData = React.useCallback(async (data: TrainingDataPoint) => {
-    if (!user?.id) return;
+    // Only save training data if user is authenticated AND has given explicit consent (DPDP compliance)
+    if (!user?.id || !getAiTrainingConsent()) return;
 
     try {
       const { error } = await supabase
@@ -157,6 +183,8 @@ export const useEnhancedGeminiTraining = () => {
   }, [user?.id]);
 
   return {
+    hasConsent,
+    updateConsent,
     saveTrainingData,
     initializeWebsiteKnowledge,
     saveChatInteraction,

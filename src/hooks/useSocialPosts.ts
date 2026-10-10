@@ -297,7 +297,6 @@ export const useCreatePost = () => {
       });
     },
     onError: (error: Error) => {
-      // eslint-disable-next-line no-console
       console.error('Error creating post:', error);
       toast({
         title: 'Error',
