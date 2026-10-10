@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Book } from '@/hooks/useLibraryBooks';
+import { useAuth } from '@/contexts/authHelpers';
+import { loadProgressLocally, saveProgressLocally } from '@/utils/readingProgressStorage';
 
 interface BookReaderProps {
   book: Book | null;
@@ -33,21 +35,44 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
+  const { user } = useAuth();
+
   // Load book data + last page
   useEffect(() => {
     if (book) {
-      const savedPage = localStorage.getItem(`book-${book.id}-page`);
+      const local = loadProgressLocally(String(book.id), user?.id);
       setTotalPages(book.pages || 200);
-      setCurrentPage(savedPage ? parseInt(savedPage) : 1);
+      setCurrentPage(local?.currentPage ? local.currentPage : 1);
     }
-  }, [book]);
+  }, [book, user?.id]);
 
   // Save last page
   useEffect(() => {
-    if (book) {
-      localStorage.setItem(`book-${book.id}-page`, String(currentPage));
+    if (book && currentPage > 0) {
+      saveProgressLocally(
+        { bookId: String(book.id), currentPage, totalPages },
+        user?.id
+      );
     }
-  }, [book, currentPage]);
+  }, [book, currentPage, totalPages, user?.id]);
+
+  // Save on tab close
+  useEffect(() => {
+    const handleUnload = () => {
+      if (book && currentPage > 0) {
+        saveProgressLocally(
+          { bookId: String(book.id), currentPage, totalPages },
+          user?.id
+        );
+      }
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
+    };
+  }, [book, currentPage, totalPages, user?.id]);
 
   // Navigation helpers
   const handlePrevPage = useCallback(() => {

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { DnaMatchChip } from "../dna/DnaMatchChip";
 
 interface SpoilerThreadCardProps {
   thread: SafeSpoilerThread;
@@ -123,6 +124,9 @@ export const SpoilerThreadCard: React.FC<SpoilerThreadCardProps> = ({ thread }) 
                     </AvatarFallback>
                   </Avatar>
                   <span>{thread.profiles?.full_name ?? "Reader"}</span>
+                  {user?.id !== thread.user_id && (
+                    <DnaMatchChip userId={thread.user_id} userName={thread.profiles?.full_name ?? "Reader"} />
+                  )}
                 </div>
                 <span>·</span>
                 <span>{formatDistanceToNow(new Date(thread.created_at), { addSuffix: true })}</span>
@@ -184,6 +188,9 @@ export const SpoilerThreadCard: React.FC<SpoilerThreadCardProps> = ({ thread }) 
                               </AvatarFallback>
                             </Avatar>
                             <span className="font-semibold text-foreground">{c.profiles?.full_name ?? "Reader"}</span>
+                            {user?.id !== c.user_id && (
+                              <DnaMatchChip userId={c.user_id} userName={c.profiles?.full_name ?? "Reader"} />
+                            )}
                           </div>
                           <span>{formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}</span>
                         </div>

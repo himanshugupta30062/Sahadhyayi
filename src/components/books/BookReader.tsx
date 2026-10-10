@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -33,11 +33,13 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { AddMarginNoteDialog } from '@/components/social/margins/AddMarginNoteDialog';
+import { ReaderMarginDrawer } from './ReaderMarginDrawer';
 import { useAuth } from '@/contexts/authHelpers';
 import { useReadingProgress, useSaveReadingProgress } from '@/hooks/useReadingProgress';
 import { useAudioSummary } from '@/hooks/useAudioSummaries';
 import { useChapterProgress, useMarkChapterAsRead } from '@/hooks/useChapterProgress';
 import { searchExternalSources } from '@/utils/searchExternalSources';
+import { loadProgressLocally, saveProgressLocally } from '@/utils/readingProgressStorage';
 
 interface BookReaderProps {
   bookId: string;
@@ -128,10 +130,9 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const activeReadUrl = readUrls[activeReadUrlIndex];
 
   useEffect(() => {
-    if (!user?.id) return;
     const saved = readingProgress?.find((item) => item.book_id === bookId);
-    const localPage = Number(localStorage.getItem(`book-${bookId}-page`));
-    const resumePage = saved?.current_page || (Number.isFinite(localPage) ? localPage : 1);
+    const local = loadProgressLocally(bookId, user?.id);
+    const resumePage = saved?.current_page || local?.currentPage || 1;
     if (resumePage > 1) setCurrentPage(resumePage);
   }, [bookId, readingProgress, user?.id]);
 
@@ -177,9 +178,9 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       startReadingTimer();
       
       // Load saved bookmarks
-      const savedBookmarks = localStorage.getItem(`book-${bookId}-bookmarks`);
-      if (savedBookmarks) {
-        setBookmarks(JSON.parse(savedBookmarks));
+      const local = loadProgressLocally(bookId, user?.id);
+      if (local?.bookmarks && local.bookmarks.length > 0) {
+        setBookmarks(local.bookmarks);
       }
     }
 
@@ -300,26 +301,22 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
         const currentPageNum = bookRef.current.locations.locationFromCfi(location.start.cfi);
         setCurrentPage(currentPageNum);
         
-        // Save reading position and progress
-        if (user) {
-          localStorage.setItem(`book-${bookId}-position`, location.start.cfi);
-          
-          // Save to database every 5 pages or 5 minutes
-          const savedTime = localStorage.getItem(`book-${bookId}-last-save`);
-          const now = Date.now();
-          if (!savedTime || now - parseInt(savedTime) > 300000) { // 5 minutes
-            saveReadingProgress(currentPageNum);
-            localStorage.setItem(`book-${bookId}-last-save`, now.toString());
-          }
-        }
+        // Save reading position and progress immediately
+        saveProgressLocally(
+          {
+            bookId,
+            currentPage: currentPageNum,
+            position: location.start.cfi,
+            totalPages: totalPages > 0 ? totalPages : 1,
+          },
+          user?.id
+        );
       });
 
       // Load previous reading position
-      if (user) {
-        const savedPosition = localStorage.getItem(`book-${bookId}-position`);
-        if (savedPosition) {
-          renditionRef.current.display(savedPosition);
-        }
+      const local = loadProgressLocally(bookId, user?.id);
+      if (local?.position) {
+        renditionRef.current.display(local.position);
       }
 
       // Apply initial theme and font
@@ -368,11 +365,14 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     renditionRef.current.themes.fontSize(`${fontSize}px`);
   };
 
-  const saveReadingProgress = async (page: number) => {
+  const saveReadingProgress = useCallback(async (page: number) => {
     if (!user || totalPages <= 0) return;
 
     try {
-      localStorage.setItem(`book-${bookId}-page`, String(page));
+      saveProgressLocally(
+        { bookId, currentPage: page, totalPages, position: currentLocation },
+        user.id
+      );
       await saveProgress.mutateAsync({
         bookId,
         bookTitle,
@@ -382,16 +382,40 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     } catch (error) {
       console.error('Error saving reading progress:', error);
     }
-  };
+  }, [bookId, bookTitle, currentLocation, saveProgress, totalPages, user]);
 
   useEffect(() => {
-    if (!user?.id || totalPages <= 0 || currentPage <= 0) return;
-    localStorage.setItem(`book-${bookId}-page`, String(currentPage));
+    if (totalPages <= 0 || currentPage <= 0) return;
+    saveProgressLocally(
+      { bookId, currentPage, totalPages, position: currentLocation },
+      user?.id
+    );
+
+    if (!user?.id) return;
     const timer = window.setTimeout(() => {
       void saveReadingProgress(currentPage);
     }, 800);
     return () => window.clearTimeout(timer);
-  }, [bookId, currentPage, totalPages, user?.id]);
+  }, [bookId, currentPage, totalPages, currentLocation, user?.id, saveReadingProgress]);
+
+  // Flush reading progress when tab closes or user navigates away
+  useEffect(() => {
+    const handleUnload = () => {
+      if (currentPage > 0) {
+        saveProgressLocally(
+          { bookId, currentPage, totalPages, position: currentLocation, bookmarks },
+          user?.id
+        );
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
+    };
+  }, [bookId, currentPage, totalPages, currentLocation, bookmarks, user?.id]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -408,7 +432,10 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     
     const newBookmarks = [...bookmarks, currentLocation];
     setBookmarks(newBookmarks);
-    localStorage.setItem(`book-${bookId}-bookmarks`, JSON.stringify(newBookmarks));
+    saveProgressLocally(
+      { bookId, bookmarks: newBookmarks, currentPage, totalPages, position: currentLocation },
+      user?.id
+    );
     
     toast({
       title: "Bookmark Added",
@@ -645,25 +672,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 </Button>
               )}
 
-              {/* Margin Note Button */}
-              {user && (
-                <AddMarginNoteDialog
-                  initialBookId={bookId}
-                  initialBookTitle={bookTitle}
-                  initialPage={currentPage || 1}
-                  initialQuote={selectedText || ""}
-                  trigger={
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-1 text-amber-700 border-amber-400/40 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-950/40"
-                    >
-                      <Quote className="w-4 h-4 text-amber-500" />
-                      <span className="hidden sm:inline">Margin Note</span>
-                    </Button>
-                  }
-                />
-              )}
+              {/* Community Margins Drawer & Add Note */}
+              <ReaderMarginDrawer
+                bookId={bookId}
+                bookTitle={bookTitle}
+                currentPage={currentPage || 1}
+                selectedText={selectedText || ""}
+              />
 
               {/* Table of Contents */}
               {isEpub && (
@@ -867,8 +882,25 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                   style={{ fontSize: `${fontSize}px` }}
                 />
                 {showSaveQuote && (
-                  <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded shadow flex gap-2">
+                  <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-border flex items-center gap-2 z-20">
                     <Button size="sm" onClick={saveSelectedQuote}>Save Quote</Button>
+                    {user && (
+                      <AddMarginNoteDialog
+                        initialBookId={bookId}
+                        initialBookTitle={bookTitle}
+                        initialPage={currentPage || 1}
+                        initialQuote={selectedText}
+                        onDone={() => {
+                          setSelectedText('');
+                          setShowSaveQuote(false);
+                        }}
+                        trigger={
+                          <Button size="sm" variant="outline" className="text-amber-700 dark:text-amber-300 border-amber-300 gap-1">
+                            <Quote className="w-3.5 h-3.5" /> Margin Note
+                          </Button>
+                        }
+                      />
+                    )}
                     <Button size="sm" variant="ghost" onClick={() => setShowSaveQuote(false)}>Cancel</Button>
                   </div>
                 )}

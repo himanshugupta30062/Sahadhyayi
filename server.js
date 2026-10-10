@@ -24,7 +24,7 @@ Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://maps.googleapis.com https://static.cloudflareinsights.com",
+  "script-src 'self' 'unsafe-inline' blob: https://maps.googleapis.com https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' https://fonts.gstatic.com",
@@ -34,6 +34,17 @@ const CSP_DIRECTIVES = [
 ];
 
 const CSP = CSP_DIRECTIVES.join('; ');
+
+const ALLOWED_ORIGINS = [
+  /\.sahadhyayi\.com$/,
+  'https://sahadhyayi.com',
+  'https://www.sahadhyayi.com',
+  'https://sahadhyayi.netlify.app',
+  /\.sahadhyayi\.app$/,
+  'https://sahadhyayi.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
 
 const SESSION_SECRET = process.env.SESSION_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'dev-local-session-secret');
 if (process.env.NODE_ENV === 'production' && !SESSION_SECRET) {
@@ -45,14 +56,7 @@ app.use(cookieParser(SESSION_SECRET));
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      /\.sahadhyayi\.com$/,
-      'https://sahadhyayi.com',
-      /\.sahadhyayi\.app$/,
-      'https://sahadhyayi.app',
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-    ],
+    origin: ALLOWED_ORIGINS,
     credentials: true,
   })
 );
@@ -139,17 +143,36 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   path: '/discussions',
   cors: {
-    origin: '*',
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed = ALLOWED_ORIGINS.some((allowed) =>
+        allowed instanceof RegExp ? allowed.test(origin) : allowed === origin
+      );
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error('Origin not allowed by Socket.io CORS policy'));
+      }
+    },
     methods: ['GET', 'POST'],
+    credentials: true,
   },
 });
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
+if (!SUPABASE_URL) {
+  throw new Error('Missing SUPABASE_URL configuration');
+}
+
+if (process.env.NODE_ENV === 'production' && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error('FATAL: SUPABASE_SERVICE_ROLE_KEY must be provided in production and cannot fall back to anon key.');
+}
+
 const SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-  throw new Error('Missing Supabase configuration');
+if (!SERVICE_ROLE_KEY) {
+  throw new Error('Missing Supabase service key configuration');
 }
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
@@ -373,7 +396,7 @@ app.get('/api/libgen', requireSession, async (req, res, next) => {
   req.pipe(bb);
 });
 
-app.get('/api/books', async (req, res, next) => {
+app.get('/api/books', requireSession, async (req, res, next) => {
   try {
     const search = typeof req.query.search === 'string' ? req.query.search : '';
     let query = supabase.from('books_library').select('*');

@@ -12,7 +12,7 @@ const PrivacyPolicy = () => {
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-6">Privacy Policy</h1>
-            <p className="text-gray-600 mb-8">Last updated: January 2024</p>
+            <p className="text-gray-600 mb-8">Last updated: September 2026</p>
 
             <div className="space-y-8">
               <section>
@@ -98,14 +98,40 @@ const PrivacyPolicy = () => {
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Changes to This Policy</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. AI Assistant, Model Training & Data Protection (India DPDP Act 2023)</h2>
+                <div className="space-y-4 text-gray-700 leading-relaxed">
+                  <p>
+                    Sahadhyayi offers an interactive AI reading assistant and Book Expert powered by Gemini. In alignment with India's <strong>Digital Personal Data Protection (DPDP) Act 2023</strong>:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>
+                      <strong>Explicit Consent for AI Training:</strong> Chat conversations and search queries are processed solely to fulfill your requests in real time. We do <em>not</em> store or use your chatbot interactions for AI model fine-tuning unless you have provided explicit, informed consent.
+                    </li>
+                    <li>
+                      <strong>Opt-Out & Right to Withdraw:</strong> You maintain the unconditional right to withdraw consent at any time. When opted out, no prompts, completions, or book interaction logs are written to training repositories.
+                    </li>
+                    <li>
+                      <strong>Purpose Limitation & Data Minimization:</strong> Any consented training samples are anonymized, stripped of direct identifiers, and utilized strictly for improving literary recommendations and contextual book assistance.
+                    </li>
+                    <li>
+                      <strong>Right to Erasure & Grievance Redressal:</strong> In accordance with the DPDP Act 2023, you may request the deletion of any stored conversation logs or training records by contacting our Grievance Officer at <a href="mailto:gyan@sahadhyayi.com" className="text-brand-primary underline">gyan@sahadhyayi.com</a>.
+                    </li>
+                  </ul>
+                  <p className="text-sm text-gray-500 italic mt-2">
+                    *Note: Our data governance practices and terms are periodically reviewed with qualified legal counsel to ensure continuous alignment with applicable rules under the DPDP Act 2023.
+                  </p>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. Changes to This Policy</h2>
                 <p className="text-gray-700 leading-relaxed">
                   We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. Contact Us</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-4">10. Contact Us</h2>
                 <p className="text-gray-700 leading-relaxed">
                   If you have any questions about this Privacy Policy, please contact us at:
                 </p>

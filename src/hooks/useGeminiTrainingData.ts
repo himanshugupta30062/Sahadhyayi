@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
+import { getAiTrainingConsent } from '@/hooks/useEnhancedGeminiTraining';
 
 /**
  * Enhanced hook for saving training data with better context and categorization
@@ -10,8 +11,8 @@ export const useGeminiTraining = () => {
 
   const saveSample = async (prompt: string, completion: string, category: string = 'general') => {
     try {
-      // Only save if user is authenticated
-      if (!user?.id) {
+      // Only save if user is authenticated AND has given explicit consent
+      if (!user?.id || !getAiTrainingConsent()) {
         return;
       }
 

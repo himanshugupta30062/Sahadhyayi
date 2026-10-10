@@ -12,6 +12,13 @@ vi.mock('@/hooks/useCommunityStats', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useLibraryBookCount', () => ({
+  useLibraryBookCount: () => ({
+    data: 12500,
+    isLoading: false,
+  }),
+}));
+
 vi.mock('@/components/SEO', () => ({
   default: () => null,
 }));

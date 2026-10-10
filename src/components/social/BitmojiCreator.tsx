@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { User, Palette, Save, RotateCcw } from 'lucide-react';
 import { useUpdateUserAvatar } from '@/hooks/useUserAvatar';
 import { toast } from 'sonner';
+import DOMPurify from 'dompurify';
 
 interface BitmojiFeatures {
   skinTone: string;
@@ -191,7 +192,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
             <div className="flex justify-center">
               <div 
                 className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-200"
-                dangerouslySetInnerHTML={{ __html: generateAvatarSvg() }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(generateAvatarSvg(), { USE_PROFILES: { svg: true } }) }}
               />
             </div>
             <div className="flex gap-2 justify-center">

@@ -27,6 +27,7 @@ import {
 import { useAuth } from "@/contexts/authHelpers";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { DnaMatchChip } from "../dna/DnaMatchChip";
 
 const EMOJIS = ["❤️", "👏", "🤔", "🔥"];
 
@@ -116,6 +117,9 @@ export const MarginNoteCard: React.FC<MarginNoteCardProps> = ({ note }) => {
                   </AvatarFallback>
                 </Avatar>
                 <span className="font-medium text-foreground truncate">{note.profiles?.full_name ?? "Reader"}</span>
+                {!isOwner && (
+                  <DnaMatchChip userId={note.user_id} userName={note.profiles?.full_name ?? "Reader"} />
+                )}
                 <span>·</span>
                 <span>{formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}</span>
               </div>
