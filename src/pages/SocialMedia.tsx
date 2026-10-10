@@ -284,8 +284,8 @@ const SocialMedia = () => {
     );
   }
 
-  // Guest view
-  if (!user) return <GuestLanding />;
+  // Guest view - show landing page if no specific tab is selected
+  if (!user && !tabParam) return <GuestLanding />;
 
   const tabs = [
     { value: 'feed', label: 'Feed', icon: MessageCircle },
