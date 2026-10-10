@@ -1,13 +1,13 @@
 User-agent: *
 Allow: /
 
-# Allow important discovery paths
+# Allow public discovery paths
 Allow: /library
+Allow: /articles
 Allow: /authors
 Allow: /book/
 Allow: /author/
 Allow: /about
-Allow: /articles
 Allow: /blog
 Allow: /social
 Allow: /groups
@@ -15,8 +15,12 @@ Allow: /map
 Allow: /games
 Allow: /help-center
 Allow: /feedback
+Allow: /privacy-policy
+Allow: /terms-of-service
+Allow: /cookie-policy
+Allow: /community-guidelines
 
-# Disallow private user areas
+# Disallow private user and editor areas
 Disallow: /dashboard/
 Disallow: /profile/
 Disallow: /settings/
@@ -27,29 +31,19 @@ Disallow: /articles/edit/
 Disallow: /my-publications
 Disallow: /functions/v1/
 
-# Disallow authentication pages
+# Disallow auth flows
 Disallow: /signin
 Disallow: /signup
 Disallow: /auth
 Disallow: /reset-password
 Disallow: /confirm-email
 
-# Allow public legal pages
-Allow: /privacy-policy
-Allow: /terms-of-service
-Allow: /cookie-policy
-Allow: /community-guidelines
-
-# Sitemap location
-Sitemap: https://sahadhyayi.com/sitemap.xml
-
-# Crawl delay
-Crawl-delay: 1
-
+# Search Engine Specific
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
-Crawl-delay: 2
+
+# Canonical Sitemap
+Sitemap: https://sahadhyayi.com/sitemap.xml

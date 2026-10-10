@@ -65,6 +65,7 @@ const ArticleDetail = () => {
 
   const articleUrl = `/articles/${article.slug}`;
   const fullArticleUrl = `https://sahadhyayi.com/articles/${article.slug}`;
+  const wordCount = article.content ? article.content.trim().split(/\s+/).length : 0;
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -73,6 +74,9 @@ const ArticleDetail = () => {
     image: article.cover_image_url ? [article.cover_image_url] : undefined,
     datePublished: (article as any).published_at || (article as any).created_at,
     dateModified: (article as any).updated_at || (article as any).published_at || (article as any).created_at,
+    inLanguage: "en-IN",
+    wordCount: wordCount > 0 ? wordCount : undefined,
+    timeRequired: `PT${article.reading_time_minutes || Math.max(1, Math.ceil(wordCount / 200))}M`,
     author: {
       "@type": "Person",
       name: (article as any).author?.full_name || (article as any).author_name || "Sahadhyayi Author"
@@ -255,6 +259,21 @@ const ArticleDetail = () => {
 
               {/* Comments */}
               <ArticleComments articleId={article.id} />
+
+              {/* Community Discussion Bridge */}
+              <div className="rounded-2xl border border-border bg-gradient-to-br from-brand-primary/10 via-card to-background p-6 mb-12 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <h4 className="font-semibold text-foreground text-base">Discuss this with fellow readers</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Join live reading rooms, share chapter margins, and connect with fellow book lovers in Sahadhyayi Social.
+                  </p>
+                </div>
+                <Link to="/social">
+                  <Button variant="default" size="sm" className="bg-brand-primary text-white hover:bg-brand-primary/90 shrink-0">
+                    Join Social Hub
+                  </Button>
+                </Link>
+              </div>
 
               {/* Related articles */}
               <RelatedArticles
