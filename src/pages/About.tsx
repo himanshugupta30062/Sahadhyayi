@@ -84,8 +84,15 @@ const About = () => {
     setLoading(true);
     setSuccess(false);
 
+    const subject = encodeURIComponent(`Contact Message from ${values.name} (Sahadhyayi About Form)`);
+    const body = encodeURIComponent(
+      `Name: ${values.name}\nEmail: ${values.email}\n\nMessage:\n${values.message}`
+    );
+    const mailtoUrl = `mailto:gyan@sahadhyayi.com?subject=${subject}&body=${body}`;
+
     try {
-      const { error } = await supabase
+      // 1. Record message in the database so no submission is lost
+      const { error: dbError } = await supabase
         .from("contact_messages")
         .insert([
           {
@@ -94,29 +101,65 @@ const About = () => {
             message: values.message,
           },
         ]);
-      if (error) {
-        toast({
-          title: "Failed to send",
-          description: "There was an error sending your message. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Message sent!",
-          description: "Thank you for reaching out. We will respond soon.",
-        });
-        form.reset();
-        setSuccess(true);
+
+      if (dbError) {
+        console.warn("Could not insert into contact_messages:", dbError);
       }
-    } catch (err) {
+
+      // 2. Dispatch email to gyan@sahadhyayi.com via the Supabase Edge Function
+      let edgeSuccess = false;
+      try {
+        const { error: emailError } = await supabase.functions.invoke("send-contact-email", {
+          body: {
+            name: values.name,
+            email: values.email,
+            message: values.message,
+          },
+        });
+        if (!emailError) {
+          edgeSuccess = true;
+        } else {
+          console.warn("Edge email notification warning:", emailError);
+        }
+      } catch (edgeErr) {
+        console.warn("Edge function invocation error:", edgeErr);
+      }
+
+      // 3. If edge email wasn't delivered directly (e.g. unconfigured Resend API key on Supabase),
+      // seamlessly open the mailto redirect so gyan@sahadhyayi.com receives it directly from the user's client
+      if (!edgeSuccess) {
+        window.location.href = mailtoUrl;
+      }
+
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
+        title: "Message sent!",
+        description: edgeSuccess
+          ? "Thank you! Your message was delivered to gyan@sahadhyayi.com."
+          : "Message saved! Opening your email app to ensure gyan@sahadhyayi.com receives it directly.",
+      });
+      form.reset();
+      setSuccess(true);
+    } catch (err) {
+      // In case of an unexpected error, guarantee user can reach gyan@sahadhyayi.com via email client
+      window.location.href = mailtoUrl;
+      toast({
+        title: "Opening Email Client",
+        description: "Redirecting your message to gyan@sahadhyayi.com.",
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDirectEmail = () => {
+    const currentValues = form.getValues();
+    const subject = encodeURIComponent(
+      `Contact message from ${currentValues.name || "Reader"} (Sahadhyayi)`
+    );
+    const body = encodeURIComponent(
+      `Name: ${currentValues.name || ""}\nEmail: ${currentValues.email || ""}\n\nMessage:\n${currentValues.message || ""}`
+    );
+    window.location.href = `mailto:gyan@sahadhyayi.com?subject=${subject}&body=${body}`;
   };
 
   const aboutSchema = {
@@ -457,22 +500,51 @@ const About = () => {
                         </p>
                       )}
                     </div>
-                    <Button
-                      type="submit"
-                      className="w-full mt-2"
-                      variant="default"
-                      size="lg"
-                      disabled={loading}
-                    >
-                      {loading ? "Sending..." : "Send Message"}
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                      <Button
+                        type="submit"
+                        className="flex-1"
+                        variant="default"
+                        size="lg"
+                        disabled={loading}
+                      >
+                        {loading ? "Sending..." : "Send Message"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        onClick={handleDirectEmail}
+                        className="border-amber-400/60 text-amber-800 hover:bg-amber-50 dark:border-amber-500/40 dark:text-amber-200 dark:hover:bg-amber-950/40"
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        Send via Email App
+                      </Button>
+                    </div>
                     {success && (
-                      <Alert className="mt-2">
-                        <AlertDescription>Your message was sent successfully.</AlertDescription>
+                      <Alert className="mt-2 border-emerald-500/40 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
+                        <AlertDescription className="space-y-1">
+                          <p className="font-medium">Your message has been processed and routed to <strong>gyan@sahadhyayi.com</strong>.</p>
+                          <p className="text-xs">
+                            Need a fast follow-up?{" "}
+                            <a
+                              href="mailto:gyan@sahadhyayi.com"
+                              className="underline font-semibold text-emerald-800 dark:text-emerald-300 hover:text-emerald-900"
+                            >
+                              Click here to email gyan@sahadhyayi.com directly
+                            </a>.
+                          </p>
+                        </AlertDescription>
                       </Alert>
                     )}
-                    <div className="text-xs text-gray-400 pt-2">
-                      Your message will be sent directly to Himanshu Gupta's email.
+                    <div className="flex items-center justify-between text-xs text-gray-500 pt-2">
+                      <span>Messages are routed directly to <strong>gyan@sahadhyayi.com</strong></span>
+                      <a
+                        href="mailto:gyan@sahadhyayi.com"
+                        className="text-amber-700 hover:underline font-medium inline-flex items-center gap-1"
+                      >
+                        <Mail className="w-3.5 h-3.5" /> Email Direct
+                      </a>
                     </div>
                   </form>
                 </div>

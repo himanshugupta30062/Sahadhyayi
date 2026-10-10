@@ -47,7 +47,7 @@ serve(async (req) => {
     const safeEmail = escapeHtml(String(email).trim());
     const safeMessage = escapeHtml(String(message).trim()).replace(/\n/g, '<br>');
 
-    const res = await fetch('https://api.resend.com/emails', {
+    let res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -70,7 +70,35 @@ serve(async (req) => {
       }),
     });
 
-    const data = await res.json();
+    let data = await res.json();
+
+    // Fallback if domain is unverified in Resend (common 403/422 domain validation errors)
+    if (!res.ok && (res.status === 403 || res.status === 422)) {
+      console.warn('Domain sahadhyayi.com may be unverified on Resend. Trying fallback sender onboarding@resend.dev');
+      res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: 'Sahadhyayi <onboarding@resend.dev>',
+          to: ['gyan@sahadhyayi.com'],
+          subject: `New Contact Message from ${safeName}`,
+          html: `
+            <h2>New Contact Form Submission</h2>
+            <p><strong>Name:</strong> ${safeName}</p>
+            <p><strong>Email:</strong> ${safeEmail}</p>
+            <p><strong>Message:</strong></p>
+            <p>${safeMessage}</p>
+            <hr>
+            <p style="color: #888; font-size: 12px;">Sent from Sahadhyayi Contact Form</p>
+          `,
+          reply_to: email,
+        }),
+      });
+      data = await res.json();
+    }
 
     if (!res.ok) {
       console.error('Resend API error:', JSON.stringify(data));
