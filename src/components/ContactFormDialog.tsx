@@ -33,24 +33,49 @@ const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
     }
 
     setLoading(true);
+    const subject = encodeURIComponent(`[Contact] Message from ${parsed.data.name} (Sahadhyayi)`);
+    const body = encodeURIComponent(
+      `Name: ${parsed.data.name}\nEmail: ${parsed.data.email}\n\nMessage:\n${parsed.data.message}`
+    );
+    const mailtoUrl = `mailto:gyan@sahadhyayi.com?subject=${subject}&body=${body}`;
+
     try {
-      const { error } = await supabase.from('contact_messages').insert({
+      const { error: dbError } = await supabase.from('contact_messages').insert({
         name: parsed.data.name,
         email: parsed.data.email,
         message: parsed.data.message,
       });
-      if (error) throw error;
+      if (dbError) console.warn("contact_messages insert failed:", dbError);
 
-      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
-        body: { name: parsed.data.name, email: parsed.data.email, message: parsed.data.message },
-      });
-      if (emailError) console.error('Email notification failed:', emailError);
+      let edgeSent = false;
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+          body: { name: parsed.data.name, email: parsed.data.email, message: parsed.data.message },
+        });
+        if (!emailError) {
+          edgeSent = true;
+        } else {
+          console.warn('Email notification failed:', emailError);
+        }
+      } catch (invokeErr) {
+        console.warn('Edge invocation error:', invokeErr);
+      }
 
-      toast.success("Message sent! We'll get back to you soon.");
+      if (!edgeSent) {
+        // Fallback: trigger mailto redirect directly
+        window.location.href = mailtoUrl;
+      }
+
+      toast.success(
+        edgeSent
+          ? "Message sent to gyan@sahadhyayi.com! We'll get back to you soon."
+          : "Message saved! Opening email client to deliver to gyan@sahadhyayi.com directly."
+      );
       setForm({ name: '', email: '', message: '' });
       setOpen(false);
     } catch {
-      toast.error("Failed to send message. Please try again.");
+      window.location.href = mailtoUrl;
+      toast.error("Opening your email client to reach gyan@sahadhyayi.com directly.");
     } finally {
       setLoading(false);
     }
@@ -126,16 +151,36 @@ const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
               />
             </div>
           </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold py-3 transition-all hover:shadow-lg hover:shadow-orange-600/20 active:scale-[0.98]"
-          >
-            <Send className="w-4 h-4 mr-2" />
-            {loading ? "Sending..." : "Send Message"}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold py-3 transition-all hover:shadow-lg hover:shadow-orange-600/20 active:scale-[0.98]"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {loading ? "Sending..." : "Send Message"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const subject = encodeURIComponent(`[Contact] Message from ${form.name || "Reader"} (Sahadhyayi)`);
+                const body = encodeURIComponent(
+                  `Name: ${form.name || ""}\nEmail: ${form.email || ""}\n\nMessage:\n${form.message || ""}`
+                );
+                window.location.href = `mailto:gyan@sahadhyayi.com?subject=${subject}&body=${body}`;
+              }}
+              className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Email App
+            </Button>
+          </div>
           <p className="text-xs text-gray-500 text-center">
-            Your message will be sent to our team at gyan@sahadhyayi.com
+            Your message will be sent to our team at{" "}
+            <a href="mailto:gyan@sahadhyayi.com" className="text-orange-400 hover:underline font-medium">
+              gyan@sahadhyayi.com
+            </a>
           </p>
         </form>
       </DialogContent>
