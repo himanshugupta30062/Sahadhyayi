@@ -2571,6 +2571,39 @@ export type Database = {
         }
         Relationships: []
       }
+      social_posts: {
+        Row: {
+          caption: string
+          comments: number
+          created_at: string
+          id: string
+          image_url: string | null
+          likes: number
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          caption: string
+          comments?: number
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes?: number
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          caption?: string
+          comments?: number
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes?: number
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       spoiler_thread_comments: {
         Row: {
           body: string
@@ -3632,6 +3665,10 @@ export type Database = {
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       increment_article_views: {
         Args: { _article_id: string }
+        Returns: undefined
+      }
+      increment_social_post_likes: {
+        Args: { delta: number; post_id: string }
         Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
