@@ -111,6 +111,50 @@ const CommunityStats = () => {
         ? edgeVisits 
         : (rpcVisits > 0 ? rpcVisits : 0);
 
+      // Fallback: If edge function did not return topCountries, query DB RPC
+      if (topCountries.length === 0) {
+        try {
+          const { data: countryData } = await supabase.rpc('get_top_visitor_countries', { limit_count: 15 });
+          if (countryData && countryData.length > 0) {
+            topCountries = countryData.map((row: any) => ({
+              code: row.country_code,
+              count: Number(row.visit_count),
+            }));
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      // Fallback: If edge function did not return topCities, query website_visits table
+      if (topCities.length === 0) {
+        try {
+          const { data: cityRows } = await supabase
+            .from('website_visits')
+            .select('city, region')
+            .not('city', 'is', null)
+            .neq('city', 'Unknown')
+            .order('visited_at', { ascending: false })
+            .limit(1000);
+
+          if (cityRows && cityRows.length > 0) {
+            const cityMap: Record<string, number> = {};
+            for (const row of cityRows) {
+              if (row.city && row.city !== 'Unknown') {
+                const label = row.region ? `${row.city}, ${row.region}` : row.city;
+                cityMap[label] = (cityMap[label] || 0) + 1;
+              }
+            }
+            topCities = Object.entries(cityMap)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 10)
+              .map(([name, count]) => ({ name, count }));
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       setStats(prev => ({
         ...prev,
         registeredMembers: registeredMembers || prev.registeredMembers || 0,
@@ -229,6 +273,13 @@ const CommunityStats = () => {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
           </span>
           <span className="text-white/70 text-[11px] sm:text-xs font-medium tracking-wide uppercase">Live Dashboard</span>
+          <button
+            onClick={() => fetchAllStats()}
+            title="Refresh statistics"
+            className="p-1 -mr-1 rounded hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+          >
+            <RefreshCw className="w-3 h-3" />
+          </button>
         </div>
         <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight">
           Community Pulse
@@ -369,6 +420,17 @@ const CommunityStats = () => {
           </div>
         )}
       </div>
+
+      {/* Empty State when no geo data is available yet */}
+      {stats.topCountries.length === 0 && stats.topCities.length === 0 && (
+        <div className="bg-white/[0.05] backdrop-blur-sm rounded-2xl border border-white/10 p-6 text-center text-white/50 text-xs">
+          <Globe className="w-6 h-6 mx-auto mb-2 text-white/30" />
+          <p className="font-medium text-white/70">Geographic Visitor Pulse</p>
+          <p className="text-[11px] text-white/40 mt-0.5">
+            Country and city analytics will populate automatically as global readers explore the library.
+          </p>
+        </div>
+      )}
 
       {/* Footer */}
       {stats.lastUpdated && (
