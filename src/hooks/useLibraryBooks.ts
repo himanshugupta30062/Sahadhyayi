@@ -34,7 +34,7 @@ export interface Book {
 }
 
 // Only select columns we actually use — avoids transferring unnecessary data
-const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
+const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio,status';
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
 // Sorting rules (displayed to users via SortingInfoTooltip)
@@ -180,7 +180,8 @@ async function fetchAllBooks(): Promise<Book[]> {
     }
   }
 
-  return sortBooksByCompleteness(all.map(mapBook));
+  const visible = all.filter((b: any) => !b.status || b.status === 'active');
+  return sortBooksByCompleteness(visible.map(mapBook));
 }
 
 export interface Genre {
@@ -212,9 +213,10 @@ export const useLibraryBooks = (searchQuery?: string, limit?: number) => {
         query = query.limit(limit);
       }
 
-      const { data, error } = await query;
+    const { data, error } = await query;
       if (error) throw error;
-      return sortBooksByCompleteness((data || []).map(mapBook));
+      const visible = (data || []).filter((b: any) => !b.status || b.status === 'active');
+      return sortBooksByCompleteness(visible.map(mapBook));
     },
     ...CACHE_OPTIONS,
   });

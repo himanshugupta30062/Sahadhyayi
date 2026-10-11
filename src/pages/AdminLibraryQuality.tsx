@@ -18,6 +18,13 @@ import {
 import { generateLibraryDuplicateAudit } from '@/utils/catalog/duplicateAudit';
 import { applyDuplicateResolution, verifyAdminStatus } from '@/utils/catalog/duplicateResolution';
 import {
+  archiveUnwantedBook,
+  restoreBookFromArchive,
+  getArchivedBooks,
+  runSafeCleanupUnusedBooks,
+  ArchivedBookRecord,
+} from '@/utils/catalog/bookArchiveVault';
+import {
   CheckCircle2,
   AlertTriangle,
   RefreshCw,
@@ -32,6 +39,9 @@ import {
   Layers,
   History,
   RotateCcw,
+  Database,
+  Plus,
+  Lock,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,9 +50,15 @@ export const AdminLibraryQuality: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<'audit' | 'history'>('audit');
+  const [activeTab, setActiveTab] = useState<'audit' | 'history' | 'vault'>('audit');
   const [filter, setFilter] = useState<'all' | 'high_confidence' | 'needs_review'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [vaultSearchQuery, setVaultSearchQuery] = useState('');
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [unwantedBookId, setUnwantedBookId] = useState('');
+  const [archiveReasonInput, setArchiveReasonInput] = useState('');
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   // Preview / Confirmation modal state
@@ -163,6 +179,7 @@ export const AdminLibraryQuality: React.FC = () => {
         description: result.message,
       });
       refetchLogs();
+      refetchVault();
       runAudit();
     } catch (err: any) {
       toast({
@@ -170,6 +187,88 @@ export const AdminLibraryQuality: React.FC = () => {
         description: err.message,
         variant: 'destructive',
       });
+    }
+  };
+
+  // 4. Fetch Archived Books from Vault
+  const {
+    data: archivedBooks = [],
+    isLoading: vaultLoading,
+    refetch: refetchVault,
+  } = useQuery<ArchivedBookRecord[]>({
+    queryKey: ['archived-books-vault'],
+    enabled: !!user && isAdmin === true,
+    queryFn: getArchivedBooks,
+  });
+
+  const handleArchiveSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!unwantedBookId.trim()) return;
+    setIsArchiving(true);
+    try {
+      const res = await archiveUnwantedBook(
+        unwantedBookId.trim(),
+        archiveReasonInput.trim() || 'Archived by administrator'
+      );
+      toast({
+        title: 'Book Safely Archived',
+        description: res.message,
+      });
+      setUnwantedBookId('');
+      setArchiveReasonInput('');
+      setIsArchiveModalOpen(false);
+      refetchVault();
+      runAudit();
+    } catch (err: any) {
+      toast({
+        title: 'Archival Failed',
+        description: err.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
+  const handleRestoreFromVault = async (bookId: string) => {
+    try {
+      const res = await restoreBookFromArchive(bookId);
+      toast({
+        title: 'Book Restored to Active Library',
+        description: res.message,
+      });
+      refetchVault();
+      runAudit();
+    } catch (err: any) {
+      toast({
+        title: 'Restore Failed',
+        description: err.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRunSafeCleanup = async () => {
+    if (!window.confirm('Run automated non-destructive cleanup? This will detect unused duplicate books and move them to the hidden vault without deleting any book.')) {
+      return;
+    }
+    setIsCleaning(true);
+    try {
+      const count = await runSafeCleanupUnusedBooks();
+      toast({
+        title: 'Safe Cleanup Completed',
+        description: `Moved ${count} redundant entries to the archive vault without deleting any records.`,
+      });
+      refetchVault();
+      runAudit();
+    } catch (err: any) {
+      toast({
+        title: 'Cleanup Error',
+        description: err.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCleaning(false);
     }
   };
 
@@ -242,6 +341,20 @@ export const AdminLibraryQuality: React.FC = () => {
               >
                 <History className="w-3.5 h-3.5" />
                 Audit Logs
+              </button>
+              <button
+                onClick={() => setActiveTab('vault')}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'vault' ? 'bg-white shadow-xs text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Database className="w-3.5 h-3.5 text-amber-600" />
+                Archive Vault
+                {archivedBooks.length > 0 && (
+                  <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                    {archivedBooks.length}
+                  </span>
+                )}
               </button>
             </div>
 
@@ -671,6 +784,165 @@ export const AdminLibraryQuality: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* Archive Vault (Hidden Books) Tab */}
+        {activeTab === 'vault' && (
+          <div className="space-y-6">
+            <div className="bg-amber-500/10 border border-amber-300/40 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <span className="p-2 bg-amber-500/20 text-amber-800 rounded-xl mt-0.5">
+                  <Database className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    Non-Destructive Book Vault (Hidden from Users)
+                    <Badge variant="outline" className="bg-white/80 text-amber-800 border-amber-200 text-[11px]">
+                      {archivedBooks.length} Records Preserved
+                    </Badge>
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1 max-w-2xl">
+                    Books placed in this vault are completely hidden from user search results, public shelves, and discovery.
+                    They are <strong>never permanently deleted</strong>. As an authorized administrator, you can inspect their original metadata and bring any book back to the active library anytime.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <Button
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white gap-1.5 shadow-xs"
+                  onClick={() => setIsArchiveModalOpen(true)}
+                >
+                  <Plus className="w-4 h-4" />
+                  Archive Book by ID
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-amber-300 text-amber-900 hover:bg-amber-100/50 gap-1.5"
+                  onClick={handleRunSafeCleanup}
+                  disabled={isCleaning}
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isCleaning ? 'animate-spin' : ''}`} />
+                  Safe Automated Cleanup
+                </Button>
+              </div>
+            </div>
+
+            {/* Vault Search & List */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="relative w-full sm:w-80">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Input
+                    placeholder="Search vault by title, author, or reason..."
+                    value={vaultSearchQuery}
+                    onChange={(e) => setVaultSearchQuery(e.target.value)}
+                    className="pl-9 h-9 text-xs"
+                  />
+                </div>
+                <Button size="sm" variant="outline" onClick={() => refetchVault()} className="gap-1.5">
+                  <RefreshCw className={`w-3.5 h-3.5 ${vaultLoading ? 'animate-spin' : ''}`} />
+                  Refresh Vault
+                </Button>
+              </div>
+
+              {vaultLoading ? (
+                <div className="space-y-3 py-6">
+                  <Skeleton className="h-14 w-full" />
+                  <Skeleton className="h-14 w-full" />
+                  <Skeleton className="h-14 w-full" />
+                </div>
+              ) : archivedBooks.length === 0 ? (
+                <div className="text-center py-16 space-y-3">
+                  <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-400">
+                    <Database className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-sm font-semibold text-slate-700">No books currently archived</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    All catalog books are currently active in the public library. When you archive unwanted or redundant books, they will be safely kept here.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border border-slate-100 rounded-lg">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="p-3">Book Info</th>
+                        <th className="p-3">Archived Date</th>
+                        <th className="p-3">Archive Reason</th>
+                        <th className="p-3">ID & Details</th>
+                        <th className="p-3 text-right">Admin Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {archivedBooks
+                        .filter((b) => {
+                          if (!vaultSearchQuery.trim()) return true;
+                          const q = vaultSearchQuery.toLowerCase();
+                          return (
+                            b.title.toLowerCase().includes(q) ||
+                            (b.author && b.author.toLowerCase().includes(q)) ||
+                            (b.archive_reason && b.archive_reason.toLowerCase().includes(q)) ||
+                            b.id.toLowerCase().includes(q)
+                          );
+                        })
+                        .map((b) => (
+                          <tr key={b.id} className="hover:bg-slate-50/60">
+                            <td className="p-3">
+                              <div className="flex items-center gap-3">
+                                {b.cover_image_url ? (
+                                  <img
+                                    src={b.cover_image_url}
+                                    alt={b.title}
+                                    className="w-9 h-12 object-cover rounded shadow-xs shrink-0"
+                                  />
+                                ) : (
+                                  <div className="w-9 h-12 bg-slate-100 rounded flex items-center justify-center text-slate-400 shrink-0">
+                                    <BookOpen className="w-4 h-4" />
+                                  </div>
+                                )}
+                                <div>
+                                  <div className="font-semibold text-slate-900 line-clamp-1">{b.title}</div>
+                                  <div className="text-[11px] text-slate-500">{b.author || 'Unknown Author'}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-3 whitespace-nowrap text-slate-500">
+                              {new Date(b.archived_at).toLocaleString()}
+                            </td>
+                            <td className="p-3 max-w-xs">
+                              <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200/60">
+                                {b.archive_reason || 'Archived record'}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <div className="font-mono text-[10px] text-slate-500">{b.id}</div>
+                              <div className="text-[10px] text-slate-400">
+                                {b.publication_year ? `Year: ${b.publication_year} ` : ''}
+                                {b.language ? `Lang: ${b.language.toUpperCase()}` : ''}
+                              </div>
+                            </td>
+                            <td className="p-3 text-right whitespace-nowrap">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs gap-1 border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-semibold"
+                                onClick={() => handleRestoreFromVault(b.id)}
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                Bring Back to Library
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Preview & Execution Confirmation Modal */}
@@ -744,6 +1016,74 @@ export const AdminLibraryQuality: React.FC = () => {
               {isExecuting ? 'Applying...' : 'Approve & Execute Resolution'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Archive Unwanted Book Modal */}
+      <Dialog open={isArchiveModalOpen} onOpenChange={setIsArchiveModalOpen}>
+        <DialogContent className="max-w-md">
+          <form onSubmit={handleArchiveSubmit}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Database className="w-5 h-5 text-amber-600" />
+                Archive Unwanted Book
+              </DialogTitle>
+              <DialogDescription>
+                Move a book into the hidden archive vault. It will be removed from user view but preserved safely for future restoration.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-800">Book ID (UUID)</label>
+                <Input
+                  required
+                  placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+                  value={unwantedBookId}
+                  onChange={(e) => setUnwantedBookId(e.target.value)}
+                  className="font-mono text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-800">Archive Reason</label>
+                <Input
+                  placeholder="e.g. Poor scan quality / Duplicate entry / Requested removal"
+                  value={archiveReasonInput}
+                  onChange={(e) => setArchiveReasonInput(e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-900 text-[11px] space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+                  Non-destructive action
+                </div>
+                <p>
+                  This will not delete the book row permanently or break user shelves. The book is safely transferred to <code>books_library_archive</code> and hidden from all public searches. You can restore it anytime with one click.
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsArchiveModalOpen(false)}
+                disabled={isArchiving}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+                disabled={isArchiving || !unwantedBookId.trim()}
+              >
+                {isArchiving ? 'Archiving...' : 'Move to Archive Vault'}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

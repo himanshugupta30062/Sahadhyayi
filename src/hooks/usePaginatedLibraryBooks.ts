@@ -106,8 +106,9 @@ async function fetchFilteredBooks(
     }
   }
 
-  // Map database rows into Editions and cluster into Works
-  const editions = all.map(row => mapRawToEdition(row));
+  // Filter out archived/superseded books and cluster into Works
+  const visibleRows = all.filter((row: any) => !row.status || row.status === 'active');
+  const editions = visibleRows.map((row: any) => mapRawToEdition(row));
   const works = clusterEditionsIntoWorks(editions);
 
   // Convert preferred editions of each work into catalog books with quality metadata
