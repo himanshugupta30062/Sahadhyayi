@@ -131,9 +131,21 @@ BEGIN
     SELECT coalesce(jsonb_agg(jsonb_build_object('name', clean_page, 'count', amount) ORDER BY amount DESC), '[]'::jsonb) AS data
     FROM (SELECT clean_page, count(*)::integer AS amount FROM current_rows
       WHERE event_type = 'pageview' GROUP BY clean_page ORDER BY amount DESC LIMIT 10) q
+  ), entry_pages AS (
+    SELECT coalesce(jsonb_agg(jsonb_build_object('name', name, 'count', amount) ORDER BY amount DESC), '[]'::jsonb) AS data
+    FROM (
+      SELECT clean_page AS name, count(*)::integer AS amount
+      FROM (
+        SELECT DISTINCT ON (session_id) session_id, clean_page
+        FROM current_rows
+        WHERE session_id IS NOT NULL AND event_type = 'pageview'
+        ORDER BY session_id, visited_at
+      ) first_page
+      GROUP BY clean_page ORDER BY amount DESC LIMIT 10
+    ) q
   ), referrers AS (
     SELECT coalesce(jsonb_agg(jsonb_build_object('name', name, 'count', amount) ORDER BY amount DESC), '[]'::jsonb) AS data
-    FROM (SELECT coalesce(nullif(split_part(split_part(referrer, '/', 3), ':', 1), ''), 'Direct / unknown') AS name,
+    FROM (SELECT CASE WHEN position('://' in referrer) > 0 THEN split_part(split_part(referrer, '://', 2), '/', 1) ELSE split_part(referrer, '/', 1) END AS name,
       count(*)::integer AS amount FROM current_rows WHERE referrer IS NOT NULL AND referrer <> ''
       GROUP BY 1 ORDER BY amount DESC LIMIT 10) q
   ), campaigns AS (
@@ -160,7 +172,7 @@ BEGIN
     'previous', jsonb_build_object('visitors', p.visitors, 'sessions', p.sessions, 'pageviews', p.pageviews,
       'signups', ps.amount, 'activeReaders', p.readers),
     'trend', coalesce((SELECT jsonb_agg(jsonb_build_object('day', day::date, 'pageviews', pageviews, 'sessions', sessions) ORDER BY day) FROM trend), '[]'::jsonb),
-    'topPages', tp.data, 'entryPages', tp.data, 'referrers', rf.data, 'campaigns', ca.data,
+    'topPages', tp.data, 'entryPages', ep.data, 'referrers', rf.data, 'campaigns', ca.data,
     'countries', co.data, 'devices', dv.data,
     'engagement', jsonb_build_object('weeklyActiveReaders', e.wau, 'monthlyActiveReaders', e.mau,
       'bookOpens', e.book_opens, 'bookSaves', e.book_saves, 'readingStarts', e.reading_starts,
@@ -179,7 +191,7 @@ BEGIN
       'countriesAndDevices','Only categories with 10 or more measured sessions are shown.'),
     'lastUpdated', now())
   INTO v_result
-  FROM kpi k, prior p, signup s, prior_signup ps, engagements e, top_pages tp, referrers rf, campaigns ca, countries co, devices dv;
+  FROM kpi k, prior p, signup s, prior_signup ps, engagements e, top_pages tp, entry_pages ep, referrers rf, campaigns ca, countries co, devices dv;
 
   RETURN v_result;
 END;
