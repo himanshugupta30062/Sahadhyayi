@@ -1,5 +1,5 @@
 // HeroAtomicRings.tsx — atoms rotate on paths; snap to arc START when hitting blank
-// Themes: outer=RED blend, middle=GREEN blend, inner=BLUE blend
+// Themes: outer=RED blend, middle=GREEN blend, inner=BLUE blend, core=GOLD blend
 // Rings: single ~65% coloured arc each, rotating; thickness increases outward
 
 import React, { useEffect, useRef, ReactNode } from "react";
@@ -28,11 +28,12 @@ function inInterval(a: number, start: number, end: number) {
 }
 
 interface HeroAtomicRingsProps {
-  size?: number;
+  size?: number | string;
+  className?: string;
   children?: ReactNode;
 }
 
-export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRingsProps) {
+export default function HeroAtomicRings({ size = 720, className = "", children }: HeroAtomicRingsProps) {
   // ===== Visual config =====
   const CORE  = 210;  // innermost
   const INNER = 225;
@@ -42,8 +43,8 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
   const STROKES = { core: 8, inner: 10, mid: 14, outer: 20 } as const;
 
   // Coloured arc coverage: ~65% of circumference
-  const COVERAGE = 0.65;                 // try 0.60–0.70
-  const SWEEP_DEG = 360 * COVERAGE;      // e.g. 234°
+  const COVERAGE = 0.65;
+  const SWEEP_DEG = 360 * COVERAGE;
 
   // Rotating arc start angles + speeds
   const ROTOR_START = { outer: -18, mid: 12, inner: -36, core: 24 } as const;
@@ -51,7 +52,7 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
   const ROTOR_DIR   = { outer: 1,   mid: -1, inner: 1,   core: -1 } as const;
 
   // Atom motion — continuous path rotation
-  const ATOM_SPEED = 30;  // deg/sec (~12s per lap). Lower = slower, higher = faster
+  const ATOM_SPEED = 30;  // deg/sec
 
   // ---------- Refs ----------
   const ringRefs = [useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null)];
@@ -83,6 +84,15 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
   }, []);
 
   useEffect(() => {
+    // Check user preference for reduced motion
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (prefersReducedMotion) {
+      return; // static elegant rings without animation loops
+    }
+
     let raf: number | null = null;
 
     const step = (now: number) => {
@@ -108,7 +118,6 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           const end = norm(start + SWEEP_DEG);
 
           if (!inInterval(atomAngles.current[k], start, end)) {
-            // Jump back to the START of the coloured arc for this ring at this moment
             atomAngles.current[k] = start;
           }
 
@@ -140,14 +149,20 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
 
   return (
     <div
-      className="relative flex items-center justify-center w-full"
-      style={{ width: size, height: size }}
+      className={`relative flex items-center justify-center ${className}`}
+      style={
+        typeof size === "number"
+          ? { width: size, height: size }
+          : typeof size === "string" && size !== "100%"
+          ? { width: size, height: size }
+          : undefined
+      }
     >
       <svg
-        className="block"
-        style={{ width: "100%", height: "100%" }}
+        className="block w-full h-full max-w-full max-h-full"
         viewBox="-360 -360 720 720"
-        aria-hidden
+        aria-hidden="true"
+        preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           {/* atom glow */}
@@ -159,13 +174,12 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
             </feMerge>
           </filter>
 
-          {/* gradients: outer RED, middle GREEN, inner BLUE (multi-stop blends) */}
+          {/* gradients: outer RED, middle GREEN, inner BLUE, core GOLD */}
           <linearGradient id="g-outer" gradientUnits="userSpaceOnUse" x1={-OUTER} y1={-OUTER} x2={OUTER} y2={OUTER}>
-            {/* vibrant red → pink blend */}
-            <stop offset="0%"   stopColor="#ff9ecf" />   {/* light pink highlight */}
-            <stop offset="35%"  stopColor="#ff4d8d" />   {/* hot pink core */}
-            <stop offset="70%"  stopColor="#ff1f5a" />   {/* vivid rose red */}
-            <stop offset="100%" stopColor="#be123c" />   {/* deep crimson anchor */}
+            <stop offset="0%"   stopColor="#ff9ecf" />
+            <stop offset="35%"  stopColor="#ff4d8d" />
+            <stop offset="70%"  stopColor="#ff1f5a" />
+            <stop offset="100%" stopColor="#be123c" />
           </linearGradient>
           <linearGradient id="g-mid" gradientUnits="userSpaceOnUse" x1={-255} y1={-255} x2={255} y2={255}>
             <stop offset="0%"   stopColor="#86efac" />
@@ -186,7 +200,7 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
 
         {/* Outer ring */}
         <g>
-          <circle r={OUTER} cx={0} cy={0} fill="none" stroke={`rgba(255,255,255,0.08)`} strokeWidth={STROKES.outer} />
+          <circle r={OUTER} cx={0} cy={0} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={STROKES.outer} />
           <g ref={el => (ringRefs[0].current = el)}>
             <path d={COVER_SWEEP(OUTER, ROTOR_START.outer)} fill="none" stroke="url(#g-outer)" strokeWidth={STROKES.outer} strokeLinecap="round" />
           </g>
@@ -194,7 +208,7 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
 
         {/* Middle ring */}
         <g>
-          <circle r={MID} cx={0} cy={0} fill="none" stroke={`rgba(255,255,255,0.08)`} strokeWidth={STROKES.mid} />
+          <circle r={MID} cx={0} cy={0} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={STROKES.mid} />
           <g ref={el => (ringRefs[1].current = el)}>
             <path
               d={COVER_SWEEP(MID, ROTOR_START.mid)}
@@ -208,7 +222,7 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
 
         {/* Inner ring */}
         <g>
-          <circle r={INNER} cx={0} cy={0} fill="none" stroke={`rgba(255,255,255,0.10)`} strokeWidth={STROKES.inner} />
+          <circle r={INNER} cx={0} cy={0} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={STROKES.inner} />
           <g ref={el => (ringRefs[2].current = el)}>
             <path
               d={COVER_SWEEP(INNER, ROTOR_START.inner)}
@@ -220,9 +234,9 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
           </g>
         </g>
 
-        {/* Core ring (Games) */}
+        {/* Core ring */}
         <g>
-          <circle r={CORE} cx={0} cy={0} fill="none" stroke={`rgba(255,255,255,0.10)`} strokeWidth={STROKES.core} />
+          <circle r={CORE} cx={0} cy={0} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={STROKES.core} />
           <g ref={el => (ringRefs[3].current = el)}>
             <path
               d={COVER_SWEEP(CORE, ROTOR_START.core)}
@@ -282,7 +296,7 @@ export default function HeroAtomicRings({ size = 720, children }: HeroAtomicRing
       </svg>
       {children && (
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <div className="w-full max-w-[60%] pointer-events-auto">{children}</div>
+          <div className="w-full max-w-[65%] pointer-events-auto flex items-center justify-center">{children}</div>
         </div>
       )}
     </div>
