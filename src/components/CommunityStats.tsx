@@ -1,384 +1,89 @@
-
 import React from 'react';
-import { Users, Eye, Loader2, AlertTriangle, Globe, Clock, Activity, MapPin, TrendingUp, RefreshCw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client-universal';
+import { Activity, BookOpen, MessageCircle, Radio, Users } from 'lucide-react';
+import { useCommunityStats } from '@/hooks/useCommunityStats';
 
-const COUNTRY_MAP: Record<string, { flag: string; name: string }> = {
-  IN: { flag: '🇮🇳', name: 'India' }, US: { flag: '🇺🇸', name: 'United States' },
-  FR: { flag: '🇫🇷', name: 'France' }, CA: { flag: '🇨🇦', name: 'Canada' },
-  GB: { flag: '🇬🇧', name: 'United Kingdom' }, DE: { flag: '🇩🇪', name: 'Germany' },
-  SG: { flag: '🇸🇬', name: 'Singapore' }, ES: { flag: '🇪🇸', name: 'Spain' },
-  NL: { flag: '🇳🇱', name: 'Netherlands' }, ID: { flag: '🇮🇩', name: 'Indonesia' },
-  BR: { flag: '🇧🇷', name: 'Brazil' }, CN: { flag: '🇨🇳', name: 'China' },
-  SE: { flag: '🇸🇪', name: 'Sweden' }, VN: { flag: '🇻🇳', name: 'Vietnam' },
-  NG: { flag: '🇳🇬', name: 'Nigeria' }, UA: { flag: '🇺🇦', name: 'Ukraine' },
-  AU: { flag: '🇦🇺', name: 'Australia' }, PL: { flag: '🇵🇱', name: 'Poland' },
-  AR: { flag: '🇦🇷', name: 'Argentina' }, LK: { flag: '🇱🇰', name: 'Sri Lanka' },
-  JP: { flag: '🇯🇵', name: 'Japan' }, KR: { flag: '🇰🇷', name: 'South Korea' },
-  RU: { flag: '🇷🇺', name: 'Russia' }, MX: { flag: '🇲🇽', name: 'Mexico' },
-  IT: { flag: '🇮🇹', name: 'Italy' }, AE: { flag: '🇦🇪', name: 'UAE' },
-  SA: { flag: '🇸🇦', name: 'Saudi Arabia' }, PK: { flag: '🇵🇰', name: 'Pakistan' },
-  BD: { flag: '🇧🇩', name: 'Bangladesh' }, NP: { flag: '🇳🇵', name: 'Nepal' },
-  MY: { flag: '🇲🇾', name: 'Malaysia' }, PH: { flag: '🇵🇭', name: 'Philippines' },
-  TH: { flag: '🇹🇭', name: 'Thailand' }, ZA: { flag: '🇿🇦', name: 'South Africa' },
-  KE: { flag: '🇰🇪', name: 'Kenya' },
-};
-
-function getCountryInfo(code: string) {
-  return COUNTRY_MAP[code] || { flag: '🏳️', name: code };
-}
-
-interface BreakdownItem { name: string; count: number }
-
-interface CommunityStatsData {
-  registeredMembers: number;
-  totalVisitors: number;
-  last24hVisits: number;
-  topCountries: { code: string; count: number }[];
-  topCities: BreakdownItem[];
-  lastUpdated: string | null;
-  loading: boolean;
-  error: string | null;
-}
-
-const MEDAL = ['🥇', '🥈', '🥉'];
-
-const StatCard = ({ icon: Icon, label, value, subtitle, gradient }: {
-  icon: React.ElementType; label: string; value: number; subtitle: string; gradient: string;
+const Metric = ({ icon: Icon, label, value, help }: {
+  icon: React.ElementType; label: string; value: number | null; help: string;
 }) => (
-  <div className={`relative overflow-hidden rounded-2xl p-4 sm:p-5 md:p-6 ${gradient} text-white shadow-lg group hover:scale-[1.02] transition-transform duration-300`}>
-    <div className="absolute top-0 right-0 w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white/10 -translate-y-1/2 translate-x-1/2" />
-    <div className="absolute bottom-0 left-0 w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-white/5 translate-y-1/2 -translate-x-1/2" />
-    <div className="relative z-10">
-      <div className="flex items-center gap-2 mb-2 sm:mb-3">
-        <div className="p-1.5 sm:p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-          <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-        </div>
-        <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white/80">{label}</span>
-      </div>
-      <div className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight tabular-nums">
-        {value.toLocaleString()}
-      </div>
-      <p className="text-white/60 text-[10px] sm:text-xs mt-1 font-medium">{subtitle}</p>
+  <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+    <div className="flex items-center gap-2 text-muted-foreground">
+      <Icon className="h-4 w-4 text-brand-primary" />
+      <span className="text-xs font-medium">{label}</span>
     </div>
+    <div className="mt-2 text-2xl font-semibold tracking-tight tabular-nums text-foreground">
+      {value === null ? '—' : value.toLocaleString()}
+    </div>
+    <p className="mt-1 text-xs text-muted-foreground">{help}</p>
   </div>
 );
 
 const CommunityStats = () => {
-  const [stats, setStats] = React.useState<CommunityStatsData>({
-    registeredMembers: 0, totalVisitors: 0, last24hVisits: 0,
-    topCountries: [], topCities: [],
-    lastUpdated: null, loading: true, error: null,
-  });
-
-  const fetchAllStats = React.useCallback(async () => {
-    let edgeSignups: number | null = null;
-    let edgeVisits: number | null = null;
-    let edge24h: number | null = null;
-    let topCountries: { code: string; count: number }[] = [];
-    let topCities: BreakdownItem[] = [];
-
-    try {
-      const { data, error } = await supabase.functions.invoke('community-stats');
-      if (!error && data) {
-        edgeSignups = typeof data.totalSignups === 'number' ? data.totalSignups : null;
-        edgeVisits = typeof data.totalVisits === 'number' ? data.totalVisits : null;
-        edge24h = typeof data.last24hVisits === 'number' ? data.last24hVisits : null;
-        topCountries = data.topCountries ?? [];
-        topCities = data.topCities ?? [];
-      }
-    } catch {
-      // Fallback to direct queries below
-    }
-
-    try {
-      const [usersRpc, visitsRpc, profilesCountRes] = await Promise.all([
-        supabase.rpc('get_total_users_count').catch(() => ({ data: null })),
-        supabase.rpc('get_website_visit_count').catch(() => ({ data: null })),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).catch(() => ({ count: null })),
-      ]);
-
-      const rpcUsers = Number(usersRpc?.data) || 0;
-      const directProfiles = Number(profilesCountRes?.count) || 0;
-      const directUsers = Math.max(rpcUsers, directProfiles);
-
-      const rpcVisits = Number(visitsRpc?.data) || 0;
-
-      const registeredMembers = Math.max(edgeSignups ?? 0, directUsers);
-      const totalVisitors = Math.max(edgeVisits ?? 0, rpcVisits);
-
-      setStats(prev => ({
-        ...prev,
-        registeredMembers: registeredMembers || prev.registeredMembers || 0,
-        totalVisitors: totalVisitors || prev.totalVisitors || 0,
-        last24hVisits: edge24h ?? prev.last24hVisits,
-        topCountries: topCountries.length > 0 ? topCountries : prev.topCountries,
-        topCities: topCities.length > 0 ? topCities : prev.topCities,
-        lastUpdated: new Date().toISOString(),
-        loading: false,
-        error: null,
-      }));
-    } catch (err) {
-      console.error('Error fetching community stats:', err);
-      if (edgeSignups !== null) {
-        setStats(prev => ({
-          ...prev,
-          registeredMembers: edgeSignups || 0,
-          totalVisitors: edgeVisits || 0,
-          last24hVisits: edge24h || 0,
-          topCountries,
-          topCities,
-          lastUpdated: new Date().toISOString(),
-          loading: false,
-          error: null,
-        }));
-      } else {
-        setStats(prev => ({ ...prev, loading: false, error: prev.registeredMembers > 0 ? null : 'Unable to load community stats' }));
-      }
-    }
-  }, []);
-
-  React.useEffect(() => {
-    fetchAllStats();
-
-    // Realtime channel for live updates when new users sign up or visit
-    const profilesChannel = supabase
-      .channel('community-profiles-pulse')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchAllStats();
-      })
-      .subscribe();
-
-    const visitsChannel = supabase
-      .channel('community-visits-pulse')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'website_visits' }, () => {
-        fetchAllStats();
-      })
-      .subscribe();
-
-    // Listen to in-app signup/signin dispatch events
-    const handleLocalUpdate = () => {
-      fetchAllStats();
-    };
-    window.addEventListener('communityStatsUpdate', handleLocalUpdate);
-
-    // Cross-tab synchronization
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'sahadhyayi_stats_sync') {
-        fetchAllStats();
-      }
-    };
-    window.addEventListener('storage', handleStorage);
-
-    // Fallback heartbeat every 30s
-    const interval = setInterval(fetchAllStats, 30_000);
-
-    return () => {
-      void supabase.removeChannel(profilesChannel);
-      void supabase.removeChannel(visitsChannel);
-      window.removeEventListener('communityStatsUpdate', handleLocalUpdate);
-      window.removeEventListener('storage', handleStorage);
-      clearInterval(interval);
-    };
-  }, [fetchAllStats]);
-
-  if (stats.loading) {
-    return (
-      <div className="w-full max-w-6xl mx-auto p-4 flex items-center justify-center py-16">
-        <div className="flex flex-col items-center gap-3">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-white/60 animate-spin" />
-          </div>
-          <span className="text-white/60 text-sm font-medium">Loading stats...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (stats.error) {
-    return (
-      <div className="w-full max-w-5xl mx-auto p-6 text-center">
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-          <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-3" />
-          <p className="text-white/70 text-sm mb-4">{stats.error}</p>
-          <button
-            onClick={fetchAllStats}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 text-white text-sm font-medium rounded-xl transition-colors"
-          >
-            <RefreshCw className="w-3.5 h-3.5" /> Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const maxCountryCount = stats.topCountries[0]?.count || 1;
-  const totalCountryVisits = stats.topCountries.reduce((sum, c) => sum + c.count, 0);
+  const { stats, isLoading, error, fetchStats } = useCommunityStats();
+  const points = stats?.activityTrend ?? [];
+  const max = Math.max(1, ...points.map((point) => point.count));
+  const coordinates = points.map((point, index) => {
+    const x = points.length <= 1 ? 0 : (index / (points.length - 1)) * 100;
+    const y = 32 - (point.count / max) * 28;
+    return `${x},${y}`;
+  }).join(' ');
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-3 sm:mb-4">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-          </span>
-          <span className="text-white/70 text-[11px] sm:text-xs font-medium tracking-wide uppercase">Live Dashboard</span>
+    <section aria-labelledby="community-pulse-title" className="mx-auto w-full max-w-5xl space-y-5">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-primary">Sahadhyayi community</p>
+          <h2 id="community-pulse-title" className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Community Pulse</h2>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">A snapshot of readers, the public library, and recent shared reading activity.</p>
         </div>
-        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight">
-          Community Pulse
-        </h2>
-        <p className="text-white/50 text-xs sm:text-sm mt-1 max-w-md mx-auto">
-          Real-time metrics from the Sahadhyayi community
-        </p>
-      </div>
-
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
-        <StatCard icon={Users} label="Members" value={stats.registeredMembers} subtitle="Total sign-ups" gradient="bg-gradient-to-br from-orange-500 to-amber-600" />
-        <StatCard icon={Eye} label="Visitors" value={stats.totalVisitors} subtitle="All-time views" gradient="bg-gradient-to-br from-blue-500 to-indigo-600" />
-        <StatCard icon={TrendingUp} label="Last 24h" value={stats.last24hVisits} subtitle="Recent activity" gradient="bg-gradient-to-br from-emerald-500 to-teal-600" />
-      </div>
-
-      {/* Country + Cities Grid */}
-      <div className={`grid grid-cols-1 ${stats.topCities.length > 0 ? 'lg:grid-cols-5' : ''} gap-3 sm:gap-4`}>
-        {/* Countries */}
-        {stats.topCountries.length > 0 && (
-          <div className={`${stats.topCities.length > 0 ? 'lg:col-span-3' : ''} bg-white/[0.07] backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden`}>
-            <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-blue-500/20 rounded-xl">
-                  <Globe className="w-4 h-4 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-sm sm:text-base font-bold text-white">Visitors by Country</h3>
-                  <p className="text-[10px] sm:text-xs text-white/40">{stats.topCountries.length} countries tracked</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                </span>
-              </div>
-            </div>
-
-            <div className="px-3 sm:px-4 pb-4 sm:pb-5 space-y-0.5">
-              {stats.topCountries.map(({ code, count }, index) => {
-                const { flag, name } = getCountryInfo(code);
-                const pct = Math.round((count / maxCountryCount) * 100);
-                const sharePct = ((count / totalCountryVisits) * 100).toFixed(1);
-                const isMedal = index < 3;
-
-                return (
-                  <div
-                    key={code}
-                    className={`group flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-200 ${
-                      isMedal ? 'bg-white/[0.06] hover:bg-white/[0.1]' : 'hover:bg-white/[0.05]'
-                    }`}
-                  >
-                    <span className="text-sm sm:text-base w-5 sm:w-6 text-center flex-shrink-0">
-                      {isMedal ? MEDAL[index] : (
-                        <span className="text-[10px] sm:text-xs text-white/30 font-mono">{index + 1}</span>
-                      )}
-                    </span>
-                    <span className="text-lg sm:text-xl leading-none flex-shrink-0">{flag}</span>
-                    <span className={`text-xs sm:text-sm flex-1 truncate ${isMedal ? 'text-white font-semibold' : 'text-white/70 font-medium'}`}>
-                      {name}
-                    </span>
-                    <div className="hidden sm:block flex-1 max-w-[120px] h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700 ease-out"
-                        style={{
-                          width: `${Math.max(pct, 4)}%`,
-                          background: isMedal
-                            ? 'linear-gradient(90deg, hsl(38, 92%, 50%), hsl(28, 80%, 52%))'
-                            : 'linear-gradient(90deg, hsl(215, 60%, 50%), hsl(225, 50%, 45%))',
-                        }}
-                      />
-                    </div>
-                    <span className={`text-xs sm:text-sm tabular-nums text-right min-w-[2rem] sm:min-w-[3rem] ${isMedal ? 'text-white font-bold' : 'text-white/60 font-semibold'}`}>
-                      {count.toLocaleString()}
-                    </span>
-                    <span className="text-[9px] sm:text-[10px] text-white/30 w-8 text-right tabular-nums hidden md:inline font-mono">
-                      {sharePct}%
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Top Cities */}
-        {stats.topCities.length > 0 && (
-          <div className="lg:col-span-2 bg-white/[0.07] backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
-            <div className="flex items-center gap-2.5 px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3">
-              <div className="p-2 bg-rose-500/20 rounded-xl">
-                <MapPin className="w-4 h-4 text-rose-400" />
-              </div>
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-white">Top Cities</h3>
-                <p className="text-[10px] sm:text-xs text-white/40">{stats.topCities.length} cities tracked</p>
-              </div>
-            </div>
-
-            <div className="px-3 sm:px-4 pb-4 sm:pb-5 space-y-0.5">
-              {stats.topCities.map((city, i) => {
-                const maxCity = stats.topCities[0]?.count || 1;
-                const pct = Math.round((city.count / maxCity) * 100);
-                const isMedal = i < 3;
-                return (
-                  <div
-                    key={city.name}
-                    className={`flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-200 ${
-                      isMedal ? 'bg-white/[0.06] hover:bg-white/[0.1]' : 'hover:bg-white/[0.05]'
-                    }`}
-                  >
-                    <span className="text-sm w-5 text-center flex-shrink-0">
-                      {isMedal ? MEDAL[i] : (
-                        <span className="text-[10px] sm:text-xs text-white/30 font-mono">{i + 1}</span>
-                      )}
-                    </span>
-                    <span className={`text-xs sm:text-sm flex-1 truncate ${isMedal ? 'text-white font-semibold' : 'text-white/70 font-medium'}`}>
-                      {city.name}
-                    </span>
-                    <div className="w-10 sm:w-16 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${Math.max(pct, 6)}%`,
-                          background: isMedal
-                            ? 'linear-gradient(90deg, hsl(350, 80%, 55%), hsl(25, 90%, 55%))'
-                            : 'linear-gradient(90deg, hsl(350, 50%, 45%), hsl(350, 40%, 40%))',
-                        }}
-                      />
-                    </div>
-                    <span className={`text-xs sm:text-sm tabular-nums text-right min-w-[2rem] ${isMedal ? 'text-white font-bold' : 'text-white/60 font-semibold'}`}>
-                      {city.count.toLocaleString()}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        {stats?.lastUpdated && (
+          <p className="text-xs text-muted-foreground">
+            Updated {new Date(stats.lastUpdated).toLocaleString()}
+          </p>
         )}
       </div>
 
-      {/* Footer */}
-      {stats.lastUpdated && (
-        <div className="flex flex-col sm:flex-row items-center justify-between text-[10px] sm:text-[11px] text-white/30 px-1 gap-1 pb-2">
-          <span className="flex items-center gap-1.5">
-            <Activity className="w-3 h-3" />
-            Auto-refreshes on new activity
-          </span>
-          <span className="font-mono">
-            {new Date(stats.lastUpdated).toLocaleTimeString()}
-          </span>
+      {error ? (
+        <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span>Community data is temporarily unavailable. No counts are being shown.</span>
+            <button className="font-medium underline underline-offset-4" onClick={() => void fetchStats()}>Try again</button>
+          </div>
         </div>
-      )}
-    </div>
+      ) : null}
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Metric icon={Users} label="Registered readers" value={error || isLoading ? null : stats?.registeredReaders ?? null} help="Profiles in the community" />
+        <Metric icon={BookOpen} label="Public library" value={error || isLoading ? null : stats?.eligibleBooks ?? null} help="Distinct book titles in the Library" />
+        <Metric icon={Radio} label="Active reading rooms" value={error || isLoading ? null : stats?.activeRooms ?? null} help="Rooms with activity in the past 30 days" />
+        <Metric icon={MessageCircle} label="Community activity" value={error || isLoading ? null : stats?.communityActivity ?? null} help="Room messages, replies and completed chapters in 30 days" />
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground"><Activity className="h-4 w-4 text-brand-primary" />Daily community activity</h3>
+            <p className="mt-1 text-xs text-muted-foreground">Replies, room messages and completed chapters · last 30 days</p>
+          </div>
+          {!isLoading && !error && points.length > 0 && (
+            <span className="text-xs tabular-nums text-muted-foreground">{points.reduce((sum, point) => sum + point.count, 0).toLocaleString()} activities</span>
+          )}
+        </div>
+        {isLoading ? (
+          <div className="mt-4 h-16 animate-pulse rounded-lg bg-muted" aria-label="Loading community activity" />
+        ) : error ? (
+          <p className="mt-4 text-sm text-muted-foreground">Trend unavailable.</p>
+        ) : points.length && points.some((point) => point.count > 0) ? (
+          <div className="mt-3">
+            <svg viewBox="0 0 100 36" role="img" aria-label="Daily community activity over the last 30 days" className="h-16 w-full overflow-visible">
+              <polyline points={coordinates} fill="none" stroke="hsl(var(--brand-primary))" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+            </svg>
+            <div className="flex justify-between text-[11px] text-muted-foreground"><span>30 days ago</span><span>Today</span></div>
+          </div>
+        ) : (
+          <p className="mt-4 rounded-lg bg-muted/40 px-3 py-3 text-sm text-muted-foreground">No community activity has been recorded in this period yet.</p>
+        )}
+      </div>
+    </section>
   );
 };
 
