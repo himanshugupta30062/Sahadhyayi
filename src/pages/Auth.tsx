@@ -117,6 +117,8 @@ const Auth = () => {
     }
     try {
       await signIn(sanitizeInput(signinData.email.trim().toLowerCase(), 254), signinData.password);
+      window.dispatchEvent(new CustomEvent('communityStatsUpdate', { detail: { action: 'signin' } }));
+      try { localStorage.setItem('sahadhyayi_stats_sync', Date.now().toString()); } catch { /* ignore storage error in private mode */ }
       navigate(redirectPath, { replace: true });
     } catch (err: any) {
       const msg = err.message || '';
@@ -157,6 +159,8 @@ const Auth = () => {
         setLoading(false);
         return;
       }
+      window.dispatchEvent(new CustomEvent('communityStatsUpdate', { detail: { action: 'signup' } }));
+      try { localStorage.setItem('sahadhyayi_stats_sync', Date.now().toString()); } catch { /* ignore storage error in private mode */ }
       setSuccess('Verification email sent! Please check your inbox.');
       setSignupData({ name: '', email: '', password: '', confirmPassword: '' });
       setTimeout(() => switchTab('signin'), 2000);

@@ -111,6 +111,8 @@ const SignUp = () => {
         setLoading(false);
         return;
       }
+      window.dispatchEvent(new CustomEvent('communityStatsUpdate', { detail: { action: 'signup' } }));
+      try { localStorage.setItem('sahadhyayi_stats_sync', Date.now().toString()); } catch { /* ignore storage error in private mode */ }
       setSuccess('A verification email has been sent to your email.');
       setFormData({ name: '', email: '', password: '', confirmPassword: '' });
       setTimeout(() => navigate('/signin'), 2000);

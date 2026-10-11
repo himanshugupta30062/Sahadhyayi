@@ -38,6 +38,25 @@ export interface ChapterPulse {
 }
 
 export const useReadingRooms = () => {
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('reading-rooms-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reading_rooms' },
+        () => {
+          qc.invalidateQueries({ queryKey: ["reading-rooms"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
   return useQuery({
     queryKey: ["reading-rooms"],
     queryFn: async () => {
@@ -49,7 +68,8 @@ export const useReadingRooms = () => {
       if (error) throw error;
       return (data ?? []) as unknown as ReadingRoom[];
     },
-    staleTime: 30_000,
+    staleTime: 10_000,
+    refetchInterval: 15_000,
   });
 };
 
