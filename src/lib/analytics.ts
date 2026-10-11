@@ -78,5 +78,5 @@ export const trackAnalyticsEvent = async (
   }
 };
 
-export const trackUiEvent = (eventName: string) =>
+export const trackUiEvent = (eventName: string, _metadata?: Record<string, string | number | boolean | null | undefined>) =>
   trackAnalyticsEvent('activity', eventName);
