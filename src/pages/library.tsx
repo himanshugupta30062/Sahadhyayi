@@ -7,7 +7,6 @@ import { RefreshCw, PenTool } from 'lucide-react';
 import SortingInfoTooltip from '@/components/library/SortingInfoTooltip';
 import LibraryHero from '@/components/library/LibraryHero';
 import BooksCollection from '@/components/library/BooksCollection';
-import { useCommunityStats } from '@/hooks/useCommunityStats';
 import { useLibraryBookCount } from '@/hooks/useLibraryBookCount';
 
 export default function Library() {
@@ -20,7 +19,6 @@ export default function Library() {
   const [selectedLanguage, setSelectedLanguage] = useState('All');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
 
-  const { stats: communityStats } = useCommunityStats();
   const { data: totalBooks } = useLibraryBookCount();
 
   const normalizedParams = useMemo(
@@ -114,9 +112,6 @@ export default function Library() {
         onSearchChange={setSearchQuery}
         onSearch={handleSearch}
         totalBooks={totalBooks}
-        activeReaders={communityStats?.totalSignups || 3200}
-        avgRating={4.8}
-        booksAddedToday={47}
       />
 
       <div className="container mx-auto px-4 py-8">
