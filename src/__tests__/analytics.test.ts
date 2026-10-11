@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getAnalyticsIds, trackAnalyticsEvent, trackUiEvent } from '@/lib/analytics';
 
-const invoke = vi.fn().mockResolvedValue({ data: { recorded: true }, error: null });
+const { invoke } = vi.hoisted(() => ({ invoke: vi.fn().mockResolvedValue({ data: { recorded: true }, error: null }) }));
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: { functions: { invoke } },
 }));
