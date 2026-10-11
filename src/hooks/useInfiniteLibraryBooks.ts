@@ -75,7 +75,11 @@ export const useInfiniteLibraryBooks = ({
         };
       }
 
-      const books = data.map(book => ({
+      const activeData = (data || []).filter(
+        (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
+      );
+
+      const books = activeData.map(book => ({
         id: book.id,
         title: book.title,
         author: book.author || 'Unknown Author',

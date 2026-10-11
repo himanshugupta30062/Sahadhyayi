@@ -19,6 +19,7 @@ import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
 import Navigation from "./components/Navigation";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 import StructuredFooter from "./components/footer/StructuredFooter";
 import DeferredSection from "./components/DeferredSection";
 import ScrollToTop from "./components/ScrollToTop";
@@ -67,6 +68,7 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const AdminLibraryQuality = lazy(() => import('./pages/AdminLibraryQuality'));
+const AdminLibraryArchive = lazy(() => import('./pages/AdminLibraryArchive'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 // Optimized loading fallback
@@ -399,19 +401,33 @@ const App = memo(() => {
                           }
                         />
                         <Route
+                          path="/admin/library-archive"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading library archive..." />}>
+                                <AdminLibraryArchive />
+                              </Suspense>
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
                           path="/admin/library-quality"
                           element={
-                            <Suspense fallback={<LoadingFallback message="Loading quality dashboard..." />}>
-                              <AdminLibraryQuality />
-                            </Suspense>
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading quality dashboard..." />}>
+                                <AdminLibraryQuality />
+                              </Suspense>
+                            </AdminRoute>
                           }
                         />
                         <Route
                           path="/admin/feedback"
                           element={
-                            <Suspense fallback={<LoadingFallback message="Loading feedback..." />}>
-                              <AdminFeedback />
-                            </Suspense>
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading feedback..." />}>
+                                <AdminFeedback />
+                              </Suspense>
+                            </AdminRoute>
                           }
                         />
                         <Route
