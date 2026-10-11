@@ -134,3 +134,4 @@ const DashboardCommunityPulse: React.FC = () => {
 };
 
 export default DashboardCommunityPulse;
+
