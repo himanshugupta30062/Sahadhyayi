@@ -2,26 +2,37 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Radio, Users, MessageSquare, ChevronRight, BookOpen } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Radio, Users, MessageSquare, ChevronRight, BookOpen, Activity } from 'lucide-react';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
+import { useCommunityStats } from '@/hooks/useCommunityStats';
 
 const DashboardCommunityPulse: React.FC = () => {
   const { data: rooms = [], isLoading: roomsLoading } = useReadingRooms();
   const { data: joinedGroups = [] } = useUserJoinedGroups();
+  const { stats } = useCommunityStats();
 
   const activeRooms = rooms.slice(0, 3);
 
   return (
     <Card className="border-border overflow-hidden">
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-base font-semibold flex items-center gap-2">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-          </span>
-          Community Pulse
-        </CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            Community Pulse
+          </CardTitle>
+          {stats.totalSignups > 0 && (
+            <Badge variant="secondary" className="hidden sm:inline-flex text-[10px] h-5 px-1.5 font-medium gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
+              <Users className="w-2.5 h-2.5" />
+              {stats.totalSignups.toLocaleString()} Readers
+            </Badge>
+          )}
+        </div>
         <Link to="/social">
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs">
             Open Feed <ChevronRight className="w-3.5 h-3.5 ml-1" />

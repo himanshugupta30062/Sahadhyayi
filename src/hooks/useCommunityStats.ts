@@ -70,33 +70,56 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
       setStats(cached);
     }
 
-    try {
-      const { data, error } = await supabase.functions.invoke('community-stats');
+    let edgeSignups: number | null = null;
+    let edgeVisits: number | null = null;
+    let edge24h: number | null = null;
+    let topCountries: CountryVisit[] = [];
 
-      if (error) throw error;
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('community-stats');
+      if (!fnError && data) {
+        edgeSignups = typeof data.totalSignups === 'number' ? data.totalSignups : null;
+        edgeVisits = typeof data.totalVisits === 'number' ? data.totalVisits : null;
+        edge24h = typeof data.last24hVisits === 'number' ? data.last24hVisits : null;
+        topCountries = data.topCountries ?? [];
+      }
+    } catch {
+      // Fallback to direct DB RPCs below
+    }
+
+    try {
+      const [usersRpc, visitsRpc, profilesCountRes] = await Promise.all([
+        supabase.rpc('get_total_users_count').catch(() => ({ data: null })),
+        supabase.rpc('get_website_visit_count').catch(() => ({ data: null })),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).catch(() => ({ count: null })),
+      ]);
+
+      const rpcUsers = Number(usersRpc?.data) || 0;
+      const directProfiles = Number(profilesCountRes?.count) || 0;
+      const directUsers = Math.max(rpcUsers, directProfiles);
+
+      const rpcVisits = Number(visitsRpc?.data) || 0;
+
+      const totalSignups = Math.max(edgeSignups ?? 0, directUsers, cached?.totalSignups ?? 0);
+      const totalVisits = Math.max(edgeVisits ?? 0, rpcVisits, cached?.totalVisits ?? 0);
 
       const updated: CommunityStats = {
-        totalSignups: data.totalSignups ?? 0,
-        totalVisits: data.totalVisits ?? 0,
-        last24hVisits: data.last24hVisits ?? 0,
-        topCountries: data.topCountries ?? [],
-        lastUpdated: data.lastUpdated ?? new Date().toISOString(),
+        totalSignups,
+        totalVisits,
+        last24hVisits: edge24h ?? cached?.last24hVisits ?? 0,
+        topCountries: topCountries.length > 0 ? topCountries : (cached?.topCountries ?? []),
+        lastUpdated: new Date().toISOString(),
       };
 
       setStats(updated);
       safeSetItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
     } catch (err) {
       console.error('Failed to fetch community stats:', err);
-      const fallback: CommunityStats = {
-        totalSignups: 0,
-        totalVisits: 0,
-        last24hVisits: 0,
-        topCountries: [],
-        lastUpdated: new Date().toISOString(),
-      };
-      setStats(fallback);
-      safeSetItem(LOCAL_STORAGE_KEY, JSON.stringify(fallback));
-      setError('Failed to load community stats');
+      if (cached) {
+        setStats(cached);
+      } else {
+        setError('Failed to load community stats');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -143,6 +166,27 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
   React.useEffect(() => {
     if (!autoFetch) return;
     fetchStats();
+
+    const profilesChannel = supabase
+      .channel('community-stats-profiles')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        fetchStats();
+      })
+      .subscribe();
+
+    const handleLocal = () => fetchStats();
+    window.addEventListener('communityStatsUpdate', handleLocal);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'sahadhyayi_stats_sync') fetchStats();
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      void supabase.removeChannel(profilesChannel);
+      window.removeEventListener('communityStatsUpdate', handleLocal);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, [autoFetch, fetchStats]);
 
   return {

@@ -72,50 +72,113 @@ const CommunityStats = () => {
   });
 
   const fetchAllStats = React.useCallback(async () => {
+    let edgeSignups: number | null = null;
+    let edgeVisits: number | null = null;
+    let edge24h: number | null = null;
+    let topCountries: { code: string; count: number }[] = [];
+    let topCities: BreakdownItem[] = [];
+
     try {
       const { data, error } = await supabase.functions.invoke('community-stats');
-      if (error) throw error;
-      setStats({
-        registeredMembers: data.totalSignups ?? 0,
-        totalVisitors: data.totalVisits ?? 0,
-        last24hVisits: data.last24hVisits ?? 0,
-        topCountries: data.topCountries ?? [],
-        topCities: data.topCities ?? [],
-        lastUpdated: data.lastUpdated ?? new Date().toISOString(),
-        loading: false, error: null,
-      });
+      if (!error && data) {
+        edgeSignups = typeof data.totalSignups === 'number' ? data.totalSignups : null;
+        edgeVisits = typeof data.totalVisits === 'number' ? data.totalVisits : null;
+        edge24h = typeof data.last24hVisits === 'number' ? data.last24hVisits : null;
+        topCountries = data.topCountries ?? [];
+        topCities = data.topCities ?? [];
+      }
+    } catch {
+      // Fallback to direct queries below
+    }
+
+    try {
+      const [usersRpc, visitsRpc, profilesCountRes] = await Promise.all([
+        supabase.rpc('get_total_users_count').catch(() => ({ data: null })),
+        supabase.rpc('get_website_visit_count').catch(() => ({ data: null })),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).catch(() => ({ count: null })),
+      ]);
+
+      const rpcUsers = Number(usersRpc?.data) || 0;
+      const directProfiles = Number(profilesCountRes?.count) || 0;
+      const directUsers = Math.max(rpcUsers, directProfiles);
+
+      const rpcVisits = Number(visitsRpc?.data) || 0;
+
+      const registeredMembers = Math.max(edgeSignups ?? 0, directUsers);
+      const totalVisitors = Math.max(edgeVisits ?? 0, rpcVisits);
+
+      setStats(prev => ({
+        ...prev,
+        registeredMembers: registeredMembers || prev.registeredMembers || 0,
+        totalVisitors: totalVisitors || prev.totalVisitors || 0,
+        last24hVisits: edge24h ?? prev.last24hVisits,
+        topCountries: topCountries.length > 0 ? topCountries : prev.topCountries,
+        topCities: topCities.length > 0 ? topCities : prev.topCities,
+        lastUpdated: new Date().toISOString(),
+        loading: false,
+        error: null,
+      }));
     } catch (err) {
       console.error('Error fetching community stats:', err);
-      try {
-        const [usersRes, visitsRes] = await Promise.all([
-          supabase.rpc('get_total_users_count'),
-          supabase.rpc('get_website_visit_count'),
-        ]);
+      if (edgeSignups !== null) {
         setStats(prev => ({
           ...prev,
-          registeredMembers: Number(usersRes.data) || 0,
-          totalVisitors: Number(visitsRes.data) || 0,
-          loading: false, error: null,
+          registeredMembers: edgeSignups || 0,
+          totalVisitors: edgeVisits || 0,
+          last24hVisits: edge24h || 0,
+          topCountries,
+          topCities,
+          lastUpdated: new Date().toISOString(),
+          loading: false,
+          error: null,
         }));
-      } catch {
-        setStats(prev => ({ ...prev, loading: false, error: 'Unable to load community stats' }));
+      } else {
+        setStats(prev => ({ ...prev, loading: false, error: prev.registeredMembers > 0 ? null : 'Unable to load community stats' }));
       }
     }
   }, []);
 
   React.useEffect(() => {
     fetchAllStats();
+
+    // Realtime channel for live updates when new users sign up or visit
     const profilesChannel = supabase
-      .channel('profiles-changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => fetchAllStats())
+      .channel('community-profiles-pulse')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        fetchAllStats();
+      })
       .subscribe();
+
     const visitsChannel = supabase
-      .channel('visits-changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'website_visits' }, () => fetchAllStats())
+      .channel('community-visits-pulse')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'website_visits' }, () => {
+        fetchAllStats();
+      })
       .subscribe();
+
+    // Listen to in-app signup/signin dispatch events
+    const handleLocalUpdate = () => {
+      fetchAllStats();
+    };
+    window.addEventListener('communityStatsUpdate', handleLocalUpdate);
+
+    // Cross-tab synchronization
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'sahadhyayi_stats_sync') {
+        fetchAllStats();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // Fallback heartbeat every 30s
+    const interval = setInterval(fetchAllStats, 30_000);
+
     return () => {
-      supabase.removeChannel(profilesChannel);
-      supabase.removeChannel(visitsChannel);
+      void supabase.removeChannel(profilesChannel);
+      void supabase.removeChannel(visitsChannel);
+      window.removeEventListener('communityStatsUpdate', handleLocalUpdate);
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
     };
   }, [fetchAllStats]);
 
