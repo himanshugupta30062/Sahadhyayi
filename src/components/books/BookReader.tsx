@@ -54,7 +54,8 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const { addQuote } = useQuotes();
   const [searchParams] = useSearchParams();
   const pageParam = searchParams.get('page');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [readerTheme, setReaderTheme] = useState<'light' | 'sepia' | 'dark'>('light');
+  const isDarkMode = readerTheme === 'dark';
   const [fontSize, setFontSize] = useState(16);
   const [showToc, setShowToc] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -333,10 +334,10 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     }
   };
 
-  const applyTheme = () => {
+  const applyTheme = (theme: 'light' | 'sepia' | 'dark' = readerTheme) => {
     if (!renditionRef.current) return;
 
-    if (isDarkMode) {
+    if (theme === 'dark') {
       renditionRef.current.themes.default({
         "body": {
           "background": "#1a1a1a !important",
@@ -349,11 +350,30 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
           "color": "#ffffff !important"
         }
       });
+    } else if (theme === 'sepia') {
+      renditionRef.current.themes.default({
+        "body": {
+          "background": "#fbf0d9 !important",
+          "color": "#4a3c28 !important"
+        },
+        "p": {
+          "color": "#4a3c28 !important"
+        },
+        "h1, h2, h3, h4, h5, h6": {
+          "color": "#2c2214 !important"
+        }
+      });
     } else {
       renditionRef.current.themes.default({
         "body": {
           "background": "#ffffff !important",
           "color": "#1a1a1a !important"
+        },
+        "p": {
+          "color": "#1a1a1a !important"
+        },
+        "h1, h2, h3, h4, h5, h6": {
+          "color": "#111111 !important"
         }
       });
     }
@@ -548,18 +568,18 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     }
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+  const handleThemeChange = (theme: 'light' | 'sepia' | 'dark') => {
+    setReaderTheme(theme);
     if (isEpub) {
-      setTimeout(applyTheme, 100);
+      setTimeout(() => applyTheme(theme), 50);
     }
   };
 
   useEffect(() => {
     if (isEpub) {
-      applyTheme();
+      applyTheme(readerTheme);
     }
-  }, [isDarkMode]);
+  }, [readerTheme]);
 
   const formatReadingTime = (minutes: number) => {
     if (minutes < 60) return `${minutes}m`;
@@ -747,17 +767,38 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
             <Card className="bg-gray-50 border-gray-200">
               <CardContent className="p-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Dark Mode Toggle */}
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="dark-mode" className="flex items-center gap-2">
-                      {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-                      Dark Mode
-                    </Label>
-                    <Switch
-                      id="dark-mode"
-                      checked={isDarkMode}
-                      onCheckedChange={toggleDarkMode}
-                    />
+                  {/* Reading Theme Selector */}
+                  <div className="flex flex-col gap-1.5 justify-center">
+                    <Label className="text-xs text-muted-foreground">Reading Theme</Label>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={readerTheme === 'light' ? 'default' : 'outline'}
+                        onClick={() => handleThemeChange('light')}
+                        className={`h-7 px-2.5 text-xs ${readerTheme === 'light' ? 'bg-white text-black border border-gray-300 shadow-xs' : ''}`}
+                      >
+                        <Sun className="w-3 h-3 mr-1" /> Light
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={readerTheme === 'sepia' ? 'default' : 'outline'}
+                        onClick={() => handleThemeChange('sepia')}
+                        className={`h-7 px-2.5 text-xs ${readerTheme === 'sepia' ? 'bg-[#fbf0d9] text-[#4a3c28] border border-amber-300 shadow-xs' : 'text-amber-800'}`}
+                      >
+                        Sepia (Warm)
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={readerTheme === 'dark' ? 'default' : 'outline'}
+                        onClick={() => handleThemeChange('dark')}
+                        className={`h-7 px-2.5 text-xs ${readerTheme === 'dark' ? 'bg-gray-900 text-white shadow-xs' : ''}`}
+                      >
+                        <Moon className="w-3 h-3 mr-1" /> Dark
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Font Size Controls */}
@@ -876,8 +917,12 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
               <>
                 <div
                   ref={viewerRef}
-                  className={`w-full border rounded-lg overflow-hidden ${
-                    isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'
+                  className={`w-full border rounded-lg overflow-hidden transition-colors ${
+                    readerTheme === 'dark'
+                      ? 'bg-gray-900 border-gray-700'
+                      : readerTheme === 'sepia'
+                      ? 'bg-[#fbf0d9] border-amber-200'
+                      : 'bg-white border-gray-300'
                   } ${isFullscreen ? 'h-screen' : 'h-[600px]'}`}
                   style={{ fontSize: `${fontSize}px` }}
                 />

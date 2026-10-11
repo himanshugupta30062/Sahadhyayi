@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { useAddToPersonalLibrary, usePersonalLibrary } from '@/hooks/usePersonalLibrary';
 import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
 import GeneratedBookCover from '@/components/library/GeneratedBookCover';
+import { BookQualityBadge } from '@/components/library/BookQualityBadge';
 import type { Book } from '@/hooks/useLibraryBooks';
 
 
@@ -60,6 +61,27 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           />
         ) : (
           <GeneratedBookCover title={book.title} author={book.author} genre={book.genre} />
+        )}
+
+        {/* Quality / Access Badge Top Left */}
+        {book.accessStatus && (
+          <div className="absolute top-2 left-2 z-10 pointer-events-auto">
+            <BookQualityBadge
+              status={book.accessStatus}
+              qualityScore={book.qualityScore}
+              whyThisEdition={book.whyThisEdition}
+              size="sm"
+            />
+          </div>
+        )}
+
+        {/* Alternative Editions count pill Top Right */}
+        {Boolean(book.alternativeEditionsCount && book.alternativeEditionsCount > 0) && (
+          <div className="absolute top-2 right-2 z-10 pointer-events-auto">
+            <span className="bg-black/75 backdrop-blur-sm text-white/95 text-[10px] font-medium px-2 py-0.5 rounded-full shadow-sm border border-white/20">
+              +{book.alternativeEditionsCount} {book.alternativeEditionsCount === 1 ? 'edition' : 'editions'}
+            </span>
+          </div>
         )}
 
         {/* Enhanced Action Buttons Overlay - Icon Only with Hover Text */}
@@ -274,22 +296,40 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
 
         {/* Enhanced Metadata with better mobile layout */}
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 items-center">
             {book.genre && (
-              <span className="inline-block bg-sahadhyayi-amber-light text-sahadhyayi-warm px-2 py-1 rounded-full text-xs font-medium border border-sahadhyayi-amber/20">
+              <span className="inline-block bg-sahadhyayi-amber-light text-sahadhyayi-warm px-2 py-0.5 rounded-full text-xs font-medium border border-sahadhyayi-amber/20">
                 {book.genre}
               </span>
             )}
             {book.language && book.language !== 'English' && (
-              <span className="inline-block bg-accent text-accent-foreground px-2 py-1 rounded-full text-xs font-medium border border-border">
+              <span className="inline-block bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs font-medium border border-border">
                 {book.language}
+              </span>
+            )}
+            {/* Format badges */}
+            {book.epub_url && (
+              <span className="inline-block bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold px-1.5 py-0.5 rounded text-[10px] tracking-wide border border-emerald-300 dark:border-emerald-800">
+                EPUB
+              </span>
+            )}
+            {book.pdf_url && (
+              <span className="inline-block bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-bold px-1.5 py-0.5 rounded text-[10px] tracking-wide border border-blue-300 dark:border-blue-800">
+                PDF
               </span>
             )}
           </div>
           {book.publication_year && (
-            <span className="text-xs text-muted-foreground font-medium">{book.publication_year}</span>
+            <span className="text-xs text-muted-foreground font-medium shrink-0">{book.publication_year}</span>
           )}
         </div>
+
+        {/* Why this edition rationale snippet */}
+        {book.whyThisEdition && (
+          <p className="text-[11px] text-muted-foreground/90 italic line-clamp-1 border-t border-border/40 pt-1.5">
+            {book.whyThisEdition}
+          </p>
+        )}
 
       </CardContent>
     </Card>

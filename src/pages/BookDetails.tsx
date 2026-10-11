@@ -22,6 +22,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import StarRating from '@/components/StarRating';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import { logBookEvent } from '@/lib/supabase/events';
+import { BookEditionTransparency } from '@/components/books/BookEditionTransparency';
 
 
 const VALID_BOOK_TABS = ['connect', 'create', 'feedback', 'read'] as const;
@@ -331,6 +332,9 @@ const BookDetails = () => {
                   )}
                 </div>
               </div>
+
+              {/* Quality & Edition Transparency */}
+              <BookEditionTransparency book={book} />
 
               {/* Book Description */}
               {book.description && (

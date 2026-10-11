@@ -66,6 +66,8 @@ const CommunityGuidelines = lazy(() => import('./pages/CommunityGuidelines'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
+const AdminLibraryQuality = lazy(() => import('./pages/AdminLibraryQuality'));
+const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 // Optimized loading fallback
 const LoadingFallback = memo(({ message = "Loading..." }: { message?: string }) => (
@@ -393,6 +395,22 @@ const App = memo(() => {
                           element={
                             <Suspense fallback={<LoadingFallback />}>
                               <Feedback />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/admin/library-quality"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading quality dashboard..." />}>
+                              <AdminLibraryQuality />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/admin/feedback"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading feedback..." />}>
+                              <AdminFeedback />
                             </Suspense>
                           }
                         />
