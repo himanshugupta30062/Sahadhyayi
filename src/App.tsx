@@ -368,6 +368,10 @@ const App = memo(() => {
                           }
                         />
                         <Route
+                          path="/my-articles"
+                          element={<Navigate to="/articles/my" replace />}
+                        />
+                        <Route
                           path="/articles/:slug"
                           element={
                             <Suspense fallback={<LoadingFallback />}>

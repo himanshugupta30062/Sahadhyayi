@@ -36,7 +36,7 @@ export const useChallenges = () =>
       const mockChallenges: ReadingChallenge[] = [
         {
           id: '1',
-          name: '2024 Reading Challenge',
+          name: `${new Date().getFullYear()} Reading Challenge`,
           description: 'Read 12 books this year',
           goal: 12,
           challenge_type: 'yearly'

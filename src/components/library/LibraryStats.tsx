@@ -83,8 +83,8 @@ const LibraryStats = ({
                 <Target className="w-6 h-6 text-library-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">2024 Reading Goal</h3>
-                <p className="text-sm text-gray-600">{booksRead} of {readingGoal} books</p>
+                <h3 className="text-lg font-semibold text-foreground">{new Date().getFullYear()} Reading Goal</h3>
+                <p className="text-sm text-muted-foreground">{booksRead} of {readingGoal} books</p>
               </div>
             </div>
             <Badge variant={progressPercentage >= 100 ? 'default' : 'secondary'} className="px-3 py-1">
@@ -94,7 +94,7 @@ const LibraryStats = ({
           
           <Progress value={progressPercentage} className="h-3 mb-2" />
           
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="flex justify-between text-sm text-muted-foreground">
             <span>{readingGoal - booksRead} books to go</span>
             <span>{progressPercentage >= 100 ? 'Goal achieved! 🎉' : 'Keep going!'}</span>
           </div>
@@ -104,14 +104,14 @@ const LibraryStats = ({
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <Card key={stat.label} className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
+          <Card key={stat.label} className="bg-card border-border hover:shadow-md transition-all duration-200">
             <CardContent className="p-4 text-center">
               <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${stat.bgColor} mb-3`}>
                 <stat.icon className={`w-6 h-6 ${stat.color}`} />
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
-              <div className="text-sm font-medium text-gray-700 mb-1">{stat.label}</div>
-              <div className="text-xs text-gray-500">{stat.subtitle}</div>
+              <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
+              <div className="text-sm font-medium text-foreground/80 mb-1">{stat.label}</div>
+              <div className="text-xs text-muted-foreground">{stat.subtitle}</div>
             </CardContent>
           </Card>
         ))}
