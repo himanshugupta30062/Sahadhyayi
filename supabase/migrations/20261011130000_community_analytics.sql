@@ -122,7 +122,9 @@ BEGIN
       count(*) FILTER (WHERE event_name IN ('book_opened','discovery_book_opened') OR clean_page LIKE '/book/%')::integer AS book_opens,
       count(*) FILTER (WHERE event_name = 'book_saved')::integer AS book_saves,
       count(*) FILTER (WHERE event_name = 'reading_started')::integer AS reading_starts,
-      count(*) FILTER (WHERE event_name = 'reading_completed')::integer AS reading_completions,
+      (count(*) FILTER (WHERE event_name = 'reading_completed') +
+        (SELECT count(*) FROM public.reading_room_events e
+          WHERE e.kind = 'chapter_complete' AND e.created_at >= v_start))::integer AS reading_completions,
       count(*) FILTER (WHERE event_name = 'group_participation')::integer AS group_participation,
       count(DISTINCT user_id) FILTER (WHERE user_id IS NOT NULL AND visited_at >= now() - interval '7 days')::integer AS wau,
       count(DISTINCT user_id) FILTER (WHERE user_id IS NOT NULL AND visited_at >= now() - interval '30 days')::integer AS mau
