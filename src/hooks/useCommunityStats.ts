@@ -1,199 +1,60 @@
-
-import * as React from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 
-const LOCAL_STORAGE_KEY = 'community-stats';
-
-interface CountryVisit {
-  code: string;
+export interface CommunityActivityDay {
+  day: string;
   count: number;
 }
 
-interface CommunityStats {
-  totalSignups: number;
-  totalVisits: number;
-  last24hVisits: number;
-  topCountries: CountryVisit[];
+export interface CommunityStats {
+  registeredReaders: number;
+  eligibleBooks: number;
+  activeRooms: number;
+  communityActivity: number;
+  activityTrend: CommunityActivityDay[];
   lastUpdated: string;
 }
 
-export const useCommunityStats = (autoFetch: boolean = true) => {
-  const safeGetItem = React.useCallback((key: string): string | null => {
-    try {
-      return typeof window !== 'undefined' ? localStorage.getItem(key) : null;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  const safeSetItem = React.useCallback((key: string, value: string) => {
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(key, value);
+export const useCommunityStats = (autoFetch = true) => {
+  const queryClient = useQueryClient();
+  const query = useQuery<CommunityStats>({
+    queryKey: ['community-pulse'],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('community-stats');
+      if (error) throw error;
+      if (!data || typeof data.registeredReaders !== 'number') {
+        throw new Error('Community pulse returned incomplete data.');
       }
-    } catch {
-      // Ignore write errors (e.g. private mode)
-    }
-  }, []);
-
-  const getCachedStats = React.useCallback((): CommunityStats | null => {
-    const cached = safeGetItem(LOCAL_STORAGE_KEY);
-    if (!cached) return null;
-    try {
-      return JSON.parse(cached) as CommunityStats;
-    } catch {
-      return null;
-    }
-  }, [safeGetItem]);
-
-  const [stats, setStats] = React.useState<CommunityStats>(() => {
-    const cached = getCachedStats();
-    return (
-      cached || {
-        totalSignups: 0,
-        totalVisits: 0,
-        last24hVisits: 0,
-        topCountries: [],
-        lastUpdated: new Date().toISOString(),
-      }
-    );
+      return data as CommunityStats;
+    },
+    enabled: autoFetch,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: 1,
   });
-  const [isLoading, setIsLoading] = React.useState(autoFetch);
-  const [error, setError] = React.useState<string | null>(null);
 
-  const fetchStats = React.useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const fetchStats = async () => {
+    const result = await query.refetch();
+    return result.data ?? null;
+  };
 
-    const cached = getCachedStats();
-    if (cached) {
-      setStats(cached);
+  const joinCommunity = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return false;
+    const { data: profile } = await supabase.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
+    if (!profile) {
+      const { error } = await supabase.from('profiles').insert({ id: session.user.id });
+      if (error) return false;
     }
-
-    let edgeSignups: number | null = null;
-    let edgeVisits: number | null = null;
-    let edge24h: number | null = null;
-    let topCountries: CountryVisit[] = [];
-
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke('community-stats');
-      if (!fnError && data) {
-        edgeSignups = typeof data.totalSignups === 'number' ? data.totalSignups : null;
-        edgeVisits = typeof data.totalVisits === 'number' ? data.totalVisits : null;
-        edge24h = typeof data.last24hVisits === 'number' ? data.last24hVisits : null;
-        topCountries = data.topCountries ?? [];
-      }
-    } catch {
-      // Fallback to direct DB RPCs below
-    }
-
-    try {
-      const [usersRpc, visitsRpc, profilesCountRes] = await Promise.all([
-        supabase.rpc('get_total_users_count').catch(() => ({ data: null })),
-        supabase.rpc('get_website_visit_count').catch(() => ({ data: null })),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).catch(() => ({ count: null })),
-      ]);
-
-      const rpcUsers = Number(usersRpc?.data) || 0;
-      const directProfiles = Number(profilesCountRes?.count) || 0;
-      const directUsers = Math.max(rpcUsers, directProfiles);
-
-      const rpcVisits = Number(visitsRpc?.data) || 0;
-
-      const totalSignups = Math.max(edgeSignups ?? 0, directUsers, cached?.totalSignups ?? 0);
-      const totalVisits = Math.max(edgeVisits ?? 0, rpcVisits, cached?.totalVisits ?? 0);
-
-      const updated: CommunityStats = {
-        totalSignups,
-        totalVisits,
-        last24hVisits: edge24h ?? cached?.last24hVisits ?? 0,
-        topCountries: topCountries.length > 0 ? topCountries : (cached?.topCountries ?? []),
-        lastUpdated: new Date().toISOString(),
-      };
-
-      setStats(updated);
-      safeSetItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-    } catch (err) {
-      console.error('Failed to fetch community stats:', err);
-      if (cached) {
-        setStats(cached);
-      } else {
-        setError('Failed to load community stats');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [getCachedStats, safeSetItem]);
-
-  const joinCommunity = React.useCallback(async () => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-
-      if (!userId) return false;
-
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (!existingProfile) {
-        const { error } = await supabase
-          .from('profiles')
-          .insert({ id: userId });
-
-        if (error) throw error;
-
-        setStats(prev => ({
-          ...prev,
-          totalSignups: prev.totalSignups + 1,
-          lastUpdated: new Date().toISOString(),
-        }));
-      }
-
-      await fetchStats();
-
-      return true;
-    } catch (err) {
-      console.error('Failed to join community:', err);
-      return false;
-    }
-  }, [fetchStats]);
-
-  React.useEffect(() => {
-    if (!autoFetch) return;
-    fetchStats();
-
-    const profilesChannel = supabase
-      .channel('community-stats-profiles')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchStats();
-      })
-      .subscribe();
-
-    const handleLocal = () => fetchStats();
-    window.addEventListener('communityStatsUpdate', handleLocal);
-
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'sahadhyayi_stats_sync') fetchStats();
-    };
-    window.addEventListener('storage', handleStorage);
-
-    return () => {
-      void supabase.removeChannel(profilesChannel);
-      window.removeEventListener('communityStatsUpdate', handleLocal);
-      window.removeEventListener('storage', handleStorage);
-    };
-  }, [autoFetch, fetchStats]);
+    await queryClient.invalidateQueries({ queryKey: ['community-pulse'] });
+    return true;
+  };
 
   return {
-    stats,
-    isLoading,
-    error,
+    stats: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error,
     fetchStats,
-    joinCommunity
+    joinCommunity,
   };
 };
