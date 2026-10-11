@@ -90,23 +90,21 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
       let uploadedImageUrl: string | undefined;
 
       // Upload image to Supabase Storage if present
-      if (selectedImage && user) {
-        try {
+      if (selectedImage) {
           const { supabase } = await import('@/integrations/supabase/client');
           const ext = selectedImage.name.split('.').pop() || 'jpg';
           const path = `user-uploads/${user.id}/${Date.now()}.${ext}`;
           const { error: uploadError } = await supabase.storage
             .from('books')
             .upload(path, selectedImage, { cacheControl: '3600', upsert: false });
-          if (!uploadError) {
-            const { data: pub } = supabase.storage.from('books').getPublicUrl(path);
-            uploadedImageUrl = pub?.publicUrl;
-          } else {
-            console.warn('Image upload warning:', uploadError);
+          if (uploadError) {
+            throw new Error('Your photo could not be uploaded. Your draft is still here; please try again.');
           }
-        } catch (imgErr) {
-          console.warn('Image upload error (proceeding with post):', imgErr);
-        }
+          const { data: pub } = supabase.storage.from('books').getPublicUrl(path);
+          uploadedImageUrl = pub?.publicUrl;
+          if (!uploadedImageUrl) {
+            throw new Error('Your photo could not be confirmed. Your draft is still here; please try again.');
+          }
       }
 
       await createPost.mutateAsync({
