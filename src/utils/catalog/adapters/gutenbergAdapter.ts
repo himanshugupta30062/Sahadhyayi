@@ -118,3 +118,4 @@ export class GutenbergAdapter implements BookProviderAdapter {
     }
   }
 }
+

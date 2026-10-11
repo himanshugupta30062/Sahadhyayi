@@ -128,3 +128,4 @@ export class OpenTextbookAdapter implements BookProviderAdapter {
     }
   }
 }
+

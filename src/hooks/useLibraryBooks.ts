@@ -37,75 +37,91 @@ export interface Book {
 const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
+// Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
-  { label: 'Supabase cover + PDF combo (e.g. Godan)', points: '+5000', priority: 'highest' },
-  { label: 'PDF from Supabase storage', points: '+3000', priority: 'highest' },
-  { label: 'Cover image available', points: '+2000', priority: 'highest' },
-  { label: 'High-res cover source (Supabase/OpenLibrary)', points: 'up to +500', priority: 'highest' },
-  { label: 'PDF download available', points: '+1000', priority: 'high' },
-  { label: 'Verified author name', points: '+300', priority: 'high' },
-  { label: 'Science/Physics/Cosmology genre', points: '+200', priority: 'medium' },
-  { label: 'Fiction/Novel/Fantasy genre', points: '+150', priority: 'medium' },
-  { label: 'Has description', points: '+40', priority: 'low' },
-  { label: 'Has author bio', points: '+30', priority: 'low' },
-  { label: 'Has genre tag', points: '+20', priority: 'low' },
-  { label: 'Has publication year', points: '+15', priority: 'low' },
-  { label: 'Has page count', points: '+10', priority: 'low' },
-  { label: 'Has ISBN', points: '+8', priority: 'low' },
-  { label: 'Non-English language', points: '+5', priority: 'low' },
-  { label: 'NCERT/CBSE textbooks', points: '−100k', priority: 'demoted' },
+  { label: 'Reflowable EPUB / Complete full text', points: '+300', priority: 'highest' },
+  { label: 'Verified ISBN & Bibliographic metadata', points: '+200', priority: 'high' },
+  { label: 'Direct open reading access', points: '+150', priority: 'high' },
+  { label: 'Editorial assurance (Standard Ebooks / Open Textbooks / Gutenberg)', points: '+150', priority: 'high' },
+  { label: 'Comprehensive synopsis & pagination', points: '+100', priority: 'medium' },
+  { label: 'Verified high-res cover art', points: '+50', priority: 'medium' },
+  { label: 'Ghost/empty record demotion', points: '−400', priority: 'demoted' },
   { label: 'Tie-breaker', points: 'newest first', priority: 'info' },
 ];
 
 // Function to calculate book completeness score (higher score = better book)
 export const getBookCompletenessScore = (book: any): number => {
   let score = 0;
-  // Tier 0: Cover image is king — books with covers ALWAYS appear first
-  const cover = normalizeCoverUrl(book.cover_image_url);
-  const hasSupabaseCover = cover && cover.includes('supabase');
-  if (cover) {
-    score += 2000;
-    score += getCoverQualityScore(cover);
+
+  // Content integrity & readability (max 300)
+  const pdf = book.pdf_url || '';
+  const epub = book.epub_url || '';
+  const isGooglePreview = pdf && pdf.includes('books.google.com');
+
+  if (epub || (pdf && pdf.includes('standardebooks'))) {
+    score += 300;
+  } else if (pdf && !isGooglePreview) {
+    score += 240;
+  } else if (isGooglePreview) {
+    score += 50;
   }
-  // Tier 1: Essential fields
-  const hasSupabasePdf = book.pdf_url && (book.pdf_url as string).includes('supabase');
-  if (book.pdf_url) {
-    score += 1000;
-    // Extra boost for books hosted directly in our Supabase storage
-    if (hasSupabasePdf) score += 3000;
+
+  // Bibliographic identity (max 200)
+  if (book.author && book.author.trim() && book.author !== 'Unknown Author') {
+    score += 80;
   }
-  // Premium combo: books with BOTH Supabase cover AND Supabase PDF
-  // (e.g. Godan, The Theory of Everything) get top priority on page 1
-  if (hasSupabaseCover && hasSupabasePdf) score += 5000;
-  if (book.author && book.author.trim() && book.author !== 'Unknown Author') score += 300;
-  // Tier 2: Rich metadata
-  if (book.description) score += 40;
-  if (book.author_bio) score += 30;
+  if (book.isbn && book.isbn.replace(/[^0-9X]/gi, '').length >= 10) {
+    score += 80;
+  }
+  if (book.publication_year && book.publication_year > 1400) {
+    score += 40;
+  }
+
+  // Verified access (max 150)
+  if (epub || (pdf && !isGooglePreview)) {
+    score += 150;
+  } else if (isGooglePreview) {
+    score += 40;
+  }
+
+  // Editorial assurance (max 150)
+  const source = (pdf || '').toLowerCase();
+  if (source.includes('standardebooks')) {
+    score += 150;
+  } else if (source.includes('open.umn.edu') || source.includes('openstax')) {
+    score += 140;
+  } else if (source.includes('gutenberg')) {
+    score += 120;
+  } else if (source.includes('archive.org')) {
+    score += 90;
+  } else {
+    score += 40;
+  }
+
+  // Metadata completeness (max 100)
+  if (book.description && book.description.length >= 100) score += 40;
+  else if (book.description) score += 20;
   if (book.genre) score += 20;
-  if (book.publication_year) score += 15;
-  if (book.pages) score += 10;
-  if (book.isbn) score += 8;
-  if (book.language && book.language !== 'English') score += 5;
-  // Boost science & fiction genres
-  const genre = (book.genre || '').toLowerCase();
-  if (genre.includes('science') || genre.includes('physics') || genre.includes('cosmology') || genre.includes('astronomy')) score += 200;
-  if (genre.includes('fiction') || genre.includes('novel') || genre.includes('fantasy') || genre.includes('sci-fi')) score += 150;
+  if (book.pages && book.pages > 10) score += 20;
+  if (book.author_bio) score += 20;
 
-  // Hard-demote NCERT/CBSE books globally
-  const title = (book.title || '').toLowerCase();
-  const author = (book.author || '').toLowerCase();
-  const description = (book.description || '').toLowerCase();
-  const isNcertOrCbse =
-    title.includes('ncert') ||
-    author.includes('ncert') ||
-    genre.includes('ncert') ||
-    description.includes('ncert') ||
-    title.includes('cbse') ||
-    author.includes('cbse') ||
-    genre.includes('cbse') ||
-    description.includes('cbse');
+  // Cover presentation (max 50)
+  const cover = normalizeCoverUrl(book.cover_image_url);
+  if (cover) {
+    score += 30;
+    score += Math.min(20, Math.round(getCoverQualityScore(cover) / 25));
+  }
 
-  if (isNcertOrCbse) score -= 100000;
+  // Demotions for empty ghost records
+  if (!cover && !pdf && !epub && (!book.description || book.description.length < 20)) {
+    score -= 400;
+  }
+
+  // Preview cap
+  if (isGooglePreview && score > 350) {
+    score = 350;
+  }
+
   return score;
 };
 

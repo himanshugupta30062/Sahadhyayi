@@ -185,3 +185,4 @@ export const BookEditionTransparency: React.FC<BookEditionTransparencyProps> = (
     </div>
   );
 };
+

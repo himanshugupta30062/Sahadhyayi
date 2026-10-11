@@ -148,6 +148,13 @@ export function normalizeIsbn(rawIsbn?: string | null): NormalizedIsbn {
 }
 
 /**
+ * Validates whether an ISBN-10 or ISBN-13 is mathematically valid
+ */
+export function validateISBN(rawIsbn?: string | null): boolean {
+  return normalizeIsbn(rawIsbn).isValid;
+}
+
+/**
  * Creates a stable canonical cluster key for matching editions of the same work.
  * Preserves Unicode letters/numbers while normalizing case and punctuation.
  */

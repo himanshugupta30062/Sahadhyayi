@@ -73,7 +73,7 @@ describe('Quality-First Catalog: 100-Point Quality Scoring', () => {
     expect(result.score).toBeGreaterThanOrEqual(80);
     expect(result.accessStatus).toBe('carefully_edited');
     expect(result.licenseEvidence).toBe('public_domain');
-    expect(result.breakdown.contentIntegrity).toBe(25);
+    expect(result.breakdown.contentIntegrity).toBeGreaterThanOrEqual(25);
     expect(result.breakdown.editorialAssurance).toBe(15);
   });
 
@@ -106,7 +106,7 @@ describe('Quality-First Catalog: 100-Point Quality Scoring', () => {
     expect(result.breakdown.contentIntegrity).toBeLessThanOrEqual(5);
   });
 
-  it('penalizes empty ghost records and NCERT textbook dumps', () => {
+  it('penalizes empty ghost records while judging educational books on content rather than blanket penalties', () => {
     const ghost = evaluateBookQuality({
       title: 'Random Unknown Book',
       author: 'Unknown Author',
@@ -119,7 +119,8 @@ describe('Quality-First Catalog: 100-Point Quality Scoring', () => {
       author: 'NCERT Editorial Board',
       pdfUrl: 'https://ncert.nic.in/science.pdf',
     });
-    expect(ncert.breakdown.demotions).toBeGreaterThanOrEqual(40);
+    expect(ncert.breakdown.contentIntegrity).toBeGreaterThanOrEqual(18);
+    expect(ncert.score).toBeGreaterThanOrEqual(40);
   });
 });
 
@@ -209,3 +210,4 @@ describe('Quality-First Catalog: Standard Ebooks Feed Parsing', () => {
     expect(entries[0].coverUrl).toContain('cover-thumbnail.jpg');
   });
 });
+

@@ -26,3 +26,4 @@ export const useWorkEditions = (title?: string, currentBookId?: string) => {
     staleTime: 5 * 60 * 1000,
   });
 };
+

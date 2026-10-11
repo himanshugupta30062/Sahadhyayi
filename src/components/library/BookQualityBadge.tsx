@@ -111,3 +111,4 @@ export const BookQualityBadge: React.FC<BookQualityBadgeProps> = ({
     </TooltipProvider>
   );
 };
+
