@@ -117,7 +117,7 @@ const CurrentReads: React.FC = () => {
                 {item.books_library?.cover_image_url ? (
                   <img
                     src={item.books_library.cover_image_url}
-                    alt={item.books_library.title}
+                    alt={item.books_library?.title || 'Book cover'}
                     className="w-16 h-24 object-cover rounded"
                   />
                 ) : (
@@ -126,7 +126,9 @@ const CurrentReads: React.FC = () => {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-sm truncate">{item.books_library.title}</h4>
+                  <h4 className="font-semibold text-sm truncate">
+                    {item.books_library?.title || 'Untitled Book'}
+                  </h4>
                   {typeof item.progress === 'number' && (
                     <div className="mt-2">
                       <Progress value={item.progress} className="h-2" />
