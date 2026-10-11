@@ -161,10 +161,21 @@ const AdminAnalytics = () => {
             <Card>
               <CardHeader><CardTitle className="text-base">Reading engagement</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                {Object.entries(data.engagement).map(([key, value]) => <div key={key} className="rounded-lg bg-muted/40 p-3">
-                  <div className="text-xl font-semibold tabular-nums">{value.toLocaleString()}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">{key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase())}</div>
-                </div>)}
+                {Object.entries(data.engagement).map(([key, value]) => {
+                  const labels: Record<string, string> = {
+                    weeklyActiveReaders: 'Weekly active readers',
+                    monthlyActiveReaders: 'Monthly active readers',
+                    bookOpens: 'Book opens',
+                    bookSaves: 'Book bookmarks saved',
+                    readingStarts: 'Reading starts',
+                    readingCompletions: 'Chapter completions',
+                    groupParticipation: 'Group joins',
+                  };
+                  return <div key={key} className="rounded-lg bg-muted/40 p-3">
+                    <div className="text-xl font-semibold tabular-nums">{value.toLocaleString()}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{labels[key] ?? key}</div>
+                  </div>;
+                })}
               </CardContent>
             </Card>
             <Card>
