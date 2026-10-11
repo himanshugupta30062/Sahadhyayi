@@ -119,7 +119,7 @@ BEGIN
     GROUP BY d.day ORDER BY d.day
   ), engagements AS (
     SELECT
-      count(*) FILTER (WHERE event_name IN ('book_opened','discovery_book_opened') OR clean_page LIKE '/book/%')::integer AS book_opens,
+      count(*) FILTER (WHERE (event_type = 'pageview' AND clean_page LIKE '/book/%') OR event_name = 'book_opened')::integer AS book_opens,
       count(*) FILTER (WHERE event_name = 'book_saved')::integer AS book_saves,
       count(*) FILTER (WHERE event_name = 'reading_started')::integer AS reading_starts,
       (count(*) FILTER (WHERE event_name = 'reading_completed') +
