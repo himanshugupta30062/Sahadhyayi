@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BookOpen, Users } from 'lucide-react';
+import { ArrowRight, BookOpen, Users, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import SignInLink from '@/components/SignInLink';
