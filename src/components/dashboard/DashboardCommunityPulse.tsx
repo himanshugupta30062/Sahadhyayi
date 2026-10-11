@@ -4,10 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookOpen, ChevronRight, MessageSquare, Radio, Users } from 'lucide-react';
-import { useReadingRooms } from '@/hooks/useReadingRoom';
+import { useReadingRoomLive, useReadingRooms } from '@/hooks/useReadingRoom';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
 import { useSocialPosts } from '@/hooks/useSocialPosts';
+
+const RoomParticipantCount = ({ room }: { room: { id: string; book_id: string; name: string } }) => {
+  const { presence } = useReadingRoomLive(room, false, null);
+  return <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{presence.length} here</span>;
+};
 
 const DashboardCommunityPulse: React.FC = () => {
   const { data: rooms = [], isLoading: roomsLoading } = useReadingRooms();
@@ -51,7 +56,7 @@ const DashboardCommunityPulse: React.FC = () => {
         <section aria-labelledby="dashboard-rooms-title" className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 id="dashboard-rooms-title" className="flex items-center gap-2 text-xs font-semibold text-muted-foreground"><Radio className="h-3.5 w-3.5" />Reading rooms</h3>
-            <span className="text-xs text-muted-foreground">{rooms.length} available</span>
+            <span className="text-xs text-muted-foreground">{rooms.length} listed</span>
           </div>
           {roomsLoading ? <div className="h-14 animate-pulse rounded-lg bg-muted" /> : rooms.length ? (
             <div className="space-y-2">
@@ -66,7 +71,7 @@ const DashboardCommunityPulse: React.FC = () => {
                       <p className="truncate text-[11px] text-muted-foreground">{room.books_library?.title || 'General reading'}</p>
                     </div>
                   </div>
-                  <Link to={`/social?tab=rooms&roomId=${room.id}`}><Button size="sm" variant="outline" className="h-7 shrink-0 px-2.5 text-xs">Join</Button></Link>
+                  <div className="flex shrink-0 items-center gap-2"><RoomParticipantCount room={room} /><Link to={`/social?tab=rooms&roomId=${room.id}`}><Button size="sm" variant="outline" className="h-7 px-2.5 text-xs">Join</Button></Link></div>
                 </div>
               ))}
             </div>
@@ -76,12 +81,12 @@ const DashboardCommunityPulse: React.FC = () => {
               <Link to="/social?tab=rooms"><Button size="sm" variant="outline" className="mt-2 h-7 text-xs">Start a room</Button></Link>
             </div>
           )}
-          <p className="text-[11px] text-muted-foreground">Rooms are listed as available; live participant presence is not tracked here.</p>
+          <p className="text-[11px] text-muted-foreground">Participant counts use each room’s current Realtime presence.</p>
         </section>
 
         <section aria-labelledby="dashboard-discussions-title" className="space-y-2 border-t border-border pt-4">
           <div className="flex items-center justify-between">
-            <h3 id="dashboard-discussions-title" className="text-xs font-semibold text-muted-foreground">Recent public posts</h3>
+            <h3 id="dashboard-discussions-title" className="text-xs font-semibold text-muted-foreground">Recent discussions</h3>
             <Link to="/social" className="text-xs text-brand-primary hover:underline">See all</Link>
           </div>
           {postsLoading ? <div className="h-14 animate-pulse rounded-lg bg-muted" /> : postsError ? (
