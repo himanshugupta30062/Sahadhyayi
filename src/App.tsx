@@ -67,6 +67,7 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const AdminLibraryQuality = lazy(() => import('./pages/AdminLibraryQuality'));
+const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 // Optimized loading fallback
@@ -410,6 +411,16 @@ const App = memo(() => {
                             <Suspense fallback={<LoadingFallback message="Loading quality dashboard..." />}>
                               <AdminLibraryQuality />
                             </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/admin/analytics"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading analytics..." />}>
+                                <AdminAnalytics />
+                              </Suspense>
+                            </ProtectedRoute>
                           }
                         />
                         <Route
