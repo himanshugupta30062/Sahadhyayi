@@ -1,14 +1,16 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BookOpen, Users, Star } from 'lucide-react';
+import { ArrowRight, BookOpen, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import SignInLink from '@/components/SignInLink';
 import { useLibraryBookCount } from '@/hooks/useLibraryBookCount';
+import { useCommunityStats } from '@/hooks/useCommunityStats';
 
 const ImprovedHero = () => {
   const { user } = useAuth();
   const { data: totalBooks, isLoading, isError } = useLibraryBookCount();
+  const { stats: communityStats } = useCommunityStats();
   const booksAvailable = isLoading || isError || totalBooks == null
     ? '—'
     : totalBooks.toLocaleString();
@@ -72,7 +74,7 @@ const ImprovedHero = () => {
           </div>
           
           {/* Social Proof */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <BookOpen className="w-6 h-6 text-white/80 mr-2" />
@@ -83,16 +85,9 @@ const ImprovedHero = () => {
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <Users className="w-6 h-6 text-white/80 mr-2" />
-                <span className="text-2xl font-bold text-white">3,200+</span>
+                <span className="text-2xl font-bold text-white">{communityStats?.registeredReaders.toLocaleString() ?? '—'}</span>
               </div>
-              <p className="text-white/70">Active Readers</p>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Star className="w-6 h-6 text-white/80 mr-2" />
-                <span className="text-2xl font-bold text-white">4.8</span>
-              </div>
-              <p className="text-white/70">Average Rating</p>
+              <p className="text-white/70">Registered Readers</p>
             </div>
           </div>
         </div>
