@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Search, TrendingUp, Users, Star, Sparkles } from 'lucide-react';
+import { BookOpen, Search, Star, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
@@ -12,19 +12,13 @@ interface LibraryHeroProps {
   onSearchChange: (query: string) => void;
   onSearch: () => void;
   totalBooks?: number | null;
-  activeReaders?: number;
-  avgRating?: number;
-  booksAddedToday?: number;
 }
 
 const LibraryHero = ({ 
   searchQuery, 
   onSearchChange, 
   onSearch, 
-  totalBooks,
-  activeReaders = 2847,
-  avgRating = 4.8,
-  booksAddedToday = 47
+  totalBooks
 }: LibraryHeroProps) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -60,17 +54,12 @@ const LibraryHero = ({
     onSearch();
   };
 
-  const stats = [
-    {
-      icon: BookOpen,
-      label: 'Books Available',
-      value: totalBooks?.toLocaleString() ?? '—',
-      color: 'text-library-primary',
-    },
-    { icon: Users, label: 'Active Readers', value: activeReaders.toLocaleString(), color: 'text-library-secondary' },
-    { icon: Star, label: 'Avg Rating', value: avgRating.toString(), color: 'text-yellow-600' },
-    { icon: TrendingUp, label: 'Books Added Today', value: booksAddedToday.toString(), color: 'text-green-600' },
-  ];
+  const stats = [{
+    icon: BookOpen,
+    label: 'Books Available',
+    value: totalBooks == null ? '—' : totalBooks.toLocaleString(),
+    color: 'text-library-primary',
+  }];
 
   return (
     <div className="relative min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] overflow-hidden">
