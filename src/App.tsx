@@ -13,6 +13,7 @@ import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRF
 import { AuthProvider } from "./contexts/AuthContext";
 import QuotesProvider from "./contexts/QuotesContext";
 import BookExpertProvider from "./contexts/BookExpertContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
@@ -141,14 +142,15 @@ const App = memo(() => {
 
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <AuthProvider>
-              <QuotesProvider>
-                <BookExpertProvider>
-                  <ScrollToTop />
-                  <PageTracker />
+      <ThemeProvider>
+        <BrowserRouter>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <AuthProvider>
+                <QuotesProvider>
+                  <BookExpertProvider>
+                    <ScrollToTop />
+                    <PageTracker />
                   <div className="min-h-screen bg-background text-foreground flex flex-col">
                     {/* Skip to content link for accessibility */}
                     <a
@@ -494,6 +496,7 @@ const App = memo(() => {
           </TooltipProvider>
         </QueryClientProvider>
       </BrowserRouter>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 });

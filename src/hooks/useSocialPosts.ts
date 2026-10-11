@@ -41,8 +41,8 @@ export const useSocialPosts = () => {
   const { toast } = useToast();
 
   // Fetch posts with user info and book details
-  const { data: posts = [], isLoading } = useQuery({
-    queryKey: ['social-posts'],
+  const { data: posts = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['social-posts', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('posts')
@@ -80,7 +80,7 @@ export const useSocialPosts = () => {
 
       return data || [];
     },
-    enabled: !!user,
+    enabled: true,
   });
 
   // Real-time subscription for new posts
@@ -147,7 +147,7 @@ export const useSocialPosts = () => {
     };
   }, [user?.id, queryClient, toast]);
 
-  return { posts, isLoading };
+  return { posts, isLoading, error, refetch };
 };
 
 export const useCreatePost = () => {

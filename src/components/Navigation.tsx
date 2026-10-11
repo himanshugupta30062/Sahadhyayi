@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown, User, LogOut, Settings, Search, MessageCircle, LogIn } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Settings, Search, MessageCircle, LogIn, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ContactFormDialog from "@/components/ContactFormDialog";
 import { useAuth } from "@/contexts/authHelpers";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,7 @@ const Navigation = () => {
   const [scrolled, setScrolled] = React.useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -152,6 +154,20 @@ const Navigation = () => {
                         Cmd+K
                       </span>
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleTheme}
+                      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                      className="h-9 w-9 text-foreground hover:bg-muted"
+                    >
+                      {theme === 'dark' ? (
+                        <Sun className="w-4 h-4 text-amber-400" />
+                      ) : (
+                        <Moon className="w-4 h-4 text-slate-700" />
+                      )}
+                    </Button>
                     <MessageDropdown />
                     <NotificationDropdown />
                     <DropdownMenu>
@@ -189,6 +205,20 @@ const Navigation = () => {
                   </>
                 ) : (
                   <div className="flex items-center space-x-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleTheme}
+                      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                      className="h-9 w-9 text-foreground hover:bg-muted"
+                    >
+                      {theme === 'dark' ? (
+                        <Sun className="w-4 h-4 text-amber-400" />
+                      ) : (
+                        <Moon className="w-4 h-4 text-slate-700" />
+                      )}
+                    </Button>
                     <ContactFormDialog
                       trigger={
                         <Button variant="outline" size="sm" className="border-amber-500 text-amber-600 hover:bg-amber-50 font-medium">
@@ -212,6 +242,20 @@ const Navigation = () => {
           {/* Mobile menu button */}
           {isMobile && (
             <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                className="h-9 w-9 text-foreground hover:bg-muted p-1"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-700" />
+                )}
+              </Button>
               {user && (
                 <>
                   <MessageDropdown />

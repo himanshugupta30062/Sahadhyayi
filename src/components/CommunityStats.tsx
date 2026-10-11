@@ -72,11 +72,28 @@ const StatCard = ({ icon: Icon, label, value, subtitle, gradient }: {
 
 const CommunityStats = () => {
   const [cityTimeframe, setCityTimeframe] = React.useState<'all' | '24h'>('all');
-  const [stats, setStats] = React.useState<CommunityStatsData>({
-    registeredMembers: 0, totalVisitors: 0, last24hVisits: 0,
-    topCountries: [], topCities: [], topCities24h: [],
-    mostVisitedCity24h: null,
-    lastUpdated: null, loading: true, error: null,
+  const [stats, setStats] = React.useState<CommunityStatsData>(() => {
+    let cached: any = null;
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem('community-stats');
+        cached = raw ? JSON.parse(raw) : null;
+      }
+    } catch {
+      cached = null;
+    }
+    return {
+      registeredMembers: cached?.totalSignups || 0,
+      totalVisitors: cached?.totalVisits || 0,
+      last24hVisits: cached?.last24hVisits || 0,
+      topCountries: cached?.topCountries || [],
+      topCities: [],
+      topCities24h: [],
+      mostVisitedCity24h: null,
+      lastUpdated: cached?.lastUpdated || null,
+      loading: !cached,
+      error: null,
+    };
   });
 
   const fetchAllStats = React.useCallback(async () => {
@@ -243,7 +260,11 @@ const CommunityStats = () => {
           error: null,
         }));
       } else {
-        setStats(prev => ({ ...prev, loading: false, error: prev.registeredMembers > 0 ? null : 'Unable to load community stats' }));
+        setStats(prev => ({
+          ...prev,
+          loading: false,
+          error: (prev.registeredMembers > 0 || prev.totalVisitors > 0) ? null : 'Community metrics currently syncing...',
+        }));
       }
     }
   }, []);
