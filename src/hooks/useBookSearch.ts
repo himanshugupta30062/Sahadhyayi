@@ -150,7 +150,10 @@ export const useBookSearch = () => {
         throw new Error(dbError.message);
       }
 
-      setSearchResults(data || []);
+      const activeBooks = (data || []).filter(
+        (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
+      );
+      setSearchResults(activeBooks);
     } catch (err) {
       console.error('Error fetching books:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch books');

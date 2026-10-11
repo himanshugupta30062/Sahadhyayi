@@ -34,7 +34,7 @@ export default function BookSelector({ onSelect, onBack, loading }: BookSelector
       try {
         let query = supabase
           .from('books_library')
-          .select('id, title, author, cover_image_url, genre')
+          .select('id, title, author, cover_image_url, genre, status, catalog_status')
           .limit(50);
 
         if (searchQuery) {
@@ -43,7 +43,10 @@ export default function BookSelector({ onSelect, onBack, loading }: BookSelector
 
         const { data, error } = await query;
         if (error) throw error;
-        setBooks(data || []);
+        const activeBooks = (data || []).filter(
+          (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
+        );
+        setBooks(activeBooks);
       } catch (err) {
         console.error('Error fetching books:', err);
       } finally {

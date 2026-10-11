@@ -30,15 +30,19 @@ export async function searchLibrary(
   // This will be replaced with the actual RPC call once the function is created
   const { data, error } = await supabase
     .from('books_library')
-    .select('id, title, author, genre, language, cover_image_url, description')
+    .select('id, title, author, genre, language, cover_image_url, description, status, catalog_status')
     .ilike('title', `%${query.trim()}%`)
     .limit(limit)
     .abortSignal(options.signal)
     
   if (error) throw error
   
+  const activeBooks = (data || []).filter(
+    (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
+  );
+
   // Transform the data to match BookSearchRow format
-  return (data || []).map((book: any) => ({
+  return activeBooks.map((book: any) => ({
     id: book.id,
     title: book.title,
     author: book.author || '',

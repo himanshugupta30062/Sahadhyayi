@@ -13,14 +13,18 @@ export const useWorkEditions = (title?: string, currentBookId?: string) => {
 
       const { data, error } = await supabase
         .from('books_library')
-        .select('id, title, author, publication_year, cover_image_url, pdf_url, language, pages, genre, description')
+        .select('id, title, author, publication_year, cover_image_url, pdf_url, language, pages, genre, description, status, catalog_status')
         .ilike('title', `%${cleanTitle}%`)
         .neq('id', currentBookId)
-        .limit(6);
+        .limit(10);
 
       if (error || !Array.isArray(data)) return [];
 
-      return data.map(row => mapRawToEdition(row));
+      const activeEditions = data.filter(
+        (row: any) => (!row.catalog_status || row.catalog_status === 'active') && (!row.status || row.status === 'active')
+      ).slice(0, 6);
+
+      return activeEditions.map(row => mapRawToEdition(row));
     },
     enabled: Boolean(title && currentBookId),
     staleTime: 5 * 60 * 1000,
