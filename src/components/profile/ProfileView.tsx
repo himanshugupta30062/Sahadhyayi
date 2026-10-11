@@ -1,21 +1,28 @@
 import React, { useRef, useState } from "react";
-import { useUserProfile, useUpsertUserProfile, useDeleteUserProfile, uploadProfilePicture, UserProfile } from "@/hooks/useUserProfile";
+import { useNavigate, Link } from "react-router-dom";
+import { useUserProfile, useUpsertUserProfile, useDeleteUserProfile, uploadProfilePicture } from "@/hooks/useUserProfile";
+import { useUserBookshelf } from "@/hooks/useUserBookshelf";
 import { useAuth } from "@/contexts/authHelpers";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
-import { Calendar } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { ProfileFormValues } from "./types";
-import { Pencil, Trash, MapPin, AtSign, Mail, Hash, User, Link2 } from "lucide-react";
-import { format } from "date-fns";
+import { 
+  Pencil, 
+  Trash, 
+  BookOpen, 
+  Share2, 
+  ArrowRight, 
+  Dna, 
+  Quote, 
+  Radio, 
+  Sparkles, 
+  Library, 
+  CheckCircle,
+  FileText
+} from "lucide-react";
 import ProfileAvatar from "./ProfileAvatar";
 import ProfileInfo from "./ProfileInfo";
 import ProfileTags from "./ProfileTags";
@@ -23,30 +30,8 @@ import ProfileSocialLinks from "./ProfileSocialLinks";
 import UserBadges from "./UserBadges";
 import EditProfileDialog from "./EditProfileDialog";
 import DeleteProfileDialog from "./DeleteProfileDialog";
-import { openPopupWindow } from "./openPopupWindow";
-import { useNavigate } from "react-router-dom";
 import { useReadingDna } from "@/hooks/useReadingDna";
 import { ReadingDnaCard } from "@/components/social/dna/ReadingDnaCard";
-import { Dna, Quote, Radio, Sparkles, ArrowRight } from "lucide-react";
-
-// Options for gender
-const GENDER_OPTIONS = [
-  { label: "Male", value: "male" },
-  { label: "Female", value: "female" },
-  { label: "Other", value: "other" }
-];
-
-// Predefined tags/life phases
-const PHASES = [
-  "School Life", "College Days", "Startup Journey", "Parenting", "Travelling", "Remote Work", "Self Discovery"
-];
-
-const SOCIAL_FIELDS = [
-  { key: "instagram", label: "Instagram" },
-  { key: "linkedin", label: "LinkedIn" },
-  { key: "twitter", label: "Twitter" },
-  { key: "facebook", label: "Facebook" }
-];
 
 type EditMode = "view" | "edit" | "delete";
 
@@ -55,6 +40,7 @@ export const ProfileView: React.FC = () => {
   const { user, signOut } = useAuth();
   const { data: profile, isLoading } = useUserProfile();
   const { data: myDna } = useReadingDna(user?.id);
+  const { data: bookshelf = [] } = useUserBookshelf();
   const upsertProfile = useUpsertUserProfile();
   const deleteProfile = useDeleteUserProfile();
 
@@ -99,14 +85,20 @@ export const ProfileView: React.FC = () => {
   const handleConfirmDelete = async () => {
     await deleteProfile.mutateAsync();
     toast({ title: "Account marked for deletion", description: "Your account has been deleted.", variant: "destructive" });
-    // Optionally, sign out user after delete
     setTimeout(signOut, 2000);
   };
 
   const handleCancelDelete = () => setEditMode("view");
 
-  const handleOpenLifeStories = () => {
-    openPopupWindow("https://jeevan-katha-anek-hai1.lovable.app/", "My Life Stories");
+  const handleCopyProfileLink = () => {
+    const profileUrl = `${window.location.origin}/profile`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(profileUrl);
+      toast({
+        title: "Profile Link Copied",
+        description: "Your profile URL is copied to your clipboard.",
+      });
+    }
   };
 
   const onSubmit = async (values: ProfileFormValues) => {
@@ -127,7 +119,6 @@ export const ProfileView: React.FC = () => {
     }
   };
 
-  // Write frequency badge - display logic (placeholder: can auto-calc)
   const writingFrequency = profile?.writing_frequency || (
     profile?.stories_written_count && profile.stories_written_count > 20
       ? "Daily"
@@ -135,6 +126,10 @@ export const ProfileView: React.FC = () => {
         ? "Weekly"
         : "Monthly"
   );
+
+  const completedBooks = bookshelf.filter(b => b.status === 'completed');
+  const readingBooks = bookshelf.filter(b => b.status === 'reading');
+  const showcaseBooks = completedBooks.length > 0 ? completedBooks.slice(0, 3) : bookshelf.slice(0, 3);
 
   if (isLoading) {
     return (
@@ -145,9 +140,10 @@ export const ProfileView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 py-4 px-1">
-      <div className="max-w-2xl mx-auto animate-fade-in">
-        <Card className="rounded-2xl shadow-lg p-6 bg-white/90">
+    <div className="min-h-screen bg-background py-4 px-1">
+      <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+        {/* Main Profile Card */}
+        <Card className="rounded-2xl shadow-sm p-6 bg-card border border-border">
           <div className="flex flex-col items-center gap-5">
             {/* Avatar */}
             <ProfileAvatar
@@ -165,58 +161,152 @@ export const ProfileView: React.FC = () => {
               writingFrequency={writingFrequency}
               joined_at={profile?.joined_at}
             />
-            {/* "My Life Stories" button */}
-            <Button
-              onClick={handleOpenLifeStories}
-              className="bg-blue-700 text-white hover:bg-blue-800"
-              type="button"
-            >
-              My Life Stories
-            </Button>
-            {/* Stats */}
-            <div className="mt-4 flex flex-wrap gap-4 justify-between w-full text-center sm:text-left">
-              <div>
-                <span className="text-xs text-gray-600">Stories Written</span>
-                <div className="font-bold text-lg text-green-700">{profile?.stories_written_count ?? 0}</div>
+
+            {/* Stories / Publications Native Bridge */}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Link to="/articles/my">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-border hover:border-[hsl(var(--brand-primary))] text-foreground"
+                >
+                  <FileText className="w-4 h-4 mr-1.5 text-[hsl(var(--brand-primary))]" />
+                  My Articles
+                </Button>
+              </Link>
+              <Link to="/my-publications">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-border hover:border-[hsl(var(--brand-secondary))] text-foreground"
+                >
+                  <BookOpen className="w-4 h-4 mr-1.5 text-[hsl(var(--brand-secondary))]" />
+                  My Publications
+                </Button>
+              </Link>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleCopyProfileLink}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Share2 className="w-4 h-4 mr-1.5" />
+                Share Profile
+              </Button>
+            </div>
+
+            {/* Reader Stats Overview */}
+            <div className="mt-2 grid grid-cols-3 gap-3 w-full text-center border-t border-border pt-4">
+              <div className="p-2 rounded-xl bg-muted/40">
+                <span className="text-xs text-muted-foreground">Stories Written</span>
+                <div className="font-bold text-lg text-emerald-600 dark:text-emerald-400">
+                  {profile?.stories_written_count ?? 0}
+                </div>
               </div>
-              <div>
-                <span className="text-xs text-gray-600">Stories Read</span>
-                <div className="font-bold text-lg text-blue-700">{profile?.stories_read_count ?? 0}</div>
+              <div className="p-2 rounded-xl bg-muted/40">
+                <span className="text-xs text-muted-foreground">Shelf Books</span>
+                <div className="font-bold text-lg text-[hsl(var(--brand-primary))]">
+                  {bookshelf.length}
+                </div>
               </div>
-              <div>
-                <span className="text-xs text-gray-600">Location</span>
-                <div className="font-medium text-base text-gray-800">{profile?.location ?? <span className="italic text-gray-400">Not set</span>}</div>
+              <div className="p-2 rounded-xl bg-muted/40">
+                <span className="text-xs text-muted-foreground">Location</span>
+                <div className="font-medium text-sm text-foreground truncate">
+                  {profile?.location ?? <span className="italic text-muted-foreground">Not set</span>}
+                </div>
               </div>
             </div>
-            {/* Tags/Life phases */}
+
+            {/* Tags / Life phases */}
             <ProfileTags life_tags={profile?.life_tags ?? []} />
+
             {/* Earned Badges */}
             <UserBadges />
+
             {/* Social Links */}
             <ProfileSocialLinks social_links={profile?.social_links} />
+
             {/* Action Buttons */}
-            <div className="flex gap-4 mt-6">
-              <Button onClick={handleEdit} className="bg-amber-600 text-white hover:bg-amber-700" type="button">
-                <Pencil className="w-4 h-4" /> Edit Profile
+            <div className="flex gap-3 mt-4 w-full sm:w-auto">
+              <Button 
+                onClick={handleEdit} 
+                className="flex-1 sm:flex-initial bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white" 
+                type="button"
+              >
+                <Pencil className="w-4 h-4 mr-1.5" /> Edit Profile
               </Button>
-              <Button onClick={handleDelete} variant="destructive" type="button">
-                <Trash className="w-4 h-4" /> Delete Account
+              <Button 
+                onClick={handleDelete} 
+                variant="outline" 
+                className="text-destructive hover:bg-destructive/10 border-destructive/30" 
+                type="button"
+              >
+                <Trash className="w-4 h-4 mr-1.5" /> Delete Account
               </Button>
             </div>
           </div>
         </Card>
 
+        {/* Showcase Shelf */}
+        {showcaseBooks.length > 0 && (
+          <Card className="rounded-2xl border-border bg-card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Library className="w-4 h-4 text-[hsl(var(--brand-primary))]" />
+                <h3 className="text-sm font-semibold text-foreground">Reader Bookshelf Showcase</h3>
+              </div>
+              <Link to="/bookshelf" className="text-xs text-[hsl(var(--brand-primary))] hover:underline flex items-center">
+                View Shelf ({bookshelf.length}) <ArrowRight className="w-3 h-3 ml-1" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {showcaseBooks.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/book/${item.book_id}`}
+                  className="group block text-center"
+                >
+                  <div className="aspect-[2/3] rounded-lg overflow-hidden bg-muted shadow-xs group-hover:shadow-md transition-all mb-1.5 relative">
+                    {item.books_library?.cover_image_url ? (
+                      <img
+                        src={item.books_library.cover_image_url}
+                        alt={item.books_library.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <BookOpen className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    {item.status === 'completed' && (
+                      <div className="absolute top-1.5 right-1.5 bg-emerald-600/90 text-white p-0.5 rounded-full shadow-xs">
+                        <CheckCircle className="w-3 h-3" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs font-medium text-foreground truncate group-hover:text-[hsl(var(--brand-primary))] transition-colors">
+                    {item.books_library?.title || 'Untitled'}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground capitalize">
+                    {item.status.replace('_', ' ')}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Reading DNA & Literary Identity Showcase */}
-        <div className="mt-6 space-y-4">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Dna className="w-5 h-5 text-brand-primary" />
+              <Dna className="w-5 h-5 text-[hsl(var(--brand-primary))]" />
               Literary & Social Identity
             </h3>
             <Button
               size="sm"
               variant="ghost"
-              className="text-xs text-brand-primary gap-1"
+              className="text-xs text-[hsl(var(--brand-primary))] gap-1"
               onClick={() => navigate('/social?tab=dna')}
             >
               Explore DNA Matches <ArrowRight className="w-3.5 h-3.5" />
@@ -226,15 +316,15 @@ export const ProfileView: React.FC = () => {
           {myDna ? (
             <ReadingDnaCard dna={myDna} mine />
           ) : (
-            <Card className="rounded-2xl border-border bg-white/90 p-5 text-center">
-              <Sparkles className="w-8 h-8 text-brand-primary mx-auto mb-2" />
+            <Card className="rounded-2xl border-border bg-card p-5 text-center">
+              <Sparkles className="w-8 h-8 text-[hsl(var(--brand-primary))] mx-auto mb-2" />
               <h4 className="text-sm font-semibold text-foreground mb-1">Generate Your Reading DNA</h4>
               <p className="text-xs text-muted-foreground max-w-md mx-auto mb-4">
                 Calculate your literary fingerprint, discover your reading archetype, and find fellow readers with high taste compatibility.
               </p>
               <Button
                 size="sm"
-                className="bg-brand-primary text-white"
+                className="bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white"
                 onClick={() => navigate('/social?tab=dna')}
               >
                 <Dna className="w-3.5 h-3.5 mr-1.5" />
@@ -247,10 +337,10 @@ export const ProfileView: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <Card
               onClick={() => navigate('/social?tab=margins')}
-              className="rounded-xl border-border bg-white/80 hover:bg-white p-3.5 cursor-pointer transition-all hover:shadow-xs group"
+              className="rounded-xl border-border bg-card hover:bg-muted/40 p-3.5 cursor-pointer transition-all hover:shadow-xs group"
             >
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                   <Quote className="w-4 h-4" />
                 </div>
                 <div>
@@ -264,10 +354,10 @@ export const ProfileView: React.FC = () => {
 
             <Card
               onClick={() => navigate('/social?tab=rooms')}
-              className="rounded-xl border-border bg-white/80 hover:bg-white p-3.5 cursor-pointer transition-all hover:shadow-xs group"
+              className="rounded-xl border-border bg-card hover:bg-muted/40 p-3.5 cursor-pointer transition-all hover:shadow-xs group"
             >
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <Radio className="w-4 h-4" />
                 </div>
                 <div>
@@ -280,6 +370,7 @@ export const ProfileView: React.FC = () => {
             </Card>
           </div>
         </div>
+
         {/* Edit Profile Dialog */}
         <EditProfileDialog
           open={editMode === "edit"}

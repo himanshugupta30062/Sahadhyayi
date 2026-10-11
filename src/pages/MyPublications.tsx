@@ -5,7 +5,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useMyPublications, usePublishBook, formatFileSize } from '@/hooks/usePublishBook';
-import { BookOpen, Plus, Trash2, Send, Clock, CheckCircle, XCircle, FileText, Loader2, Eye, Download, Edit } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Send, Clock, CheckCircle, XCircle, FileText, Loader2, Eye, Download, Edit, Radio } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
   draft: { label: 'Draft', icon: <FileText className="h-3 w-3" />, className: 'bg-muted text-muted-foreground' },
@@ -101,7 +101,7 @@ export default function MyPublications() {
                             <span className="inline-flex items-center gap-1"><Download className="h-3 w-3" /> {book.downloads_count} downloads</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-2 mt-3">
+                        <div className="flex flex-wrap items-center gap-2 mt-3">
                           {book.status === 'draft' && (
                             <Button size="sm" onClick={() => submitForReview.mutate(book.id)} disabled={submitForReview.isPending}>
                               <Send className="mr-1 h-3 w-3" /> Submit
@@ -110,6 +110,16 @@ export default function MyPublications() {
                           {book.status === 'rejected' && (
                             <Button size="sm" onClick={() => submitForReview.mutate(book.id)} disabled={submitForReview.isPending}>
                               <Send className="mr-1 h-3 w-3" /> Resubmit
+                            </Button>
+                          )}
+                          {book.status === 'approved' && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => navigate('/social?tab=rooms')}
+                              className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 text-xs"
+                            >
+                              <Radio className="mr-1.5 h-3.5 w-3.5" /> Host Reading Room
                             </Button>
                           )}
                           {canDelete && (
