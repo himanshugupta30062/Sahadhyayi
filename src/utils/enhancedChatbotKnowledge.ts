@@ -19,10 +19,25 @@ export interface WebsiteContext {
 
 export const getWebsiteContext = async (): Promise<WebsiteContext> => {
   try {
-    // Get total books count
-    const { count: totalBooks } = await supabase
+    // Get total unique books count (matching library catalog deduplication)
+    const { data: titleData, error: titleError } = await supabase
       .from('books_library')
-      .select('*', { count: 'exact', head: true });
+      .select('title');
+
+    let totalBooks = 0;
+    if (!titleError && Array.isArray(titleData) && titleData.length > 0) {
+      const uniqueTitles = new Set<string>();
+      titleData.forEach((b: { title?: string | null }) => {
+        const key = (b.title || '').trim().toLowerCase();
+        if (key) uniqueTitles.add(key);
+      });
+      totalBooks = uniqueTitles.size;
+    } else {
+      const { count } = await supabase
+        .from('books_library')
+        .select('*', { count: 'exact', head: true });
+      totalBooks = count || 0;
+    }
 
     // Get available genres
     const { data: genreData } = await supabase

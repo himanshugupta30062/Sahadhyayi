@@ -5,12 +5,28 @@ export const useLibraryBookCount = () =>
   useQuery({
     queryKey: ['library-book-count'],
     queryFn: async () => {
-      const { count, error } = await supabase
+      // Fetch titles to calculate unique deduplicated books (matching the library catalog)
+      const { data, error } = await supabase
+        .from('books_library')
+        .select('title');
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const uniqueTitles = new Set<string>();
+        data.forEach((b: { title?: string | null }) => {
+          const key = (b.title || '').trim().toLowerCase();
+          if (key) uniqueTitles.add(key);
+        });
+        return uniqueTitles.size;
+      }
+
+      // Fallback to exact count if title query fails or returns empty
+      const { count, error: countError } = await supabase
         .from('books_library')
         .select('id', { count: 'exact', head: true });
 
-      if (error) throw error;
+      if (countError) throw countError;
 
       return count;
     },
+    staleTime: 5 * 60 * 1000,
   });
