@@ -1,4 +1,3 @@
-
 import React from "react";
 import ProfileStats from "./ProfileStats";
 
@@ -10,7 +9,6 @@ type ProfileInfoProps = {
   gender?: string;
   writingFrequency: string;
   joined_at?: string;
-  // Add children for custom actions/badges if needed
 };
 
 const ProfileInfo: React.FC<ProfileInfoProps> = ({
@@ -23,14 +21,18 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
   joined_at
 }) => (
   <div className="w-full flex flex-col items-center text-center">
-    <h2 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+    <h2 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
       {name || "Unnamed"}
-      <span className="text-amber-500 font-mono text-base">{username && <>@{username}</>}</span>
+      {username && (
+        <span className="text-[hsl(var(--brand-primary))] font-mono text-base font-normal">
+          @{username}
+        </span>
+      )}
     </h2>
-    <div className="flex justify-center items-center gap-2 mt-1 mb-2 text-gray-600 text-sm">
+    <div className="flex justify-center items-center gap-2 mt-1 mb-2 text-muted-foreground text-sm">
       <span>{email || "No email"}</span>
     </div>
-    <p className="text-gray-600 text-base mb-2">{bio}</p>
+    {bio && <p className="text-muted-foreground text-sm max-w-md mb-3 leading-relaxed">{bio}</p>}
     <ProfileStats writingFrequency={writingFrequency} gender={gender} joined_at={joined_at} />
   </div>
 );
