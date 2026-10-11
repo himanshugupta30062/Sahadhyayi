@@ -5,12 +5,10 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import SignInLink from '@/components/SignInLink';
 import { useLibraryBookCount } from '@/hooks/useLibraryBookCount';
-import { useCommunityStats } from '@/hooks/useCommunityStats';
 
 const ImprovedHero = () => {
   const { user } = useAuth();
   const { data: totalBooks, isLoading, isError } = useLibraryBookCount();
-  const { stats: communityStats } = useCommunityStats();
   const booksAvailable = isLoading || isError || totalBooks == null
     ? '—'
     : totalBooks.toLocaleString();
@@ -74,7 +72,7 @@ const ImprovedHero = () => {
           </div>
           
           {/* Social Proof */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 gap-8 max-w-sm mx-auto">
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <BookOpen className="w-6 h-6 text-white/80 mr-2" />
@@ -82,13 +80,7 @@ const ImprovedHero = () => {
               </div>
               <p className="text-white/70">Books Available</p>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Users className="w-6 h-6 text-white/80 mr-2" />
-                <span className="text-2xl font-bold text-white">{communityStats?.registeredReaders.toLocaleString() ?? '—'}</span>
-              </div>
-              <p className="text-white/70">Registered Readers</p>
-            </div>
+
           </div>
         </div>
       </div>
