@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
@@ -27,6 +28,47 @@ export interface BookshelfItem {
 
 export const useUserBookshelf = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Realtime channel for instant cross-device updates
+    const channel = supabase
+      .channel(`user-bookshelf-realtime-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_bookshelf',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user.id] });
+        }
+      )
+      .subscribe();
+
+    // Multi-tab sync via storage events
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'sahadhyayi_shelf_sync') {
+        queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user.id] });
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    const handleShelfUpdated = () => {
+      queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user.id] });
+    };
+    window.addEventListener('shelfUpdated', handleShelfUpdated);
+
+    return () => {
+      void supabase.removeChannel(channel);
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('shelfUpdated', handleShelfUpdated);
+    };
+  }, [user?.id, queryClient]);
   
   return useQuery({
     queryKey: ['user-bookshelf', user?.id],
@@ -59,6 +101,16 @@ export const useUserBookshelf = () => {
   });
 };
 
+const notifyShelfChanged = (queryClient: ReturnType<typeof useQueryClient>) => {
+  queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
+  window.dispatchEvent(new Event('shelfUpdated'));
+  try {
+    localStorage.setItem('sahadhyayi_shelf_sync', Date.now().toString());
+  } catch {
+    // ignore in private browsing/restricted environments
+  }
+};
+
 export const useAddToBookshelf = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -81,8 +133,7 @@ export const useAddToBookshelf = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
-      window.dispatchEvent(new Event('shelfUpdated'));
+      notifyShelfChanged(queryClient);
       toast({ title: 'Success', description: 'Book added to your shelf!' });
     },
     onError: (error: any) => {
@@ -111,7 +162,7 @@ export const useUpdateBookshelfItem = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
+      notifyShelfChanged(queryClient);
       toast({ title: 'Success', description: 'Book updated!' });
     },
   });
@@ -130,7 +181,7 @@ export const useRemoveFromBookshelf = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
+      notifyShelfChanged(queryClient);
       toast({ title: 'Success', description: 'Book removed from shelf!' });
     },
   });

@@ -53,4 +53,24 @@ describe('Group Management Operations', () => {
     expect(canLeaveGroup('admin', 5).allowed).toBe(true);
     expect(canLeaveGroup('member', 1).allowed).toBe(true);
   });
+
+  it('validates create group payload with privacy mode', () => {
+    const prepareCreatePayload = (name: string, description: string, isPrivate: boolean, userId: string) => {
+      const sanitized = name.trim();
+      if (!sanitized) throw new Error('Group name is required');
+      return {
+        id: 'test-group-id',
+        name: sanitized,
+        description: description.trim() || null,
+        created_by: userId,
+        is_encrypted: Boolean(isPrivate),
+      };
+    };
+
+    const publicGroup = prepareCreatePayload('Classic Novels', 'Public book discussions', false, 'user-1');
+    expect(publicGroup.is_encrypted).toBe(false);
+
+    const privateGroup = prepareCreatePayload('Secret Society', 'Invite only', true, 'user-1');
+    expect(privateGroup.is_encrypted).toBe(true);
+  });
 });

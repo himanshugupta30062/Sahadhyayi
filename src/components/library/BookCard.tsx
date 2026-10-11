@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Download, Info, Plus, Check } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
 import { useAuth } from '@/contexts/authHelpers';
 import { useAddToPersonalLibrary, usePersonalLibrary } from '@/hooks/usePersonalLibrary';
@@ -19,6 +19,7 @@ interface BookCardProps {
 const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: personalLibrary = [] } = usePersonalLibrary();
   const addToLibrary = useAddToPersonalLibrary();
   
@@ -33,7 +34,11 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
   const handleAddToLibrary = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user || isInLibrary) return;
+    if (!user) {
+      navigate(`/signin?redirect=${encodeURIComponent(`/book/${book.id}`)}&intent=add_shelf&book_id=${encodeURIComponent(book.id)}`);
+      return;
+    }
+    if (isInLibrary) return;
     addToLibrary.mutate(book.id);
   };
 
@@ -64,52 +69,54 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           } 
           flex items-center justify-center gap-4`}
         >
-          {/* Add to Library Button - Only show if user is logged in */}
-          {user && (
-            <button
-              onClick={handleAddToLibrary}
-              disabled={isInLibrary || addToLibrary.isPending}
-              className={`
-                group/btn relative flex items-center justify-center w-12 h-12 rounded-full
-                transition-all duration-300 transform hover:scale-110 active:scale-95
-                shadow-lg hover:shadow-xl backdrop-blur-sm
-                ${
-                  isInLibrary
-                    ? 'bg-green-600 text-white cursor-default'
-                    : addToLibrary.isPending
-                    ? 'bg-muted/80 text-muted-foreground cursor-not-allowed opacity-60'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                }
-              `}
-              title={
-                isInLibrary 
-                  ? "Already in library" 
-                  : addToLibrary.isPending 
-                  ? "Adding..." 
-                  : "Add to library"
+          {/* Add to Library Button - Available to authenticated users and guests */}
+          <button
+            onClick={handleAddToLibrary}
+            disabled={user && (isInLibrary || addToLibrary.isPending)}
+            className={`
+              group/btn relative flex items-center justify-center w-12 h-12 rounded-full
+              transition-all duration-300 transform hover:scale-110 active:scale-95
+              shadow-lg hover:shadow-xl backdrop-blur-sm
+              ${
+                isInLibrary
+                  ? 'bg-green-600 text-white cursor-default'
+                  : addToLibrary.isPending
+                  ? 'bg-muted/80 text-muted-foreground cursor-not-allowed opacity-60'
+                  : 'bg-primary text-primary-foreground hover:bg-primary/90'
               }
-              aria-label={
-                isInLibrary 
-                  ? "Already in library" 
-                  : addToLibrary.isPending 
-                  ? "Adding to library..." 
-                  : "Add to library"
-              }
-            >
-              {isInLibrary ? (
-                <Check className="w-5 h-5" />
-              ) : (
-                <Plus className="w-5 h-5" />
-              )}
-              
-              {/* Hover Text Tooltip */}
-              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none">
-                <div className="bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                  {isInLibrary ? 'In Library' : addToLibrary.isPending ? 'Adding...' : 'Add to Library'}
-                </div>
+            `}
+            title={
+              !user
+                ? "Sign in to add to library"
+                : isInLibrary 
+                ? "Already in library" 
+                : addToLibrary.isPending 
+                ? "Adding..." 
+                : "Add to library"
+            }
+            aria-label={
+              !user
+                ? "Sign in to add to library"
+                : isInLibrary 
+                ? "Already in library" 
+                : addToLibrary.isPending 
+                ? "Adding to library..." 
+                : "Add to library"
+            }
+          >
+            {isInLibrary ? (
+              <Check className="w-5 h-5" />
+            ) : (
+              <Plus className="w-5 h-5" />
+            )}
+            
+            {/* Hover Text Tooltip */}
+            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                {!user ? 'Sign In to Save' : isInLibrary ? 'In Library' : addToLibrary.isPending ? 'Adding...' : 'Add to Library'}
               </div>
-            </button>
-          )}
+            </div>
+          </button>
 
           {/* Download Button - Icon Only */}
           <button
@@ -169,43 +176,45 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
         >
           <div className="flex gap-3 justify-center">
             {/* Add to Library Button - Mobile */}
-            {user && (
-              <button
-                onClick={handleAddToLibrary}
-                disabled={isInLibrary || addToLibrary.isPending}
-                className={`
-                  flex items-center justify-center w-10 h-10 rounded-full
-                  transition-all duration-200 backdrop-blur-sm
-                  ${
-                    isInLibrary
-                      ? 'bg-green-600 text-white cursor-default'
-                      : addToLibrary.isPending
-                      ? 'bg-muted/60 text-muted-foreground cursor-not-allowed opacity-60'
-                      : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                  }
-                `}
-                title={
-                  isInLibrary 
-                    ? "Already in library" 
-                    : addToLibrary.isPending 
-                    ? "Adding..." 
-                    : "Add to library"
+            <button
+              onClick={handleAddToLibrary}
+              disabled={user && (isInLibrary || addToLibrary.isPending)}
+              className={`
+                flex items-center justify-center w-10 h-10 rounded-full
+                transition-all duration-200 backdrop-blur-sm
+                ${
+                  isInLibrary
+                    ? 'bg-green-600 text-white cursor-default'
+                    : addToLibrary.isPending
+                    ? 'bg-muted/60 text-muted-foreground cursor-not-allowed opacity-60'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
                 }
-                aria-label={
-                  isInLibrary 
-                    ? "Already in library" 
-                    : addToLibrary.isPending 
-                    ? "Adding to library..." 
-                    : "Add to library"
-                }
-              >
-                {isInLibrary ? (
-                  <Check className="w-4 h-4" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
-              </button>
-            )}
+              `}
+              title={
+                !user
+                  ? "Sign in to add to library"
+                  : isInLibrary 
+                  ? "Already in library" 
+                  : addToLibrary.isPending 
+                  ? "Adding..." 
+                  : "Add to library"
+              }
+              aria-label={
+                !user
+                  ? "Sign in to add to library"
+                  : isInLibrary 
+                  ? "Already in library" 
+                  : addToLibrary.isPending 
+                  ? "Adding to library..." 
+                  : "Add to library"
+              }
+            >
+              {isInLibrary ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+            </button>
 
             <button
               onClick={handleDownload}
