@@ -88,3 +88,4 @@ export const AdminRoute: FC<AdminRouteProps> = memo(({ children }) => {
 AdminRoute.displayName = 'AdminRoute';
 
 export default AdminRoute;
+

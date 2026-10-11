@@ -48,21 +48,69 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  Globe,
+  Copy,
+  Check,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Users,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-export const AdminLibraryArchive: React.FC = () => {
+const COUNTRY_FLAGS: Record<string, string> = {
+  IN: '🇮🇳', US: '🇺🇸', GB: '🇬🇧', CA: '🇨🇦', DE: '🇩🇪', FR: '🇫🇷',
+  AU: '🇦🇺', SG: '🇸🇬', NL: '🇳🇱', ES: '🇪🇸', IT: '🇮🇹', BR: '🇧🇷',
+  JP: '🇯🇵', CN: '🇨🇳', RU: '🇷🇺', ID: '🇮🇩', KR: '🇰🇷', AE: '🇦🇪',
+  SA: '🇸🇦', PK: '🇵🇰', BD: '🇧🇩', NP: '🇳🇵', LK: '🇱🇰', MX: '🇲🇽',
+  ZA: '🇿🇦', NG: '🇳🇬', EG: '🇪🇬', SE: '🇸🇪', CH: '🇨🇭', NO: '🇳🇴',
+};
+
+const getCountryFlag = (code?: string | null): string => {
+  if (!code) return '🌐';
+  const upper = code.toUpperCase();
+  if (COUNTRY_FLAGS[upper]) return COUNTRY_FLAGS[upper];
+  if (upper.length === 2) {
+    const codePoints = upper
+      .split('')
+      .map((char) => 127397 + char.charCodeAt(0));
+    try {
+      return String.fromCodePoint(...codePoints);
+    } catch {
+      return '🌐';
+    }
+  }
+  return '🌐';
+};
+
+const getDeviceIcon = (deviceType?: string | null) => {
+  const dt = (deviceType || '').toLowerCase();
+  if (dt === 'mobile') return <Smartphone className="w-3.5 h-3.5 text-indigo-500" />;
+  if (dt === 'tablet') return <Tablet className="w-3.5 h-3.5 text-amber-500" />;
+  return <Monitor className="w-3.5 h-3.5 text-sky-500" />;
+};
+
+interface AdminLibraryArchiveProps {
+  defaultTab?: 'active' | 'archived' | 'duplicate' | 'history' | 'visitors';
+}
+
+export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaultTab = 'archived' }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<'active' | 'archived' | 'duplicate' | 'history'>('archived');
+  const [activeTab, setActiveTab] = useState<'active' | 'archived' | 'duplicate' | 'history' | 'visitors'>(defaultTab);
 
   // Search & Filter state for Archived tab
   const [archivedSearch, setArchivedSearch] = useState('');
   const [classificationFilter, setClassificationFilter] = useState<string>('all');
   const [archivedPage, setArchivedPage] = useState(1);
   const pageSize = 20;
+
+  // Visitor Intelligence state
+  const [visitorSearch, setVisitorSearch] = useState('');
+  const [visitorLimit, setVisitorLimit] = useState<number>(100);
+  const [copiedIp, setCopiedIp] = useState<string | null>(null);
 
   // Search & Filter state for Active tab
   const [activeSearch, setActiveSearch] = useState('');
@@ -165,6 +213,69 @@ export const AdminLibraryArchive: React.FC = () => {
       return data || [];
     },
   });
+
+  // 5. Fetch Visitor Logs (for Visitor Intelligence tab)
+  const {
+    data: recentVisits = [],
+    isLoading: isVisitsLoading,
+    refetch: refetchVisits,
+    isFetching: isVisitsFetching,
+  } = useQuery({
+    queryKey: ['admin-visitor-intelligence', visitorSearch, visitorLimit],
+    enabled: activeTab === 'visitors',
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_admin_recent_visits', {
+        p_limit: visitorLimit,
+        p_search: visitorSearch.trim() || null,
+      });
+
+      if (error) {
+        // Fallback: direct query on website_visits
+        let query = supabase
+          .from('website_visits')
+          .select('*')
+          .order('visited_at', { ascending: false })
+          .limit(visitorLimit);
+
+        if (visitorSearch.trim()) {
+          const s = visitorSearch.trim();
+          query = query.or(`ip_address.ilike.%${s}%,city.ilike.%${s}%,country_code.ilike.%${s}%,page_url.ilike.%${s}%`);
+        }
+
+        const { data: fallbackData, error: fallbackError } = await query;
+        if (fallbackError) throw fallbackError;
+        return (fallbackData || []).map((row: any) => ({
+          id: row.id,
+          visited_at: row.visited_at,
+          ip_address: row.ip_address || 'Unknown',
+          country_code: row.country_code,
+          city: row.city,
+          region: row.region,
+          page_url: row.page_url,
+          browser: row.browser,
+          browser_version: row.browser_version,
+          os: row.os,
+          device_type: row.device_type,
+          device_model: row.device_model,
+          referrer: row.referrer,
+          screen_resolution: row.screen_resolution,
+          language: row.language,
+        }));
+      }
+
+      return data || [];
+    },
+    refetchInterval: activeTab === 'visitors' ? 15000 : false,
+  });
+
+  const handleCopyIp = (ip: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(ip);
+      setCopiedIp(ip);
+      toast({ title: 'IP Copied', description: `${ip} copied to clipboard.` });
+      setTimeout(() => setCopiedIp(null), 2000);
+    }
+  };
 
   // Handle Archive Action Submit
   const handleArchiveConfirm = async (e: React.FormEvent) => {
@@ -322,6 +433,17 @@ export const AdminLibraryArchive: React.FC = () => {
               >
                 <History className="w-3.5 h-3.5 text-slate-600" />
                 Archive History
+              </button>
+              <button
+                onClick={() => setActiveTab('visitors')}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'visitors'
+                    ? 'bg-white shadow-xs text-slate-900 font-semibold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                Visitor Intelligence
               </button>
             </div>
           </div>
@@ -857,6 +979,222 @@ export const AdminLibraryArchive: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* TAB 5: VISITOR INTELLIGENCE & IP LOGS */}
+        {activeTab === 'visitors' && (
+          <div className="space-y-6">
+            {/* Search & Filter Bar */}
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div className="relative w-full sm:w-80">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Input
+                    placeholder="Search by IP, city, country, or route..."
+                    value={visitorSearch}
+                    onChange={(e) => setVisitorSearch(e.target.value)}
+                    className="pl-9 h-9 text-xs"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Filter className="w-3.5 h-3.5 text-slate-400" />
+                  <select
+                    value={visitorLimit}
+                    onChange={(e) => setVisitorLimit(Number(e.target.value))}
+                    className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700"
+                  >
+                    <option value={50}>Last 50 Visits</option>
+                    <option value={100}>Last 100 Visits</option>
+                    <option value={250}>Last 250 Visits</option>
+                    <option value={500}>Last 500 Visits</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-end md:self-auto">
+                <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Auto-sync: 15s
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => refetchVisits()}
+                  disabled={isVisitsFetching}
+                  className="gap-1.5 text-xs h-9"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isVisitsFetching ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+
+            {/* Quick Summary Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Visits in View</div>
+                <div className="text-2xl font-bold text-slate-900 mt-1">{recentVisits.length.toLocaleString()}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Most recent traffic events</div>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unique IPs</div>
+                <div className="text-2xl font-bold text-indigo-600 mt-1">
+                  {new Set(recentVisits.map((v: any) => v.ip_address).filter(Boolean)).size.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Distinct visitor addresses</div>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Countries Active</div>
+                <div className="text-2xl font-bold text-emerald-600 mt-1">
+                  {new Set(recentVisits.map((v: any) => v.country_code).filter(Boolean)).size.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Global locations represented</div>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Mobile vs Desktop</div>
+                <div className="text-2xl font-bold text-amber-600 mt-1">
+                  {recentVisits.filter((v: any) => (v.device_type || '').toLowerCase() === 'mobile').length} / {recentVisits.filter((v: any) => (v.device_type || '').toLowerCase() !== 'mobile').length}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Mobile / Desktop sessions</div>
+              </div>
+            </div>
+
+            {/* Visits Table */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Live Visitor Access Log</h3>
+                  <p className="text-xs text-slate-500">Real-time unmasked client IP addresses, geo-location, user-agents, and visited paths.</p>
+                </div>
+                <div className="text-xs text-slate-400 font-mono">
+                  Showing {recentVisits.length} entries
+                </div>
+              </div>
+
+              {isVisitsLoading ? (
+                <div className="p-6 space-y-3">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : recentVisits.length === 0 ? (
+                <div className="text-center py-16 space-y-3">
+                  <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-400">
+                    <Globe className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-sm font-semibold text-slate-700">No visitor records found</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    {visitorSearch
+                      ? `No visits matched your search term "${visitorSearch}". Try clearing the filter.`
+                      : 'No website visit logs recorded yet.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="p-3">Visited At</th>
+                        <th className="p-3">Client IP Address</th>
+                        <th className="p-3">Location</th>
+                        <th className="p-3">Route / URL</th>
+                        <th className="p-3">Device & Browser</th>
+                        <th className="p-3">Tech Details</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700 font-normal">
+                      {recentVisits.map((v: any) => {
+                        const isCopied = copiedIp === v.ip_address;
+                        const dateObj = new Date(v.visited_at);
+                        const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                        const dateStr = dateObj.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                        const countryFlag = getCountryFlag(v.country_code);
+
+                        return (
+                          <tr key={v.id || `${v.visited_at}-${v.ip_address}`} className="hover:bg-slate-50/70 transition-colors">
+                            <td className="p-3 whitespace-nowrap">
+                              <div className="font-semibold text-slate-900">{timeStr}</div>
+                              <div className="text-[10px] text-slate-400">{dateStr}</div>
+                            </td>
+
+                            <td className="p-3 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-xs bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2 py-0.5 rounded text-slate-900 font-medium select-all">
+                                  {v.ip_address || 'Unknown'}
+                                </span>
+                                {v.ip_address && v.ip_address !== 'Unknown' && (
+                                  <button
+                                    onClick={() => handleCopyIp(v.ip_address)}
+                                    title="Copy IP address"
+                                    className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-700 transition-colors"
+                                  >
+                                    {isCopied ? (
+                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                    ) : (
+                                      <Copy className="w-3.5 h-3.5" />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+
+                            <td className="p-3">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-base leading-none" title={v.country_code || 'Global'}>
+                                  {countryFlag}
+                                </span>
+                                <div>
+                                  <div className="font-semibold text-slate-900 line-clamp-1">{v.city || 'Unknown City'}</div>
+                                  <div className="text-[10px] text-slate-400">
+                                    {[v.region, v.country_code].filter(Boolean).join(' • ') || 'No Geo Data'}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="p-3 max-w-[200px]">
+                              <div className="flex items-center gap-1">
+                                <span className="font-mono text-[11px] text-sky-800 bg-sky-50 border border-sky-100 px-1.5 py-0.5 rounded truncate inline-block max-w-[180px]">
+                                  {v.page_url || '/'}
+                                </span>
+                              </div>
+                            </td>
+
+                            <td className="p-3">
+                              <div className="flex items-center gap-2">
+                                <div className="p-1 rounded bg-slate-100 shrink-0">
+                                  {getDeviceIcon(v.device_type)}
+                                </div>
+                                <div>
+                                  <div className="font-medium text-slate-900 text-xs flex items-center gap-1">
+                                    {v.browser || 'Unknown'} {v.browser_version ? <span className="text-slate-400 text-[10px]">v{v.browser_version}</span> : null}
+                                  </div>
+                                  <div className="text-[10px] text-slate-500">
+                                    {v.os || 'Unknown OS'} • {v.device_type || 'Desktop'}
+                                    {v.device_model ? ` (${v.device_model})` : ''}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="p-3 text-[11px] text-slate-500 max-w-[180px]">
+                              <div>{v.screen_resolution || '—'}</div>
+                              <div className="text-[10px] text-slate-400 truncate">
+                                {v.language ? `Lang: ${v.language}` : ''}
+                                {v.referrer ? ` | Ref: ${v.referrer}` : ''}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Archive Book Modal Dialog */}
@@ -1045,3 +1383,4 @@ export const AdminLibraryArchive: React.FC = () => {
 };
 
 export default AdminLibraryArchive;
+

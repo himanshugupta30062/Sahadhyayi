@@ -7,11 +7,20 @@ const corsHeaders = {
 }
 
 interface VisitData {
+  event_id?: string;
+  event_type?: string;
+  event_name?: string | null;
+  visitor_id?: string;
+  session_id?: string;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
   userAgent?: string;
   page?: string;
   referrer?: string;
   screenResolution?: string;
   language?: string;
+  timezone?: string;
 }
 
 interface ParsedUserAgent {
@@ -169,6 +178,14 @@ Deno.serve(async (req) => {
 
     // Insert with all new columns
     const { error } = await supabase.from('website_visits').insert({
+      event_id: body.event_id || undefined,
+      event_type: body.event_type || 'pageview',
+      event_name: body.event_name || null,
+      session_id: body.session_id || null,
+      visitor_id: body.visitor_id || null,
+      utm_source: body.utm_source || null,
+      utm_medium: body.utm_medium || null,
+      utm_campaign: body.utm_campaign || null,
       ip_address: ipAddress === '0.0.0.0' ? null : ipAddress,
       user_agent: userAgentDisplay,
       page_url: body.page || null,
