@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { getAnalyticsIds } from '@/lib/analytics';
+
+const cleanCampaignValue = (value: string | null) =>
+  value ? value.replace(/[^a-zA-Z0-9 _.-]/g, '').trim().slice(0, 100) || null : null;
 
 export const usePageVisitTracker = () => {
   const location = useLocation();
@@ -20,6 +24,7 @@ export const usePageVisitTracker = () => {
 
     const recordVisit = async () => {
       try {
+        const { visitorId, sessionId } = getAnalyticsIds();
         const userAgent = navigator.userAgent;
         const referrer = document.referrer || undefined;
         const screenResolution = window.screen ? `${window.screen.width}x${window.screen.height}` : undefined;
@@ -31,11 +36,19 @@ export const usePageVisitTracker = () => {
           // ignore
         }
 
+        const query = new URLSearchParams(window.location.search);
+
         await supabase.functions.invoke('website-visits', {
           body: {
-            userAgent,
+            event_type: 'pageview',
             page: currentPage,
             referrer,
+            visitor_id: visitorId,
+            session_id: sessionId,
+            utm_source: cleanCampaignValue(query.get('utm_source')),
+            utm_medium: cleanCampaignValue(query.get('utm_medium')),
+            utm_campaign: cleanCampaignValue(query.get('utm_campaign')),
+            userAgent,
             screenResolution,
             language,
             timezone,
