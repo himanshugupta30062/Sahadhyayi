@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
 import { getBookCompletenessScore } from './useLibraryBooks';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
+import { mapRawToEdition, clusterEditionsIntoWorks } from '@/utils/catalog/deduplicationEngine';
 
 // Only select columns we actually use
 const PAGINATED_SELECT = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
@@ -105,22 +106,49 @@ async function fetchFilteredBooks(
     }
   }
 
-  // Map, sort, dedup — then spread within tiers to preserve cover priority
-  const mapped = all.map(mapBook);
+  // Map database rows into Editions and cluster into Works
+  const editions = all.map(row => mapRawToEdition(row));
+  const works = clusterEditionsIntoWorks(editions);
 
-  mapped.sort((a, b) => {
+  // Convert preferred editions of each work into catalog books with quality metadata
+  const deduped: Book[] = works.map(w => {
+    const p = w.preferredEdition;
+    const rawMatch = all.find(r => r.id === p.id);
+    return {
+      id: p.id,
+      title: p.title,
+      author: p.author || 'Unknown Author',
+      genre: p.genre || rawMatch?.genre,
+      cover_image_url: p.coverImageUrl || rawMatch?.cover_image_url,
+      description: p.description || rawMatch?.description,
+      publication_year: p.publicationYear || rawMatch?.publication_year,
+      language: p.language || rawMatch?.language || 'English',
+      pdf_url: p.assets.find(a => a.format === 'pdf')?.downloadUrl || rawMatch?.pdf_url,
+      epub_url: p.assets.find(a => a.format === 'epub')?.downloadUrl,
+      created_at: rawMatch?.created_at || new Date().toISOString(),
+      price: 0,
+      isbn: p.isbn13 || p.isbn10 || rawMatch?.isbn,
+      pages: p.pages || rawMatch?.pages,
+      author_bio: rawMatch?.author_bio,
+      accessStatus: p.accessStatus,
+      licenseEvidence: p.licenseEvidence,
+      qualityScore: p.qualityScore,
+      qualityReasons: p.qualityReasons,
+      whyThisEdition: p.whyThisEdition,
+      isPreferredEdition: true,
+      alternativeEditionsCount: w.alternativeEditions.length,
+      alternativeEditions: w.alternativeEditions,
+      assets: p.assets,
+    };
+  });
+
+  // Sort by quality score, with tie-breaker by completeness and creation date
+  deduped.sort((a, b) => {
+    const scoreDiff = (b.qualityScore || 0) - (a.qualityScore || 0);
+    if (scoreDiff !== 0) return scoreDiff;
     const diff = getBookCompletenessScore(b) - getBookCompletenessScore(a);
     if (diff !== 0) return diff;
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
-
-  // Deduplicate by title
-  const seen = new Set<string>();
-  const deduped = mapped.filter(book => {
-    const key = book.title.trim().toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
   });
 
   // Split into 3 tiers: with-cover, no-cover, NCERT/CBSE

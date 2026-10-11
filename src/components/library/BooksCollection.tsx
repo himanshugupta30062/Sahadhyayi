@@ -329,6 +329,28 @@ const BooksCollection = ({
             </div>
           </div>
 
+          {/* Quality Standards Banner */}
+          <div className="bg-gradient-to-r from-amber-50/80 via-white to-blue-50/80 border border-amber-200/70 rounded-xl p-3.5 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="p-1 rounded bg-amber-100 text-amber-700">✨</span>
+              <span className="font-semibold text-gray-900">Quality-First Catalog:</span>
+              <span className="text-gray-600 hidden md:inline">
+                We evaluate content integrity, reflowable EPUB typography, and verified open licenses.
+              </span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap text-[11px] text-gray-500">
+              <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                ● Carefully Edited
+              </span>
+              <span className="inline-flex items-center gap-1 text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+                ● Open Textbooks
+              </span>
+              <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                ● Public Domain
+              </span>
+            </div>
+          </div>
+
           <div ref={allGridRef} className="space-y-6">
             {isLoadingAll ? (
               <LoadingSpinner />

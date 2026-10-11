@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { getCoverQualityScore } from '@/utils/getCoverQualityScore';
 
+import type { AccessStatus, LicenseEvidence } from '@/types/bookCatalog';
+
 export interface Book {
   id: string;
   title: string;
@@ -13,12 +15,22 @@ export interface Book {
   publication_year?: number;
   language?: string;
   pdf_url?: string;
+  epub_url?: string;
   created_at: string;
   price?: number;
   rating?: number;
   isbn?: string;
   pages?: number;
   author_bio?: string;
+  accessStatus?: AccessStatus;
+  licenseEvidence?: LicenseEvidence;
+  qualityScore?: number;
+  qualityReasons?: string[];
+  whyThisEdition?: string;
+  isPreferredEdition?: boolean;
+  alternativeEditionsCount?: number;
+  alternativeEditions?: any[];
+  assets?: any[];
 }
 
 // Only select columns we actually use — avoids transferring unnecessary data
