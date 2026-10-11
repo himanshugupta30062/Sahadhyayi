@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { BookOpen, Plus, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
 
@@ -23,13 +24,17 @@ interface BookCardProps {
 
 const BookCard: React.FC<BookCardProps> = ({ book, onAdded }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: bookshelf = [] } = useUserBookshelf();
   const addToBookshelf = useAddToBookshelf();
 
   const isInShelf = bookshelf.some(item => item.book_id === book.id);
 
   const handleAddToShelf = () => {
-    if (!user) return;
+    if (!user) {
+      navigate(`/signin?redirect=${encodeURIComponent(`/book/${book.id}`)}&intent=add_shelf&book_id=${encodeURIComponent(book.id)}`);
+      return;
+    }
     addToBookshelf.mutate(
       { bookId: book.id },
       {
@@ -42,7 +47,7 @@ const BookCard: React.FC<BookCardProps> = ({ book, onAdded }) => {
   };
 
   return (
-    <Card className="bg-white/70 backdrop-blur-sm border-amber-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+    <Card className="bg-card/90 backdrop-blur-sm border-border hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardHeader className="pb-3">
         <div className="flex space-x-4">
           {book.cover_image_url ? (
@@ -54,17 +59,17 @@ const BookCard: React.FC<BookCardProps> = ({ book, onAdded }) => {
               height={96}
             />
           ) : (
-            <div className="w-16 h-24 bg-gradient-to-br from-amber-100 to-orange-100 rounded-md flex items-center justify-center">
-              <BookOpen className="w-8 h-8 text-amber-600" />
+            <div className="w-16 h-24 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-md flex items-center justify-center">
+              <BookOpen className="w-8 h-8 text-[hsl(var(--brand-primary))]" />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg text-gray-900 mb-1 line-clamp-2">{book.title}</CardTitle>
+            <CardTitle className="text-lg text-foreground mb-1 line-clamp-2">{book.title}</CardTitle>
             {book.author && (
-              <p className="text-gray-600 text-sm mb-2">by {book.author}</p>
+              <p className="text-muted-foreground text-sm mb-2">by {book.author}</p>
             )}
             {isInShelf && (
-              <Badge className="bg-green-100 text-green-800">
+              <Badge className="bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30">
                 <Check className="w-3 h-3 mr-1" />
                 In Library
               </Badge>
@@ -75,31 +80,29 @@ const BookCard: React.FC<BookCardProps> = ({ book, onAdded }) => {
       
       <CardContent className="pt-0">
         {book.description && (
-          <p className="text-sm text-gray-700 mb-3 line-clamp-2">{book.description}</p>
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{book.description}</p>
         )}
         
         <div className="flex gap-2">
-          {user && (
-            <Button
-              onClick={handleAddToShelf}
-              disabled={isInShelf || addToBookshelf.isPending}
-              className="flex-1 bg-amber-600 hover:bg-amber-700"
-              size="sm"
-            >
-              {isInShelf ? (
-                <>
-                  <Check className="w-4 h-4 mr-1" />
-                  Added
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add to Shelf
-                </>
-              )}
-            </Button>
-          )}
-          <Button variant="outline" size="sm">
+          <Button
+            onClick={handleAddToShelf}
+            disabled={user && isInShelf || addToBookshelf.isPending}
+            className="flex-1 bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white"
+            size="sm"
+          >
+            {isInShelf ? (
+              <>
+                <Check className="w-4 h-4 mr-1" />
+                Added
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-1" />
+                Add to Shelf
+              </>
+            )}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/book/${book.id}`)}>
             Preview
           </Button>
         </div>

@@ -10,7 +10,9 @@ import {
   Loader2, 
   CheckCircle2, 
   BookOpen, 
-  Sparkles 
+  Sparkles,
+  Globe,
+  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -139,8 +141,17 @@ const GroupDetails = () => {
                   <Users className="w-6 h-6" />
                 </span>
                 <Badge variant={isMember ? 'default' : 'secondary'} className="text-xs">
-                  {isMember ? 'Joined Member' : 'Public Group'}
+                  {isMember ? 'Joined Member' : 'Member Candidate'}
                 </Badge>
+                {group.is_encrypted ? (
+                  <Badge variant="outline" className="text-xs gap-1 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-background/80">
+                    <Lock className="w-3 h-3" /> Invite-Only Group
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="text-xs gap-1 bg-background/80">
+                    <Globe className="w-3 h-3 text-muted-foreground" /> Public Group
+                  </Badge>
+                )}
               </div>
             </div>
 

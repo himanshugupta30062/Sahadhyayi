@@ -14,6 +14,7 @@ export interface Group {
   member_count?: number;
   user_role?: 'admin' | 'member';
   group_members?: { count: number }[];
+  is_encrypted?: boolean | null;
 }
 
 export interface GroupChat {
@@ -70,7 +71,7 @@ export const useCreateGroup = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ name, description }: { name: string; description?: string }) => {
+    mutationFn: async ({ name, description, isPrivate }: { name: string; description?: string; isPrivate?: boolean }) => {
       const sanitizedName = name.trim();
       const sanitizedDescription = description?.trim() || null;
 
@@ -98,7 +99,8 @@ export const useCreateGroup = () => {
           id: groupId,
           name: sanitizedName,
           description: sanitizedDescription,
-          created_by: user.id
+          created_by: user.id,
+          is_encrypted: Boolean(isPrivate),
         }]);
       
       if (groupError) {
@@ -131,6 +133,7 @@ export const useCreateGroup = () => {
         name: sanitizedName,
         description: sanitizedDescription,
         created_by: user.id,
+        is_encrypted: Boolean(isPrivate),
       };
     },
     onSuccess: () => {

@@ -14,6 +14,8 @@ import {
   Link2,
   CheckCircle2,
   UserPlus,
+  Globe,
+  Lock,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import {
@@ -117,7 +119,7 @@ const ReadingGroupsDirectory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newGroup, setNewGroup] = useState({ name: '', description: '' });
+  const [newGroup, setNewGroup] = useState({ name: '', description: '', isPrivate: false });
   const [editGroup, setEditGroup] = useState<EditableGroup | null>(null);
   const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
   const [chatGroup, setChatGroup] = useState<Pick<Group, 'id' | 'name'> | null>(null);
@@ -166,8 +168,12 @@ const ReadingGroupsDirectory = () => {
     const name = newGroup.name.trim();
     if (!name) return;
     try {
-      const created = await createGroup.mutateAsync({ name, description: newGroup.description });
-      setNewGroup({ name: '', description: '' });
+      const created = await createGroup.mutateAsync({
+        name,
+        description: newGroup.description,
+        isPrivate: newGroup.isPrivate,
+      });
+      setNewGroup({ name: '', description: '', isPrivate: false });
       setShowCreateDialog(false);
       toast.success(`Reading group "${name}" created!`);
       // Auto-copy invite link after creation
@@ -431,12 +437,21 @@ const ReadingGroupsDirectory = () => {
                     </div>
                   </div>
 
-                  {/* Meta: member count + role */}
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  {/* Meta: member count + role + privacy */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <Users className="h-3.5 w-3.5" />
                       <span>{memberCount} {memberCount === 1 ? 'member' : 'members'}</span>
                     </div>
+                    {group.is_encrypted ? (
+                      <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-amber-500/30 text-amber-600 dark:text-amber-400 gap-1">
+                        <Lock className="w-2.5 h-2.5" /> Invite-Only
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-[10px] h-4 px-1.5 gap-1 bg-muted/60">
+                        <Globe className="w-2.5 h-2.5 text-muted-foreground" /> Public
+                      </Badge>
+                    )}
                     {membership?.role === 'admin' && (
                       <Badge variant="outline" className="text-[10px] h-4 px-1.5">Admin</Badge>
                     )}
@@ -612,6 +627,47 @@ const ReadingGroupsDirectory = () => {
                 maxLength={500}
               />
               <p className="text-xs text-muted-foreground">{newGroup.description.length}/500 characters</p>
+            </div>
+            {/* Privacy Setting */}
+            <div className="space-y-2">
+              <Label>Group Privacy</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setNewGroup((c) => ({ ...c, isPrivate: false }))}
+                  className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all ${
+                    !newGroup.isPrivate
+                      ? 'border-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.1)] text-foreground ring-1 ring-[hsl(var(--brand-primary))]'
+                      : 'border-border bg-card hover:bg-muted/40 text-muted-foreground'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-medium text-xs text-foreground">
+                    <Globe className="w-3.5 h-3.5 text-[hsl(var(--brand-primary))]" />
+                    <span>Public Group</span>
+                  </div>
+                  <span className="text-[11px] leading-tight text-muted-foreground">
+                    Anyone can discover and join
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setNewGroup((c) => ({ ...c, isPrivate: true }))}
+                  className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all ${
+                    newGroup.isPrivate
+                      ? 'border-amber-500 bg-amber-500/10 text-foreground ring-1 ring-amber-500'
+                      : 'border-border bg-card hover:bg-muted/40 text-muted-foreground'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-medium text-xs text-foreground">
+                    <Lock className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Invite-Only</span>
+                  </div>
+                  <span className="text-[11px] leading-tight text-muted-foreground">
+                    Joined via invite link
+                  </span>
+                </button>
+              </div>
             </div>
             <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground flex items-start gap-2">
               <Link2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />

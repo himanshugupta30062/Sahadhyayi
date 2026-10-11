@@ -39,7 +39,7 @@ const AuthenticatedActions: React.FC<AuthenticatedActionsProps> = ({ book, onDow
   if (!user) {
     return (
       <div className="flex flex-col sm:flex-row gap-2 mt-3">
-        <SignInLink className="flex-1">
+        <SignInLink className="flex-1" intent="add_shelf" bookId={book.id}>
           <Button
             variant="outline"
             size="sm"

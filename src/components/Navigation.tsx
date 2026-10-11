@@ -91,21 +91,21 @@ const Navigation = () => {
       aria-label="Main"
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200'
-          : 'bg-white/90 backdrop-blur-sm'
+          ? 'bg-background/95 backdrop-blur-md shadow-xs border-b border-border'
+          : 'bg-background/85 backdrop-blur-sm border-b border-border/40'
       }`}
     >
       {/* Skip to Content accessibility link */}
       <a
         href="#main"
-        className="sr-only focus:not-sr-only absolute left-2 top-2 bg-white text-gray-800 p-2 rounded"
+        className="sr-only focus:not-sr-only absolute left-2 top-2 bg-background text-foreground border border-border p-2 rounded z-50"
       >
         Skip to main content
       </a>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-3 font-bold text-2xl text-gray-800">
+          <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-3 font-bold text-2xl text-foreground">
             <EnhancedLazyImage
               src="/lovable-uploads/logo-small.webp"
               alt="Sahadhyayi navigation logo"
@@ -125,11 +125,11 @@ const Navigation = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`text-sm font-medium transition-colors duration-200 hover:text-amber-600 ${
+                    className={`text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] ${
                       (location.pathname === item.href || 
                        (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                        ? 'text-amber-600 border-b-2 border-amber-600 pb-1' 
-                        : 'text-gray-700'
+                        ? 'text-[hsl(var(--brand-primary))] border-b-2 border-[hsl(var(--brand-primary))] pb-1 font-semibold' 
+                        : 'text-muted-foreground'
                     }`}
                   >
                     {item.name}
@@ -222,7 +222,7 @@ const Navigation = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+                className="p-2 border border-border text-foreground hover:bg-muted"
                 aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
                 ref={menuButtonRef}
               >
@@ -235,7 +235,7 @@ const Navigation = () => {
         {/* Mobile Navigation Menu */}
         {isMobile && isOpen && (
           <div
-            className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md"
+            className="md:hidden border-t border-border bg-background/98 backdrop-blur-md"
             ref={menuRef}
           >
             <div className="px-2 pt-2 pb-3 space-y-1">
@@ -247,8 +247,8 @@ const Navigation = () => {
                   className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                     (location.pathname === item.href || 
                      (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                      ? 'text-amber-600 bg-amber-50' 
-                      : 'text-gray-700 hover:text-amber-600 hover:bg-gray-50'
+                      ? 'text-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.1)] font-semibold' 
+                      : 'text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted'
                   }`}
                 >
                   {item.name}
@@ -256,7 +256,7 @@ const Navigation = () => {
               ))}
 
               {user ? (
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-border">
                   <div className="flex items-center px-3 py-2">
                     <Avatar className="h-10 w-10 mr-3">
                       <AvatarImage src={user.user_metadata?.avatar_url} />
@@ -265,16 +265,16 @@ const Navigation = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-foreground">
                         {user.user_metadata?.full_name || user.email}
                       </div>
-                      <div className="text-xs text-gray-500">{user.email}</div>
+                      <div className="text-xs text-muted-foreground">{user.email}</div>
                     </div>
                   </div>
                   <Link
                     to="/profile"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                    className="block px-3 py-2 text-sm font-medium text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted rounded-md"
                   >
                     <User className="inline mr-2 h-4 w-4" />
                     Profile
@@ -282,23 +282,23 @@ const Navigation = () => {
                   <Link
                     to="/profile"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                    className="block px-3 py-2 text-sm font-medium text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted rounded-md"
                   >
                     <Settings className="inline mr-2 h-4 w-4" />
                     Account Settings
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="block w-full text-left px-3 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-50 rounded-md"
+                    className="block w-full text-left px-3 py-2 text-sm font-medium text-foreground hover:text-destructive hover:bg-muted rounded-md"
                   >
                     <LogOut className="inline mr-2 h-4 w-4" />
                     Sign Out
                   </button>
                 </div>
               ) : (
-                <div className="pt-4 space-y-3 border-t border-gray-200">
+                <div className="pt-4 space-y-3 border-t border-border">
                   <Link to="/auth" onClick={() => setIsOpen(false)} className="block">
-                    <Button size="sm" className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white">
+                    <Button size="sm" className="w-full bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white">
                       <LogIn className="w-4 h-4 mr-1.5" />
                       Sign In
                     </Button>

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/authHelpers';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { Mail, Lock, User, Eye, EyeOff, BookOpen, LogIn, UserPlus } from 'lucide-react';
 import { PasswordStrength } from '@/components/ui/password-strength';
 import { validateEmail, validatePassword, sanitizeInput, isRateLimited } from '@/utils/validation';
@@ -47,15 +48,49 @@ const Auth = () => {
   }, [defaultTab]);
 
   useEffect(() => {
-    if (user) navigate(redirectPath, { replace: true });
-  }, [user, navigate, redirectPath]);
+    if (user) {
+      const intent = searchParams.get('intent') || location.state?.intent;
+      const bookId = searchParams.get('book_id') || location.state?.bookId;
+
+      if (intent === 'add_shelf' && bookId) {
+        supabase
+          .from('user_bookshelf')
+          .insert({
+            user_id: user.id,
+            book_id: bookId,
+            status: 'want_to_read',
+          })
+          .then(({ error: insertError }) => {
+            if (!insertError) {
+              window.dispatchEvent(new Event('shelfUpdated'));
+              try {
+                localStorage.setItem('sahadhyayi_shelf_sync', Date.now().toString());
+              } catch {
+                // ignore in restricted mode
+              }
+              toast({
+                title: 'Book Added to Bookshelf!',
+                description: 'We saved this book to your shelf automatically.',
+              });
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            navigate(redirectPath, { replace: true });
+          });
+      } else {
+        navigate(redirectPath, { replace: true });
+      }
+    }
+  }, [user, navigate, redirectPath, searchParams, location.state, toast]);
 
   const switchTab = (tab: AuthTab) => {
     setActiveTab(tab);
     setError('');
     setSuccess('');
     const nextPath = tab === 'signup' ? '/signup' : '/signin';
-    const nextSearch = redirectParam ? `?redirect=${encodeURIComponent(redirectParam)}` : '';
+    const currentParams = new URLSearchParams(searchParams);
+    const nextSearch = currentParams.toString() ? `?${currentParams.toString()}` : '';
     if (location.pathname !== nextPath || location.search !== nextSearch) {
       navigate(`${nextPath}${nextSearch}`, { replace: true, state: location.state });
     }
@@ -197,6 +232,13 @@ const Auth = () => {
                   Sign Up
                 </button>
               </div>
+
+              {(searchParams.get('intent') === 'add_shelf' || location.state?.intent === 'add_shelf') && (
+                <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 shrink-0 text-amber-600" />
+                  <span>Sign in or create an account to automatically add this book to your shelf!</span>
+                </div>
+              )}
 
               {error && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mb-4">
