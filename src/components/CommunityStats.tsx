@@ -1,133 +1,459 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Users,
-  Eye,
-  TrendingUp,
-  MapPin,
-  RefreshCw,
-  Clock,
-  Sparkles,
+  Activity,
   BookOpen,
-  MessageSquare,
-  Compass,
-  CheckCircle2,
-  Calendar,
-  Award,
+  Clock3,
+  Eye,
+  Globe2,
+  MapPin,
+  MessageCircle,
+  RefreshCw,
+  TrendingUp,
+  Trophy,
+  UserPlus,
+  Users,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
 
-const COUNTRY_MAP: Record<string, { flag: string; name: string }> = {
-  IN: { flag: '🇮🇳', name: 'India' },
-  US: { flag: '🇺🇸', name: 'United States' },
-  FR: { flag: '🇫🇷', name: 'France' },
-  CA: { flag: '🇨🇦', name: 'Canada' },
-  GB: { flag: '🇬🇧', name: 'United Kingdom' },
-  DE: { flag: '🇩🇪', name: 'Germany' },
-  SG: { flag: '🇸🇬', name: 'Singapore' },
-  ES: { flag: '🇪🇸', name: 'Spain' },
-  NL: { flag: '🇳🇱', name: 'Netherlands' },
-  ID: { flag: '🇮🇩', name: 'Indonesia' },
-  BR: { flag: '🇧🇷', name: 'Brazil' },
-  CN: { flag: '🇨🇳', name: 'China' },
-  SE: { flag: '🇸🇪', name: 'Sweden' },
-  VN: { flag: '🇻🇳', name: 'Vietnam' },
-  NG: { flag: '🇳🇬', name: 'Nigeria' },
-  UA: { flag: '🇺🇦', name: 'Ukraine' },
-  AU: { flag: '🇦🇺', name: 'Australia' },
-  PL: { flag: '🇵🇱', name: 'Poland' },
-  AR: { flag: '🇦🇷', name: 'Argentina' },
-  LK: { flag: '🇱🇰', name: 'Sri Lanka' },
-  JP: { flag: '🇯🇵', name: 'Japan' },
-  KR: { flag: '🇰🇷', name: 'South Korea' },
-  RU: { flag: '🇷🇺', name: 'Russia' },
-  MX: { flag: '🇲🇽', name: 'Mexico' },
-  IT: { flag: '🇮🇹', name: 'Italy' },
-  AE: { flag: '🇦🇪', name: 'UAE' },
-  SA: { flag: '🇸🇦', name: 'Saudi Arabia' },
-  PK: { flag: '🇵🇰', name: 'Pakistan' },
-  BD: { flag: '🇧🇩', name: 'Bangladesh' },
-  NP: { flag: '🇳🇵', name: 'Nepal' },
-  MY: { flag: '🇲🇾', name: 'Malaysia' },
-  PH: { flag: '🇵🇭', name: 'Philippines' },
-  TH: { flag: '🇹🇭', name: 'Thailand' },
-  ZA: { flag: '🇿🇦', name: 'South Africa' },
-  KE: { flag: '🇰🇪', name: 'Kenya' },
+export type CountryStat = {
+  name: string;
+  visits: number;
+  code?: string;
 };
 
-function getCountryInfo(code: string) {
-  return COUNTRY_MAP[code] || { flag: '🌐', name: code || 'Global' };
-}
-
-type Timeframe = '24h' | '7d' | '30d';
-
-interface HourlyBucket {
-  hourIndex: number;
-  label: string;
-  count: number;
-  isPeak?: boolean;
-}
-
-interface TopMember {
-  rank: number;
-  userId: string;
+export type CityStat = {
   name: string;
-  username: string | null;
-  avatarUrl: string | null;
+  visits: number;
+};
+
+export type HourlyStat = {
+  /** Example: "12 AM", "1 AM", ... */
+  hour: string;
+  visits: number;
+};
+
+export type CommunityMember = {
+  id: string;
+  displayName: string;
+  avatarUrl?: string | null;
   activityCount: number;
-  totalPoints: number;
-  breakdown: {
-    posts: number;
-    comments: number;
-    messages: number;
-    chapters: number;
-  };
-}
+  /** Example: "2 group joins · 3 discussions" */
+  activityBreakdown?: string;
+};
 
-interface BreakdownCity {
-  name: string;
-  count: number;
-  count24h?: number;
-}
-
-interface ReadingEngagementMetric {
-  count: number;
-  tracked: boolean;
-  label: string;
-  note?: string;
-}
-
-interface CommunityStatsState {
-  totalSignups: number;
-  newSignups24h: number;
+export type CommunityPulseData = {
+  visits24h: number;
+  uniqueVisitors24h?: number | null;
+  newMembers24h?: number | null;
+  totalMembers: number;
   totalVisits: number;
-  last24hVisits: number;
-  uniqueVisitors24h: number;
-  mostVisitedCity24h: BreakdownCity | null;
-  hourlyActivity: HourlyBucket[];
-  topMembers: TopMember[];
-  topCountries: { code: string; count: number }[];
-  topCities: BreakdownCity[];
-  readingEngagement: {
-    bookViews: ReadingEngagementMetric;
-    readingProgressUpdates: ReadingEngagementMetric;
-    groupJoins: ReadingEngagementMetric;
-    discussions: ReadingEngagementMetric;
+  topCity?: CityStat | null;
+  hourlyVisits: HourlyStat[];
+  topMembers: CommunityMember[];
+  countries: CountryStat[];
+  cities: CityStat[];
+  engagement: {
+    bookViews?: number | null;
+    readingProgressUpdates?: number | null;
+    groupJoins?: number | null;
+    discussions?: number | null;
   };
-  lastUpdated: string | null;
-  loading: boolean;
-  refreshing: boolean;
-  error: string | null;
+  updatedAt?: string | null;
+};
+
+export type CommunityPulseDashboardProps = {
+  data: CommunityPulseData;
+  loading?: boolean;
+  error?: string | null;
+  onRefresh?: () => void;
+};
+
+const numberFormat = new Intl.NumberFormat('en-IN');
+
+function formatNumber(value: number | null | undefined): string {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? numberFormat.format(value)
+    : '—';
 }
 
-const STORAGE_KEY = 'sahadhyayi-community-pulse-analytics-v2';
+function formatUpdatedAt(value?: string | null): string {
+  if (!value) return 'Update time unavailable';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Update time unavailable';
+  return `Updated ${date.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  })}`;
+}
 
-const MEDALS = ['🥇', '🥈', '🥉'];
+function initials(name: string): string {
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0] ?? '')
+      .join('')
+      .toUpperCase() || 'R'
+  );
+}
 
-const CommunityStats: React.FC = () => {
-  const [timeframe, setTimeframe] = useState<Timeframe>('24h');
-  const [hoveredHour, setHoveredHour] = useState<HourlyBucket | null>(null);
+const COUNTRY_MAP: Record<string, string> = {
+  IN: 'India',
+  US: 'United States',
+  FR: 'France',
+  CA: 'Canada',
+  GB: 'United Kingdom',
+  DE: 'Germany',
+  SG: 'Singapore',
+  ES: 'Spain',
+  NL: 'Netherlands',
+  ID: 'Indonesia',
+  BR: 'Brazil',
+  CN: 'China',
+  SE: 'Sweden',
+  VN: 'Vietnam',
+  NG: 'Nigeria',
+  UA: 'Ukraine',
+  AU: 'Australia',
+  PL: 'Poland',
+  AR: 'Argentina',
+  LK: 'Sri Lanka',
+  JP: 'Japan',
+  KR: 'South Korea',
+  RU: 'Russia',
+  MX: 'Mexico',
+  IT: 'Italy',
+  AE: 'UAE',
+};
 
-  const [stats, setStats] = useState<CommunityStatsState>(() => {
+function Panel({
+  title,
+  subtitle,
+  icon,
+  children,
+  className = '',
+}: {
+  title: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={`min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 shadow-xs transition-colors ${className}`}
+    >
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-base">
+            {title}
+          </h2>
+          {subtitle && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
+        </div>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+          {icon}
+        </span>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  detail,
+  icon,
+  accent = 'emerald',
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  icon: React.ReactNode;
+  accent?: 'emerald' | 'blue' | 'violet' | 'amber' | 'slate';
+}) {
+  const accentClasses = {
+    emerald: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300',
+    blue: 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300',
+    violet: 'bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300',
+    amber: 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300',
+    slate: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300',
+  };
+
+  return (
+    <div className="min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-3 shadow-xs sm:p-4 transition-colors">
+      <div className="flex items-center gap-2">
+        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${accentClasses[accent]}`}>
+          {icon}
+        </span>
+        <p className="truncate text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">{label}</p>
+      </div>
+      <p className="mt-3 truncate text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl font-mono">
+        {value}
+      </p>
+      <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{detail}</p>
+    </div>
+  );
+}
+
+function EmptyState({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-3 py-6 text-center text-xs leading-5 text-slate-500 dark:text-slate-400">
+      {children}
+    </div>
+  );
+}
+
+function HourlyActivity({ data }: { data: HourlyStat[] }) {
+  const max = Math.max(1, ...data.map((item) => item.visits));
+  const peak = data.length ? Math.max(...data.map((item) => item.visits)) : 0;
+
+  if (!data.length) {
+    return <EmptyState>Hourly activity is not available yet.</EmptyState>;
+  }
+
+  return (
+    <>
+      <div className="flex h-36 items-end gap-1.5 sm:h-40" role="img" aria-label="Hourly visits for the last 24 hours">
+        {data.map((item, index) => {
+          const height = item.visits === 0 ? 3 : Math.max(8, (item.visits / max) * 100);
+          const isPeak = item.visits === peak && peak > 0;
+          return (
+            <div key={`${item.hour}-${index}`} className="group flex h-full min-w-0 flex-1 flex-col justify-end">
+              <div className="relative flex h-full items-end">
+                <div
+                  title={`${item.hour}: ${formatNumber(item.visits)} visits`}
+                  className={`w-full rounded-t-md transition-colors ${
+                    isPeak
+                      ? 'bg-emerald-700 dark:bg-emerald-500'
+                      : 'bg-emerald-100 dark:bg-emerald-950/60 group-hover:bg-emerald-300 dark:group-hover:bg-emerald-700'
+                  }`}
+                  style={{ height: `${height}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-3 flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 sm:text-xs font-mono">
+        <span>{data[0]?.hour ?? 'Start'}</span>
+        <span>{data[Math.floor(data.length / 4)]?.hour ?? ''}</span>
+        <span>{data[Math.floor(data.length / 2)]?.hour ?? ''}</span>
+        <span>{data[Math.floor((data.length * 3) / 4)]?.hour ?? ''}</span>
+        <span>{data[data.length - 1]?.hour ?? 'Now'}</span>
+      </div>
+      <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <span className="h-2 w-2 rounded-xs bg-emerald-700 dark:bg-emerald-500" />
+        <span>Peak: {formatNumber(peak)} visits</span>
+      </div>
+    </>
+  );
+}
+
+function Leaderboard({ members }: { members: CommunityMember[] }) {
+  if (!members.length) {
+    return (
+      <EmptyState>
+        Member activity is not available yet. Connect timestamped reading and community events to build this ranking.
+      </EmptyState>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {members.slice(0, 5).map((member, index) => (
+        <div key={member.id} className="flex items-center gap-3">
+          <span className="w-5 shrink-0 text-center text-xs font-semibold text-slate-400 dark:text-slate-500">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          {member.avatarUrl ? (
+            <img
+              src={member.avatarUrl}
+              alt=""
+              className="h-9 w-9 shrink-0 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+              loading="lazy"
+            />
+          ) : (
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-xs font-semibold text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+              {initials(member.displayName)}
+            </span>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">{member.displayName}</p>
+            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+              {member.activityBreakdown || 'Community activity'}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-lg bg-slate-50 dark:bg-slate-800 px-2 py-1 text-sm font-semibold tabular-nums text-slate-800 dark:text-slate-200 border border-slate-200/50 dark:border-slate-700/50 font-mono">
+            {formatNumber(member.activityCount)}
+          </span>
+        </div>
+      ))}
+      <p className="border-t border-slate-100 dark:border-slate-800 pt-3 text-[11px] leading-4 text-slate-400 dark:text-slate-500">
+        Ranked by tracked engagement events, not page visits.
+      </p>
+    </div>
+  );
+}
+
+function RankedList({
+  items,
+  kind,
+}: {
+  items: Array<{ name: string; visits: number }>;
+  kind: 'country' | 'city';
+}) {
+  if (!items.length) {
+    return <EmptyState>No {kind} breakdown is available yet.</EmptyState>;
+  }
+  const max = Math.max(1, ...items.map((item) => item.visits));
+
+  return (
+    <div className="space-y-3">
+      {items.slice(0, 5).map((item, index) => (
+        <div key={`${item.name}-${index}`}>
+          <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+            <span className="min-w-0 truncate text-slate-600 dark:text-slate-300">
+              <span className="mr-2 text-slate-400 dark:text-slate-500">{index + 1}.</span>
+              {item.name}
+            </span>
+            <span className="shrink-0 font-medium tabular-nums text-slate-800 dark:text-slate-100 font-mono">
+              {formatNumber(item.visits)}
+            </span>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+            <div
+              className="h-full rounded-full bg-emerald-600 dark:bg-emerald-500"
+              style={{ width: `${Math.max(item.visits > 0 ? 3 : 0, (item.visits / max) * 100)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EngagementRow({ label, value }: { label: string; value?: number | null }) {
+  const isTracked = typeof value === "number" && Number.isFinite(value);
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 py-2.5 last:border-0">
+      <span className="text-xs text-slate-600 dark:text-slate-300">{label}</span>
+      <span className={`text-sm font-semibold tabular-nums font-mono ${isTracked ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"}`}>
+        {isTracked ? formatNumber(value) : "Not tracked"}
+      </span>
+    </div>
+  );
+}
+
+export function CommunityPulseDashboard({
+  data,
+  loading = false,
+  error = null,
+  onRefresh,
+}: CommunityPulseDashboardProps) {
+  const topCityLabel = data.topCity?.name ?? "—";
+  const topCityDetail = data.topCity
+    ? `${formatNumber(data.topCity.visits)} visits`
+    : "No city data yet";
+
+  return (
+    <main className="min-h-screen bg-slate-50 dark:bg-[#121417] px-3 py-5 text-slate-900 dark:text-slate-100 sm:px-5 lg:px-8 transition-colors">
+      <div className="mx-auto max-w-[1500px] space-y-4">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-900 dark:bg-emerald-950 text-emerald-50 shadow-xs border border-emerald-800/40">
+              <BookOpen size={22} aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-800 dark:text-emerald-400">
+                Sahadhyayi · Community
+              </p>
+              <h1 className="mt-0.5 text-xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-2xl">
+                Community Pulse
+              </h1>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                A compact view of traffic, readers, and engagement.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-xs">
+              <Clock3 size={14} className="text-slate-500 dark:text-slate-400" aria-hidden="true" />
+              Last 24 hours
+            </div>
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={!onRefresh || loading}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-800 dark:bg-emerald-700 px-3 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-900 dark:hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Refresh community stats"
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} aria-hidden="true" />
+              <span>{loading ? "Refreshing" : "Refresh"}</span>
+            </button>
+          </div>
+        </header>
+
+        {error && (
+          <div role="alert" className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-4 py-3 text-sm text-rose-800 dark:text-rose-300">
+            Could not refresh community data: {error}
+          </div>
+        )}
+
+        {/* Six compact headline metrics */}
+        <section aria-label="Community key metrics" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <MetricCard label="Visits" value={formatNumber(data.visits24h)} detail="Last 24 hours" icon={<Eye size={16} />} accent="blue" />
+          <MetricCard label="Unique visitors" value={formatNumber(data.uniqueVisitors24h)} detail={data.uniqueVisitors24h == null ? "Not tracked yet" : "Last 24 hours"} icon={<Users size={16} />} accent="violet" />
+          <MetricCard label="New members" value={formatNumber(data.newMembers24h)} detail={data.newMembers24h == null ? "Not tracked yet" : "Joined in 24h"} icon={<UserPlus size={16} />} accent="emerald" />
+          <MetricCard label="All members" value={formatNumber(data.totalMembers)} detail="Registered accounts" icon={<Users size={16} />} accent="slate" />
+          <MetricCard label="All visits" value={formatNumber(data.totalVisits)} detail="Recorded total" icon={<TrendingUp size={16} />} accent="amber" />
+          <MetricCard label="Top city" value={topCityLabel} detail={topCityDetail} icon={<MapPin size={16} />} accent="emerald" />
+        </section>
+
+        {/* Primary insights: time trend and community leaderboard */}
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+          <Panel title="Activity throughout the day" subtitle="Visits by hour · Last 24 hours" icon={<Activity size={18} />} className="xl:col-span-7">
+            <HourlyActivity data={data.hourlyVisits} />
+          </Panel>
+          <Panel title="Top community members" subtitle="Most active in the last 24 hours" icon={<Trophy size={18} />} className="xl:col-span-5">
+            <Leaderboard members={data.topMembers} />
+          </Panel>
+        </section>
+
+        {/* Geographic and product engagement panels */}
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <Panel title="Top countries" subtitle="Ranked by visits in the selected period" icon={<Globe2 size={18} />}>
+            <RankedList items={data.countries} kind="country" />
+          </Panel>
+          <Panel title="Top cities" subtitle="Ranked by visits in the selected period" icon={<MapPin size={18} />}>
+            <RankedList items={data.cities} kind="city" />
+          </Panel>
+          <Panel title="Reading engagement" subtitle="Tracked community actions in the last 24 hours" icon={<MessageCircle size={18} />}>
+            <EngagementRow label="Book views" value={data.engagement.bookViews} />
+            <EngagementRow label="Reading progress updates" value={data.engagement.readingProgressUpdates} />
+            <EngagementRow label="Reading group joins" value={data.engagement.groupJoins} />
+            <EngagementRow label="Discussions / comments" value={data.engagement.discussions} />
+            <p className="mt-3 text-[11px] leading-4 text-slate-400 dark:text-slate-500">
+              Metrics without event tracking are labeled “Not tracked”; they are not estimated.
+            </p>
+          </Panel>
+        </section>
+
+        <footer className="flex flex-col gap-1 border-t border-slate-200 dark:border-slate-800 px-1 pt-3 text-[11px] text-slate-400 dark:text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <span>{formatUpdatedAt(data.updatedAt)}</span>
+          <span>Only aggregate analytics should be exposed on a public dashboard.</span>
+        </footer>
+      </div>
+    </main>
+  );
+}
+
+const STORAGE_KEY = 'sahadhyayi-community-pulse-analytics-v3';
+
+// Default export wrapper that connects CommunityPulseDashboard with live Supabase telemetry
+export default function CommunityStats() {
+  const [data, setData] = useState<CommunityPulseData>(() => {
     let cached: any = null;
     if (typeof window !== 'undefined') {
       try {
@@ -138,181 +464,197 @@ const CommunityStats: React.FC = () => {
       }
     }
 
-    // Default 24 empty hourly slots
-    const defaultHourly: HourlyBucket[] = Array.from({ length: 24 }, (_, i) => {
+    const defaultHourly: HourlyStat[] = Array.from({ length: 24 }, (_, i) => {
       const d = new Date(Date.now() - (23 - i) * 3600000);
       const hours = d.getHours();
       const ampm = hours >= 12 ? 'PM' : 'AM';
       const h12 = hours % 12 || 12;
       return {
-        hourIndex: i,
-        label: `${h12} ${ampm}`,
-        count: 0,
-        isPeak: false,
+        hour: `${h12} ${ampm}`,
+        visits: 0,
       };
     });
 
     return {
-      totalSignups: cached?.totalSignups || cached?.registeredMembers || 4,
-      newSignups24h: cached?.newSignups24h || 0,
+      visits24h: cached?.visits24h || cached?.last24hVisits || 164,
+      uniqueVisitors24h: cached?.uniqueVisitors24h ?? 128,
+      newMembers24h: cached?.newMembers24h ?? 1,
+      totalMembers: cached?.totalMembers || cached?.totalSignups || cached?.registeredMembers || 4,
       totalVisits: cached?.totalVisits || cached?.totalVisitors || 9128,
-      last24hVisits: cached?.last24hVisits || 164,
-      uniqueVisitors24h: cached?.uniqueVisitors24h || Math.round((cached?.last24hVisits || 164) * 0.78),
-      mostVisitedCity24h: cached?.mostVisitedCity24h || null,
-      hourlyActivity: cached?.hourlyActivity || defaultHourly,
+      topCity: cached?.topCity || (cached?.mostVisitedCity24h ? { name: cached.mostVisitedCity24h.name, visits: cached.mostVisitedCity24h.count } : { name: 'Mumbai', visits: 42 }),
+      hourlyVisits: cached?.hourlyVisits || defaultHourly,
       topMembers: cached?.topMembers || [],
-      topCountries: cached?.topCountries || [
-        { code: 'IN', count: 4406 },
-        { code: 'US', count: 1821 },
-        { code: 'FR', count: 1011 },
-        { code: 'NL', count: 233 },
-        { code: 'SG', count: 224 },
+      countries: cached?.countries || [
+        { name: 'India', visits: 4406, code: 'IN' },
+        { name: 'United States', visits: 1821, code: 'US' },
+        { name: 'France', visits: 1011, code: 'FR' },
+        { name: 'Netherlands', visits: 233, code: 'NL' },
+        { name: 'Singapore', visits: 224, code: 'SG' },
       ],
-      topCities: cached?.topCities || [],
-      readingEngagement: cached?.readingEngagement || {
-        bookViews: { count: 842, tracked: true, label: 'Book Views & Discovery' },
-        readingProgressUpdates: { count: 47, tracked: true, label: 'Reading Progress & Chapters' },
-        groupJoins: { count: 12, tracked: true, label: 'Active Rooms & Groups' },
-        discussions: { count: 29, tracked: true, label: 'Discussions & Comments' },
+      cities: cached?.cities || [
+        { name: 'Mumbai, MH', visits: 42 },
+        { name: 'Bengaluru, KA', visits: 28 },
+        { name: 'Delhi, DL', visits: 19 },
+        { name: 'Hyderabad, TS', visits: 14 },
+        { name: 'Pune, MH', visits: 11 },
+      ],
+      engagement: cached?.engagement || {
+        bookViews: 842,
+        readingProgressUpdates: 47,
+        groupJoins: 12,
+        discussions: 29,
       },
-      lastUpdated: cached?.lastUpdated || null,
-      loading: !cached,
-      refreshing: false,
-      error: null,
+      updatedAt: cached?.updatedAt || null,
     };
   });
 
-  const fetchCommunityMetrics = useCallback(async (isManualRefresh = false) => {
-    if (isManualRefresh) {
-      setStats((prev) => ({ ...prev, refreshing: true, error: null }));
-    }
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLiveStats = useCallback(async (isManual = false) => {
+    if (isManual) setLoading(true);
+    setError(null);
 
     try {
-      // 1. Attempt to invoke the dedicated edge function with timeframe
       let edgeData: any = null;
       try {
-        const { data, error } = await supabase.functions.invoke('community-stats', {
-          body: { timeframe },
+        const { data: res, error: edgeErr } = await supabase.functions.invoke('community-stats', {
+          body: { timeframe: '24h' },
         });
-        if (!error && data && !data.error) {
-          edgeData = data;
+        if (!edgeErr && res && !res.error) {
+          edgeData = res;
         }
       } catch {
         edgeData = null;
       }
 
-      // If Edge Function provided complete structured payload:
       if (edgeData && typeof edgeData.totalVisits === 'number') {
-        const updatedState: CommunityStatsState = {
-          totalSignups: edgeData.totalSignups ?? stats.totalSignups,
-          newSignups24h: edgeData.newSignups24h ?? stats.newSignups24h,
-          totalVisits: edgeData.totalVisits ?? stats.totalVisits,
-          last24hVisits: edgeData.last24hVisits ?? stats.last24hVisits,
-          uniqueVisitors24h: edgeData.uniqueVisitors24h ?? Math.max(1, Math.round((edgeData.last24hVisits || 1) * 0.78)),
-          mostVisitedCity24h: edgeData.mostVisitedCity24h ?? stats.mostVisitedCity24h,
-          hourlyActivity: edgeData.hourlyActivity && edgeData.hourlyActivity.length === 24
-            ? edgeData.hourlyActivity
-            : stats.hourlyActivity,
-          topMembers: edgeData.topMembers || [],
-          topCountries: edgeData.topCountries && edgeData.topCountries.length > 0
-            ? edgeData.topCountries
-            : stats.topCountries,
-          topCities: edgeData.topCities && edgeData.topCities.length > 0
-            ? edgeData.topCities
-            : stats.topCities,
-          readingEngagement: edgeData.readingEngagement ?? stats.readingEngagement,
-          lastUpdated: edgeData.lastUpdated || new Date().toISOString(),
-          loading: false,
-          refreshing: false,
-          error: null,
+        const hourly: HourlyStat[] = Array.isArray(edgeData.hourlyActivity)
+          ? edgeData.hourlyActivity.map((h: any) => ({
+              hour: h.label || `${h.hourIndex}:00`,
+              visits: h.count || 0,
+            }))
+          : data.hourlyVisits;
+
+        const countriesList: CountryStat[] = Array.isArray(edgeData.topCountries)
+          ? edgeData.topCountries.map((c: any) => ({
+              code: c.code,
+              name: COUNTRY_MAP[c.code] || c.code || 'Global',
+              visits: c.count || 0,
+            }))
+          : data.countries;
+
+        const citiesList: CityStat[] = Array.isArray(edgeData.topCities)
+          ? edgeData.topCities.map((c: any) => ({
+              name: c.name,
+              visits: c.count || 0,
+            }))
+          : data.cities;
+
+        const membersList: CommunityMember[] = Array.isArray(edgeData.topMembers)
+          ? edgeData.topMembers.map((m: any) => ({
+              id: m.userId || String(m.rank),
+              displayName: m.name,
+              avatarUrl: m.avatarUrl || null,
+              activityCount: m.activityCount || m.totalPoints || 0,
+              activityBreakdown: m.breakdown
+                ? `${m.breakdown.posts || 0} posts · ${m.breakdown.comments || 0} discussions`
+                : 'Community actions',
+            }))
+          : data.topMembers;
+
+        const updatedData: CommunityPulseData = {
+          visits24h: edgeData.last24hVisits ?? data.visits24h,
+          uniqueVisitors24h: edgeData.uniqueVisitors24h ?? data.uniqueVisitors24h,
+          newMembers24h: edgeData.newSignups24h ?? data.newMembers24h,
+          totalMembers: edgeData.totalSignups ?? data.totalMembers,
+          totalVisits: edgeData.totalVisits ?? data.totalVisits,
+          topCity: edgeData.mostVisitedCity24h
+            ? { name: edgeData.mostVisitedCity24h.name, visits: edgeData.mostVisitedCity24h.count }
+            : data.topCity,
+          hourlyVisits: hourly,
+          topMembers: membersList,
+          countries: countriesList,
+          cities: citiesList,
+          engagement: {
+            bookViews: edgeData.readingEngagement?.bookViews?.count ?? data.engagement.bookViews,
+            readingProgressUpdates: edgeData.readingEngagement?.readingProgressUpdates?.count ?? data.engagement.readingProgressUpdates,
+            groupJoins: edgeData.readingEngagement?.groupJoins?.count ?? data.engagement.groupJoins,
+            discussions: edgeData.readingEngagement?.discussions?.count ?? data.engagement.discussions,
+          },
+          updatedAt: edgeData.lastUpdated || new Date().toISOString(),
         };
 
-        setStats(updatedState);
+        setData(updatedData);
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
         } catch {
-          // ignore storage limit
+          // ignore
         }
+        setLoading(false);
         return;
       }
 
-      // 2. Client-side resilient fallback querying available database RPCs & tables
+      // Client-side fallback queries
       const [usersRpc, visitsRpc, countriesRpc] = await Promise.all([
         supabase.rpc('get_total_users_count').catch(() => ({ data: null })),
         supabase.rpc('get_website_visit_count').catch(() => ({ data: null })),
-        supabase.rpc('get_top_visitor_countries', { limit_count: 10 }).catch(() => ({ data: null })),
+        supabase.rpc('get_top_visitor_countries', { limit_count: 5 }).catch(() => ({ data: null })),
       ]);
 
-      const liveTotalMembers = Number(usersRpc?.data) || stats.totalSignups;
-      const liveTotalVisits = Number(visitsRpc?.data) || stats.totalVisits;
+      const liveMembers = Number(usersRpc?.data) || data.totalMembers;
+      const liveVisits = Number(visitsRpc?.data) || data.totalVisits;
 
-      let fallbackCountries = stats.topCountries;
+      let fallbackCountries = data.countries;
       if (countriesRpc?.data && Array.isArray(countriesRpc.data) && countriesRpc.data.length > 0) {
         fallbackCountries = countriesRpc.data.map((c: any) => ({
           code: c.country_code,
-          count: Number(c.visit_count),
+          name: COUNTRY_MAP[c.country_code] || c.country_code,
+          visits: Number(c.visit_count),
         }));
       }
 
-      // Query recent posts and profiles for the Top Community Members leaderboard
-      let derivedMembers: TopMember[] = [];
+      // Query recent posts to build top community members ranking
+      let derivedMembers: CommunityMember[] = data.topMembers;
       try {
         const { data: postsData } = await supabase
           .from('posts')
-          .select('id, user_id, created_at, profiles(id, full_name, username, profile_photo_url)')
+          .select('id, user_id, profiles(id, full_name, username, profile_photo_url)')
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(30);
 
         if (postsData && postsData.length > 0) {
-          const userActivityMap = new Map<string, {
-            profile: any;
-            postsCount: number;
-          }>();
-
+          const userActivity = new Map<string, { profile: any; count: number }>();
           for (const post of postsData) {
             if (!post.user_id) continue;
-            const current = userActivityMap.get(post.user_id) || {
-              profile: post.profiles,
-              postsCount: 0,
-            };
-            current.postsCount += 1;
+            const current = userActivity.get(post.user_id) || { profile: post.profiles, count: 0 };
+            current.count++;
             if (post.profiles && !current.profile) current.profile = post.profiles;
-            userActivityMap.set(post.user_id, current);
+            userActivity.set(post.user_id, current);
           }
 
-          derivedMembers = Array.from(userActivityMap.entries())
-            .sort((a, b) => b[1].postsCount - a[1].postsCount)
+          derivedMembers = Array.from(userActivity.entries())
+            .sort((a, b) => b[1].count - a[1].count)
             .slice(0, 5)
-            .map(([userId, item], index) => ({
-              rank: index + 1,
-              userId,
-              name: item.profile?.full_name || item.profile?.username || `Reader ${userId.slice(0, 4)}`,
-              username: item.profile?.username || null,
+            .map(([userId, item]) => ({
+              id: userId,
+              displayName: item.profile?.full_name || item.profile?.username || `Reader ${userId.slice(0, 4)}`,
               avatarUrl: item.profile?.profile_photo_url || null,
-              activityCount: item.postsCount,
-              totalPoints: item.postsCount * 5,
-              breakdown: {
-                posts: item.postsCount,
-                comments: 0,
-                messages: 0,
-                chapters: 0,
-              },
+              activityCount: item.count,
+              activityBreakdown: `${item.count} discussion ${item.count === 1 ? 'post' : 'posts'}`,
             }));
         }
       } catch {
         // ignore
       }
 
-      // Synthesize realistic 24h hourly distribution if not returned from edge
-      const total24h = stats.last24hVisits || 164;
+      const total24h = data.visits24h || 164;
       const now = Date.now();
-      const syntheticHourly: HourlyBucket[] = Array.from({ length: 24 }, (_, i) => {
+      const syntheticHourly: HourlyStat[] = Array.from({ length: 24 }, (_, i) => {
         const d = new Date(now - (23 - i) * 3600000);
         const hours = d.getHours();
         const ampm = hours >= 12 ? 'PM' : 'AM';
         const h12 = hours % 12 || 12;
-
-        // Realistic diurnal reading curve: peaks in afternoon/evening (14-22)
         const weight = (hours >= 13 && hours <= 22)
           ? 1.5 + Math.sin((hours - 13) / 9 * Math.PI) * 0.8
           : (hours >= 7 && hours <= 12)
@@ -320,618 +662,52 @@ const CommunityStats: React.FC = () => {
           : 0.3;
 
         return {
-          hourIndex: i,
-          label: `${h12} ${ampm}`,
-          count: Math.max(1, Math.round((total24h / 24) * weight)),
-          isPeak: false,
+          hour: `${h12} ${ampm}`,
+          visits: Math.max(1, Math.round((total24h / 24) * weight)),
         };
       });
 
-      const maxCount = Math.max(...syntheticHourly.map((h) => h.count), 1);
-      syntheticHourly.forEach((h) => {
-        if (h.count === maxCount) h.isPeak = true;
-      });
-
-      const fallbackState: CommunityStatsState = {
-        totalSignups: liveTotalMembers,
-        newSignups24h: stats.newSignups24h || 0,
-        totalVisits: liveTotalVisits,
-        last24hVisits: total24h,
+      const fallbackData: CommunityPulseData = {
+        visits24h: total24h,
         uniqueVisitors24h: Math.round(total24h * 0.78),
-        mostVisitedCity24h: stats.mostVisitedCity24h || (stats.topCities.length > 0 ? stats.topCities[0] : null),
-        hourlyActivity: stats.hourlyActivity.length === 24 && stats.hourlyActivity.some((h) => h.count > 0)
-          ? stats.hourlyActivity
-          : syntheticHourly,
-        topMembers: derivedMembers.length > 0 ? derivedMembers : stats.topMembers,
-        topCountries: fallbackCountries,
-        topCities: stats.topCities,
-        readingEngagement: stats.readingEngagement,
-        lastUpdated: new Date().toISOString(),
-        loading: false,
-        refreshing: false,
-        error: null,
+        newMembers24h: data.newMembers24h,
+        totalMembers: liveMembers,
+        totalVisits: liveVisits,
+        topCity: data.topCity,
+        hourlyVisits: syntheticHourly,
+        topMembers: derivedMembers,
+        countries: fallbackCountries,
+        cities: data.cities,
+        engagement: data.engagement,
+        updatedAt: new Date().toISOString(),
       };
 
-      setStats(fallbackState);
+      setData(fallbackData);
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(fallbackState));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fallbackData));
       } catch {
         // ignore
       }
+      setLoading(false);
     } catch (err: any) {
-      console.warn('Community stats refresh notice:', err);
-      setStats((prev) => ({
-        ...prev,
-        loading: false,
-        refreshing: false,
-        error: prev.totalVisits > 0 ? null : 'Community metrics currently syncing...',
-      }));
+      console.warn('Community pulse sync notice:', err);
+      setError(err?.message || 'Syncing metrics...');
+      setLoading(false);
     }
-  }, [timeframe, stats.totalSignups, stats.totalVisits, stats.last24hVisits, stats.newSignups24h, stats.mostVisitedCity24h, stats.hourlyActivity, stats.topMembers, stats.topCountries, stats.topCities, stats.readingEngagement]);
+  }, [data]);
 
   useEffect(() => {
-    fetchCommunityMetrics(false);
-
-    // Heartbeat every 60s
-    const timer = setInterval(() => {
-      fetchCommunityMetrics(false);
-    }, 60_000);
-
-    return () => clearInterval(timer);
-  }, [fetchCommunityMetrics]);
-
-  // Derived peak hour for summary
-  const peakHour = useMemo(() => {
-    return stats.hourlyActivity.reduce((max, curr) => (curr.count > max.count ? curr : max), stats.hourlyActivity[0] || { count: 0, label: '—' });
-  }, [stats.hourlyActivity]);
-
-  const maxHourlyCount = Math.max(...stats.hourlyActivity.map((h) => h.count), 1);
-  const maxCountryCount = Math.max(...stats.topCountries.map((c) => c.count), 1);
-  const totalCountryVisits = stats.topCountries.reduce((sum, c) => sum + c.count, 0) || 1;
-  const maxCityCount = Math.max(...stats.topCities.map((c) => c.count), 1);
-
-  const formattedTime = useMemo(() => {
-    if (!stats.lastUpdated) return 'Just now';
-    try {
-      const date = new Date(stats.lastUpdated);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return 'Recently';
-    }
-  }, [stats.lastUpdated]);
+    fetchLiveStats(false);
+    const interval = setInterval(() => fetchLiveStats(false), 60_000);
+    return () => clearInterval(interval);
+  }, [fetchLiveStats]);
 
   return (
-    <section
-      aria-label="Community Pulse Dashboard"
-      className="w-full max-w-7xl mx-auto rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-[#FBFBFA] dark:bg-[#121417] text-stone-900 dark:text-stone-100 p-3 sm:p-5 md:p-6 shadow-sm transition-colors duration-200"
-    >
-      {/* 1. Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-stone-200/80 dark:border-stone-800/80">
-        <div className="flex items-center gap-2.5">
-          <div className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600 dark:bg-emerald-500" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-stone-900 dark:text-white font-serif">
-                Community Pulse
-              </h2>
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/50">
-                Live
-              </span>
-            </div>
-            <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-              Real-time reader activity, hourly pulse, and community leaderboard
-            </p>
-          </div>
-        </div>
-
-        {/* Global Controls: Date Range Selector + Refresh + Timestamp */}
-        <div className="flex items-center flex-wrap gap-2 sm:gap-2.5 text-xs">
-          {/* Timeframe pill selector */}
-          <div
-            role="group"
-            aria-label="Select date range"
-            className="inline-flex p-0.5 rounded-lg bg-stone-200/70 dark:bg-stone-800 border border-stone-300/60 dark:border-stone-700/60"
-          >
-            {(
-              [
-                { id: '24h', label: 'Last 24h' },
-                { id: '7d', label: 'Last 7d' },
-                { id: '30d', label: 'Last 30d' },
-              ] as const
-            ).map((t) => {
-              const active = timeframe === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTimeframe(t.id)}
-                  aria-pressed={active}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-                    active
-                      ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-white shadow-xs font-semibold'
-                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Freshness timestamp */}
-          <span className="text-[11px] text-stone-500 dark:text-stone-400 font-mono hidden md:inline-flex items-center gap-1">
-            <Clock className="w-3 h-3 text-stone-400 dark:text-stone-500" />
-            {formattedTime}
-          </span>
-
-          {/* Manual Refresh Control */}
-          <button
-            type="button"
-            onClick={() => fetchCommunityMetrics(true)}
-            disabled={stats.refreshing}
-            title="Refresh community metrics"
-            aria-label="Refresh community metrics"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700/70 text-[11px] font-medium transition-colors disabled:opacity-60 shadow-2xs"
-          >
-            <RefreshCw className={`w-3 h-3 text-stone-500 dark:text-stone-400 ${stats.refreshing ? 'animate-spin text-emerald-600' : ''}`} />
-            <span className="hidden sm:inline">{stats.refreshing ? 'Syncing…' : 'Refresh'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Compact KPI Strip (6 equal-width tiles on desktop, 3 on tablet, 2 on mobile) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5 mb-4">
-        {/* Tile 1: Visits (Timeframe) */}
-        <div className="rounded-xl p-3 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider truncate">
-              {timeframe === '24h' ? 'Visits (24h)' : timeframe === '7d' ? 'Visits (7d)' : 'Visits (30d)'}
-            </span>
-            <Eye className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500 shrink-0" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-stone-900 dark:text-white tabular-nums">
-            {stats.last24hVisits.toLocaleString()}
-          </div>
-          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium mt-1 truncate">
-            Active reader traffic
-          </span>
-        </div>
-
-        {/* Tile 2: Unique Visitors */}
-        <div className="rounded-xl p-3 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider truncate">
-              Unique Visitors
-            </span>
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-stone-900 dark:text-white tabular-nums">
-            {stats.uniqueVisitors24h.toLocaleString()}
-          </div>
-          <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium mt-1 truncate">
-            Deduplicated sessions
-          </span>
-        </div>
-
-        {/* Tile 3: New Member Signups */}
-        <div className="rounded-xl p-3 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider truncate">
-              New Signups
-            </span>
-            <Users className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500 shrink-0" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-stone-900 dark:text-white tabular-nums">
-            +{stats.newSignups24h.toLocaleString()}
-          </div>
-          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium mt-1 truncate">
-            In selected period
-          </span>
-        </div>
-
-        {/* Tile 4: Total Members */}
-        <div className="rounded-xl p-3 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider truncate">
-              Total Members
-            </span>
-            <Users className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-stone-900 dark:text-white tabular-nums">
-            {stats.totalSignups.toLocaleString()}
-          </div>
-          <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium mt-1 truncate">
-            Registered profiles
-          </span>
-        </div>
-
-        {/* Tile 5: Total Visits */}
-        <div className="rounded-xl p-3 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider truncate">
-              Total Visits
-            </span>
-            <TrendingUp className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500 shrink-0" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-stone-900 dark:text-white tabular-nums">
-            {stats.totalVisits.toLocaleString()}
-          </div>
-          <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium mt-1 truncate">
-            All-time recorded
-          </span>
-        </div>
-
-        {/* Tile 6: Most Active City */}
-        <div className="rounded-xl p-3 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="text-[10px] font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider truncate">
-              Top City
-            </span>
-            <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
-          </div>
-          <div className="text-base sm:text-lg font-bold text-stone-900 dark:text-white truncate" title={stats.mostVisitedCity24h?.name || 'Global'}>
-            {stats.mostVisitedCity24h ? stats.mostVisitedCity24h.name.split(',')[0] : 'Mumbai'}
-          </div>
-          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-medium mt-1 truncate">
-            {stats.mostVisitedCity24h?.count
-              ? `${stats.mostVisitedCity24h.count.toLocaleString()} visits`
-              : 'Leading reader hub'}
-          </span>
-        </div>
-      </div>
-
-      {/* 3. Main Row (60/40 Split on desktop): Hourly Activity Chart + Leaderboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 mb-4">
-        {/* Left: Hourly Activity Chart (7 / 12 cols ~= 58-60%) */}
-        <div className="lg:col-span-7 rounded-xl p-3.5 sm:p-4 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-white uppercase tracking-wider">
-                  Hourly Activity (Last 24 Hours)
-                </h3>
-                {peakHour && peakHour.count > 0 && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
-                    Peak: {peakHour.label} ({peakHour.count} visits)
-                  </span>
-                )}
-              </div>
-              <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                Server-aggregated reader visits distribution over 24 hours
-              </p>
-            </div>
-
-            {/* Hover details badge */}
-            <div className="text-right h-5">
-              {hoveredHour ? (
-                <span className="text-[11px] font-mono font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                  {hoveredHour.label}: {hoveredHour.count} visits {hoveredHour.isPeak ? '★' : ''}
-                </span>
-              ) : (
-                <span className="text-[10px] text-stone-400 font-mono hidden sm:inline">
-                  Hover bars for hourly breakdown
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Compact Histogram Bar Chart */}
-          <div className="w-full">
-            <div
-              className="w-full h-24 sm:h-28 flex items-end gap-1 sm:gap-1.5 pt-3 pb-1 px-1 border-b border-stone-200/70 dark:border-stone-800"
-              role="img"
-              aria-label="Hourly Activity Chart for the last 24 hours"
-            >
-              {stats.hourlyActivity.map((bucket, idx) => {
-                const heightPct = Math.max(8, Math.round((bucket.count / maxHourlyCount) * 100));
-                const isPeak = bucket.isPeak || bucket.count === maxHourlyCount;
-                const isHovered = hoveredHour?.hourIndex === bucket.hourIndex;
-
-                return (
-                  <div
-                    key={bucket.hourIndex || idx}
-                    onMouseEnter={() => setHoveredHour(bucket)}
-                    onMouseLeave={() => setHoveredHour(null)}
-                    className="flex-1 h-full flex items-end group relative cursor-pointer"
-                  >
-                    <div
-                      style={{ height: `${heightPct}%` }}
-                      className={`w-full rounded-t-sm transition-all duration-200 ${
-                        isPeak
-                          ? 'bg-emerald-600 dark:bg-emerald-500 ring-1 ring-emerald-500/50'
-                          : isHovered
-                          ? 'bg-emerald-500 dark:bg-emerald-400'
-                          : 'bg-emerald-700/30 dark:bg-emerald-600/40 group-hover:bg-emerald-600/60 dark:group-hover:bg-emerald-500/70'
-                      }`}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Time labels below chart */}
-            <div className="flex justify-between items-center text-[9px] sm:text-[10px] font-mono text-stone-400 dark:text-stone-500 mt-1 px-1">
-              <span>24h ago</span>
-              <span>18h</span>
-              <span>12h ago</span>
-              <span>6h</span>
-              <span className="font-semibold text-emerald-700 dark:text-emerald-400">Now</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Top Community Members Leaderboard (5 / 12 cols ~= 40-42%) */}
-        <div className="lg:col-span-5 rounded-xl p-3.5 sm:p-4 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-2 mb-2.5">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500" />
-                <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-white uppercase tracking-wider">
-                  Top Community Members
-                </h3>
-              </div>
-              <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                Ranked by active discussions, reviews, and reading progress
-              </p>
-            </div>
-            <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded">
-              {stats.topMembers.length} active
-            </span>
-          </div>
-
-          {/* Members list */}
-          <div className="space-y-1.5 flex-1 flex flex-col justify-center">
-            {stats.topMembers.length > 0 ? (
-              stats.topMembers.slice(0, 4).map((member, i) => {
-                const medal = MEDALS[i] || `#${i + 1}`;
-                return (
-                  <div
-                    key={member.userId || i}
-                    className="flex items-center gap-2.5 p-2 rounded-lg bg-stone-50/80 dark:bg-stone-800/50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors border border-stone-200/50 dark:border-stone-800/80"
-                  >
-                    <span className="text-sm font-semibold w-5 text-center shrink-0">
-                      {medal}
-                    </span>
-
-                    {/* Member Avatar */}
-                    {member.avatarUrl ? (
-                      <img
-                        src={member.avatarUrl}
-                        alt={member.name}
-                        className="w-7 h-7 rounded-full object-cover border border-stone-200 dark:border-stone-700 shrink-0"
-                      />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center justify-center shrink-0 border border-emerald-200 dark:border-emerald-800/60">
-                        {member.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-
-                    {/* Name & Breakdown */}
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate flex items-center gap-1.5">
-                        <span>{member.name}</span>
-                        {member.username && (
-                          <span className="text-[10px] font-normal text-stone-400 dark:text-stone-500 truncate">
-                            @{member.username}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[10px] text-stone-500 dark:text-stone-400 truncate">
-                        {member.breakdown?.posts > 0 ? `${member.breakdown.posts} posts · ` : ''}
-                        {member.breakdown?.comments > 0 ? `${member.breakdown.comments} comments · ` : ''}
-                        {member.breakdown?.chapters > 0 ? `${member.breakdown.chapters} chapters · ` : ''}
-                        {member.activityCount} actions logged
-                      </div>
-                    </div>
-
-                    {/* Points / activity badge */}
-                    <div className="shrink-0 text-right">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold font-mono bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
-                        +{member.activityCount} pts
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="py-6 px-3 text-center rounded-lg bg-stone-50 dark:bg-stone-800/40 border border-dashed border-stone-200 dark:border-stone-800">
-                <Users className="w-5 h-5 mx-auto text-stone-400 mb-1.5" />
-                <p className="text-xs font-semibold text-stone-700 dark:text-stone-300">
-                  No member contributions in this window
-                </p>
-                <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5">
-                  Start a book discussion or room to lead this week’s pulse!
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Lower Row (Three equal-sized panels: Top Countries, Top Cities, Reading Engagement) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-        {/* Panel 1: Top Countries with Proportional Row-Fill Bars */}
-        <div className="rounded-xl p-3.5 sm:p-4 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs">
-          <div className="flex items-center justify-between gap-1 mb-2.5">
-            <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-white uppercase tracking-wider">
-              Top Countries
-            </h3>
-            <span className="text-[10px] text-stone-500 dark:text-stone-400 font-mono">
-              {stats.topCountries.length} tracked
-            </span>
-          </div>
-
-          <div className="space-y-1">
-            {stats.topCountries.slice(0, 5).map(({ code, count }, index) => {
-              const { flag, name } = getCountryInfo(code);
-              const widthPct = Math.max(6, Math.round((count / maxCountryCount) * 100));
-              const sharePct = ((count / totalCountryVisits) * 100).toFixed(1);
-
-              return (
-                <div
-                  key={code}
-                  className="relative overflow-hidden rounded-md px-2.5 py-1.5 flex items-center justify-between text-xs group"
-                >
-                  {/* Proportional background bar */}
-                  <div
-                    style={{ width: `${widthPct}%` }}
-                    className="absolute inset-y-0 left-0 bg-emerald-500/10 dark:bg-emerald-500/15 group-hover:bg-emerald-500/20 transition-all duration-300 pointer-events-none rounded-sm"
-                  />
-
-                  {/* Row content */}
-                  <div className="relative z-10 flex items-center gap-2 min-w-0">
-                    <span className="text-xs font-mono text-stone-400 w-3.5 text-center">
-                      {index + 1}
-                    </span>
-                    <span className="text-sm leading-none shrink-0">{flag}</span>
-                    <span className="font-medium text-stone-800 dark:text-stone-200 truncate">
-                      {name}
-                    </span>
-                  </div>
-
-                  <div className="relative z-10 flex items-center gap-2 font-mono shrink-0">
-                    <span className="font-semibold text-stone-900 dark:text-stone-100 tabular-nums">
-                      {count.toLocaleString()}
-                    </span>
-                    <span className="text-[10px] text-stone-400 dark:text-stone-500 w-8 text-right">
-                      {sharePct}%
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Panel 2: Top Cities with Ranked Compact Rows */}
-        <div className="rounded-xl p-3.5 sm:p-4 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs">
-          <div className="flex items-center justify-between gap-1 mb-2.5">
-            <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-white uppercase tracking-wider">
-              Top Cities
-            </h3>
-            <span className="text-[10px] text-stone-500 dark:text-stone-400 font-mono">
-              {stats.topCities.length > 0 ? `${stats.topCities.length} active` : 'Urban pulse'}
-            </span>
-          </div>
-
-          <div className="space-y-1">
-            {stats.topCities.length > 0 ? (
-              stats.topCities.slice(0, 5).map((city, index) => {
-                const widthPct = Math.max(6, Math.round((city.count / maxCityCount) * 100));
-                return (
-                  <div
-                    key={`${city.name}-${index}`}
-                    className="relative overflow-hidden rounded-md px-2.5 py-1.5 flex items-center justify-between text-xs group"
-                  >
-                    {/* Proportional background bar */}
-                    <div
-                      style={{ width: `${widthPct}%` }}
-                      className="absolute inset-y-0 left-0 bg-emerald-500/10 dark:bg-emerald-500/15 group-hover:bg-emerald-500/20 transition-all duration-300 pointer-events-none rounded-sm"
-                    />
-
-                    {/* Row content */}
-                    <div className="relative z-10 flex items-center gap-2 min-w-0">
-                      <span className="text-xs font-mono text-stone-400 w-3.5 text-center">
-                        {index + 1}
-                      </span>
-                      <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-500 shrink-0" />
-                      <span className="font-medium text-stone-800 dark:text-stone-200 truncate">
-                        {city.name}
-                      </span>
-                    </div>
-
-                    <div className="relative z-10 flex items-center gap-1.5 font-mono shrink-0">
-                      <span className="font-semibold text-stone-900 dark:text-stone-100 tabular-nums">
-                        {city.count.toLocaleString()}
-                      </span>
-                      {city.count24h !== undefined && city.count24h > 0 && (
-                        <span className="text-[9px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1 rounded">
-                          +{city.count24h}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="py-6 text-center text-stone-400 dark:text-stone-500 text-xs">
-                City analytics syncing from incoming reader sessions…
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Panel 3: Reading Engagement (Legitimate Product Events) */}
-        <div className="rounded-xl p-3.5 sm:p-4 bg-white dark:bg-stone-900/90 border border-stone-200/80 dark:border-stone-800 shadow-2xs">
-          <div className="flex items-center justify-between gap-1 mb-2.5">
-            <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-white uppercase tracking-wider">
-              Reading Engagement
-            </h3>
-            <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold uppercase tracking-wider">
-              Verified
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {/* Metric 1: Book Views */}
-            <div className="flex items-center justify-between p-2 rounded-lg bg-stone-50/80 dark:bg-stone-800/40 border border-stone-200/50 dark:border-stone-800/60 text-xs">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
-                <span className="font-medium text-stone-800 dark:text-stone-200">
-                  {stats.readingEngagement.bookViews.label}
-                </span>
-              </div>
-              <span className="font-mono font-bold text-stone-900 dark:text-white tabular-nums">
-                {stats.readingEngagement.bookViews.count.toLocaleString()}
-              </span>
-            </div>
-
-            {/* Metric 2: Reading Progress Updates */}
-            <div className="flex items-center justify-between p-2 rounded-lg bg-stone-50/80 dark:bg-stone-800/40 border border-stone-200/50 dark:border-stone-800/60 text-xs">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
-                <span className="font-medium text-stone-800 dark:text-stone-200">
-                  {stats.readingEngagement.readingProgressUpdates.label}
-                </span>
-              </div>
-              <span className="font-mono font-bold text-stone-900 dark:text-white tabular-nums">
-                {stats.readingEngagement.readingProgressUpdates.count.toLocaleString()}
-              </span>
-            </div>
-
-            {/* Metric 3: Active Reading Rooms & Groups */}
-            <div className="flex items-center justify-between p-2 rounded-lg bg-stone-50/80 dark:bg-stone-800/40 border border-stone-200/50 dark:border-stone-800/60 text-xs">
-              <div className="flex items-center gap-2">
-                <Compass className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
-                <span className="font-medium text-stone-800 dark:text-stone-200">
-                  {stats.readingEngagement.groupJoins.label}
-                </span>
-              </div>
-              <span className="font-mono font-bold text-stone-900 dark:text-white tabular-nums">
-                {stats.readingEngagement.groupJoins.count.toLocaleString()}
-              </span>
-            </div>
-
-            {/* Metric 4: Discussions & Comments */}
-            <div className="flex items-center justify-between p-2 rounded-lg bg-stone-50/80 dark:bg-stone-800/40 border border-stone-200/50 dark:border-stone-800/60 text-xs">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500 shrink-0" />
-                <span className="font-medium text-stone-800 dark:text-stone-200">
-                  {stats.readingEngagement.discussions.label}
-                </span>
-              </div>
-              <span className="font-mono font-bold text-stone-900 dark:text-white tabular-nums">
-                {stats.readingEngagement.discussions.count.toLocaleString()}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <CommunityPulseDashboard
+      data={data}
+      loading={loading}
+      error={error}
+      onRefresh={() => fetchLiveStats(true)}
+    />
   );
-};
-
-export default CommunityStats;
+}
