@@ -40,6 +40,7 @@ import { useAudioSummary } from '@/hooks/useAudioSummaries';
 import { useChapterProgress, useMarkChapterAsRead } from '@/hooks/useChapterProgress';
 import { searchExternalSources } from '@/utils/searchExternalSources';
 import { loadProgressLocally, saveProgressLocally } from '@/utils/readingProgressStorage';
+import { trackUiEvent } from '@/lib/analytics';
 
 interface BookReaderProps {
   bookId: string;
@@ -49,6 +50,10 @@ interface BookReaderProps {
 }
 
 const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => {
+  useEffect(() => {
+    if (bookId) void trackUiEvent('reading_started', { bookId });
+  }, [bookId]);
+
   const { user } = useAuth();
   const { toast } = useToast();
   const { addQuote } = useQuotes();
@@ -449,6 +454,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
 
   const addBookmark = () => {
     if (!currentLocation) return;
+    void trackUiEvent('book_saved', { bookId });
     
     const newBookmarks = [...bookmarks, currentLocation];
     setBookmarks(newBookmarks);
