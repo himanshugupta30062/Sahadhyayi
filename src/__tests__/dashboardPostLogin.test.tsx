@@ -60,6 +60,7 @@ vi.mock('@/hooks/useReadingProgress', () => ({
 }));
 
 vi.mock('@/hooks/useReadingRoom', () => ({
+  useReadingRoomLive: () => ({ presence: [] }),
   useReadingRooms: () => ({
     data: [
       {
@@ -78,6 +79,14 @@ vi.mock('@/hooks/useReadingRoom', () => ({
     ],
     isLoading: false,
   }),
+}));
+
+vi.mock('@/hooks/useSocialPosts', () => ({
+  useSocialPosts: () => ({ posts: [], isLoading: false, error: null }),
+}));
+
+vi.mock('@/hooks/useCommunityStats', () => ({
+  useCommunityStats: () => ({ stats: { registeredReaders: 12 } }),
 }));
 
 vi.mock('@/hooks/useUserGroups', () => ({
@@ -144,7 +153,7 @@ describe('Dashboard Post-Login Modernization', () => {
 
     expect(screen.getByText('Community Pulse')).toBeInTheDocument();
     expect(screen.getByText('Evening Philosophy Circle')).toBeInTheDocument();
-    expect(screen.getByText('1 Active')).toBeInTheDocument();
+    expect(screen.getByText('1 listed')).toBeInTheDocument();
     expect(screen.getByText('Join')).toBeInTheDocument();
   });
 });
