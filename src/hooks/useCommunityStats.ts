@@ -100,8 +100,12 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
       const rpcVisits = Number(visitsRpc?.data) || 0;
 
-      const totalSignups = Math.max(edgeSignups ?? 0, directUsers, cached?.totalSignups ?? 0);
-      const totalVisits = Math.max(edgeVisits ?? 0, rpcVisits, cached?.totalVisits ?? 0);
+      // Prefer live data from edge function or DB; only fall back to cached data if live values are unavailable
+      const liveSignups = edgeSignups !== null ? edgeSignups : directUsers;
+      const liveVisits = edgeVisits !== null ? edgeVisits : rpcVisits;
+
+      const totalSignups = liveSignups > 0 ? liveSignups : (cached?.totalSignups ?? 0);
+      const totalVisits = liveVisits > 0 ? liveVisits : (cached?.totalVisits ?? 0);
 
       const updated: CommunityStats = {
         totalSignups,
@@ -174,6 +178,13 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
       })
       .subscribe();
 
+    const visitsChannel = supabase
+      .channel('community-stats-visits')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'website_visits' }, () => {
+        fetchStats();
+      })
+      .subscribe();
+
     const handleLocal = () => fetchStats();
     window.addEventListener('communityStatsUpdate', handleLocal);
 
@@ -184,6 +195,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
     return () => {
       void supabase.removeChannel(profilesChannel);
+      void supabase.removeChannel(visitsChannel);
       window.removeEventListener('communityStatsUpdate', handleLocal);
       window.removeEventListener('storage', handleStorage);
     };

@@ -104,8 +104,12 @@ const CommunityStats = () => {
 
       const rpcVisits = Number(visitsRpc?.data) || 0;
 
-      const registeredMembers = Math.max(edgeSignups ?? 0, directUsers);
-      const totalVisitors = Math.max(edgeVisits ?? 0, rpcVisits);
+      const registeredMembers = edgeSignups !== null 
+        ? edgeSignups 
+        : (directUsers > 0 ? directUsers : 0);
+      const totalVisitors = edgeVisits !== null 
+        ? edgeVisits 
+        : (rpcVisits > 0 ? rpcVisits : 0);
 
       setStats(prev => ({
         ...prev,

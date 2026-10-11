@@ -121,9 +121,12 @@ const ReaderRedirect = () => {
   return <Navigate to={`/book/${id}?tab=read${query ? `&${query}` : ''}`} replace />;
 };
 
-const App = memo(() => {
+const PageTracker = () => {
   usePageVisitTracker();
+  return null;
+};
 
+const App = memo(() => {
   useEffect(() => {
     initializeSecurity();
     initializeSecureSession();
@@ -145,6 +148,7 @@ const App = memo(() => {
               <QuotesProvider>
                 <BookExpertProvider>
                   <ScrollToTop />
+                  <PageTracker />
                   <div className="min-h-screen bg-background text-foreground flex flex-col">
                     {/* Skip to content link for accessibility */}
                     <a
@@ -406,6 +410,16 @@ const App = memo(() => {
                             <AdminRoute>
                               <Suspense fallback={<LoadingFallback message="Loading library archive..." />}>
                                 <AdminLibraryArchive />
+                              </Suspense>
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/visitors"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading visitor analytics..." />}>
+                                <AdminLibraryArchive defaultTab="visitors" />
                               </Suspense>
                             </AdminRoute>
                           }
