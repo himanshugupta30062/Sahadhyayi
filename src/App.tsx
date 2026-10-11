@@ -119,8 +119,13 @@ const ReaderRedirect = () => {
   return <Navigate to={`/book/${id}?tab=read${query ? `&${query}` : ''}`} replace />;
 };
 
-const App = memo(() => {
+const PageVisitTracker = () => {
   usePageVisitTracker();
+  return null;
+};
+
+const App = memo(() => {
+  
 
   useEffect(() => {
     initializeSecurity();
@@ -140,6 +145,7 @@ const App = memo(() => {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <AuthProvider>
+                  <PageVisitTracker />
               <QuotesProvider>
                 <BookExpertProvider>
                   <ScrollToTop />
