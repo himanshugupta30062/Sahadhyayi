@@ -23,22 +23,22 @@ const DashboardStats = () => {
       label: 'Reading',
       value: currentlyReading,
       icon: Clock,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      color: 'text-blue-500 dark:text-blue-400',
+      bg: 'bg-blue-500/10',
     },
     {
       label: 'Completed',
       value: completedBooks,
       icon: Star,
-      color: 'text-green-600',
-      bg: 'bg-green-50',
+      color: 'text-emerald-500 dark:text-emerald-400',
+      bg: 'bg-emerald-500/10',
     },
     {
       label: 'Want to Read',
       value: wantToRead,
       icon: BookMarked,
-      color: 'text-amber-600',
-      bg: 'bg-amber-50',
+      color: 'text-amber-500 dark:text-amber-400',
+      bg: 'bg-amber-500/10',
     },
   ];
 

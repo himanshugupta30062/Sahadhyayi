@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Target } from 'lucide-react';
 
+import { useReadingGoal } from '@/hooks/useReadingGoal';
+
 interface ReadingGoalModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,14 +29,13 @@ const ReadingGoalModal: React.FC<ReadingGoalModalProps> = ({
   totalBooksRead,
   onGoalUpdate,
 }) => {
+  const { setGoal: saveGoal } = useReadingGoal();
   const [newGoal, setNewGoal] = useState(currentGoal + 5);
 
-  const handleUpdateGoal = () => {
+  const handleUpdateGoal = async () => {
     if (newGoal > 0) {
+      await saveGoal(newGoal);
       onGoalUpdate(newGoal);
-      localStorage.setItem(`readingGoal${new Date().getFullYear()}`, newGoal.toString());
-      // Dispatch custom event to update the dashboard
-      window.dispatchEvent(new CustomEvent('readingGoalUpdated', { detail: { goal: newGoal } }));
       onClose();
     }
   };

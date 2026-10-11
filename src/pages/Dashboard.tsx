@@ -15,6 +15,8 @@ import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
 import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
 import BookRecommendations from '@/components/dashboard/BookRecommendations';
 import ReadingStreakCard from '@/components/dashboard/ReadingStreakCard';
+import DashboardCommunityPulse from '@/components/dashboard/DashboardCommunityPulse';
+import { useReadingGoal } from '@/hooks/useReadingGoal';
 import { trackUiEvent } from '@/lib/analytics';
 
 const Dashboard = () => {
@@ -22,32 +24,11 @@ const Dashboard = () => {
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: userBooks = [] } = useUserBookshelf();
   const { data: joinedGroups = [] } = useUserJoinedGroups();
-  const [readingGoal, setReadingGoal] = useState(12);
+  const { goal: readingGoal, setGoal: setCloudGoal, currentYear } = useReadingGoal();
   const [showGoalModal, setShowGoalModal] = useState(false);
 
-  useEffect(() => {
-    const loadGoal = () => {
-      const savedGoal = localStorage.getItem(`readingGoal${new Date().getFullYear()}`);
-      if (savedGoal) {
-        setReadingGoal(parseInt(savedGoal) || 12);
-      }
-    };
-
-    loadGoal();
-
-    const handleGoalUpdate = (event: CustomEvent) => {
-      setReadingGoal(event.detail.goal);
-    };
-
-    window.addEventListener('readingGoalUpdated', handleGoalUpdate as EventListener);
-
-    return () => {
-      window.removeEventListener('readingGoalUpdated', handleGoalUpdate as EventListener);
-    };
-  }, []);
-
   const handleGoalUpdate = (newGoal: number) => {
-    setReadingGoal(newGoal);
+    void setCloudGoal(newGoal);
   };
 
   const userName =
@@ -276,7 +257,7 @@ const Dashboard = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
                     <Flame className="w-4 h-4 text-[hsl(var(--brand-primary))]" />
-                    {new Date().getFullYear()} Reading Goal
+                    {currentYear} Reading Goal
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -332,6 +313,9 @@ const Dashboard = () => {
                   <ReadingGoalDialog onGoalUpdate={handleGoalUpdate} />
                 </CardContent>
               </Card>
+
+              {/* Community Pulse: Live rooms, groups & co-readers */}
+              <DashboardCommunityPulse />
 
               {/* Reading Streak */}
               <ReadingStreakCard />
