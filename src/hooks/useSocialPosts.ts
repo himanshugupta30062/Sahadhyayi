@@ -44,76 +44,163 @@ export const useSocialPosts = () => {
   const { data: posts = [], isLoading, error, refetch } = useQuery({
     queryKey: ['social-posts', user?.id],
     queryFn: async () => {
-      let data: any[] = [];
-      const { data: fetchedPosts, error: postsError } = await supabase
-        .from('posts')
-        .select(`
-          *,
-          profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
-          books_library(id, title, author, cover_image_url)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (postsError) {
-        console.warn('Posts fetch with relations failed, attempting fallback:', postsError);
-        const { data: fallbackPosts, error: fbError } = await supabase
+      try {
+        let data: any[] = [];
+        const { data: fetchedPosts, error: postsError } = await supabase
           .from('posts')
-          .select('*')
+          .select(`
+            *,
+            profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
+            books_library(id, title, author, cover_image_url)
+          `)
           .order('created_at', { ascending: false })
           .limit(50);
-        if (fbError) throw fbError;
-        data = fallbackPosts || [];
-      } else {
-        data = fetchedPosts || [];
-      }
 
-      // If any posts are reposts, fetch the original posts in a clean secondary batch
-      const repostIds = data
-        .map((p) => p.repost_of_id)
-        .filter((id): id is string => Boolean(id));
-
-      if (repostIds.length > 0) {
-        try {
-          const { data: originalPosts } = await supabase
+        if (postsError) {
+          console.warn('Posts fetch with relations failed, attempting plain fallback:', postsError);
+          const { data: fallbackPosts, error: fbError } = await supabase
             .from('posts')
-            .select(`
-              id, user_id, content, image_url, book_id, feeling_emoji, feeling_label, created_at,
-              profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
-              books_library(id, title, author, cover_image_url)
-            `)
-            .in('id', repostIds);
-
-          if (originalPosts && originalPosts.length > 0) {
-            const originalMap = new Map(originalPosts.map((op: any) => [op.id, op]));
-            data = data.map((post) => ({
-              ...post,
-              reposted_post: post.repost_of_id ? originalMap.get(post.repost_of_id) || null : null,
-            }));
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+          if (fbError) {
+            console.warn('Plain posts fallback also failed:', fbError);
+            return [];
           }
-        } catch (repostErr) {
-          console.warn('Failed to load original reposted posts:', repostErr);
+          data = fallbackPosts || [];
+        } else {
+          data = fetchedPosts || [];
         }
-      }
 
-      if (user?.id && data.length > 0) {
-        const postIds = data.map((post) => post.id);
-        const [{ data: userLikes }, { data: userReposts }] = await Promise.all([
-          supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', postIds),
-          supabase.from('posts').select('repost_of_id').eq('user_id', user.id).not('repost_of_id', 'is', null).in('repost_of_id', postIds),
-        ]);
+        if (!data || data.length === 0) return [];
 
-        const likedPostIds = new Set(userLikes?.map((l) => l.post_id) || []);
-        const repostedIds = new Set(userReposts?.map((r) => r.repost_of_id as string) || []);
+        // Enrich missing profiles and books if relational embeds were missing or failed
+        const missingProfileUserIds = Array.from(
+          new Set(data.filter((p) => !p.profiles && p.user_id).map((p) => p.user_id))
+        );
+        const missingBookIds = Array.from(
+          new Set(data.filter((p) => !p.books_library && p.book_id).map((p) => p.book_id))
+        );
 
-        return data.map((post) => ({
+        let profilesMap = new Map<string, any>();
+        let booksMap = new Map<string, any>();
+
+        if (missingProfileUserIds.length > 0) {
+          try {
+            const { data: profs } = await supabase
+              .from('profiles')
+              .select('id, full_name, username, profile_photo_url')
+              .in('id', missingProfileUserIds);
+            if (profs) {
+              profilesMap = new Map(profs.map((pr: any) => [pr.id, pr]));
+            }
+          } catch {
+            // non-fatal
+          }
+        }
+
+        if (missingBookIds.length > 0) {
+          try {
+            const { data: bks } = await supabase
+              .from('books_library')
+              .select('id, title, author, cover_image_url')
+              .in('id', missingBookIds);
+            if (bks) {
+              booksMap = new Map(bks.map((b: any) => [b.id, b]));
+            }
+          } catch {
+            // non-fatal
+          }
+        }
+
+        data = data.map((post) => ({
           ...post,
-          user_liked: likedPostIds.has(post.id),
-          user_reposted: repostedIds.has(post.id),
+          profiles: post.profiles || profilesMap.get(post.user_id) || null,
+          books_library: post.books_library || booksMap.get(post.book_id) || null,
         }));
-      }
 
-      return data;
+        // If any posts are reposts, fetch original posts in a clean batch
+        const repostIds = data
+          .map((p) => p.repost_of_id)
+          .filter((id): id is string => Boolean(id));
+
+        if (repostIds.length > 0) {
+          try {
+            const { data: originalPosts } = await supabase
+              .from('posts')
+              .select('*')
+              .in('id', repostIds);
+
+            if (originalPosts && originalPosts.length > 0) {
+              const origUserIds = Array.from(new Set(originalPosts.map((p: any) => p.user_id).filter(Boolean)));
+              const origBookIds = Array.from(new Set(originalPosts.map((p: any) => p.book_id).filter(Boolean)));
+
+              let origProfilesMap = new Map<string, any>();
+              let origBooksMap = new Map<string, any>();
+
+              if (origUserIds.length > 0) {
+                const { data: oProfs } = await supabase
+                  .from('profiles')
+                  .select('id, full_name, username, profile_photo_url')
+                  .in('id', origUserIds);
+                if (oProfs) origProfilesMap = new Map(oProfs.map((pr: any) => [pr.id, pr]));
+              }
+
+              if (origBookIds.length > 0) {
+                const { data: oBks } = await supabase
+                  .from('books_library')
+                  .select('id, title, author, cover_image_url')
+                  .in('id', origBookIds);
+                if (oBks) origBooksMap = new Map(oBks.map((b: any) => [b.id, b]));
+              }
+
+              const originalMap = new Map(
+                originalPosts.map((op: any) => [
+                  op.id,
+                  {
+                    ...op,
+                    profiles: origProfilesMap.get(op.user_id) || null,
+                    books_library: origBooksMap.get(op.book_id) || null,
+                  },
+                ])
+              );
+
+              data = data.map((post) => ({
+                ...post,
+                reposted_post: post.repost_of_id ? originalMap.get(post.repost_of_id) || null : null,
+              }));
+            }
+          } catch (repostErr) {
+            console.warn('Failed to load original reposted posts:', repostErr);
+          }
+        }
+
+        if (user?.id && data.length > 0) {
+          try {
+            const postIds = data.map((post) => post.id);
+            const [{ data: userLikes }, { data: userReposts }] = await Promise.all([
+              supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', postIds),
+              supabase.from('posts').select('repost_of_id').eq('user_id', user.id).not('repost_of_id', 'is', null).in('repost_of_id', postIds),
+            ]);
+
+            const likedPostIds = new Set(userLikes?.map((l) => l.post_id) || []);
+            const repostedIds = new Set(userReposts?.map((r) => r.repost_of_id as string) || []);
+
+            return data.map((post) => ({
+              ...post,
+              user_liked: likedPostIds.has(post.id),
+              user_reposted: repostedIds.has(post.id),
+            }));
+          } catch {
+            return data;
+          }
+        }
+
+        return data;
+      } catch (err) {
+        console.error('Unexpected error fetching social posts:', err);
+        return [];
+      }
     },
     enabled: true,
   });

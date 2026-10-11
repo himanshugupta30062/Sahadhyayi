@@ -9,6 +9,7 @@ import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
 import DeferredSection from "@/components/DeferredSection";
 import AnimatedHero from "@/components/AnimatedHero";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const SahadhyayiCapabilities = lazy(() => import("@/components/SahadhyayiCapabilities"));
 const SahadhyayiCircuit = lazy(() => import("@/components/SahadhyayiCircuit"));
@@ -67,7 +68,10 @@ const Index = () => {
     : { to: "/signup", label: "Get Started Free", icon: UserPlus };
 
   const PrimaryCtaIcon = primaryCta.icon;
-  const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Reader';
+  const firstName =
+    (typeof profile?.full_name === 'string' && profile.full_name.trim().split(/\s+/)[0]) ||
+    (typeof user?.email === 'string' && user.email.split('@')[0]) ||
+    'Reader';
 
   return (
     <>
@@ -107,7 +111,9 @@ const Index = () => {
                 fallback={<div className="min-h-[220px] rounded-2xl border border-orange-900/20 bg-black/20" aria-hidden="true" />}
                 minHeightClassName="min-h-[220px]"
               >
-                <CurrentReads />
+                <ErrorBoundary fallback={<div className="min-h-[140px] rounded-2xl border border-orange-900/20 bg-black/30 p-6 text-center text-sm text-gray-400">Your reading progress could not be loaded right now.</div>}>
+                  <CurrentReads />
+                </ErrorBoundary>
               </DeferredSection>
             </div>
           </section>

@@ -25,7 +25,7 @@ import {
   useDeleteMarginNote,
 } from "@/hooks/useMarginNotes";
 import { useAuth } from "@/contexts/authHelpers";
-import { formatDistanceToNow } from "date-fns";
+import { safeFormatDistanceToNow } from "@/lib/dateUtils";
 import { useToast } from "@/hooks/use-toast";
 import { DnaMatchChip } from "../dna/DnaMatchChip";
 
@@ -121,7 +121,7 @@ export const MarginNoteCard: React.FC<MarginNoteCardProps> = ({ note }) => {
                   <DnaMatchChip userId={note.user_id} userName={note.profiles?.full_name ?? "Reader"} />
                 )}
                 <span>·</span>
-                <span>{formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}</span>
+                <span>{safeFormatDistanceToNow(note.created_at, { addSuffix: true })}</span>
               </div>
             </div>
           </div>
@@ -215,7 +215,7 @@ export const MarginNoteCard: React.FC<MarginNoteCardProps> = ({ note }) => {
                         </Avatar>
                         <span className="font-medium text-foreground">{r.profiles?.full_name ?? "Reader"}</span>
                       </div>
-                      <span>{formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}</span>
+                      <span>{safeFormatDistanceToNow(r.created_at, { addSuffix: true })}</span>
                     </div>
                     <p className="text-foreground pl-5">{r.body}</p>
                   </div>

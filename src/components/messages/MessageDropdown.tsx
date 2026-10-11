@@ -18,7 +18,7 @@ import {
   useMarkMessagesAsRead,
   useMarkAllMessagesAsRead,
 } from '@/hooks/useMessages';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 export const MessageDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -102,7 +102,7 @@ export const MessageDropdown = () => {
                         {message.content}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                        {safeFormatDistanceToNow(message.created_at, { addSuffix: true })}
                       </p>
                     </div>
                   </div>

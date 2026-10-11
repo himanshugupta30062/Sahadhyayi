@@ -22,7 +22,7 @@ import {
   Send,
   Loader2,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { safeFormatDistanceToNow } from "@/lib/dateUtils";
 import { useToast } from "@/hooks/use-toast";
 import { DnaMatchChip } from "../dna/DnaMatchChip";
 
@@ -129,7 +129,7 @@ export const SpoilerThreadCard: React.FC<SpoilerThreadCardProps> = ({ thread }) 
                   )}
                 </div>
                 <span>·</span>
-                <span>{formatDistanceToNow(new Date(thread.created_at), { addSuffix: true })}</span>
+                <span>{safeFormatDistanceToNow(thread.created_at, { addSuffix: true })}</span>
               </div>
             </div>
           </div>
@@ -192,7 +192,7 @@ export const SpoilerThreadCard: React.FC<SpoilerThreadCardProps> = ({ thread }) 
                               <DnaMatchChip userId={c.user_id} userName={c.profiles?.full_name ?? "Reader"} />
                             )}
                           </div>
-                          <span>{formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}</span>
+                          <span>{safeFormatDistanceToNow(c.created_at, { addSuffix: true })}</span>
                         </div>
                         <p className="text-foreground pl-5 leading-relaxed">{c.body}</p>
                       </div>
