@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageCircle, Edit2, Trash2, Reply } from 'lucide-react';
 import { usePostComments, useCreateComment } from '@/hooks/useSocialPosts';
 import { useAuth } from '@/contexts/authHelpers';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 interface CommentSectionProps {
   postId: string;
@@ -77,7 +77,7 @@ const CommentItem = ({ comment, postId, isReply = false }: CommentItemProps) => 
             <div className="flex items-center space-x-2 mb-1">
               <span className="font-medium text-sm text-gray-900">{comment.profiles?.full_name || 'Unknown User'}</span>
               <span className="text-xs text-gray-500">
-                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                {safeFormatDistanceToNow(comment.created_at, { addSuffix: true })}
               </span>
             </div>
             

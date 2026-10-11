@@ -32,6 +32,7 @@ import { BookPulseBar } from '@/components/social/BookPulseBar';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
 import { useMarginNotes } from '@/hooks/useMarginNotes';
 import { useSpoilerThreads } from '@/hooks/useSpoilerThreads';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy-load the 4 book-native feature panels
 const MarginNotesFeed = lazy(() => import('@/components/social/margins/MarginNotesFeed'));
@@ -155,7 +156,9 @@ const GuestLanding: React.FC = () => (
 
           {/* Live Pulse bar */}
           <div className="max-w-3xl mx-auto">
-            <BookPulseBar />
+            <ErrorBoundary fallback={null}>
+              <BookPulseBar />
+            </ErrorBoundary>
           </div>
 
           {/* Social proof */}
@@ -418,7 +421,19 @@ const SocialMedia = () => {
             {/* ── Feed ── */}
             <TabsContent value="feed" className="mt-0">
               <div className="max-w-2xl mx-auto">
-                <EnhancedSocialFeed />
+                <ErrorBoundary
+                  fallback={
+                    <Card className="bg-card border-border rounded-2xl p-8 text-center">
+                      <p className="text-sm font-semibold mb-2">Unable to display social feed</p>
+                      <p className="text-xs text-muted-foreground mb-4">A temporary error occurred while rendering the community feed.</p>
+                      <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                        Reload Feed
+                      </Button>
+                    </Card>
+                  }
+                >
+                  <EnhancedSocialFeed />
+                </ErrorBoundary>
               </div>
             </TabsContent>
 

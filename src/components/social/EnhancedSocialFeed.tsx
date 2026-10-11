@@ -28,45 +28,52 @@ import { SpoilerThreadCard } from './threads/SpoilerThreadCard';
 import { useMarginNotes } from '@/hooks/useMarginNotes';
 import { useSpoilerThreads } from '@/hooks/useSpoilerThreads';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { useAuth } from '@/contexts/authHelpers';
 import { Quote, Lock, Sparkles } from 'lucide-react';
 
-const EmbeddedOriginalPost: React.FC<{ post: NonNullable<SocialPost['reposted_post']> }> = ({ post }) => (
-  <div className="mt-3 border border-border rounded-xl p-3 bg-muted/30">
-    <div className="flex items-center gap-2 mb-2">
-      <Avatar className="w-7 h-7">
-        <AvatarImage src={post.profiles?.profile_photo_url} />
-        <AvatarFallback className="bg-gradient-button text-white text-[10px]">
-          {post.profiles?.full_name?.charAt(0) || 'U'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="text-xs flex items-center gap-1.5 flex-wrap">
-        <span className="font-medium text-foreground">{post.profiles?.full_name || 'Anonymous'}</span>
-        {post.user_id && <DnaMatchChip userId={post.user_id} userName={post.profiles?.full_name || 'Reader'} />}
-        {post.profiles?.username && (
-          <span className="text-muted-foreground"> · @{post.profiles.username}</span>
-        )}
-        <span className="text-muted-foreground"> · {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+const EmbeddedOriginalPost: React.FC<{ post?: SocialPost | null }> = ({ post }) => {
+  if (!post) return null;
+
+  const profile = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
+  const book = Array.isArray(post.books_library) ? post.books_library[0] : post.books_library;
+
+  return (
+    <div className="mt-3 border border-border rounded-xl p-3 bg-muted/30">
+      <div className="flex items-center gap-2 mb-2">
+        <Avatar className="w-7 h-7">
+          <AvatarImage src={profile?.profile_photo_url} />
+          <AvatarFallback className="bg-gradient-button text-white text-[10px]">
+            {profile?.full_name?.charAt(0) || 'U'}
+          </AvatarFallback>
+        </Avatar>
+        <div className="text-xs flex items-center gap-1.5 flex-wrap">
+          <span className="font-medium text-foreground">{profile?.full_name || 'Anonymous'}</span>
+          {post.user_id && <DnaMatchChip userId={post.user_id} userName={profile?.full_name || 'Reader'} />}
+          {profile?.username && (
+            <span className="text-muted-foreground"> · @{profile.username}</span>
+          )}
+          <span className="text-muted-foreground"> · {safeFormatDistanceToNow(post.created_at, { addSuffix: true })}</span>
+        </div>
       </div>
+      <p className="text-sm text-foreground whitespace-pre-wrap">{post.content}</p>
+      {post.image_url && (
+        <div className="mt-2 rounded-lg overflow-hidden border border-border">
+          <img src={post.image_url} alt="" className="w-full max-h-72 object-cover" />
+        </div>
+      )}
+      {book && (
+        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <span>📖</span>
+          <span className="truncate">
+            <strong className="text-foreground">{book.title}</strong>
+            {book.author ? ` — ${book.author}` : ''}
+          </span>
+        </div>
+      )}
     </div>
-    <p className="text-sm text-foreground whitespace-pre-wrap">{post.content}</p>
-    {post.image_url && (
-      <div className="mt-2 rounded-lg overflow-hidden border border-border">
-        <img src={post.image_url} alt="" className="w-full max-h-72 object-cover" />
-      </div>
-    )}
-    {post.books_library && (
-      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-        <span>📖</span>
-        <span className="truncate">
-          <strong className="text-foreground">{post.books_library.title}</strong>
-          {post.books_library.author ? ` — ${post.books_library.author}` : ''}
-        </span>
-      </div>
-    )}
-  </div>
-);
+  );
+};
 
 export const EnhancedSocialFeed = () => {
   const { user } = useAuth();
@@ -220,9 +227,11 @@ export const EnhancedSocialFeed = () => {
         posts.map((post, idx) => {
           const isRepost = !!post.repost_of_id && !!post.reposted_post;
           const isOwn = post.user_id === user?.id;
+          const postProfile = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
+          const postBook = Array.isArray(post.books_library) ? post.books_library[0] : post.books_library;
 
           return (
-            <React.Fragment key={post.id}>
+            <React.Fragment key={post.id || idx}>
               <Card
                 className="bg-card border-border rounded-2xl hover:shadow-[var(--shadow-elevated)] transition-all duration-200 overflow-hidden"
               >
@@ -232,7 +241,7 @@ export const EnhancedSocialFeed = () => {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                     <Repeat2 className="w-3.5 h-3.5 text-emerald-600" />
                     <span>
-                      <strong className="text-foreground">{isOwn ? 'You' : (post.profiles?.full_name || 'Someone')}</strong> reposted
+                      <strong className="text-foreground">{isOwn ? 'You' : (postProfile?.full_name || 'Someone')}</strong> reposted
                     </span>
                   </div>
                 )}
@@ -241,18 +250,18 @@ export const EnhancedSocialFeed = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
-                      <AvatarImage src={post.profiles?.profile_photo_url} />
+                      <AvatarImage src={postProfile?.profile_photo_url} />
                       <AvatarFallback className="bg-gradient-button text-white font-semibold">
-                        {post.profiles?.full_name?.charAt(0) || 'U'}
+                        {postProfile?.full_name?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-semibold text-foreground">
-                          {isOwn ? 'You' : (post.profiles?.full_name || 'Anonymous')}
+                          {isOwn ? 'You' : (postProfile?.full_name || 'Anonymous')}
                         </h4>
-                        {!isOwn && (
-                          <DnaMatchChip userId={post.user_id} userName={post.profiles?.full_name || 'Reader'} />
+                        {!isOwn && post.user_id && (
+                          <DnaMatchChip userId={post.user_id} userName={postProfile?.full_name || 'Reader'} />
                         )}
                         {post.feeling_emoji && post.feeling_label && (
                           <span className="text-sm text-muted-foreground">
@@ -262,9 +271,9 @@ export const EnhancedSocialFeed = () => {
                       </div>
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                         <Clock className="w-3 h-3" />
-                        <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
-                        {post.profiles?.username && (
-                          <span className="text-muted-foreground/70">• @{post.profiles.username}</span>
+                        <span>{safeFormatDistanceToNow(post.created_at, { addSuffix: true })}</span>
+                        {postProfile?.username && (
+                          <span className="text-muted-foreground/70">• @{postProfile.username}</span>
                         )}
                       </div>
                     </div>
@@ -311,25 +320,25 @@ export const EnhancedSocialFeed = () => {
                   )}
 
                   {/* Book Card (only on non-reposts) */}
-                  {!isRepost && post.books_library && (
+                  {!isRepost && postBook && (
                     <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-xl p-3 flex items-center gap-3">
                       <div className="w-12 h-16 bg-gradient-button rounded-md flex-shrink-0 overflow-hidden shadow-sm">
-                        {post.books_library.cover_image_url ? (
+                        {postBook.cover_image_url ? (
                           <img
-                            src={post.books_library.cover_image_url}
-                            alt={post.books_library.title}
+                            src={postBook.cover_image_url}
+                            alt={postBook.title || 'Book cover'}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">
-                            {post.books_library.title.charAt(0)}
+                            {postBook.title?.charAt(0) || '📖'}
                           </div>
                         )}
                       </div>
                       <div className="min-w-0">
-                        <h5 className="font-semibold text-foreground text-sm truncate">{post.books_library.title}</h5>
-                        {post.books_library.author && (
-                          <p className="text-xs text-muted-foreground truncate">{post.books_library.author}</p>
+                        <h5 className="font-semibold text-foreground text-sm truncate">{postBook.title}</h5>
+                        {postBook.author && (
+                          <p className="text-xs text-muted-foreground truncate">{postBook.author}</p>
                         )}
                         <Badge
                           variant="outline"

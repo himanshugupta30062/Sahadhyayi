@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { MessageCircle, UserPlus, MapPin, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 interface UserProfileModalProps {
   userId: string;
@@ -107,7 +107,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             {userProfile.last_seen && (
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Calendar className="w-4 h-4" />
-                <span>Last seen {formatDistanceToNow(new Date(userProfile.last_seen), { addSuffix: true })}</span>
+                <span>Last seen {safeFormatDistanceToNow(userProfile.last_seen, { addSuffix: true })}</span>
               </div>
             )}
             

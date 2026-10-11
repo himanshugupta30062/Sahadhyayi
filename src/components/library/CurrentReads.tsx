@@ -107,38 +107,44 @@ const CurrentReads: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {books.map((item) => (
-            <Card
-              key={item.id}
-              className="cursor-pointer overflow-hidden"
-              onClick={() => handleOpen(item)}
-            >
-              <CardContent className="p-4 flex gap-4">
-                {item.books_library?.cover_image_url ? (
-                  <img
-                    src={item.books_library.cover_image_url}
-                    alt={item.books_library?.title || 'Book cover'}
-                    className="w-16 h-24 object-cover rounded"
-                  />
-                ) : (
-                  <div className="w-16 h-24 bg-amber-100 rounded flex items-center justify-center">
-                    <BookOpen className="w-8 h-8 text-amber-600" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-sm truncate">
-                    {item.books_library?.title || 'Untitled Book'}
-                  </h4>
-                  {typeof item.progress === 'number' && (
-                    <div className="mt-2">
-                      <Progress value={item.progress} className="h-2" />
-                      <p className="text-xs text-gray-600 mt-1">{Math.round(item.progress)}%</p>
+          {books.map((item, idx) => {
+            const libBook = Array.isArray(item.books_library) ? item.books_library[0] : item.books_library;
+            const bookTitle = libBook?.title || 'Untitled Book';
+            const coverImage = libBook?.cover_image_url;
+
+            return (
+              <Card
+                key={item.id || item.book_id || idx}
+                className="cursor-pointer overflow-hidden"
+                onClick={() => handleOpen(item)}
+              >
+                <CardContent className="p-4 flex gap-4">
+                  {coverImage ? (
+                    <img
+                      src={coverImage}
+                      alt={bookTitle}
+                      className="w-16 h-24 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-16 h-24 bg-amber-100 rounded flex items-center justify-center">
+                      <BookOpen className="w-8 h-8 text-amber-600" />
                     </div>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm truncate">
+                      {bookTitle}
+                    </h4>
+                    {typeof item.progress === 'number' && (
+                      <div className="mt-2">
+                        <Progress value={item.progress} className="h-2" />
+                        <p className="text-xs text-gray-600 mt-1">{Math.round(item.progress)}%</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

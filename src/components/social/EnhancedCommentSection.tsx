@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, Reply, Send, Clock } from 'lucide-react';
 import { usePostComments, useCreateComment, useToggleCommentLike } from '@/hooks/useSocialPosts';
 import { useAuth } from '@/contexts/authHelpers';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { DnaMatchChip } from './dna/DnaMatchChip';
@@ -94,7 +94,7 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" />
-                  <span>{formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}</span>
+                  <span>{safeFormatDistanceToNow(c.created_at, { addSuffix: true })}</span>
                 </div>
               </div>
               <p className="text-sm text-foreground whitespace-pre-wrap mt-0.5">{c.content}</p>

@@ -83,7 +83,8 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
-  const getUserInitials = (email: string) => {
+  const getUserInitials = (email?: string | null) => {
+    if (!email || typeof email !== 'string') return 'U';
     return email.charAt(0).toUpperCase();
   };
 
