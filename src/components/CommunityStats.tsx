@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Users, Eye, Loader2, AlertTriangle, Globe, Clock, Activity, MapPin, TrendingUp, RefreshCw } from 'lucide-react';
+import { Users, Eye, Loader2, AlertTriangle, Globe, Clock, Activity, MapPin, TrendingUp, RefreshCw, Flame } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
 
 const COUNTRY_MAP: Record<string, { flag: string; name: string }> = {
@@ -28,7 +28,11 @@ function getCountryInfo(code: string) {
   return COUNTRY_MAP[code] || { flag: '🏳️', name: code };
 }
 
-interface BreakdownItem { name: string; count: number }
+interface BreakdownItem { 
+  name: string; 
+  count: number; 
+  count24h?: number; 
+}
 
 interface CommunityStatsData {
   registeredMembers: number;
@@ -36,6 +40,8 @@ interface CommunityStatsData {
   last24hVisits: number;
   topCountries: { code: string; count: number }[];
   topCities: BreakdownItem[];
+  topCities24h: BreakdownItem[];
+  mostVisitedCity24h: BreakdownItem | null;
   lastUpdated: string | null;
   loading: boolean;
   error: string | null;
@@ -65,9 +71,11 @@ const StatCard = ({ icon: Icon, label, value, subtitle, gradient }: {
 );
 
 const CommunityStats = () => {
+  const [cityTimeframe, setCityTimeframe] = React.useState<'all' | '24h'>('all');
   const [stats, setStats] = React.useState<CommunityStatsData>({
     registeredMembers: 0, totalVisitors: 0, last24hVisits: 0,
-    topCountries: [], topCities: [],
+    topCountries: [], topCities: [], topCities24h: [],
+    mostVisitedCity24h: null,
     lastUpdated: null, loading: true, error: null,
   });
 
@@ -77,6 +85,8 @@ const CommunityStats = () => {
     let edge24h: number | null = null;
     let topCountries: { code: string; count: number }[] = [];
     let topCities: BreakdownItem[] = [];
+    let topCities24h: BreakdownItem[] = [];
+    let mostVisitedCity24h: BreakdownItem | null = null;
 
     try {
       const { data, error } = await supabase.functions.invoke('community-stats');
@@ -86,6 +96,8 @@ const CommunityStats = () => {
         edge24h = typeof data.last24hVisits === 'number' ? data.last24hVisits : null;
         topCountries = data.topCountries ?? [];
         topCities = data.topCities ?? [];
+        topCities24h = data.topCities24h ?? [];
+        mostVisitedCity24h = data.mostVisitedCity24h ?? null;
       }
     } catch {
       // Fallback to direct queries below
@@ -126,6 +138,42 @@ const CommunityStats = () => {
         }
       }
 
+      // Query 24h city visits for fallback and cross-referencing
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const cityMap24h: Record<string, number> = {};
+
+      try {
+        const { data: rows24h } = await supabase
+          .from('website_visits')
+          .select('city, region')
+          .gte('visited_at', twentyFourHoursAgo)
+          .not('city', 'is', null)
+          .neq('city', 'Unknown')
+          .limit(2000);
+
+        if (rows24h && rows24h.length > 0) {
+          for (const r of rows24h) {
+            if (r.city && r.city !== 'Unknown') {
+              const label = r.region ? `${r.city}, ${r.region}` : r.city;
+              cityMap24h[label] = (cityMap24h[label] || 0) + 1;
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      if (topCities24h.length === 0) {
+        topCities24h = Object.entries(cityMap24h)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .map(([name, count]) => ({ name, count, count24h: count }));
+      }
+
+      if (!mostVisitedCity24h && topCities24h.length > 0) {
+        mostVisitedCity24h = topCities24h[0];
+      }
+
       // Fallback: If edge function did not return topCities, query website_visits table
       if (topCities.length === 0) {
         try {
@@ -148,11 +196,21 @@ const CommunityStats = () => {
             topCities = Object.entries(cityMap)
               .sort((a, b) => b[1] - a[1])
               .slice(0, 10)
-              .map(([name, count]) => ({ name, count }));
+              .map(([name, count]) => ({ 
+                name, 
+                count, 
+                count24h: cityMap24h[name] || 0 
+              }));
           }
         } catch {
           // ignore
         }
+      } else {
+        // Ensure every topCity item has its count24h populated
+        topCities = topCities.map((c) => ({
+          ...c,
+          count24h: c.count24h !== undefined ? c.count24h : (cityMap24h[c.name] || 0),
+        }));
       }
 
       setStats(prev => ({
@@ -162,6 +220,8 @@ const CommunityStats = () => {
         last24hVisits: edge24h ?? prev.last24hVisits,
         topCountries: topCountries.length > 0 ? topCountries : prev.topCountries,
         topCities: topCities.length > 0 ? topCities : prev.topCities,
+        topCities24h: topCities24h.length > 0 ? topCities24h : prev.topCities24h,
+        mostVisitedCity24h: mostVisitedCity24h ?? prev.mostVisitedCity24h,
         lastUpdated: new Date().toISOString(),
         loading: false,
         error: null,
@@ -176,6 +236,8 @@ const CommunityStats = () => {
           last24hVisits: edge24h || 0,
           topCountries,
           topCities,
+          topCities24h,
+          mostVisitedCity24h,
           lastUpdated: new Date().toISOString(),
           loading: false,
           error: null,
@@ -367,55 +429,139 @@ const CommunityStats = () => {
         )}
 
         {/* Top Cities */}
-        {stats.topCities.length > 0 && (
-          <div className="lg:col-span-2 bg-white/[0.07] backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
-            <div className="flex items-center gap-2.5 px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3">
-              <div className="p-2 bg-rose-500/20 rounded-xl">
-                <MapPin className="w-4 h-4 text-rose-400" />
+        {(stats.topCities.length > 0 || stats.topCities24h.length > 0) && (
+          <div className="lg:col-span-2 bg-white/[0.07] backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-rose-500/20 rounded-xl">
+                  <MapPin className="w-4 h-4 text-rose-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white">Top Cities</h3>
+                  <p className="text-[10px] sm:text-xs text-white/40">
+                    {cityTimeframe === '24h' 
+                      ? `${stats.topCities24h.length} cities active in last 24h` 
+                      : `${stats.topCities.length} cities tracked`}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-white">Top Cities</h3>
-                <p className="text-[10px] sm:text-xs text-white/40">{stats.topCities.length} cities tracked</p>
+
+              {/* Timeframe switch */}
+              <div className="flex items-center bg-white/10 p-0.5 rounded-lg text-[10px] font-medium">
+                <button
+                  type="button"
+                  onClick={() => setCityTimeframe('all')}
+                  className={`px-2 py-1 rounded-md transition-colors ${
+                    cityTimeframe === 'all'
+                      ? 'bg-white/20 text-white font-semibold'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  All-Time
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCityTimeframe('24h')}
+                  className={`px-2 py-1 rounded-md transition-colors flex items-center gap-1 ${
+                    cityTimeframe === '24h'
+                      ? 'bg-rose-500/30 text-rose-200 font-semibold'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <Flame className="w-2.5 h-2.5 text-rose-400" />
+                  Last 24h
+                </button>
               </div>
             </div>
 
-            <div className="px-3 sm:px-4 pb-4 sm:pb-5 space-y-0.5">
-              {stats.topCities.map((city, i) => {
-                const maxCity = stats.topCities[0]?.count || 1;
-                const pct = Math.round((city.count / maxCity) * 100);
-                const isMedal = i < 3;
-                return (
-                  <div
-                    key={city.name}
-                    className={`flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-200 ${
-                      isMedal ? 'bg-white/[0.06] hover:bg-white/[0.1]' : 'hover:bg-white/[0.05]'
-                    }`}
-                  >
-                    <span className="text-sm w-5 text-center flex-shrink-0">
-                      {isMedal ? MEDAL[i] : (
-                        <span className="text-[10px] sm:text-xs text-white/30 font-mono">{i + 1}</span>
-                      )}
-                    </span>
-                    <span className={`text-xs sm:text-sm flex-1 truncate ${isMedal ? 'text-white font-semibold' : 'text-white/70 font-medium'}`}>
-                      {city.name}
-                    </span>
-                    <div className="w-10 sm:w-16 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${Math.max(pct, 6)}%`,
-                          background: isMedal
-                            ? 'linear-gradient(90deg, hsl(350, 80%, 55%), hsl(25, 90%, 55%))'
-                            : 'linear-gradient(90deg, hsl(350, 50%, 45%), hsl(350, 40%, 40%))',
-                        }}
-                      />
-                    </div>
-                    <span className={`text-xs sm:text-sm tabular-nums text-right min-w-[2rem] ${isMedal ? 'text-white font-bold' : 'text-white/60 font-semibold'}`}>
-                      {city.count.toLocaleString()}
-                    </span>
+            {/* Featured Highlight: Most visited city in last 24 hours */}
+            {stats.mostVisitedCity24h && stats.mostVisitedCity24h.count > 0 && (
+              <div className="mx-3 sm:mx-4 mb-3 p-2.5 rounded-xl bg-gradient-to-r from-rose-500/20 via-amber-500/10 to-transparent border border-rose-500/30 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="p-1 rounded-lg bg-rose-500/30 text-rose-300 shrink-0">
+                    <Flame className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
                   </div>
-                );
-              })}
+                  <div className="min-w-0">
+                    <div className="text-[9px] sm:text-[10px] text-rose-200/80 uppercase font-bold tracking-wider">
+                      Most Active City (Last 24h)
+                    </div>
+                    <div className="text-xs sm:text-sm font-bold text-white truncate">
+                      {stats.mostVisitedCity24h.name}
+                    </div>
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/30 text-rose-200 border border-rose-400/30 tabular-nums">
+                    +{stats.mostVisitedCity24h.count.toLocaleString()} visits
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Cities list */}
+            <div className="px-3 sm:px-4 pb-4 sm:pb-5 space-y-0.5 flex-1">
+              {(() => {
+                const currentCities = cityTimeframe === '24h' ? stats.topCities24h : stats.topCities;
+                if (currentCities.length === 0) {
+                  return (
+                    <div className="py-8 text-center text-white/40 text-xs">
+                      {cityTimeframe === '24h'
+                        ? 'No city visits recorded in the last 24 hours yet.'
+                        : 'No city records available.'}
+                    </div>
+                  );
+                }
+
+                const maxCity = currentCities[0]?.count || 1;
+
+                return currentCities.map((city, i) => {
+                  const pct = Math.round((city.count / maxCity) * 100);
+                  const isMedal = i < 3;
+                  return (
+                    <div
+                      key={`${city.name}-${cityTimeframe}`}
+                      className={`flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-200 ${
+                        isMedal ? 'bg-white/[0.06] hover:bg-white/[0.1]' : 'hover:bg-white/[0.05]'
+                      }`}
+                    >
+                      <span className="text-sm w-5 text-center flex-shrink-0">
+                        {isMedal ? MEDAL[i] : (
+                          <span className="text-[10px] sm:text-xs text-white/30 font-mono">{i + 1}</span>
+                        )}
+                      </span>
+                      <span className={`text-xs sm:text-sm flex-1 truncate ${isMedal ? 'text-white font-semibold' : 'text-white/70 font-medium'}`}>
+                        {city.name}
+                      </span>
+                      <div className="w-10 sm:w-16 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${Math.max(pct, 6)}%`,
+                            background: isMedal
+                              ? 'linear-gradient(90deg, hsl(350, 80%, 55%), hsl(25, 90%, 55%))'
+                              : 'linear-gradient(90deg, hsl(350, 50%, 45%), hsl(350, 40%, 40%))',
+                          }}
+                        />
+                      </div>
+                      <div className="text-right min-w-[3.5rem]">
+                        <div className={`text-xs sm:text-sm tabular-nums ${isMedal ? 'text-white font-bold' : 'text-white/60 font-semibold'}`}>
+                          {city.count.toLocaleString()}
+                        </div>
+                        {cityTimeframe === 'all' && city.count24h !== undefined && city.count24h > 0 && (
+                          <div className="text-[9px] text-emerald-400/90 font-medium tabular-nums">
+                            +{city.count24h.toLocaleString()} in 24h
+                          </div>
+                        )}
+                        {cityTimeframe === '24h' && (
+                          <div className="text-[9px] text-rose-300/80 font-medium tabular-nums">
+                            last 24h
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
         )}

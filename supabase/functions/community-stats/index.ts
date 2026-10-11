@@ -82,11 +82,34 @@ serve(async (req) => {
       }
     }
 
+    // Query last 24h city activity
+    const { data: last24hRows } = await supabase
+      .from('website_visits')
+      .select('city, region')
+      .gte('visited_at', twentyFourHoursAgo)
+      .not('city', 'is', null)
+      .limit(10000)
+
+    const cityCounts24h: Record<string, number> = {}
+    for (const row of (last24hRows || [])) {
+      if (row.city && row.city !== 'Unknown') {
+        const label = row.region ? `${row.city}, ${row.region}` : row.city
+        cityCounts24h[label] = (cityCounts24h[label] || 0) + 1
+      }
+    }
+
     const toSorted = (obj: Record<string, number>, limit = 10) =>
       Object.entries(obj)
         .sort((a, b) => b[1] - a[1])
         .slice(0, limit)
         .map(([name, count]) => ({ name, count }))
+
+    const topCities24h = toSorted(cityCounts24h, 10)
+    const mostVisitedCity24h = topCities24h.length > 0 ? topCities24h[0] : null
+    const enrichedTopCities = toSorted(cityCounts, 10).map((c) => ({
+      ...c,
+      count24h: cityCounts24h[c.name] || 0,
+    }))
 
     const stats = {
       totalSignups,
@@ -96,7 +119,9 @@ serve(async (req) => {
       topBrowsers: toSorted(browserCounts, 6),
       topOS: toSorted(osCounts, 6),
       deviceTypes: toSorted(deviceCounts, 5),
-      topCities: toSorted(cityCounts, 10),
+      topCities: enrichedTopCities,
+      topCities24h,
+      mostVisitedCity24h,
       lastUpdated: new Date().toISOString()
     }
 
