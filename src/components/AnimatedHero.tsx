@@ -11,8 +11,8 @@ const AnimatedHero: React.FC = () => {
     >
       {/* Subtle atmospheric ambient glow */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-emerald-950/15 blur-[120px]" />
-        <div className="absolute top-1/3 right-10 w-[350px] h-[350px] rounded-full bg-[#D5B16D]/5 blur-[100px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[550px] h-[550px] rounded-full bg-[#1A1E1C]/40 blur-[140px]" />
+        <div className="absolute top-1/4 right-12 w-[320px] h-[320px] rounded-full bg-[#D5B16D]/5 blur-[120px]" />
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

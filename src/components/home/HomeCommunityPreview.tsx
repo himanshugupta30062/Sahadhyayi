@@ -56,12 +56,12 @@ export const HomeCommunityPreview: React.FC = () => {
         </div>
 
         {/* 3-Column Editorial Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Pillar 1: Reading Groups */}
-          <div className="flex flex-col rounded-2xl bg-[#111614] border border-[#29332D] p-6 sm:p-7 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-[#29332D]/70 mb-5">
+          <div className="flex flex-col rounded-2xl bg-[#111413] border border-[#26302A] p-6 sm:p-7 shadow-xs">
+            <div className="flex items-center justify-between pb-4 border-b border-[#26302A] mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#1A251E] text-[#D5B16D] border border-[#2B3F32] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#181C1A] text-[#D5B16D] border border-[#2B352E] flex items-center justify-center">
                   <Users className="w-4 h-4" />
                 </div>
                 <div>
@@ -149,10 +149,10 @@ export const HomeCommunityPreview: React.FC = () => {
           </div>
 
           {/* Pillar 2: Live Reading Rooms */}
-          <div className="flex flex-col rounded-2xl bg-[#111614] border border-[#29332D] p-6 sm:p-7 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-[#29332D]/70 mb-5">
+          <div className="flex flex-col rounded-2xl bg-[#111413] border border-[#26302A] p-6 sm:p-7 shadow-xs">
+            <div className="flex items-center justify-between pb-4 border-b border-[#26302A] mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#14261B] text-emerald-400 border border-[#254A34] flex items-center justify-center relative">
+                <div className="w-9 h-9 rounded-xl bg-[#181C1A] text-emerald-400 border border-[#26382E] flex items-center justify-center relative">
                   <Radio className="w-4 h-4" />
                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
@@ -181,14 +181,14 @@ export const HomeCommunityPreview: React.FC = () => {
                   ))}
                 </div>
               ) : rooms.length === 0 ? (
-                <div className="py-8 px-4 text-center rounded-xl bg-[#161D19]/40 border border-dashed border-[#29332D]">
+                <div className="py-8 px-4 text-center rounded-xl bg-[#141816]/60 border border-dashed border-[#26302A]">
                   <Clock className="w-8 h-8 text-[#A5ADA6]/60 mx-auto mb-2.5" />
                   <p className="text-xs font-medium text-[#F3F0E7]">No live sprint running right now</p>
                   <p className="text-[11px] text-[#A5ADA6] mt-1 mb-4">
                     Open a room for any book in your library and invite fellow readers to sprint with you.
                   </p>
                   <Link to="/social?tab=rooms">
-                    <Button size="sm" variant="outline" className="text-xs border-[#29332D] bg-[#161D19] text-[#F3F0E7] hover:bg-[#1C2620]">
+                    <Button size="sm" variant="outline" className="text-xs border-[#26302A] bg-[#141816] text-[#F3F0E7] hover:bg-[#1C221F]">
                       Open Reading Room
                     </Button>
                   </Link>
@@ -201,7 +201,7 @@ export const HomeCommunityPreview: React.FC = () => {
                       <Link
                         key={room.id}
                         to={`/social?tab=rooms`}
-                        className="group block p-3.5 rounded-xl bg-[#161D19]/60 hover:bg-[#1B251F] border border-[#29332D] hover:border-[#334E3C] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
+                        className="group block p-3.5 rounded-xl bg-[#141816] hover:bg-[#19201C] border border-[#26302A] hover:border-[#38483D] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
                       >
                         <div className="flex items-center gap-2 mb-1.5">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
@@ -224,7 +224,7 @@ export const HomeCommunityPreview: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-[#29332D]/40">
+              <div className="pt-3 border-t border-[#26302A]">
                 <Link
                   to="/social?tab=rooms"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A5ADA6] hover:text-[#F3F0E7] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] rounded"
@@ -237,10 +237,10 @@ export const HomeCommunityPreview: React.FC = () => {
           </div>
 
           {/* Pillar 3: Reader Marginalia */}
-          <div className="flex flex-col rounded-2xl bg-[#111614] border border-[#29332D] p-6 sm:p-7 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-[#29332D]/70 mb-5">
+          <div className="flex flex-col rounded-2xl bg-[#111413] border border-[#26302A] p-6 sm:p-7 shadow-xs">
+            <div className="flex items-center justify-between pb-4 border-b border-[#26302A] mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#262117] text-[#D5B16D] border border-[#483B25] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#1D1B16] text-[#D5B16D] border border-[#383020] flex items-center justify-center">
                   <Quote className="w-4 h-4" />
                 </div>
                 <div>
@@ -268,14 +268,14 @@ export const HomeCommunityPreview: React.FC = () => {
                   ))}
                 </div>
               ) : margins.length === 0 ? (
-                <div className="py-8 px-4 text-center rounded-xl bg-[#161D19]/40 border border-dashed border-[#29332D]">
+                <div className="py-8 px-4 text-center rounded-xl bg-[#141816]/60 border border-dashed border-[#26302A]">
                   <Quote className="w-8 h-8 text-[#A5ADA6]/60 mx-auto mb-2.5" />
                   <p className="text-xs font-medium text-[#F3F0E7]">No public margin notes yet</p>
                   <p className="text-[11px] text-[#A5ADA6] mt-1 mb-4">
                     Leave your impressions and highlighted quotes as you read through books.
                   </p>
                   <Link to="/social?tab=margins">
-                    <Button size="sm" variant="outline" className="text-xs border-[#29332D] bg-[#161D19] text-[#F3F0E7] hover:bg-[#1C2620]">
+                    <Button size="sm" variant="outline" className="text-xs border-[#26302A] bg-[#141816] text-[#F3F0E7] hover:bg-[#1C221F]">
                       Browse Margins
                     </Button>
                   </Link>
@@ -288,7 +288,7 @@ export const HomeCommunityPreview: React.FC = () => {
                       <Link
                         key={note.id}
                         to={`/social?tab=margins`}
-                        className="group block p-3.5 rounded-xl bg-[#161D19]/60 hover:bg-[#1B251F] border border-[#29332D] hover:border-[#334E3C] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
+                        className="group block p-3.5 rounded-xl bg-[#141816] hover:bg-[#1C1813] border border-[#26302A] hover:border-[#D5B16D]/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
                       >
                         <p className="text-xs italic font-serif text-[#F3F0E7]/90 line-clamp-2 leading-relaxed border-l-2 border-[#D5B16D]/50 pl-2.5 mb-2">
                           "{note.quote}"
@@ -306,7 +306,7 @@ export const HomeCommunityPreview: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-[#29332D]/40">
+              <div className="pt-3 border-t border-[#26302A]">
                 <Link
                   to="/social?tab=margins"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A5ADA6] hover:text-[#F3F0E7] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] rounded"

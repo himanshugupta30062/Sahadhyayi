@@ -19,9 +19,9 @@ export const HeroContent: React.FC = () => {
   return (
     <div className="flex flex-col items-center text-center lg:items-start lg:text-left max-w-xl mx-auto lg:mx-0">
       {/* Brand Pill */}
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#161D19] border border-[#29332D] text-xs font-semibold text-[#D5B16D] mb-5 tracking-wide shadow-xs">
+      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111614] border border-[#26302A] text-xs font-medium text-[#D5B16D] mb-6 tracking-wide shadow-xs">
         <Sparkles className="w-3.5 h-3.5 text-[#D5B16D]" />
-        <span>The Book Readers Social Media</span>
+        <span>The Social Reading Platform</span>
       </div>
 
       {/* Main Headline (Image 2 reference: "Read deeper. Connect meaningfully.") */}
