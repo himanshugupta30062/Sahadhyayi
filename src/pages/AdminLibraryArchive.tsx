@@ -22,6 +22,11 @@ import {
   AdminArchivedBookRecord,
   ArchiveClassification,
 } from '@/utils/catalog/bookArchiveVault';
+import {
+  detectBookSchemaCapabilities,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 import { generateLibraryDuplicateAudit } from '@/utils/catalog/duplicateAudit';
 import { applyDuplicateResolution } from '@/utils/catalog/duplicateResolution';
 import {
@@ -158,23 +163,26 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
     queryKey: ['admin-active-catalog-sample', activeSearch],
     enabled: activeTab === 'active',
     queryFn: async () => {
+      const caps = await detectBookSchemaCapabilities();
       let query = supabase
         .from('books_library')
-        .select('*')
-        .or('catalog_status.eq.active,status.eq.active')
-        .order('created_at', { ascending: false })
-        .limit(40);
+        .select('*');
+
+      query = applyPublicBookFilter(query, caps);
 
       if (activeSearch.trim()) {
         query = query.or(`title.ilike.%${activeSearch.trim()}%,author.ilike.%${activeSearch.trim()}%`);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .limit(40);
+
       if (error) {
         console.warn('Error fetching active books:', error);
         return [];
       }
-      return data || [];
+      return filterPublicBooks(data || []);
     },
   });
 

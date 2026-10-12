@@ -1,6 +1,11 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
+import {
+  detectBookSchemaCapabilities,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 
 interface InfiniteParams {
   genre: string;
@@ -29,12 +34,17 @@ export const useInfiniteLibraryBooks = ({
     queryKey: ['infinite-library-books', genre, searchQuery, author, year, language, pageSize],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }): Promise<BooksPage> => {
+      const caps = await detectBookSchemaCapabilities();
       const start = pageParam * pageSize;
       const end = start + pageSize - 1;
 
       let query = supabase
         .from('books_library')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact' });
+
+      query = applyPublicBookFilter(query, caps);
+
+      query = query
         .order('created_at', { ascending: true })
         .range(start, end);
 
@@ -75,9 +85,7 @@ export const useInfiniteLibraryBooks = ({
         };
       }
 
-      const activeData = (data || []).filter(
-        (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
-      );
+      const activeData = filterPublicBooks(data || []);
 
       const books = activeData.map(book => ({
         id: book.id,

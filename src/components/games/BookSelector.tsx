@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  detectBookSchemaCapabilities,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,20 +37,24 @@ export default function BookSelector({ onSelect, onBack, loading }: BookSelector
     async function fetchBooks() {
       setFetching(true);
       try {
+        const caps = await detectBookSchemaCapabilities();
+        const selectCols = ['id', 'title', 'author', 'cover_image_url', 'genre'];
+        if (caps.hasStatus) selectCols.push('status');
+        if (caps.hasCatalogStatus) selectCols.push('catalog_status');
+
         let query = supabase
           .from('books_library')
-          .select('id, title, author, cover_image_url, genre, status, catalog_status')
-          .limit(50);
+          .select(selectCols.join(', '));
+
+        query = applyPublicBookFilter(query, caps);
 
         if (searchQuery) {
           query = query.or(`title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%`);
         }
 
-        const { data, error } = await query;
+        const { data, error } = await query.limit(50);
         if (error) throw error;
-        const activeBooks = (data || []).filter(
-          (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
-        );
+        const activeBooks = filterPublicBooks(data || []);
         setBooks(activeBooks);
       } catch (err) {
         console.error('Error fetching books:', err);

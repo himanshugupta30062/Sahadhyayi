@@ -1,5 +1,11 @@
 import { supabase } from '@/integrations/supabase/client-universal';
 import { verifyAdminStatus } from './duplicateResolution';
+import {
+  recordArchivedBookId,
+  removeArchivedBookId,
+  detectBookSchemaCapabilities,
+  getLocalArchivedBookIds,
+} from './bookVisibility';
 
 export type ArchiveClassification =
   | 'duplicate'
@@ -119,6 +125,7 @@ export async function archiveLibraryBook(
     });
 
     if (!error && data?.success) {
+      recordArchivedBookId(bookId);
       return {
         success: true,
         message: data.message || 'Book safely archived from public Library.',
@@ -140,6 +147,7 @@ export async function archiveLibraryBook(
       p_reason: reason,
     });
     if (!legacyErr && legacyData?.success) {
+      recordArchivedBookId(bookId);
       return {
         success: true,
         message: legacyData.message || 'Book archived.',
@@ -210,6 +218,8 @@ export async function archiveLibraryBook(
 
   if (updateErr) throw updateErr;
 
+  recordArchivedBookId(bookId);
+
   return {
     success: true,
     message: 'Book safely archived from public Library and preserved in vault.',
@@ -258,6 +268,7 @@ export async function restoreArchivedBook(
     });
 
     if (!error && data?.success) {
+      removeArchivedBookId(bookId);
       return {
         success: true,
         message: data.message || 'Book successfully restored to public Library.',
@@ -275,6 +286,7 @@ export async function restoreArchivedBook(
       p_book_id: bookId,
     });
     if (!legacyErr && legacyData?.success) {
+      removeArchivedBookId(bookId);
       return {
         success: true,
         message: legacyData.message || 'Book restored to active library.',
@@ -304,6 +316,8 @@ export async function restoreArchivedBook(
     .eq('id', bookId);
 
   if (updateErr) throw updateErr;
+
+  removeArchivedBookId(bookId);
 
   return {
     success: true,
@@ -386,16 +400,33 @@ export async function getAdminArchivedBooks(options: {
   }
 
   // 2. Fallback: Query books_library where catalog_status or status is 'archived'
+  const caps = await detectBookSchemaCapabilities();
   let query = supabase
     .from('books_library')
-    .select('*')
-    .or('catalog_status.eq.archived,status.eq.archived')
-    .order('archived_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+    .select('*');
+
+  if (caps.hasCatalogStatus && caps.hasStatus) {
+    query = query.or('catalog_status.eq.archived,status.eq.archived');
+  } else if (caps.hasCatalogStatus) {
+    query = query.eq('catalog_status', 'archived');
+  } else if (caps.hasStatus) {
+    query = query.eq('status', 'archived');
+  } else {
+    const localArchived = getLocalArchivedBookIds();
+    if (localArchived.length > 0) {
+      query = query.in('id', localArchived);
+    } else {
+      return [];
+    }
+  }
 
   if (search && search.trim()) {
     query = query.or(`title.ilike.%${search.trim()}%,author.ilike.%${search.trim()}%`);
   }
+
+  query = query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
 
   const { data: fallbackRows } = await query;
 

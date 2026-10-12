@@ -5,9 +5,12 @@ import type { Book } from './useLibraryBooks';
 import { getBookCompletenessScore } from './useLibraryBooks';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { mapRawToEdition, clusterEditionsIntoWorks } from '@/utils/catalog/deduplicationEngine';
-
-// Only select columns we actually use
-const PAGINATED_SELECT = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
+import {
+  detectBookSchemaCapabilities,
+  getPublicBookSelectColumns,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 
 interface UsePaginatedLibraryBooksParams {
   searchQuery?: string;
@@ -62,6 +65,8 @@ async function fetchFilteredBooks(
   selectedYear?: string,
   selectedLanguage?: string,
 ): Promise<Book[]> {
+  const caps = await detectBookSchemaCapabilities();
+  const selectColumns = getPublicBookSelectColumns(caps);
   const BATCH = 500;
   const all: any[] = [];
   let offset = 0;
@@ -70,8 +75,10 @@ async function fetchFilteredBooks(
   while (hasMore) {
     let query = supabase
       .from('books_library')
-      .select(PAGINATED_SELECT)
+      .select(selectColumns)
       .range(offset, offset + BATCH - 1);
+
+    query = applyPublicBookFilter(query, caps);
 
     if (searchQuery && searchQuery.trim()) {
       query = query.or(
@@ -107,7 +114,7 @@ async function fetchFilteredBooks(
   }
 
   // Filter out archived/superseded books and cluster into Works
-  const visibleRows = all.filter((row: any) => !row.status || row.status === 'active');
+  const visibleRows = filterPublicBooks(all);
   const editions = visibleRows.map((row: any) => mapRawToEdition(row));
   const works = clusterEditionsIntoWorks(editions);
 
