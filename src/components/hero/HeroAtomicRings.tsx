@@ -257,10 +257,18 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
           className="pointer-events-auto cursor-pointer"
         >
           <circle r={16} fill="#ef4444" filter="url(#soft)" />
-          <text y={6} textAnchor="middle" fontSize={12} fontWeight={700} fill="#ffffff">L</text>
+          {/* Mini open book vector icon */}
+          <path
+            d="M -6 -3.5 C -3 -4.5 -1 -4.5 0 -2.5 C 1 -4.5 3 -4.5 6 -3.5 L 6 3.5 C 3 2.5 1 2.5 0 4.5 C -1 2.5 -3 2.5 -6 3.5 Z M 0 -2.5 L 0 4.5"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
           <text y={30} textAnchor="middle" fontSize={10} fontWeight={500} fill="#f8fafc">Library</text>
         </g>
-        {/* Mid ring: Games */}
+        {/* Mid ring: Authors */}
         <g
           ref={el => (atomRefs[1].current = el)}
           onMouseEnter={handleEnter}
@@ -268,10 +276,14 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
           className="pointer-events-auto cursor-pointer"
         >
           <circle r={15} fill="#22c55e" filter="url(#soft)" />
-          <text y={6} textAnchor="middle" fontSize={11} fontWeight={700} fill="#f8fafc">G</text>
-          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Games</text>
+          {/* Quill / Pen vector icon */}
+          <path
+            d="M 3.5 -4.5 L 4.5 -3.5 L -2 3 C -3 4.5 -4.5 4.5 -4.5 4.5 C -4.5 4.5 -4.5 3 -3 2 Z"
+            fill="#ffffff"
+          />
+          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Authors</text>
         </g>
-        {/* Inner ring: Authors */}
+        {/* Inner ring: Social Media */}
         <g
           ref={el => (atomRefs[2].current = el)}
           onMouseEnter={handleEnter}
@@ -279,10 +291,14 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
           className="pointer-events-auto cursor-pointer"
         >
           <circle r={15} fill="#3b82f6" filter="url(#soft)" />
-          <text y={6} textAnchor="middle" fontSize={11} fontWeight={700} fill="#f8fafc">A</text>
-          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Authors</text>
+          {/* Users group vector icon */}
+          <circle cx="-2" cy="-2.5" r="2.2" fill="#ffffff" />
+          <path d="M -5.5 3.5 C -5.5 1.5 -3 1.5 -2 1.5 C -1 1.5 1.5 1.5 1.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" />
+          <circle cx="2.5" cy="-2" r="1.8" fill="#ffffff" />
+          <path d="M 2 1.8 C 2.5 1.8 4.5 2 4.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
+          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Social Media</text>
         </g>
-        {/* Core ring: Social Media */}
+        {/* Core ring: Discovery */}
         <g
           ref={el => (atomRefs[3].current = el)}
           onMouseEnter={handleEnter}
@@ -290,13 +306,14 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
           className="pointer-events-auto cursor-pointer"
         >
           <circle r={14} fill="#f59e0b" filter="url(#soft)" />
-          <text y={5} textAnchor="middle" fontSize={11} fontWeight={700} fill="#ffffff">S</text>
-          <text y={27} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Social Media</text>
+          {/* 4-point star vector icon */}
+          <path d="M 0 -4.5 L 1.2 -1.2 L 4.5 0 L 1.2 1.2 L 0 4.5 L -1.2 1.2 L -4.5 0 L -1.2 -1.2 Z" fill="#ffffff" />
+          <text y={27} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Discovery</text>
         </g>
       </svg>
       {children && (
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <div className="w-full max-w-[65%] pointer-events-auto flex items-center justify-center">{children}</div>
+          <div className="w-full max-w-[92%] sm:max-w-[88%] pointer-events-auto flex items-center justify-center">{children}</div>
         </div>
       )}
     </div>

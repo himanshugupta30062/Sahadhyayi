@@ -18,13 +18,13 @@ export const HeroContent: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center text-center lg:items-start lg:text-left max-w-xl mx-auto lg:mx-0">
-      {/* Brand Pill */}
-      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111614] border border-[#26302A] text-xs font-medium text-[#D5B16D] mb-6 tracking-wide shadow-xs">
+      {/* Brand Pill matching reference design */}
+      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111614] border border-[#26302A] text-xs font-semibold uppercase tracking-widest text-[#D5B16D] mb-6 shadow-xs">
         <Sparkles className="w-3.5 h-3.5 text-[#D5B16D]" />
-        <span>The Social Reading Platform</span>
+        <span>A Reading Community</span>
       </div>
 
-      {/* Main Headline (Image 2 reference: "Read deeper. Connect meaningfully.") */}
+      {/* Main Headline (Image reference: "Read deeper. Connect meaningfully.") */}
       <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#F3F0E7] tracking-tight leading-[1.14] mb-5">
         Read <span className="text-[#D5B16D]">deeper.</span>
         <br />
@@ -33,13 +33,14 @@ export const HeroContent: React.FC = () => {
 
       {/* Supporting Description */}
       <p className="text-sm sm:text-base md:text-lg text-[#A5ADA6] leading-relaxed mb-8 max-w-lg">
-        Discover books, exchange ideas, and find fellow readers who make every reading journey richer.
+        Discover books, exchange ideas, join reading groups, and find fellow readers who make every reading journey richer.
       </p>
 
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row items-center gap-3.5 w-full sm:w-auto">
         <Link
           to={primaryCta.to}
+          aria-label={primaryCta.label}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#D5B16D] hover:bg-[#e4c688] text-black text-sm sm:text-base font-semibold shadow-md shadow-[#D5B16D]/20 transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#D5B16D] focus-visible:ring-offset-[#0B0D0C]"
         >
           <PrimaryIcon className="w-4 h-4 text-black" />
