@@ -37,8 +37,8 @@ export const Hero3DBook: React.FC<Hero3DBookProps> = ({ className = "" }) => {
           <img
             src="/assets/hero-3d-book.png"
             alt="Realistic 3D open book with warm ivory pages and dark green leather hardcover"
-            width={1134}
-            height={756}
+            width={1245}
+            height={696}
             loading="eager"
             fetchPriority="high"
             decoding="async"

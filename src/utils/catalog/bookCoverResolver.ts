@@ -1,0 +1,257 @@
+/**
+ * Book Cover Resolution Pipeline
+ * Resolves genuine publisher cover artwork for catalog books with missing or broken cover URLs.
+ * Matches by ISBN first via Open Library Cover CDN / Google Books API, then by normalized Title + Author.
+ * Verifies matches and caches results persistently to prevent duplicate network calls.
+ */
+
+import { useState, useEffect } from 'react';
+import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
+import { normalizeTitle, normalizeAuthor, normalizeIsbn } from '@/utils/catalog/metadataNormalization';
+
+export interface BookCoverTarget {
+  id?: string;
+  title: string;
+  author?: string | null;
+  isbn?: string | null;
+  cover_image_url?: string | null;
+}
+
+interface CacheEntry {
+  url: string | null;
+  timestamp: number;
+}
+
+const CACHE_KEY = 'sahadhyayi_cover_cache_v1';
+const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+// Memory cache for fast synchronous access during session
+const memoryCache = new Map<string, CacheEntry>();
+
+function getStorageCache(): Record<string, CacheEntry> {
+  if (typeof window === 'undefined' || !window.localStorage) return {};
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveStorageCache(cache: Record<string, CacheEntry>): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    // Ignore quota errors
+  }
+}
+
+export function clearCoverCache(): void {
+  memoryCache.clear();
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      localStorage.removeItem(CACHE_KEY);
+    } catch {
+      // Ignore errors
+    }
+  }
+}
+
+export function getBookLookupKey(book: BookCoverTarget): string {
+  if (book.id) return `id_${book.id}`;
+  const isbn = normalizeIsbn(book.isbn);
+  if (isbn.isValid && (isbn.isbn13 || isbn.isbn10)) {
+    return `isbn_${isbn.isbn13 || isbn.isbn10}`;
+  }
+  const cleanTitle = normalizeTitle(book.title).cleanTitle.toLowerCase().trim();
+  const cleanAuthor = normalizeAuthor(book.author).normalizedAuthor.toLowerCase().trim();
+  return `meta_${cleanTitle}_${cleanAuthor}`;
+}
+
+export function getCachedCover(book: BookCoverTarget): string | null | undefined {
+  const key = getBookLookupKey(book);
+
+  // 1. Check memory cache first
+  const mem = memoryCache.get(key);
+  if (mem && Date.now() - mem.timestamp < CACHE_TTL_MS) {
+    return mem.url;
+  }
+
+  // 2. Check localStorage
+  const disk = getStorageCache()[key];
+  if (disk && Date.now() - disk.timestamp < CACHE_TTL_MS) {
+    memoryCache.set(key, disk);
+    return disk.url;
+  }
+
+  return undefined; // Not cached yet
+}
+
+export function setCachedCover(book: BookCoverTarget, url: string | null): void {
+  const key = getBookLookupKey(book);
+  const entry: CacheEntry = { url, timestamp: Date.now() };
+
+  memoryCache.set(key, entry);
+
+  try {
+    const disk = getStorageCache();
+    disk[key] = entry;
+    saveStorageCache(disk);
+  } catch {
+    // Ignore storage issues
+  }
+}
+
+/**
+ * Construct Open Library direct cover URL for a valid ISBN.
+ * Appends `?default=false` so client receives 404 if no genuine cover is stored.
+ */
+export function getOpenLibraryCoverUrl(isbnRaw?: string | null, size: 'S' | 'M' | 'L' = 'M'): string | null {
+  const norm = normalizeIsbn(isbnRaw);
+  if (!norm.isValid) return null;
+  const isbn = norm.isbn13 || norm.isbn10;
+  if (!isbn) return null;
+  return `https://covers.openlibrary.org/b/isbn/${isbn}-${size}.jpg?default=false`;
+}
+
+/**
+ * Fetch genuine cover from Google Books API using ISBN or normalized Title + Author.
+ * Strictly verifies the match to avoid showing incorrect covers.
+ */
+export async function fetchGoogleBooksCover(
+  title: string,
+  author?: string | null,
+  isbnRaw?: string | null
+): Promise<string | null> {
+  try {
+    const isbnNorm = normalizeIsbn(isbnRaw);
+    const validIsbn = isbnNorm.isValid ? (isbnNorm.isbn13 || isbnNorm.isbn10) : null;
+
+    let query = '';
+    if (validIsbn) {
+      query = `isbn:${encodeURIComponent(validIsbn)}`;
+    } else {
+      const cleanTitle = normalizeTitle(title).cleanTitle;
+      const cleanAuthor = normalizeAuthor(author).normalizedAuthor;
+      if (!cleanTitle || cleanTitle === 'Untitled') return null;
+
+      query = `intitle:${encodeURIComponent(cleanTitle)}`;
+      if (cleanAuthor && cleanAuthor !== 'Unknown Author') {
+        query += `+inauthor:${encodeURIComponent(cleanAuthor)}`;
+      }
+    }
+
+    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=1&fields=items(volumeInfo(title,authors,imageLinks))`);
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    if (!data.items || data.items.length === 0) return null;
+
+    const volume = data.items[0].volumeInfo;
+    if (!volume || !volume.imageLinks) return null;
+
+    // Verify Title similarity if searched without ISBN
+    if (!validIsbn) {
+      const returnedTitle = (volume.title || '').toLowerCase();
+      const targetTitle = normalizeTitle(title).cleanTitle.toLowerCase();
+      if (!returnedTitle.includes(targetTitle) && !targetTitle.includes(returnedTitle)) {
+        return null; // Reject false positive match
+      }
+    }
+
+    const rawUrl =
+      volume.imageLinks.thumbnail ||
+      volume.imageLinks.smallThumbnail ||
+      volume.imageLinks.medium ||
+      volume.imageLinks.large;
+
+    if (!rawUrl) return null;
+
+    // Ensure secure HTTPS and remove curl/zoom limitations
+    return rawUrl.replace(/^http:\/\//i, 'https://').replace(/&edge=curl/gi, '');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Synchronous or asynchronous resolution of the best available book cover.
+ */
+export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<string | null> {
+  // 1. Existing valid URL in book record
+  const existing = normalizeCoverUrl(book.cover_image_url);
+  if (existing) {
+    return existing;
+  }
+
+  // 2. Check persistent cache
+  const cached = getCachedCover(book);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  // 3. Try Open Library ISBN cover URL directly if valid
+  const olCover = getOpenLibraryCoverUrl(book.isbn, 'M');
+  if (olCover) {
+    setCachedCover(book, olCover);
+    return olCover;
+  }
+
+  // 4. Try Google Books API metadata lookup
+  const gbCover = await fetchGoogleBooksCover(book.title, book.author, book.isbn);
+  if (gbCover) {
+    setCachedCover(book, gbCover);
+    return gbCover;
+  }
+
+  // 5. No genuine cover found — record negative in cache to avoid repetitive queries
+  setCachedCover(book, null);
+  return null;
+}
+
+/**
+ * React hook to resolve genuine cover with instant cache lookup and background fallback.
+ */
+export function useResolvedBookCover(book: BookCoverTarget): {
+  coverUrl: string | null;
+  isGenuine: boolean;
+} {
+  const existing = normalizeCoverUrl(book.cover_image_url);
+  const cached = getCachedCover(book);
+  const initialUrl = existing || (cached !== undefined ? cached : getOpenLibraryCoverUrl(book.isbn, 'M'));
+  const [coverUrl, setCoverUrl] = useState<string | null>(initialUrl);
+
+  const lookupKey = getBookLookupKey(book);
+
+  useEffect(() => {
+    // If existing valid cover is present, nothing to resolve
+    if (existing) {
+      setCoverUrl(existing);
+      return;
+    }
+
+    const currentCached = getCachedCover(book);
+    if (currentCached !== undefined) {
+      setCoverUrl(currentCached);
+      return;
+    }
+
+    let isMounted = true;
+
+    resolveGenuineBookCover(book).then((resolved) => {
+      if (isMounted) {
+        setCoverUrl(resolved);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [lookupKey, existing, book]);
+
+  return {
+    coverUrl,
+    isGenuine: Boolean(coverUrl),
+  };
+}
