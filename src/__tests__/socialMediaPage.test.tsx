@@ -225,5 +225,43 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       // Discussions view should be active
       expect(screen.getByText('Chapter-Locked Discussions')).toBeInTheDocument();
     });
+
+    it('renders reading progress card with valid /book/:id link', () => {
+      mockUseReadingProgress.mockReturnValue({
+        data: [
+          {
+            book_id: 'book-xyz',
+            book_title: 'The Great Gatsby',
+            current_page: 50,
+            total_pages: 180,
+            cover_image_url: 'https://example.com/cover.jpg',
+          },
+        ],
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/social']}>
+          <SocialMedia />
+        </MemoryRouter>
+      );
+
+      const continueReadingLink = screen.getByRole('link', { name: /Continue Reading →/i });
+      expect(continueReadingLink).toHaveAttribute('href', '/book/book-xyz');
+    });
+
+    it('toggles mobile search input when mobile search button is clicked', () => {
+      render(
+        <MemoryRouter initialEntries={['/social']}>
+          <SocialMedia />
+        </MemoryRouter>
+      );
+
+      const toggleButton = screen.getByRole('button', { name: /Toggle search/i });
+      fireEvent.click(toggleButton);
+
+      // Both desktop and mobile search inputs rendered
+      const inputs = screen.getAllByPlaceholderText(/Search books, authors, discussions…/i);
+      expect(inputs.length).toBe(2);
+    });
   });
 });

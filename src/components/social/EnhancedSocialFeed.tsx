@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -63,13 +64,16 @@ const EmbeddedOriginalPost: React.FC<{ post?: SocialPost | null }> = ({ post }) 
         </div>
       )}
       {book && (
-        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+        <Link
+          to={`/book/${post.book_id || book.id}`}
+          className="mt-2 flex items-center gap-2 text-xs text-muted-foreground hover:text-[#D5B16D] transition-colors"
+        >
           <span>📖</span>
           <span className="truncate">
-            <strong className="text-foreground">{book.title}</strong>
+            <strong className="text-foreground hover:text-[#D5B16D] transition-colors">{book.title}</strong>
             {book.author ? ` — ${book.author}` : ''}
           </span>
-        </div>
+        </Link>
       )}
     </div>
   );
@@ -321,33 +325,40 @@ export const EnhancedSocialFeed = () => {
 
                   {/* Book Card (only on non-reposts) */}
                   {!isRepost && postBook && (
-                    <div className="bg-[#16211A]/80 border border-[#315C43]/50 rounded-xl p-3 flex items-center gap-3">
-                      <div className="w-12 h-16 bg-[#1C3024] rounded-md flex-shrink-0 overflow-hidden shadow-xs border border-[#315C43]/40">
-                        {postBook.cover_image_url ? (
-                          <img
-                            src={postBook.cover_image_url}
-                            alt={postBook.title || 'Book cover'}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[#D5B16D] text-xs font-bold">
-                            {postBook.title?.charAt(0) || '📖'}
-                          </div>
-                        )}
+                    <Link
+                      to={`/book/${post.book_id || postBook.id}`}
+                      className="block group"
+                    >
+                      <div className="bg-[#16211A]/80 border border-[#315C43]/50 rounded-xl p-3 flex items-center gap-3 transition-colors group-hover:border-[#D5B16D]/50 group-hover:bg-[#1A261F]">
+                        <div className="w-12 h-16 bg-[#1C3024] rounded-md flex-shrink-0 overflow-hidden shadow-xs border border-[#315C43]/40">
+                          {postBook.cover_image_url ? (
+                            <img
+                              src={postBook.cover_image_url}
+                              alt={postBook.title || 'Book cover'}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[#D5B16D] text-xs font-bold">
+                              {postBook.title?.charAt(0) || '📖'}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h5 className="font-semibold text-[#F3F0E7] text-sm truncate group-hover:text-[#D5B16D] transition-colors">
+                            {postBook.title}
+                          </h5>
+                          {postBook.author && (
+                            <p className="text-xs text-[#A5ADA6] truncate">{postBook.author}</p>
+                          )}
+                          <Badge
+                            variant="outline"
+                            className="mt-1.5 text-[10px] border-[#315C43] text-[#D5B16D] bg-[#111614]"
+                          >
+                            Currently Reading
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <h5 className="font-semibold text-[#F3F0E7] text-sm truncate">{postBook.title}</h5>
-                        {postBook.author && (
-                          <p className="text-xs text-[#A5ADA6] truncate">{postBook.author}</p>
-                        )}
-                        <Badge
-                          variant="outline"
-                          className="mt-1.5 text-[10px] border-[#315C43] text-[#D5B16D] bg-[#111614]"
-                        >
-                          Currently Reading
-                        </Badge>
-                      </div>
-                    </div>
+                    </Link>
                   )}
 
                   {/* Image (only on non-reposts) */}

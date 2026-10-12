@@ -313,6 +313,7 @@ const SocialMedia: React.FC = () => {
 
   const [mapView, setMapView] = useState<'readers' | 'friends'>('readers');
   const [topSearch, setTopSearch] = useState('');
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   // Fetch community data
   const { data: rooms = [] } = useReadingRooms();
@@ -443,6 +444,15 @@ const SocialMedia: React.FC = () => {
 
             {/* Right Tools: Notification Dropdown & Profile Pill */}
             <div className="flex items-center gap-2.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileSearch(prev => !prev)}
+                aria-label="Toggle search"
+                className="sm:hidden p-1.5 h-8 w-8 text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1C3024] rounded-lg"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
               <NotificationDropdown />
               <Link
                 to="/profile"
@@ -460,6 +470,23 @@ const SocialMedia: React.FC = () => {
               </Link>
             </div>
           </div>
+
+          {/* Mobile Search Input Drawer */}
+          {showMobileSearch && (
+            <div className="px-4 pb-3 pt-1 sm:hidden border-t border-[#29332D]/70 bg-[#0B0D0C]">
+              <form onSubmit={handleTopSearchSubmit} className="relative flex items-center">
+                <Search className="absolute left-3 w-4 h-4 text-[#A5ADA6] pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="Search books, authors, discussions…"
+                  value={topSearch}
+                  onChange={(e) => setTopSearch(e.target.value)}
+                  autoFocus
+                  className="w-full pl-9 pr-3 h-9 bg-[#111614] border-[#29332D] text-xs text-[#F3F0E7] placeholder:text-[#A5ADA6]/70 rounded-xl focus-visible:ring-1 focus-visible:ring-[#D5B16D]"
+                />
+              </form>
+            </div>
+          )}
         </header>
 
         {/* ── Main Viewport Content ── */}
@@ -513,6 +540,10 @@ const SocialMedia: React.FC = () => {
                     onClick={() => {
                       handleTabChange('feed');
                       window.scrollTo({ top: 0, behavior: 'smooth' });
+                      setTimeout(() => {
+                        const el = document.getElementById('feed-composer-textarea');
+                        if (el) el.focus();
+                      }, 100);
                     }}
                     className="w-full h-10 bg-[#D5B16D] hover:bg-[#c49f5c] text-[#0B0D0C] font-semibold text-xs rounded-xl shadow-xs gap-2 transition-all justify-center"
                   >
@@ -987,7 +1018,7 @@ const SocialMedia: React.FC = () => {
                           </div>
                           {currentProgress.book_id && (
                             <Link
-                              to={`/books/${currentProgress.book_id}`}
+                              to={`/book/${currentProgress.book_id}`}
                               className="inline-block mt-1 text-[11px] font-semibold text-[#D5B16D] hover:underline"
                             >
                               Continue Reading →

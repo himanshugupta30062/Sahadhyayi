@@ -56,7 +56,7 @@ const BookCardGrid: React.FC = () => {
               </p>
             </CardContent>
             <CardFooter className="pt-0">
-              <Link to={`/books/${book.id}`} className="ml-auto">
+              <Link to={`/book/${book.id}`} className="ml-auto">
                 <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
                   About
                 </Button>

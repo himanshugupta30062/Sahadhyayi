@@ -122,6 +122,13 @@ const ReaderRedirect = () => {
   return <Navigate to={`/book/${id}?tab=read${query ? `&${query}` : ''}`} replace />;
 };
 
+const BooksRedirect = () => {
+  const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const query = searchParams.toString();
+  return <Navigate to={`/book/${id}${query ? `?${query}` : ''}`} replace />;
+};
+
 const PageTracker = () => {
   usePageVisitTracker();
   return null;
@@ -203,6 +210,10 @@ const App = memo(() => {
                         <Route
                           path="/reader/:id"
                           element={<ReaderRedirect />}
+                        />
+                        <Route
+                          path="/books/:id"
+                          element={<BooksRedirect />}
                         />
                         
                         {/* Secondary routes */}

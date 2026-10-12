@@ -155,6 +155,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
             </Avatar>
             <div className="flex-1">
               <Textarea
+                id="feed-composer-textarea"
                 placeholder="What are you reading or thinking about?"
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
