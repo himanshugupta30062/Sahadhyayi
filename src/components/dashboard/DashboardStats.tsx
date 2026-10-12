@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Clock, BookMarked, Star } from 'lucide-react';
 import { useUserBookshelf } from '@/hooks/useUserBookshelf';
@@ -46,20 +47,23 @@ const DashboardStats = () => {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
+        const linkTo = stat.label === 'Total Books' ? '/bookshelf' : `/bookshelf?status=${stat.label.toLowerCase().replace(/\s+/g, '_')}`;
         return (
-          <Card key={index} className="border-border hover:shadow-sm transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl ${stat.bg}`}>
-                  <Icon className={`w-5 h-5 ${stat.color}`} />
+          <Link key={index} to={linkTo} className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-primary))] rounded-xl">
+            <Card className="border-border hover:shadow-sm hover:border-[hsl(var(--brand-primary)/0.5)] transition-all">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2.5 rounded-xl ${stat.bg} group-hover:scale-105 transition-transform`}>
+                    <Icon className={`w-5 h-5 ${stat.color}`} />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-foreground group-hover:text-[hsl(var(--brand-primary))] transition-colors">{stat.value}</div>
+                    <div className="text-xs text-muted-foreground">{stat.label}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground">{stat.label}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         );
       })}
     </div>

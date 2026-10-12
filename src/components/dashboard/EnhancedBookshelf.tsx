@@ -71,12 +71,16 @@ const EnhancedBookshelf = () => {
         ) : (
           <div className="space-y-3">
             {bookshelf.slice(0, 5).map((item) => (
-              <div key={item.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+              <Link
+                key={item.id}
+                to={`/book/${item.book_id}`}
+                className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group"
+              >
                 {item.books_library?.cover_image_url ? (
                   <img
                     src={item.books_library.cover_image_url}
                     alt={item.books_library?.title}
-                    className="w-10 h-14 object-cover rounded shadow-sm"
+                    className="w-10 h-14 object-cover rounded shadow-sm group-hover:scale-105 transition-transform"
                   />
                 ) : (
                   <div className="w-10 h-14 bg-amber-100 rounded flex items-center justify-center">
@@ -84,7 +88,7 @@ const EnhancedBookshelf = () => {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 truncate">
+                  <h4 className="font-medium text-gray-900 truncate group-hover:text-amber-800 transition-colors">
                     {item.books_library?.title || 'Unknown Title'}
                   </h4>
                   <p className="text-sm text-gray-500 truncate">
@@ -95,7 +99,7 @@ const EnhancedBookshelf = () => {
                     <span className="ml-1 capitalize">{item.status?.replace('_', ' ')}</span>
                   </Badge>
                 </div>
-              </div>
+              </Link>
             ))}
             {bookshelf.length > 5 && (
               <Link to="/bookshelf">

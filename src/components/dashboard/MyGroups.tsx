@@ -67,9 +67,11 @@ const MyGroups = () => {
                     <Calendar className="w-3 h-3 mr-1" />
                     Joined {new Date(membership.joined_at).toLocaleDateString()}
                   </div>
-                  <Button size="sm" variant="ghost" className="text-amber-600">
-                    View Group
-                  </Button>
+                  <Link to={`/groups/${membership.groups?.id || membership.group_id || ''}`}>
+                    <Button size="sm" variant="ghost" className="text-amber-600 hover:text-amber-700">
+                      View Group
+                    </Button>
+                  </Link>
                 </div>
               </div>
             ))}
