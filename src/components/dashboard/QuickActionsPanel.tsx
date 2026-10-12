@@ -11,9 +11,9 @@ const QuickActionsPanel: React.FC = () => {
   const actions = [
     {
       title: 'Add Book',
-      description: 'Add a new book to your library',
+      description: 'Discover and add books to your shelf',
       icon: Plus,
-      onClick: () => {}, // This would open AddBookDialog
+      onClick: () => navigate('/library'),
       color: 'bg-green-500 hover:bg-green-600'
     },
     {
@@ -41,7 +41,7 @@ const QuickActionsPanel: React.FC = () => {
       title: 'Reading Stats',
       description: 'Track your reading progress',
       icon: BarChart3,
-      onClick: () => {}, // This would show detailed stats
+      onClick: () => navigate('/dashboard'),
       color: 'bg-amber-500 hover:bg-amber-600'
     }
   ];

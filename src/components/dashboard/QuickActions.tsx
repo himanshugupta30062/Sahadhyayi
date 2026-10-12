@@ -16,9 +16,9 @@ const QuickActions = () => {
     },
     {
       title: 'Write Story',
-      description: 'Create a new story',
+      description: 'Create a new story or article',
       icon: Edit,
-      href: '/dashboard?tab=stories',
+      href: '/articles/write',
       variant: 'secondary' as const,
     },
     {

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Plus, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { slugify } from '@/utils/slugify';
 import { useAuth } from '@/contexts/authHelpers';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
 import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
@@ -101,9 +102,13 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => 
                   {book.title}
                 </h4>
               </Link>
-              <p className="text-xs text-muted-foreground line-clamp-1">
-                {book.author || 'Unknown Author'}
-              </p>
+              {book.author ? (
+                <p className="text-xs text-muted-foreground line-clamp-1">
+                  <Link to={`/authors/${slugify(book.author)}`} className="hover:underline hover:text-foreground">
+                    {book.author}
+                  </Link>
+                </p>
+              ) : null}
               {book.genre && (
                 <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                   {book.genre}
