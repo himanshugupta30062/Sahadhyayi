@@ -26,12 +26,17 @@ const DashboardCommunityPulse: React.FC = () => {
             </span>
             Community Pulse
           </CardTitle>
-          {stats.totalSignups > 0 && (
+          {stats.totalSignups > 0 ? (
             <Badge variant="secondary" className="hidden sm:inline-flex text-[10px] h-5 px-1.5 font-medium gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
               <Users className="w-2.5 h-2.5" />
               {stats.totalSignups.toLocaleString()} Readers
             </Badge>
-          )}
+          ) : stats.totalVisits > 0 ? (
+            <Badge variant="secondary" className="hidden sm:inline-flex text-[10px] h-5 px-1.5 font-medium gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
+              <Activity className="w-2.5 h-2.5" />
+              {stats.totalVisits.toLocaleString()} Visits
+            </Badge>
+          ) : null}
         </div>
         <Link to="/social">
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs">

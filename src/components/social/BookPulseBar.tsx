@@ -1,9 +1,10 @@
 import React from 'react';
-import { Radio, Quote, MessageCircle, Loader2 } from 'lucide-react';
+import { Radio, Quote, MessageCircle, Loader2, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
 import { useMarginNotes } from '@/hooks/useMarginNotes';
 import { useSpoilerThreads } from '@/hooks/useSpoilerThreads';
+import { useCommunityStats } from '@/hooks/useCommunityStats';
 
 /**
  * BookPulseBar
@@ -15,6 +16,7 @@ export const BookPulseBar: React.FC = () => {
   const { data: rooms = [], isLoading: roomsLoading } = useReadingRooms();
   const { data: marginNotes = [], isLoading: notesLoading } = useMarginNotes({ filter: 'all' });
   const { data: spoilerThreads = [], isLoading: threadsLoading } = useSpoilerThreads();
+  const { stats } = useCommunityStats();
 
   const isLoading = roomsLoading || notesLoading || threadsLoading;
 
@@ -80,6 +82,15 @@ export const BookPulseBar: React.FC = () => {
           )}
           <span className="text-muted-foreground">Threads</span>
         </Link>
+
+        {/* Readers */}
+        {stats.totalSignups > 0 && (
+          <div className="flex items-center gap-1.5 text-sm text-foreground">
+            <Users className="w-4 h-4 text-sky-500" />
+            <span className="font-semibold">{stats.totalSignups}</span>
+            <span className="text-muted-foreground">Readers</span>
+          </div>
+        )}
       </div>
 
       {/* Latest active room callout */}
