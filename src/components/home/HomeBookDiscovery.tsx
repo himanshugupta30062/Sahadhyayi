@@ -5,6 +5,26 @@ import { useLibraryBooks, useGenres, type Book } from '@/hooks/useLibraryBooks';
 import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
 import GeneratedBookCover from '@/components/library/GeneratedBookCover';
 import { Button } from '@/components/ui/button';
+import { useResolvedBookCover } from '@/utils/catalog/bookCoverResolver';
+
+const DiscoveryBookCover: React.FC<{ book: Book }> = ({ book }) => {
+  const { coverUrl } = useResolvedBookCover(book);
+
+  if (coverUrl) {
+    return (
+      <EnhancedLazyImage
+        src={coverUrl}
+        alt={`Cover of ${book.title}`}
+        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        fallback={
+          <GeneratedBookCover title={book.title} author={book.author} genre={book.genre} />
+        }
+      />
+    );
+  }
+
+  return <GeneratedBookCover title={book.title} author={book.author} genre={book.genre} />;
+};
 
 export const HomeBookDiscovery: React.FC = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
@@ -161,18 +181,7 @@ export const HomeBookDiscovery: React.FC = () => {
                 >
                   {/* Book Cover Container with 2:3 aspect ratio */}
                   <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-[#141816] border border-[#26302A] shadow-sm transition-all duration-300 group-hover:border-[#D5B16D]/60 group-hover:shadow-[0_8px_24px_rgba(0,0,0,0.6)] group-hover:-translate-y-1">
-                    {book.cover_image_url ? (
-                      <EnhancedLazyImage
-                        src={book.cover_image_url}
-                        alt={`Cover of ${book.title}`}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        fallback={
-                          <GeneratedBookCover title={book.title} author={book.author} genre={book.genre} />
-                        }
-                      />
-                    ) : (
-                      <GeneratedBookCover title={book.title} author={book.author} genre={book.genre} />
-                    )}
+                    <DiscoveryBookCover book={book} />
 
                     {/* Subtle Dark Vignette on Hover */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
