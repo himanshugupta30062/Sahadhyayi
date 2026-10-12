@@ -128,57 +128,36 @@ const Index = () => {
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* Guest Cultural Origin & Mission callout */}
-        {!user && (
-          <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#0B0D0C] border-b border-[#29332D]">
-            <div className="max-w-3xl mx-auto text-center">
-              <span className="text-xs font-semibold tracking-wider uppercase text-[#D5B16D] mb-3 block">
-                The Origin
-              </span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#F3F0E7] mb-4">
-                What "Sahadhyayi" Means
-              </h2>
-              <p className="text-sm sm:text-base text-[#A5ADA6] leading-relaxed max-w-2xl mx-auto">
-                <strong className="text-[#F3F0E7]">Sahadhyayi</strong> (सहाध्यायी) is Sanskrit for <em className="text-[#D5B16D]">"fellow reader"</em> — from <em className="text-[#D5B16D]">saha</em> (together) and <em className="text-[#D5B16D]">adhyayi</em> (one who studies). We build a digital home for readers to connect, share insights, and support each other's reading journey.
-              </p>
-              <div className="mt-6">
-                <Link
-                  to="/about"
-                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#D5B16D] hover:text-[#e4c688] transition-colors group"
-                >
-                  <span>Read our complete story</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* 6. Atmospheric Final Call-to-Action (Image 2 reference) */}
-        <section className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#0B0D0C] via-[#121614] to-[#0B0D0C] text-[#F3F0E7] overflow-hidden border-t border-[#29332D]">
-          {/* Subtle warm library glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(213,177,109,0.08),transparent_65%)] pointer-events-none" />
+        {/* 6. Atmospheric Final Call-to-Action with warm library aesthetic (matching Image 2 reference) */}
+        <section className="relative py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#0B0D0C] via-[#121413] to-[#0B0D0C] text-[#F3F0E7] overflow-hidden border-t border-[#26302A]">
+          {/* Subtle warm library ambient glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(213,177,109,0.06),transparent_65%)] pointer-events-none" />
 
           <div className="relative max-w-3xl mx-auto text-center">
+            {/* Cultural Origin Tag */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#141816] border border-[#26302A] text-xs font-medium text-[#D5B16D] mb-4">
+              <span>सहाध्यायी · Fellow Reader</span>
+            </div>
+
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight mb-4 text-[#F3F0E7]">
-              Your next great read (and conversation) is here.
+              Ready to join Sahadhyayi?
             </h2>
             <p className="text-sm sm:text-base text-[#A5ADA6] mb-8 max-w-xl mx-auto leading-relaxed">
-              Explore a growing library, join a vibrant community, and make reading a more meaningful experience.
+              Explore the library, join reading groups, and be part of a community that reads, thinks, and grows together.
             </p>
             <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center">
               <Link
-                to={user ? "/dashboard" : "/library"}
+                to={user ? "/dashboard" : "/signup"}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#D5B16D] hover:bg-[#e4c688] text-black font-semibold text-sm sm:text-base shadow-md shadow-[#D5B16D]/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
               >
-                <span>{user ? 'Open Dashboard' : 'Explore the library'}</span>
+                <span>{user ? 'Open Dashboard' : 'Get started'}</span>
                 <ArrowRight className="w-4 h-4 text-black/80" />
               </Link>
               <Link
-                to={user ? "/library" : "/signup"}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border border-[#29332D] hover:border-[#415147] bg-[#111614] hover:bg-[#1B241E] text-[#F3F0E7] text-sm sm:text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
+                to="/library"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border border-[#26302A] hover:border-[#38483D] bg-[#111413] hover:bg-[#181C1A] text-[#F3F0E7] text-sm sm:text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
               >
-                <span>{user ? 'Browse the library' : 'Create your account'}</span>
+                <span>Explore the library</span>
               </Link>
             </div>
           </div>

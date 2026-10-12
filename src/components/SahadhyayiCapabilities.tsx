@@ -85,10 +85,10 @@ export const SahadhyayiCapabilities: React.FC = () => {
               <Link
                 key={item.id}
                 to={item.href}
-                className="group flex items-center gap-4 p-5 rounded-2xl bg-[#111614] hover:bg-[#161D19] border border-[#29332D] hover:border-[#315C43] transition-all duration-300 hover:-translate-y-0.5 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
+                className="group flex items-center gap-4 p-5 rounded-2xl bg-[#111413] hover:bg-[#161A18] border border-[#26302A] hover:border-[#D5B16D]/50 transition-all duration-300 hover:-translate-y-0.5 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
               >
                 {/* Glowing Icon Box */}
-                <div className="w-12 h-12 rounded-xl bg-[#161D19] group-hover:bg-[#1F2B22] border border-[#29332D] group-hover:border-[#315C43] flex items-center justify-center text-[#D5B16D] shrink-0 transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-[#161A18] group-hover:bg-[#1E1C15] border border-[#26302A] group-hover:border-[#D5B16D]/40 flex items-center justify-center text-[#D5B16D] shrink-0 transition-colors">
                   <Icon className="w-5 h-5" />
                 </div>
 

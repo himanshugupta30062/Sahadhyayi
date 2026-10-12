@@ -69,10 +69,10 @@ export const HomeBookDiscovery: React.FC = () => {
                   type="button"
                   aria-pressed={isSelected}
                   onClick={() => setSelectedGenre(genre)}
-                  className={`px-4 py-2 min-h-[38px] rounded-lg text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] ${
+                  className={`px-4 py-2 min-h-[38px] rounded-full text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] ${
                     isSelected
-                      ? 'bg-[#1C3024] text-[#F3F0E7] border border-[#315C43] shadow-xs'
-                      : 'bg-[#111614] text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1B241E] border border-[#29332D]'
+                      ? 'bg-[#D5B16D] text-black font-semibold shadow-xs'
+                      : 'bg-[#111413] text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#181C1A] border border-[#26302A]'
                   }`}
                 >
                   {genre}
@@ -137,9 +137,9 @@ export const HomeBookDiscovery: React.FC = () => {
           </div>
         )}
 
-        {/* Real Books Grid */}
+        {/* Real Books Grid — Prominent covers matching the reference design */}
         {!isLoading && !isError && filteredBooks.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
             {filteredBooks.map((book: Book) => {
               return (
                 <Link
@@ -150,7 +150,7 @@ export const HomeBookDiscovery: React.FC = () => {
                   aria-label={`View details for ${book.title} by ${book.author || 'Unknown author'}`}
                 >
                   {/* Book Cover Container with 2:3 aspect ratio */}
-                  <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-[#161D19] border border-[#29332D] shadow-sm transition-all duration-300 group-hover:border-[#315C43] group-hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)] group-hover:-translate-y-1">
+                  <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-[#141816] border border-[#26302A] shadow-sm transition-all duration-300 group-hover:border-[#D5B16D]/60 group-hover:shadow-[0_8px_24px_rgba(0,0,0,0.6)] group-hover:-translate-y-1">
                     {book.cover_image_url ? (
                       <EnhancedLazyImage
                         src={book.cover_image_url}
