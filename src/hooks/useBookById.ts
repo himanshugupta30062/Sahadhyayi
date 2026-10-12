@@ -2,38 +2,32 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
+import {
+  detectBookSchemaCapabilities,
+  getPublicBookSelectColumns,
+  isBookPubliclyVisible,
+} from '@/utils/catalog/bookVisibility';
 
 export const useBookById = (id?: string) => {
   return useQuery({
     queryKey: ['book', id],
     enabled: !!id,
     queryFn: async () => {
+      const caps = await detectBookSchemaCapabilities();
+      const selectCols = getPublicBookSelectColumns(caps);
+
       const { data, error } = await supabase
         .from('books_library')
-        .select(`
-          id,
-          title,
-          author,
-          genre,
-          description,
-          author_bio,
-          cover_image_url,
-          pdf_url,
-          isbn,
-          publication_year,
-          pages,
-          language,
-          created_at
-        `)
+        .select(selectCols)
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching book:', error);
         throw error;
       }
 
-      if (!data) return null;
+      if (!data || !isBookPubliclyVisible(data)) return null;
 
       return {
         id: data.id,
@@ -53,6 +47,8 @@ export const useBookById = (id?: string) => {
         pages: data.pages,
         language: data.language,
         created_at: data.created_at || new Date().toISOString(),
+        status: data.status,
+        catalog_status: data.catalog_status,
       } as Book;
     },
   });

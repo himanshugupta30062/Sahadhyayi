@@ -2,6 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { getCoverQualityScore } from '@/utils/getCoverQualityScore';
+import {
+  BASE_BOOK_SELECT_COLUMNS,
+  detectBookSchemaCapabilities,
+  getPublicBookSelectColumns,
+  applyPublicBookFilter,
+  isBookPubliclyVisible,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 
 import type { AccessStatus, LicenseEvidence } from '@/types/bookCatalog';
 
@@ -31,10 +39,12 @@ export interface Book {
   alternativeEditionsCount?: number;
   alternativeEditions?: any[];
   assets?: any[];
+  status?: string;
+  catalog_status?: string;
 }
 
 // Only select columns we actually use — avoids transferring unnecessary data
-const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
+export const BOOK_SELECT_COLUMNS = BASE_BOOK_SELECT_COLUMNS;
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
 // Sorting rules (displayed to users via SortingInfoTooltip)
@@ -149,6 +159,8 @@ const mapBook = (book: any): Book => ({
   isbn: book.isbn,
   pages: book.pages,
   author_bio: book.author_bio,
+  status: book.status,
+  catalog_status: book.catalog_status,
 });
 
 // Shared cache settings — books don't change often
@@ -159,18 +171,41 @@ const CACHE_OPTIONS = {
 
 /** Fetch all books in paginated batches to avoid Supabase's 1000-row limit */
 async function fetchAllBooks(): Promise<Book[]> {
+  const caps = await detectBookSchemaCapabilities();
+  const columns = getPublicBookSelectColumns(caps);
   const BATCH = 500;
   const all: any[] = [];
   let offset = 0;
   let hasMore = true;
 
   while (hasMore) {
-    const { data, error } = await supabase
+    let query = supabase
       .from('books_library')
-      .select(BOOK_SELECT_COLUMNS)
-      .range(offset, offset + BATCH - 1);
+      .select(columns);
 
-    if (error) throw error;
+    query = applyPublicBookFilter(query, caps);
+
+    const { data, error } = await query.range(offset, offset + BATCH - 1);
+
+    if (error) {
+      // Fallback: If status columns failed on unmigrated database, retry with base columns
+      if (caps.hasStatus || caps.hasCatalogStatus) {
+        console.warn('fetchAllBooks probe mismatch, falling back to base columns:', error.message);
+        let fallbackQuery = supabase
+          .from('books_library')
+          .select(BASE_BOOK_SELECT_COLUMNS);
+        fallbackQuery = applyPublicBookFilter(fallbackQuery, { hasStatus: false, hasCatalogStatus: false, checked: true });
+        const fallbackRes = await fallbackQuery.range(offset, offset + BATCH - 1);
+        if (fallbackRes.error) throw fallbackRes.error;
+        if (fallbackRes.data && fallbackRes.data.length > 0) {
+          all.push(...fallbackRes.data);
+          offset += BATCH;
+          hasMore = fallbackRes.data.length === BATCH;
+          continue;
+        }
+      }
+      throw error;
+    }
     if (data && data.length > 0) {
       all.push(...data);
       offset += BATCH;
@@ -180,7 +215,7 @@ async function fetchAllBooks(): Promise<Book[]> {
     }
   }
 
-  const visible = all.filter((b: any) => !b.status || b.status === 'active');
+  const visible = filterPublicBooks(all);
   return sortBooksByCompleteness(visible.map(mapBook));
 }
 
@@ -214,7 +249,11 @@ export const useLibraryBooks = (
   return useQuery({
     queryKey: ['library-books', searchQuery, limit, requireCover, genre ?? 'All'],
     queryFn: async (): Promise<Book[]> => {
-      let query = supabase.from('books_library').select(BOOK_SELECT_COLUMNS);
+      const caps = await detectBookSchemaCapabilities();
+      const columns = getPublicBookSelectColumns(caps);
+
+      let query = supabase.from('books_library').select(columns);
+      query = applyPublicBookFilter(query, caps);
 
       // Filter at the database before applying the limit, so homepage discovery
       // does not miss real covers merely because they occur later in the catalog.
@@ -245,6 +284,8 @@ export const useLibraryBooks = (
           .from('books_library')
           .select('id,title,author,genre,cover_image_url,description,pdf_url,created_at');
 
+        fallbackQuery = applyPublicBookFilter(fallbackQuery, { hasStatus: false, hasCatalogStatus: false, checked: true });
+
         if (requireCover) {
           fallbackQuery = fallbackQuery.not('cover_image_url', 'is', null).neq('cover_image_url', '');
         }
@@ -262,11 +303,12 @@ export const useLibraryBooks = (
         const fallback = await fallbackQuery.limit(limit || 24);
 
         if (!fallback.error && fallback.data) {
-          return sortBooksByCompleteness(fallback.data.map(mapBook));
+          const visibleFallback = filterPublicBooks(fallback.data);
+          return sortBooksByCompleteness(visibleFallback.map(mapBook));
         }
         throw error;
       }
-      const visible = (data || []).filter((b: any) => !b.status || b.status === 'active');
+      const visible = filterPublicBooks(data || []);
       return sortBooksByCompleteness(visible.map(mapBook));
     },
     retry: 2,
@@ -278,7 +320,11 @@ export const useBooksByGenre = (genre: string) => {
   return useQuery({
     queryKey: ['books-by-genre', genre],
     queryFn: async (): Promise<Book[]> => {
-      let query = supabase.from('books_library').select(BOOK_SELECT_COLUMNS);
+      const caps = await detectBookSchemaCapabilities();
+      const columns = getPublicBookSelectColumns(caps);
+
+      let query = supabase.from('books_library').select(columns);
+      query = applyPublicBookFilter(query, caps);
 
       if (genre !== 'All') {
         if (genre === 'Hindi') {
@@ -296,6 +342,8 @@ export const useBooksByGenre = (genre: string) => {
           .from('books_library')
           .select('id,title,author,genre,cover_image_url,description,pdf_url,created_at');
 
+        fallbackQuery = applyPublicBookFilter(fallbackQuery, { hasStatus: false, hasCatalogStatus: false, checked: true });
+
         if (genre !== 'All') {
           fallbackQuery = genre === 'Hindi'
             ? fallbackQuery.eq('language', 'Hindi')
@@ -304,11 +352,13 @@ export const useBooksByGenre = (genre: string) => {
 
         const fallback = await fallbackQuery;
         if (!fallback.error && fallback.data) {
-          return sortBooksByCompleteness(fallback.data.map(mapBook));
+          const visibleFallback = filterPublicBooks(fallback.data);
+          return sortBooksByCompleteness(visibleFallback.map(mapBook));
         }
         throw error;
       }
-      return sortBooksByCompleteness((data || []).map(mapBook));
+      const visible = filterPublicBooks(data || []);
+      return sortBooksByCompleteness(visible.map(mapBook));
     },
     retry: 2,
     ...CACHE_OPTIONS,
@@ -321,14 +371,23 @@ export const useGenres = () => {
     staleTime: 10 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     queryFn: async (): Promise<Genre[]> => {
-      const { data, error } = await supabase
+      const caps = await detectBookSchemaCapabilities();
+      const cols = caps.hasCatalogStatus || caps.hasStatus
+        ? `genre${caps.hasStatus ? ',status' : ''}${caps.hasCatalogStatus ? ',catalog_status' : ''}`
+        : 'genre';
+
+      let query = supabase
         .from('books_library')
-        .select('genre')
+        .select(cols)
         .not('genre', 'is', null);
 
+      query = applyPublicBookFilter(query, caps);
+
+      const { data, error } = await query;
       if (error) throw error;
 
-      const uniqueGenres = [...new Set((data as Array<{ genre: string }>).map(item => item.genre))];
+      const visible = filterPublicBooks(data || []);
+      const uniqueGenres = [...new Set((visible as Array<{ genre: string }>).map(item => item.genre).filter(Boolean))];
       return uniqueGenres.map((genre, index) => ({
         id: index.toString(),
         name: genre as string,

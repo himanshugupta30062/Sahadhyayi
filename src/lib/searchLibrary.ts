@@ -1,4 +1,9 @@
 import { supabase } from '@/integrations/supabase/client'
+import {
+  detectBookSchemaCapabilities,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility'
 
 export type BookSearchRow = {
   id: string
@@ -26,20 +31,25 @@ export async function searchLibrary(
 ) {
   const { limit = 50, lang = null, minPopularity = null, genres = null } = params
   
-  // For now, we'll use a simple approach since the search_books RPC doesn't exist yet
-  // This will be replaced with the actual RPC call once the function is created
-  const { data, error } = await supabase
+  const caps = await detectBookSchemaCapabilities();
+  const selectCols = ['id', 'title', 'author', 'genre', 'language', 'cover_image_url', 'description'];
+  if (caps.hasStatus) selectCols.push('status');
+  if (caps.hasCatalogStatus) selectCols.push('catalog_status');
+
+  let dbQuery = supabase
     .from('books_library')
-    .select('id, title, author, genre, language, cover_image_url, description, status, catalog_status')
+    .select(selectCols.join(', '));
+
+  dbQuery = applyPublicBookFilter(dbQuery, caps);
+
+  const { data, error } = await dbQuery
     .ilike('title', `%${query.trim()}%`)
     .limit(limit)
-    .abortSignal(options.signal)
+    .abortSignal(options.signal);
     
   if (error) throw error
   
-  const activeBooks = (data || []).filter(
-    (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
-  );
+  const activeBooks = filterPublicBooks(data || []);
 
   // Transform the data to match BookSearchRow format
   return activeBooks.map((book: any) => ({

@@ -1,6 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
+import {
+  detectBookSchemaCapabilities,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 
 export const useAuthorBooks = (authorId: string) => {
   return useQuery({
@@ -8,10 +13,15 @@ export const useAuthorBooks = (authorId: string) => {
     queryFn: async (): Promise<Book[]> => {
       if (!authorId) return [];
       
-      const { data, error } = await supabase
+      const caps = await detectBookSchemaCapabilities();
+      let query = supabase
         .from('books_library')
         .select('*')
-        .eq('author_id', authorId)
+        .eq('author_id', authorId);
+
+      query = applyPublicBookFilter(query, caps);
+
+      const { data, error } = await query
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -19,9 +29,7 @@ export const useAuthorBooks = (authorId: string) => {
         throw error;
       }
 
-      const activeData = (data || []).filter(
-        (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
-      );
+      const activeData = filterPublicBooks(data || []);
 
       return activeData.map(book => ({
         id: book.id,
@@ -50,10 +58,15 @@ export const useBooksByAuthorName = (authorName: string) => {
     queryFn: async (): Promise<Book[]> => {
       if (!authorName) return [];
       
-      const { data, error } = await supabase
+      const caps = await detectBookSchemaCapabilities();
+      let query = supabase
         .from('books_library')
         .select('*')
-        .ilike('author', `%${authorName}%`)
+        .ilike('author', `%${authorName}%`);
+
+      query = applyPublicBookFilter(query, caps);
+
+      const { data, error } = await query
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -61,9 +74,7 @@ export const useBooksByAuthorName = (authorName: string) => {
         throw error;
       }
 
-      const activeData = (data || []).filter(
-        (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
-      );
+      const activeData = filterPublicBooks(data || []);
 
       return activeData.map(book => ({
         id: book.id,

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { filterPublicBooks } from '@/utils/catalog/bookVisibility';
 
 export interface RecommendedBook {
   id: string;
@@ -19,7 +20,7 @@ export const useBookRecommendations = (userId?: string) => {
         method: 'POST',
       });
       if (error) throw new Error('Failed to fetch recommendations');
-      return data?.recommendations || [];
+      return filterPublicBooks(data?.recommendations || []);
     },
     enabled: !!userId,
   });

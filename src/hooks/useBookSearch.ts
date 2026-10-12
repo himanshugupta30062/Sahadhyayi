@@ -1,6 +1,11 @@
 
 import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client-universal';
+import {
+  detectBookSchemaCapabilities,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 
 interface BookSearchResult {
   id: string;
@@ -141,18 +146,21 @@ export const useBookSearch = () => {
     setError(null);
 
     try {
-      const { data, error: dbError } = await supabase
+      const caps = await detectBookSchemaCapabilities();
+      let query = supabase
         .from('books_library')
         .select('*')
         .order('created_at', { ascending: false });
+
+      query = applyPublicBookFilter(query, caps);
+
+      const { data, error: dbError } = await query;
 
       if (dbError) {
         throw new Error(dbError.message);
       }
 
-      const activeBooks = (data || []).filter(
-        (b: any) => (!b.catalog_status || b.catalog_status === 'active') && (!b.status || b.status === 'active')
-      );
+      const activeBooks = filterPublicBooks(data || []);
       setSearchResults(activeBooks);
     } catch (err) {
       console.error('Error fetching books:', err);

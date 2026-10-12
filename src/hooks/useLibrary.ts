@@ -2,6 +2,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { toast } from '@/hooks/use-toast';
+import {
+  detectBookSchemaCapabilities,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 
 interface LibraryBook {
   id: string;
@@ -16,13 +21,18 @@ export const useLibraryBooks = () => {
   return useQuery({
     queryKey: ['library-books'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const caps = await detectBookSchemaCapabilities();
+      let query = supabase
         .from('books_library')
-        .select('*')
+        .select('*');
+
+      query = applyPublicBookFilter(query, caps);
+
+      const { data, error } = await query
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as LibraryBook[];
+      return filterPublicBooks(data || []) as LibraryBook[];
     },
   });
 };

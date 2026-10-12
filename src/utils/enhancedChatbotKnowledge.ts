@@ -1,5 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client-universal';
+import {
+  detectBookSchemaCapabilities,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 
 export interface BookData {
   id: string;
@@ -19,40 +24,66 @@ export interface WebsiteContext {
 
 export const getWebsiteContext = async (): Promise<WebsiteContext> => {
   try {
+    const caps = await detectBookSchemaCapabilities();
+
     // Get total unique books count (matching library catalog deduplication)
-    const { data: titleData, error: titleError } = await supabase
+    const titleSelect = ['id', 'title'];
+    if (caps.hasStatus) titleSelect.push('status');
+    if (caps.hasCatalogStatus) titleSelect.push('catalog_status');
+
+    let titleQuery = supabase
       .from('books_library')
-      .select('title');
+      .select(titleSelect.join(','));
+    titleQuery = applyPublicBookFilter(titleQuery, caps);
+
+    const { data: titleData, error: titleError } = await titleQuery;
 
     let totalBooks = 0;
     if (!titleError && Array.isArray(titleData) && titleData.length > 0) {
+      const visible = filterPublicBooks(titleData);
       const uniqueTitles = new Set<string>();
-      titleData.forEach((b: { title?: string | null }) => {
+      visible.forEach((b: { title?: string | null }) => {
         const key = (b.title || '').trim().toLowerCase();
         if (key) uniqueTitles.add(key);
       });
       totalBooks = uniqueTitles.size;
     } else {
-      const { count } = await supabase
+      let countQuery = supabase
         .from('books_library')
         .select('*', { count: 'exact', head: true });
+      countQuery = applyPublicBookFilter(countQuery, caps);
+      const { count } = await countQuery;
       totalBooks = count || 0;
     }
 
     // Get available genres
-    const { data: genreData } = await supabase
-      .from('books_library')
-      .select('genre')
-      .not('genre', 'is', null);
+    const genreSelect = ['id', 'genre'];
+    if (caps.hasStatus) genreSelect.push('status');
+    if (caps.hasCatalogStatus) genreSelect.push('catalog_status');
 
-    const genres = [...new Set(genreData?.map((item: { genre: string }) => item.genre).filter(Boolean))] as string[];
+    let genreQuery = supabase
+      .from('books_library')
+      .select(genreSelect.join(','))
+      .not('genre', 'is', null);
+    genreQuery = applyPublicBookFilter(genreQuery, caps);
+
+    const { data: genreData } = await genreQuery;
+    const visibleGenres = filterPublicBooks(genreData || []);
+    const genres = [...new Set(visibleGenres.map((item: { genre: string }) => item.genre).filter(Boolean))] as string[];
 
     // Get recent books
-    const { data: recentBooks } = await supabase
+    const bookSelect = ['id', 'title', 'author', 'genre', 'description', 'language'];
+    if (caps.hasStatus) bookSelect.push('status');
+    if (caps.hasCatalogStatus) bookSelect.push('catalog_status');
+
+    let recentQuery = supabase
       .from('books_library')
-      .select('id, title, author, genre, description, language')
-      .order('created_at', { ascending: false })
-      .limit(10);
+      .select(bookSelect.join(','))
+      .order('created_at', { ascending: false });
+    recentQuery = applyPublicBookFilter(recentQuery, caps);
+
+    const { data: recentBooksRaw } = await recentQuery.limit(20);
+    const recentBooks = filterPublicBooks(recentBooksRaw || []).slice(0, 10);
 
     return {
       totalBooks: totalBooks || 0,
@@ -106,14 +137,22 @@ export const generateEnhancedPrompt = (
 
 export const searchRelevantBooks = async (query: string, limit: number = 5): Promise<BookData[]> => {
   try {
-    const { data, error } = await supabase
+    const caps = await detectBookSchemaCapabilities();
+    const bookSelect = ['id', 'title', 'author', 'genre', 'description', 'language'];
+    if (caps.hasStatus) bookSelect.push('status');
+    if (caps.hasCatalogStatus) bookSelect.push('catalog_status');
+
+    let queryBuilder = supabase
       .from('books_library')
-      .select('id, title, author, genre, description, language')
-      .or(`title.ilike.%${query}%,author.ilike.%${query}%,description.ilike.%${query}%,genre.ilike.%${query}%`)
-      .limit(limit);
+      .select(bookSelect.join(','))
+      .or(`title.ilike.%${query}%,author.ilike.%${query}%,description.ilike.%${query}%,genre.ilike.%${query}%`);
+
+    queryBuilder = applyPublicBookFilter(queryBuilder, caps);
+
+    const { data, error } = await queryBuilder.limit(limit * 2);
 
     if (error) throw error;
-    return data || [];
+    return filterPublicBooks(data || []).slice(0, limit);
   } catch (error) {
     console.error('Error searching books:', error);
     return [];
