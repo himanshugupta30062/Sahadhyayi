@@ -73,7 +73,7 @@ describe('HomeBookDiscovery component', () => {
     expect(sciFiPill).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('renders real book cards linking to /book/:id', () => {
+  it('renders real book cards linking to /book/:id', async () => {
     mockUseGenres.mockReturnValue({ data: [] });
     mockUseLibraryBooks.mockReturnValue({
       data: [

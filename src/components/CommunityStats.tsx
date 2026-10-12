@@ -302,7 +302,23 @@ export function CommunityPulseDashboard({ data, loading = false, error = null, o
           </div>
         </header>
 
-        {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">Could not refresh community data: {error}</div>}
+        {error && (
+          <div
+            role="alert"
+            className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300"
+          >
+            <span>Could not refresh community data: {error}</span>
+            {onRefresh && (
+              <button
+                type="button"
+                onClick={onRefresh}
+                className="shrink-0 text-xs font-semibold underline hover:no-underline"
+              >
+                Try Again
+              </button>
+            )}
+          </div>
+        )}
 
         {loading && !data.updatedAt && <div role="status" className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">Loading real community statistics…</div>}
 
@@ -433,10 +449,33 @@ function normalizeStatsResponse(raw: unknown): CommunityPulseData {
   };
 }
 
+const DASHBOARD_CACHE_KEY = 'community_pulse_dashboard_cache_v1';
+
+function loadCachedDashboardData(): CommunityPulseData | null {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    const raw = localStorage.getItem(DASHBOARD_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCachedDashboardData(data: CommunityPulseData): void {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore quota errors
+  }
+}
+
 /** Uses one server-side aggregate endpoint; no client-side synthetic analytics or N+1 fallbacks. */
 export default function CommunityStats() {
-  const [data, setData] = useState<CommunityPulseData>(EMPTY_DATA);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<CommunityPulseData>(() => loadCachedDashboardData() ?? EMPTY_DATA);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(false);
   const inFlightRef = useRef(false);
@@ -456,6 +495,7 @@ export default function CommunityStats() {
       const nextData = normalizeStatsResponse(response);
       if (mountedRef.current) {
         setData(nextData);
+        saveCachedDashboardData(nextData);
         setError(null);
         hasLoadedRef.current = true;
       }
