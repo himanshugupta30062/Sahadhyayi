@@ -88,20 +88,16 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     }
 
     try {
-      const [usersRpc, visitsRpc, profilesCountRes] = await Promise.all([
+      const [usersRpc, visitsRpc] = await Promise.all([
         supabase.rpc('get_total_users_count').catch(() => ({ data: null })),
         supabase.rpc('get_website_visit_count').catch(() => ({ data: null })),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).catch(() => ({ count: null })),
       ]);
 
       const rpcUsers = Number(usersRpc?.data) || 0;
-      const directProfiles = Number(profilesCountRes?.count) || 0;
-      const directUsers = Math.max(rpcUsers, directProfiles);
-
       const rpcVisits = Number(visitsRpc?.data) || 0;
 
-      // Prefer live data from edge function or DB; only fall back to cached data if live values are unavailable
-      const liveSignups = edgeSignups !== null ? edgeSignups : directUsers;
+      // Prefer live data from edge function or counting RPCs; only fall back to cached data if live values are unavailable
+      const liveSignups = edgeSignups !== null ? edgeSignups : rpcUsers;
       const liveVisits = edgeVisits !== null ? edgeVisits : rpcVisits;
 
       const totalSignups = liveSignups > 0 ? liveSignups : (cached?.totalSignups ?? 0);

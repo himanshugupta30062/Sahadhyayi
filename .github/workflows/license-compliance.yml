@@ -15,4 +15,4 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Check licenses
-        run: npx license-checker --production --failOn "GPL;AGPL"
+        run: npx -y license-checker --production --failOn "GPL;AGPL"

@@ -6,8 +6,23 @@
  */
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { normalizeTitle, normalizeAuthor, normalizeIsbn } from '@/utils/catalog/metadataNormalization';
+
+export async function persistVerifiedCoverToDatabase(bookId: string, verifiedUrl: string): Promise<boolean> {
+  if (!bookId || !verifiedUrl || !verifiedUrl.startsWith('https://')) return false;
+  try {
+    const { data, error } = await supabase.rpc('repair_verified_book_cover', {
+      p_book_id: bookId,
+      p_cover_image_url: verifiedUrl,
+    });
+    if (error) return false;
+    return Boolean(data);
+  } catch {
+    return false;
+  }
+}
 
 export interface BookCoverTarget {
   id?: string;
@@ -195,6 +210,9 @@ export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<st
   const olCover = getOpenLibraryCoverUrl(book.isbn, 'M');
   if (olCover) {
     setCachedCover(book, olCover);
+    if (book.id) {
+      void persistVerifiedCoverToDatabase(book.id, olCover);
+    }
     return olCover;
   }
 
@@ -202,6 +220,9 @@ export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<st
   const gbCover = await fetchGoogleBooksCover(book.title, book.author, book.isbn);
   if (gbCover) {
     setCachedCover(book, gbCover);
+    if (book.id) {
+      void persistVerifiedCoverToDatabase(book.id, gbCover);
+    }
     return gbCover;
   }
 
