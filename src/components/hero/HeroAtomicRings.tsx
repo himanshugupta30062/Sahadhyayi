@@ -149,13 +149,13 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
 
   return (
     <div
-      className={`relative flex items-center justify-center ${className}`}
+      className={`relative w-full h-full aspect-square flex items-center justify-center ${className}`}
       style={
         typeof size === "number"
           ? { width: size, height: size }
           : typeof size === "string" && size !== "100%"
           ? { width: size, height: size }
-          : undefined
+          : { width: "100%", height: "100%" }
       }
     >
       <svg
@@ -313,7 +313,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
       </svg>
       {children && (
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <div className="w-full max-w-[92%] sm:max-w-[88%] pointer-events-auto flex items-center justify-center">{children}</div>
+          <div className="w-full max-w-[68%] sm:max-w-[65%] pointer-events-auto flex items-center justify-center">{children}</div>
         </div>
       )}
     </div>

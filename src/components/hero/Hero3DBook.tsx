@@ -9,41 +9,41 @@ export const Hero3DBook: React.FC<Hero3DBookProps> = ({ className = "" }) => {
 
   return (
     <div
-      className={`relative w-full max-w-[520px] sm:max-w-[560px] lg:max-w-[600px] xl:max-w-[640px] flex items-center justify-center select-none ${className}`}
+      className={`relative w-full flex items-center justify-center select-none ${className}`}
       aria-label="Sahadhyayi 3D Open Book Illustration"
     >
       {/* ── Atmospheric Warm Reading Lamp Glow (matching visual reference) ── */}
       <div
-        className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 rounded-full bg-[radial-gradient(circle,rgba(213,177,109,0.28)_0%,rgba(213,177,109,0.08)_45%,transparent_70%)] blur-2xl"
+        className="pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 w-56 sm:w-72 h-44 sm:h-56 rounded-full bg-[radial-gradient(circle,rgba(213,177,109,0.25)_0%,rgba(213,177,109,0.06)_45%,transparent_70%)] blur-2xl"
         aria-hidden="true"
       />
 
       {/* ── Warm Golden Core Radiance ── */}
       <div
-        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 sm:w-64 h-32 sm:h-44 rounded-full bg-[radial-gradient(ellipse,rgba(213,177,109,0.35)_0%,rgba(213,177,109,0.1)_50%,transparent_75%)] blur-xl"
+        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 sm:w-56 h-28 sm:h-36 rounded-full bg-[radial-gradient(ellipse,rgba(213,177,109,0.32)_0%,rgba(213,177,109,0.08)_50%,transparent_75%)] blur-xl"
         aria-hidden="true"
       />
 
       {/* ── Grounding Desk & Leather Volumes Shadow ── */}
       <div
-        className="pointer-events-none absolute -bottom-3 sm:-bottom-5 left-1/2 -translate-x-1/2 w-[85%] h-8 sm:h-12 rounded-full bg-[radial-gradient(ellipse,rgba(0,0,0,0.85)_0%,rgba(0,0,0,0.4)_50%,transparent_75%)] blur-md"
+        className="pointer-events-none absolute -bottom-2 sm:-bottom-3 left-1/2 -translate-x-1/2 w-[85%] h-6 sm:h-8 rounded-full bg-[radial-gradient(ellipse,rgba(0,0,0,0.85)_0%,rgba(0,0,0,0.35)_50%,transparent_75%)] blur-md"
         aria-hidden="true"
       />
 
       {/* ── 3D Open Book Visual ── */}
       {!imageError ? (
-        <picture className="relative z-10 block w-full transform-gpu transition-transform duration-500 hover:scale-[1.015]">
+        <picture className="relative z-10 block w-full transform-gpu transition-transform duration-300 hover:scale-[1.015]">
           <source srcSet="/assets/hero-3d-book.webp" type="image/webp" />
           <img
             src="/assets/hero-3d-book.png"
             alt="Realistic 3D open book with warm ivory pages and dark green leather hardcover"
-            width={1024}
-            height={686}
+            width={1134}
+            height={756}
             loading="eager"
             fetchPriority="high"
             decoding="async"
             onError={() => setImageError(true)}
-            className="w-full h-auto object-contain drop-shadow-[0_22px_35px_rgba(0,0,0,0.7)] drop-shadow-[0_0_25px_rgba(213,177,109,0.18)]"
+            className="w-full h-auto max-h-[300px] sm:max-h-[340px] md:max-h-[380px] object-contain drop-shadow-[0_16px_30px_rgba(0,0,0,0.7)] drop-shadow-[0_0_20px_rgba(213,177,109,0.2)]"
           />
         </picture>
       ) : (

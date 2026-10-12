@@ -34,7 +34,7 @@ export interface Book {
 }
 
 // Only select columns we actually use — avoids transferring unnecessary data
-const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio,status';
+const BOOK_SELECT_COLUMNS = 'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
 // Sorting rules (displayed to users via SortingInfoTooltip)
@@ -213,11 +213,24 @@ export const useLibraryBooks = (searchQuery?: string, limit?: number) => {
         query = query.limit(limit);
       }
 
-    const { data, error } = await query;
-      if (error) throw error;
+      const { data, error } = await query;
+      if (error) {
+        // Fallback: If full column select fails (e.g. temporary schema or network glitch), try minimal guaranteed columns
+        console.warn('Initial books_library query failed, attempting core fallback:', error.message);
+        const fallback = await supabase
+          .from('books_library')
+          .select('id,title,author,genre,cover_image_url,description,pdf_url,created_at')
+          .limit(limit || 24);
+
+        if (!fallback.error && fallback.data) {
+          return sortBooksByCompleteness(fallback.data.map(mapBook));
+        }
+        throw error;
+      }
       const visible = (data || []).filter((b: any) => !b.status || b.status === 'active');
       return sortBooksByCompleteness(visible.map(mapBook));
     },
+    retry: 2,
     ...CACHE_OPTIONS,
   });
 };
@@ -237,9 +250,28 @@ export const useBooksByGenre = (genre: string) => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        // Fallback query with core columns
+        console.warn('Initial books_by_genre query failed, attempting core fallback:', error.message);
+        let fallbackQuery = supabase
+          .from('books_library')
+          .select('id,title,author,genre,cover_image_url,description,pdf_url,created_at');
+
+        if (genre !== 'All') {
+          fallbackQuery = genre === 'Hindi'
+            ? fallbackQuery.eq('language', 'Hindi')
+            : fallbackQuery.eq('genre', genre);
+        }
+
+        const fallback = await fallbackQuery;
+        if (!fallback.error && fallback.data) {
+          return sortBooksByCompleteness(fallback.data.map(mapBook));
+        }
+        throw error;
+      }
       return sortBooksByCompleteness((data || []).map(mapBook));
     },
+    retry: 2,
     ...CACHE_OPTIONS,
   });
 };

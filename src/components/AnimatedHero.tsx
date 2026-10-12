@@ -23,8 +23,8 @@ const AnimatedHero: React.FC = () => {
           </div>
 
           {/* Right Column: Signature Animated Atomic Rings with 3D Open Book */}
-          <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center order-2">
-            <div className="relative w-full max-w-[340px] sm:max-w-[440px] md:max-w-[500px] lg:max-w-[560px] xl:max-w-[620px] aspect-square flex items-center justify-center">
+          <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center order-2 w-full">
+            <div className="relative w-full max-w-[320px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-[540px] xl:max-w-[600px] aspect-square flex items-center justify-center mx-auto">
               <HeroAtomicRings size="100%" className="w-full h-full max-w-full max-h-full">
                 {/* Center Core: Realistic 3D Open Book matching the reference design */}
                 <Hero3DBook />

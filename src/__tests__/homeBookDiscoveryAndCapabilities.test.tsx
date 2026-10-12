@@ -96,6 +96,33 @@ describe('HomeBookDiscovery component', () => {
       '/book/book-101'
     );
   });
+
+  it('renders graceful error state with retry and open full library link when query fails', () => {
+    const mockRefetch = vi.fn();
+    mockUseGenres.mockReturnValue({ data: [] });
+    mockUseLibraryBooks.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: true,
+      refetch: mockRefetch,
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBookDiscovery />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Unable to load library books')).toBeInTheDocument();
+    expect(
+      screen.getByText('A temporary network issue prevented loading books. You can still explore the complete digital catalog.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /open full library/i })).toHaveAttribute('href', '/library');
+
+    const tryAgainBtn = screen.getByRole('button', { name: /try again/i });
+    tryAgainBtn.click();
+    expect(mockRefetch).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('SahadhyayiCapabilities component', () => {
