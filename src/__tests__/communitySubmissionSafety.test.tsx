@@ -29,7 +29,7 @@ describe('community submission safety', () => {
     const input = container.querySelector('input[type="file"]');
     if (!input) throw new Error('Missing file input');
     fireEvent.change(input, { target: { files: [new File(['photo'], 'photo.png', { type: 'image/png' })] } });
-    fireEvent.click(screen.getByRole('button', { name: 'Post', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: /^Post$/ }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' })));
     expect(mocks.post).not.toHaveBeenCalled();
     expect((screen.getByRole('textbox') as HTMLTextAreaElement).value).toBe('My photo draft');
