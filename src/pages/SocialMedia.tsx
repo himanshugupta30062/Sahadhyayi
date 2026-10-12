@@ -836,7 +836,7 @@ const SocialMedia: React.FC = () => {
                                     {room.name}
                                   </p>
                                   <p className="text-[11px] text-[#A5ADA6]">
-                                    {room.participants_count ? `${room.participants_count} in room` : 'Active now'}
+                                    Active now
                                   </p>
                                 </div>
                               </div>
