@@ -1,7 +1,7 @@
 import React from "react";
 import HeroAtomicRings from "./hero/HeroAtomicRings";
 import { HeroContent } from "./hero/HeroContent";
-import Hero3DBook from "./hero/Hero3DBook";
+import { BookOpen } from "lucide-react";
 
 const AnimatedHero: React.FC = () => {
   return (
@@ -22,12 +22,23 @@ const AnimatedHero: React.FC = () => {
             <HeroContent />
           </div>
 
-          {/* Right Column: Signature Animated Atomic Rings with 3D Open Book */}
-          <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center order-2 w-full">
-            <div className="relative w-full max-w-[320px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-[540px] xl:max-w-[600px] aspect-square flex items-center justify-center mx-auto">
+          {/* Right Column: Original Signature Animated Atomic Rings */}
+          <div className="lg:col-span-6 xl:col-span-5 flex items-center justify-center order-2">
+            <div className="relative w-full max-w-[320px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-[540px] xl:max-w-[580px] aspect-square flex items-center justify-center">
               <HeroAtomicRings size="100%" className="w-full h-full max-w-full max-h-full">
-                {/* Center Core: Realistic 3D Open Book matching the reference design */}
-                <Hero3DBook />
+                {/* Center Core Brand Sigil — kept inside the animated rings */}
+                <div className="text-center p-3 select-none pointer-events-none flex flex-col items-center justify-center">
+                  <div className="relative mb-1 flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full bg-[#D5B16D]/30 blur-md" />
+                    <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-[#F3F0E7] relative drop-shadow-[0_0_14px_rgba(213,177,109,0.8)]" aria-hidden="true" />
+                  </div>
+                  <span className="block text-[9px] sm:text-[11px] uppercase tracking-[0.24em] text-[#D5B16D] font-semibold">
+                    सहाध्यायी
+                  </span>
+                  <span className="block text-xs sm:text-sm font-serif font-bold text-[#F3F0E7] mt-0.5">
+                    Sahadhyayi
+                  </span>
+                </div>
               </HeroAtomicRings>
             </div>
           </div>

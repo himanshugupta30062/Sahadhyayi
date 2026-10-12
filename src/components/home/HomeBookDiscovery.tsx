@@ -1,41 +1,77 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ArrowRight, Compass, Sparkles, Loader2 } from 'lucide-react';
+import { BookOpen, ArrowRight, Compass } from 'lucide-react';
 import { useLibraryBooks, useGenres, type Book } from '@/hooks/useLibraryBooks';
 import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
-import GeneratedBookCover from '@/components/library/GeneratedBookCover';
 import { Button } from '@/components/ui/button';
-import { useResolvedBookCover } from '@/utils/catalog/bookCoverResolver';
 
-const DiscoveryBookCover: React.FC<{ book: Book }> = ({ book }) => {
-  const { coverUrl } = useResolvedBookCover(book);
-
-  if (coverUrl) {
-    return (
-      <EnhancedLazyImage
-        src={coverUrl}
-        alt={`Cover of ${book.title}`}
-        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        fallback={
-          <GeneratedBookCover title={book.title} author={book.author} genre={book.genre} />
-        }
-      />
-    );
+/**
+ * Only accept a usable HTTP(S) cover URL saved on the catalog record.
+ * The homepage intentionally doesn't create or substitute generated book art.
+ */
+function getDatabaseCoverUrl(rawUrl?: string | null): string | null {
+  const value = rawUrl?.trim();
+  if (!value || value.toLowerCase() === 'null' || value.toLowerCase() === 'undefined') {
+    return null;
   }
 
-  return <GeneratedBookCover title={book.title} author={book.author} genre={book.genre} />;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+    // Avoid mixed-content image requests when a legacy catalog URL uses HTTP.
+    if (url.protocol === 'http:') url.protocol = 'https:';
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+const CoverUnavailable: React.FC<{ title: string }> = ({ title }) => (
+  <div
+    role="img"
+    aria-label={`Cover image unavailable for ${title}`}
+    className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#101512] text-[#7A847D]"
+  >
+    <BookOpen className="h-8 w-8 opacity-60" aria-hidden="true" />
+    <span className="text-[10px] uppercase tracking-wider">Cover unavailable</span>
+  </div>
+);
+
+const DiscoveryBookCover: React.FC<{ book: Book }> = ({ book }) => {
+  const coverUrl = getDatabaseCoverUrl(book.cover_image_url);
+  if (!coverUrl) return <CoverUnavailable title={book.title} />;
+
+  return (
+    <EnhancedLazyImage
+      key={coverUrl}
+      src={coverUrl}
+      alt={`Cover of ${book.title}`}
+      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+      fallback={<CoverUnavailable title={book.title} />}
+      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
+    />
+  );
 };
 
 export const HomeBookDiscovery: React.FC = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
   const { data: genres = [] } = useGenres();
-  const { data: allBooks = [], isLoading, isError, refetch } = useLibraryBooks(undefined, 24);
+  const {
+    data: allBooks = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useLibraryBooks(undefined, 80, { requireCover: true, genre: selectedGenre });
 
-  // Filter books by selected genre if not 'All'
+  // Show catalog records with a usable cover URL stored in the database only.
+  // Cover filtering happens in SQL before LIMIT; this second check handles empty or malformed values.
   const filteredBooks = React.useMemo(() => {
-    if (selectedGenre === 'All') return allBooks.slice(0, 8);
     return allBooks
-      .filter((b) => b.genre?.toLowerCase() === selectedGenre.toLowerCase())
+      .filter((book) => Boolean(getDatabaseCoverUrl(book.cover_image_url)))
+      .filter((book) =>
+        selectedGenre === 'All' ||
+        book.genre?.toLowerCase() === selectedGenre.toLowerCase()
+      )
       .slice(0, 8);
   }, [allBooks, selectedGenre]);
 
@@ -145,9 +181,9 @@ export const HomeBookDiscovery: React.FC = () => {
         {!isLoading && !isError && filteredBooks.length === 0 && (
           <div className="rounded-2xl border border-[#29332D] bg-[#111614] p-8 text-center max-w-lg mx-auto">
             <BookOpen className="w-8 h-8 text-[#A5ADA6] mx-auto mb-3" />
-            <h3 className="text-base font-semibold text-[#F3F0E7]">No books found in this category</h3>
+            <h3 className="text-base font-semibold text-[#F3F0E7]">No real covers available in this category yet</h3>
             <p className="text-xs text-[#A5ADA6] mt-1 mb-5">
-              Try choosing another genre or browse the full collection in our digital library.
+              This section only displays cover images stored in Sahadhyayi’s catalog. Try another genre or browse the full library.
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button
