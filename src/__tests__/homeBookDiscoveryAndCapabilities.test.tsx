@@ -3,7 +3,7 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import HomeBookDiscovery from '@/components/home/HomeBookDiscovery';
 import SahadhyayiCapabilities from '@/components/SahadhyayiCapabilities';
@@ -13,7 +13,7 @@ const mockUseLibraryBooks = vi.fn();
 
 vi.mock('@/hooks/useLibraryBooks', () => ({
   useGenres: () => mockUseGenres(),
-  useLibraryBooks: () => mockUseLibraryBooks(),
+  useLibraryBooks: (...args: unknown[]) => mockUseLibraryBooks(...args),
 }));
 
 afterEach(() => {
@@ -26,7 +26,13 @@ describe('HomeBookDiscovery component', () => {
     vi.stubGlobal(
       'IntersectionObserver',
       class {
-        observe() {}
+        callback: IntersectionObserverCallback;
+        constructor(callback: IntersectionObserverCallback) {
+          this.callback = callback;
+        }
+        observe(target: Element) {
+          this.callback([{ isIntersecting: true, target } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+        }
         unobserve() {}
         disconnect() {}
       }
@@ -95,6 +101,43 @@ describe('HomeBookDiscovery component', () => {
       'href',
       '/book/book-101'
     );
+    expect(mockUseLibraryBooks).toHaveBeenCalledWith(undefined, 80, {
+      requireCover: true,
+      genre: 'All',
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('img', { name: 'Cover of The Bhagavad Gita' })).toHaveAttribute(
+        'src',
+        'https://example.com/cover.jpg'
+      );
+    });
+  });
+
+  it('does not display generated template covers for catalog records without a stored cover URL', () => {
+    mockUseGenres.mockReturnValue({ data: [] });
+    mockUseLibraryBooks.mockReturnValue({
+      data: [
+        {
+          id: 'book-no-cover',
+          title: 'A Book Without Stored Cover Art',
+          author: 'A. Reader',
+          genre: 'Fiction',
+          cover_image_url: null,
+        },
+      ],
+      isLoading: false,
+      isError: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBookDiscovery />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByText('A Book Without Stored Cover Art')).not.toBeInTheDocument();
+    expect(screen.getByText('No real covers available in this category yet')).toBeInTheDocument();
+    expect(screen.queryByText('Cover unavailable')).not.toBeInTheDocument();
   });
 
   it('renders graceful error state with retry and open full library link when query fails', () => {
