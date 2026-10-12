@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
+import { uniqueChannelName } from '@/lib/realtime';
 
 export interface Group {
   id: string;
@@ -39,7 +40,7 @@ export const useGroups = () => {
       void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
     };
     const channel = supabase
-      .channel(`reading-groups-directory-${user?.id ?? 'guest'}`)
+      .channel(uniqueChannelName(`reading-groups-directory-${user?.id ?? 'guest'}`))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'group_chats' }, refreshGroups)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'group_chat_members' }, refreshGroups)
       .subscribe();

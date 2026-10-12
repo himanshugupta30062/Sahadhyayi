@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
 import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
+import { uniqueChannelName } from '@/lib/realtime';
 
 declare global {
   interface Window {
@@ -60,7 +61,7 @@ export const FriendsLocationMap: React.FC = () => {
   // Subscribe to profile updates to refresh data
   useEffect(() => {
     const channel = supabase
-      .channel('friend_location_updates')
+      .channel(uniqueChannelName('friend_location_updates'))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'profiles' },

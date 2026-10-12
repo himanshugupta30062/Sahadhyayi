@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/authHelpers";
+import { uniqueChannelName } from '@/lib/realtime';
 
 export interface ReadingRoom {
   id: string;
@@ -42,7 +43,7 @@ export const useReadingRooms = () => {
 
   useEffect(() => {
     const channel = supabase
-      .channel('reading-rooms-realtime')
+      .channel(uniqueChannelName('reading-rooms-realtime'))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reading_rooms' },

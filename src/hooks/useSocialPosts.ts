@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { uniqueChannelName } from '@/lib/realtime';
 
 export interface SocialPost {
   id: string;
@@ -210,7 +211,7 @@ export const useSocialPosts = () => {
     if (!user?.id) return;
 
     const channel = supabase
-      .channel('social-posts-realtime')
+      .channel(uniqueChannelName('social-posts-realtime'))
       .on(
         'postgres_changes',
         {

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { uniqueChannelName } from '@/lib/realtime';
 
 export interface GroupMessage {
   id: string;
@@ -30,7 +31,7 @@ export const useGroupMessages = (groupId: string) => {
     if (!groupId || !user?.id) return;
 
     const channel = supabase
-      .channel(`group-messages-realtime-${groupId}`)
+      .channel(uniqueChannelName(`group-messages-realtime-${groupId}`))
       .on(
         'postgres_changes',
         {

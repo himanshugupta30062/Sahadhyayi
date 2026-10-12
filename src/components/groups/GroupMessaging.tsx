@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { uniqueChannelName } from '@/lib/realtime';
 
 interface GroupMessagingProps {
   groupId: string;
@@ -59,7 +60,7 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
     if (!groupId) return;
 
     const channel = supabase
-      .channel(`group-messages-${groupId}`)
+      .channel(uniqueChannelName(`group-messages-${groupId}`))
       .on(
         'postgres_changes',
         {

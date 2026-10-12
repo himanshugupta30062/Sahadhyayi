@@ -8,6 +8,7 @@ import { MapPin, Users, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { toast } from 'sonner';
 import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
+import { uniqueChannelName } from '@/lib/realtime';
 
 // Declare global types for Google Maps
 declare global {
@@ -77,7 +78,7 @@ export const ModernGoogleMap: React.FC = () => {
 
     // Set up real-time subscription
     const channel = supabase
-      .channel('readers_changes')
+      .channel(uniqueChannelName('readers_changes'))
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'readers' }, 
         () => {
