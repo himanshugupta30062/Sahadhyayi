@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 export const HomeBookDiscovery: React.FC = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
   const { data: genres = [] } = useGenres();
-  const { data: allBooks = [], isLoading, isError } = useLibraryBooks(undefined, 24);
+  const { data: allBooks = [], isLoading, isError, refetch } = useLibraryBooks(undefined, 24);
 
   // Filter books by selected genre if not 'All'
   const filteredBooks = React.useMemo(() => {
@@ -103,11 +103,21 @@ export const HomeBookDiscovery: React.FC = () => {
             <p className="text-xs text-[#A5ADA6] mt-1 mb-5">
               A temporary network issue prevented loading books. You can still explore the complete digital catalog.
             </p>
-            <Link to="/library">
-              <Button size="sm" className="bg-[#1C3024] hover:bg-[#254231] text-[#F3F0E7] border border-[#315C43]">
-                Open Full Library
+            <div className="flex items-center justify-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+                className="border-[#29332D] bg-[#161D19] text-[#F3F0E7] hover:bg-[#1B241E]"
+              >
+                Try Again
               </Button>
-            </Link>
+              <Link to="/library">
+                <Button size="sm" className="bg-[#1C3024] hover:bg-[#254231] text-[#F3F0E7] border border-[#315C43]">
+                  Open Full Library
+                </Button>
+              </Link>
+            </div>
           </div>
         )}
 
