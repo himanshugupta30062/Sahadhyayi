@@ -221,11 +221,17 @@ BEGIN
     GROUP BY user_id
     ORDER BY total_points DESC, total_actions DESC
     LIMIT 5
+  ), ranked_members AS (
+    -- Window functions must be evaluated in a CTE before aggregation.
+    SELECT
+      row_number() OVER (ORDER BY total_points DESC, total_actions DESC) AS member_rank,
+      member_stats.*
+    FROM member_stats
   )
   SELECT coalesce(
     jsonb_agg(
       jsonb_build_object(
-        'rank', row_number() OVER (ORDER BY m.total_points DESC, m.total_actions DESC),
+        'rank', m.member_rank,
         'userId', m.user_id,
         'name', coalesce(p.full_name, p.username, 'Community Member'),
         'username', p.username,
@@ -238,12 +244,12 @@ BEGIN
           'messages', m.messages_count,
           'chapters', m.chapters_count
         )
-      )
+      ) ORDER BY m.member_rank
     ),
     '[]'::jsonb
   )
   INTO v_top_members
-  FROM member_stats m
+  FROM ranked_members m
   LEFT JOIN public.profiles p ON p.id = m.user_id;
 
   -- 10. Reading engagement metrics
