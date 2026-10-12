@@ -92,10 +92,10 @@ serve(async (req) => {
     const twentyFourHoursAgo = new Date(now - 24 * 3600 * 1000).toISOString();
 
     const [
-      { count: totalSignupsCount },
-      { count: newSignupsPeriodCount },
-      { count: totalVisitsCount },
-      { count: periodVisitsCount },
+      totalSignupsRes,
+      newSignupsPeriodRes,
+      totalVisitsRes,
+      periodVisitsRes,
     ] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", timeframeStart),
@@ -103,12 +103,19 @@ serve(async (req) => {
       supabase.from("website_visits").select("*", { count: "exact", head: true }).gte("visited_at", timeframeStart),
     ]);
 
-    const totalSignups = totalSignupsCount ?? 0;
-    const newSignups = newSignupsPeriodCount ?? 0;
-    const totalVisits = totalVisitsCount ?? 0;
-    const periodVisits = periodVisitsCount ?? 0;
+    if (totalVisitsRes.error) {
+      console.warn("Failed querying total visits:", totalVisitsRes.error.message);
+    }
+    if (periodVisitsRes.error) {
+      console.warn("Failed querying period visits:", periodVisitsRes.error.message);
+    }
 
-    // 3. Hourly buckets for 24h: format with Asia/Kolkata timezone
+    const totalSignups = totalSignupsRes.count ?? 0;
+    const newSignups = newSignupsPeriodRes.count ?? 0;
+    const totalVisits = totalVisitsRes.count ?? 0;
+    const periodVisits = periodVisitsRes.count ?? 0;
+
+    // 3. Compute real hourly activity and breakdowns from actual visits
     const hourlyActivity = [];
     const formatter = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Kolkata",
@@ -126,13 +133,145 @@ serve(async (req) => {
       });
     }
 
+    const { data: recentVisitsData, error: rvError } = await supabase
+      .from("website_visits")
+      .select("visited_at, visitor_id, session_id, country_code, city, device_type, page_url, referrer")
+      .gte("visited_at", timeframeStart)
+      .limit(3000);
+
+    if (rvError) {
+      console.warn("Could not query recent visits for breakdown:", rvError.message);
+    }
+
+    const visitsList = Array.isArray(recentVisitsData) ? recentVisitsData : [];
+    const uniqueVisitorIds = new Set<string>();
+    const countryCounts: Record<string, number> = {};
+    const cityCounts: Record<string, number> = {};
+    const pageCounts: Record<string, number> = {};
+    const deviceCounts: Record<string, number> = {};
+    const referrerCounts: Record<string, number> = {};
+
+    for (const v of visitsList) {
+      if (v.visitor_id) uniqueVisitorIds.add(String(v.visitor_id));
+
+      // Hourly grouping (for last 24h)
+      if (v.visited_at) {
+        const time = new Date(v.visited_at).getTime();
+        const diffHours = Math.floor((now - time) / (3600 * 1000));
+        if (diffHours >= 0 && diffHours < 24) {
+          const idx = 23 - diffHours;
+          if (hourlyActivity[idx]) hourlyActivity[idx].count++;
+        }
+      }
+
+      if (v.country_code) {
+        const c = String(v.country_code).toUpperCase();
+        countryCounts[c] = (countryCounts[c] || 0) + 1;
+      }
+      if (v.city) {
+        const city = String(v.city).trim();
+        cityCounts[city] = (cityCounts[city] || 0) + 1;
+      }
+      if (v.device_type) {
+        const dt = String(v.device_type).trim();
+        deviceCounts[dt] = (deviceCounts[dt] || 0) + 1;
+      }
+      if (v.page_url) {
+        try {
+          const clean = new URL(v.page_url, "https://sahadhyayi.com").pathname;
+          pageCounts[clean] = (pageCounts[clean] || 0) + 1;
+        } catch {
+          const rawClean = v.page_url.split("?")[0].split("#")[0] || "/";
+          pageCounts[rawClean] = (pageCounts[rawClean] || 0) + 1;
+        }
+      }
+      const ref = v.referrer ? v.referrer.trim() : "";
+      if (!ref || ref === "direct") {
+        referrerCounts["Direct"] = (referrerCounts["Direct"] || 0) + 1;
+      } else {
+        try {
+          const host = new URL(ref).hostname.replace(/^www\./, "");
+          const label = host.includes("google") ? "Google"
+            : host.includes("twitter") || host.includes("t.co") || host.includes("x.com") ? "Twitter"
+            : host.includes("reddit") ? "Reddit"
+            : host.includes("facebook") ? "Facebook"
+            : host;
+          referrerCounts[label] = (referrerCounts[label] || 0) + 1;
+        } catch {
+          referrerCounts["Other"] = (referrerCounts["Other"] || 0) + 1;
+        }
+      }
+    }
+
+    // Determine peak hour
+    let maxHourlyCount = 0;
+    let peakHourLabel: string | null = null;
+    for (const h of hourlyActivity) {
+      if (h.count > maxHourlyCount) {
+        maxHourlyCount = h.count;
+        peakHourLabel = h.label;
+      }
+    }
+    if (maxHourlyCount > 0) {
+      for (const h of hourlyActivity) {
+        if (h.count === maxHourlyCount) h.isPeak = true;
+      }
+    }
+
+    const totalTrackedVisits = visitsList.length || 1;
+    const topCountries = Object.entries(countryCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([code, count]) => ({
+        code,
+        name: code,
+        count,
+        percent: Math.round((count / totalTrackedVisits) * 100),
+      }));
+
+    const topCities = Object.entries(cityCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percent: Math.round((count / totalTrackedVisits) * 100),
+      }));
+
+    const topPages = Object.entries(pageCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percent: Math.round((count / totalTrackedVisits) * 100),
+      }));
+
+    const devices = Object.entries(deviceCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percent: Math.round((count / totalTrackedVisits) * 100),
+      }));
+
+    const referrers = Object.entries(referrerCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percent: Math.round((count / totalTrackedVisits) * 100),
+      }));
+
     // 4. Fallback reading engagement counts
     const [
-      { count: bookViewsCount },
-      { count: progressCount },
-      { count: groupJoinsCount },
-      { count: postsCount },
-      { count: commentsCount },
+      bookViewsRes,
+      progressRes,
+      groupJoinsRes,
+      postsRes,
+      commentsRes,
     ] = await Promise.all([
       supabase.from("website_visits").select("*", { count: "exact", head: true }).gte("visited_at", timeframeStart).or("event_name.in.(book_opened,discovery_book_opened),page_url.ilike.%/book/%,page_url.ilike.%/reader/%"),
       supabase.from("reading_room_events").select("*", { count: "exact", head: true }).gte("created_at", timeframeStart).eq("kind", "chapter_complete"),
@@ -147,18 +286,21 @@ serve(async (req) => {
       newSignups24h: newSignups,
       totalVisits,
       last24hVisits: periodVisits,
-      uniqueVisitors24h: null,
+      uniqueVisitors24h: uniqueVisitorIds.size > 0 ? uniqueVisitorIds.size : null,
       hourlyActivity,
-      peakHour: null,
-      topCountries: [],
-      topCities: [],
-      mostVisitedCity24h: null,
+      peakHour: peakHourLabel,
+      topCountries,
+      topCities,
+      topPages,
+      devices,
+      referrers,
+      mostVisitedCity24h: topCities[0]?.name || null,
       topMembers: [],
       readingEngagement: {
-        bookViews: { count: bookViewsCount ?? 0, tracked: true, label: "Book Views & Discovery" },
-        readingProgressUpdates: { count: progressCount ?? 0, tracked: true, label: "Progress Updates & Chapters" },
-        groupJoins: { count: groupJoinsCount ?? 0, tracked: true, label: "Group Memberships Joined" },
-        discussions: { count: (postsCount ?? 0) + (commentsCount ?? 0), tracked: true, label: "Discussions & Comments" },
+        bookViews: { count: bookViewsRes.count ?? 0, tracked: true, label: "Book Views & Discovery" },
+        readingProgressUpdates: { count: progressRes.count ?? 0, tracked: true, label: "Progress Updates & Chapters" },
+        groupJoins: { count: groupJoinsRes.count ?? 0, tracked: true, label: "Group Memberships Joined" },
+        discussions: { count: (postsRes.count ?? 0) + (commentsRes.count ?? 0), tracked: true, label: "Discussions & Comments" },
       },
       lastUpdated: new Date().toISOString(),
     };

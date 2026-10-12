@@ -171,18 +171,36 @@ Deno.serve(async (req) => {
     const geo = await getGeoFromIP(ipAddress);
     const ua = body.userAgent ? parseUserAgent(body.userAgent) : null;
 
+    // Extract authenticated user ID exclusively from server-side JWT verification
+    let authUserId: string | null = null;
+    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+      if (token) {
+        try {
+          const { data: userData } = await supabase.auth.getUser(token);
+          if (userData?.user?.id) {
+            authUserId = userData.user.id;
+          }
+        } catch {
+          // Token invalid or expired — treat as anonymous visitor
+        }
+      }
+    }
+
     // Build a readable user_agent summary for legacy column
     const userAgentDisplay = ua
       ? `${ua.browser} ${ua.browserVersion} on ${ua.os} (${ua.deviceType})`
       : body.userAgent || 'Unknown';
 
-    // Insert with all new columns
+    // Insert with all new columns including server-authenticated user_id
     const { error } = await supabase.from('website_visits').insert({
       event_id: body.event_id || undefined,
       event_type: body.event_type || 'pageview',
       event_name: body.event_name || null,
       session_id: body.session_id || null,
       visitor_id: body.visitor_id || null,
+      user_id: authUserId,
       utm_source: body.utm_source || null,
       utm_medium: body.utm_medium || null,
       utm_campaign: body.utm_campaign || null,

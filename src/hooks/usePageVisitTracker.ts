@@ -38,7 +38,14 @@ export const usePageVisitTracker = () => {
 
         const query = new URLSearchParams(window.location.search);
 
+        const { data: authData } = await supabase.auth.getSession();
+        const headers: Record<string, string> = {};
+        if (authData?.session?.access_token) {
+          headers['Authorization'] = `Bearer ${authData.session.access_token}`;
+        }
+
         await supabase.functions.invoke('website-visits', {
+          headers,
           body: {
             event_type: 'pageview',
             page: currentPage,

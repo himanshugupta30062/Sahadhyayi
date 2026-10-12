@@ -238,37 +238,8 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
       });
 
       if (error) {
-        // Fallback: direct query on website_visits
-        let query = supabase
-          .from('website_visits')
-          .select('*')
-          .order('visited_at', { ascending: false })
-          .limit(visitorLimit);
-
-        if (visitorSearch.trim()) {
-          const s = visitorSearch.trim();
-          query = query.or(`ip_address.ilike.%${s}%,city.ilike.%${s}%,country_code.ilike.%${s}%,page_url.ilike.%${s}%`);
-        }
-
-        const { data: fallbackData, error: fallbackError } = await query;
-        if (fallbackError) throw fallbackError;
-        return (fallbackData || []).map((row: any) => ({
-          id: row.id,
-          visited_at: row.visited_at,
-          ip_address: row.ip_address || 'Unknown',
-          country_code: row.country_code,
-          city: row.city,
-          region: row.region,
-          page_url: row.page_url,
-          browser: row.browser,
-          browser_version: row.browser_version,
-          os: row.os,
-          device_type: row.device_type,
-          device_model: row.device_model,
-          referrer: row.referrer,
-          screen_resolution: row.screen_resolution,
-          language: row.language,
-        }));
+        console.warn('get_admin_recent_visits RPC failed:', error.message);
+        return [];
       }
 
       return data || [];
