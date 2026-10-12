@@ -144,21 +144,21 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
 
   return (
     <>
-      <Card className="bg-card border-border rounded-2xl mb-6 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="bg-[#111614] border-[#29332D] rounded-2xl mb-6 shadow-sm">
         <CardContent className="p-4">
           <div className="flex items-start space-x-3 mb-4">
-            <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
+            <Avatar className="w-10 h-10 border border-[#29332D]">
               <AvatarImage src={user?.user_metadata?.avatar_url} />
-              <AvatarFallback className="bg-gradient-button text-white font-semibold">
+              <AvatarFallback className="bg-[#1C3024] text-[#D5B16D] text-xs font-semibold">
                 {user?.user_metadata?.full_name?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <Textarea
-                placeholder="What's on your mind?"
+                placeholder="What are you reading or thinking about?"
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
-                className="min-h-[80px] border-0 bg-muted/50 rounded-xl resize-none focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-brand-primary/30 transition-colors text-base placeholder:text-muted-foreground"
+                className="min-h-[80px] border border-[#29332D] bg-[#0B0D0C]/70 text-[#F3F0E7] rounded-xl resize-none focus-visible:ring-1 focus-visible:ring-[#D5B16D] transition-colors text-sm placeholder:text-[#A5ADA6]/70"
               />
             </div>
           </div>
@@ -247,38 +247,38 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10 rounded-lg gap-1.5"
+                className="text-[#A5ADA6] hover:text-[#D5B16D] hover:bg-[#1C3024] rounded-lg gap-1.5 text-xs h-8"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <Image className="w-4 h-4" />
-                <span className="text-sm">Photo</span>
+                <Image className="w-3.5 h-3.5 text-[#D5B16D]" />
+                <span>Add Image</span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10 rounded-lg gap-1.5"
+                className="text-[#A5ADA6] hover:text-[#D5B16D] hover:bg-[#1C3024] rounded-lg gap-1.5 text-xs h-8"
                 onClick={() => setShowBookModal(true)}
               >
-                <BookOpen className="w-4 h-4" />
-                <span className="text-sm">Book</span>
+                <BookOpen className="w-3.5 h-3.5 text-[#D5B16D]" />
+                <span>Add Book</span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10 rounded-lg gap-1.5"
+                className="text-[#A5ADA6] hover:text-[#D5B16D] hover:bg-[#1C3024] rounded-lg gap-1.5 text-xs h-8"
                 onClick={() => setShowEmojiPicker(true)}
               >
-                <Smile className="w-4 h-4" />
-                <span className="text-sm">Feeling</span>
+                <Smile className="w-3.5 h-3.5 text-[#D5B16D]" />
+                <span>Feeling</span>
               </Button>
             </div>
             <Button
               onClick={handlePost}
               disabled={(!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting || createPost.isPending}
-              className="bg-gradient-button text-white shadow-[var(--shadow-button)] hover:shadow-[var(--shadow-elevated)] hover:opacity-95 rounded-xl w-full sm:w-auto mt-2 sm:mt-0 transition-all"
+              className="bg-[#D5B16D] hover:bg-[#c49f5c] text-[#0B0D0C] font-semibold text-xs h-8 px-4 rounded-xl shadow-xs transition-all disabled:opacity-50"
             >
-              <Send className="w-4 h-4 mr-1.5" />
-              {isPosting || createPost.isPending ? 'Posting...' : 'Post'}
+              <Send className="w-3.5 h-3.5 mr-1.5" />
+              {isPosting || createPost.isPending ? 'Posting…' : 'Post'}
             </Button>
           </div>
         </CardContent>

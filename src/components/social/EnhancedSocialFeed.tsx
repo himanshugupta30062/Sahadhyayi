@@ -127,41 +127,41 @@ export const EnhancedSocialFeed = () => {
       <BookPulseBar />
 
       {/* Feed Stream Filter Pills */}
-      <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-xl border border-border w-fit flex-wrap">
+      <div className="flex items-center gap-1.5 bg-[#111614] p-1 rounded-xl border border-[#29332D] w-fit flex-wrap">
         <Button
           size="sm"
           variant={feedFilter === 'all' ? 'default' : 'ghost'}
-          className={feedFilter === 'all' ? 'h-8 px-3 text-xs bg-brand-primary text-white shadow-xs' : 'h-8 px-3 text-xs text-muted-foreground'}
+          className={feedFilter === 'all' ? 'h-8 px-3 text-xs bg-[#1C3024] border border-[#315C43] text-[#F3F0E7] shadow-xs' : 'h-8 px-3 text-xs text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1B241E]'}
           onClick={() => setFeedFilter('all')}
         >
-          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+          <Sparkles className="w-3.5 h-3.5 mr-1.5 text-[#D5B16D]" />
           All Community
         </Button>
         <Button
           size="sm"
           variant={feedFilter === 'posts' ? 'default' : 'ghost'}
-          className={feedFilter === 'posts' ? 'h-8 px-3 text-xs bg-brand-primary text-white shadow-xs' : 'h-8 px-3 text-xs text-muted-foreground'}
+          className={feedFilter === 'posts' ? 'h-8 px-3 text-xs bg-[#1C3024] border border-[#315C43] text-[#F3F0E7] shadow-xs' : 'h-8 px-3 text-xs text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1B241E]'}
           onClick={() => setFeedFilter('posts')}
         >
-          <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
+          <MessageCircle className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
           Discussions
         </Button>
         <Button
           size="sm"
           variant={feedFilter === 'margins' ? 'default' : 'ghost'}
-          className={feedFilter === 'margins' ? 'h-8 px-3 text-xs bg-brand-primary text-white shadow-xs' : 'h-8 px-3 text-xs text-muted-foreground'}
+          className={feedFilter === 'margins' ? 'h-8 px-3 text-xs bg-[#1C3024] border border-[#315C43] text-[#F3F0E7] shadow-xs' : 'h-8 px-3 text-xs text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1B241E]'}
           onClick={() => setFeedFilter('margins')}
         >
-          <Quote className="w-3.5 h-3.5 mr-1.5" />
+          <Quote className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
           Margin Notes ({marginNotes.length})
         </Button>
         <Button
           size="sm"
           variant={feedFilter === 'threads' ? 'default' : 'ghost'}
-          className={feedFilter === 'threads' ? 'h-8 px-3 text-xs bg-brand-primary text-white shadow-xs' : 'h-8 px-3 text-xs text-muted-foreground'}
+          className={feedFilter === 'threads' ? 'h-8 px-3 text-xs bg-[#1C3024] border border-[#315C43] text-[#F3F0E7] shadow-xs' : 'h-8 px-3 text-xs text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1B241E]'}
           onClick={() => setFeedFilter('threads')}
         >
-          <Lock className="w-3.5 h-3.5 mr-1.5" />
+          <Lock className="w-3.5 h-3.5 mr-1.5 text-indigo-400" />
           Chapter Threads ({spoilerThreads.length})
         </Button>
       </div>
@@ -233,15 +233,15 @@ export const EnhancedSocialFeed = () => {
           return (
             <React.Fragment key={post.id || idx}>
               <Card
-                className="bg-card border-border rounded-2xl hover:shadow-[var(--shadow-elevated)] transition-all duration-200 overflow-hidden"
+                className="bg-[#111614] border-[#29332D] text-[#F3F0E7] rounded-2xl hover:border-[#315C43] transition-all duration-200 overflow-hidden"
               >
               <CardContent className="p-5">
                 {/* Repost banner */}
                 {isRepost && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                    <Repeat2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <div className="flex items-center gap-2 text-xs text-[#A5ADA6] mb-3">
+                    <Repeat2 className="w-3.5 h-3.5 text-emerald-400" />
                     <span>
-                      <strong className="text-foreground">{isOwn ? 'You' : (postProfile?.full_name || 'Someone')}</strong> reposted
+                      <strong className="text-[#F3F0E7]">{isOwn ? 'You' : (postProfile?.full_name || 'Someone')}</strong> reposted
                     </span>
                   </div>
                 )}
@@ -249,9 +249,9 @@ export const EnhancedSocialFeed = () => {
                 {/* Post Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
+                    <Avatar className="w-10 h-10 border border-[#29332D]">
                       <AvatarImage src={postProfile?.profile_photo_url} />
-                      <AvatarFallback className="bg-gradient-button text-white font-semibold">
+                      <AvatarFallback className="bg-[#1C3024] text-[#D5B16D] font-semibold text-xs">
                         {postProfile?.full_name?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
@@ -321,8 +321,8 @@ export const EnhancedSocialFeed = () => {
 
                   {/* Book Card (only on non-reposts) */}
                   {!isRepost && postBook && (
-                    <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-xl p-3 flex items-center gap-3">
-                      <div className="w-12 h-16 bg-gradient-button rounded-md flex-shrink-0 overflow-hidden shadow-sm">
+                    <div className="bg-[#16211A]/80 border border-[#315C43]/50 rounded-xl p-3 flex items-center gap-3">
+                      <div className="w-12 h-16 bg-[#1C3024] rounded-md flex-shrink-0 overflow-hidden shadow-xs border border-[#315C43]/40">
                         {postBook.cover_image_url ? (
                           <img
                             src={postBook.cover_image_url}
@@ -330,19 +330,19 @@ export const EnhancedSocialFeed = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">
+                          <div className="w-full h-full flex items-center justify-center text-[#D5B16D] text-xs font-bold">
                             {postBook.title?.charAt(0) || '📖'}
                           </div>
                         )}
                       </div>
                       <div className="min-w-0">
-                        <h5 className="font-semibold text-foreground text-sm truncate">{postBook.title}</h5>
+                        <h5 className="font-semibold text-[#F3F0E7] text-sm truncate">{postBook.title}</h5>
                         {postBook.author && (
-                          <p className="text-xs text-muted-foreground truncate">{postBook.author}</p>
+                          <p className="text-xs text-[#A5ADA6] truncate">{postBook.author}</p>
                         )}
                         <Badge
                           variant="outline"
-                          className="mt-1.5 text-[10px] border-brand-primary/40 text-brand-primary bg-background"
+                          className="mt-1.5 text-[10px] border-[#315C43] text-[#D5B16D] bg-[#111614]"
                         >
                           Currently Reading
                         </Badge>
@@ -352,51 +352,51 @@ export const EnhancedSocialFeed = () => {
 
                   {/* Image (only on non-reposts) */}
                   {!isRepost && post.image_url && (
-                    <div className="mt-3 rounded-xl overflow-hidden border border-border">
+                    <div className="mt-3 rounded-xl overflow-hidden border border-[#29332D]">
                       <img src={post.image_url} alt="Post" className="w-full max-h-96 object-cover" />
                     </div>
                   )}
                 </div>
 
                 {/* Post Actions */}
-                <div className="flex items-center justify-around gap-1 pt-3 border-t border-border">
+                <div className="flex items-center justify-around gap-1 pt-3 border-t border-[#29332D]">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleLike(post)}
                     disabled={toggleLike.isPending || !user}
-                    className={`flex-1 rounded-lg gap-2 ${post.user_liked ? 'text-rose-500 hover:text-rose-600 hover:bg-rose-50' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+                    className={`flex-1 rounded-lg gap-2 text-xs h-8 ${post.user_liked ? 'text-rose-400 hover:text-rose-300 hover:bg-rose-950/20' : 'text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1B241E]'}`}
                   >
                     <Heart className={`w-4 h-4 ${post.user_liked ? 'fill-current' : ''}`} />
-                    <span className="text-sm font-medium">{post.likes_count}</span>
+                    <span className="font-medium">{post.likes_count}</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="flex-1 rounded-lg gap-2 text-muted-foreground hover:text-foreground hover:bg-muted"
+                    className="flex-1 rounded-lg gap-2 text-xs h-8 text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1B241E]"
                     onClick={() => toggleComments(post.id)}
                   >
                     <MessageCircle className="w-4 h-4" />
-                    <span className="text-sm font-medium">{post.comments_count}</span>
+                    <span className="font-medium">{post.comments_count}</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleRepostClick(post)}
                     disabled={toggleRepost.isPending || !user}
-                    className={`flex-1 rounded-lg gap-2 ${post.user_reposted ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+                    className={`flex-1 rounded-lg gap-2 text-xs h-8 ${post.user_reposted ? 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/20' : 'text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1B241E]'}`}
                   >
                     <Repeat2 className="w-4 h-4" />
-                    <span className="text-sm font-medium">{post.reposts_count || 0}</span>
+                    <span className="font-medium">{post.reposts_count || 0}</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="flex-1 rounded-lg gap-2 text-muted-foreground hover:text-foreground hover:bg-muted"
+                    className="flex-1 rounded-lg gap-2 text-xs h-8 text-[#A5ADA6] hover:text-[#F3F0E7] hover:bg-[#1B241E]"
                     onClick={() => handleShare(post)}
                   >
                     <Share2 className="w-4 h-4" />
-                    <span className="text-sm font-medium hidden sm:inline">Share</span>
+                    <span className="font-medium hidden sm:inline">Share</span>
                   </Button>
                 </div>
 
