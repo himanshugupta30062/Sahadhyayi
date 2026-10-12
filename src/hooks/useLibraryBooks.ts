@@ -197,18 +197,42 @@ export const useAllLibraryBooks = () => {
   });
 };
 
-export const useLibraryBooks = (searchQuery?: string, limit?: number) => {
+export interface LibraryBookQueryOptions {
+  /** Return only catalog records that already have a stored cover URL. */
+  requireCover?: boolean;
+  /** Optional exact genre filter, used by homepage discovery. */
+  genre?: string;
+}
+
+export const useLibraryBooks = (
+  searchQuery?: string,
+  limit?: number,
+  options: LibraryBookQueryOptions = {}
+) => {
+  const requireCover = options.requireCover === true;
+  const genre = options.genre && options.genre !== 'All' ? options.genre : undefined;
   return useQuery({
-    queryKey: ['library-books', searchQuery, limit],
+    queryKey: ['library-books', searchQuery, limit, requireCover, genre ?? 'All'],
     queryFn: async (): Promise<Book[]> => {
       let query = supabase.from('books_library').select(BOOK_SELECT_COLUMNS);
 
+      // Filter at the database before applying the limit, so homepage discovery
+      // does not miss real covers merely because they occur later in the catalog.
+      if (requireCover) {
+        query = query.not('cover_image_url', 'is', null).neq('cover_image_url', '');
+      }
+      if (genre) {
+        query = query.eq('genre', genre);
+      }
       if (searchQuery && searchQuery.trim()) {
         query = query.or(
           `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,genre.ilike.%${searchQuery}%`
         );
       }
 
+      if (requireCover) {
+        query = query.order('created_at', { ascending: false });
+      }
       if (limit) {
         query = query.limit(limit);
       }
@@ -217,10 +241,25 @@ export const useLibraryBooks = (searchQuery?: string, limit?: number) => {
       if (error) {
         // Fallback: If full column select fails (e.g. temporary schema or network glitch), try minimal guaranteed columns
         console.warn('Initial books_library query failed, attempting core fallback:', error.message);
-        const fallback = await supabase
+        let fallbackQuery = supabase
           .from('books_library')
-          .select('id,title,author,genre,cover_image_url,description,pdf_url,created_at')
-          .limit(limit || 24);
+          .select('id,title,author,genre,cover_image_url,description,pdf_url,created_at');
+
+        if (requireCover) {
+          fallbackQuery = fallbackQuery.not('cover_image_url', 'is', null).neq('cover_image_url', '');
+        }
+        if (genre) {
+          fallbackQuery = fallbackQuery.eq('genre', genre);
+        }
+        if (searchQuery && searchQuery.trim()) {
+          fallbackQuery = fallbackQuery.or(
+            `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,genre.ilike.%${searchQuery}%`
+          );
+        }
+        if (requireCover) {
+          fallbackQuery = fallbackQuery.order('created_at', { ascending: false });
+        }
+        const fallback = await fallbackQuery.limit(limit || 24);
 
         if (!fallback.error && fallback.data) {
           return sortBooksByCompleteness(fallback.data.map(mapBook));
