@@ -13,7 +13,8 @@ interface ShareModalProps {
 }
 
 export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalProps) => {
-  const currentUrl = window.location.origin + '/social';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.sahadhyayi.com';
+  const currentUrl = postId ? `${baseUrl}/social?post=${encodeURIComponent(postId)}` : `${baseUrl}/social`;
   const shareText = `Check out this post on Sahadhyayi: "${postContent.slice(0, 100)}${postContent.length > 100 ? '...' : ''}"`;
 
   const copyToClipboard = (message: string) => {
@@ -34,7 +35,7 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
     {
       name: 'Twitter',
       icon: Twitter,
-      color: 'bg-black hover:bg-gray-800',
+      color: 'bg-black hover:bg-zinc-800 border border-zinc-700',
       action: () => {
         const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`;
         window.open(url, '_blank', 'noopener,noreferrer,width=600,height=400');
@@ -43,7 +44,7 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
     {
       name: 'WhatsApp',
       icon: MessageCircle,
-      color: 'bg-green-600 hover:bg-green-700',
+      color: 'bg-emerald-600 hover:bg-emerald-700',
       action: () => {
         const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + currentUrl)}`;
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -58,16 +59,16 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
     {
       name: 'Snapchat',
       icon: Camera,
-      color: 'bg-yellow-400 hover:bg-yellow-500',
+      color: 'bg-amber-400 hover:bg-amber-500 text-black',
       action: () => copyToClipboard('Content copied! You can now share it on Snapchat.')
     }
   ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-[#111614] border-[#29332D] text-[#F3F0E7]">
         <DialogHeader>
-          <DialogTitle className="text-center">Share this post</DialogTitle>
+          <DialogTitle className="text-center font-serif font-bold text-base text-[#F3F0E7]">Share this post</DialogTitle>
         </DialogHeader>
         
         <div className="grid grid-cols-2 gap-3 py-4">
@@ -77,26 +78,26 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
               <Button
                 key={option.name}
                 variant="outline"
-                className={`${option.color} text-white border-0 flex flex-col items-center space-y-2 h-auto py-4`}
+                className={`${option.color} text-white border-0 flex flex-col items-center space-y-2 h-auto py-3.5 rounded-xl shadow-xs`}
                 onClick={() => {
                   option.action();
                   onClose();
                 }}
               >
-                <IconComponent className="w-6 h-6" />
-                <span className="text-sm">{option.name}</span>
+                <IconComponent className="w-5 h-5" />
+                <span className="text-xs font-medium">{option.name}</span>
               </Button>
             );
           })}
         </div>
 
-        <div className="border-t pt-4">
+        <div className="border-t border-[#29332D] pt-4">
           <div className="flex items-center space-x-2">
             <input
               type="text"
               value={currentUrl}
               readOnly
-              className="flex-1 px-3 py-2 text-sm bg-muted border rounded-md"
+              className="flex-1 px-3 py-2 text-xs bg-[#0B0D0C] border border-[#29332D] rounded-xl text-[#F3F0E7] focus:outline-none focus:ring-1 focus:ring-[#D5B16D]"
             />
             <Button
               variant="outline"
@@ -105,6 +106,7 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
                 navigator.clipboard.writeText(currentUrl);
                 toast({ title: 'Link copied!', description: 'URL copied to clipboard.' });
               }}
+              className="border-[#29332D] bg-[#1C3024] text-[#D5B16D] hover:bg-[#253d2f] text-xs h-9 px-3 rounded-xl"
             >
               Copy Link
             </Button>

@@ -231,7 +231,8 @@ export const useSocialPosts = () => {
             .single();
 
           if (newPost) {
-            queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => {
+            queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
+              if (old.some((p) => p.id === newPost.id)) return old;
               return [{ ...newPost, user_liked: false }, ...old];
             });
 
@@ -253,7 +254,7 @@ export const useSocialPosts = () => {
           table: 'posts'
         },
         (payload) => {
-          queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => {
+          queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
             return old.map(post => 
               post.id === payload.new.id 
                 ? { ...post, ...payload.new }
@@ -379,7 +380,7 @@ export const useCreatePost = () => {
     },
     onSuccess: (newPost) => {
       if (newPost) {
-        queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => {
+        queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
           if (old.some((p) => p.id === newPost.id)) return old;
           return [{ ...newPost, user_liked: false, user_reposted: false }, ...old];
         });
@@ -430,14 +431,14 @@ export const useTogglePostLike = () => {
       return { postId, isLiked: !isLiked };
     },
     onSuccess: ({ postId, isLiked }) => {
-      // Update the posts in cache
-      queryClient.setQueryData<SocialPost[]>(['social-posts'], (old = []) => {
+      // Update the posts in cache across all queries with matching prefix
+      queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
         return old.map(post => 
           post.id === postId 
             ? { 
                 ...post, 
                 user_liked: isLiked, 
-                likes_count: isLiked ? post.likes_count + 1 : post.likes_count - 1 
+                likes_count: isLiked ? post.likes_count + 1 : Math.max(0, post.likes_count - 1) 
               }
             : post
         );
@@ -614,7 +615,10 @@ export const useDeletePost = () => {
       if (error) throw error;
       return postId;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
+      queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
+        return old.filter(post => post.id !== deletedId);
+      });
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({ title: 'Post deleted' });
     },
