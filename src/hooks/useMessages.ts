@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import * as React from 'react';
 import { toast } from '@/hooks/use-toast';
+import { uniqueChannelName } from '@/lib/realtime';
 
 export interface PrivateMessage {
   id: string;
@@ -185,7 +186,7 @@ export const useGroupMessages = (groupId: string) => {
     if (!groupId || !user?.id) return;
 
     const channel = supabase
-      .channel(`group-messages-${groupId}`)
+      .channel(uniqueChannelName(`group-messages-${groupId}`))
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'group_messages', filter: `group_id=eq.${groupId}` },

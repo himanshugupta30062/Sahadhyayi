@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from '@/components/ui/use-toast';
+import { uniqueChannelName } from '@/lib/realtime';
 
 export interface BookshelfItem {
   id: string;
@@ -35,7 +36,7 @@ export const useUserBookshelf = () => {
 
     // Realtime channel for instant cross-device updates
     const channel = supabase
-      .channel(`user-bookshelf-realtime-${user.id}`)
+      .channel(uniqueChannelName(`user-bookshelf-realtime-${user.id}`))
       .on(
         'postgres_changes',
         {

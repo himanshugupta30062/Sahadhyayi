@@ -1,6 +1,7 @@
 
 import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { uniqueChannelName } from '@/lib/realtime';
 
 const LOCAL_STORAGE_KEY = 'community-stats';
 
@@ -168,14 +169,14 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     fetchStats();
 
     const profilesChannel = supabase
-      .channel('community-stats-profiles')
+      .channel(uniqueChannelName('community-stats-profiles'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
         fetchStats();
       })
       .subscribe();
 
     const visitsChannel = supabase
-      .channel('community-stats-visits')
+      .channel(uniqueChannelName('community-stats-visits'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'website_visits' }, () => {
         fetchStats();
       })
