@@ -449,7 +449,8 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     // Proportional metrics derived from 830 active books and 4 registered readers
     expect(result.current.stats!.pageViews).toBeGreaterThanOrEqual(2847);
     expect(result.current.stats!.uniqueVisitors).toBeGreaterThanOrEqual(1203);
-    expect(result.current.stats!.newReaders).toBeGreaterThan(0);
+    expect(result.current.stats!.newReaders).toBe(10);
+    expect(result.current.stats!.totalMembers).toBe(9589);
     expect(result.current.stats!.hourlyActivity.length).toBe(24);
     expect(result.current.stats!.countries.length).toBeGreaterThan(0);
     expect(result.current.stats!.topPages.length).toBeGreaterThan(0);
