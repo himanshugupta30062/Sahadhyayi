@@ -446,9 +446,9 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     });
 
     expect(result.current.stats).not.toBeNull();
-    // Proportional metrics derived from 830 active books and 4 registered readers
-    expect(result.current.stats!.pageViews).toBeGreaterThanOrEqual(2847);
-    expect(result.current.stats!.uniqueVisitors).toBeGreaterThanOrEqual(1203);
+    // Proportional metrics derived from real database visit and member base
+    expect(result.current.stats!.pageViews).toBeGreaterThan(0);
+    expect(result.current.stats!.uniqueVisitors).toBeGreaterThan(0);
     expect(result.current.stats!.newReaders).toBe(10);
     expect(result.current.stats!.totalMembers).toBe(9589);
     expect(result.current.stats!.hourlyActivity.length).toBe(24);
@@ -491,5 +491,52 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     const select = screen.getByLabelText(/select metric/i);
     fireEvent.change(select, { target: { value: 'unique' } });
     expect(screen.getByDisplayValue('Unique visitors')).toBeInTheDocument();
+  });
+
+  // 11. Timeframe Switching Produces Distinct, Timeframe-Aware Metrics (No duplicate or static data)
+  it('updates metrics dynamically when switching timeframe between 24h, 7d, and 30d without duplicate data', async () => {
+    mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
+      if (name === 'get_website_visit_count') return Promise.resolve({ data: 9596, error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    const { result } = renderHook(() => useCommunityPulse(true));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    // 24h baseline / metrics
+    const stats24h = result.current.stats!;
+    expect(stats24h.pageViews).toBe(432);
+    expect(stats24h.newReaders).toBe(10);
+    expect(stats24h.pageViewsChange?.label).toContain('previous day');
+
+    // Switch to 7d
+    act(() => {
+      result.current.setTimeframe('7d');
+    });
+
+    const stats7d = result.current.stats!;
+    expect(stats7d.pageViews).toBe(2687);
+    expect(stats7d.newReaders).toBe(62);
+    expect(stats7d.pageViewsChange?.label).toContain('previous 7 days');
+
+    // Switch to 30d
+    act(() => {
+      result.current.setTimeframe('30d');
+    });
+
+    const stats30d = result.current.stats!;
+    expect(stats30d.pageViews).toBe(9596);
+    expect(stats30d.newReaders).toBe(245);
+    expect(stats30d.pageViewsChange?.label).toContain('previous 30 days');
+
+    // Ensure 24h, 7d, 30d are distinct and not identical
+    expect(stats24h.pageViews).not.toBe(stats7d.pageViews);
+    expect(stats7d.pageViews).not.toBe(stats30d.pageViews);
+    expect(stats24h.newReaders).not.toBe(stats7d.newReaders);
+    expect(stats7d.newReaders).not.toBe(stats30d.newReaders);
   });
 });

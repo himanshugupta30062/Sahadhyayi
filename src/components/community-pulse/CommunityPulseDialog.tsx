@@ -31,6 +31,7 @@ import {
   HourPoint,
   useCommunityPulse,
   DEFAULT_BASELINE_STATS,
+  getBaselineStats,
 } from '@/hooks/useCommunityPulse';
 import { useToast } from '@/hooks/use-toast';
 
@@ -201,35 +202,36 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     }
   };
 
-  // Ensure non-zero, consistent baseline fallback for all metrics
+  // Dynamic, timeframe-aware baseline fallback
+  const baseline = React.useMemo(() => getBaselineStats(timeframe), [timeframe]);
   const effectiveStats: PulseStats = React.useMemo(() => {
     return {
-      ...DEFAULT_BASELINE_STATS,
+      ...baseline,
       ...(stats || {}),
-      pageViews: (stats?.pageViews && stats.pageViews > 0) ? stats.pageViews : DEFAULT_BASELINE_STATS.pageViews,
-      uniqueVisitors: (stats?.uniqueVisitors && stats.uniqueVisitors > 0) ? stats.uniqueVisitors : DEFAULT_BASELINE_STATS.uniqueVisitors,
-      newReaders: (stats?.newReaders && stats.newReaders > 0) ? stats.newReaders : DEFAULT_BASELINE_STATS.newReaders,
-      totalMembers: (stats?.totalMembers && stats.totalMembers > 0) ? stats.totalMembers : (DEFAULT_BASELINE_STATS.totalMembers ?? 9589),
-      avgTimeOnSite: (stats?.avgTimeOnSite && stats.avgTimeOnSite !== '—') ? stats.avgTimeOnSite : DEFAULT_BASELINE_STATS.avgTimeOnSite,
-      pageViewsChange: stats?.pageViewsChange ?? DEFAULT_BASELINE_STATS.pageViewsChange,
-      uniqueVisitorsChange: stats?.uniqueVisitorsChange ?? DEFAULT_BASELINE_STATS.uniqueVisitorsChange,
-      newReadersChange: stats?.newReadersChange ?? DEFAULT_BASELINE_STATS.newReadersChange,
-      avgTimeChange: stats?.avgTimeChange ?? DEFAULT_BASELINE_STATS.avgTimeChange,
-      hourlyActivity: (stats?.hourlyActivity && stats.hourlyActivity.length > 0) ? stats.hourlyActivity : DEFAULT_BASELINE_STATS.hourlyActivity,
-      countries: (stats?.countries && stats.countries.length > 0) ? stats.countries : DEFAULT_BASELINE_STATS.countries,
-      topPages: (stats?.topPages && stats.topPages.length > 0) ? stats.topPages : DEFAULT_BASELINE_STATS.topPages,
-      devices: (stats?.devices && stats.devices.length > 0) ? stats.devices : DEFAULT_BASELINE_STATS.devices,
-      referrers: (stats?.referrers && stats.referrers.length > 0) ? stats.referrers : DEFAULT_BASELINE_STATS.referrers,
+      pageViews: (stats?.pageViews && stats.pageViews > 0) ? stats.pageViews : baseline.pageViews,
+      uniqueVisitors: (stats?.uniqueVisitors && stats.uniqueVisitors > 0) ? stats.uniqueVisitors : baseline.uniqueVisitors,
+      newReaders: (stats?.newReaders && stats.newReaders > 0) ? stats.newReaders : baseline.newReaders,
+      totalMembers: (stats?.totalMembers && stats.totalMembers > 0) ? stats.totalMembers : (baseline.totalMembers ?? 9589),
+      avgTimeOnSite: (stats?.avgTimeOnSite && stats.avgTimeOnSite !== '—') ? stats.avgTimeOnSite : baseline.avgTimeOnSite,
+      pageViewsChange: stats?.pageViewsChange ?? baseline.pageViewsChange,
+      uniqueVisitorsChange: stats?.uniqueVisitorsChange ?? baseline.uniqueVisitorsChange,
+      newReadersChange: stats?.newReadersChange ?? baseline.newReadersChange,
+      avgTimeChange: stats?.avgTimeChange ?? baseline.avgTimeChange,
+      hourlyActivity: (stats?.hourlyActivity && stats.hourlyActivity.length > 0) ? stats.hourlyActivity : baseline.hourlyActivity,
+      countries: (stats?.countries && stats.countries.length > 0) ? stats.countries : baseline.countries,
+      topPages: (stats?.topPages && stats.topPages.length > 0) ? stats.topPages : baseline.topPages,
+      devices: (stats?.devices && stats.devices.length > 0) ? stats.devices : baseline.devices,
+      referrers: (stats?.referrers && stats.referrers.length > 0) ? stats.referrers : baseline.referrers,
       readingEngagement: {
-        bookViews: stats?.readingEngagement?.bookViews ?? DEFAULT_BASELINE_STATS.readingEngagement!.bookViews,
-        readingProgressUpdates: stats?.readingEngagement?.readingProgressUpdates ?? DEFAULT_BASELINE_STATS.readingEngagement!.readingProgressUpdates,
-        groupJoins: stats?.readingEngagement?.groupJoins ?? DEFAULT_BASELINE_STATS.readingEngagement!.groupJoins,
-        discussions: stats?.readingEngagement?.discussions ?? DEFAULT_BASELINE_STATS.readingEngagement!.discussions,
+        bookViews: stats?.readingEngagement?.bookViews ?? baseline.readingEngagement!.bookViews,
+        readingProgressUpdates: stats?.readingEngagement?.readingProgressUpdates ?? baseline.readingEngagement!.readingProgressUpdates,
+        groupJoins: stats?.readingEngagement?.groupJoins ?? baseline.readingEngagement!.groupJoins,
+        discussions: stats?.readingEngagement?.discussions ?? baseline.readingEngagement!.discussions,
       },
-      lastUpdated: stats?.lastUpdated || DEFAULT_BASELINE_STATS.lastUpdated,
+      lastUpdated: stats?.lastUpdated || baseline.lastUpdated,
       isStale: stats?.isStale ?? false,
     };
-  }, [stats]);
+  }, [stats, baseline]);
 
   // Hourly chart data scaled appropriately for views vs unique visitors
   const hourlyData = React.useMemo(() => {
