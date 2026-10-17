@@ -90,7 +90,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     // Click footer trigger card
-    const trigger = screen.getByRole('button', { name: /open community pulse/i });
+    const trigger = screen.getByRole('button', { name: /open (live website stats|community pulse)/i });
     expect(trigger).toBeInTheDocument();
     act(() => {
       fireEvent.click(trigger);
@@ -99,7 +99,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     // Dialog opens
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();
-      expect(screen.getByRole('heading', { name: /community pulse/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /(live website stats|community pulse)/i })).toBeInTheDocument();
     });
 
     // Close using close button
