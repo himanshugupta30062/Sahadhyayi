@@ -11,10 +11,14 @@ import SahadhyayiCapabilities from '@/components/SahadhyayiCapabilities';
 const mockUseGenres = vi.fn();
 const mockUseLibraryBooks = vi.fn();
 
-vi.mock('@/hooks/useLibraryBooks', () => ({
-  useGenres: () => mockUseGenres(),
-  useLibraryBooks: (...args: unknown[]) => mockUseLibraryBooks(...args),
-}));
+vi.mock('@/hooks/useLibraryBooks', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/hooks/useLibraryBooks')>();
+  return {
+    ...actual,
+    useGenres: () => mockUseGenres(),
+    useLibraryBooks: (...args: unknown[]) => mockUseLibraryBooks(...args),
+  };
+});
 
 afterEach(() => {
   cleanup();
@@ -101,7 +105,7 @@ describe('HomeBookDiscovery component', () => {
       'href',
       '/book/book-101'
     );
-    expect(mockUseLibraryBooks).toHaveBeenCalledWith(undefined, 80, {
+    expect(mockUseLibraryBooks).toHaveBeenCalledWith(undefined, 600, {
       requireCover: true,
       genre: 'All',
     });
@@ -262,6 +266,167 @@ describe('HomeBookDiscovery component', () => {
     fireEvent.click(resumeBtn);
 
     expect(screen.getByRole('button', { name: /pause book carousel animation/i })).toBeInTheDocument();
+  });
+
+  it('renders all available database genres in the filter bar without capping at 5', () => {
+    mockUseGenres.mockReturnValue({
+      data: [
+        { name: 'Fiction' },
+        { name: 'Philosophy' },
+        { name: 'Science' },
+        { name: 'History' },
+        { name: 'Psychology' },
+        { name: 'Biography & Autobiography' },
+        { name: 'Poetry' },
+        { name: 'Art' },
+      ],
+    });
+    mockUseLibraryBooks.mockReturnValue({ data: [], isLoading: false, isError: false });
+
+    render(
+      <MemoryRouter>
+        <HomeBookDiscovery />
+      </MemoryRouter>
+    );
+
+    // All 8 database genres + All pill should be present
+    expect(screen.getByRole('button', { name: /^all$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^fiction$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^philosophy$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^science$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^history$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^psychology$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^biography & autobiography$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^poetry$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^art$/i })).toBeInTheDocument();
+  });
+
+  it('prevents a prolific author (such as Stephen Hawking) from dominating the carousel', () => {
+    mockUseGenres.mockReturnValue({ data: [] });
+    mockUseLibraryBooks.mockReturnValue({
+      data: [
+        {
+          id: 'hawking-1',
+          title: 'A Brief History of Time',
+          author: 'Stephen Hawking',
+          genre: 'Science',
+          cover_image_url: 'https://example.com/h1.jpg',
+          description: 'A landmark volume in science writing by one of the great minds of our time.',
+          pages: 256,
+          publication_year: 1988,
+          pdf_url: 'https://example.com/h1.pdf',
+        },
+        {
+          id: 'hawking-2',
+          title: 'The Theory of Everything',
+          author: 'Stephen Hawking',
+          genre: 'Science',
+          cover_image_url: 'https://example.com/h2.jpg',
+          description: 'Lectures on theoretical physics and black holes.',
+          pages: 180,
+          publication_year: 2002,
+        },
+        {
+          id: 'hawking-3',
+          title: 'Brief Answers to the Big Questions',
+          author: 'Stephen Hawking',
+          genre: 'Science',
+          cover_image_url: 'https://example.com/h3.jpg',
+          description: 'Reflections on the universe.',
+          pages: 200,
+        },
+        {
+          id: 'dostoevsky-1',
+          title: 'Crime and Punishment',
+          author: 'Fyodor Dostoevsky',
+          genre: 'Fiction',
+          cover_image_url: 'https://example.com/d1.jpg',
+          description: 'A masterpiece of Russian literature.',
+          pages: 545,
+          pdf_url: 'https://example.com/d1.pdf',
+        },
+        {
+          id: 'plato-1',
+          title: 'The Republic',
+          author: 'Plato',
+          genre: 'Philosophy',
+          cover_image_url: 'https://example.com/p1.jpg',
+          description: 'Classical philosophical dialogue.',
+          pages: 416,
+          pdf_url: 'https://example.com/p1.pdf',
+        },
+      ],
+      isLoading: false,
+      isError: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBookDiscovery />
+      </MemoryRouter>
+    );
+
+    // Hawking's highest scoring masterpiece should be present
+    expect(screen.getAllByText('A Brief History of Time').length).toBeGreaterThan(0);
+
+    // Other works by Stephen Hawking should NOT be present in the initial selection
+    expect(screen.queryAllByText('The Theory of Everything')).toHaveLength(0);
+    expect(screen.queryAllByText('Brief Answers to the Big Questions')).toHaveLength(0);
+
+    // Other authors should be present
+    expect(screen.getAllByText('Crime and Punishment').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('The Republic').length).toBeGreaterThan(0);
+  });
+
+  it('filters books accurately when a genre pill is clicked', () => {
+    mockUseGenres.mockReturnValue({
+      data: [{ name: 'Philosophy' }, { name: 'Science' }],
+    });
+    mockUseLibraryBooks.mockImplementation((_query, _limit, options) => {
+      const selected = options?.genre;
+      const allMockBooks = [
+        {
+          id: 'p-1',
+          title: 'Meditations',
+          author: 'Marcus Aurelius',
+          genre: 'Philosophy',
+          cover_image_url: 'https://example.com/med.jpg',
+          description: 'Stoic philosophy reflections.',
+        },
+        {
+          id: 's-1',
+          title: 'Cosmos',
+          author: 'Carl Sagan',
+          genre: 'Science',
+          cover_image_url: 'https://example.com/cos.jpg',
+          description: 'A personal voyage through astronomy.',
+        },
+      ];
+      const data = selected && selected !== 'All'
+        ? allMockBooks.filter((b) => b.genre.toLowerCase() === selected.toLowerCase())
+        : allMockBooks;
+      return { data, isLoading: false, isError: false };
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBookDiscovery />
+      </MemoryRouter>
+    );
+
+    // Initially in "All"
+    expect(screen.getAllByText('Meditations').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Cosmos').length).toBeGreaterThan(0);
+
+    // Click Philosophy pill
+    const philPill = screen.getByRole('button', { name: /^philosophy$/i });
+    fireEvent.click(philPill);
+
+    expect(philPill).toHaveAttribute('aria-pressed', 'true');
+    expect(mockUseLibraryBooks).toHaveBeenCalledWith(undefined, 600, {
+      requireCover: true,
+      genre: 'Philosophy',
+    });
   });
 });
 

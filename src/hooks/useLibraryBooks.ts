@@ -261,7 +261,7 @@ export const useLibraryBooks = (
         query = query.not('cover_image_url', 'is', null).neq('cover_image_url', '');
       }
       if (genre) {
-        query = query.eq('genre', genre);
+        query = query.ilike('genre', genre.trim());
       }
       if (searchQuery && searchQuery.trim()) {
         query = query.or(
@@ -274,6 +274,8 @@ export const useLibraryBooks = (
       }
       if (limit) {
         query = query.limit(limit);
+      } else if (requireCover) {
+        query = query.limit(1000);
       }
 
       const { data, error } = await query;
@@ -290,7 +292,7 @@ export const useLibraryBooks = (
           fallbackQuery = fallbackQuery.not('cover_image_url', 'is', null).neq('cover_image_url', '');
         }
         if (genre) {
-          fallbackQuery = fallbackQuery.eq('genre', genre);
+          fallbackQuery = fallbackQuery.ilike('genre', genre.trim());
         }
         if (searchQuery && searchQuery.trim()) {
           fallbackQuery = fallbackQuery.or(
@@ -300,7 +302,9 @@ export const useLibraryBooks = (
         if (requireCover) {
           fallbackQuery = fallbackQuery.order('created_at', { ascending: false });
         }
-        const fallback = await fallbackQuery.limit(limit || 24);
+        const fallback = limit
+          ? await fallbackQuery.limit(limit)
+          : await fallbackQuery.limit(requireCover ? 1000 : 24);
 
         if (!fallback.error && fallback.data) {
           const visibleFallback = filterPublicBooks(fallback.data);
