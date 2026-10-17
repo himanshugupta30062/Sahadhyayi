@@ -93,7 +93,7 @@ function generateHourlyBuckets(totalVisits: number): HourPoint[] {
 
 export function getBaselineStats(
   tf: '24h' | '7d' | '30d' = '24h',
-  totalVisits = 9615,
+  totalVisits = 9625,
   totalMembers = 9612
 ): PulseStats {
   const is30d = tf === '30d';
@@ -160,7 +160,7 @@ export function getBaselineStats(
   };
 }
 
-export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v4`;
+export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v5`;
 export const DEFAULT_BASELINE_STATS: PulseStats = getBaselineStats('24h');
 
 export const useCommunityPulse = (isOpen: boolean = false) => {
@@ -173,13 +173,13 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     try {
       const cached =
         localStorage.getItem(getCacheKey('24h')) ||
+        localStorage.getItem('sahadhyayi_pulse_stats_24h_v4') ||
         localStorage.getItem('sahadhyayi_pulse_stats_24h_v3') ||
         localStorage.getItem('sahadhyayi_pulse_stats_v2');
       if (cached) {
         const parsed = JSON.parse(cached) as PulseStats;
         if (parsed && Number(parsed.pageViews) > 0) {
-          const totalMembers = parsed.totalMembers && parsed.totalMembers > 9589 ? parsed.totalMembers : 9612;
-          return { ...parsed, totalMembers, isStale: true };
+          return { ...parsed, isStale: true };
         }
       }
     } catch {
@@ -207,7 +207,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
   const isMountedRef = useRef(true);
   const inFlightStatsRef = useRef(false);
   const inFlightVisitorsRef = useRef(false);
-  const totalVisitsRef = useRef(9615);
+  const totalVisitsRef = useRef(9625);
   const totalMembersRef = useRef(9612);
 
   useEffect(() => {
@@ -316,11 +316,15 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
     // Check if get_community_pulse_stats RPC succeeded
     const rpcData = (rpcPulseRes as any)?.data;
-    if (rpcData && typeof rpcData === 'object' && Number(rpcData.totalVisits ?? rpcData.last24hVisits) > 0) {
+    if (rpcData && typeof rpcData === 'object' && (Number(rpcData.totalVisits ?? rpcData.last24hVisits) > 0 || Number(rpcData.totalSignups ?? rpcData.totalMembers) > 0)) {
       const totalVisits = Number(rpcData.totalVisits ?? rpcData.last24hVisits ?? 0);
       const periodVisits = Number(rpcData.last24hVisits ?? rpcData.periodVisits ?? totalVisits);
       const uniqueVisitors = Number(rpcData.uniqueVisitors24h ?? rpcData.uniqueVisitors ?? Math.round(periodVisits * 0.75));
       const newReaders = Number(rpcData.newSignups24h ?? rpcData.newSignupsPeriod ?? 0);
+      const totalMembers = Number(rpcData.totalMembers ?? rpcData.totalSignups ?? 0);
+
+      if (totalVisits > 0) totalVisitsRef.current = totalVisits;
+      if (totalMembers > 0) totalMembersRef.current = totalMembers;
 
       const rawHourly = Array.isArray(rpcData.hourlyActivity) ? rpcData.hourlyActivity : [];
       const hourlyActivity: HourPoint[] = rawHourly.map((h: any, i: number) => ({
@@ -334,6 +338,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         pageViews: periodVisits,
         uniqueVisitors,
         newReaders,
+        totalMembers,
         avgTimeOnSite: rpcData.avgTimeOnSite || '3m 24s',
         pageViewsChange: { value: 12, label: 'vs previous day' },
         uniqueVisitorsChange: { value: 8, label: 'vs previous day' },
@@ -372,17 +377,25 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       };
     }
 
-    // Direct database counts fallback with real visit count (9,615) and registered member count (9,612)
+    // Direct database counts fallback from live database queries
     const visitRpcCount = Number((visitsRpcRes as any)?.data) || 0;
     const usersRpcCount = Number((usersRpcRes as any)?.data) || 0;
-    const realTotalVisits = visitRpcCount > 0 ? visitRpcCount : 9615;
-    const realTotalMembers = usersRpcCount > 50 ? usersRpcCount : 9612;
-    totalVisitsRef.current = realTotalVisits;
-    totalMembersRef.current = realTotalMembers;
+    const profilesCount = Number(totalProfiles) || 0;
+    const newProfilesCount = Number(newProfiles) || 0;
+
+    // Use live database numbers directly without arbitrary threshold or static fallback
+    const realTotalVisits = visitRpcCount > 0 ? visitRpcCount : totalVisitsRef.current;
+    const realTotalMembers = usersRpcCount > 0 ? usersRpcCount : (profilesCount > 0 ? profilesCount : totalMembersRef.current);
+
+    if (realTotalVisits > 0) totalVisitsRef.current = realTotalVisits;
+    if (realTotalMembers > 0) totalMembersRef.current = realTotalMembers;
+
     const baseStats = getBaselineStats(tf, realTotalVisits, realTotalMembers);
 
     return {
       ...baseStats,
+      totalMembers: realTotalMembers,
+      newReaders: newProfilesCount > 0 ? newProfilesCount : baseStats.newReaders,
       lastUpdated: new Date().toISOString(),
       isStale: false,
     };
@@ -425,14 +438,14 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             const is7d = timeframe === '7d';
             const periodLabel = is30d ? 'vs previous 30 days' : is7d ? 'vs previous 7 days' : 'vs previous day';
 
-            // Total registered members across Sahadhyayi: real database count (9,612)
-            const rawTotalMembers = Number(data.totalMembers ?? data.totalSignups ?? 0);
-            const totalMembers = rawTotalMembers > 50 ? rawTotalMembers : 9612;
+            // Total registered members across Sahadhyayi: dynamically read from DB response
+            const rawTotalMembers = Number(data.totalMembers ?? data.totalSignups ?? data.registeredReaders ?? 0);
+            const totalMembers = rawTotalMembers > 0 ? rawTotalMembers : totalMembersRef.current;
+            if (totalMembers > 0) totalMembersRef.current = totalMembers;
 
-            // New periodic signups: 24h = 10, 7d = 62, 30d = 245
-            const defaultNewReaders = is30d ? 245 : is7d ? 62 : 10;
+            // New periodic signups: read from DB response or scale from dynamic members
             const rawNewReaders = Number(data.newSignups24h ?? data.newSignupsPeriod ?? (data.newReaders && data.newReaders > 0 ? data.newReaders : 0));
-            const newReaders = rawNewReaders > 0 ? rawNewReaders : defaultNewReaders;
+            const newReaders = rawNewReaders > 0 ? rawNewReaders : Math.round(totalMembers * (is30d ? 0.025 : is7d ? 0.006 : 0.001));
 
             const periodVisits = rawPeriodVisits > 0 ? rawPeriodVisits : rawTotalVisits;
             const uniqueVisitors = rawUnique > 0
@@ -650,7 +663,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       if (cached) {
         const parsed = JSON.parse(cached) as PulseStats;
         if (parsed && Number(parsed.pageViews) > 0) {
-          const totalMembers = parsed.totalMembers && parsed.totalMembers > 9589 ? parsed.totalMembers : 9612;
+          const totalMembers = Number(parsed.totalMembers) || totalMembersRef.current;
           setStats({ ...parsed, totalMembers });
           return;
         }
