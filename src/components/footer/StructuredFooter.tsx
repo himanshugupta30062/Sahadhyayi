@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Facebook, Twitter, Instagram, Linkedin, Heart, Users, Eye, ArrowRight } from 'lucide-react';
+import {
+  Mail,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Heart,
+  ChevronRight,
+  BarChart3,
+} from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
-import { Button } from '@/components/ui/button';
-import CommunityStats from '@/components/CommunityStats';
+import { CommunityPulseDialog } from '@/components/community-pulse/CommunityPulseDialog';
 
 const StructuredFooter = () => {
   const { user } = useAuth();
-  const [showStats, setShowStats] = useState(false);
+  const [isPulseOpen, setIsPulseOpen] = useState(false);
 
   const footerSections = [
     {
@@ -18,7 +26,7 @@ const StructuredFooter = () => {
         { name: 'Community', href: '/social' },
         { name: 'Reading Groups', href: '/groups' },
         { name: 'Reader Map', href: '/map' },
-      ]
+      ],
     },
     {
       title: 'Support',
@@ -27,7 +35,7 @@ const StructuredFooter = () => {
         { name: 'Contact Us', href: '/feedback' },
         { name: 'Community Guidelines', href: '/community-guidelines' },
         { name: 'Report Issue', href: '/feedback' },
-      ]
+      ],
     },
     {
       title: 'Company',
@@ -36,8 +44,8 @@ const StructuredFooter = () => {
         { name: 'Privacy Policy', href: '/privacy-policy' },
         { name: 'Terms of Service', href: '/terms-of-service' },
         { name: 'Cookie Policy', href: '/cookie-policy' },
-      ]
-    }
+      ],
+    },
   ];
 
   const socialLinks = [
@@ -50,17 +58,10 @@ const StructuredFooter = () => {
   return (
     <footer className="bg-text-primary text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Community Stats Section */}
-        {showStats && (
-          <div className="mb-12 bg-black/50 rounded-2xl p-6">
-            <CommunityStats />
-          </div>
-        )}
-        
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8 items-start">
           {/* Brand Section */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <div className="flex items-center space-x-3 mb-4">
               <img
                 src="/lovable-uploads/logo-small.webp"
@@ -72,20 +73,34 @@ const StructuredFooter = () => {
               />
               <span className="text-xl font-bold">Sahadhyayi</span>
             </div>
-            <p className="text-gray-300 text-sm leading-relaxed mb-6 max-w-xs">
+            <p className="text-gray-300 text-sm leading-relaxed mb-6 max-w-sm">
               Rediscover the joy of deep reading through community, technology, and shared knowledge. Join fellow readers worldwide.
             </p>
-            
-            {/* Community Stats Toggle */}
-            <div className="mb-6">
-              <Button
-                variant="outline"
-                onClick={() => setShowStats(!showStats)}
-                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2"
+
+            {/* Editorial Community Pulse Trigger Card */}
+            <div className="max-w-md">
+              <button
+                type="button"
+                onClick={() => setIsPulseOpen(true)}
+                aria-label="Open Community Pulse"
+                className="group w-full text-left p-4 rounded-xl border border-white/[0.09] bg-[#111614] hover:border-[#D5B16D]/50 hover:bg-[#151d18] transition-all flex items-center justify-between gap-4 shadow-sm"
               >
-                <Eye className="w-4 h-4" />
-                {showStats ? 'Hide' : 'Show'} Community Stats
-              </Button>
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-[#18241e] flex items-center justify-center text-[#D5B16D] flex-shrink-0 border border-white/5">
+                    <BarChart3 className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-stone-100 flex items-center gap-2">
+                      Community Pulse
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    </div>
+                    <p className="text-xs text-stone-400 truncate mt-0.5">
+                      See who's visiting, reading and exploring Sahadhyayi in real time.
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-[#D5B16D] transition-colors flex-shrink-0" />
+              </button>
             </div>
           </div>
 
@@ -132,7 +147,7 @@ const StructuredFooter = () => {
                 })}
               </div>
             </div>
-            
+
             {/* User Status */}
             <div className="text-sm text-gray-400">
               {user ? (
@@ -162,6 +177,12 @@ const StructuredFooter = () => {
           </div>
         </div>
       </div>
+
+      {/* Responsive Community Pulse Dialog / Drawer */}
+      <CommunityPulseDialog
+        open={isPulseOpen}
+        onClose={() => setIsPulseOpen(false)}
+      />
     </footer>
   );
 };
