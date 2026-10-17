@@ -1,9 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ArrowRight, Compass, Pause, Play } from 'lucide-react';
-import { useLibraryBooks, useGenres, type Book } from '@/hooks/useLibraryBooks';
+import { BookOpen, ArrowRight, Compass, Pause, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLibraryBooks, useGenres, getBookCompletenessScore, type Book } from '@/hooks/useLibraryBooks';
 import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
 import { Button } from '@/components/ui/button';
+import { createCanonicalClusterKey, normalizeAuthor } from '@/utils/catalog/metadataNormalization';
+import { identifyJunkCandidate } from '@/utils/catalog/deduplicationEngine';
 
 /**
  * Only accept a usable HTTP(S) cover URL saved on the catalog record.
@@ -57,14 +59,18 @@ export const HomeBookDiscovery: React.FC = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
+  const genreBarRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const { data: genres = [] } = useGenres();
+  // Widen query limit to 600 so discovery accesses the full available catalog of covers without artificial starvation
   const {
     data: allBooks = [],
     isLoading,
     isError,
     refetch,
-  } = useLibraryBooks(undefined, 80, { requireCover: true, genre: selectedGenre });
+  } = useLibraryBooks(undefined, 600, { requireCover: true, genre: selectedGenre });
 
   // Listen to prefers-reduced-motion media query
   useEffect(() => {
@@ -86,71 +92,267 @@ export const HomeBookDiscovery: React.FC = () => {
   }, []);
 
   /**
-   * Filter and curate diverse books across distinct authors.
-   * For authors with multiple catalog records, select their best book
-   * based on metadata completeness, access format, and description.
-   * Ensure no consecutive books share the same author.
+   * Filter and curate diverse books across distinct authors and genres.
+   * - Clusters multiple editions into unified works using canonical key to prevent duplicate titles.
+   * - Selects each author's single most complete masterpiece.
+   * - In "All", performs fair stratified round-robin sampling across all available genres.
+   * - Guarantees no author (including prolific authors like Stephen Hawking) dominates the carousel.
+   * - Ensures adjacent books never share the same author.
    */
   const curatedBooks = useMemo(() => {
-    const validBooks = allBooks
-      .filter((book) => Boolean(getDatabaseCoverUrl(book.cover_image_url)))
-      .filter(
-        (book) =>
-          selectedGenre === 'All' ||
-          book.genre?.toLowerCase() === selectedGenre.toLowerCase()
-      );
+    const validBooks = allBooks.filter((book) => {
+      const cover = getDatabaseCoverUrl(book.cover_image_url);
+      if (!cover) return false;
+      const junk = identifyJunkCandidate(book);
+      if (junk.isJunk) return false;
+      return true;
+    });
 
     if (validBooks.length === 0) return [];
 
-    // Calculate completeness score for each candidate book
-    const scoredBooks = validBooks.map((book) => {
-      let score = 0;
-      if (book.description && book.description.trim().length > 40) score += 40;
-      if (book.pdf_url || book.epub_url) score += 30;
-      if (book.pages && book.pages > 50) score += 20;
-      if (book.publication_year && book.publication_year > 1000) score += 10;
-      if (book.isbn) score += 10;
-      return { book, score };
-    });
+    // 1. Cluster editions into canonical works by title and author
+    const workMap = new Map<string, { book: Book; score: number }>();
+    for (const book of validBooks) {
+      const clusterKey = createCanonicalClusterKey(book.title, book.author);
+      const score = getBookCompletenessScore(book);
+      const existing = workMap.get(clusterKey);
+      if (!existing || score > existing.score) {
+        workMap.set(clusterKey, { book, score });
+      }
+    }
+    const uniqueWorks = Array.from(workMap.values());
 
-    // Group by normalized author to select their highest-scoring masterpiece
+    // 2. Filter by selected genre if specific genre is active
+    const filteredWorks =
+      selectedGenre === 'All'
+        ? uniqueWorks
+        : uniqueWorks.filter(
+            ({ book }) =>
+              book.genre?.trim().toLowerCase() === selectedGenre.trim().toLowerCase()
+          );
+
+    if (filteredWorks.length === 0) return [];
+
+    // 3. Group by author to select best masterpiece per author
     const authorBestMap = new Map<string, { book: Book; score: number }>();
-    const unknownAuthorBooks: Book[] = [];
+    const authorOthersMap = new Map<string, Array<{ book: Book; score: number }>>();
+    const unknownAuthorWorks: Array<{ book: Book; score: number }> = [];
 
-    for (const item of scoredBooks) {
+    for (const item of filteredWorks) {
       const rawAuthor = item.book.author?.trim();
-      if (!rawAuthor || rawAuthor.toLowerCase() === 'unknown author') {
-        unknownAuthorBooks.push(item.book);
+      const normAuthor = normalizeAuthor(rawAuthor).normalizedAuthor;
+      if (!rawAuthor || normAuthor.toLowerCase() === 'unknown author') {
+        unknownAuthorWorks.push(item);
         continue;
       }
-      const normAuthor = rawAuthor
-        .replace(/\s+(LLM|PhD|MD|Esq\.?|QC|KC)$/gi, '')
-        .trim()
-        .toLowerCase();
 
-      const existing = authorBestMap.get(normAuthor);
-      if (!existing || item.score > existing.score) {
-        authorBestMap.set(normAuthor, item);
+      const aKey = normAuthor.toLowerCase();
+      const existing = authorBestMap.get(aKey);
+      if (!existing) {
+        authorBestMap.set(aKey, item);
+      } else if (item.score > existing.score) {
+        if (!authorOthersMap.has(aKey)) authorOthersMap.set(aKey, []);
+        authorOthersMap.get(aKey)!.push(existing);
+        authorBestMap.set(aKey, item);
+      } else {
+        if (!authorOthersMap.has(aKey)) authorOthersMap.set(aKey, []);
+        authorOthersMap.get(aKey)!.push(item);
       }
     }
 
-    const uniqueAuthorBooks = Array.from(authorBestMap.values())
-      .sort((a, b) => b.score - a.score)
-      .map((x) => x.book);
+    // Specific genre view
+    if (selectedGenre !== 'All') {
+      const uniqueAuthorBooks = Array.from(authorBestMap.values())
+        .sort((a, b) => b.score - a.score)
+        .map((x) => x.book);
 
-    // Feature each unique author's single highest-scoring work, followed by any works with unknown authors
-    const curated = [...uniqueAuthorBooks, ...unknownAuthorBooks];
-    return curated.slice(0, 20);
+      const unknownBooks = unknownAuthorWorks
+        .sort((a, b) => b.score - a.score)
+        .map((x) => x.book);
+
+      const result = [...uniqueAuthorBooks, ...unknownBooks];
+
+      // If fewer than 10 books in this genre and authors have other works, backfill without consecutive authors
+      if (result.length < 10 && authorOthersMap.size > 0) {
+        const others: Book[] = [];
+        for (const list of authorOthersMap.values()) {
+          for (const item of list) {
+            others.push(item.book);
+          }
+        }
+        for (const cand of others) {
+          if (result.length >= 16) break;
+          const lastAuthor = result[result.length - 1]?.author?.trim().toLowerCase();
+          const candAuthor = cand.author?.trim().toLowerCase();
+          if (lastAuthor !== candAuthor) {
+            result.push(cand);
+          }
+        }
+      }
+
+      return result.slice(0, 24);
+    }
+
+    // "All" view: Fair stratified sampling across genres & authors
+    const genreBuckets = new Map<string, Array<{ book: Book; score: number }>>();
+    for (const item of authorBestMap.values()) {
+      const g = item.book.genre?.trim() || 'General';
+      if (!genreBuckets.has(g)) genreBuckets.set(g, []);
+      genreBuckets.get(g)!.push(item);
+    }
+    for (const item of unknownAuthorWorks) {
+      const g = item.book.genre?.trim() || 'General';
+      if (!genreBuckets.has(g)) genreBuckets.set(g, []);
+      genreBuckets.get(g)!.push(item);
+    }
+
+    // Sort items within each bucket by score descending
+    for (const list of genreBuckets.values()) {
+      list.sort((a, b) => b.score - a.score);
+    }
+
+    // Sort genre buckets so populated literary genres rotate first, followed by others
+    const sortedGenreNames = Array.from(genreBuckets.keys()).sort((a, b) => {
+      if (a === 'General') return 1;
+      if (b === 'General') return -1;
+      return genreBuckets.get(b)!.length - genreBuckets.get(a)!.length;
+    });
+
+    const curated: Book[] = [];
+    const usedAuthors = new Set<string>();
+    const usedIds = new Set<string>();
+    const TARGET_COUNT = 24;
+    const maxRounds = 12;
+
+    for (let round = 0; round < maxRounds && curated.length < TARGET_COUNT; round++) {
+      for (const gName of sortedGenreNames) {
+        if (curated.length >= TARGET_COUNT) break;
+        const bucket = genreBuckets.get(gName) || [];
+        const candItem = bucket.find((it) => {
+          if (usedIds.has(it.book.id)) return false;
+          const aKey = normalizeAuthor(it.book.author).normalizedAuthor.toLowerCase();
+          if (aKey !== 'unknown author' && usedAuthors.has(aKey)) return false;
+          return true;
+        });
+
+        if (candItem) {
+          const aKey = normalizeAuthor(candItem.book.author).normalizedAuthor.toLowerCase();
+          const lastBook = curated[curated.length - 1];
+          const lastAuthor = lastBook ? normalizeAuthor(lastBook.author).normalizedAuthor.toLowerCase() : null;
+
+          if (aKey !== 'unknown author' && lastAuthor === aKey) {
+            continue;
+          }
+
+          curated.push(candItem.book);
+          usedIds.add(candItem.book.id);
+          if (aKey !== 'unknown author') {
+            usedAuthors.add(aKey);
+          }
+        }
+      }
+    }
+
+    // Fallback if target count isn't reached: add remaining high-scoring works from authors not yet included
+    if (curated.length < TARGET_COUNT) {
+      const remainingCandidates = [
+        ...Array.from(authorBestMap.values()),
+        ...unknownAuthorWorks,
+      ].sort((a, b) => b.score - a.score);
+
+      for (const item of remainingCandidates) {
+        if (curated.length >= TARGET_COUNT) break;
+        if (usedIds.has(item.book.id)) continue;
+        const aKey = normalizeAuthor(item.book.author).normalizedAuthor.toLowerCase();
+        if (aKey !== 'unknown author' && usedAuthors.has(aKey)) continue;
+
+        const lastBook = curated[curated.length - 1];
+        const lastAuthor = lastBook ? normalizeAuthor(lastBook.author).normalizedAuthor.toLowerCase() : null;
+        if (lastAuthor === aKey && aKey !== 'unknown author') continue;
+
+        curated.push(item.book);
+        usedIds.add(item.book.id);
+        if (aKey !== 'unknown author') usedAuthors.add(aKey);
+      }
+    }
+
+    return curated;
   }, [allBooks, selectedGenre]);
 
-  // Curate popular top genres from real library records (max 5 pills)
-  const popularGenres = useMemo(() => {
-    const list = genres
-      .map((g) => g.name)
-      .filter((name): name is string => Boolean(name && name.trim()))
-      .slice(0, 5);
-    return ['All', ...list];
-  }, [genres]);
+  // Extract all real genres from the catalog without artificial truncation
+  const allAvailableGenres = useMemo(() => {
+    const genreCounts = new Map<string, number>();
+    for (const b of allBooks) {
+      if (b.cover_image_url && b.genre) {
+        const trimmed = b.genre.trim();
+        if (trimmed) {
+          genreCounts.set(trimmed, (genreCounts.get(trimmed) || 0) + 1);
+        }
+      }
+    }
+
+    const set = new Set<string>();
+    genres.forEach((g) => {
+      const name = g.name?.trim();
+      if (name) set.add(name);
+    });
+    allBooks.forEach((b) => {
+      const name = b.genre?.trim();
+      if (name) set.add(name);
+    });
+
+    const filtered = Array.from(set).filter(
+      (name) => !/^subject headings/i.test(name) && !/^gazettes/i.test(name)
+    );
+
+    filtered.sort((a, b) => {
+      const countA = genreCounts.get(a) || 0;
+      const countB = genreCounts.get(b) || 0;
+      if (countB !== countA) return countB - countA;
+      return a.localeCompare(b);
+    });
+
+    return ['All', ...filtered];
+  }, [genres, allBooks]);
+
+  // Keep track of horizontal genre bar scroll buttons
+  const updateScrollButtons = useCallback(() => {
+    if (!genreBarRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = genreBarRef.current;
+    setCanScrollLeft(scrollLeft > 4);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    updateScrollButtons();
+    const el = genreBarRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateScrollButtons, { passive: true });
+    window.addEventListener('resize', updateScrollButtons);
+    return () => {
+      el.removeEventListener('scroll', updateScrollButtons);
+      window.removeEventListener('resize', updateScrollButtons);
+    };
+  }, [updateScrollButtons, allAvailableGenres]);
+
+  const scrollGenres = (direction: 'left' | 'right') => {
+    if (genreBarRef.current) {
+      const offset = direction === 'left' ? -260 : 260;
+      genreBarRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
+  // Build marquee base items: if fewer than 8 books, repeat them so the loop has sufficient width
+  const marqueeItems = useMemo(() => {
+    if (curatedBooks.length <= 1) return curatedBooks;
+    if (curatedBooks.length >= 8) return curatedBooks;
+    const repetitions = Math.ceil(8 / curatedBooks.length);
+    const repeated: Book[] = [];
+    for (let i = 0; i < repetitions; i++) {
+      repeated.push(...curatedBooks);
+    }
+    return repeated;
+  }, [curatedBooks]);
 
   // Determine marquee playback state
   const isMarqueeActive = !isPaused && !prefersReducedMotion && curatedBooks.length > 1;
@@ -175,7 +377,7 @@ export const HomeBookDiscovery: React.FC = () => {
           will-change: transform;
         }
         .sahadhyayi-marquee-animating {
-          animation: sahadhyayi-marquee-scroll 45s linear infinite;
+          animation: sahadhyayi-marquee-scroll 48s linear infinite;
         }
         .sahadhyayi-marquee-animating:hover,
         .sahadhyayi-marquee-animating:focus-within {
@@ -231,27 +433,54 @@ export const HomeBookDiscovery: React.FC = () => {
           </div>
         </div>
 
-        {/* Category Pills (Real Genres) */}
-        {popularGenres.length > 1 && (
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-2 mb-8 -mx-1 px-1">
-            {popularGenres.map((genre) => {
-              const isSelected = selectedGenre.toLowerCase() === genre.toLowerCase();
-              return (
-                <button
-                  key={genre}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => setSelectedGenre(genre)}
-                  className={`px-4 py-2 min-h-[38px] rounded-full text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] ${
-                    isSelected
-                      ? 'bg-[#1C442D] text-white font-semibold shadow-xs dark:bg-[#D5B16D] dark:text-black'
-                      : 'bg-white text-[#636B65] hover:text-[#1C201D] hover:bg-[#F4EFEA] border border-[#E8E2D9] dark:bg-[#111413] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#181C1A] dark:border-[#26302A]'
-                  }`}
-                >
-                  {genre}
-                </button>
-              );
-            })}
+        {/* Category Pills (All Real Genres from Catalog) */}
+        {allAvailableGenres.length > 1 && (
+          <div className="relative mb-8 -mx-1 px-1">
+            {/* Scroll Navigation Chevrons */}
+            {canScrollLeft && (
+              <button
+                type="button"
+                onClick={() => scrollGenres('left')}
+                aria-label="Scroll genres left"
+                className="hidden sm:flex absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#161D19]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#E8E2D9] dark:border-[#29332D] shadow-md backdrop-blur-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35]"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+            {canScrollRight && (
+              <button
+                type="button"
+                onClick={() => scrollGenres('right')}
+                aria-label="Scroll genres right"
+                className="hidden sm:flex absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#161D19]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#E8E2D9] dark:border-[#29332D] shadow-md backdrop-blur-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35]"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+
+            <div
+              ref={genreBarRef}
+              className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-2 scroll-smooth"
+            >
+              {allAvailableGenres.map((genre) => {
+                const isSelected = selectedGenre.toLowerCase() === genre.toLowerCase();
+                return (
+                  <button
+                    key={genre}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedGenre(genre)}
+                    className={`px-4 py-2 min-h-[38px] rounded-full text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] ${
+                      isSelected
+                        ? 'bg-[#1C442D] text-white font-semibold shadow-xs dark:bg-[#D5B16D] dark:text-black'
+                        : 'bg-white text-[#636B65] hover:text-[#1C201D] hover:bg-[#F4EFEA] border border-[#E8E2D9] dark:bg-[#111413] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#181C1A] dark:border-[#26302A]'
+                    }`}
+                  >
+                    {genre}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -336,7 +565,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
           <div
             className={`sahadhyayi-marquee-track flex gap-4 sm:gap-6 px-4 ${
-              isMarqueeActive ? 'sahadhyayi-marquee-animating' : 'overflow-x-auto scrollbar-none'
+              isMarqueeActive ? 'sahadhyayi-marquee-animating' : 'overflow-x-auto scrollbar-none justify-center'
             }`}
             style={{
               animationPlayState: isPaused ? 'paused' : 'running',
@@ -344,9 +573,9 @@ export const HomeBookDiscovery: React.FC = () => {
           >
             {/* Primary Track Set A (Always accessible to screen readers & keyboard navigation) */}
             <div className="flex gap-4 sm:gap-6 flex-shrink-0">
-              {curatedBooks.map((book: Book) => (
+              {marqueeItems.map((book: Book, idx: number) => (
                 <Link
-                  key={`primary-${book.id}`}
+                  key={`primary-${book.id}-${idx}`}
                   to={`/book/${book.id}`}
                   className="group flex flex-col w-36 sm:w-44 md:w-48 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] rounded-xl"
                   title={`${book.title} by ${book.author || 'Unknown author'}`}
@@ -377,12 +606,12 @@ export const HomeBookDiscovery: React.FC = () => {
               ))}
             </div>
 
-            {/* Seamless Duplicate Track Set B (Only rendered when multiple books exist for continuous loop) */}
-            {curatedBooks.length > 1 && (
+            {/* Seamless Duplicate Track Set B (Only rendered when marquee is active for infinite loop) */}
+            {isMarqueeActive && (
               <div className="flex gap-4 sm:gap-6 flex-shrink-0" aria-hidden="true">
-                {curatedBooks.map((book: Book) => (
+                {marqueeItems.map((book: Book, idx: number) => (
                   <Link
-                    key={`duplicate-${book.id}`}
+                    key={`duplicate-${book.id}-${idx}`}
                     to={`/book/${book.id}`}
                     tabIndex={-1}
                     aria-hidden="true"
