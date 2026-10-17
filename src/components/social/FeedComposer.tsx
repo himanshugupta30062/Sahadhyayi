@@ -166,14 +166,14 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
 
           {/* Attachment Previews */}
           {(imagePreview || selectedBook || selectedFeeling) && (
-            <div className="mb-4 p-3 bg-muted/40 rounded-xl border border-border">
+            <div className="mb-4 p-3 bg-[#0B0D0C]/80 rounded-xl border border-[#29332D]">
               {imagePreview && (
                 <div className="relative mb-3">
-                  <img src={imagePreview} alt="Preview" className="w-full max-h-60 object-cover rounded-lg" />
+                  <img src={imagePreview} alt="Preview" className="w-full max-h-60 object-cover rounded-lg border border-[#29332D]" />
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="absolute top-2 right-2 bg-foreground/60 text-background hover:bg-foreground/80 rounded-full h-8 w-8 p-0"
+                    className="absolute top-2 right-2 bg-black/70 text-white hover:bg-black/90 rounded-full h-8 w-8 p-0"
                     onClick={() => {
                       setSelectedImage(null);
                       setImagePreview(null);
@@ -186,8 +186,8 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               )}
 
               {selectedBook && (
-                <div className="flex items-start space-x-3 mb-3 p-3 bg-card rounded-lg border border-border">
-                  <div className="w-16 h-20 bg-gradient-button rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
+                <div className="flex items-start space-x-3 mb-3 p-3 bg-[#16211A]/60 rounded-xl border border-[#315C43]/50">
+                  <div className="w-16 h-20 bg-[#1C3024] border border-[#315C43]/40 rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
                     {selectedBook.cover ? (
                       <img
                         src={selectedBook.cover}
@@ -195,39 +195,39 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <BookOpen className="w-8 h-8 text-white" />
+                      <BookOpen className="w-8 h-8 text-[#D5B16D]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h5 className="font-semibold text-foreground text-sm line-clamp-2 mb-1">
+                    <h5 className="font-semibold text-[#F3F0E7] text-sm line-clamp-2 mb-1">
                       {selectedBook.title}
                     </h5>
-                    <p className="text-xs text-muted-foreground mb-1">
+                    <p className="text-xs text-[#A5ADA6] mb-1">
                       by {selectedBook.author}
                     </p>
                     {selectedBook.description && (
-                      <p className="text-xs text-muted-foreground/80 line-clamp-2">
+                      <p className="text-xs text-[#A5ADA6]/80 line-clamp-2">
                         {selectedBook.description.length > 120
                           ? selectedBook.description.substring(0, 120) + '...'
                           : selectedBook.description
                         }
                       </p>
                     )}
-                    <Badge variant="outline" className="mt-2 text-xs border-brand-primary/40 text-brand-primary">
+                    <Badge variant="outline" className="mt-2 text-xs border-[#315C43] text-[#D5B16D] bg-[#111614]">
                       Reading
                     </Badge>
                   </div>
-                  <Button size="sm" variant="ghost" onClick={() => setSelectedBook(null)} className="ml-2 rounded-full h-8 w-8 p-0">
+                  <Button size="sm" variant="ghost" onClick={() => setSelectedBook(null)} className="ml-2 rounded-full h-8 w-8 p-0 text-[#A5ADA6] hover:text-[#F3F0E7]">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               )}
 
               {selectedFeeling && (
-                <div className="flex items-center space-x-2 p-2 bg-card rounded-lg border border-border">
+                <div className="flex items-center space-x-2 p-2 bg-[#16211A]/60 rounded-xl border border-[#315C43]/50">
                   <span className="text-2xl">{selectedFeeling.emoji}</span>
-                  <span className="text-sm text-foreground">feeling <span className="font-medium">{selectedFeeling.label}</span></span>
-                  <Button size="sm" variant="ghost" onClick={() => setSelectedFeeling(null)} className="ml-auto rounded-full h-8 w-8 p-0">
+                  <span className="text-sm text-[#F3F0E7]">feeling <span className="font-medium text-[#D5B16D]">{selectedFeeling.label}</span></span>
+                  <Button size="sm" variant="ghost" onClick={() => setSelectedFeeling(null)} className="ml-auto rounded-full h-8 w-8 p-0 text-[#A5ADA6] hover:text-[#F3F0E7]">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>

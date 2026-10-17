@@ -211,7 +211,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
       pageViews: (stats?.pageViews && stats.pageViews > 0) ? stats.pageViews : baseline.pageViews,
       uniqueVisitors: (stats?.uniqueVisitors && stats.uniqueVisitors > 0) ? stats.uniqueVisitors : baseline.uniqueVisitors,
       newReaders: (stats?.newReaders && stats.newReaders > 0) ? stats.newReaders : baseline.newReaders,
-      totalMembers: (stats?.totalMembers && stats.totalMembers > 0) ? stats.totalMembers : (baseline.totalMembers ?? 9589),
+      totalMembers: (stats?.totalMembers && stats.totalMembers > 0) ? stats.totalMembers : (baseline.totalMembers || 0),
       avgTimeOnSite: (stats?.avgTimeOnSite && stats.avgTimeOnSite !== '—') ? stats.avgTimeOnSite : baseline.avgTimeOnSite,
       pageViewsChange: stats?.pageViewsChange ?? baseline.pageViewsChange,
       uniqueVisitorsChange: stats?.uniqueVisitorsChange ?? baseline.uniqueVisitorsChange,
@@ -289,7 +289,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 )}
               </div>
               <p className="text-[11px] sm:text-xs text-stone-400 truncate mt-0.5">
-                Real-time traffic, visitor analytics & reading activity across our {number(effectiveStats.totalMembers ?? 9589)}-reader community
+                Real-time traffic, visitor analytics & reading activity across our {effectiveStats.totalMembers ? `${number(effectiveStats.totalMembers)}-reader` : 'reader'} community
               </p>
             </div>
           </div>
@@ -442,7 +442,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     </span>
                     <span className="text-[10px] sm:text-[11px] font-semibold text-[#D5B16D] bg-[#D5B16D]/10 px-2 py-0.5 rounded-full border border-[#D5B16D]/20 flex items-center gap-1 flex-shrink-0">
                       <Users className="w-3 h-3" />
-                      {number(effectiveStats.totalMembers ?? 9589)} Total
+                      {effectiveStats.totalMembers ? `${number(effectiveStats.totalMembers)} Total` : '—'}
                     </span>
                   </div>
                   <div className="min-w-0">
@@ -451,7 +451,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     </div>
                     <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">New readers</div>
                     <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">
-                      {number(effectiveStats.totalMembers ?? 9589)} total registered readers
+                      {effectiveStats.totalMembers ? `${number(effectiveStats.totalMembers)} total registered readers` : 'Registered readers'}
                     </div>
                   </div>
                 </div>
@@ -1113,7 +1113,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm sm:text-base font-bold text-stone-100 truncate">
-                      {number(effectiveStats.totalMembers ?? 9589)} Total Readers
+                      {effectiveStats.totalMembers ? `${number(effectiveStats.totalMembers)} Total Readers` : 'Total Readers'}
                     </div>
                     <div className="text-[11px] sm:text-xs text-stone-400 truncate mt-0.5">
                       Global reading community growing with +{number(effectiveStats.newReaders)} new readers this period
