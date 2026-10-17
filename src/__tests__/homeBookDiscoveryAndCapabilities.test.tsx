@@ -3,7 +3,7 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import HomeBookDiscovery from '@/components/home/HomeBookDiscovery';
 import SahadhyayiCapabilities from '@/components/SahadhyayiCapabilities';
@@ -166,7 +166,105 @@ describe('HomeBookDiscovery component', () => {
     tryAgainBtn.click();
     expect(mockRefetch).toHaveBeenCalledTimes(1);
   });
+
+  it('deduplicates multiple books by the same author to their single most complete work', () => {
+    mockUseGenres.mockReturnValue({ data: [] });
+    mockUseLibraryBooks.mockReturnValue({
+      data: [
+        {
+          id: 'book-basic',
+          title: 'Author Work Draft',
+          author: 'Michael T. Nolan',
+          genre: 'Philosophy',
+          cover_image_url: 'https://example.com/cover1.jpg',
+          description: 'Short snippet',
+        },
+        {
+          id: 'book-masterpiece',
+          title: 'Author Work Masterpiece Edition',
+          author: 'Michael T. Nolan',
+          genre: 'Philosophy',
+          cover_image_url: 'https://example.com/cover2.jpg',
+          description: 'A comprehensive, complete, definitive master edition with scholarly notes and indexes.',
+          page_count: 520,
+          publication_year: 2021,
+          isbn: '978-0123456789',
+          pdf_url: 'https://example.com/reader.pdf',
+        },
+        {
+          id: 'book-other',
+          title: 'Meditations',
+          author: 'Marcus Aurelius',
+          genre: 'Philosophy',
+          cover_image_url: 'https://example.com/cover3.jpg',
+          description: 'Personal writings of the Roman Emperor.',
+        },
+      ],
+      isLoading: false,
+      isError: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBookDiscovery />
+      </MemoryRouter>
+    );
+
+    // The masterpiece edition should be selected and displayed
+    expect(screen.getAllByText('Author Work Masterpiece Edition').length).toBeGreaterThan(0);
+    // The inferior draft edition by the same author should NOT be present in either track
+    expect(screen.queryAllByText('Author Work Draft')).toHaveLength(0);
+    // The other author's work should be present
+    expect(screen.getAllByText('Meditations').length).toBeGreaterThan(0);
+  });
+
+  it('provides accessible pause and resume controls for the continuous marquee', () => {
+    mockUseGenres.mockReturnValue({ data: [] });
+    mockUseLibraryBooks.mockReturnValue({
+      data: [
+        {
+          id: 'book-1',
+          title: 'First Great Book',
+          author: 'First Author',
+          genre: 'Fiction',
+          cover_image_url: 'https://example.com/c1.jpg',
+        },
+        {
+          id: 'book-2',
+          title: 'Second Great Book',
+          author: 'Second Author',
+          genre: 'Philosophy',
+          cover_image_url: 'https://example.com/c2.jpg',
+        },
+      ],
+      isLoading: false,
+      isError: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBookDiscovery />
+      </MemoryRouter>
+    );
+
+    const pauseBtn = screen.getByRole('button', { name: /pause book carousel animation/i });
+    expect(pauseBtn).toBeInTheDocument();
+    expect(pauseBtn).toHaveTextContent('Pause');
+
+    // Click pause
+    fireEvent.click(pauseBtn);
+
+    const resumeBtn = screen.getByRole('button', { name: /resume book carousel animation/i });
+    expect(resumeBtn).toBeInTheDocument();
+    expect(resumeBtn).toHaveTextContent('Resume');
+
+    // Click resume
+    fireEvent.click(resumeBtn);
+
+    expect(screen.getByRole('button', { name: /pause book carousel animation/i })).toBeInTheDocument();
+  });
 });
+
 
 describe('SahadhyayiCapabilities component', () => {
   it('renders all 4 core capabilities linking to valid routes without fabricated percentage stats', () => {
