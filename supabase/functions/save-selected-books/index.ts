@@ -4,9 +4,24 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-interface BookData {
+interface IncomingBookPayload {
+  title: unknown;
+  author?: unknown;
+  genre?: unknown;
+  cover_image_url?: unknown;
+  description?: unknown;
+  author_bio?: unknown;
+  isbn?: unknown;
+  publication_year?: unknown;
+  pages?: unknown;
+  language?: unknown;
+  pdf_url?: unknown;
+}
+
+interface ValidatedBook {
   title: string;
   author?: string;
   genre?: string;
@@ -20,214 +35,450 @@ interface BookData {
   pdf_url?: string;
 }
 
+export interface BookSaveResult {
+  title: string;
+  status: 'inserted' | 'already_exists' | 'enriched' | 'failed';
+  id?: string;
+  enrichedFields?: string[];
+  error?: string;
+}
+
 serve(async (req) => {
+  // 1. Handle CORS Preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { selectedBooks } = await req.json()
-    
+    // 2. Mandatory Authentication: Verify signed-in user identity before any service-role operations
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Authentication required. Please sign in to save books to the catalog.' 
+        }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '').trim()
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+
+    // Verify token with Supabase Auth
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false },
+    })
+
+    const { data: userData, error: authError } = await authClient.auth.getUser(token)
+    if (authError || !userData?.user) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid or expired authentication session. Please sign in again.' 
+        }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const authenticatedUser = userData.user;
+    console.log(`🔐 Authenticated user ${authenticatedUser.id} triggered catalog save.`);
+
+    // 3. Parse and Validate Request Payload
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Malformed JSON payload in request body.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { selectedBooks } = body || {};
+
     if (!selectedBooks || !Array.isArray(selectedBooks) || selectedBooks.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Selected books array is required' }),
+        JSON.stringify({ error: 'Selected books array is required and must contain at least one book.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    if (selectedBooks.length > 100) {
+    // Limit batch size to prevent payload exhaustion
+    const MAX_BATCH = 50;
+    if (selectedBooks.length > MAX_BATCH) {
       return new Response(
-        JSON.stringify({ error: 'Batch limit exceeded. Maximum 100 books per request.' }),
+        JSON.stringify({ error: `Batch limit exceeded. Maximum ${MAX_BATCH} books allowed per request.` }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const authHeader = req.headers.get('Authorization')
-    if (authHeader) {
-      const authClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-        { global: { headers: { Authorization: authHeader } } }
-      )
-      const { error: authError } = await authClient.auth.getUser()
-      if (authError) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid authentication credentials' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+    // Validate and sanitize each incoming book
+    const validatedBooks: ValidatedBook[] = [];
+    for (const raw of selectedBooks as IncomingBookPayload[]) {
+      const sanitized = validateAndSanitizeBook(raw);
+      if (sanitized) {
+        validatedBooks.push(sanitized);
       }
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    if (validatedBooks.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'No valid books found in payload. Each book requires a non-empty title.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    console.log(`💾 Saving ${selectedBooks.length} selected books to database`)
+    // 4. Initialize privileged server-side database client (strictly server-side only)
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false },
+    });
 
-    // Save selected books to database
-    const savedBooks = []
-    const duplicateBooks = []
-    
-    for (const book of selectedBooks) {
+    // 5. Probe schema capabilities for books_library once for this batch
+    const hasStatusColumn = await probeHasStatusColumn(supabaseClient);
+
+    console.log(`💾 Processing ${validatedBooks.length} books. (hasStatusColumn: ${hasStatusColumn})`);
+
+    const results: BookSaveResult[] = [];
+    const savedBooks: any[] = [];
+    const duplicateBooks: any[] = [];
+
+    // 6. Process each validated book with atomic duplicate lookup and enrichment
+    for (const book of validatedBooks) {
       try {
-        const result = await saveOrUpdateBook(supabaseClient, book)
-        if (result) {
-          if (result.isDuplicate) {
-            duplicateBooks.push(result)
-          } else {
-            savedBooks.push(result)
-          }
+        const outcome = await saveOrEnrichSingleBook(supabaseClient, book, hasStatusColumn);
+        results.push(outcome);
+
+        if (outcome.status === 'inserted') {
+          savedBooks.push({ id: outcome.id, title: book.title, author: book.author });
+        } else if (outcome.status === 'already_exists' || outcome.status === 'enriched') {
+          duplicateBooks.push({ id: outcome.id, title: book.title, author: book.author, enriched: outcome.status === 'enriched' });
         }
-      } catch (error) {
-        console.error('❌ Error processing book:', book.title, error)
+      } catch (err: any) {
+        console.error(`❌ Unexpected error saving "${book.title}":`, err?.message);
+        results.push({
+          title: book.title,
+          status: 'failed',
+          error: err?.message || 'Database operation failed',
+        });
       }
     }
 
-    console.log(`✅ Successfully saved ${savedBooks.length} books, found ${duplicateBooks.length} duplicates`)
+    const insertedCount = results.filter(r => r.status === 'inserted').length;
+    const enrichedCount = results.filter(r => r.status === 'enriched').length;
+    const existingCount = results.filter(r => r.status === 'already_exists').length;
+    const failedCount = results.filter(r => r.status === 'failed').length;
+
+    console.log(`✅ Results: Inserted(${insertedCount}), Enriched(${enrichedCount}), Existed(${existingCount}), Failed(${failedCount})`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        booksSaved: savedBooks.length,
-        duplicatesFound: duplicateBooks.length,
+        booksSaved: insertedCount + enrichedCount,
+        newlyInserted: insertedCount,
+        enrichedCount,
+        duplicatesFound: existingCount + enrichedCount,
+        failedCount,
+        results,
         books: savedBooks,
-        duplicates: duplicateBooks
+        duplicates: duplicateBooks,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
-  } catch (error) {
-    console.error('💥 Error saving selected books:', error)
+  } catch (error: any) {
+    console.error('💥 Fatal error in save-selected-books:', error)
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'An unknown error occurred' 
+        error: error instanceof Error ? error.message : 'An unknown server error occurred' 
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
 
+/**
+ * Validate and sanitize an incoming book object.
+ * Enforces field lengths, types, and valid string shapes.
+ */
+function validateAndSanitizeBook(raw: IncomingBookPayload): ValidatedBook | null {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const rawTitle = typeof raw.title === 'string' ? raw.title.trim() : '';
+  if (!rawTitle || rawTitle.length < 1) return null;
+
+  const title = rawTitle.slice(0, 300);
+
+  const author = typeof raw.author === 'string' && raw.author.trim()
+    ? raw.author.trim().slice(0, 200)
+    : undefined;
+
+  const genre = typeof raw.genre === 'string' && raw.genre.trim()
+    ? raw.genre.trim().slice(0, 100)
+    : undefined;
+
+  let cover_image_url: string | undefined = undefined;
+  if (typeof raw.cover_image_url === 'string') {
+    const trimmed = raw.cover_image_url.trim();
+    if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
+      cover_image_url = trimmed.slice(0, 1000);
+    }
+  }
+
+  const description = typeof raw.description === 'string' && raw.description.trim()
+    ? raw.description.trim().slice(0, 10000)
+    : undefined;
+
+  const author_bio = typeof raw.author_bio === 'string' && raw.author_bio.trim()
+    ? raw.author_bio.trim().slice(0, 2000)
+    : undefined;
+
+  let isbn: string | undefined = undefined;
+  if (typeof raw.isbn === 'string') {
+    const clean = raw.isbn.replace(/[-\s]/g, '').trim().toUpperCase();
+    if (/^\d{9}[\dX]$/.test(clean) || /^\d{13}$/.test(clean)) {
+      isbn = clean;
+    }
+  }
+
+  let publication_year: number | undefined = undefined;
+  if (typeof raw.publication_year === 'number' && Number.isInteger(raw.publication_year)) {
+    if (raw.publication_year >= 1000 && raw.publication_year <= 2100) {
+      publication_year = raw.publication_year;
+    }
+  } else if (typeof raw.publication_year === 'string') {
+    const parsed = parseInt(raw.publication_year, 10);
+    if (!isNaN(parsed) && parsed >= 1000 && parsed <= 2100) {
+      publication_year = parsed;
+    }
+  }
+
+  let pages: number | undefined = undefined;
+  if (typeof raw.pages === 'number' && Number.isInteger(raw.pages) && raw.pages > 0 && raw.pages < 50000) {
+    pages = raw.pages;
+  } else if (typeof raw.pages === 'string') {
+    const parsed = parseInt(raw.pages, 10);
+    if (!isNaN(parsed) && parsed > 0 && parsed < 50000) {
+      pages = parsed;
+    }
+  }
+
+  const language = typeof raw.language === 'string' && raw.language.trim()
+    ? raw.language.trim().slice(0, 50)
+    : 'English';
+
+  let pdf_url: string | undefined = undefined;
+  if (typeof raw.pdf_url === 'string') {
+    const trimmed = raw.pdf_url.trim();
+    if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
+      pdf_url = trimmed.slice(0, 1000);
+    }
+  }
+
+  return {
+    title,
+    author,
+    genre,
+    cover_image_url,
+    description,
+    author_bio,
+    isbn,
+    publication_year,
+    pages,
+    language,
+    pdf_url,
+  };
+}
+
+/**
+ * Check whether `status` column exists in the live database.
+ */
+async function probeHasStatusColumn(supabaseClient: any): Promise<boolean> {
+  try {
+    const { error } = await supabaseClient.from('books_library').select('status').limit(1);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 function normalizeTitleKey(raw: string): string {
   if (!raw) return '';
   return raw
     .normalize('NFC')
     .replace(/[([][^()[\]]*[)\]]/g, '') // remove bracketed tags
-    .split(/[:—–-]/)[0] // take primary title before colon/dash
+    .split(/[:—–-]/)[0] // primary title
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '')
     .trim();
 }
 
-function normalizeAuthorName(raw: string): string {
+function normalizeAuthorKey(raw?: string): string {
   if (!raw) return '';
   const trimmed = raw.trim();
   if (trimmed.includes(',')) {
     const parts = trimmed.split(',').map((p) => p.trim());
-    if (parts.length === 2 && !parts[1].toLowerCase().includes('inc') && !parts[1].toLowerCase().includes('ltd')) {
+    if (parts.length === 2) {
       return `${parts[1]} ${parts[0]}`.toLowerCase().replace(/[^a-z0-9]/g, '');
     }
   }
   return trimmed.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-async function saveOrUpdateBook(supabaseClient: any, book: BookData): Promise<any> {
-  try {
-    const normTitleKey = normalizeTitleKey(book.title);
-    const normAuthorKey = normalizeAuthorName(book.author || '');
+/**
+ * Look up, enrich existing, or insert a single book safely.
+ */
+async function saveOrEnrichSingleBook(
+  supabaseClient: any,
+  book: ValidatedBook,
+  hasStatusColumn: boolean
+): Promise<BookSaveResult> {
+  let existingBook: any = null;
 
-    // 1. Check for duplicate using clean ISBN
-    let existingBook: any = null;
-    const cleanIsbn = book.isbn ? book.isbn.replace(/[^0-9X]/gi, '').toUpperCase() : null;
+  // 1. Match by verified ISBN
+  if (book.isbn) {
+    const { data: isbnMatches } = await supabaseClient
+      .from('books_library')
+      .select('*')
+      .eq('isbn', book.isbn)
+      .limit(1);
 
-    if (cleanIsbn && (cleanIsbn.length === 10 || cleanIsbn.length === 13)) {
-      const { data: isbnMatch } = await supabaseClient
-        .from('books_library')
-        .select('*')
-        .eq('isbn', cleanIsbn)
-        .limit(1);
-
-      if (isbnMatch && isbnMatch.length > 0) {
-        existingBook = isbnMatch[0];
-      }
+    if (isbnMatches && isbnMatches.length > 0) {
+      existingBook = isbnMatches[0];
     }
+  }
 
-    // 2. If not found by ISBN, query candidates by title
-    if (!existingBook && normTitleKey) {
-      // First exact title match
-      const { data: exactMatch } = await supabaseClient
+  // 2. Fallback: match by title and author
+  if (!existingBook) {
+    const normTitle = normalizeTitleKey(book.title);
+    const normAuthor = normalizeAuthorKey(book.author);
+
+    if (normTitle) {
+      const { data: titleMatches } = await supabaseClient
         .from('books_library')
         .select('*')
         .ilike('title', book.title.trim())
         .limit(5);
 
-      if (exactMatch && exactMatch.length > 0) {
-        existingBook = exactMatch.find((candidate: any) => {
-          const cAuthor = normalizeAuthorName(candidate.author || '');
-          return !cAuthor || !normAuthorKey || cAuthor === normAuthorKey || cAuthor.includes(normAuthorKey) || normAuthorKey.includes(cAuthor);
-        }) || exactMatch[0];
+      if (titleMatches && titleMatches.length > 0) {
+        existingBook = titleMatches.find((candidate: any) => {
+          const cAuthor = normalizeAuthorKey(candidate.author);
+          if (!cAuthor || !normAuthor) return true;
+          return cAuthor === normAuthor || cAuthor.includes(normAuthor) || normAuthor.includes(cAuthor);
+        }) || titleMatches[0];
       }
     }
-
-    // 3. If an existing record was found, enrich missing fields and return without creating duplicate
-    if (existingBook) {
-      console.log(`📖 Matched existing edition: "${existingBook.title}" (ID: ${existingBook.id})`);
-
-      const updates: any = {};
-      if (!existingBook.description && book.description) updates.description = book.description;
-      if (!existingBook.cover_image_url && book.cover_image_url) updates.cover_image_url = book.cover_image_url;
-      if (!existingBook.isbn && cleanIsbn) updates.isbn = cleanIsbn;
-      if (!existingBook.publication_year && book.publication_year) updates.publication_year = book.publication_year;
-      if (!existingBook.pages && book.pages) updates.pages = book.pages;
-      if (!existingBook.pdf_url && book.pdf_url) updates.pdf_url = book.pdf_url;
-      if (!existingBook.author_bio && book.author_bio) updates.author_bio = book.author_bio;
-      if (!existingBook.genre && book.genre) updates.genre = book.genre;
-
-      if (Object.keys(updates).length > 0) {
-        const { data: updatedRecord } = await supabaseClient
-          .from('books_library')
-          .update(updates)
-          .eq('id', existingBook.id)
-          .select()
-          .single();
-
-        console.log(`🔄 Enriched existing book ${existingBook.id} with ${Object.keys(updates).length} fields`);
-        return { ...(updatedRecord || existingBook), isDuplicate: true, wasEnriched: true };
-      }
-
-      return { ...existingBook, isDuplicate: true, wasEnriched: false };
-    }
-
-    // 4. Insert new book record
-    const { data, error } = await supabaseClient
-      .from('books_library')
-      .insert({
-        title: book.title.trim(),
-        author: book.author?.trim(),
-        genre: book.genre?.trim(),
-        cover_image_url: book.cover_image_url?.trim(),
-        description: book.description?.trim(),
-        author_bio: book.author_bio?.trim(),
-        isbn: cleanIsbn || book.isbn?.trim(),
-        publication_year: book.publication_year,
-        pages: book.pages,
-        language: book.language || 'English',
-        pdf_url: book.pdf_url?.trim(),
-        status: 'active',
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error inserting book:', error);
-      return null;
-    }
-
-    console.log(`➕ Added new unique book: ${book.title}`);
-    return data;
-
-  } catch (error) {
-    console.error('Error in saveOrUpdateBook:', error);
-    return null;
   }
+
+  // 3. If existing book found, enrich missing fields
+  if (existingBook) {
+    const updates: Record<string, any> = {};
+    const enrichedFields: string[] = [];
+
+    if (!existingBook.cover_image_url && book.cover_image_url) {
+      updates.cover_image_url = book.cover_image_url;
+      enrichedFields.push('cover_image_url');
+    }
+    if (!existingBook.description && book.description) {
+      updates.description = book.description;
+      enrichedFields.push('description');
+    }
+    if (!existingBook.isbn && book.isbn) {
+      updates.isbn = book.isbn;
+      enrichedFields.push('isbn');
+    }
+    if (!existingBook.publication_year && book.publication_year) {
+      updates.publication_year = book.publication_year;
+      enrichedFields.push('publication_year');
+    }
+    if (!existingBook.pages && book.pages) {
+      updates.pages = book.pages;
+      enrichedFields.push('pages');
+    }
+    if (!existingBook.pdf_url && book.pdf_url) {
+      updates.pdf_url = book.pdf_url;
+      enrichedFields.push('pdf_url');
+    }
+    if (!existingBook.author_bio && book.author_bio) {
+      updates.author_bio = book.author_bio;
+      enrichedFields.push('author_bio');
+    }
+    if (!existingBook.genre && book.genre) {
+      updates.genre = book.genre;
+      enrichedFields.push('genre');
+    }
+
+    if (enrichedFields.length > 0) {
+      const { error: updateError } = await supabaseClient
+        .from('books_library')
+        .update(updates)
+        .eq('id', existingBook.id);
+
+      if (updateError) {
+        console.warn(`Enrichment failed for book ${existingBook.id}:`, updateError.message);
+        return {
+          title: book.title,
+          status: 'already_exists',
+          id: existingBook.id,
+        };
+      }
+
+      console.log(`🔄 Enriched book "${book.title}" (${existingBook.id}) with [${enrichedFields.join(', ')}]`);
+      return {
+        title: book.title,
+        status: 'enriched',
+        id: existingBook.id,
+        enrichedFields,
+      };
+    }
+
+    return {
+      title: book.title,
+      status: 'already_exists',
+      id: existingBook.id,
+    };
+  }
+
+  // 4. Insert new record with verified existing schema columns
+  const insertPayload: Record<string, any> = {
+    title: book.title,
+    author: book.author || null,
+    genre: book.genre || null,
+    cover_image_url: book.cover_image_url || null,
+    description: book.description || null,
+    author_bio: book.author_bio || null,
+    isbn: book.isbn || null,
+    publication_year: book.publication_year || null,
+    pages: book.pages || null,
+    language: book.language || 'English',
+    pdf_url: book.pdf_url || null,
+  };
+
+  // Only include status column if it physically exists in the database
+  if (hasStatusColumn) {
+    insertPayload.status = 'active';
+  }
+
+  const { data: newRecord, error: insertError } = await supabaseClient
+    .from('books_library')
+    .insert(insertPayload)
+    .select('id, title, author')
+    .single();
+
+  if (insertError) {
+    console.error(`Error inserting "${book.title}":`, insertError);
+    return {
+      title: book.title,
+      status: 'failed',
+      error: insertError.message,
+    };
+  }
+
+  console.log(`➕ Successfully inserted new catalog book: "${newRecord.title}" (ID: ${newRecord.id})`);
+  return {
+    title: book.title,
+    status: 'inserted',
+    id: newRecord.id,
+  };
 }

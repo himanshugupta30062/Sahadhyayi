@@ -84,43 +84,18 @@ const BooksCollection = ({
 
   const handleSearch = async (searchTerm: string) => {
     const results = await searchBooks(searchTerm);
-    let external: ExternalBook[] = [];
+    const external: ExternalBook[] = [];
     let libgenBooks: LibgenBook[] = [];
     
-    // Search external sources in parallel
-    const searchPromises = [];
-    
+    // Concurrently search Libgen if external sources enabled
     if (useExternalSources) {
-      // Search existing external sources
-      searchPromises.push(
-        searchExternalSources(searchTerm).catch(error => {
-          console.warn('External search failed:', error);
-          return [];
-        })
-      );
-      
-      // Search Libgen
-      searchPromises.push(
-        searchLibgen(searchTerm).then(response => {
-          if (response.success) {
-            return response.books;
-          }
-          console.warn('Libgen search failed:', response.error);
-          return [];
-        }).catch(error => {
-          console.warn('Libgen search error:', error);
-          return [];
-        })
-      );
-    }
-
-    if (searchPromises.length > 0) {
       try {
-        const [externalResults, libgenResults] = await Promise.all(searchPromises);
-        external = externalResults || [];
-        libgenBooks = libgenResults || [];
+        const response = await searchLibgen(searchTerm);
+        if (response.success && response.books) {
+          libgenBooks = response.books;
+        }
       } catch (error) {
-        console.warn('Parallel search failed:', error);
+        console.warn('Libgen search notice:', error);
       }
     }
 
