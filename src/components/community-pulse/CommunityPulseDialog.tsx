@@ -276,7 +276,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h2 id="pulse-modal-title" className="text-sm sm:text-lg font-bold text-stone-100 tracking-tight truncate">
-                  Community Pulse
+                  Live Website Stats
                 </h2>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 flex-shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -289,7 +289,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 )}
               </div>
               <p className="text-[11px] sm:text-xs text-stone-400 truncate mt-0.5">
-                A real-time picture of our {number(effectiveStats.totalMembers ?? 9589)}-reader community
+                Real-time traffic, visitor analytics & reading activity across our {number(effectiveStats.totalMembers ?? 9589)}-reader community
               </p>
             </div>
           </div>

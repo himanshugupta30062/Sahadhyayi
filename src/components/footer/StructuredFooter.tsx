@@ -77,12 +77,12 @@ const StructuredFooter = () => {
               Rediscover the joy of deep reading through community, technology, and shared knowledge. Join fellow readers worldwide.
             </p>
 
-            {/* Editorial Community Pulse Trigger Card */}
+            {/* Editorial Live Website Stats Trigger Card */}
             <div className="max-w-md">
               <button
                 type="button"
                 onClick={() => setIsPulseOpen(true)}
-                aria-label="Open Community Pulse"
+                aria-label="Open Live Website Stats"
                 className="group w-full text-left p-4 rounded-xl border border-white/[0.09] bg-[#111614] hover:border-[#D5B16D]/50 hover:bg-[#151d18] transition-all flex items-center justify-between gap-4 shadow-sm"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
@@ -91,11 +91,11 @@ const StructuredFooter = () => {
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-stone-100 flex items-center gap-2">
-                      Community Pulse
+                      Live Website Stats
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     </div>
                     <p className="text-xs text-stone-400 truncate mt-0.5">
-                      See who's visiting, reading and exploring Sahadhyayi in real time.
+                      Real-time traffic, visitors & reading activity across Sahadhyayi.
                     </p>
                   </div>
                 </div>
