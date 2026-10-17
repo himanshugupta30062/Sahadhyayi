@@ -390,4 +390,34 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
       );
     });
   });
+
+  // 8. Resilient Database Fallback when Edge Function is Unreachable or Un-deployed
+  it('falls back to database counts and distribution when Edge Function is un-deployed or fails with no cache', async () => {
+    mockFunctionsInvoke.mockRejectedValue(new Error('FunctionsFetchError: Failed to send a request to the Edge Function'));
+    mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
+      if (name === 'get_website_visit_count') return Promise.resolve({ data: 3420, error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+    mockFrom.mockImplementation((table: string) => ({
+      select: () => ({
+        gte: () => Promise.resolve({ count: 18, data: [], error: null }),
+        then: (resolve: any) => resolve({ count: 120, data: [], error: null }),
+      }),
+    }));
+
+    const { result } = renderHook(() => useCommunityPulse(true));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.stats).not.toBeNull();
+    expect(result.current.stats?.pageViews).toBeGreaterThan(0);
+    expect(result.current.stats?.uniqueVisitors).toBeGreaterThan(0);
+    expect(result.current.stats?.hourlyActivity.length).toBe(24);
+    expect(result.current.stats?.countries.length).toBeGreaterThan(0);
+    expect(result.current.stats?.topPages.length).toBeGreaterThan(0);
+    expect(result.current.error).toBeNull();
+  });
 });
