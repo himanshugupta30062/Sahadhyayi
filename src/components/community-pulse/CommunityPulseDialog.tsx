@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Activity,
   BarChart3,
@@ -9,7 +10,6 @@ import {
   ChevronRight,
   Clock3,
   Copy,
-  ExternalLink,
   Eye,
   Globe2,
   Laptop,
@@ -28,7 +28,6 @@ import {
   PulseStats,
   RecentVisitor,
   Change,
-  BreakdownItem,
   HourPoint,
   useCommunityPulse,
 } from '@/hooks/useCommunityPulse';
@@ -37,6 +36,13 @@ import { useToast } from '@/hooks/use-toast';
 export type CommunityPulseDialogProps = {
   open: boolean;
   onClose: () => void;
+  isAdmin?: boolean;
+  stats?: PulseStats | null;
+  visitors?: RecentVisitor[];
+  loading?: boolean;
+  error?: string | null;
+  onRefresh?: () => void;
+  onVisitorSearch?: (query: string) => void;
   pulseState?: ReturnType<typeof useCommunityPulse>;
 };
 
@@ -97,13 +103,13 @@ function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-xl border border-white/[0.09] bg-[#111614] p-4.5 ${className}`}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="flex min-w-0 items-center gap-2 text-sm font-semibold text-stone-100">
-          <span className="text-[#D5B16D]">{icon}</span>
-          {title}
+    <section className={`rounded-xl border border-white/[0.09] bg-[#111614] p-3.5 sm:p-4.5 min-w-0 overflow-hidden ${className}`}>
+      <div className="mb-3.5 flex items-center justify-between gap-3 min-w-0">
+        <h3 className="flex min-w-0 items-center gap-2 text-xs sm:text-sm font-semibold text-stone-100 truncate">
+          <span className="text-[#D5B16D] flex-shrink-0">{icon}</span>
+          <span className="truncate">{title}</span>
         </h3>
-        {action}
+        {action && <div className="flex-shrink-0">{action}</div>}
       </div>
       {children}
     </section>
@@ -113,18 +119,27 @@ function Panel({
 export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   open,
   onClose,
+  isAdmin: propIsAdmin,
+  stats: propStats,
+  visitors: propVisitors,
+  loading: propLoading,
+  error: propError,
+  onRefresh: propOnRefresh,
+  onVisitorSearch: propOnVisitorSearch,
   pulseState: externalPulseState,
 }) => {
   const internalPulseState = useCommunityPulse(open);
   const pulse = externalPulseState || internalPulseState;
 
+  const isAdmin = propIsAdmin !== undefined ? propIsAdmin : pulse.isAdmin;
+  const stats = propStats !== undefined ? propStats : pulse.stats;
+  const visitors = propVisitors !== undefined ? propVisitors : pulse.visitors;
+  const loading = propLoading !== undefined ? propLoading : pulse.loading;
+  const error = propError !== undefined ? propError : pulse.error;
+
   const {
-    isAdmin,
     timeframe,
     setTimeframe,
-    stats,
-    loading,
-    error,
     refetchStats,
     filteredVisitors,
     paginatedVisitors,
@@ -147,13 +162,12 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'overview' | 'visitors' | 'insights'>('overview');
   const [metricView, setMetricView] = useState<'views' | 'unique'>('views');
-  const [copiedIp, setCopiedIp] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showAllCountries, setShowAllCountries] = useState(false);
   const [showAllPages, setShowAllPages] = useState(false);
   const [showAllReferrers, setShowAllReferrers] = useState(false);
 
-  // Close on Escape
+  // Close on Escape & Lock body scroll
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -193,39 +207,42 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   const maxHourlyCount = Math.max(1, ...hourlyData.map(h => h.count));
   const chartPeak = Math.ceil(maxHourlyCount / 50) * 50 || 100;
 
-  return (
+  const modalContent = (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="pulse-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto"
       onClick={e => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative flex flex-col w-full max-w-5xl max-h-[92vh] rounded-2xl border border-white/[0.09] bg-[#0B0D0C] text-stone-100 shadow-2xl overflow-hidden">
+      <div
+        className="relative flex flex-col w-full max-w-5xl h-auto max-h-[92dvh] sm:max-h-[88vh] my-auto rounded-2xl border border-white/[0.09] bg-[#0B0D0C] text-stone-100 shadow-2xl overflow-hidden min-w-0"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4.5 border-b border-white/[0.08] bg-[#0E1210]/90">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-[#16201b] border border-[#27392f] flex items-center justify-center text-[#D5B16D] shadow-inner flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4.5 border-b border-white/[0.08] bg-[#0E1210]/95 flex-shrink-0 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#16201b] border border-[#27392f] flex items-center justify-center text-[#D5B16D] shadow-inner flex-shrink-0">
               <BarChart3 className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2.5">
-                <h2 id="pulse-modal-title" className="text-base sm:text-lg font-bold text-stone-100 tracking-tight">
+              <div className="flex items-center gap-2">
+                <h2 id="pulse-modal-title" className="text-sm sm:text-lg font-bold text-stone-100 tracking-tight truncate">
                   Community Pulse
                 </h2>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/40">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 flex-shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Live
                 </span>
                 {stats?.isStale && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/40">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/40 flex-shrink-0">
                     Cached
                   </span>
                 )}
               </div>
-              <p className="text-xs text-stone-400 truncate mt-0.5">
+              <p className="text-[11px] sm:text-xs text-stone-400 truncate mt-0.5">
                 A real-time picture of our growing reading community
               </p>
             </div>
@@ -234,40 +251,40 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
           <button
             onClick={onClose}
             aria-label="Close dialog"
-            className="p-2 rounded-lg text-stone-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg text-stone-400 hover:text-white hover:bg-white/[0.06] transition-colors flex-shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation & Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 sm:px-6 py-3 border-b border-white/[0.08] bg-[#0B0D0C]">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 border-b border-white/[0.08] bg-[#0B0D0C] flex-shrink-0 min-w-0">
           {/* Tabs */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#111614] border border-white/[0.06]">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-[#111614] border border-white/[0.06] overflow-x-auto max-w-full no-scrollbar flex-shrink min-w-0">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'overview'
                   ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
                   : 'text-stone-400 hover:text-stone-200'
               }`}
             >
-              <BarChart3 className="w-4 h-4" />
-              Overview
+              <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+              <span>Overview</span>
             </button>
 
             {isAdmin && (
               <button
                 onClick={() => setActiveTab('visitors')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                   activeTab === 'visitors'
                     ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
                     : 'text-stone-400 hover:text-stone-200'
                 }`}
               >
-                <Users className="w-4 h-4" />
-                Recent Visitors
-                <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-[#D5B16D]/15 text-[#D5B16D] font-bold">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span>Recent Visitors</span>
+                <span className="text-[9px] uppercase tracking-wider px-1 py-0.2 rounded bg-[#D5B16D]/15 text-[#D5B16D] font-bold">
                   Admin
                 </span>
               </button>
@@ -275,36 +292,38 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
             <button
               onClick={() => setActiveTab('insights')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'insights'
                   ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
                   : 'text-stone-400 hover:text-stone-200'
               }`}
             >
-              <Activity className="w-4 h-4" />
-              Insights
+              <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+              <span>Insights</span>
             </button>
           </div>
 
           {/* Controls: Timeframe & Refresh */}
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
             <div className="relative">
               <select
                 value={timeframe}
                 onChange={e => setTimeframe(e.target.value as '24h' | '7d' | '30d')}
                 aria-label="Select timeframe"
-                className="appearance-none bg-[#111614] border border-white/[0.09] hover:border-white/20 text-stone-200 text-xs sm:text-sm rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#D5B16D] cursor-pointer"
+                className="appearance-none bg-[#111614] border border-white/[0.09] hover:border-white/20 text-stone-200 text-xs rounded-lg pl-2.5 pr-7 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#D5B16D] cursor-pointer"
               >
                 <option value="24h">Last 24 hours</option>
                 <option value="7d">Last 7 days</option>
                 <option value="30d">Last 30 days</option>
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown className="w-3 h-3 text-stone-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
 
             <button
               onClick={() => {
-                if (activeTab === 'visitors') {
+                if (propOnRefresh) {
+                  propOnRefresh();
+                } else if (activeTab === 'visitors') {
                   refetchVisitors();
                 } else {
                   refetchStats();
@@ -313,115 +332,115 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
               disabled={loading || visitorsLoading}
               title="Refresh metrics"
               aria-label="Refresh metrics"
-              className="p-2 rounded-lg bg-[#111614] border border-white/[0.09] hover:border-white/20 text-stone-300 hover:text-[#D5B16D] transition-colors disabled:opacity-50"
+              className="p-1.5 sm:p-2 rounded-lg bg-[#111614] border border-white/[0.09] hover:border-white/20 text-stone-300 hover:text-[#D5B16D] transition-colors disabled:opacity-50 flex-shrink-0"
             >
-              <RefreshCw className={`w-4 h-4 ${loading || visitorsLoading ? 'animate-spin text-[#D5B16D]' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading || visitorsLoading ? 'animate-spin text-[#D5B16D]' : ''}`} />
             </button>
           </div>
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6 min-w-0">
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <>
               {/* Top 4 KPI Cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 min-w-0">
                 {/* 1. Page Views */}
-                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3 sm:p-4 flex flex-col justify-between min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="p-2 rounded-lg bg-[#18241e] text-[#D5B16D]">
-                      <Eye className="w-4 h-4" />
+                    <span className="p-1.5 sm:p-2 rounded-lg bg-[#18241e] text-[#D5B16D] flex-shrink-0">
+                      <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </span>
                     {stats?.pageViewsChange && (
-                      <span className="text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5">
+                      <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5 flex-shrink-0">
                         ↑ {changeLabel(stats.pageViewsChange)}
                       </span>
                     )}
                   </div>
-                  <div>
-                    <div className="text-xl sm:text-2xl font-bold text-stone-100 tracking-tight">
+                  <div className="min-w-0">
+                    <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
                       {number(stats?.pageViews ?? 0)}
                     </div>
-                    <div className="text-xs text-stone-400 mt-0.5">Page views</div>
-                    <div className="text-[10px] text-stone-500 mt-1">vs previous period</div>
+                    <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Page views</div>
+                    <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">vs previous period</div>
                   </div>
                 </div>
 
                 {/* 2. Unique Visitors */}
-                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3 sm:p-4 flex flex-col justify-between min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="p-2 rounded-lg bg-[#18241e] text-[#D5B16D]">
-                      <Users className="w-4 h-4" />
+                    <span className="p-1.5 sm:p-2 rounded-lg bg-[#18241e] text-[#D5B16D] flex-shrink-0">
+                      <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </span>
                     {stats?.uniqueVisitorsChange && (
-                      <span className="text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5">
+                      <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5 flex-shrink-0">
                         ↑ {changeLabel(stats.uniqueVisitorsChange)}
                       </span>
                     )}
                   </div>
-                  <div>
-                    <div className="text-xl sm:text-2xl font-bold text-stone-100 tracking-tight">
+                  <div className="min-w-0">
+                    <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
                       {number(stats?.uniqueVisitors ?? 0)}
                     </div>
-                    <div className="text-xs text-stone-400 mt-0.5">Unique visitors</div>
-                    <div className="text-[10px] text-stone-500 mt-1">vs previous period</div>
+                    <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Unique visitors</div>
+                    <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">vs previous period</div>
                   </div>
                 </div>
 
                 {/* 3. New Readers */}
-                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3 sm:p-4 flex flex-col justify-between min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="p-2 rounded-lg bg-[#18241e] text-[#D5B16D]">
-                      <BookOpen className="w-4 h-4" />
+                    <span className="p-1.5 sm:p-2 rounded-lg bg-[#18241e] text-[#D5B16D] flex-shrink-0">
+                      <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </span>
                     {stats?.newReadersChange && (
-                      <span className="text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5">
+                      <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5 flex-shrink-0">
                         ↑ {changeLabel(stats.newReadersChange)}
                       </span>
                     )}
                   </div>
-                  <div>
-                    <div className="text-xl sm:text-2xl font-bold text-stone-100 tracking-tight">
+                  <div className="min-w-0">
+                    <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
                       {number(stats?.newReaders ?? 0)}
                     </div>
-                    <div className="text-xs text-stone-400 mt-0.5">New readers</div>
-                    <div className="text-[10px] text-stone-500 mt-1">vs previous period</div>
+                    <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">New readers</div>
+                    <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">vs previous period</div>
                   </div>
                 </div>
 
                 {/* 4. Avg. Time on Site */}
-                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3 sm:p-4 flex flex-col justify-between min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="p-2 rounded-lg bg-[#18241e] text-[#D5B16D]">
-                      <Clock3 className="w-4 h-4" />
+                    <span className="p-1.5 sm:p-2 rounded-lg bg-[#18241e] text-[#D5B16D] flex-shrink-0">
+                      <Clock3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </span>
                     {stats?.avgTimeChange && (
-                      <span className="text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5">
+                      <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5 flex-shrink-0">
                         ↑ {changeLabel(stats.avgTimeChange)}
                       </span>
                     )}
                   </div>
-                  <div>
-                    <div className="text-xl sm:text-2xl font-bold text-stone-100 tracking-tight">
+                  <div className="min-w-0">
+                    <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
                       {stats?.avgTimeOnSite || '3m 24s'}
                     </div>
-                    <div className="text-xs text-stone-400 mt-0.5">Avg. time on site</div>
-                    <div className="text-[10px] text-stone-500 mt-1">vs previous period</div>
+                    <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Avg. time on site</div>
+                    <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">vs previous period</div>
                   </div>
                 </div>
               </div>
 
               {/* Second Row: Visitor Activity Chart (Left) + Visitors by Country (Right) */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 min-w-0">
                 {/* Hourly Visitor Activity */}
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-2 min-w-0">
                   <Panel
                     title="Visitor Activity"
                     icon={<Eye className="w-4 h-4" />}
                     action={
                       <div className="flex items-center gap-1.5 text-xs text-stone-400">
-                        <span>Metric:</span>
+                        <span className="hidden sm:inline">Metric:</span>
                         <select
                           value={metricView}
                           onChange={e => setMetricView(e.target.value as 'views' | 'unique')}
@@ -434,8 +453,8 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     }
                   >
                     {/* Bar Chart Container */}
-                    <div className="h-48 pt-4 pb-2 flex flex-col justify-end">
-                      <div className="flex items-end justify-between gap-1 sm:gap-1.5 h-36 border-b border-white/[0.08] pb-1 px-1">
+                    <div className="h-44 sm:h-48 pt-3 pb-2 flex flex-col justify-end w-full min-w-0">
+                      <div className="flex items-end justify-between gap-1 h-32 sm:h-36 border-b border-white/[0.08] pb-1 px-1 w-full min-w-0 overflow-x-auto sm:overflow-x-visible">
                         {hourlyData.length > 0 ? (
                           hourlyData.map((h, i) => {
                             const heightPct = Math.max(6, Math.min(100, Math.round((h.count / chartPeak) * 100)));
@@ -443,7 +462,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                             return (
                               <div
                                 key={i}
-                                className="group relative flex-1 flex flex-col items-center justify-end h-full"
+                                className="group relative flex-1 flex flex-col items-center justify-end h-full min-w-[8px] sm:min-w-0"
                               >
                                 {/* Tooltip */}
                                 <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
@@ -474,13 +493,13 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                       </div>
 
                       {/* X-axis labels */}
-                      <div className="flex justify-between text-[10px] text-stone-500 pt-2 px-1">
+                      <div className="flex justify-between text-[9px] sm:text-[10px] text-stone-500 pt-2 px-1 w-full">
                         <span>12AM</span>
-                        <span>3AM</span>
+                        <span className="hidden sm:inline">3AM</span>
                         <span>6AM</span>
-                        <span>9AM</span>
+                        <span className="hidden sm:inline">9AM</span>
                         <span>12PM</span>
-                        <span>3PM</span>
+                        <span className="hidden sm:inline">3PM</span>
                         <span>6PM</span>
                         <span>9PM</span>
                       </div>
@@ -489,7 +508,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 </div>
 
                 {/* Visitors by Country */}
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-1 min-w-0">
                   <Panel
                     title="Visitors by Country"
                     icon={<Globe2 className="w-4 h-4" />}
@@ -504,20 +523,20 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                       )
                     }
                   >
-                    <div className="space-y-3 pt-1">
+                    <div className="space-y-3 pt-1 min-w-0">
                       {(stats?.countries || []).slice(0, showAllCountries ? 15 : 6).map((c, i) => (
-                        <div key={i} className="flex items-center gap-3 text-xs">
-                          <span className="text-base select-none">{getFlagEmoji(c.code)}</span>
-                          <span className="w-24 truncate text-stone-300 font-medium">
+                        <div key={i} className="flex items-center gap-2.5 sm:gap-3 text-xs min-w-0">
+                          <span className="text-sm sm:text-base select-none flex-shrink-0">{getFlagEmoji(c.code)}</span>
+                          <span className="w-20 sm:w-24 truncate text-stone-300 font-medium">
                             {formatCountryName(c.name)}
                           </span>
-                          <div className="flex-1 h-2 rounded-full bg-[#18241e] overflow-hidden">
+                          <div className="flex-1 h-2 rounded-full bg-[#18241e] overflow-hidden min-w-[40px]">
                             <div
                               style={{ width: `${Math.min(100, Math.max(3, c.percent))}%` }}
                               className="h-full bg-[#D5B16D] rounded-full transition-all duration-500"
                             />
                           </div>
-                          <span className="w-8 text-right font-medium text-stone-400">
+                          <span className="w-8 text-right font-medium text-stone-400 flex-shrink-0">
                             {c.percent}%
                           </span>
                         </div>
@@ -534,7 +553,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
               </div>
 
               {/* Third Row: Top Pages, Devices, Referrers (3 Columns) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 min-w-0">
                 {/* 1. Top Pages */}
                 <Panel
                   title="Top Pages"
@@ -550,19 +569,19 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     )
                   }
                 >
-                  <div className="space-y-3 pt-1">
+                  <div className="space-y-3 pt-1 min-w-0">
                     {(stats?.topPages || []).slice(0, showAllPages ? 10 : 5).map((p, i) => (
-                      <div key={i} className="flex items-center gap-3 text-xs">
-                        <span className="w-28 truncate font-mono text-stone-300" title={p.name}>
+                      <div key={i} className="flex items-center gap-2.5 sm:gap-3 text-xs min-w-0">
+                        <span className="w-24 sm:w-28 truncate font-mono text-stone-300" title={p.name}>
                           {p.name}
                         </span>
-                        <div className="flex-1 h-2 rounded-full bg-[#18241e] overflow-hidden">
+                        <div className="flex-1 h-2 rounded-full bg-[#18241e] overflow-hidden min-w-[40px]">
                           <div
                             style={{ width: `${Math.min(100, Math.max(4, p.percent))}%` }}
                             className="h-full bg-[#D5B16D] rounded-full transition-all"
                           />
                         </div>
-                        <span className="w-8 text-right font-medium text-stone-400">
+                        <span className="w-8 text-right font-medium text-stone-400 flex-shrink-0">
                           {p.percent}%
                         </span>
                       </div>
@@ -577,7 +596,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
                 {/* 2. Devices */}
                 <Panel title="Devices" icon={<Laptop className="w-4 h-4" />}>
-                  <div className="space-y-3.5 pt-1">
+                  <div className="space-y-3 pt-1 min-w-0">
                     {(stats?.devices || []).map((d, i) => {
                       const dt = d.name.toLowerCase();
                       const Icon = dt.includes('mobile')
@@ -586,18 +605,18 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                         ? Tablet
                         : Monitor;
                       return (
-                        <div key={i} className="flex items-center gap-3 text-xs">
+                        <div key={i} className="flex items-center gap-2.5 sm:gap-3 text-xs min-w-0">
                           <Icon className="w-4 h-4 text-stone-400 flex-shrink-0" />
-                          <span className="w-20 truncate text-stone-300 font-medium capitalize">
+                          <span className="w-18 sm:w-20 truncate text-stone-300 font-medium capitalize">
                             {d.name}
                           </span>
-                          <div className="flex-1 h-2 rounded-full bg-[#18241e] overflow-hidden">
+                          <div className="flex-1 h-2 rounded-full bg-[#18241e] overflow-hidden min-w-[40px]">
                             <div
                               style={{ width: `${Math.min(100, Math.max(4, d.percent))}%` }}
                               className="h-full bg-[#D5B16D] rounded-full transition-all"
                             />
                           </div>
-                          <span className="w-8 text-right font-medium text-stone-400">
+                          <span className="w-8 text-right font-medium text-stone-400 flex-shrink-0">
                             {d.percent}%
                           </span>
                         </div>
@@ -626,19 +645,19 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     )
                   }
                 >
-                  <div className="space-y-3 pt-1">
+                  <div className="space-y-3 pt-1 min-w-0">
                     {(stats?.referrers || []).slice(0, showAllReferrers ? 10 : 5).map((r, i) => (
-                      <div key={i} className="flex items-center gap-3 text-xs">
-                        <span className="w-24 truncate text-stone-300 font-medium">
+                      <div key={i} className="flex items-center gap-2.5 sm:gap-3 text-xs min-w-0">
+                        <span className="w-20 sm:w-24 truncate text-stone-300 font-medium">
                           {r.name}
                         </span>
-                        <div className="flex-1 h-2 rounded-full bg-[#18241e] overflow-hidden">
+                        <div className="flex-1 h-2 rounded-full bg-[#18241e] overflow-hidden min-w-[40px]">
                           <div
                             style={{ width: `${Math.min(100, Math.max(4, r.percent))}%` }}
                             className="h-full bg-[#D5B16D] rounded-full transition-all"
                           />
                         </div>
-                        <span className="w-8 text-right font-medium text-stone-400">
+                        <span className="w-8 text-right font-medium text-stone-400 flex-shrink-0">
                           {r.percent}%
                         </span>
                       </div>
@@ -653,16 +672,16 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
               </div>
 
               {/* Status and Privacy Footer Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div className="rounded-xl border border-white/[0.08] bg-[#111614] p-4 flex items-center gap-3.5">
-                  <div className="p-2.5 rounded-lg bg-[#18241e] text-emerald-400 border border-emerald-900/40">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 pt-1 min-w-0">
+                <div className="rounded-xl border border-white/[0.08] bg-[#111614] p-3.5 sm:p-4 flex items-center gap-3 min-w-0">
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-[#18241e] text-emerald-400 border border-emerald-900/40 flex-shrink-0">
                     <Check className="w-4 h-4" />
                   </div>
-                  <div>
-                    <div className="text-xs font-semibold text-stone-200">
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-stone-200 truncate">
                       Last updated
                     </div>
-                    <div className="text-xs text-stone-400">
+                    <div className="text-[11px] sm:text-xs text-stone-400 truncate">
                       • {stats?.lastUpdated ? new Date(stats.lastUpdated).toLocaleString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -673,21 +692,21 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                         timeZoneName: 'short',
                       }) : 'Just now'}
                     </div>
-                    <div className="text-[11px] text-stone-500 mt-0.5">
+                    <div className="text-[10px] sm:text-[11px] text-stone-500 mt-0.5 truncate">
                       {stats?.isStale ? 'Showing cached statistics (live refresh delayed)' : 'Data updates automatically while panel is open'}
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-white/[0.08] bg-[#111614] p-4 flex items-center gap-3.5">
-                  <div className="p-2.5 rounded-lg bg-[#18241e] text-[#D5B16D] border border-[#2e4034]/60">
+                <div className="rounded-xl border border-white/[0.08] bg-[#111614] p-3.5 sm:p-4 flex items-center gap-3 min-w-0">
+                  <div className="p-2 sm:p-2.5 rounded-lg bg-[#18241e] text-[#D5B16D] border border-[#2e4034]/60 flex-shrink-0">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
-                  <div>
-                    <div className="text-xs font-semibold text-stone-200">
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-stone-200 truncate">
                       Privacy Protected Analytics
                     </div>
-                    <div className="text-xs text-stone-400">
+                    <div className="text-[11px] sm:text-xs text-stone-400 leading-snug">
                       Visitor data is aggregated and privacy protected. Detailed visitor intelligence is strictly restricted to authenticated administrators.
                     </div>
                   </div>
@@ -698,20 +717,21 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
           {/* TAB 2: RECENT VISITORS (ADMIN ONLY) */}
           {activeTab === 'visitors' && isAdmin && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6 min-w-0">
               {/* Search & Filters Bar */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
+              <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 min-w-0">
+                <div className="relative flex-1 min-w-0">
                   <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={visitorSearch}
                     onChange={e => {
+                      if (propOnVisitorSearch) propOnVisitorSearch(e.target.value);
                       setVisitorSearch(e.target.value);
                       setPage(1);
                     }}
                     placeholder="Search by IP, location, page, device or referrer..."
-                    className="w-full bg-[#111614] border border-white/[0.09] focus:border-[#D5B16D] rounded-xl pl-9 pr-4 py-2 text-xs sm:text-sm text-stone-100 placeholder-stone-500 focus:outline-none"
+                    className="w-full bg-[#111614] border border-white/[0.09] focus:border-[#D5B16D] rounded-xl pl-9 pr-8 py-2 text-xs sm:text-sm text-stone-100 placeholder-stone-500 focus:outline-none"
                   />
                   {visitorSearch && (
                     <button
@@ -723,7 +743,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                   <select
                     value={countryFilter}
                     onChange={e => {
@@ -731,7 +751,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                       setPage(1);
                     }}
                     aria-label="Filter by country"
-                    className="bg-[#111614] border border-white/[0.09] text-xs text-stone-300 rounded-xl px-3 py-2 focus:outline-none focus:border-[#D5B16D]"
+                    className="bg-[#111614] border border-white/[0.09] text-xs text-stone-300 rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-[#D5B16D]"
                   >
                     <option value="all">All Countries</option>
                     <option value="India">India</option>
@@ -748,7 +768,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                       setPage(1);
                     }}
                     aria-label="Filter by device"
-                    className="bg-[#111614] border border-white/[0.09] text-xs text-stone-300 rounded-xl px-3 py-2 focus:outline-none focus:border-[#D5B16D]"
+                    className="bg-[#111614] border border-white/[0.09] text-xs text-stone-300 rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-[#D5B16D]"
                   >
                     <option value="all">All Devices</option>
                     <option value="mobile">Mobile</option>
@@ -759,7 +779,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
               </div>
 
               {visitorsError && (
-                <div className="p-4 rounded-xl border border-red-900/50 bg-red-950/20 text-red-300 text-xs flex items-center justify-between">
+                <div className="p-3 sm:p-4 rounded-xl border border-red-900/50 bg-red-950/20 text-red-300 text-xs flex items-center justify-between">
                   <span>{visitorsError}</span>
                   <button
                     onClick={refetchVisitors}
@@ -770,18 +790,18 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 </div>
               )}
 
-              {/* Visitors Table */}
-              <div className="rounded-xl border border-white/[0.09] bg-[#111614] overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-stone-300">
+              {/* Visitors Table Container (Horizontally Scrollable, Never Out of Bounds) */}
+              <div className="rounded-xl border border-white/[0.09] bg-[#111614] overflow-hidden min-w-0 w-full max-w-full">
+                <div className="overflow-x-auto max-w-full">
+                  <table className="w-full text-left text-xs text-stone-300 min-w-[550px]">
                     <thead className="bg-[#161e1a] text-stone-400 font-semibold border-b border-white/[0.08]">
                       <tr>
-                        <th className="py-3 px-4">Time</th>
-                        <th className="py-3 px-4">Visitor</th>
-                        <th className="py-3 px-4">Location</th>
-                        <th className="py-3 px-4">Page</th>
-                        <th className="py-3 px-4">Referrer</th>
-                        <th className="py-3 px-4">Device</th>
+                        <th className="py-3 px-3 sm:px-4">Time</th>
+                        <th className="py-3 px-3 sm:px-4">Visitor</th>
+                        <th className="py-3 px-3 sm:px-4">Location</th>
+                        <th className="py-3 px-3 sm:px-4">Page</th>
+                        <th className="py-3 px-3 sm:px-4">Referrer</th>
+                        <th className="py-3 px-3 sm:px-4">Device</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.05]">
@@ -798,30 +818,30 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                                 : 'hover:bg-white/[0.02]'
                             }`}
                           >
-                            <td className="py-3 px-4 whitespace-nowrap text-stone-400 font-mono">
+                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap text-stone-400 font-mono">
                               {new Date(v.visitedAt).toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit',
                               })}
                             </td>
-                            <td className="py-3 px-4 whitespace-nowrap">
-                              <div className="flex items-center gap-2">
+                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5 sm:gap-2">
                                 <span className="w-5 h-5 rounded-full bg-emerald-900/80 border border-emerald-600/40 flex items-center justify-center text-[10px] text-emerald-300 font-bold">
                                   #{avatarHash.slice(0, 1).toUpperCase()}
                                 </span>
                                 <span className="font-mono text-[#D5B16D]">#{avatarHash}</span>
                               </div>
                             </td>
-                            <td className="py-3 px-4 whitespace-nowrap">
+                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
                               <span className="text-stone-200">{v.location}</span>
                             </td>
-                            <td className="py-3 px-4 whitespace-nowrap">
+                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
                               <span className="font-mono text-stone-300">{v.page}</span>
                             </td>
-                            <td className="py-3 px-4 whitespace-nowrap">
-                              <span className="text-stone-400">{v.referrer}</span>
+                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
+                              <span className="text-stone-400 truncate max-w-[140px] block">{v.referrer}</span>
                             </td>
-                            <td className="py-3 px-4 whitespace-nowrap">
+                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
                               <span className="text-stone-400">{v.device}</span>
                             </td>
                           </tr>
@@ -839,28 +859,28 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 </div>
 
                 {/* Pagination Controls */}
-                <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.08] bg-[#0E1210]/60 text-xs text-stone-400">
-                  <div>
+                <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.08] bg-[#0E1210]/60 text-xs text-stone-400 min-w-0">
+                  <div className="truncate">
                     Showing {filteredVisitors.length > 0 ? (page - 1) * 10 + 1 : 0}–
                     {Math.min(page * 10, filteredVisitors.length)} of {filteredVisitors.length} visits
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
                       onClick={() => setPage(Math.max(1, page - 1))}
                       disabled={page === 1}
                       aria-label="Previous page"
-                      className="p-1.5 rounded-lg border border-white/10 hover:border-white/20 disabled:opacity-30"
+                      className="p-1 sm:p-1.5 rounded-lg border border-white/10 hover:border-white/20 disabled:opacity-30"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    <span className="px-2 font-mono text-stone-300">
+                    <span className="px-1.5 sm:px-2 font-mono text-stone-300 text-xs">
                       {page} / {totalPages}
                     </span>
                     <button
                       onClick={() => setPage(Math.min(totalPages, page + 1))}
                       disabled={page >= totalPages}
                       aria-label="Next page"
-                      className="p-1.5 rounded-lg border border-white/10 hover:border-white/20 disabled:opacity-30"
+                      className="p-1 sm:p-1.5 rounded-lg border border-white/10 hover:border-white/20 disabled:opacity-30"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -870,22 +890,22 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
               {/* Selected Visitor Detail Inspector Panel */}
               {selectedVisitor && (
-                <div className="rounded-xl border border-[#2e4235] bg-[#121915] p-5 shadow-xl relative animate-in fade-in-0 duration-150">
-                  <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-emerald-950 border border-emerald-700/50 flex items-center justify-center text-sm font-bold text-emerald-400">
+                <div className="rounded-xl border border-[#2e4235] bg-[#121915] p-4 sm:p-5 shadow-xl relative animate-in fade-in-0 duration-150 min-w-0 w-full">
+                  <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08] mb-4 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-emerald-950 border border-emerald-700/50 flex items-center justify-center text-xs sm:text-sm font-bold text-emerald-400 flex-shrink-0">
                         #{selectedVisitor.visitorId.slice(-4)}
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-stone-100 font-mono">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs sm:text-sm font-bold text-stone-100 font-mono">
                             #{selectedVisitor.visitorId.slice(-6)}
                           </span>
-                          <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800/40">
+                          <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800/40">
                             {selectedVisitor.userId ? '• Authenticated Member' : '• Visitor Session'}
                           </span>
                         </div>
-                        <div className="text-xs text-stone-400 mt-0.5">
+                        <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">
                           Visited{' '}
                           {new Date(selectedVisitor.visitedAt).toLocaleString('en-US', {
                             dateStyle: 'medium',
@@ -898,26 +918,26 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <button
                       onClick={() => setSelectedVisitor(null)}
                       aria-label="Close inspector panel"
-                      className="text-stone-400 hover:text-white p-1 rounded"
+                      className="text-stone-400 hover:text-white p-1 rounded flex-shrink-0 ml-2"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
 
                   {/* 3-Column Inspector Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 text-xs min-w-0">
                     {/* Col 1 */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0">
                       <div>
                         <span className="text-stone-500 block">Location</span>
-                        <span className="text-stone-200 font-medium">
+                        <span className="text-stone-200 font-medium truncate block">
                           {selectedVisitor.location} (Approximate)
                         </span>
                       </div>
                       <div>
                         <span className="text-stone-500 block">IP Address</span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="font-mono text-stone-200">
+                        <div className="flex items-center gap-2 mt-0.5 min-w-0">
+                          <span className="font-mono text-stone-200 truncate">
                             {selectedVisitor.ipAddress || 'Unavailable'}
                           </span>
                           {selectedVisitor.ipAddress && selectedVisitor.ipAddress !== 'Unknown' && (
@@ -926,7 +946,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                                 handleCopyText(selectedVisitor.ipAddress!, 'IP Address', 'ip')
                               }
                               title="Copy IP"
-                              className="text-stone-400 hover:text-[#D5B16D]"
+                              className="text-stone-400 hover:text-[#D5B16D] flex-shrink-0"
                             >
                               {copiedKey === 'ip' ? (
                                 <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -939,54 +959,54 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                       </div>
                       <div>
                         <span className="text-stone-500 block">Referrer</span>
-                        <span className="text-stone-200 truncate block">
+                        <span className="text-stone-200 truncate block break-all">
                           {selectedVisitor.referrer}
                         </span>
                       </div>
                     </div>
 
                     {/* Col 2 */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0">
                       <div>
                         <span className="text-stone-500 block">Device</span>
-                        <span className="text-stone-200 font-medium">
+                        <span className="text-stone-200 font-medium truncate block">
                           {selectedVisitor.device}
                         </span>
                       </div>
                       <div>
                         <span className="text-stone-500 block">Browser</span>
-                        <span className="text-stone-200 font-medium">
+                        <span className="text-stone-200 font-medium truncate block">
                           {selectedVisitor.browser}
                         </span>
                       </div>
                       <div>
                         <span className="text-stone-500 block">Operating System</span>
-                        <span className="text-stone-200 font-medium">{selectedVisitor.os}</span>
+                        <span className="text-stone-200 font-medium truncate block">{selectedVisitor.os}</span>
                       </div>
                       <div>
                         <span className="text-stone-500 block">Screen Resolution</span>
-                        <span className="text-stone-200 font-mono">
+                        <span className="text-stone-200 font-mono truncate block">
                           {selectedVisitor.screenResolution || 'Unavailable'}
                         </span>
                       </div>
                     </div>
 
                     {/* Col 3 */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0">
                       <div>
                         <span className="text-stone-500 block">Page Visited</span>
-                        <span className="text-[#D5B16D] font-mono break-all block">
+                        <span className="text-[#D5B16D] font-mono break-all block truncate">
                           {selectedVisitor.page}
                         </span>
                       </div>
                       <div>
                         <span className="text-stone-500 block">Language</span>
-                        <span className="text-stone-200">{selectedVisitor.language}</span>
+                        <span className="text-stone-200 truncate block">{selectedVisitor.language}</span>
                       </div>
                       <div>
                         <span className="text-stone-500 block">Session ID</span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="font-mono text-stone-300 truncate max-w-[160px]">
+                        <div className="flex items-center gap-2 mt-0.5 min-w-0">
+                          <span className="font-mono text-stone-300 truncate max-w-[150px] block">
                             {selectedVisitor.sessionId || 'Unavailable'}
                           </span>
                           {selectedVisitor.sessionId && (
@@ -995,7 +1015,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                                 handleCopyText(selectedVisitor.sessionId!, 'Session ID', 'sess')
                               }
                               title="Copy Session ID"
-                              className="text-stone-400 hover:text-[#D5B16D]"
+                              className="text-stone-400 hover:text-[#D5B16D] flex-shrink-0"
                             >
                               {copiedKey === 'sess' ? (
                                 <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -1008,8 +1028,8 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                       </div>
                       <div>
                         <span className="text-stone-500 block">Visitor ID</span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="font-mono text-stone-300 truncate max-w-[160px]">
+                        <div className="flex items-center gap-2 mt-0.5 min-w-0">
+                          <span className="font-mono text-stone-300 truncate max-w-[150px] block">
                             {selectedVisitor.visitorId}
                           </span>
                           <button
@@ -1017,7 +1037,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                               handleCopyText(selectedVisitor.visitorId, 'Visitor ID', 'vis')
                             }
                             title="Copy Visitor ID"
-                            className="text-stone-400 hover:text-[#D5B16D]"
+                            className="text-stone-400 hover:text-[#D5B16D] flex-shrink-0"
                           >
                             {copiedKey === 'vis' ? (
                               <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -1036,66 +1056,66 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
           {/* TAB 3: INSIGHTS & READING ENGAGEMENT */}
           {activeTab === 'insights' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4.5">
+            <div className="space-y-4 sm:space-y-6 min-w-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 min-w-0">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3.5 sm:p-4.5 min-w-0">
                   <span className="p-2 rounded-lg bg-[#18241e] text-[#D5B16D] inline-block mb-3">
                     <BookOpen className="w-4 h-4" />
                   </span>
-                  <div className="text-2xl font-bold text-stone-100">
+                  <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
                     {number(stats?.readingEngagement?.bookViews ?? 0)}
                   </div>
-                  <div className="text-xs text-stone-400 mt-1">Book Opens & Discovery</div>
-                  <div className="text-[10px] text-stone-500 mt-0.5">
+                  <div className="text-xs text-stone-400 mt-1 truncate">Book Opens & Discovery</div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
                     Readers actively opening titles in the digital library
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4.5">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3.5 sm:p-4.5 min-w-0">
                   <span className="p-2 rounded-lg bg-[#18241e] text-emerald-400 inline-block mb-3">
                     <Activity className="w-4 h-4" />
                   </span>
-                  <div className="text-2xl font-bold text-stone-100">
+                  <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
                     {number(stats?.readingEngagement?.readingProgressUpdates ?? 0)}
                   </div>
-                  <div className="text-xs text-stone-400 mt-1">Chapters Completed</div>
-                  <div className="text-[10px] text-stone-500 mt-0.5">
+                  <div className="text-xs text-stone-400 mt-1 truncate">Chapters Completed</div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
                     Verified reading room milestones
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4.5">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3.5 sm:p-4.5 min-w-0">
                   <span className="p-2 rounded-lg bg-[#18241e] text-sky-400 inline-block mb-3">
                     <Users className="w-4 h-4" />
                   </span>
-                  <div className="text-2xl font-bold text-stone-100">
+                  <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
                     {number(stats?.readingEngagement?.discussions ?? 0)}
                   </div>
-                  <div className="text-xs text-stone-400 mt-1">Community Discussions</div>
-                  <div className="text-[10px] text-stone-500 mt-0.5">
+                  <div className="text-xs text-stone-400 mt-1 truncate">Community Discussions</div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
                     Thoughtful notes, comments & reflections
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4.5">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3.5 sm:p-4.5 min-w-0">
                   <span className="p-2 rounded-lg bg-[#18241e] text-amber-400 inline-block mb-3">
                     <Sparkles className="w-4 h-4" />
                   </span>
-                  <div className="text-2xl font-bold text-stone-100">
+                  <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
                     {number(stats?.readingEngagement?.groupJoins ?? 0)}
                   </div>
-                  <div className="text-xs text-stone-400 mt-1">Reading Circles Joined</div>
-                  <div className="text-[10px] text-stone-500 mt-0.5">
+                  <div className="text-xs text-stone-400 mt-1 truncate">Reading Circles Joined</div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
                     New collective reading memberships
                   </div>
                 </div>
               </div>
 
               {/* Engagement Insights summary */}
-              <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-5">
-                <h4 className="text-sm font-semibold text-stone-100 mb-2 flex items-center gap-2">
-                  <Clock3 className="w-4 h-4 text-[#D5B16D]" />
-                  Peak Reading & Quiet Hours
+              <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 sm:p-5 min-w-0">
+                <h4 className="text-xs sm:text-sm font-semibold text-stone-100 mb-2 flex items-center gap-2">
+                  <Clock3 className="w-4 h-4 text-[#D5B16D] flex-shrink-0" />
+                  <span>Peak Reading & Quiet Hours</span>
                 </h4>
                 <p className="text-xs text-stone-400 leading-relaxed max-w-2xl">
                   Sahadhyayi readers engage deeply during late evening quiet hours (8:00 PM – 11:30 PM IST). 
@@ -1108,7 +1128,12 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+
+  return modalContent;
 };
 
 export default CommunityPulseDialog;
-
