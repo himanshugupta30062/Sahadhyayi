@@ -174,10 +174,10 @@ export const EnhancedSocialFeed = () => {
         marginLoading ? (
           <div className="flex justify-center py-8"><LoadingSpinner /></div>
         ) : marginNotes.length === 0 ? (
-          <Card className="bg-card border-border rounded-2xl p-8 text-center">
-            <Quote className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm font-semibold">No margin notes yet</p>
-            <p className="text-xs text-muted-foreground mt-1">Open any book in the reader to highlight quotes and leave margin notes.</p>
+          <Card className="bg-[#111614] border-[#29332D] text-[#F3F0E7] rounded-2xl p-8 text-center">
+            <Quote className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+            <p className="text-sm font-semibold text-[#F3F0E7]">No margin notes yet</p>
+            <p className="text-xs text-[#A5ADA6] mt-1">Open any book in the reader to highlight quotes and leave margin notes.</p>
           </Card>
         ) : (
           <div className="space-y-4">
@@ -190,10 +190,10 @@ export const EnhancedSocialFeed = () => {
         threadsLoading ? (
           <div className="flex justify-center py-8"><LoadingSpinner /></div>
         ) : spoilerThreads.length === 0 ? (
-          <Card className="bg-card border-border rounded-2xl p-8 text-center">
-            <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm font-semibold">No spoiler-safe threads yet</p>
-            <p className="text-xs text-muted-foreground mt-1">Start a chapter discussion from the Threads tab.</p>
+          <Card className="bg-[#111614] border-[#29332D] text-[#F3F0E7] rounded-2xl p-8 text-center">
+            <Lock className="w-8 h-8 text-indigo-400 mx-auto mb-2" />
+            <p className="text-sm font-semibold text-[#F3F0E7]">No spoiler-safe threads yet</p>
+            <p className="text-xs text-[#A5ADA6] mt-1">Start a chapter discussion from the Threads tab.</p>
           </Card>
         ) : (
           <div className="space-y-4">
@@ -207,24 +207,24 @@ export const EnhancedSocialFeed = () => {
           <FeedComposer />
 
           {error ? (
-            <Card className="bg-card border-destructive/20 rounded-2xl">
+            <Card className="bg-[#111614] border-destructive/40 text-[#F3F0E7] rounded-2xl">
               <CardContent className="p-8 text-center">
                 <p className="text-sm text-destructive font-medium mb-3">
                   Unable to load feed posts: {(error as Error)?.message || 'Unknown network error'}
                 </p>
-                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                <Button variant="outline" size="sm" onClick={() => refetch()} className="border-[#29332D] bg-[#16211A] text-[#F3F0E7] hover:bg-[#1C3024]">
                   Retry
                 </Button>
               </CardContent>
             </Card>
           ) : posts.length === 0 ? (
-            <Card className="bg-card border-border rounded-2xl">
+            <Card className="bg-[#111614] border-[#29332D] text-[#F3F0E7] rounded-2xl">
               <CardContent className="p-10 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
-                  <MessageCircle className="w-8 h-8 text-brand-primary" />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#1C3024] border border-[#315C43]/50 flex items-center justify-center text-[#D5B16D]">
+                  <MessageCircle className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-1">No posts yet</h3>
-                <p className="text-sm text-muted-foreground">Be the first to share something with the community.</p>
+                <h3 className="text-lg font-serif font-bold text-[#F3F0E7] mb-1">No posts yet</h3>
+                <p className="text-sm text-[#A5ADA6]">Be the first to share something with the community.</p>
               </CardContent>
             </Card>
           ) : (
