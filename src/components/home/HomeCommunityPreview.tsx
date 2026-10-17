@@ -27,28 +27,28 @@ export const HomeCommunityPreview: React.FC = () => {
 
   return (
     <section
-      className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#0B0D0C] border-b border-[#29332D] text-[#F3F0E7]"
+      className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F4EFEA] dark:bg-[#0B0D0C] border-b border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200"
       aria-label="Community Preview"
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#161D19] border border-[#29332D] text-xs font-semibold text-[#D5B16D] mb-4">
-              <Users className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D] text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D] mb-4 shadow-2xs">
+              <Users className="w-3.5 h-3.5 text-[#1C442D] dark:text-[#D5B16D]" />
               <span>Living Reader Network</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#F3F0E7] tracking-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight">
               Reading is better together
             </h2>
-            <p className="mt-2.5 text-sm sm:text-base text-[#A5ADA6] leading-relaxed">
+            <p className="mt-2.5 text-sm sm:text-base text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">
               Share what you're reading, exchange ideas, and find people who see the world through books.
             </p>
           </div>
 
           <Link
             to="/social"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#D5B16D] hover:text-[#e4c688] transition-colors self-start md:self-end group"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#1C442D] hover:text-[#2D5A40] dark:text-[#D5B16D] dark:hover:text-[#e4c688] transition-colors self-start md:self-end group"
           >
             <span>Explore full community</span>
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -58,20 +58,20 @@ export const HomeCommunityPreview: React.FC = () => {
         {/* 3-Column Editorial Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Pillar 1: Reading Groups */}
-          <div className="flex flex-col rounded-2xl bg-[#111413] border border-[#26302A] p-6 sm:p-7 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-[#26302A] mb-5">
+          <div className="flex flex-col rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E2D9] dark:border-[#26302A] p-6 sm:p-7 shadow-[0_2px_12px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-[#E8E2D9] dark:border-[#26302A] mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#181C1A] text-[#D5B16D] border border-[#2B352E] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#EBF2EC] dark:bg-[#181C1A] text-[#1C442D] dark:text-[#D5B16D] border border-[#C8DBCB] dark:border-[#2B352E] flex items-center justify-center">
                   <Users className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#F3F0E7] leading-tight">Reading Groups</h3>
-                  <p className="text-xs text-[#A5ADA6]">Book circles & clubs</p>
+                  <h3 className="text-base font-bold text-[#1C201D] dark:text-[#F3F0E7] leading-tight">Reading Groups</h3>
+                  <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">Book circles & clubs</p>
                 </div>
               </div>
               <Link
                 to="/groups"
-                className="text-xs font-semibold text-[#D5B16D] hover:text-[#e4c688] transition-colors"
+                className="text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D] hover:underline transition-colors"
               >
                 Browse all
               </Link>
@@ -82,21 +82,21 @@ export const HomeCommunityPreview: React.FC = () => {
               {loadingGroups ? (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-[#161D19] border border-[#29332D]/60 animate-pulse space-y-2">
-                      <div className="h-4 bg-[#212C24] rounded w-3/5" />
-                      <div className="h-3 bg-[#212C24] rounded w-4/5" />
+                    <div key={i} className="p-3.5 rounded-xl bg-[#FAF7F2] dark:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D]/60 animate-pulse space-y-2">
+                      <div className="h-4 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-3/5" />
+                      <div className="h-3 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-4/5" />
                     </div>
                   ))}
                 </div>
               ) : groups.length === 0 ? (
-                <div className="py-8 px-4 text-center rounded-xl bg-[#161D19]/40 border border-dashed border-[#29332D]">
-                  <Users className="w-8 h-8 text-[#A5ADA6]/60 mx-auto mb-2.5" />
-                  <p className="text-xs font-medium text-[#F3F0E7]">No groups created yet</p>
-                  <p className="text-[11px] text-[#A5ADA6] mt-1 mb-4">
+                <div className="py-8 px-4 text-center rounded-xl bg-[#FAF7F2] dark:bg-[#161D19]/40 border border-dashed border-[#E8E2D9] dark:border-[#29332D]">
+                  <Users className="w-8 h-8 text-[#636B65]/60 dark:text-[#A5ADA6]/60 mx-auto mb-2.5" />
+                  <p className="text-xs font-medium text-[#1C201D] dark:text-[#F3F0E7]">No groups created yet</p>
+                  <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-4">
                     Be the first reader to start a discussion circle for your favorite genre.
                   </p>
                   <Link to="/groups">
-                    <Button size="sm" variant="outline" className="text-xs border-[#29332D] bg-[#161D19] text-[#F3F0E7] hover:bg-[#1C2620]">
+                    <Button size="sm" variant="outline" className="text-xs border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1C2620]">
                       Explore Groups
                     </Button>
                   </Link>
@@ -109,24 +109,24 @@ export const HomeCommunityPreview: React.FC = () => {
                       <Link
                         key={group.id}
                         to={`/groups`}
-                        className="group block p-3.5 rounded-xl bg-[#161D19]/60 hover:bg-[#1B251F] border border-[#29332D] hover:border-[#334E3C] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
+                        className="group block p-3.5 rounded-xl bg-[#FAF7F2] hover:bg-[#F0EAE1] dark:bg-[#161D19]/60 dark:hover:bg-[#1B251F] border border-[#E8E2D9] hover:border-[#D4C9BC] dark:border-[#29332D] dark:hover:border-[#334E3C] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="text-sm font-semibold text-[#F3F0E7] group-hover:text-[#D5B16D] transition-colors line-clamp-1">
+                          <h4 className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors line-clamp-1">
                             {group.name}
                           </h4>
-                          <span className="shrink-0 text-[10px] font-medium text-[#A5ADA6] bg-[#111614] px-2 py-0.5 rounded-full border border-[#29332D]">
+                          <span className="shrink-0 text-[10px] font-medium text-[#636B65] dark:text-[#A5ADA6] bg-white dark:bg-[#111614] px-2 py-0.5 rounded-full border border-[#E8E2D9] dark:border-[#29332D]">
                             {memberCount} {memberCount === 1 ? 'member' : 'members'}
                           </span>
                         </div>
                         {group.description && (
-                          <p className="text-xs text-[#A5ADA6] mt-1.5 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mt-1.5 line-clamp-2 leading-relaxed">
                             {group.description}
                           </p>
                         )}
-                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[#29332D]/40">
-                          <span className="text-[11px] text-[#A5ADA6]/70">Discussion circle</span>
-                          <span className="text-[11px] font-semibold text-[#D5B16D] group-hover:text-[#e4c688] flex items-center gap-1">
+                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[#E8E2D9] dark:border-[#29332D]/40">
+                          <span className="text-[11px] text-[#636B65]/70 dark:text-[#A5ADA6]/70">Discussion circle</span>
+                          <span className="text-[11px] font-semibold text-[#1C442D] dark:text-[#D5B16D] group-hover:underline flex items-center gap-1">
                             View group <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
                           </span>
                         </div>
@@ -136,10 +136,10 @@ export const HomeCommunityPreview: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-[#29332D]/40">
+              <div className="pt-3 border-t border-[#E8E2D9] dark:border-[#29332D]/40">
                 <Link
                   to="/groups"
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A5ADA6] hover:text-[#F3F0E7] transition-colors group"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] transition-colors group"
                 >
                   <span>Explore reading groups</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -149,21 +149,21 @@ export const HomeCommunityPreview: React.FC = () => {
           </div>
 
           {/* Pillar 2: Live Reading Rooms */}
-          <div className="flex flex-col rounded-2xl bg-[#111413] border border-[#26302A] p-6 sm:p-7 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-[#26302A] mb-5">
+          <div className="flex flex-col rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E2D9] dark:border-[#26302A] p-6 sm:p-7 shadow-[0_2px_12px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-[#E8E2D9] dark:border-[#26302A] mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#181C1A] text-emerald-400 border border-[#26382E] flex items-center justify-center relative">
+                <div className="w-9 h-9 rounded-xl bg-[#EBF2EC] dark:bg-[#181C1A] text-emerald-600 dark:text-emerald-400 border border-[#C8DBCB] dark:border-[#26382E] flex items-center justify-center relative">
                   <Radio className="w-4 h-4" />
                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#F3F0E7] leading-tight">Live Reading Sprints</h3>
-                  <p className="text-xs text-[#A5ADA6]">Silent co-reading rooms</p>
+                  <h3 className="text-base font-bold text-[#1C201D] dark:text-[#F3F0E7] leading-tight">Live Reading Sprints</h3>
+                  <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">Silent co-reading rooms</p>
                 </div>
               </div>
               <Link
                 to="/social?tab=rooms"
-                className="text-xs font-semibold text-[#D5B16D] hover:text-[#e4c688] transition-colors"
+                className="text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D] hover:underline transition-colors"
               >
                 Join sprint
               </Link>
@@ -174,21 +174,21 @@ export const HomeCommunityPreview: React.FC = () => {
               {loadingRooms ? (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-[#161D19] border border-[#29332D]/60 animate-pulse space-y-2">
-                      <div className="h-4 bg-[#212C24] rounded w-3/5" />
-                      <div className="h-3 bg-[#212C24] rounded w-4/5" />
+                    <div key={i} className="p-3.5 rounded-xl bg-[#FAF7F2] dark:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D]/60 animate-pulse space-y-2">
+                      <div className="h-4 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-3/5" />
+                      <div className="h-3 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-4/5" />
                     </div>
                   ))}
                 </div>
               ) : rooms.length === 0 ? (
-                <div className="py-8 px-4 text-center rounded-xl bg-[#141816]/60 border border-dashed border-[#26302A]">
-                  <Clock className="w-8 h-8 text-[#A5ADA6]/60 mx-auto mb-2.5" />
-                  <p className="text-xs font-medium text-[#F3F0E7]">No live sprint running right now</p>
-                  <p className="text-[11px] text-[#A5ADA6] mt-1 mb-4">
+                <div className="py-8 px-4 text-center rounded-xl bg-[#FAF7F2] dark:bg-[#141816]/60 border border-dashed border-[#E8E2D9] dark:border-[#26302A]">
+                  <Clock className="w-8 h-8 text-[#636B65]/60 dark:text-[#A5ADA6]/60 mx-auto mb-2.5" />
+                  <p className="text-xs font-medium text-[#1C201D] dark:text-[#F3F0E7]">No live sprint running right now</p>
+                  <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-4">
                     Open a room for any book in your library and invite fellow readers to sprint with you.
                   </p>
                   <Link to="/social?tab=rooms">
-                    <Button size="sm" variant="outline" className="text-xs border-[#26302A] bg-[#141816] text-[#F3F0E7] hover:bg-[#1C221F]">
+                    <Button size="sm" variant="outline" className="text-xs border-[#E8E2D9] dark:border-[#26302A] bg-white dark:bg-[#141816] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1C221F]">
                       Open Reading Room
                     </Button>
                   </Link>
@@ -201,22 +201,22 @@ export const HomeCommunityPreview: React.FC = () => {
                       <Link
                         key={room.id}
                         to={`/social?tab=rooms`}
-                        className="group block p-3.5 rounded-xl bg-[#141816] hover:bg-[#19201C] border border-[#26302A] hover:border-[#38483D] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
+                        className="group block p-3.5 rounded-xl bg-[#FAF7F2] hover:bg-[#F0EAE1] dark:bg-[#141816] dark:hover:bg-[#19201C] border border-[#E8E2D9] hover:border-[#D4C9BC] dark:border-[#26302A] dark:hover:border-[#38483D] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
                       >
                         <div className="flex items-center gap-2 mb-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                          <h4 className="text-sm font-semibold text-[#F3F0E7] group-hover:text-[#D5B16D] transition-colors truncate">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                          <h4 className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors truncate">
                             {room.name}
                           </h4>
                         </div>
                         {book ? (
-                          <div className="flex items-center gap-2 text-xs text-[#A5ADA6]">
-                            <BookOpen className="w-3.5 h-3.5 text-[#D5B16D] shrink-0" />
+                          <div className="flex items-center gap-2 text-xs text-[#636B65] dark:text-[#A5ADA6]">
+                            <BookOpen className="w-3.5 h-3.5 text-[#B68A35] dark:text-[#D5B16D] shrink-0" />
                             <span className="truncate">{book.title}</span>
-                            {book.author && <span className="text-[#A5ADA6]/60 shrink-0">· {book.author}</span>}
+                            {book.author && <span className="text-[#636B65]/70 dark:text-[#A5ADA6]/60 shrink-0">· {book.author}</span>}
                           </div>
                         ) : (
-                          <p className="text-xs text-[#A5ADA6]">Open co-reading sprint</p>
+                          <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">Open co-reading sprint</p>
                         )}
                       </Link>
                     );
@@ -224,10 +224,10 @@ export const HomeCommunityPreview: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-[#26302A]">
+              <div className="pt-3 border-t border-[#E8E2D9] dark:border-[#26302A]">
                 <Link
                   to="/social?tab=rooms"
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A5ADA6] hover:text-[#F3F0E7] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] rounded"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] rounded"
                 >
                   <span>See all reading rooms</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -237,20 +237,20 @@ export const HomeCommunityPreview: React.FC = () => {
           </div>
 
           {/* Pillar 3: Reader Marginalia */}
-          <div className="flex flex-col rounded-2xl bg-[#111413] border border-[#26302A] p-6 sm:p-7 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-[#26302A] mb-5">
+          <div className="flex flex-col rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E2D9] dark:border-[#26302A] p-6 sm:p-7 shadow-[0_2px_12px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-[#E8E2D9] dark:border-[#26302A] mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#1D1B16] text-[#D5B16D] border border-[#383020] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#FBF4E6] dark:bg-[#1D1B16] text-[#B68A35] dark:text-[#D5B16D] border border-[#E8D9BF] dark:border-[#383020] flex items-center justify-center">
                   <Quote className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#F3F0E7] leading-tight">Public Marginalia</h3>
-                  <p className="text-xs text-[#A5ADA6]">Notes from the margins</p>
+                  <h3 className="text-base font-bold text-[#1C201D] dark:text-[#F3F0E7] leading-tight">Public Marginalia</h3>
+                  <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">Notes from the margins</p>
                 </div>
               </div>
               <Link
                 to="/social?tab=margins"
-                className="text-xs font-semibold text-[#D5B16D] hover:text-[#e4c688] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] rounded"
+                className="text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D] hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] rounded"
               >
                 View notes
               </Link>
@@ -261,21 +261,21 @@ export const HomeCommunityPreview: React.FC = () => {
               {loadingMargins ? (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-[#161D19] border border-[#29332D]/60 animate-pulse space-y-2">
-                      <div className="h-4 bg-[#212C24] rounded w-3/5" />
-                      <div className="h-3 bg-[#212C24] rounded w-4/5" />
+                    <div key={i} className="p-3.5 rounded-xl bg-[#FAF7F2] dark:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D]/60 animate-pulse space-y-2">
+                      <div className="h-4 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-3/5" />
+                      <div className="h-3 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-4/5" />
                     </div>
                   ))}
                 </div>
               ) : margins.length === 0 ? (
-                <div className="py-8 px-4 text-center rounded-xl bg-[#141816]/60 border border-dashed border-[#26302A]">
-                  <Quote className="w-8 h-8 text-[#A5ADA6]/60 mx-auto mb-2.5" />
-                  <p className="text-xs font-medium text-[#F3F0E7]">No public margin notes yet</p>
-                  <p className="text-[11px] text-[#A5ADA6] mt-1 mb-4">
+                <div className="py-8 px-4 text-center rounded-xl bg-[#FAF7F2] dark:bg-[#141816]/60 border border-dashed border-[#E8E2D9] dark:border-[#26302A]">
+                  <Quote className="w-8 h-8 text-[#636B65]/60 dark:text-[#A5ADA6]/60 mx-auto mb-2.5" />
+                  <p className="text-xs font-medium text-[#1C201D] dark:text-[#F3F0E7]">No public margin notes yet</p>
+                  <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-4">
                     Leave your impressions and highlighted quotes as you read through books.
                   </p>
                   <Link to="/social?tab=margins">
-                    <Button size="sm" variant="outline" className="text-xs border-[#26302A] bg-[#141816] text-[#F3F0E7] hover:bg-[#1C221F]">
+                    <Button size="sm" variant="outline" className="text-xs border-[#E8E2D9] dark:border-[#26302A] bg-white dark:bg-[#141816] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1C221F]">
                       Browse Margins
                     </Button>
                   </Link>
@@ -288,17 +288,17 @@ export const HomeCommunityPreview: React.FC = () => {
                       <Link
                         key={note.id}
                         to={`/social?tab=margins`}
-                        className="group block p-3.5 rounded-xl bg-[#141816] hover:bg-[#1C1813] border border-[#26302A] hover:border-[#D5B16D]/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]"
+                        className="group block p-3.5 rounded-xl bg-[#FAF7F2] hover:bg-[#F0EAE1] dark:bg-[#141816] dark:hover:bg-[#1C1813] border border-[#E8E2D9] hover:border-[#D4C9BC] dark:border-[#26302A] dark:hover:border-[#D5B16D]/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
                       >
-                        <p className="text-xs italic font-serif text-[#F3F0E7]/90 line-clamp-2 leading-relaxed border-l-2 border-[#D5B16D]/50 pl-2.5 mb-2">
+                        <p className="text-xs italic font-serif text-[#1C201D]/90 dark:text-[#F3F0E7]/90 line-clamp-2 leading-relaxed border-l-2 border-[#B68A35] dark:border-[#D5B16D]/50 pl-2.5 mb-2">
                           "{note.quote}"
                         </p>
-                        <div className="flex items-center justify-between text-[11px] text-[#A5ADA6]">
-                          <span className="truncate text-[#D5B16D]">
+                        <div className="flex items-center justify-between text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
+                          <span className="truncate text-[#1C442D] dark:text-[#D5B16D]">
                             {note.books_library?.title || 'Book note'}
                             {note.page ? ` · p. ${note.page}` : ''}
                           </span>
-                          <span className="text-[#A5ADA6]/70 shrink-0 ml-2">by {authorName}</span>
+                          <span className="text-[#636B65]/70 dark:text-[#A5ADA6]/70 shrink-0 ml-2">by {authorName}</span>
                         </div>
                       </Link>
                     );
@@ -306,10 +306,10 @@ export const HomeCommunityPreview: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-[#26302A]">
+              <div className="pt-3 border-t border-[#E8E2D9] dark:border-[#26302A]">
                 <Link
                   to="/social?tab=margins"
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A5ADA6] hover:text-[#F3F0E7] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] rounded"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] rounded"
                 >
                   <span>Explore all margin notes</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
