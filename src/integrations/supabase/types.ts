@@ -3544,6 +3544,10 @@ export type Database = {
           website_url: string
         }[]
       }
+      get_community_pulse_stats: {
+        Args: { p_timeframe?: string }
+        Returns: Json
+      }
       get_contact_messages_admin: {
         Args: never
         Returns: {
@@ -3624,6 +3628,7 @@ export type Database = {
           reader_name: string
         }[]
       }
+      get_public_community_pulse: { Args: never; Returns: Json }
       get_public_profiles_for_search: {
         Args: { search_term?: string }
         Returns: {
