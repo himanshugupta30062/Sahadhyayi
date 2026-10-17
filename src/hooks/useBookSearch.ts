@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client-universal';
 import {
@@ -7,7 +6,9 @@ import {
   filterPublicBooks,
 } from '@/utils/catalog/bookVisibility';
 
-interface BookSearchResult {
+export type AccessType = 'full_download' | 'official_reader' | 'preview' | 'borrow' | 'metadata_only';
+
+export interface BookSearchResult {
   id: string;
   title: string;
   author?: string;
@@ -20,101 +21,230 @@ interface BookSearchResult {
   pages?: number;
   language?: string;
   pdf_url?: string;
+  epub_url?: string;
+  reader_url?: string;
+  preview_url?: string;
+  source?: string;
+  access_type?: AccessType;
+  formats?: string[];
+  provider_id?: string;
   created_at: string;
+}
+
+export interface BookSaveResult {
+  title: string;
+  status: 'inserted' | 'already_exists' | 'enriched' | 'failed';
+  id?: string;
+  enrichedFields?: string[];
+  error?: string;
 }
 
 interface SearchResponse {
   success: boolean;
   booksFound: number;
   books: BookSearchResult[];
-  sources?: {
-    openLibrary: number;
-    googleBooks: number;
-    gutenberg: number;
-    archive: number;
-  };
+  sources?: Record<string, number>;
+  metrics?: Record<string, { count: number; latencyMs: number; status: string }>;
   error?: string;
 }
 
 interface SaveBooksResponse {
   success: boolean;
   booksSaved: number;
+  newlyInserted?: number;
+  enrichedCount?: number;
   duplicatesFound: number;
+  failedCount?: number;
+  results?: BookSaveResult[];
   books: BookSearchResult[];
   duplicates: BookSearchResult[];
   error?: string;
 }
+
+export interface SaveBooksOutcome {
+  savedBooks: BookSearchResult[];
+  duplicates: BookSearchResult[];
+  duplicatesFound: number;
+  newlyInserted: number;
+  enrichedCount: number;
+  failedCount: number;
+  results: BookSaveResult[];
+}
+
+// In-memory short-lived search cache (5 minute TTL)
+export const clientSearchCache = new Map<string, { results: BookSearchResult[]; timestamp: number }>();
+export const CLIENT_CACHE_TTL_MS = 5 * 60 * 1000;
 
 export const useBookSearch = () => {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [searchResults, setSearchResults] = React.useState<BookSearchResult[]>([]);
 
+  // Generation counter to protect against stale out-of-order responses
+  const activeSearchIdRef = React.useRef<number>(0);
+
   const searchBooks = React.useCallback(async (
     searchTerm: string
   ): Promise<BookSearchResult[]> => {
-    if (!searchTerm.trim()) {
+    const cleanTerm = (searchTerm || '').trim();
+    if (!cleanTerm) {
       setError('Please enter a search term');
       return [];
     }
 
+    const cacheKey = cleanTerm.toLowerCase();
+    const cached = clientSearchCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CLIENT_CACHE_TTL_MS) {
+      setSearchResults(cached.results);
+      setError(null);
+      return cached.results;
+    }
+
+    const searchId = ++activeSearchIdRef.current;
     setLoading(true);
     setError(null);
 
     try {
-      const { data, error: functionError } = await supabase.functions.invoke('search-books-preview', {
-        body: { searchTerm: searchTerm.trim() }
-      });
-
-      if (functionError) {
-        throw new Error(functionError.message);
-      }
-
-      const response = data as SearchResponse;
-
-      if (response.success) {
-        // Convert preview books to include temporary ID for UI
-        const booksWithTempId = response.books.map((book, index) => ({
-          ...book,
-          id: `temp-${Date.now()}-${index}`,
-          created_at: new Date().toISOString()
-        }));
-        
-        setSearchResults(booksWithTempId);
-        if (booksWithTempId.length === 0) {
-          setError('No books found for your search term. Try different keywords.');
+      // 1. Search local Sahadhyayi catalog and external preview providers concurrently
+      const localSearchPromise = (async () => {
+        try {
+          const caps = await detectBookSchemaCapabilities();
+          let query = supabase
+            .from('books_library')
+            .select('*')
+            .or(`title.ilike.%${cleanTerm}%,author.ilike.%${cleanTerm}%,isbn.ilike.%${cleanTerm}%`)
+            .limit(15);
+          query = applyPublicBookFilter(query, caps);
+          const { data, error: dbErr } = await query;
+          if (dbErr || !data) return [];
+          const visible = filterPublicBooks(data);
+          return visible.map((b: any) => ({
+            ...b,
+            source: 'sahadhyayi',
+            access_type: (b.pdf_url ? 'full_download' : 'metadata_only') as AccessType,
+            formats: b.pdf_url ? ['pdf'] : [],
+          }));
+        } catch {
+          return [];
         }
-        return booksWithTempId;
-      } else {
-        throw new Error(response.error || 'Search failed');
+      })();
+
+      const externalSearchPromise = (async () => {
+        try {
+          const { data, error: functionError } = await supabase.functions.invoke('search-books-preview', {
+            body: { searchTerm: cleanTerm }
+          });
+          if (functionError) throw new Error(functionError.message);
+          const response = data as SearchResponse;
+          if (!response.success) throw new Error(response.error || 'External search failed');
+          return response.books || [];
+        } catch (err: any) {
+          console.warn('External search-books-preview notice:', err?.message);
+          return [];
+        }
+      })();
+
+      const [localBooks, externalBooks] = await Promise.all([
+        localSearchPromise,
+        externalSearchPromise
+      ]);
+
+      // If a newer search was started while this was in-flight, discard this result to prevent stale overwrites
+      if (searchId !== activeSearchIdRef.current) {
+        return [];
       }
-    } catch (err) {
+
+      // Convert preview books to include temporary ID and formats
+      const mappedExternal: BookSearchResult[] = externalBooks.map((book: any, index: number) => ({
+        ...book,
+        id: book.id || `temp-${Date.now()}-${index}`,
+        created_at: new Date().toISOString(),
+      }));
+
+      // Combine and deduplicate: prefer local library match over external placeholder
+      const combinedMap = new Map<string, BookSearchResult>();
+
+      for (const b of localBooks) {
+        const key = b.isbn ? `isbn:${b.isbn}` : `${b.title.toLowerCase().replace(/[^a-z0-9]/g, '')}-${(b.author || '').toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+        combinedMap.set(key, b);
+      }
+
+      for (const b of mappedExternal) {
+        const key = b.isbn ? `isbn:${b.isbn}` : `${b.title.toLowerCase().replace(/[^a-z0-9]/g, '')}-${(b.author || '').toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+        if (!combinedMap.has(key)) {
+          combinedMap.set(key, b);
+        } else {
+          // Enrich local book with external reader/cover if missing
+          const existing = combinedMap.get(key)!;
+          if (!existing.cover_image_url && b.cover_image_url) existing.cover_image_url = b.cover_image_url;
+          if (!existing.pdf_url && b.pdf_url) existing.pdf_url = b.pdf_url;
+          if (!existing.epub_url && b.epub_url) existing.epub_url = b.epub_url;
+          if (!existing.reader_url && b.reader_url) existing.reader_url = b.reader_url;
+          if (!existing.preview_url && b.preview_url) existing.preview_url = b.preview_url;
+        }
+      }
+
+      const finalResults = Array.from(combinedMap.values());
+
+      setSearchResults(finalResults);
+      if (finalResults.length === 0) {
+        setError('No books found for your search term. Try different keywords.');
+      } else {
+        // Cache result for 5 minutes
+        clientSearchCache.set(cacheKey, { results: finalResults, timestamp: Date.now() });
+      }
+
+      return finalResults;
+    } catch (err: any) {
+      if (searchId !== activeSearchIdRef.current) return [];
       console.error('Book search error:', err);
       setError(err instanceof Error ? err.message : 'Failed to search books');
       setSearchResults([]);
       return [];
     } finally {
-      setLoading(false);
+      if (searchId === activeSearchIdRef.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
   const saveSelectedBooks = React.useCallback(async (
     selectedBooks: BookSearchResult[]
-  ): Promise<{ savedBooks: BookSearchResult[], duplicates: BookSearchResult[], duplicatesFound: number }> => {
+  ): Promise<SaveBooksOutcome> => {
     if (!selectedBooks || selectedBooks.length === 0) {
-      return { savedBooks: [], duplicates: [], duplicatesFound: 0 };
+      return {
+        savedBooks: [],
+        duplicates: [],
+        duplicatesFound: 0,
+        newlyInserted: 0,
+        enrichedCount: 0,
+        failedCount: 0,
+        results: [],
+      };
     }
 
     setLoading(true);
     setError(null);
 
     try {
+      // Pass the current user's JWT explicitly in the authorization header
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      if (!accessToken) {
+        throw new Error('Authentication required. Please sign in to save books to the catalog.');
+      }
+
       const { data, error: functionError } = await supabase.functions.invoke('save-selected-books', {
-        body: { selectedBooks: selectedBooks.map(book => {
-          // Remove temporary ID and created_at for saving
-          const { id, created_at, ...bookData } = book;
-          return bookData;
-        }) }
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: {
+          selectedBooks: selectedBooks.map(book => {
+            const { id, created_at, ...bookData } = book;
+            return bookData;
+          }),
+        },
       });
 
       if (functionError) {
@@ -125,17 +255,22 @@ export const useBookSearch = () => {
 
       if (response.success) {
         return { 
-          savedBooks: response.books,
+          savedBooks: response.books || [],
           duplicates: response.duplicates || [],
-          duplicatesFound: response.duplicatesFound || 0
+          duplicatesFound: response.duplicatesFound || 0,
+          newlyInserted: response.newlyInserted ?? response.booksSaved ?? 0,
+          enrichedCount: response.enrichedCount ?? 0,
+          failedCount: response.failedCount ?? 0,
+          results: response.results || [],
         };
       } else {
         throw new Error(response.error || 'Failed to save books');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Book save error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save books');
-      return { savedBooks: [], duplicates: [], duplicatesFound: 0 };
+      const msg = err instanceof Error ? err.message : 'Failed to save books';
+      setError(msg);
+      throw err;
     } finally {
       setLoading(false);
     }

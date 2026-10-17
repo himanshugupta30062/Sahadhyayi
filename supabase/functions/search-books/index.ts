@@ -98,27 +98,12 @@ serve(async (req) => {
     const mergedBooks = await mergeBookData(openLibraryBooks, googleBooksData, gutenbergBooks, archiveBooks, searchTerm)
     console.log(`🔄 Merged into ${mergedBooks.length} unique books`)
 
-    // Save books to database with enhanced duplicate handling
-    const savedBooks = []
-    for (const book of mergedBooks) {
-      try {
-        const savedBook = await saveOrUpdateBook(supabaseClient, book)
-        if (savedBook) {
-          savedBooks.push(savedBook)
-        }
-      } catch (error) {
-        console.error('❌ Error processing book:', book.title, error)
-      }
-    }
-
-    console.log(`✅ Successfully saved ${savedBooks.length} books`)
-
+    // Return merged results without automatic unauthenticated database writes
     return new Response(
       JSON.stringify({ 
         success: true, 
         booksFound: mergedBooks.length,
-        booksSaved: savedBooks.length,
-        books: savedBooks,
+        books: mergedBooks,
         sources: {
           openLibrary: openLibraryBooks.length,
           googleBooks: googleBooksData.length,
