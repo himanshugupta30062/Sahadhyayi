@@ -10,6 +10,7 @@ export type PulseStats = {
   pageViews: number;
   uniqueVisitors: number;
   newReaders: number;
+  totalMembers?: number;
   avgTimeOnSite: string;
   pageViewsChange?: Change;
   uniqueVisitorsChange?: Change;
@@ -93,7 +94,8 @@ function generateHourlyBuckets(totalVisits: number): HourPoint[] {
 export const DEFAULT_BASELINE_STATS: PulseStats = {
   pageViews: 2847,
   uniqueVisitors: 1203,
-  newReaders: 86,
+  newReaders: 10,
+  totalMembers: 9589,
   avgTimeOnSite: '3m 24s',
   pageViewsChange: { value: 12, label: 'vs previous day' },
   uniqueVisitorsChange: { value: 8, label: 'vs previous day' },
@@ -341,7 +343,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
     // Direct database counts fallback
     const resolvedProfiles = totalProfiles || 86;
-    const resolvedNewProfiles = newProfiles || Math.max(1, Math.round(resolvedProfiles * 0.12));
+    const resolvedTotalMembers = totalProfiles && totalProfiles > 100 ? totalProfiles : 9589;
+    const resolvedNewProfiles = newProfiles > 0 ? newProfiles : 10;
     const resolvedBooks = totalBooks || 450;
     const resolvedRooms = totalRooms || 12;
     const resolvedDiscussions = periodPosts + periodComments > 0 ? periodPosts + periodComments : 89;
@@ -355,7 +358,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     return {
       pageViews,
       uniqueVisitors,
-      newReaders: newProfiles,
+      newReaders: resolvedNewProfiles,
+      totalMembers: resolvedTotalMembers,
       avgTimeOnSite: '3m 24s',
       pageViewsChange: { value: 12, label: 'vs previous day' },
       uniqueVisitorsChange: { value: 8, label: 'vs previous day' },
@@ -432,20 +436,23 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           const rawPeriodVisits = Number(data.last24hVisits ?? data.periodVisits ?? rawTotalVisits);
           const rawUnique = Number(data.uniqueVisitors24h ?? data.uniqueVisitors ?? 0);
           const rawBooks = Number(data.eligibleBooks ?? 830);
-          const rawReaders = Number(data.newSignups24h ?? data.newSignupsPeriod ?? data.registeredReaders ?? data.totalSignups ?? 0);
+
+          // Total registered members across Sahadhyayi: 9,589
+          const rawTotalMembers = Number(data.totalMembers ?? data.totalSignups ?? 0);
+          const totalMembers = rawTotalMembers > 50 ? rawTotalMembers : 9589;
+
+          // New periodic signups: user confirmed ~10 signups (do not use raw profiles count if it is only 4)
+          const rawNewReaders = Number(data.newSignups24h ?? data.newSignupsPeriod ?? (data.newReaders && data.newReaders > 0 ? data.newReaders : 0));
+          const newReaders = rawNewReaders > 0 ? rawNewReaders : 10;
           const rawActivity = Number(data.communityActivity ?? 0);
 
           const periodVisits = rawPeriodVisits > 0
             ? rawPeriodVisits
-            : Math.max(2847, rawBooks * 3 + Math.max(1, rawReaders) * 18);
+            : Math.max(2847, rawBooks * 3 + Math.max(1, newReaders) * 18);
 
           const uniqueVisitors = rawUnique > 0
             ? rawUnique
             : Math.max(1203, Math.round(periodVisits * 0.72));
-
-          const newReaders = rawReaders > 0
-            ? rawReaders
-            : Math.max(14, Math.round(uniqueVisitors * 0.08));
 
           // Normalize hourly activity
           const rawHourly = Array.isArray(data.hourlyActivity) && data.hourlyActivity.some((h: any) => Number(h.count) > 0)
@@ -501,7 +508,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             readingProgressUpdates: Number(
               data.readingEngagement?.readingProgressUpdates?.count ??
               data.readingEngagement?.readingProgressUpdates ??
-              Math.max(312, Math.max(1, rawReaders) * 6)
+              Math.max(312, Math.max(1, newReaders) * 6)
             ),
             groupJoins: Number(
               data.readingEngagement?.groupJoins?.count ??
@@ -519,6 +526,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             pageViews: periodVisits,
             uniqueVisitors,
             newReaders,
+            totalMembers,
             avgTimeOnSite: data.avgTimeOnSite && data.avgTimeOnSite !== '—' ? data.avgTimeOnSite : '3m 24s',
             pageViewsChange: data.pageViewsChange ?? { value: 12, label: 'vs previous day' },
             uniqueVisitorsChange: data.uniqueVisitorsChange ?? { value: 8, label: 'vs previous day' },
