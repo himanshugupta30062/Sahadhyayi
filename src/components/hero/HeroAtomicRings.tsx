@@ -200,7 +200,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
 
         {/* Outer ring */}
         <g>
-          <circle r={OUTER} cx={0} cy={0} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={STROKES.outer} />
+          <circle r={OUTER} cx={0} cy={0} fill="none" stroke="rgba(0,0,0,0.06)" className="dark:stroke-[rgba(255,255,255,0.08)]" strokeWidth={STROKES.outer} />
           <g ref={el => (ringRefs[0].current = el)}>
             <path d={COVER_SWEEP(OUTER, ROTOR_START.outer)} fill="none" stroke="url(#g-outer)" strokeWidth={STROKES.outer} strokeLinecap="round" />
           </g>
@@ -208,7 +208,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
 
         {/* Middle ring */}
         <g>
-          <circle r={MID} cx={0} cy={0} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={STROKES.mid} />
+          <circle r={MID} cx={0} cy={0} fill="none" stroke="rgba(0,0,0,0.06)" className="dark:stroke-[rgba(255,255,255,0.08)]" strokeWidth={STROKES.mid} />
           <g ref={el => (ringRefs[1].current = el)}>
             <path
               d={COVER_SWEEP(MID, ROTOR_START.mid)}
@@ -222,7 +222,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
 
         {/* Inner ring */}
         <g>
-          <circle r={INNER} cx={0} cy={0} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={STROKES.inner} />
+          <circle r={INNER} cx={0} cy={0} fill="none" stroke="rgba(0,0,0,0.08)" className="dark:stroke-[rgba(255,255,255,0.10)]" strokeWidth={STROKES.inner} />
           <g ref={el => (ringRefs[2].current = el)}>
             <path
               d={COVER_SWEEP(INNER, ROTOR_START.inner)}
@@ -236,7 +236,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
 
         {/* Core ring */}
         <g>
-          <circle r={CORE} cx={0} cy={0} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={STROKES.core} />
+          <circle r={CORE} cx={0} cy={0} fill="none" stroke="rgba(0,0,0,0.08)" className="dark:stroke-[rgba(255,255,255,0.10)]" strokeWidth={STROKES.core} />
           <g ref={el => (ringRefs[3].current = el)}>
             <path
               d={COVER_SWEEP(CORE, ROTOR_START.core)}
@@ -266,7 +266,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          <text y={30} textAnchor="middle" fontSize={10} fontWeight={500} fill="#f8fafc">Library</text>
+          <text y={30} textAnchor="middle" fontSize={10} fontWeight={500} fill="currentColor" className="text-[#1C201D] dark:text-[#f8fafc]">Library</text>
         </g>
         {/* Mid ring: Authors */}
         <g
@@ -281,7 +281,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
             d="M 3.5 -4.5 L 4.5 -3.5 L -2 3 C -3 4.5 -4.5 4.5 -4.5 4.5 C -4.5 4.5 -4.5 3 -3 2 Z"
             fill="#ffffff"
           />
-          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Authors</text>
+          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="currentColor" className="text-[#1C201D] dark:text-[#f8fafc]">Authors</text>
         </g>
         {/* Inner ring: Social Media */}
         <g
@@ -296,7 +296,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
           <path d="M -5.5 3.5 C -5.5 1.5 -3 1.5 -2 1.5 C -1 1.5 1.5 1.5 1.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" />
           <circle cx="2.5" cy="-2" r="1.8" fill="#ffffff" />
           <path d="M 2 1.8 C 2.5 1.8 4.5 2 4.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
-          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Social Media</text>
+          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="currentColor" className="text-[#1C201D] dark:text-[#f8fafc]">Social Media</text>
         </g>
         {/* Core ring: Discovery */}
         <g
@@ -308,7 +308,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
           <circle r={14} fill="#f59e0b" filter="url(#soft)" />
           {/* 4-point star vector icon */}
           <path d="M 0 -4.5 L 1.2 -1.2 L 4.5 0 L 1.2 1.2 L 0 4.5 L -1.2 1.2 L -4.5 0 L -1.2 -1.2 Z" fill="#ffffff" />
-          <text y={27} textAnchor="middle" fontSize={9} fontWeight={500} fill="#f8fafc">Discovery</text>
+          <text y={27} textAnchor="middle" fontSize={9} fontWeight={500} fill="currentColor" className="text-[#1C201D] dark:text-[#f8fafc]">Discovery</text>
         </g>
       </svg>
       {children && (

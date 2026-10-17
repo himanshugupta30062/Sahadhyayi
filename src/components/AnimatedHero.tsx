@@ -6,13 +6,13 @@ import { BookOpen } from "lucide-react";
 const AnimatedHero: React.FC = () => {
   return (
     <section
-      className="relative min-h-[calc(100vh-4rem)] flex items-center bg-[#0B0D0C] text-[#F3F0E7] overflow-hidden py-10 sm:py-14 lg:py-20 border-b border-[#29332D]"
+      className="relative min-h-[calc(100vh-4rem)] flex items-center bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden py-10 sm:py-14 lg:py-20 border-b border-[#E8E2D9] dark:border-[#29332D] transition-colors duration-200"
       aria-label="Sahadhyayi Hero"
     >
-      {/* Subtle atmospheric ambient glow matching reference design */}
+      {/* Atmospheric ambient glow matching editorial and cinematic themes */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[550px] h-[550px] rounded-full bg-[#1A1E1C]/40 blur-[140px]" />
-        <div className="absolute top-1/4 right-12 w-[400px] h-[400px] rounded-full bg-[#D5B16D]/10 blur-[130px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[550px] h-[550px] rounded-full bg-[#1C442D]/5 dark:bg-[#1A1E1C]/40 blur-[140px]" />
+        <div className="absolute top-1/4 right-12 w-[400px] h-[400px] rounded-full bg-[#B68A35]/10 dark:bg-[#D5B16D]/10 blur-[130px]" />
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,13 +29,13 @@ const AnimatedHero: React.FC = () => {
                 {/* Center Core Brand Sigil — kept inside the animated rings */}
                 <div className="text-center p-3 select-none pointer-events-none flex flex-col items-center justify-center">
                   <div className="relative mb-1 flex items-center justify-center">
-                    <div className="absolute inset-0 rounded-full bg-[#D5B16D]/30 blur-md" />
-                    <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-[#F3F0E7] relative drop-shadow-[0_0_14px_rgba(213,177,109,0.8)]" aria-hidden="true" />
+                    <div className="absolute inset-0 rounded-full bg-[#B68A35]/20 dark:bg-[#D5B16D]/30 blur-md" />
+                    <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-[#1C442D] dark:text-[#F3F0E7] relative drop-shadow-[0_0_12px_rgba(28,68,45,0.4)] dark:drop-shadow-[0_0_14px_rgba(213,177,109,0.8)]" aria-hidden="true" />
                   </div>
-                  <span className="block text-[9px] sm:text-[11px] uppercase tracking-[0.24em] text-[#D5B16D] font-semibold">
+                  <span className="block text-[9px] sm:text-[11px] uppercase tracking-[0.24em] text-[#B68A35] dark:text-[#D5B16D] font-semibold">
                     सहाध्यायी
                   </span>
-                  <span className="block text-xs sm:text-sm font-serif font-bold text-[#F3F0E7] mt-0.5">
+                  <span className="block text-xs sm:text-sm font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mt-0.5">
                     Sahadhyayi
                   </span>
                 </div>
