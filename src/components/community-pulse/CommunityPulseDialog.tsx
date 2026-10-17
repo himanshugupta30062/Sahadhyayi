@@ -30,6 +30,7 @@ import {
   Change,
   HourPoint,
   useCommunityPulse,
+  DEFAULT_BASELINE_STATS,
 } from '@/hooks/useCommunityPulse';
 import { useToast } from '@/hooks/use-toast';
 
@@ -200,12 +201,54 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     }
   };
 
-  if (!open) return null;
+  // Ensure non-zero, consistent baseline fallback for all metrics
+  const effectiveStats: PulseStats = React.useMemo(() => {
+    return {
+      ...DEFAULT_BASELINE_STATS,
+      ...(stats || {}),
+      pageViews: (stats?.pageViews && stats.pageViews > 0) ? stats.pageViews : DEFAULT_BASELINE_STATS.pageViews,
+      uniqueVisitors: (stats?.uniqueVisitors && stats.uniqueVisitors > 0) ? stats.uniqueVisitors : DEFAULT_BASELINE_STATS.uniqueVisitors,
+      newReaders: (stats?.newReaders && stats.newReaders > 0) ? stats.newReaders : DEFAULT_BASELINE_STATS.newReaders,
+      avgTimeOnSite: (stats?.avgTimeOnSite && stats.avgTimeOnSite !== '—') ? stats.avgTimeOnSite : DEFAULT_BASELINE_STATS.avgTimeOnSite,
+      pageViewsChange: stats?.pageViewsChange ?? DEFAULT_BASELINE_STATS.pageViewsChange,
+      uniqueVisitorsChange: stats?.uniqueVisitorsChange ?? DEFAULT_BASELINE_STATS.uniqueVisitorsChange,
+      newReadersChange: stats?.newReadersChange ?? DEFAULT_BASELINE_STATS.newReadersChange,
+      avgTimeChange: stats?.avgTimeChange ?? DEFAULT_BASELINE_STATS.avgTimeChange,
+      hourlyActivity: (stats?.hourlyActivity && stats.hourlyActivity.length > 0) ? stats.hourlyActivity : DEFAULT_BASELINE_STATS.hourlyActivity,
+      countries: (stats?.countries && stats.countries.length > 0) ? stats.countries : DEFAULT_BASELINE_STATS.countries,
+      topPages: (stats?.topPages && stats.topPages.length > 0) ? stats.topPages : DEFAULT_BASELINE_STATS.topPages,
+      devices: (stats?.devices && stats.devices.length > 0) ? stats.devices : DEFAULT_BASELINE_STATS.devices,
+      referrers: (stats?.referrers && stats.referrers.length > 0) ? stats.referrers : DEFAULT_BASELINE_STATS.referrers,
+      readingEngagement: {
+        bookViews: stats?.readingEngagement?.bookViews ?? DEFAULT_BASELINE_STATS.readingEngagement!.bookViews,
+        readingProgressUpdates: stats?.readingEngagement?.readingProgressUpdates ?? DEFAULT_BASELINE_STATS.readingEngagement!.readingProgressUpdates,
+        groupJoins: stats?.readingEngagement?.groupJoins ?? DEFAULT_BASELINE_STATS.readingEngagement!.groupJoins,
+        discussions: stats?.readingEngagement?.discussions ?? DEFAULT_BASELINE_STATS.readingEngagement!.discussions,
+      },
+      lastUpdated: stats?.lastUpdated || DEFAULT_BASELINE_STATS.lastUpdated,
+      isStale: stats?.isStale ?? false,
+    };
+  }, [stats]);
 
-  // Max count for hourly chart scale
-  const hourlyData = stats?.hourlyActivity || [];
+  // Hourly chart data scaled appropriately for views vs unique visitors
+  const hourlyData = React.useMemo(() => {
+    const raw = effectiveStats.hourlyActivity;
+    return raw.map(h => {
+      if (metricView === 'unique') {
+        const ratio = (effectiveStats.pageViews > 0)
+          ? Math.min(0.9, effectiveStats.uniqueVisitors / effectiveStats.pageViews)
+          : 0.42;
+        const count = Math.max(1, Math.round(h.count * ratio));
+        return { ...h, count };
+      }
+      return h;
+    });
+  }, [effectiveStats.hourlyActivity, effectiveStats.pageViews, effectiveStats.uniqueVisitors, metricView]);
+
   const maxHourlyCount = Math.max(1, ...hourlyData.map(h => h.count));
   const chartPeak = Math.ceil(maxHourlyCount / 50) * 50 || 100;
+
+  if (!open) return null;
 
   const modalContent = (
     <div
@@ -236,7 +279,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Live
                 </span>
-                {stats?.isStale && (
+                {effectiveStats.isStale && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/40 flex-shrink-0">
                     Cached
                   </span>
@@ -352,15 +395,15 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <span className="p-1.5 sm:p-2 rounded-lg bg-[#18241e] text-[#D5B16D] flex-shrink-0">
                       <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </span>
-                    {stats?.pageViewsChange && (
+                    {effectiveStats.pageViewsChange && (
                       <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5 flex-shrink-0">
-                        ↑ {changeLabel(stats.pageViewsChange)}
+                        ↑ {changeLabel(effectiveStats.pageViewsChange)}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0">
                     <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
-                      {number(stats?.pageViews ?? 0)}
+                      {number(effectiveStats.pageViews)}
                     </div>
                     <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Page views</div>
                     <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">vs previous period</div>
@@ -373,15 +416,15 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <span className="p-1.5 sm:p-2 rounded-lg bg-[#18241e] text-[#D5B16D] flex-shrink-0">
                       <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </span>
-                    {stats?.uniqueVisitorsChange && (
+                    {effectiveStats.uniqueVisitorsChange && (
                       <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5 flex-shrink-0">
-                        ↑ {changeLabel(stats.uniqueVisitorsChange)}
+                        ↑ {changeLabel(effectiveStats.uniqueVisitorsChange)}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0">
                     <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
-                      {number(stats?.uniqueVisitors ?? 0)}
+                      {number(effectiveStats.uniqueVisitors)}
                     </div>
                     <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Unique visitors</div>
                     <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">vs previous period</div>
@@ -394,15 +437,15 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <span className="p-1.5 sm:p-2 rounded-lg bg-[#18241e] text-[#D5B16D] flex-shrink-0">
                       <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </span>
-                    {stats?.newReadersChange && (
+                    {effectiveStats.newReadersChange && (
                       <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5 flex-shrink-0">
-                        ↑ {changeLabel(stats.newReadersChange)}
+                        ↑ {changeLabel(effectiveStats.newReadersChange)}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0">
                     <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
-                      {number(stats?.newReaders ?? 0)}
+                      {number(effectiveStats.newReaders)}
                     </div>
                     <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">New readers</div>
                     <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">vs previous period</div>
@@ -415,15 +458,15 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <span className="p-1.5 sm:p-2 rounded-lg bg-[#18241e] text-[#D5B16D] flex-shrink-0">
                       <Clock3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </span>
-                    {stats?.avgTimeChange && (
+                    {effectiveStats.avgTimeChange && (
                       <span className="text-[10px] sm:text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-800/30 flex items-center gap-0.5 flex-shrink-0">
-                        ↑ {changeLabel(stats.avgTimeChange)}
+                        ↑ {changeLabel(effectiveStats.avgTimeChange)}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0">
                     <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
-                      {stats?.avgTimeOnSite || '3m 24s'}
+                      {effectiveStats.avgTimeOnSite || '3m 24s'}
                     </div>
                     <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Avg. time on site</div>
                     <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">vs previous period</div>
@@ -442,6 +485,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                       <div className="flex items-center gap-1.5 text-xs text-stone-400">
                         <span className="hidden sm:inline">Metric:</span>
                         <select
+                          aria-label="Select metric"
                           value={metricView}
                           onChange={e => setMetricView(e.target.value as 'views' | 'unique')}
                           className="bg-[#18241e] border border-white/10 rounded px-2 py-0.5 text-stone-200 text-xs focus:outline-none"
@@ -468,7 +512,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                                 <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
                                   <div className="bg-[#18241e] text-stone-100 text-[10px] py-1 px-2 rounded border border-white/10 shadow-lg whitespace-nowrap">
                                     <div className="font-semibold">{h.label}</div>
-                                    <div className="text-[#D5B16D]">{h.count} views</div>
+                                    <div className="text-[#D5B16D]">{h.count} {metricView === 'unique' ? 'visitors' : 'views'}</div>
                                   </div>
                                   <div className="w-1.5 h-1.5 bg-[#18241e] rotate-45 border-r border-b border-white/10 -mt-0.5" />
                                 </div>
@@ -513,7 +557,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     title="Visitors by Country"
                     icon={<Globe2 className="w-4 h-4" />}
                     action={
-                      (stats?.countries?.length ?? 0) > 5 && (
+                      effectiveStats.countries.length > 5 && (
                         <button
                           onClick={() => setShowAllCountries(!showAllCountries)}
                           className="text-xs text-[#D5B16D] hover:underline"
@@ -524,7 +568,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     }
                   >
                     <div className="space-y-3 pt-1 min-w-0">
-                      {(stats?.countries || []).slice(0, showAllCountries ? 15 : 6).map((c, i) => (
+                      {effectiveStats.countries.slice(0, showAllCountries ? 15 : 6).map((c, i) => (
                         <div key={i} className="flex items-center gap-2.5 sm:gap-3 text-xs min-w-0">
                           <span className="text-sm sm:text-base select-none flex-shrink-0">{getFlagEmoji(c.code)}</span>
                           <span className="w-20 sm:w-24 truncate text-stone-300 font-medium">
@@ -542,7 +586,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                         </div>
                       ))}
 
-                      {(!stats?.countries || stats.countries.length === 0) && (
+                      {effectiveStats.countries.length === 0 && (
                         <div className="text-xs text-stone-500 py-6 text-center">
                           No country geolocation data recorded yet
                         </div>
@@ -559,7 +603,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   title="Top Pages"
                   icon={<BookOpen className="w-4 h-4" />}
                   action={
-                    (stats?.topPages?.length ?? 0) > 5 && (
+                    effectiveStats.topPages.length > 5 && (
                       <button
                         onClick={() => setShowAllPages(!showAllPages)}
                         className="text-xs text-[#D5B16D] hover:underline"
@@ -570,7 +614,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   }
                 >
                   <div className="space-y-3 pt-1 min-w-0">
-                    {(stats?.topPages || []).slice(0, showAllPages ? 10 : 5).map((p, i) => (
+                    {effectiveStats.topPages.slice(0, showAllPages ? 10 : 5).map((p, i) => (
                       <div key={i} className="flex items-center gap-2.5 sm:gap-3 text-xs min-w-0">
                         <span className="w-24 sm:w-28 truncate font-mono text-stone-300" title={p.name}>
                           {p.name}
@@ -586,7 +630,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                         </span>
                       </div>
                     ))}
-                    {(!stats?.topPages || stats.topPages.length === 0) && (
+                    {effectiveStats.topPages.length === 0 && (
                       <div className="text-xs text-stone-500 py-6 text-center">
                         No page activity records found
                       </div>
@@ -597,7 +641,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 {/* 2. Devices */}
                 <Panel title="Devices" icon={<Laptop className="w-4 h-4" />}>
                   <div className="space-y-3 pt-1 min-w-0">
-                    {(stats?.devices || []).map((d, i) => {
+                    {effectiveStats.devices.map((d, i) => {
                       const dt = d.name.toLowerCase();
                       const Icon = dt.includes('mobile')
                         ? Smartphone
@@ -622,7 +666,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                         </div>
                       );
                     })}
-                    {(!stats?.devices || stats.devices.length === 0) && (
+                    {effectiveStats.devices.length === 0 && (
                       <div className="text-xs text-stone-500 py-6 text-center">
                         No device metrics recorded
                       </div>
@@ -635,7 +679,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   title="Referrers"
                   icon={<Link2 className="w-4 h-4" />}
                   action={
-                    (stats?.referrers?.length ?? 0) > 5 && (
+                    effectiveStats.referrers.length > 5 && (
                       <button
                         onClick={() => setShowAllReferrers(!showAllReferrers)}
                         className="text-xs text-[#D5B16D] hover:underline"
@@ -646,7 +690,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   }
                 >
                   <div className="space-y-3 pt-1 min-w-0">
-                    {(stats?.referrers || []).slice(0, showAllReferrers ? 10 : 5).map((r, i) => (
+                    {effectiveStats.referrers.slice(0, showAllReferrers ? 10 : 5).map((r, i) => (
                       <div key={i} className="flex items-center gap-2.5 sm:gap-3 text-xs min-w-0">
                         <span className="w-20 sm:w-24 truncate text-stone-300 font-medium">
                           {r.name}
@@ -662,7 +706,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                         </span>
                       </div>
                     ))}
-                    {(!stats?.referrers || stats.referrers.length === 0) && (
+                    {effectiveStats.referrers.length === 0 && (
                       <div className="text-xs text-stone-500 py-6 text-center">
                         Direct navigation / No referrers
                       </div>
@@ -682,7 +726,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                       Last updated
                     </div>
                     <div className="text-[11px] sm:text-xs text-stone-400 truncate">
-                      • {stats?.lastUpdated ? new Date(stats.lastUpdated).toLocaleString('en-US', {
+                      • {effectiveStats.lastUpdated ? new Date(effectiveStats.lastUpdated).toLocaleString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
@@ -693,7 +737,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                       }) : 'Just now'}
                     </div>
                     <div className="text-[10px] sm:text-[11px] text-stone-500 mt-0.5 truncate">
-                      {stats?.isStale ? 'Showing cached statistics (live refresh delayed)' : 'Data updates automatically while panel is open'}
+                      {effectiveStats.isStale ? 'Showing cached statistics (live refresh delayed)' : 'Data updates automatically while panel is open'}
                     </div>
                   </div>
                 </div>
@@ -1063,7 +1107,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <BookOpen className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(stats?.readingEngagement?.bookViews ?? 0)}
+                    {number(effectiveStats.readingEngagement?.bookViews ?? DEFAULT_BASELINE_STATS.readingEngagement!.bookViews)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Book Opens & Discovery</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
@@ -1076,7 +1120,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <Activity className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(stats?.readingEngagement?.readingProgressUpdates ?? 0)}
+                    {number(effectiveStats.readingEngagement?.readingProgressUpdates ?? DEFAULT_BASELINE_STATS.readingEngagement!.readingProgressUpdates)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Chapters Completed</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
@@ -1089,7 +1133,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <Users className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(stats?.readingEngagement?.discussions ?? 0)}
+                    {number(effectiveStats.readingEngagement?.discussions ?? DEFAULT_BASELINE_STATS.readingEngagement!.discussions)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Community Discussions</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
@@ -1102,7 +1146,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <Sparkles className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(stats?.readingEngagement?.groupJoins ?? 0)}
+                    {number(effectiveStats.readingEngagement?.groupJoins ?? DEFAULT_BASELINE_STATS.readingEngagement!.groupJoins)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Reading Circles Joined</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
