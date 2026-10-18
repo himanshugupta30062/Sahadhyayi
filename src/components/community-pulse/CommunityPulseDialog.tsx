@@ -233,14 +233,15 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
         devices: Array.isArray(stats.devices) ? stats.devices : [],
         referrers: Array.isArray(stats.referrers) ? stats.referrers : [],
         readingEngagement: stats.readingEngagement ?? {
-          bookViews: 0,
-          readingProgressUpdates: 0,
-          groupJoins: 0,
-          discussions: 0,
+          bookViews: null,
+          readingProgressUpdates: null,
+          groupJoins: null,
+          discussions: null,
         },
         topMembers: Array.isArray(stats.topMembers) ? stats.topMembers : [],
         lastUpdated: stats.lastUpdated || '',
         isStale: stats.isStale ?? false,
+        partialData: stats.partialData ?? false,
       };
     }
     return getBaselineStats(timeframe);
@@ -490,6 +491,23 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   >
                     Retry
                   </button>
+                </div>
+              )}
+
+              {effectiveStats.partialData && (
+                <div
+                  role="status"
+                  className="rounded-xl border border-amber-500/25 bg-amber-950/20 px-3.5 py-3 text-xs leading-relaxed text-amber-200"
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                    <div>
+                      <p className="font-semibold">Some analytics details are unavailable</p>
+                      <p className="mt-1 text-amber-100/75">
+                        The backend returned partial statistics. Missing breakdowns are not treated as zero activity. Refresh again after the analytics backend is restored.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1250,7 +1268,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <BookOpen className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(effectiveStats.readingEngagement?.bookViews ?? 0)}
+                    {number(effectiveStats.readingEngagement?.bookViews)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Book Opens & Discovery</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
@@ -1263,7 +1281,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <Activity className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(effectiveStats.readingEngagement?.readingProgressUpdates ?? 0)}
+                    {number(effectiveStats.readingEngagement?.readingProgressUpdates)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Chapters Completed</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
@@ -1276,7 +1294,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <Users className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(effectiveStats.readingEngagement?.discussions ?? 0)}
+                    {number(effectiveStats.readingEngagement?.discussions)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Community Discussions</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
@@ -1289,7 +1307,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <Sparkles className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(effectiveStats.readingEngagement?.groupJoins ?? 0)}
+                    {number(effectiveStats.readingEngagement?.groupJoins)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Reading Circles Joined</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
