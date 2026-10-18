@@ -5,7 +5,7 @@ import type { AnalyticsTimeframe } from '@/types/analytics';
 
 export type Change = { value: number | null; label?: string };
 export type BreakdownItem = { name: string; count?: number; percent: number; code?: string };
-export type HourPoint = { label: string; count: number; hourIndex?: number; isPeak?: boolean; bucketStart?: string };
+export type HourPoint = { label: string; count: number; uniqueVisitors?: number; hourIndex?: number; isPeak?: boolean; bucketStart?: string };
 
 export type MemberLeaderboardItem = {
   rank: number;
@@ -39,14 +39,15 @@ export type PulseStats = {
   devices: BreakdownItem[];
   referrers: BreakdownItem[];
   readingEngagement?: {
-    bookViews: number;
-    readingProgressUpdates: number;
-    groupJoins: number;
-    discussions: number;
+    bookViews: number | null;
+    readingProgressUpdates: number | null;
+    groupJoins: number | null;
+    discussions: number | null;
   };
   topMembers?: MemberLeaderboardItem[];
   lastUpdated?: string;
   isStale?: boolean;
+  partialData?: boolean;
 };
 
 export type RecentVisitor = {
@@ -120,18 +121,24 @@ export function getBaselineStats(
     devices: [],
     referrers: [],
     readingEngagement: {
-      bookViews: 0,
-      readingProgressUpdates: 0,
-      groupJoins: 0,
-      discussions: 0,
+      bookViews: null,
+      readingProgressUpdates: null,
+      groupJoins: null,
+      discussions: null,
     },
     topMembers: [],
     lastUpdated: '',
     isStale: false,
+    partialData: false,
   };
 }
 
 export const DEFAULT_BASELINE_STATS: PulseStats = getBaselineStats('24h');
+
+const optionalCount = (...values: unknown[]): number | null => {
+  const value = values.find((candidate) => typeof candidate === 'number' && Number.isFinite(candidate));
+  return typeof value === 'number' ? value : null;
+};
 
 export const useCommunityPulse = (isOpen: boolean = false) => {
   const { user } = useAuth();
@@ -290,9 +297,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         ? rpcData.periodVisits
         : typeof rpcData.pageViews === 'number'
         ? rpcData.pageViews
-        : typeof rpcData.totalVisits === 'number'
-        ? rpcData.totalVisits
-        : null;
+: null;
 
       const rawTotalMembers = typeof rpcData.metrics?.registeredReaders?.value === 'number'
         ? rpcData.metrics.registeredReaders.value
@@ -372,11 +377,19 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           : undefined;
 
         const readingEngagement = {
-          bookViews: Number(rpcData.engagement?.bookOpens?.value ?? rpcData.readingEngagement?.bookViews?.count ?? rpcData.readingEngagement?.bookViews ?? 0),
-          readingProgressUpdates: Number(rpcData.engagement?.readingProgressCompletions?.value ?? rpcData.readingEngagement?.readingProgressUpdates?.count ?? 0),
-          groupJoins: Number(rpcData.engagement?.groupJoins?.value ?? rpcData.readingEngagement?.groupJoinsCount?.count ?? rpcData.readingEngagement?.groupJoins ?? 0),
-          discussions: Number(rpcData.engagement?.discussions?.value ?? rpcData.readingEngagement?.discussionsCount?.count ?? rpcData.readingEngagement?.discussions ?? 0),
+          bookViews: optionalCount(rpcData.engagement?.bookOpens?.value, rpcData.readingEngagement?.bookViews?.count, rpcData.readingEngagement?.bookViews),
+          readingProgressUpdates: optionalCount(rpcData.engagement?.readingProgressCompletions?.value, rpcData.readingEngagement?.readingProgressUpdates?.count),
+          groupJoins: optionalCount(rpcData.engagement?.groupJoins?.value, rpcData.readingEngagement?.groupJoinsCount?.count, rpcData.readingEngagement?.groupJoins),
+          discussions: optionalCount(rpcData.engagement?.discussions?.value, rpcData.readingEngagement?.discussionsCount?.count, rpcData.readingEngagement?.discussions),
         };
+        const partialData = Boolean(
+          rpcData.partialData ||
+          !Array.isArray(rpcData.hourlyActivity) ||
+          !(Array.isArray(rpcData.breakdowns?.countries) || Array.isArray(rpcData.topCountries)) ||
+          !(Array.isArray(rpcData.breakdowns?.pages) || Array.isArray(rpcData.topPages)) ||
+          !(Array.isArray(rpcData.breakdowns?.devices) || Array.isArray(rpcData.devices)) ||
+          !(Array.isArray(rpcData.breakdowns?.referrers) || Array.isArray(rpcData.referrers))
+        );
 
         return {
           pageViews,
@@ -397,6 +410,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           topMembers: rawTopMembers,
           lastUpdated: rpcData.lastUpdated || new Date().toISOString(),
           isStale: false,
+          partialData,
         };
       }
     }
@@ -404,9 +418,10 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     // 2. Head-count / public RPC fallback: query authoritative counts directly
     const [
       usersRpcRes,
-      visitsRpcRes,
+      totalVisitsRpcRes,
       totalProfiles,
       newProfiles,
+      periodPageviews,
       progressUpdates,
       groupJoins,
       postsCount,
@@ -416,6 +431,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       safeRpc('get_website_visit_count'),
       safeCount('profiles'),
       safeCount('profiles', 'created_at', timeframeStart),
+      safeCount('website_visits', 'visited_at', timeframeStart, 'event_type', 'pageview'),
       safeCount('reading_room_events', 'created_at', timeframeStart, 'kind', 'chapter_complete'),
       safeCount('group_members', 'joined_at', timeframeStart),
       safeCount('posts', 'created_at', timeframeStart),
@@ -423,38 +439,40 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     ]);
 
     const rpcUsers = typeof (usersRpcRes as any)?.data === 'number' ? (usersRpcRes as any).data : null;
-    const rpcVisits = typeof (visitsRpcRes as any)?.data === 'number' ? (visitsRpcRes as any).data : null;
+    // This RPC is lifetime-wide and must not be displayed as page views for the selected period.
+    const totalVisits = typeof (totalVisitsRpcRes as any)?.data === 'number' ? (totalVisitsRpcRes as any).data : null;
 
-    if (rpcVisits === null && rpcUsers === null && totalProfiles === null) {
+    const availableCounts = [rpcUsers, totalVisits, totalProfiles, newProfiles, periodPageviews, progressUpdates, groupJoins, postsCount, commentsCount];
+    if (availableCounts.every((value) => value === null)) {
       throw new Error('Database statistics unavailable');
     }
 
-    const finalTotalMembers = rpcUsers !== null ? rpcUsers : (typeof totalProfiles === 'number' ? totalProfiles : 0);
-
     return {
-      pageViews: rpcVisits ?? 0,
-      uniqueVisitors: 0,
-      newReaders: newProfiles ?? 0,
-      totalMembers: finalTotalMembers,
+      pageViews: periodPageviews,
+      uniqueVisitors: null,
+      newReaders: newProfiles,
+      totalMembers: rpcUsers ?? totalProfiles,
       avgTimeOnSite: '—',
       pageViewsChange: undefined,
       uniqueVisitorsChange: undefined,
       newReadersChange: undefined,
       avgTimeChange: undefined,
-      hourlyActivity: buildEmptyHourlyBuckets(),
+      // No hourly aggregate available in fallback mode; do not fabricate 24 zero-count buckets.
+      hourlyActivity: [],
       countries: [],
       topPages: [],
       devices: [],
       referrers: [],
       readingEngagement: {
-        bookViews: 0,
-        readingProgressUpdates: progressUpdates ?? 0,
-        groupJoins: groupJoins ?? 0,
-        discussions: (postsCount ?? 0) + (commentsCount ?? 0),
+        bookViews: null,
+        readingProgressUpdates: progressUpdates,
+        groupJoins,
+        discussions: postsCount !== null && commentsCount !== null ? postsCount + commentsCount : null,
       },
       topMembers: [],
       lastUpdated: new Date().toISOString(),
       isStale: false,
+      partialData: true,
     };
   }, []);
 
@@ -497,9 +515,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             ? data.periodVisits
             : typeof data.pageViews === 'number'
             ? data.pageViews
-            : typeof data.totalVisits === 'number'
-            ? data.totalVisits
-            : null;
+: null;
 
           const rawTotalMembers = typeof data.metrics?.registeredReaders?.value === 'number'
             ? data.metrics.registeredReaders.value
@@ -519,9 +535,9 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             } catch {
               if (rawTotalMembers !== null) {
                 statsPayload = {
-                  pageViews: 0,
-                  uniqueVisitors: 0,
-                  newReaders: 0,
+                  pageViews: null,
+                  uniqueVisitors: null,
+                  newReaders: null,
                   totalMembers: rawTotalMembers,
                   avgTimeOnSite: '—',
                   pageViewsChange: undefined,
@@ -534,14 +550,15 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
                   devices: [],
                   referrers: [],
                   readingEngagement: {
-                    bookViews: 0,
-                    readingProgressUpdates: 0,
-                    groupJoins: 0,
-                    discussions: 0,
+                    bookViews: null,
+                    readingProgressUpdates: null,
+                    groupJoins: null,
+                    discussions: null,
                   },
                   topMembers: [],
                   lastUpdated: data.lastUpdated || new Date().toISOString(),
                   isStale: false,
+                  partialData: true,
                 };
               }
             }
@@ -632,27 +649,24 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               : undefined;
 
             const readingEngagement = {
-              bookViews: Number(
-                data.engagement?.bookOpens?.value ??
-                data.readingEngagement?.bookViews?.count ??
-                data.readingEngagement?.bookViews ??
-                0
+              bookViews: optionalCount(
+                data.engagement?.bookOpens?.value,
+                data.readingEngagement?.bookViews?.count,
+                data.readingEngagement?.bookViews,
               ),
-              readingProgressUpdates: Number(
-                data.engagement?.readingProgressCompletions?.value ??
-                data.readingEngagement?.readingProgressUpdates?.count ??
-                0
+              readingProgressUpdates: optionalCount(
+                data.engagement?.readingProgressCompletions?.value,
+                data.readingEngagement?.readingProgressUpdates?.count,
               ),
-              groupJoins: Number(
-                data.engagement?.groupJoins?.value ??
-                data.readingEngagement?.groupJoinsCount?.count ??
-                data.readingEngagement?.groupJoins ??
-                0
+              groupJoins: optionalCount(
+                data.engagement?.groupJoins?.value,
+                data.readingEngagement?.groupJoinsCount?.count,
+                data.readingEngagement?.groupJoins,
               ),
-              discussions: Number(
-                data.engagement?.discussions?.value ??
-                data.readingEngagement?.discussionsCount?.count ??
-                0
+              discussions: optionalCount(
+                data.engagement?.discussions?.value,
+                data.readingEngagement?.discussionsCount?.count,
+                data.readingEngagement?.discussions,
               ),
             };
 
@@ -675,6 +689,14 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               topMembers,
               lastUpdated: data.lastUpdated || new Date().toISOString(),
               isStale: false,
+              partialData: Boolean(
+                data.partialData ||
+                !(Array.isArray(data.hourlyActivity) || Array.isArray(data.hourlyTraffic)) ||
+                !(Array.isArray(data.breakdowns?.countries) || Array.isArray(data.topCountries)) ||
+                !(Array.isArray(data.breakdowns?.pages) || Array.isArray(data.topPages)) ||
+                !(Array.isArray(data.breakdowns?.devices) || Array.isArray(data.devices)) ||
+                !(Array.isArray(data.breakdowns?.referrers) || Array.isArray(data.referrers))
+              ),
             };
           }
         } catch (edgeErr: any) {
