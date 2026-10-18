@@ -108,8 +108,7 @@ const Articles = () => {
                 The Sahadhyayi Journal
               </div>
               <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
-                Ideas worth turning
-                <span className="block text-[#E4C17B]">a page for.</span>
+                Articles
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
                 Thoughtful essays, book reflections, and stories to spark your next idea — written by readers who have something to say.
@@ -141,7 +140,7 @@ const Articles = () => {
                   className="h-12 shrink-0 rounded-xl bg-[#D5B16D] px-5 font-semibold text-[#171C17] shadow-lg transition hover:bg-[#E4C17B] sm:h-14 sm:px-6"
                 >
                   <PenLine className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Write a story
+                  Write an article
                 </Button>
               </div>
 

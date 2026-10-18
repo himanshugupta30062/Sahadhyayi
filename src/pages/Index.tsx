@@ -64,11 +64,11 @@ const Index = () => {
       {/* 1. Animated Hero */}
       <AnimatedHero />
 
-      <div className="bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
+      <div className="sahadhyayi-home-sections bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300">
         {/* 2. Logged-in: Continue Reading first */}
         {user && (
-          <section className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 border-b border-[#E8E2D9] dark:border-[#29332D]">
-            <div className="max-w-7xl mx-auto">
+          <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-[#0B0D0C]">
+            <div className="relative z-10 max-w-7xl mx-auto">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7]">
@@ -87,10 +87,10 @@ const Index = () => {
                 </Link>
               </div>
               <DeferredSection
-                fallback={<div className="min-h-[220px] rounded-2xl border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614]" aria-hidden="true" />}
+                fallback={<div className="min-h-[220px] rounded-2xl border border-[#DDE7D8] dark:border-[#29332D] bg-white dark:bg-[#111614]" aria-hidden="true" />}
                 minHeightClassName="min-h-[220px]"
               >
-                <ErrorBoundary fallback={<div className="min-h-[140px] rounded-2xl border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] p-6 text-center text-sm text-[#636B65] dark:text-[#A5ADA6]">Your reading progress could not be loaded right now.</div>}>
+                <ErrorBoundary fallback={<div className="min-h-[140px] rounded-2xl border border-[#DDE7D8] dark:border-[#29332D] bg-white dark:bg-[#111614] p-6 text-center text-sm text-[#636B65] dark:text-[#A5ADA6]">Your reading progress could not be loaded right now.</div>}>
                   <CurrentReads />
                 </ErrorBoundary>
               </DeferredSection>
@@ -100,7 +100,7 @@ const Index = () => {
 
         {/* 3. Real Book Discovery */}
         <DeferredSection
-          fallback={<div className="min-h-[360px] bg-[#FAF7F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[360px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[360px]"
         >
           <ErrorBoundary fallback={null}>
@@ -110,7 +110,7 @@ const Index = () => {
 
         {/* 4. Real Community Preview */}
         <DeferredSection
-          fallback={<div className="min-h-[400px] bg-[#FAF7F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[400px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[400px]"
         >
           <ErrorBoundary fallback={null}>
@@ -120,7 +120,7 @@ const Index = () => {
 
         {/* 5. Explore the Platform / Capabilities */}
         <DeferredSection
-          fallback={<div className="min-h-[320px] bg-[#FAF7F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[320px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[320px]"
         >
           <ErrorBoundary fallback={null}>
@@ -129,20 +129,18 @@ const Index = () => {
         </DeferredSection>
 
         {/* 6. Atmospheric Final Call-to-Action with warm library aesthetic */}
-        <section className="relative py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#FAF7F2] via-[#F4EFEA] to-[#FAF7F2] dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden border-t border-[#E8E2D9] dark:border-[#26302A] transition-colors duration-200">
-          {/* Subtle warm library ambient glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(182,138,53,0.08),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(213,177,109,0.06),transparent_65%)] pointer-events-none" />
+        <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300">
 
-          <div className="relative max-w-3xl mx-auto text-center">
+          <div className="relative z-10 max-w-3xl mx-auto text-center">
             {/* Cultural Origin Tag */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#141816] border border-[#E8E2D9] dark:border-[#26302A] text-xs font-medium text-[#8F681C] dark:text-[#D5B16D] mb-4 shadow-2xs">
-              <span>सहाध्यायी · Fellow Reader</span>
+            <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-4">
+              सहाध्यायी · Fellow Reader
             </div>
 
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight mb-4 text-[#1C201D] dark:text-[#F3F0E7]">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold tracking-tight mb-5 text-[#1C201D] dark:text-[#F3F0E7]">
               Ready to join Sahadhyayi?
             </h2>
-            <p className="text-sm sm:text-base text-[#636B65] dark:text-[#A5ADA6] mb-8 max-w-xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base text-[#636B65] dark:text-[#A5ADA6] mb-9 max-w-2xl mx-auto leading-relaxed">
               Explore the library, join reading groups, and be part of a community that reads, thinks, and grows together.
             </p>
             <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center">
@@ -155,7 +153,7 @@ const Index = () => {
               </Link>
               <Link
                 to="/library"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border border-[#E8E2D9] hover:border-[#D4C9BC] bg-white hover:bg-[#F4EFEA] text-[#1C201D] dark:border-[#26302A] dark:hover:border-[#38483D] dark:bg-[#111413] dark:hover:bg-[#181C1A] dark:text-[#F3F0E7] text-sm sm:text-base font-medium transition-all shadow-2xs dark:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border border-[#DDE5D8] hover:border-[#B7CEB7] bg-white/85 hover:bg-[#ECF4EA] text-[#1C201D] dark:border-[#26302A] dark:hover:border-[#38483D] dark:bg-[#111413] dark:hover:bg-[#181C1A] dark:text-[#F3F0E7] text-sm sm:text-base font-medium transition-all shadow-2xs dark:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D]"
               >
                 <span>Explore the library</span>
               </Link>

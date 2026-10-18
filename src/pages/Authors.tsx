@@ -164,7 +164,7 @@ const Authors = () => {
                 <div className="relative min-w-0 flex-1">
                   <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#69756D]" aria-hidden="true" />
                   <Input
-                    placeholder="Search writers, genres, or ideas…"
+                    placeholder="Search for an author by name…"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     className="h-12 rounded-xl border border-white/25 bg-white/95 pl-11 pr-11 text-[#1C201D] shadow-xl placeholder:text-[#798179] focus-visible:ring-2 focus-visible:ring-[#D5B16D] sm:h-14"
