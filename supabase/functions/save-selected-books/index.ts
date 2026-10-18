@@ -50,40 +50,38 @@ serve(async (req) => {
   }
 
   try {
-    // 2. Mandatory Authentication: Verify signed-in user identity before any service-role operations
+    // 2. Open Access / Guest Support: Authentication is optional so guests and readers can expand the catalog.
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Authentication required. Please sign in to save books to the catalog.' 
-        }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const token = authHeader.replace('Bearer ', '').trim()
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 
-    // Verify token with Supabase Auth
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-      auth: { persistSession: false },
-    })
+    let authenticatedUser: any = null;
 
-    const { data: userData, error: authError } = await authClient.auth.getUser(token)
-    if (authError || !userData?.user) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Invalid or expired authentication session. Please sign in again.' 
-        }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '').trim()
+      if (token && token !== supabaseAnonKey) {
+        try {
+          const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+            auth: { persistSession: false },
+          });
+
+          const { data: userData } = await authClient.auth.getUser(token);
+          if (userData?.user) {
+            authenticatedUser = userData.user;
+          }
+        } catch (authErr) {
+          console.warn('Optional auth verification notice:', authErr);
+        }
+      }
     }
 
-    const authenticatedUser = userData.user;
-    console.log(`🔐 Authenticated user ${authenticatedUser.id} triggered catalog save.`);
+    if (authenticatedUser) {
+      console.log(`🔐 Authenticated user ${authenticatedUser.id} triggered catalog save.`);
+    } else {
+      console.log('📖 Guest reader triggered catalog save without requiring sign-in.');
+    }
 
     // 3. Parse and Validate Request Payload
     let body: any;

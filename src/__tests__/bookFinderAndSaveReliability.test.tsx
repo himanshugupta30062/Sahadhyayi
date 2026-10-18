@@ -2,7 +2,7 @@
 
 import { describe, vi, it, expect, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -228,26 +228,52 @@ describe('useBookSearch hook reliability & caching', () => {
     expect(result.current.searchResults[0].title).toBe('War and Peace');
   });
 
-  it('rejects saveSelectedBooks if user is unauthenticated before invoking edge function', async () => {
+  it('allows saveSelectedBooks for unauthenticated / guest users and invokes edge function', async () => {
     mockGetSession.mockResolvedValueOnce({
       data: { session: null },
       error: null,
     });
 
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        success: true,
+        booksSaved: 1,
+        newlyInserted: 1,
+        enrichedCount: 0,
+        failedCount: 0,
+        duplicatesFound: 0,
+        books: [{ id: 'temp-1', title: 'The Republic', author: 'Plato' }],
+        results: [{ title: 'The Republic', status: 'inserted', id: 'temp-1' }],
+      },
+      error: null,
+    });
+
     const { result } = renderHook(() => useBookSearch());
 
-    await expect(
-      result.current.saveSelectedBooks([
+    let outcome: any;
+    await act(async () => {
+      outcome = await result.current.saveSelectedBooks([
         {
           id: 'temp-1',
           title: 'The Republic',
           author: 'Plato',
           created_at: new Date().toISOString(),
         },
-      ])
-    ).rejects.toThrow(/Authentication required/i);
+      ]);
+    });
 
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(outcome.newlyInserted).toBe(1);
+    expect(outcome.savedBooks).toHaveLength(1);
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'save-selected-books',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          selectedBooks: expect.arrayContaining([
+            expect.objectContaining({ title: 'The Republic', author: 'Plato' }),
+          ]),
+        }),
+      })
+    );
   });
 
   it('passes user JWT in authorization header and returns detailed save outcome', async () => {
@@ -449,6 +475,11 @@ describe('BookSelectionModal UX & Provider Badges', () => {
     },
   ];
 
+  beforeEach(() => {
+    cleanup();
+    document.body.innerHTML = '';
+  });
+
   it('renders provider badges and access badges for external sources', () => {
     renderWithQueryClient(
       <BookSelectionModal
@@ -492,8 +523,28 @@ describe('BookSelectionModal UX & Provider Badges', () => {
     expect(screen.getAllByText(/All Formats/i).length).toBeGreaterThan(0);
   });
 
-  it('prompts sign-in toast when unauthenticated user attempts to save books', async () => {
+  it('allows unauthenticated / guest user to save books without sign-in restriction', async () => {
     mockUserState.current = null;
+    mockGetSession.mockResolvedValue({
+      data: { session: null },
+      error: null,
+    });
+
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        success: true,
+        booksSaved: 2,
+        newlyInserted: 2,
+        enrichedCount: 0,
+        failedCount: 0,
+        duplicatesFound: 0,
+        books: sampleBooks.map((b) => ({ id: b.id, title: b.title, author: b.author })),
+        results: sampleBooks.map((b) => ({ id: b.id, title: b.title, status: 'inserted' })),
+      },
+      error: null,
+    });
+
+    const onBooksAddedMock = vi.fn();
 
     renderWithQueryClient(
       <BookSelectionModal
@@ -501,22 +552,24 @@ describe('BookSelectionModal UX & Provider Badges', () => {
         onClose={vi.fn()}
         books={sampleBooks}
         searchTerm="Classics"
-        onSaveSuccess={vi.fn()}
+        onBooksAdded={onBooksAddedMock}
       />
     );
 
-    // All books are selected by default; click the "Sign In to Save" button
-    const saveButtons = screen.getAllByText(/Sign In to Save/i);
-    expect(saveButtons.length).toBeGreaterThanOrEqual(1);
+    // Button allows saving directly: "Add Selected to Library (3)"
+    const saveButton = screen.getByRole('button', { name: /Add Selected to Library \(3\)/i });
+    expect(saveButton).toBeInTheDocument();
 
-    fireEvent.click(saveButtons[0]);
+    await act(async () => {
+      fireEvent.click(saveButton);
+    });
 
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Sign in required',
-        variant: 'destructive',
+        title: 'Catalog updated',
       })
     );
+    expect(onBooksAddedMock).toHaveBeenCalled();
   });
 
   it('displays per-book outcome statuses and allows single-book retry', async () => {
@@ -552,13 +605,13 @@ describe('BookSelectionModal UX & Provider Badges', () => {
         onClose={vi.fn()}
         books={sampleBooks.slice(0, 2)}
         searchTerm="Classics"
-        onSaveSuccess={vi.fn()}
+        onBooksAdded={vi.fn()}
       />
     );
 
-    const saveButtons = screen.getAllByText(/Save Selected/i);
+    const saveButton = screen.getByRole('button', { name: /Add Selected to Library \(2\)/i });
     await act(async () => {
-      fireEvent.click(saveButtons[0]);
+      fireEvent.click(saveButton);
     });
 
     // Check that success and failed badges are rendered
