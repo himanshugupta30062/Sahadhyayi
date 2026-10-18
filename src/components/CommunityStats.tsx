@@ -464,7 +464,7 @@ function normalizeStatsResponse(raw: unknown): CommunityPulseData {
   };
 }
 
-const DASHBOARD_CACHE_KEY = 'community_pulse_dashboard_cache_v1';
+const DASHBOARD_CACHE_KEY = 'community_pulse_dashboard_cache_v2';
 
 function loadCachedDashboardData(): CommunityPulseData | null {
   try {
