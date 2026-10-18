@@ -12,7 +12,7 @@ User intent: ${intent}
 Question: "${question}"
 
 Site context:
-- Total books: ${ctx.site.totalBooks}
+- Total books: ${ctx.site.totalBooks === null ? 'currently unavailable; do not guess the count' : ctx.site.totalBooks}
 - Top genres: ${ctx.site.topGenres.slice(0,5).join(', ')}
 
 Relevant books (max 3):
