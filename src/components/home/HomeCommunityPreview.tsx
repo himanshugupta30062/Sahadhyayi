@@ -42,8 +42,8 @@ export const HomeCommunityPreview: React.FC = () => {
         @media (prefers-reduced-motion: reduce) { .home-community-glow { animation: none; } }
       `}</style>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden dark:hidden">
-        <div className="home-community-glow absolute -right-24 top-8 h-80 w-80 rounded-full bg-[#C9DCF5]/60 blur-[95px]" />
-        <div className="home-community-glow home-community-glow-delayed absolute -left-24 bottom-[-9rem] h-72 w-72 rounded-full bg-[#E4D6F5]/40 blur-[90px]" />
+        <div className="home-community-glow absolute -right-24 top-8 h-80 w-80 rounded-full bg-[#CFE6CE]/55 blur-[95px]" />
+        <div className="home-community-glow home-community-glow-delayed absolute -left-24 bottom-[-9rem] h-72 w-72 rounded-full bg-[#F0DDB5]/35 blur-[90px]" />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Section Header */}
