@@ -122,7 +122,8 @@
   {
     "id": "catalog-count",
     "category": "catalog-availability",
-    "prompt": "How many books are currently in Sahadhyayi's library? If you cannot check a live count, say so."
+    "prompt": "How many books are currently in Sahadhyayi's library? If you cannot check a live count, say so.",
+    "expectCatalogCount": true
   },
   {
     "id": "specific-author",
