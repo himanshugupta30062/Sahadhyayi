@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
+import { trackUiEvent } from '@/lib/analytics';
 
 export const useAuthorFollow = (authorId?: string) => {
   const { user } = useAuth();
@@ -42,6 +43,7 @@ export const useAuthorFollow = (authorId?: string) => {
       if (error) throw error;
     },
     onSuccess: () => {
+      if (authorId) trackUiEvent('author_followed', { item_type: 'author', item_id: authorId, target_type: 'author' });
       queryClient.invalidateQueries({ queryKey: ['author-follow', user?.id, authorId] });
       queryClient.invalidateQueries({ queryKey: ['authors'] });
       toast.success('Successfully followed author!');
@@ -66,6 +68,7 @@ export const useAuthorFollow = (authorId?: string) => {
       if (error) throw error;
     },
     onSuccess: () => {
+      if (authorId) trackUiEvent('author_unfollowed', { item_type: 'author', item_id: authorId, target_type: 'author' });
       queryClient.invalidateQueries({ queryKey: ['author-follow', user?.id, authorId] });
       queryClient.invalidateQueries({ queryKey: ['authors'] });
       toast.success('Successfully unfollowed author');
