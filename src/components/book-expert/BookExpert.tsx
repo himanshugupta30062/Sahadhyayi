@@ -38,7 +38,7 @@ function validHttpUrl(value: string | null | undefined): string | null {
 
 function BookResultCard({ book }: { book: BookExpertBook }) {
   const coverUrl = validHttpUrl(book.coverImageUrl);
-  const pdfUrl = validHttpUrl(book.pdfUrl);
+  const readingUrl = validHttpUrl(book.readingUrl);
 
   return (
     <article className="flex min-w-0 gap-3 rounded-xl border border-border bg-background p-2.5">
@@ -73,14 +73,14 @@ function BookResultCard({ book }: { book: BookExpertBook }) {
           >
             View book <ExternalLink className="h-3 w-3" aria-hidden="true" />
           </a>
-          {pdfUrl && (
+          {readingUrl && (
             <a
-              href={pdfUrl}
+              href={readingUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Open PDF <ExternalLink className="h-3 w-3" aria-hidden="true" />
+              {book.isDirectPdf ? "Open PDF" : "Open reading link"} <ExternalLink className="h-3 w-3" aria-hidden="true" />
             </a>
           )}
         </div>
