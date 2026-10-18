@@ -38,6 +38,7 @@ import {
   buildEmptyHourlyBuckets,
 } from '@/hooks/useCommunityPulse';
 import { useToast } from '@/hooks/use-toast';
+import './CommunityPulseDialog.theme.css';
 
 export type CommunityPulseDialogProps = {
   open: boolean;
@@ -269,7 +270,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pulse-modal-title"
-      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto"
+      className="community-pulse-dialog fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto"
       onClick={e => {
         if (e.target === e.currentTarget) onClose();
       }}
