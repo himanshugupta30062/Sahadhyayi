@@ -56,13 +56,31 @@ export function useRelatedArticles(
         .slice(0, limit)
         .map(({ a }) => a);
 
-      // Author profiles
+      // Author profiles (try public_profiles view first, fallback to profiles)
       const userIds = [...new Set(scored.map((a) => a.user_id))];
       if (userIds.length === 0) return [];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name, profile_photo_url')
-        .in('id', userIds);
+      let profiles: any[] = [];
+      try {
+        const { data: pubProfiles, error: pubErr } = await (supabase as any)
+          .from('public_profiles')
+          .select('id, full_name, profile_photo_url')
+          .in('id', userIds);
+        if (!pubErr && pubProfiles && pubProfiles.length > 0) {
+          profiles = pubProfiles;
+        } else {
+          const { data: directProfiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, profile_photo_url')
+            .in('id', userIds);
+          profiles = directProfiles || [];
+        }
+      } catch {
+        const { data: directProfiles } = await supabase
+          .from('profiles')
+          .select('id, full_name, profile_photo_url')
+          .in('id', userIds);
+        profiles = directProfiles || [];
+      }
       const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
 
       return scored.map((a) => ({

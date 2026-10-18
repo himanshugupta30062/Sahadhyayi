@@ -88,12 +88,20 @@ export const useSocialPosts = () => {
 
         if (missingProfileUserIds.length > 0) {
           try {
-            const { data: profs } = await supabase
-              .from('profiles')
+            const { data: pubProfs, error: pubErr } = await (supabase as any)
+              .from('public_profiles')
               .select('id, full_name, username, profile_photo_url')
               .in('id', missingProfileUserIds);
-            if (profs) {
-              profilesMap = new Map(profs.map((pr: any) => [pr.id, pr]));
+            if (!pubErr && pubProfs && pubProfs.length > 0) {
+              profilesMap = new Map(pubProfs.map((pr: any) => [pr.id, pr]));
+            } else {
+              const { data: profs } = await supabase
+                .from('profiles')
+                .select('id, full_name, username, profile_photo_url')
+                .in('id', missingProfileUserIds);
+              if (profs) {
+                profilesMap = new Map(profs.map((pr: any) => [pr.id, pr]));
+              }
             }
           } catch {
             // non-fatal

@@ -50,12 +50,30 @@ export function usePublishedArticles() {
 
       if (error) throw error;
 
-      // Fetch author profiles
+      // Fetch author profiles (try public_profiles view first, fallback to profiles)
       const userIds = [...new Set((data as Article[]).map((a: Article) => a.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name, profile_photo_url')
-        .in('id', userIds);
+      let profiles: any[] = [];
+      try {
+        const { data: pubProfiles, error: pubErr } = await (supabase as any)
+          .from('public_profiles')
+          .select('id, full_name, profile_photo_url')
+          .in('id', userIds);
+        if (!pubErr && pubProfiles && pubProfiles.length > 0) {
+          profiles = pubProfiles;
+        } else {
+          const { data: directProfiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, profile_photo_url')
+            .in('id', userIds);
+          profiles = directProfiles || [];
+        }
+      } catch {
+        const { data: directProfiles } = await supabase
+          .from('profiles')
+          .select('id, full_name, profile_photo_url')
+          .in('id', userIds);
+        profiles = directProfiles || [];
+      }
 
       const profileMap = new Map(
         (profiles || []).map((p) => [p.id, p])
@@ -105,11 +123,31 @@ export function useArticleBySlug(slug: string | undefined) {
 
       if (error) throw error;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, full_name, profile_photo_url')
-        .eq('id', (data as Article).user_id)
-        .maybeSingle();
+      let profile: any = null;
+      try {
+        const { data: pubProfile, error: pubErr } = await (supabase as any)
+          .from('public_profiles')
+          .select('id, full_name, profile_photo_url')
+          .eq('id', (data as Article).user_id)
+          .maybeSingle();
+        if (!pubErr && pubProfile) {
+          profile = pubProfile;
+        } else {
+          const { data: directProfile } = await supabase
+            .from('profiles')
+            .select('id, full_name, profile_photo_url')
+            .eq('id', (data as Article).user_id)
+            .maybeSingle();
+          profile = directProfile;
+        }
+      } catch {
+        const { data: directProfile } = await supabase
+          .from('profiles')
+          .select('id, full_name, profile_photo_url')
+          .eq('id', (data as Article).user_id)
+          .maybeSingle();
+        profile = directProfile;
+      }
 
       return {
         ...(data as Article),
