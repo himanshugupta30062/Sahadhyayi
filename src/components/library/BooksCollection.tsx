@@ -349,21 +349,21 @@ const BooksCollection = ({
                   <Library className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                  <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight mb-2">
                     All Books
                   </h2>
-                  <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+                  <div className="h-1 w-12 bg-[#1C442D] dark:bg-[#D5B16D] rounded-full"></div>
                 </div>
               </div>
               
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="text-sm text-gray-600 font-medium">
+                <div className="text-sm text-[#636B65] dark:text-[#A5ADA6] font-medium">
                   {paginatedData?.totalCount
-                    ? `Showing ${((page - 1) * pageSize) + 1}-${Math.min(page * pageSize, paginatedData.totalCount)} of ${paginatedData.totalCount} books`
+                    ? `Showing ${((page - 1) * pageSize) + 1}–${Math.min(page * pageSize, paginatedData.totalCount)} of ${paginatedData.totalCount} books`
                     : 'No books match the current filters'}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700">Books per page:</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-[#636B65] dark:text-[#A5ADA6]">Per page:</span>
                   <Select 
                     value={String(pageSize)} 
                     onValueChange={(value) => {
@@ -371,12 +371,12 @@ const BooksCollection = ({
                       setPage(1); // Reset to page 1 when changing page size
                     }}
                   >
-                    <SelectTrigger className="w-20 h-9 border-2 border-gray-200 hover:border-blue-300 transition-colors">
+                    <SelectTrigger className="w-18 h-8 text-xs border border-[#E8E2D9] dark:border-[#26302A] bg-white dark:bg-[#181F1B] text-[#1C201D] dark:text-[#F3F0E7] hover:border-[#1C442D] dark:hover:border-[#D5B16D] transition-colors rounded-lg">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-2 border-gray-200 shadow-lg z-50">
+                    <SelectContent className="bg-white dark:bg-[#181F1B] border border-[#E8E2D9] dark:border-[#26302A] text-xs shadow-md z-50">
                       {[12, 24, 48, 96].map((size) => (
-                        <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                        <SelectItem key={size} value={size.toString()} className="text-xs cursor-pointer">{size}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

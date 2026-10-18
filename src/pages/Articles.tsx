@@ -22,6 +22,7 @@ import SEO from '@/components/SEO';
 import BookFlipLoader from '@/components/ui/BookFlipLoader';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import LibraryPagination from '@/components/library/LibraryPagination';
 
 type SortMode = 'latest' | 'popular';
 
@@ -32,6 +33,13 @@ const Articles = () => {
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>('latest');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
+  const articlesGridRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search, activeTag, sortMode]);
 
   const articleWritePath = user ? '/articles/write' : '/signin?redirect=%2Farticles%2Fwrite';
 
@@ -77,6 +85,11 @@ const Articles = () => {
 
   const featured = sortMode === 'latest' && !search && !activeTag ? filtered[0] : null;
   const rest = featured ? filtered.slice(1) : filtered;
+
+  const paginatedRest = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return rest.slice(start, start + pageSize);
+  }, [rest, page, pageSize]);
 
   return (
     <>
@@ -337,8 +350,8 @@ const Articles = () => {
               )}
 
               {/* Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {rest.map((article) => (
+              <div ref={articlesGridRef} className="grid grid-cols-1 md:grid-cols-2 gap-6 scroll-mt-24">
+                {paginatedRest.map((article) => (
                   <Link
                     key={article.id}
                     to={`/articles/${article.slug}`}
@@ -422,6 +435,22 @@ const Articles = () => {
                   </Link>
                 ))}
               </div>
+
+              {/* Pagination */}
+              {rest.length > pageSize && (
+                <div className="mt-10">
+                  <LibraryPagination
+                    totalCount={rest.length}
+                    currentPage={page}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                    onPageSizeChange={setPageSize}
+                    pageSizeOptions={[8, 16, 24, 32]}
+                    itemLabel="articles"
+                    scrollTargetRef={articlesGridRef}
+                  />
+                </div>
+              )}
 
               {/* Library Spotlight Bridge */}
               <div className="mt-16 p-8 rounded-3xl bg-gradient-to-r from-brand-primary/10 via-card to-brand-secondary/10 border border-border flex flex-col md:flex-row items-center justify-between gap-6">

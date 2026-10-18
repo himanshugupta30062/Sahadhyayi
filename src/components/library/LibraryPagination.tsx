@@ -1,12 +1,4 @@
-
 import React, { useEffect, useState } from 'react';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationEllipsis,
-} from '@/components/ui/pagination';
 import {
   Select,
   SelectContent,
@@ -16,9 +8,16 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  MoreHorizontal,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface LibraryPaginationProps {
+export interface LibraryPaginationProps {
   totalCount: number;
   currentPage: number;
   pageSize: number;
@@ -26,9 +25,11 @@ interface LibraryPaginationProps {
   onPageSizeChange: (size: number) => void;
   scrollTargetRef?: React.RefObject<HTMLElement>;
   itemLabel?: string;
+  className?: string;
+  pageSizeOptions?: number[];
 }
 
-const LibraryPagination: React.FC<LibraryPaginationProps> = ({
+export const LibraryPagination: React.FC<LibraryPaginationProps> = ({
   totalCount,
   currentPage,
   pageSize,
@@ -36,6 +37,8 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
   onPageSizeChange,
   scrollTargetRef,
   itemLabel = 'books',
+  className,
+  pageSizeOptions = [12, 24, 48, 96],
 }) => {
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const [goInput, setGoInput] = useState('');
@@ -52,14 +55,17 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
 
   const handlePageSizeChange = (value: string) => {
     const size = parseInt(value, 10);
-    onPageSizeChange(size);
-    onPageChange(1);
+    if (!isNaN(size) && size > 0) {
+      onPageSizeChange(size);
+      onPageChange(1);
+    }
   };
 
-  const handleGo = () => {
+  const handleGo = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const pageNum = parseInt(goInput, 10);
     if (!pageNum || pageNum < 1 || pageNum > totalPages) {
-      setError(`Please enter a valid page number (1-${totalPages})`);
+      setError(`1–${totalPages}`);
       return;
     }
     setError('');
@@ -67,56 +73,22 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
     setGoInput('');
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleGo();
-    }
-  };
-
-  // Generate page numbers with ellipsis if needed
-  const getVisiblePages = () => {
-    type PageType = number | "ellipsis";
-    const pages: PageType[] = [];
-
+  // Modern, clean visible page numbers calculation
+  const getVisiblePages = (): (number | 'ellipsis')[] => {
     if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-      return pages;
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
-    pages.push(1);
-    const left = Math.max(currentPage - 1, 2);
-    const right = Math.min(currentPage + 1, totalPages - 1);
-
-    if (left > 2) {
-      pages.push("ellipsis");
+    if (currentPage <= 4) {
+      return [1, 2, 3, 4, 5, 'ellipsis', totalPages];
     }
 
-    for (let i = left; i <= right; i++) {
-      pages.push(i);
+    if (currentPage >= totalPages - 3) {
+      return [1, 'ellipsis', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
     }
 
-    if (right < totalPages - 1) {
-      pages.push("ellipsis");
-    }
-
-    pages.push(totalPages);
-    return pages;
+    return [1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages];
   };
-
-  // Detect mobile screen size
-  const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640); // sm breakpoint
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const visiblePages = getVisiblePages();
 
@@ -125,166 +97,170 @@ const LibraryPagination: React.FC<LibraryPaginationProps> = ({
   }
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6 shadow-sm space-y-6">
-      {/* Summary and Page Size Selector */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="text-sm font-medium text-gray-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
-          Showing <span className="font-bold text-blue-600">{start}-{end}</span> of{' '}
-          <span className="font-bold text-blue-600">{totalCount}</span> {itemLabel}
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-gray-700">Items per page:</span>
+    <nav
+      role="navigation"
+      aria-label="Pagination"
+      className={cn(
+        'flex flex-col lg:flex-row items-center justify-between gap-4 p-3 sm:p-4 rounded-2xl bg-white/80 dark:bg-[#121614]/80 backdrop-blur-md border border-[#E8E2D9] dark:border-[#26302A] shadow-xs text-[#1C201D] dark:text-[#F3F0E7]',
+        className
+      )}
+    >
+      {/* Left: Summary & Page Size Selector */}
+      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 w-full lg:w-auto text-xs sm:text-sm text-[#636B65] dark:text-[#A5ADA6]">
+        <span>
+          Showing{' '}
+          <strong className="font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
+            {start.toLocaleString()}–{end.toLocaleString()}
+          </strong>{' '}
+          of{' '}
+          <strong className="font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
+            {totalCount.toLocaleString()}
+          </strong>{' '}
+          {itemLabel}
+        </span>
+
+        <span className="hidden sm:inline text-[#E8E2D9] dark:text-[#26302A]">•</span>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs">Per page:</span>
           <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-            <SelectTrigger className="w-24 h-9 border-2 border-gray-200 hover:border-blue-300 transition-colors font-medium">
+            <SelectTrigger
+              aria-label="Items per page"
+              className="h-7 w-[68px] text-xs font-medium rounded-lg border-[#E8E2D9] dark:border-[#26302A] bg-white dark:bg-[#181F1B] text-[#1C201D] dark:text-[#F3F0E7] focus:ring-1 focus:ring-[#1C442D] dark:focus:ring-[#D5B16D]"
+            >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              {[12, 24, 48, 96].map((size) => (
-                <SelectItem key={size} value={size.toString()} className="font-medium">
-                  {size}
-                </SelectItem>
-              ))}
+            <SelectContent className="bg-white dark:bg-[#181F1B] border-[#E8E2D9] dark:border-[#26302A] text-xs">
+              {Array.from(new Set([...pageSizeOptions, pageSize]))
+                .sort((a, b) => a - b)
+                .map((size) => (
+                  <SelectItem key={size} value={size.toString()} className="text-xs cursor-pointer">
+                    {size}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
       </div>
 
+      {/* Center: Pagination Controls */}
       {totalPages > 1 && (
-        <>
-          {/* Main Pagination */}
-          <div className="flex flex-col items-center gap-4">
-            <Pagination>
-              <PaginationContent className={`gap-1 ${isMobile ? 'flex-wrap justify-center' : 'gap-2'}`}>
-                {/* First/Previous - Show only if not mobile or show compact version */}
-                {!isMobile && (
-                  <PaginationItem>
-                    <Button
-                      variant={currentPage === 1 ? "ghost" : "outline"}
-                      size="sm"
-                      disabled={currentPage === 1}
-                      onClick={() => onPageChange(1)}
-                      className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronsLeft className="h-4 w-4" />
-                      <span className="hidden sm:inline ml-1">First</span>
-                    </Button>
-                  </PaginationItem>
-                )}
+        <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[#F4EFEA]/80 dark:bg-[#181F1B]/90 border border-[#E8E2D9]/70 dark:border-[#26302A] shadow-2xs">
+          {/* First Page */}
+          <button
+            type="button"
+            onClick={() => onPageChange(1)}
+            disabled={currentPage === 1}
+            aria-label="First page"
+            className="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg text-[#636B65] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] hover:bg-white dark:hover:bg-[#202823] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+          >
+            <ChevronsLeft className="w-4 h-4" />
+          </button>
 
-                {/* Previous Page */}
-                <PaginationItem>
-                  <Button
-                    variant={currentPage === 1 ? "ghost" : "outline"}
-                    size="sm"
-                    disabled={currentPage === 1}
-                    onClick={() => onPageChange(currentPage - 1)}
-                    className={`border-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isMobile ? 'h-9 w-9 px-0' : 'h-10 px-3'
-                    }`}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    {!isMobile && <span className="hidden sm:inline ml-1">Prev</span>}
-                  </Button>
-                </PaginationItem>
+          {/* Previous Page */}
+          <button
+            type="button"
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            aria-label="Previous page"
+            className="h-8 px-2 sm:px-2.5 flex items-center justify-center gap-1 rounded-lg text-xs font-medium text-[#636B65] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] hover:bg-white dark:hover:bg-[#202823] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="hidden md:inline">Prev</span>
+          </button>
 
-                {/* Page Numbers */}
-                {visiblePages.map((page, idx) =>
-                  page === "ellipsis" ? (
-                    <PaginationItem key={`ellipsis-${idx}`}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  ) : (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        href="#"
-                        isActive={page === currentPage}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          onPageChange(page);
-                        }}
-                        className={`border-2 font-medium transition-all ${
-                          isMobile ? 'h-9 w-9 text-sm' : 'h-10 w-10'
-                        } ${
-                          page === currentPage
-                            ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                        }`}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
-                )}
-
-                {/* Next Page */}
-                <PaginationItem>
-                  <Button
-                    variant={currentPage === totalPages ? "ghost" : "outline"}
-                    size="sm"
-                    disabled={currentPage === totalPages}
-                    onClick={() => onPageChange(currentPage + 1)}
-                    className={`border-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isMobile ? 'h-9 w-9 px-0' : 'h-10 px-3'
-                    }`}
-                  >
-                    {!isMobile && <span className="hidden sm:inline mr-1">Next</span>}
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </PaginationItem>
-
-                {/* Last Page - Hide on mobile */}
-                {!isMobile && (
-                  <PaginationItem>
-                    <Button
-                      variant={currentPage === totalPages ? "ghost" : "outline"}
-                      size="sm"
-                      disabled={currentPage === totalPages}
-                      onClick={() => onPageChange(totalPages)}
-                      className="h-10 px-3 border-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span className="hidden sm:inline mr-1">Last</span>
-                      <ChevronsRight className="h-4 w-4" />
-                    </Button>
-                  </PaginationItem>
-                )}
-              </PaginationContent>
-            </Pagination>
-
-            {/* Jump to Page (only show if more than 10 pages) */}
-            {totalPages > 10 && (
-              <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Jump to page:</span>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    value={goInput}
-                    onChange={(e) => setGoInput(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder={`1-${totalPages}`}
-                    className="w-20 h-9 text-center border-2 border-gray-200 focus:border-blue-400"
-                    min={1}
-                    max={totalPages}
-                  />
-                  <Button 
-                    size="sm" 
-                    onClick={handleGo}
-                    className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                  >
-                    Go
-                  </Button>
-                </div>
-                {error && (
-                  <span className="text-red-500 text-sm font-medium bg-red-50 px-3 py-1 rounded border border-red-200">
-                    {error}
-                  </span>
-                )}
-              </div>
+          {/* Page Numbers */}
+          <div className="flex items-center gap-1">
+            {visiblePages.map((page, idx) =>
+              page === 'ellipsis' ? (
+                <span
+                  key={`ellipsis-${idx}`}
+                  className="h-8 w-6 flex items-center justify-center text-[#9CA3AF] dark:text-[#6B7280]"
+                  aria-hidden="true"
+                >
+                  <MoreHorizontal className="w-3.5 h-3.5" />
+                </span>
+              ) : (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => onPageChange(page)}
+                  aria-current={page === currentPage ? 'page' : undefined}
+                  aria-label={`Page ${page}`}
+                  className={cn(
+                    'h-8 min-w-8 px-2 flex items-center justify-center rounded-lg text-xs font-medium transition-all cursor-pointer',
+                    page === currentPage
+                      ? 'bg-[#1C442D] text-white dark:bg-[#D5B16D] dark:text-[#0B0D0C] font-semibold shadow-xs'
+                      : 'text-[#636B65] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] hover:bg-white dark:hover:bg-[#202823]'
+                  )}
+                >
+                  {page}
+                </button>
+              )
             )}
           </div>
-        </>
+
+          {/* Next Page */}
+          <button
+            type="button"
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            aria-label="Next page"
+            className="h-8 px-2 sm:px-2.5 flex items-center justify-center gap-1 rounded-lg text-xs font-medium text-[#636B65] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] hover:bg-white dark:hover:bg-[#202823] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+          >
+            <span className="hidden md:inline">Next</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          {/* Last Page */}
+          <button
+            type="button"
+            onClick={() => onPageChange(totalPages)}
+            disabled={currentPage === totalPages}
+            aria-label="Last page"
+            className="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg text-[#636B65] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] hover:bg-white dark:hover:bg-[#202823] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+          >
+            <ChevronsRight className="w-4 h-4" />
+          </button>
+        </div>
       )}
-    </div>
+
+      {/* Right: Quick Jump to Page (when > 4 pages) */}
+      {totalPages > 4 && (
+        <form
+          onSubmit={handleGo}
+          className="flex items-center gap-1.5 text-xs text-[#636B65] dark:text-[#A5ADA6] w-full lg:w-auto justify-center lg:justify-end"
+        >
+          <span>Page</span>
+          <Input
+            type="number"
+            value={goInput}
+            onChange={(e) => {
+              setGoInput(e.target.value);
+              if (error) setError('');
+            }}
+            placeholder={String(currentPage)}
+            aria-label="Page number to jump to"
+            className={cn(
+              'w-12 h-7 px-1 text-center text-xs font-medium rounded-lg border-[#E8E2D9] dark:border-[#26302A] bg-white dark:bg-[#181F1B] text-[#1C201D] dark:text-[#F3F0E7] focus:ring-1 focus:ring-[#1C442D] dark:focus:ring-[#D5B16D]',
+              error && 'border-red-500 focus:ring-red-500'
+            )}
+            min={1}
+            max={totalPages}
+          />
+          <span>of {totalPages.toLocaleString()}</span>
+          <Button
+            type="submit"
+            variant="ghost"
+            size="sm"
+            disabled={!goInput.trim()}
+            className="h-7 px-2 text-xs font-medium text-[#1C442D] dark:text-[#D5B16D] hover:bg-[#1C442D]/10 dark:hover:bg-[#D5B16D]/10 disabled:opacity-30"
+          >
+            Go
+          </Button>
+        </form>
+      )}
+    </nav>
   );
 };
 
