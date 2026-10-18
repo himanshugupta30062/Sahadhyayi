@@ -70,8 +70,24 @@ serve(async (req) => {
     });
 
     if (!rpcError && rpcStats && typeof rpcStats === "object") {
-      // Direct return of sanitized, authoritative server-aggregated statistics
-      return new Response(JSON.stringify(rpcStats), {
+      // City aggregates live in a separate, privacy-conscious RPC so the main
+      // visitor aggregate remains focused on traffic, devices, pages and engagement.
+      let responseStats = rpcStats as Record<string, unknown>;
+      const { data: cityStats, error: cityStatsError } = await supabase.rpc("get_community_pulse_city_stats", {
+        p_timeframe: timeframe,
+      });
+
+      if (!cityStatsError && cityStats && typeof cityStats === "object") {
+        responseStats = {
+          ...responseStats,
+          topCities: Array.isArray((cityStats as Record<string, unknown>).topCities)
+            ? (cityStats as Record<string, unknown>).topCities
+            : [],
+          mostVisitedCity24h: (cityStats as Record<string, unknown>).mostVisitedCity24h ?? null,
+        };
+      }
+
+      return new Response(JSON.stringify(responseStats), {
         status: 200,
         headers: {
           ...corsHeaders,
@@ -102,6 +118,19 @@ serve(async (req) => {
       supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview"),
       supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview").gte("visited_at", timeframeStart),
     ]);
+
+    // Restore city panels independently when that aggregate RPC is deployed.
+    let cityStats: Record<string, unknown> = {};
+    try {
+      const { data, error } = await supabase.rpc("get_community_pulse_city_stats", {
+        p_timeframe: timeframe,
+      });
+      if (!error && data && typeof data === "object") {
+        cityStats = data as Record<string, unknown>;
+      }
+    } catch {
+      // Keep the response explicitly partial if city aggregation is not deployed yet.
+    }
 
     const registeredReaders = totalSignupsRes.error ? null : totalSignupsRes.count;
     const newReaders = newSignupsPeriodRes.error ? null : newSignupsPeriodRes.count;
@@ -211,6 +240,8 @@ serve(async (req) => {
       },
 
       topMembers: [],
+      topCities: Array.isArray(cityStats.topCities) ? cityStats.topCities : [],
+      mostVisitedCity24h: cityStats.mostVisitedCity24h ?? null,
 
       // This fallback deliberately marks unaggregated details as unavailable.
       // Do not invent country/page/device/referrer distributions when the SQL aggregate fails.
