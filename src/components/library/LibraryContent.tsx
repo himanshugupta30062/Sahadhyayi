@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useBooksByGenre } from '@/hooks/useLibraryBooks';
+import { useBooksByGenre, compareLibraryBooks } from '@/hooks/useLibraryBooks';
 import BookGridView from '@/components/library/BookGridView';
 import BookListView from '@/components/library/BookListView';
 import LibraryPagination from '@/components/library/LibraryPagination';
@@ -69,7 +69,7 @@ const LibraryContent = ({
         case 'date-asc':
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         default:
-          return 0;
+          return compareLibraryBooks(a, b);
       }
     });
 

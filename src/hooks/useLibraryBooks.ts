@@ -47,101 +47,322 @@ export interface Book {
 export const BOOK_SELECT_COLUMNS = BASE_BOOK_SELECT_COLUMNS;
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
-// Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
-  { label: 'Reflowable EPUB / Complete full text', points: '+300', priority: 'highest' },
-  { label: 'Verified ISBN & Bibliographic metadata', points: '+200', priority: 'high' },
-  { label: 'Direct open reading access', points: '+150', priority: 'high' },
-  { label: 'Editorial assurance (Standard Ebooks / Open Textbooks / Gutenberg)', points: '+150', priority: 'high' },
-  { label: 'Comprehensive synopsis & pagination', points: '+100', priority: 'medium' },
-  { label: 'Verified high-res cover art', points: '+50', priority: 'medium' },
-  { label: 'Ghost/empty record demotion', points: '−400', priority: 'demoted' },
+  { label: 'Verified PDF with complete metadata', points: 'Top Tier (10,000+)', priority: 'highest' },
+  { label: 'Verified PDF with partial metadata', points: 'Tier 2 (7,000+)', priority: 'high' },
+  { label: 'Other verified full text (EPUB / HTML reader)', points: 'Tier 3 (5,000+)', priority: 'high' },
+  { label: 'Unverified or broken reading links', points: 'Demoted (3,000+)', priority: 'demoted' },
+  { label: 'Metadata-only records (no reading files)', points: 'Bottom (1,000+)', priority: 'low' },
+  { label: 'Bibliographic completeness & cover quality', points: '+10 to +400', priority: 'medium' },
   { label: 'Tie-breaker', points: 'newest first', priority: 'info' },
 ];
 
-// Function to calculate book completeness score (higher score = better book)
+/**
+ * Evaluates whether a book has a verified, working PDF link.
+ * A non-empty pdf_url does NOT automatically count as a verified PDF.
+ */
+export function isVerifiedPdf(book: any): boolean {
+  if (!book) return false;
+
+  // 1. Explicit broken link flags or unverified access status
+  if (book.isBrokenLink === true) return false;
+  if (book.accessStatus === 'access_unverified') return false;
+
+  // 2. If structured assets exist, check the PDF asset's verification status
+  if (Array.isArray(book.assets) && book.assets.length > 0) {
+    const pdfAsset = book.assets.find((a: any) => a.format === 'pdf');
+    if (pdfAsset) {
+      if (pdfAsset.verified === false) return false;
+      const url = (pdfAsset.downloadUrl || pdfAsset.readerUrl || '').trim();
+      if (!url || url.includes('books.google.') || url.includes('broken') || url.includes('404')) {
+        return false;
+      }
+      return true;
+    }
+  }
+
+  // 3. Check raw pdf_url
+  const pdf = (book.pdf_url || book.pdfUrl || '').trim();
+  if (!pdf) return false;
+
+  // Reject Google Books previews masquerading as PDFs
+  if (
+    book.isGooglePreview ||
+    book.accessStatus === 'preview_only' ||
+    pdf.includes('books.google.')
+  ) {
+    return false;
+  }
+
+  // Reject invalid, placeholder, or broken link patterns
+  if (
+    pdf === '#' ||
+    pdf.startsWith('javascript:') ||
+    pdf.includes('broken') ||
+    pdf.includes('404') ||
+    pdf.includes('invalid')
+  ) {
+    return false;
+  }
+
+  // Must be a valid HTTP/HTTPS URL or storage path
+  if (!/^https?:\/\//i.test(pdf) && !pdf.startsWith('/')) {
+    return false;
+  }
+
+  // Check verified PDF indicators:
+  // - Direct .pdf extension
+  // - Or hosted on verified document repository (Supabase, Gutenberg, Open Textbook, OpenStax, Archive.org download, NCERT, DOAB)
+  // - Or book.accessStatus indicates verified full text
+  const isPdfExtension = /\.pdf(\?|#|$)/i.test(pdf);
+  const isTrustedHost =
+    pdf.includes('supabase.co') ||
+    pdf.includes('gutenberg.org') ||
+    pdf.includes('open.umn.edu') ||
+    pdf.includes('openstax.org') ||
+    pdf.includes('archive.org/download') ||
+    pdf.includes('ncert.nic.in') ||
+    pdf.includes('doabooks.org');
+  const isVerifiedAccessStatus =
+    book.accessStatus === 'verified_full_text' ||
+    book.accessStatus === 'open_textbook' ||
+    book.accessStatus === 'public_domain';
+
+  return isPdfExtension || isTrustedHost || isVerifiedAccessStatus;
+}
+
+/**
+ * Evaluates whether a book has complete metadata:
+ * title, author, cover, description, language, etc.
+ */
+export function hasCompleteMetadata(book: any): boolean {
+  if (!book) return false;
+
+  // Title: non-empty, length >= 2, not placeholder
+  const title = (book.title || '').trim();
+  if (!title || title.length < 2 || /^(test|untitled|sample|demo|n\/a|null|undefined)$/i.test(title)) {
+    return false;
+  }
+
+  // Author: non-empty, not unknown / anonymous
+  const author = (book.author || '').trim();
+  if (
+    !author ||
+    author.toLowerCase() === 'unknown author' ||
+    author.toLowerCase() === 'unknown' ||
+    author.toLowerCase() === 'anonymous'
+  ) {
+    return false;
+  }
+
+  // Cover: normalized cover image URL present and not placeholder
+  const cover = normalizeCoverUrl(book.cover_image_url || book.coverImageUrl);
+  if (!cover || cover.includes('placeholder') || cover.includes('default')) {
+    return false;
+  }
+
+  // Description: meaningful synopsis (>= 20 characters)
+  const description = (book.description || '').trim();
+  if (!description || description.length < 20) {
+    return false;
+  }
+
+  // Language: present
+  const language = (book.language || '').trim();
+  if (!language) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Checks if a book has other verified full-text formats (such as EPUB or official HTML readers).
+ */
+export function hasOtherVerifiedFullText(book: any): boolean {
+  if (!book) return false;
+  if (isVerifiedPdf(book)) return false; // Already handled by verified PDF group
+  if (book.isBrokenLink === true) return false;
+  if (book.accessStatus === 'access_unverified' || book.accessStatus === 'preview_only') return false;
+
+  const epub = (book.epub_url || book.epubUrl || '').trim();
+  if (epub && !epub.includes('broken') && !epub.includes('404') && (/^https?:\/\//i.test(epub) || epub.startsWith('/'))) {
+    return true;
+  }
+
+  if (Array.isArray(book.assets) && book.assets.length > 0) {
+    const otherAsset = book.assets.find(
+      (a: any) =>
+        (a.format === 'epub' || a.format === 'html' || a.format === 'official_reader') &&
+        a.verified !== false
+    );
+    if (otherAsset) {
+      const url = (otherAsset.downloadUrl || otherAsset.readerUrl || '').trim();
+      if (url && !url.includes('broken') && !url.includes('404')) {
+        return true;
+      }
+    }
+  }
+
+  if (book.accessStatus === 'carefully_edited' || book.accessStatus === 'official_reader') {
+    return true;
+  }
+
+  const pdf = (book.pdf_url || book.pdfUrl || '').trim();
+  if (pdf.includes('.epub') || pdf.includes('standardebooks')) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Checks if a book has an unverified or broken reading link.
+ */
+export function hasUnverifiedOrBrokenLink(book: any): boolean {
+  if (!book) return false;
+  if (isVerifiedPdf(book) || hasOtherVerifiedFullText(book)) return false;
+
+  if (book.isBrokenLink === true) return true;
+  if (book.accessStatus === 'access_unverified' || book.accessStatus === 'preview_only') return true;
+
+  const pdf = (book.pdf_url || book.pdfUrl || '').trim();
+  const epub = (book.epub_url || book.epubUrl || '').trim();
+  if (pdf || epub) {
+    return true; // Has link, but not verified
+  }
+
+  if (Array.isArray(book.assets) && book.assets.length > 0) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Checks if a book is metadata-only with no digital full-text access.
+ */
+export function isMetadataOnly(book: any): boolean {
+  if (!book) return false;
+  if (isVerifiedPdf(book) || hasOtherVerifiedFullText(book) || hasUnverifiedOrBrokenLink(book)) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Calculates book ranking score according to the verified content hierarchy:
+ * 1. Verified PDF + complete metadata (10,000+)
+ * 2. Verified PDF + incomplete metadata (7,000+)
+ * 3. Other verified full-text formats (EPUB / HTML reader) (5,000+)
+ * 4. Unverified or broken reading links (3,000+)
+ * 5. Metadata-only records (1,000+)
+ * 6. Empty / ghost records (0+)
+ */
 export const getBookCompletenessScore = (book: any): number => {
-  let score = 0;
+  if (!book) return 0;
 
-  // Content integrity & readability (max 300)
-  const pdf = book.pdf_url || '';
-  const epub = book.epub_url || '';
-  const isGooglePreview = pdf && pdf.includes('books.google.com');
+  const verifiedPdf = isVerifiedPdf(book);
+  const completeMeta = hasCompleteMetadata(book);
+  const otherFullText = hasOtherVerifiedFullText(book);
+  const brokenOrUnverified = hasUnverifiedOrBrokenLink(book);
 
-  if (epub || (pdf && pdf.includes('standardebooks'))) {
-    score += 300;
-  } else if (pdf && !isGooglePreview) {
-    score += 240;
-  } else if (isGooglePreview) {
-    score += 50;
-  }
-
-  // Bibliographic identity (max 200)
-  if (book.author && book.author.trim() && book.author !== 'Unknown Author') {
-    score += 80;
-  }
-  if (book.isbn && book.isbn.replace(/[^0-9X]/gi, '').length >= 10) {
-    score += 80;
-  }
-  if (book.publication_year && book.publication_year > 1400) {
-    score += 40;
-  }
-
-  // Verified access (max 150)
-  if (epub || (pdf && !isGooglePreview)) {
-    score += 150;
-  } else if (isGooglePreview) {
-    score += 40;
-  }
-
-  // Editorial assurance (max 150)
-  const source = (pdf || '').toLowerCase();
-  if (source.includes('standardebooks')) {
-    score += 150;
-  } else if (source.includes('open.umn.edu') || source.includes('openstax')) {
-    score += 140;
-  } else if (source.includes('gutenberg')) {
-    score += 120;
-  } else if (source.includes('archive.org')) {
-    score += 90;
+  // Determine base tier score
+  let baseScore = 0;
+  if (verifiedPdf && completeMeta) {
+    baseScore = 10000; // Tier 1: Verified PDF + complete metadata (at the top)
+  } else if (verifiedPdf) {
+    baseScore = 7000;  // Tier 2: Verified PDF + incomplete metadata
+  } else if (otherFullText) {
+    baseScore = 5000;  // Tier 3: Other verified full-text (EPUB, official HTML)
+    if (completeMeta) baseScore += 500; // Sub-boost within Tier 3 for complete metadata
+  } else if (brokenOrUnverified) {
+    baseScore = 3000;  // Tier 4: Unverified or broken reading links
   } else {
-    score += 40;
+    // Check if empty ghost record
+    const title = (book.title || '').trim();
+    const desc = (book.description || '').trim();
+    const cover = normalizeCoverUrl(book.cover_image_url || book.coverImageUrl);
+    if (!cover && (!desc || desc.length < 20) && (!title || title.length < 3)) {
+      baseScore = 0;   // Tier 6: Empty ghost record
+    } else {
+      baseScore = 1000; // Tier 5: Metadata-only book with no full-text access
+    }
   }
 
-  // Metadata completeness (max 100)
-  if (book.description && book.description.length >= 100) score += 40;
-  else if (book.description) score += 20;
-  if (book.genre) score += 20;
-  if (book.pages && book.pages > 10) score += 20;
-  if (book.author_bio) score += 20;
+  // Detailed sub-scoring within tier (max 450 points, preserves relative quality within each tier)
+  let subScore = 0;
 
-  // Cover presentation (max 50)
-  const cover = normalizeCoverUrl(book.cover_image_url);
+  // Bibliographic metadata (max 140)
+  const author = (book.author || '').trim();
+  if (author && author.toLowerCase() !== 'unknown author' && author.toLowerCase() !== 'anonymous') {
+    subScore += 50;
+  }
+  const isbn = (book.isbn || '').toString().replace(/[^0-9X]/gi, '');
+  if (isbn.length >= 10) {
+    subScore += 50;
+  }
+  const pubYear = book.publication_year || book.publicationYear;
+  if (pubYear && pubYear > 1400 && pubYear <= new Date().getFullYear()) {
+    subScore += 40;
+  }
+
+  // Synopsis, genre, pages, bio (max 130)
+  const desc = (book.description || '').trim();
+  if (desc.length >= 100) subScore += 40;
+  else if (desc.length >= 20) subScore += 20;
+
+  const genre = (book.genre || '').trim();
+  if (genre) subScore += 30;
+
+  const pages = book.pages;
+  if (pages && pages > 10) subScore += 30;
+
+  if (book.author_bio) subScore += 30;
+
+  // Cover quality (max 60)
+  const cover = normalizeCoverUrl(book.cover_image_url || book.coverImageUrl);
   if (cover) {
-    score += 30;
-    score += Math.min(20, Math.round(getCoverQualityScore(cover) / 25));
+    subScore += 30;
+    subScore += Math.min(30, Math.round(getCoverQualityScore(cover) / 25) * 5);
   }
 
-  // Demotions for empty ghost records
-  if (!cover && !pdf && !epub && (!book.description || book.description.length < 20)) {
-    score -= 400;
+  // Provenance / QualityScore bonus (max 40)
+  if (typeof book.qualityScore === 'number' && book.qualityScore > 0) {
+    subScore += Math.min(40, Math.round(book.qualityScore * 0.4));
   }
 
-  // Preview cap
-  if (isGooglePreview && score > 350) {
-    score = 350;
-  }
+  return baseScore + subScore;
+};
 
-  return score;
+/**
+ * Deterministic library book comparator function.
+ */
+export const compareLibraryBooks = (a: any, b: any): number => {
+  const scoreA = getBookCompletenessScore(a);
+  const scoreB = getBookCompletenessScore(b);
+  if (scoreA !== scoreB) {
+    return scoreB - scoreA;
+  }
+  // Tie-breaker 1: newest created_at first
+  const dateA = a?.created_at ? new Date(a.created_at).getTime() : 0;
+  const dateB = b?.created_at ? new Date(b.created_at).getTime() : 0;
+  if (dateB !== dateA) {
+    return dateB - dateA;
+  }
+  // Tie-breaker 2: title alphabetical
+  const titleA = (a?.title || '').trim().toLowerCase();
+  const titleB = (b?.title || '').trim().toLowerCase();
+  const titleCompare = titleA.localeCompare(titleB);
+  if (titleCompare !== 0) {
+    return titleCompare;
+  }
+  // Tie-breaker 3: ID alphabetical for absolute determinism
+  return String(a?.id || '').localeCompare(String(b?.id || ''));
 };
 
 export const sortBooksByCompleteness = (books: any[]): any[] => {
-  return books.sort((a, b) => {
-    const scoreA = getBookCompletenessScore(a);
-    const scoreB = getBookCompletenessScore(b);
-    if (scoreA !== scoreB) return scoreB - scoreA;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+  return [...books].sort(compareLibraryBooks);
 };
 
 const mapBook = (book: any): Book => ({
