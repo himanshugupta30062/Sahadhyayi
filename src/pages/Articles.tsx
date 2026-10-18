@@ -108,7 +108,7 @@ const Articles = () => {
                 The Sahadhyayi Journal
               </div>
               <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
-                Stories &amp; Ideas
+                Articles
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
                 Thoughtful essays, book reflections, and stories to spark your next idea — written by readers who have something to say.
