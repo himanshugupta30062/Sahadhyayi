@@ -174,7 +174,6 @@ export default function HeroAtomicRings({
         : { width: size, height: size };
 
   const gradients = [outerGradientId, middleGradientId, innerGradientId];
-  const colors = ['#FB7185', '#22C55E', '#3B82F6'];
 
   return (
     <div
