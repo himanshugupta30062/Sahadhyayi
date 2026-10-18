@@ -274,6 +274,33 @@ Deno.serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
+    // Bound ingestion by source IP without persisting another raw IP copy in rate_limits.
+    // The existing pageview row keeps the configured analytics location context.
+    const rateLimitSource = getRealIP(req);
+    const rateLimitFallback = validUuid(body.session_id) || validUuid(body.visitor_id) || 'unknown';
+    const rateLimitInput = rateLimitSource && rateLimitSource !== '0.0.0.0'
+      ? `ip:${rateLimitSource}`
+      : `session:${rateLimitFallback}`;
+    const rateLimitDigest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rateLimitInput));
+    const rateLimitIdentifier = Array.from(new Uint8Array(rateLimitDigest))
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('');
+    const { data: withinRateLimit, error: rateLimitError } = await supabase.rpc('check_rate_limit', {
+      p_identifier: rateLimitIdentifier,
+      p_endpoint: eventType === 'pageview' ? 'website-analytics-pageview' : 'website-analytics-activity',
+      p_max_requests: eventType === 'pageview' ? 90 : 300,
+      p_window_minutes: 1,
+    });
+    if (rateLimitError) {
+      // Do not lose real analytics because an optional limiter is temporarily unavailable.
+      console.error('Analytics rate limiter unavailable:', rateLimitError.code || 'rate_limit_error');
+    } else if (withinRateLimit === false) {
+      return new Response(JSON.stringify({ error: 'Analytics request rate exceeded' }), {
+        status: 429,
+        headers: { ...jsonHeaders, 'Retry-After': '60' },
+      });
+    }
+
     // Always derive user_id from a verified Auth token; never trust a body-provided user id.
     let authUserId: string | null = null;
     const authHeader = req.headers.get('Authorization');
