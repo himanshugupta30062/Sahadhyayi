@@ -70,8 +70,24 @@ serve(async (req) => {
     });
 
     if (!rpcError && rpcStats && typeof rpcStats === "object") {
-      // Direct return of sanitized, authoritative server-aggregated statistics
-      return new Response(JSON.stringify(rpcStats), {
+      // City aggregates live in a separate, privacy-conscious RPC so the main
+      // visitor aggregate remains focused on traffic, devices, pages and engagement.
+      let responseStats = rpcStats as Record<string, unknown>;
+      const { data: cityStats, error: cityStatsError } = await supabase.rpc("get_community_pulse_city_stats", {
+        p_timeframe: timeframe,
+      });
+
+      if (!cityStatsError && cityStats && typeof cityStats === "object") {
+        responseStats = {
+          ...responseStats,
+          topCities: Array.isArray((cityStats as Record<string, unknown>).topCities)
+            ? (cityStats as Record<string, unknown>).topCities
+            : [],
+          mostVisitedCity24h: (cityStats as Record<string, unknown>).mostVisitedCity24h ?? null,
+        };
+      }
+
+      return new Response(JSON.stringify(responseStats), {
         status: 200,
         headers: {
           ...corsHeaders,
@@ -103,29 +119,61 @@ serve(async (req) => {
       supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview").gte("visited_at", timeframeStart),
     ]);
 
-    const registeredReaders = totalSignupsRes.count ?? 0;
-    const newReaders = newSignupsPeriodRes.count ?? 0;
-    const totalPageviews = totalPageviewsRes.count ?? 0;
-    const periodPageviews = periodPageviewsRes.count ?? 0;
+    // Restore city panels independently when that aggregate RPC is deployed.
+    let cityStats: Record<string, unknown> = {};
+    try {
+      const { data, error } = await supabase.rpc("get_community_pulse_city_stats", {
+        p_timeframe: timeframe,
+      });
+      if (!error && data && typeof data === "object") {
+        cityStats = data as Record<string, unknown>;
+      }
+    } catch {
+      // Keep the response explicitly partial if city aggregation is not deployed yet.
+    }
 
-    // 24 chronological hourly buckets (initialized cleanly with 0)
-    const hourlyActivity = [];
+    const registeredReaders = totalSignupsRes.error ? null : totalSignupsRes.count;
+    const newReaders = newSignupsPeriodRes.error ? null : newSignupsPeriodRes.count;
+    const totalPageviews = totalPageviewsRes.error ? null : totalPageviewsRes.count;
+    const periodPageviews = periodPageviewsRes.error ? null : periodPageviewsRes.count;
+
+    // If the aggregate RPC is unavailable, try exact per-hour counts instead
+    // of presenting an all-zero chart as if it were measured traffic.
     const formatter = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Kolkata",
       hour: "numeric",
       hour12: true,
     });
 
-    for (let i = 0; i < 24; i++) {
-      const d = new Date(now - (23 - i) * 3600 * 1000);
-      hourlyActivity.push({
-        hourIndex: i,
-        bucketStart: d.toISOString(),
-        label: formatter.format(d),
-        pageViews: 0,
-        count: 0,
-        isPeak: false,
-      });
+    const hourlyBuckets = await Promise.all(
+      Array.from({ length: 24 }, async (_, i) => {
+        const bucketStart = new Date(now - (24 - i) * 3600 * 1000);
+        const bucketEnd = new Date(now - (23 - i) * 3600 * 1000);
+        const { count, error } = await supabase
+          .from("website_visits")
+          .select("id", { count: "exact", head: true })
+          .eq("event_type", "pageview")
+          .gte("visited_at", bucketStart.toISOString())
+          .lt("visited_at", bucketEnd.toISOString());
+
+        if (error || typeof count !== "number") return null;
+        return {
+          hourIndex: i,
+          bucketStart: bucketStart.toISOString(),
+          label: formatter.format(bucketStart),
+          pageViews: count,
+          count,
+          isPeak: false,
+        };
+      }),
+    );
+
+    const hourlyActivity = hourlyBuckets.every((bucket) => bucket !== null)
+      ? hourlyBuckets.filter((bucket): bucket is NonNullable<typeof bucket> => bucket !== null)
+      : [];
+    const hourlyPeak = Math.max(0, ...hourlyActivity.map((bucket) => bucket.count));
+    for (const bucket of hourlyActivity) {
+      bucket.isPeak = hourlyPeak > 0 && bucket.count === hourlyPeak;
     }
 
     // Engagement counts from primary tables
@@ -143,25 +191,29 @@ serve(async (req) => {
       supabase.from("post_comments").select("*", { count: "exact", head: true }).gte("created_at", timeframeStart),
     ]);
 
-    const bookOpens = bookOpensRes.count ?? 0;
-    const readingProgressCompletions = progressRes.count ?? 0;
-    const groupJoins = groupJoinsRes.count ?? 0;
-    const discussions = (postsRes.count ?? 0) + (commentsRes.count ?? 0);
+    const bookOpens = bookOpensRes.error ? null : bookOpensRes.count;
+    const readingProgressCompletions = progressRes.error ? null : progressRes.count;
+    const groupJoins = groupJoinsRes.error ? null : groupJoinsRes.count;
+    const discussions = postsRes.error || commentsRes.error || postsRes.count == null || commentsRes.count == null
+      ? null
+      : postsRes.count + commentsRes.count;
 
     const fallbackResponse = {
       schemaVersion: 1,
       timeframe,
+      partialData: true,
+      fallbackMode: "partial",
       periodStart: timeframeStart,
       periodEnd,
       lastUpdated: new Date().toISOString(),
       freshness: "fresh",
 
       metrics: {
-        registeredReaders: { value: registeredReaders, status: "available", definition: "Authoritative count of registered reader accounts" },
-        totalPageViews: { value: totalPageviews, status: "available", definition: "Total recorded pageviews across platform lifetime" },
-        periodPageViews: { value: periodPageviews, status: "available", definition: "Recorded pageviews in the selected timeframe" },
+        registeredReaders: { value: registeredReaders, status: registeredReaders === null ? "unavailable" : "available", definition: "Authoritative count of registered reader accounts" },
+        totalPageViews: { value: totalPageviews, status: totalPageviews === null ? "unavailable" : "available", definition: "Total recorded pageviews across platform lifetime" },
+        periodPageViews: { value: periodPageviews, status: periodPageviews === null ? "unavailable" : "available", definition: "Recorded pageviews in the selected timeframe" },
         uniqueVisitors: { value: null, status: "unavailable", definition: "Unique visitor deduplication unavailable during fallback mode" },
-        newReaders: { value: newReaders, status: "available", definition: "New accounts registered in the selected timeframe" },
+        newReaders: { value: newReaders, status: newReaders === null ? "unavailable" : "available", definition: "New accounts registered in the selected timeframe" },
         averageSessionDurationSeconds: { value: null, status: "unavailable", definition: "Active session duration telemetry not currently instrumented" },
       },
 
@@ -181,13 +233,18 @@ serve(async (req) => {
       },
 
       engagement: {
-        bookOpens: { value: bookOpens, status: "available", definition: "Unique book and reader page views or explicit open events" },
-        readingProgressCompletions: { value: readingProgressCompletions, status: "available", definition: "Completed reading room chapters recorded" },
-        groupJoins: { value: groupJoins, status: "available", definition: "New reading group memberships formed" },
-        discussions: { value: discussions, status: "available", definition: "Community posts and comment responses published" },
+        bookOpens: { value: bookOpens, status: bookOpens === null ? "unavailable" : "available", definition: "Unique book and reader page views or explicit open events" },
+        readingProgressCompletions: { value: readingProgressCompletions, status: readingProgressCompletions === null ? "unavailable" : "available", definition: "Completed reading room chapters recorded" },
+        groupJoins: { value: groupJoins, status: groupJoins === null ? "unavailable" : "available", definition: "New reading group memberships formed" },
+        discussions: { value: discussions, status: discussions === null ? "unavailable" : "available", definition: "Community posts and comment responses published" },
       },
 
       topMembers: [],
+      topCities: Array.isArray(cityStats.topCities) ? cityStats.topCities : [],
+      mostVisitedCity24h: cityStats.mostVisitedCity24h ?? null,
+
+      // This fallback deliberately marks unaggregated details as unavailable.
+      // Do not invent country/page/device/referrer distributions when the SQL aggregate fails.
 
       // Backward compatibility fields
       totalSignups: registeredReaders,

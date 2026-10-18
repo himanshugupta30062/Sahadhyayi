@@ -325,8 +325,8 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     });
   });
 
-  // 7. Legacy Edge function payload without traffic metrics triggers database fallback
-  it('falls back to get_website_visit_count (9,920) and get_total_users_count (4) when edge function returns legacy payload lacking page views', async () => {
+  // 7. A lifetime visit RPC cannot stand in for selected-period page views.
+  it('shows period page views as unavailable when only lifetime visit totals are available', async () => {
     // Legacy schema from un-deployed Edge function
     mockFunctionsInvoke.mockResolvedValue({
       data: {
@@ -350,14 +350,63 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     render(<CommunityPulseDialog open={true} onClose={() => {}} />);
 
     await waitFor(() => {
-      // 9,920 real visits must be displayed from database RPC
-      expect(screen.getByText('9,920')).toBeInTheDocument();
-      // 4 registered readers displayed
+      // 9,920 is the lifetime count, not this period's page views.
+      const pageViewsLabel = screen.getByText('Page views');
+      expect(pageViewsLabel.closest('.rounded-xl')).toHaveTextContent('—');
+      expect(pageViewsLabel.closest('.rounded-xl')).not.toHaveTextContent('9,920');
       expect(screen.getByText('4 Total')).toBeInTheDocument();
     });
+  });
 
-    // Zero page views must NOT be rendered when 9,920 visits exist in the database!
-    expect(screen.queryByText(/^0 Page views/)).not.toBeInTheDocument();
+  // Fallback must never show a lifetime visit count as period page views.
+  it('uses the exact selected-period count and never substitutes lifetime visits or guessed zeros', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        registeredReaders: 4,
+        totalVisits: 9920,
+        lastUpdated: new Date().toISOString(),
+      },
+      error: null,
+    });
+
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
+      if (fn === 'get_total_users_count') return Promise.resolve({ data: 4, error: null });
+      if (fn === 'get_website_visit_count') return Promise.resolve({ data: 9920, error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    mockFrom.mockImplementation((table: string) => {
+      const query: any = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        then: (resolve: (value: any) => unknown) => Promise.resolve({
+          count: table === 'website_visits' ? 7 : table === 'profiles' ? 4 : 0,
+          error: null,
+        }).then(resolve),
+      };
+      return query;
+    });
+
+    render(<CommunityPulseDialog open={true} onClose={() => {}} />);
+
+    await waitFor(() => {
+      const pageViewsLabel = screen.getByText('Page views');
+      expect(pageViewsLabel.closest('.rounded-xl')).toHaveTextContent('7');
+      expect(pageViewsLabel.closest('.rounded-xl')).not.toHaveTextContent('9,920');
+
+      // Unique visitor identity is not available through the count-only fallback.
+      const uniqueLabel = screen.getByText('Unique visitors');
+      expect(uniqueLabel.closest('.rounded-xl')).toHaveTextContent('—');
+      expect(screen.getByText('4 Total')).toBeInTheDocument();
+      expect(screen.getByText('Some analytics details are unavailable')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText('Select metric'), { target: { value: 'unique' } });
+    await waitFor(() => {
+      expect(screen.getByText('Hourly unique visitor data is unavailable')).toBeInTheDocument();
+    });
   });
 
   // 8. Distinguishes between measured 0 and unavailable null ('—')
@@ -417,7 +466,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       referrers: [],
       lastUpdated: '2026-10-18T10:00:00.000Z',
     };
-    localStorage.setItem('sahadhyayi_pulse_stats_24h_v7', JSON.stringify(cachedStats));
+    localStorage.setItem('sahadhyayi_pulse_stats_24h_v8', JSON.stringify(cachedStats));
 
     // Refresh attempt fails
     mockFunctionsInvoke.mockRejectedValue(new Error('Gateway timeout'));
