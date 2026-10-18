@@ -74,3 +74,4 @@ describe('send-contact-email Edge Function Logic', () => {
     expect(formattedError).not.toContain('re_'); // Ensure no API key secret in error output
   });
 });
+

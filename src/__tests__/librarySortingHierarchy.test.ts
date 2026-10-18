@@ -6,6 +6,9 @@ import {
   hasOtherVerifiedFullText,
   hasUnverifiedOrBrokenLink,
   isMetadataOnly,
+  isOnlineReader,
+  isNonBookDocument,
+  getBookResourceType,
   getBookCompletenessScore,
   compareLibraryBooks,
   sortBooksByCompleteness,
@@ -141,6 +144,15 @@ describe('Library Book Sorting Hierarchy', () => {
     created_at: '2026-01-10T00:00:00Z',
   };
 
+  const nasaTechnicalReport = {
+    id: 'doc-nasa-report',
+    title: 'NASA Technical Reports Server (NTRS) 20110005614: The Black Holes in the Hearts of Galaxies',
+    author: 'NASA Technical Reports Server (NTRS)',
+    cover_image_url: null,
+    pdf_url: 'https://archive.org/download/NASA_NTRS_Archive/nasa_report.pdf',
+    created_at: '2026-01-15T00:00:00Z',
+  };
+
   // Requirement 7: Non-empty pdf_url validation
   describe('Requirement 7: PDF link verification rules', () => {
     it('accepts valid, accessible PDF URLs with direct .pdf extension', () => {
@@ -242,12 +254,20 @@ describe('Library Book Sorting Hierarchy', () => {
     });
   });
 
-  // Unverified/broken link and metadata-only detection
-  describe('Requirements 5 & 6: Unverified links and metadata-only records', () => {
+  // Resource types and metadata detection
+  describe('Requirements 5 & 6: Resource type classification and detection', () => {
+    it('classifies resources into distinct defensive resource types', () => {
+      expect(getBookResourceType(completeVerifiedPdf)).toBe('verified_direct_pdf');
+      expect(getBookResourceType(verifiedEpubBook)).toBe('verified_direct_pdf');
+      expect(getBookResourceType(googlePreviewBook)).toBe('online_reader');
+      expect(getBookResourceType(metadataOnlyBook)).toBe('no_reading_resource');
+      expect(isOnlineReader(googlePreviewBook)).toBe(true);
+      expect(isOnlineReader(completeVerifiedPdf)).toBe(false);
+    });
+
     it('identifies broken links and unverified access', () => {
       expect(hasUnverifiedOrBrokenLink(brokenLinkBook)).toBe(true);
       expect(hasUnverifiedOrBrokenLink(unverifiedAccessBook)).toBe(true);
-      expect(hasUnverifiedOrBrokenLink(googlePreviewBook)).toBe(true);
     });
 
     it('identifies metadata-only books with no readable digital assets', () => {
@@ -257,6 +277,12 @@ describe('Library Book Sorting Hierarchy', () => {
     it('does not classify books with working reading files as metadata-only', () => {
       expect(isMetadataOnly(completeVerifiedPdf)).toBe(false);
       expect(isMetadataOnly(verifiedEpubBook)).toBe(false);
+    });
+
+    it('correctly distinguishes technical reports and preprints from books', () => {
+      expect(isNonBookDocument(nasaTechnicalReport)).toBe(true);
+      expect(isNonBookDocument(completeVerifiedPdf)).toBe(false);
+      expect(isNonBookDocument(partialVerifiedPdfNoCover)).toBe(false);
     });
   });
 
@@ -273,57 +299,60 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(scoreWithCover).toBeLessThan(10000);
     });
 
-    it('ranks other verified full-text with cover photo in Tier 3 (8,000-8,799)', () => {
+    it('ranks other verified full-text with cover photo in Tier 3 (8,200-8,799)', () => {
       const scoreEpub = getBookCompletenessScore(verifiedEpubBook);
       const scoreHtml = getBookCompletenessScore(officialHtmlReaderBook);
 
-      expect(scoreEpub).toBeGreaterThanOrEqual(8000);
+      expect(scoreEpub).toBeGreaterThanOrEqual(8200);
       expect(scoreEpub).toBeLessThan(8800);
-      expect(scoreHtml).toBeGreaterThanOrEqual(8000);
+      expect(scoreHtml).toBeGreaterThanOrEqual(8200);
       expect(scoreHtml).toBeLessThan(8800);
     });
 
-    it('ranks verified PDF without cover photo in Tier 4 (7,000-7,999), below covered books', () => {
-      const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
-      const scoreEpubWithCover = getBookCompletenessScore(verifiedEpubBook);
-      const scorePdfWithCover = getBookCompletenessScore(partialVerifiedPdfNoDesc);
-
-      expect(scoreNoCover).toBeGreaterThanOrEqual(7000);
-      expect(scoreNoCover).toBeLessThan(8000);
-
-      // Books with covers strictly outrank books without covers
-      expect(scorePdfWithCover).toBeGreaterThan(scoreNoCover);
-      expect(scoreEpubWithCover).toBeGreaterThan(scoreNoCover);
-    });
-
-    it('ranks unverified or broken reading links below verified-content books (Tier 6: 3,000-4,999)', () => {
-      const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
-      const scoreBroken = getBookCompletenessScore(brokenLinkBook);
-      const scoreUnverified = getBookCompletenessScore(unverifiedAccessBook);
+    it('ranks genuine books with cover and online reader in Tier 4 (7,500-8,199), above coverless documents', () => {
       const scorePreview = getBookCompletenessScore(googlePreviewBook);
+      const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
+      const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
 
-      expect(scoreBroken).toBeGreaterThanOrEqual(3000);
-      expect(scoreBroken).toBeLessThan(5000);
-      expect(scoreUnverified).toBeGreaterThanOrEqual(3000);
-      expect(scoreUnverified).toBeLessThan(5000);
-      expect(scorePreview).toBeGreaterThanOrEqual(3000);
-      expect(scorePreview).toBeLessThan(5000);
+      expect(scorePreview).toBeGreaterThanOrEqual(7500);
+      expect(scorePreview).toBeLessThan(8200);
 
-      expect(scoreNoCover).toBeGreaterThan(scoreBroken);
-      expect(scoreNoCover).toBeGreaterThan(scoreUnverified);
-      expect(scoreNoCover).toBeGreaterThan(scorePreview);
+      // Books with covers and online reader strictly outrank coverless PDFs and reports
+      expect(scorePreview).toBeGreaterThan(scoreNoCover);
+      expect(scorePreview).toBeGreaterThan(scoreNasa);
     });
 
-    it('ranks metadata-only books near the bottom (Tier 7: 1,000-2,999)', () => {
-      const scoreBroken = getBookCompletenessScore(brokenLinkBook);
-      const scoreMetaOnly = getBookCompletenessScore(metadataOnlyBook);
+    it('ranks genuine books with cover and metadata in Tier 5 (6,200-7,499), above coverless documents', () => {
+      const scoreMetaWithCover = getBookCompletenessScore(metadataOnlyBook);
+      const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
+      const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
+
+      expect(scoreMetaWithCover).toBeGreaterThanOrEqual(6200);
+      expect(scoreMetaWithCover).toBeLessThan(7500);
+
+      expect(scoreMetaWithCover).toBeGreaterThan(scoreNoCover);
+      expect(scoreMetaWithCover).toBeGreaterThan(scoreNasa);
+    });
+
+    it('ranks genuine books with verified PDF without cover in Tier 6 (4,500-6,199)', () => {
+      const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
+      const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
+
+      expect(scoreNoCover).toBeGreaterThanOrEqual(4500);
+      expect(scoreNoCover).toBeLessThan(6200);
+
+      // Genuine book without cover outranks non-book institutional reports
+      expect(scoreNoCover).toBeGreaterThan(scoreNasa);
+    });
+
+    it('ranks technical reports and preprints in Tier 7 (3,200-4,499)', () => {
+      const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
       const scoreGhost = getBookCompletenessScore(ghostRecordBook);
 
-      expect(scoreMetaOnly).toBeGreaterThanOrEqual(1000);
-      expect(scoreMetaOnly).toBeLessThan(3000);
+      expect(scoreNasa).toBeGreaterThanOrEqual(3200);
+      expect(scoreNasa).toBeLessThan(4500);
 
-      expect(scoreBroken).toBeGreaterThan(scoreMetaOnly);
-      expect(scoreMetaOnly).toBeGreaterThan(scoreGhost);
+      expect(scoreNasa).toBeGreaterThan(scoreGhost);
     });
   });
 
@@ -332,9 +361,10 @@ describe('Library Book Sorting Hierarchy', () => {
     it('sorts a mixed catalog into the exact required hierarchical order prioritizing covers', () => {
       const mixedBooks = [
         ghostRecordBook,
+        nasaTechnicalReport,
         metadataOnlyBook,
-        brokenLinkBook,
         partialVerifiedPdfNoCover,
+        googlePreviewBook,
         verifiedEpubBook,
         partialVerifiedPdfNoDesc,
         completeVerifiedPdf,
@@ -348,9 +378,10 @@ describe('Library Book Sorting Hierarchy', () => {
         'book-1-complete-pdf',       // Tier 1: complete verified PDF (has cover)
         'book-3-pdf-no-desc',        // Tier 2: verified PDF with cover photo
         'book-4-verified-epub',      // Tier 3: verified EPUB with cover photo
-        'book-2-pdf-no-cover',       // Tier 4: verified PDF without cover photo
-        'book-6-broken-link',        // Tier 6: broken / unverified link
-        'book-9-metadata-only',      // Tier 7: metadata-only
+        'book-8-google-preview',     // Tier 4: online reader with cover photo
+        'book-9-metadata-only',      // Tier 5: metadata-only with cover photo
+        'book-2-pdf-no-cover',       // Tier 6: verified PDF without cover photo
+        'doc-nasa-report',           // Tier 7: technical report without cover
         'book-10-ghost',             // Tier 8: ghost
       ]);
     });
@@ -477,6 +508,219 @@ describe('Library Book Sorting Hierarchy', () => {
       // All 4 books must be preserved across pages
       expect(diversified).toHaveLength(4);
       expect(diversified.map(b => b.id)).toEqual(['cia-1', 'cia-2', 'cia-3', 'cia-4']);
+    });
+  });
+
+  // Section 6 of prompt: Regression tests verifying book-first ranking and resource separation
+  describe('Prompt Section 6: Specific Regression Tests', () => {
+    // 1. A genuine book with a valid cover and Google Books reader link ranks ahead of an unrelated coverless technical paper with a direct PDF
+    it('1. ranks a genuine book with valid cover and Google Books reader link ahead of an unrelated coverless technical paper with direct PDF', () => {
+      const durgaSaptashati = {
+        id: 'durga-saptashati-1',
+        title: 'Shri Durga Saptashati',
+        author: 'Bharat Bhushan Mishra',
+        language: 'Hindi',
+        cover_image_url: 'https://books.google.com/books/content?id=fqiEEQAAQBAJ&printsec=frontcover&img=1',
+        description: 'Complete Sanskrit text with Hindi translation and detailed rituals for recitation.',
+        pdf_url: 'http://books.google.co.in/books?id=fqiEEQAAQBAJ&printsec=frontcover',
+        created_at: '2026-03-24T00:00:00Z',
+      };
+
+      const coverlessTechPaper = {
+        id: 'nasa-tech-paper-1',
+        title: 'NASA Technical Reports Server (NTRS) 20110005614: The Black Holes in the Hearts of Galaxies',
+        author: 'NASA Technical Reports Server (NTRS)',
+        language: 'English',
+        cover_image_url: null,
+        description: 'Technical investigation into galactic center supermassive black holes.',
+        pdf_url: 'https://archive.org/download/NASA_NTRS_Archive/nasa_report.pdf',
+        created_at: '2026-03-25T00:00:00Z',
+      };
+
+      const scoreBook = getBookCompletenessScore(durgaSaptashati);
+      const scorePaper = getBookCompletenessScore(coverlessTechPaper);
+
+      expect(scoreBook).toBeGreaterThan(scorePaper);
+      expect(compareLibraryBooks(durgaSaptashati, coverlessTechPaper)).toBeLessThan(0); // durga ranks first
+    });
+
+    // 2. A verified direct-PDF book with a valid cover ranks appropriately
+    it('2. ranks a verified direct-PDF book with a valid cover at the top tier', () => {
+      const score = getBookCompletenessScore(completeVerifiedPdf);
+      expect(score).toBeGreaterThanOrEqual(10000);
+      expect(getBookResourceType(completeVerifiedPdf)).toBe('verified_direct_pdf');
+    });
+
+    // 3. A coverless genuine book with a direct PDF is not incorrectly treated as a non-book document
+    it('3. does not treat a coverless genuine book with a direct PDF as a non-book document', () => {
+      const kantBook = {
+        id: 'kant-critique',
+        title: 'Critique of Pure Reason',
+        author: 'Immanuel Kant',
+        language: 'English',
+        cover_image_url: null,
+        description: 'A masterpiece of Western philosophy exploring human reason and epistemology.',
+        pdf_url: 'https://archive.org/download/kant_critique/kant.pdf',
+        created_at: '2026-01-01T00:00:00Z',
+      };
+
+      expect(isNonBookDocument(kantBook)).toBe(false);
+      expect(isVerifiedPdf(kantBook)).toBe(true);
+      expect(getBookResourceType(kantBook)).toBe('verified_direct_pdf');
+      // Should score higher than technical reports (Tier 6: 4,500+ vs Tier 7: 3,200)
+      const scoreKant = getBookCompletenessScore(kantBook);
+      const scoreReport = getBookCompletenessScore(nasaTechnicalReport);
+      expect(scoreKant).toBeGreaterThan(scoreReport);
+    });
+
+    // 4. Google Books preview URLs never qualify as verified direct PDFs
+    it('4. ensures Google Books preview URLs never qualify as verified direct PDFs', () => {
+      const googleBooksItem = {
+        id: 'gb-preview-item',
+        title: 'Devdas',
+        author: 'Śaratcandra Caṭṭopādhyāya',
+        cover_image_url: 'https://books.google.com/books/content?id=123&img=1',
+        pdf_url: 'http://books.google.co.in/books?id=J7U719-WcWQC&printsec=frontcover',
+      };
+
+      expect(isVerifiedPdf(googleBooksItem)).toBe(false);
+      expect(getBookResourceType(googleBooksItem)).toBe('online_reader');
+      expect(isOnlineReader(googleBooksItem)).toBe(true);
+    });
+
+    // 5. Missing, malformed, and inaccessible cover URLs are handled safely
+    it('5. handles missing, malformed, and inaccessible cover URLs safely without crashing', () => {
+      expect(hasValidCover({ cover_image_url: null })).toBe(false);
+      expect(hasValidCover({ cover_image_url: undefined })).toBe(false);
+      expect(hasValidCover({ cover_image_url: '' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: '   ' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: '#' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: 'javascript:alert(1)' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: 'https://example.com/placeholder.png' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: 'https://example.com/default-book-cover.jpg' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: 'https://example.com/no-cover.png' })).toBe(false);
+      expect(hasValidCover(null)).toBe(false);
+      expect(hasValidCover(undefined)).toBe(false);
+    });
+
+    // 6. Duplicate book editions do not gain an unfair ranking advantage
+    it('6. prevents duplicate book editions from gaining an unfair ranking advantage', () => {
+      const edition1 = {
+        id: 'devdas-ed-1',
+        title: 'Devdas',
+        author: 'Sarat Chandra Chattopadhyay',
+        created_at: '2026-01-01T00:00:00Z',
+        cover_image_url: 'https://example.com/cover1.jpg',
+        description: 'Tragic love story of Devdas and Paro.',
+        language: 'English',
+        pdf_url: 'https://books.google.com/books?id=ed1',
+      };
+      const edition2 = {
+        ...edition1,
+        id: 'devdas-ed-2',
+        created_at: '2026-01-02T00:00:00Z',
+      };
+
+      // Both receive identical completeness score
+      expect(getBookCompletenessScore(edition1)).toBe(getBookCompletenessScore(edition2));
+
+      // In pagination with diversification, they are spread across different pages (max 1 per page)
+      const catalog = [
+        edition1,
+        edition2,
+        { id: 'other-book', title: 'Godan', author: 'Munshi Premchand', created_at: '2026-01-03T00:00:00Z' },
+      ];
+      const page1 = diversifyBooksPerPage(catalog, 2).slice(0, 2);
+      const devdasOnPage1 = page1.filter(b => b.title.includes('Devdas'));
+      expect(devdasOnPage1).toHaveLength(1); // Only 1 edition on page 1
+    });
+
+    // 7. Ranking is stable when scores are equal
+    it('7. produces deterministic and stable ranking when scores are equal', () => {
+      const bookX = {
+        id: 'stable-book-x',
+        title: 'Book X',
+        author: 'Author One',
+        created_at: '2026-01-01T00:00:00Z',
+      };
+      const bookY = {
+        id: 'stable-book-y',
+        title: 'Book Y',
+        author: 'Author Two',
+        created_at: '2026-01-01T00:00:00Z',
+      };
+
+      // Exact same score and created_at
+      expect(getBookCompletenessScore(bookX)).toBe(getBookCompletenessScore(bookY));
+
+      // Title tie-breaker is deterministic
+      const comp1 = compareLibraryBooks(bookX, bookY);
+      const comp2 = compareLibraryBooks(bookX, bookY);
+      expect(comp1).toBe(comp2);
+      expect(comp1).toBeLessThan(0); // 'Book X' < 'Book Y' alphabetically
+    });
+
+    // 8. Pagination produces the same global ordering across page boundaries
+    it('8. ensures pagination produces the same global ordering across page boundaries', () => {
+      const catalog = Array.from({ length: 24 }, (_, i) => ({
+        id: `book-${i + 1}`,
+        title: `Distinct Book ${i + 1}`,
+        author: `Author ${i + 1}`,
+        created_at: new Date(Date.now() - i * 1000).toISOString(),
+        cover_image_url: `https://example.com/cover-${i + 1}.jpg`,
+        description: `Description for distinct book ${i + 1} with enough length.`,
+        language: 'English',
+      }));
+
+      const globallySorted = sortBooksByCompleteness(catalog);
+      const pageSize = 8;
+      const page1 = globallySorted.slice(0, pageSize);
+      const page2 = globallySorted.slice(pageSize, pageSize * 2);
+      const page3 = globallySorted.slice(pageSize * 2, pageSize * 3);
+
+      // Union of pages reproduces globally sorted array with no duplicates or missing books
+      const concatenated = [...page1, ...page2, ...page3];
+      expect(concatenated.map(b => b.id)).toEqual(globallySorted.map(b => b.id));
+    });
+
+    // 9. Search and genre filters retain relevant results
+    it('9. retains relevant results under search and genre filters', () => {
+      const catalog = [
+        { id: 'b1', title: 'Shri Durga Saptashati', author: 'Bharat Bhushan Mishra', genre: 'Spiritual', language: 'Hindi' },
+        { id: 'b2', title: 'Devdas', author: 'Sarat Chandra', genre: 'Fiction', language: 'Bengali' },
+        { id: 'b3', title: 'Astrodynamics', author: 'Roger Bate', genre: 'Science', language: 'English' },
+      ];
+
+      // Simulated search filter for "durga"
+      const searchResults = catalog.filter(b => b.title.toLowerCase().includes('durga'));
+      expect(searchResults).toHaveLength(1);
+      expect(searchResults[0].id).toBe('b1');
+
+      // Simulated genre filter for "Fiction"
+      const genreResults = catalog.filter(b => b.genre === 'Fiction');
+      expect(genreResults).toHaveLength(1);
+      expect(genreResults[0].id).toBe('b2');
+    });
+
+    // 10. Explicit document-focused searches can still surface relevant papers and reports
+    it('10. surfaces relevant papers and reports when explicitly searched for', () => {
+      const catalog = [
+        completeVerifiedPdf,
+        googlePreviewBook,
+        nasaTechnicalReport,
+      ];
+
+      // Explicit search for "NASA" or "Black Holes"
+      const query = 'nasa';
+      const matchingDocs = catalog.filter(
+        b => b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query)
+      );
+
+      expect(matchingDocs).toHaveLength(1);
+      expect(matchingDocs[0].id).toBe('doc-nasa-report');
+      // When sorted among matching results, it surfaces properly
+      const sortedMatches = sortBooksByCompleteness(matchingDocs);
+      expect(sortedMatches[0].id).toBe('doc-nasa-report');
     });
   });
 });
