@@ -317,13 +317,8 @@ serve(async (req: Request) => {
     return jsonResponse({ error: "Please send a valid message." }, 400);
   }
 
-  if (!body || typeof body.text !== "string") {
-    return jsonResponse({ error: "A message is required." }, 400);
-  }
-  const text = body.text.trim();
-  if (!text) return jsonResponse({ error: "Please enter a message first." }, 400);
-  if (text.length > LIMITS.maxTextCharacters) {
-    return jsonResponse({ error: "Please keep messages under 2,000 characters." }, 413);
+  if (!body || typeof body !== "object") {
+    return jsonResponse({ error: "Please send a valid request." }, 400);
   }
 
   const rawIdentifier =
@@ -333,6 +328,50 @@ serve(async (req: Request) => {
     "unknown";
   const identifier = "book-expert-" + await hashIdentifier(rawIdentifier);
   const supabaseClient = createClient(supabaseUrl, serviceRoleKey);
+
+  if (body.feedback !== undefined) {
+    const feedback = body.feedback;
+    if (
+      !feedback ||
+      typeof feedback !== "object" ||
+      typeof feedback.requestId !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(feedback.requestId) ||
+      (feedback.rating !== 1 && feedback.rating !== -1)
+    ) {
+      return jsonResponse({ error: "Invalid feedback." }, 400);
+    }
+
+    const feedbackLimit = await checkRateLimit(
+      supabaseClient, identifier, "book-expert-feedback", 30, 1440,
+    );
+    if (feedbackLimit === "limited") {
+      return jsonResponse({ error: "Feedback limit reached. Please try again later." }, 429);
+    }
+    if (feedbackLimit === "unavailable") {
+      return jsonResponse({ error: "Feedback cannot be saved right now." }, 503);
+    }
+
+    const { error: feedbackError } = await supabaseClient
+      .from("book_expert_feedback")
+      .upsert(
+        { request_id: feedback.requestId, rating: feedback.rating },
+        { onConflict: "request_id" },
+      );
+    if (feedbackError) {
+      console.error("Book Expert feedback could not be stored.");
+      return jsonResponse({ error: "Feedback could not be saved right now." }, 503);
+    }
+    return jsonResponse({ success: true });
+  }
+
+  if (typeof body.text !== "string") {
+    return jsonResponse({ error: "A message is required." }, 400);
+  }
+  const text = body.text.trim();
+  if (!text) return jsonResponse({ error: "Please enter a message first." }, 400);
+  if (text.length > LIMITS.maxTextCharacters) {
+    return jsonResponse({ error: "Please keep messages under 2,000 characters." }, 413);
+  }
 
   const minuteLimit = await checkRateLimit(
     supabaseClient, identifier, "book-expert-gemini-minute", LIMITS.perMinute, 1,
@@ -380,8 +419,10 @@ serve(async (req: Request) => {
         : "No matching Sahadhyayi catalog records were retrieved for this message. Do not pretend that a title is listed in the library.",
     ].join("\n\n");
 
+    const requestId = crypto.randomUUID();
     const configuredModel = Deno.env.get("BOOK_EXPERT_MODEL") || "gemini-3.8-flash";
-    let generated;
+    let modelUsed = configuredModel;
+    let generated: Awaited<ReturnType<typeof callGemini>>;
     try {
       generated = await callGemini(configuredModel, geminiApiKey, history, latestPrompt);
     } catch (error) {
@@ -396,6 +437,7 @@ serve(async (req: Request) => {
     const modelUnavailable = generated.status === 404 ||
       (generated.status === 400 && (modelErrorText.includes("model") && (modelErrorText.includes("not found") || modelErrorText.includes("not supported"))));
     if (!generated.ok && modelUnavailable && configuredModel !== "gemini-2.5-flash") {
+      modelUsed = "gemini-2.5-flash";
       generated = await callGemini("gemini-2.5-flash", geminiApiKey, history, latestPrompt);
     }
 
@@ -418,11 +460,13 @@ serve(async (req: Request) => {
     }
 
     return jsonResponse({
+      requestId,
       reply,
       books: searchWasRelevant ? publicBooks : [],
       sources: {
         library: publicBooks.length > 0,
-        model: configuredModel,
+        model: modelUsed,
+        retrievedBookCount: publicBooks.length,
       },
     });
   } catch (error) {
