@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
+import { trackGroupJoined } from '@/lib/analytics';
 import { uniqueChannelName } from '@/lib/realtime';
 
 export interface Group {
@@ -166,7 +167,8 @@ export const useJoinGroup = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.group_id) trackGroupJoined(data.group_id);
       toast.success('Successfully joined the group!');
       queryClient.invalidateQueries({ queryKey: ['user-groups'] });
       queryClient.invalidateQueries({ queryKey: ['all-groups'] });
