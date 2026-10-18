@@ -269,8 +269,7 @@ async function callGemini(
             { role: "user", parts: [{ text: latestPrompt }] },
           ],
           generationConfig: {
-            temperature: 0.45,
-            topP: 0.9,
+            thinkingConfig: { thinkingLevel: "medium" },
             maxOutputTokens: 1000,
           },
         }),
