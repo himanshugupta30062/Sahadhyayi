@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
-import { getBookCompletenessScore } from './useLibraryBooks';
+import { getBookCompletenessScore, compareLibraryBooks } from './useLibraryBooks';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { mapRawToEdition, clusterEditionsIntoWorks } from '@/utils/catalog/deduplicationEngine';
 import {
@@ -31,32 +31,6 @@ interface PaginatedBooksResponse {
   hasNextPage: boolean;
   hasPrevPage: boolean;
 }
-
-const isNcertOrCbseBook = (book: Book) => {
-  const t = (book.title || '').toLowerCase();
-  const a = (book.author || '').toLowerCase();
-  const g = (book.genre || '').toLowerCase();
-  const d = (book.description || '').toLowerCase();
-  return t.includes('ncert') || a.includes('ncert') || g.includes('ncert') || d.includes('ncert') ||
-         t.includes('cbse') || a.includes('cbse') || g.includes('cbse') || d.includes('cbse');
-};
-
-const mapBook = (book: any): Book => ({
-  id: book.id,
-  title: book.title,
-  author: book.author || 'Unknown Author',
-  genre: book.genre,
-  cover_image_url: book.cover_image_url,
-  description: book.description,
-  publication_year: book.publication_year,
-  language: book.language || 'English',
-  pdf_url: book.pdf_url,
-  created_at: book.created_at,
-  price: 0,
-  isbn: book.isbn,
-  pages: book.pages,
-  author_bio: book.author_bio,
-});
 
 /** Fetch all matching books in batches to avoid 1000-row limit */
 async function fetchFilteredBooks(
@@ -196,55 +170,10 @@ async function fetchFilteredBooks(
     };
   });
 
-  // Sort by quality score, with tie-breaker by completeness and creation date
-  deduped.sort((a, b) => {
-    const scoreDiff = (b.qualityScore || 0) - (a.qualityScore || 0);
-    if (scoreDiff !== 0) return scoreDiff;
-    const diff = getBookCompletenessScore(b) - getBookCompletenessScore(a);
-    if (diff !== 0) return diff;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+  // Sort deterministically by library completeness hierarchy
+  deduped.sort(compareLibraryBooks);
 
-  // Split into 3 tiers: with-cover, no-cover, NCERT/CBSE
-  const withCover: Book[] = [];
-  const noCover: Book[] = [];
-  const ncert: Book[] = [];
-  for (const book of deduped) {
-    if (isNcertOrCbseBook(book)) {
-      ncert.push(book);
-    } else if (normalizeCoverUrl(book.cover_image_url)) {
-      withCover.push(book);
-    } else {
-      noCover.push(book);
-    }
-  }
-
-  // Round-robin spread by author within each tier to avoid author clustering
-  const spreadByAuthor = (books: Book[]): Book[] => {
-    const authorGroups = new Map<string, Book[]>();
-    for (const book of books) {
-      const k = (book.author || 'Unknown').trim().toLowerCase();
-      if (!authorGroups.has(k)) authorGroups.set(k, []);
-      authorGroups.get(k)!.push(book);
-    }
-    const queues = Array.from(authorGroups.values());
-    queues.sort((a, b) => b.length - a.length);
-    const result: Book[] = [];
-    let rem = true;
-    while (rem) {
-      rem = false;
-      for (const q of queues) {
-        if (q.length > 0) {
-          result.push(q.shift()!);
-          if (q.length > 0) rem = true;
-        }
-      }
-    }
-    return result;
-  };
-
-  // Books with covers ALWAYS come first, then no-cover, then NCERT/CBSE last
-  return [...spreadByAuthor(withCover), ...spreadByAuthor(noCover), ...spreadByAuthor(ncert)];
+  return deduped;
 }
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
