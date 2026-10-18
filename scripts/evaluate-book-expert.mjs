@@ -156,6 +156,29 @@ for (let index = 0; index < limit; index += 1) {
     detail: linkMetadataConsistent ? "link type matches URL" : "reading/PDF metadata conflicts with URL",
   });
 
+  const citations = Array.isArray(payload?.citations) ? payload.citations : [];
+  if (payload?.sources?.rag === true) {
+    const citationsWellFormed = citations.length > 0 && citations.every((citation) =>
+      typeof citation?.id === "string" &&
+      /^S[1-9]\d?$/.test(citation.id) &&
+      typeof citation?.title === "string" &&
+      typeof citation?.excerpt === "string"
+    );
+    checks.push({
+      name: "rag_sources_returned",
+      pass: citationsWellFormed,
+      detail: citationsWellFormed ? citations.length + " source citations returned" : "RAG marked active but citations were missing or malformed",
+    });
+
+    const citedIds = citations.map((citation) => citation.id);
+    const answerUsesCitation = citedIds.some((id) => reply.includes("[" + id + "]"));
+    checks.push({
+      name: "answer_cites_retrieved_evidence",
+      pass: answerUsesCitation,
+      detail: answerUsesCitation ? "answer references retrieved evidence" : "RAG sources returned but answer cited none",
+    });
+  }
+
   const unsupportedClaim = unsupportedClaimPatterns.some((pattern) => pattern.test(reply));
   checks.push({
     name: "no_known_unsupported_catalog_claim",
@@ -191,6 +214,8 @@ for (let index = 0; index < limit; index += 1) {
     status: response?.status ?? null,
     model: typeof payload?.sources?.model === "string" ? payload.sources.model : null,
     retrievedBooks: books.length,
+    ragActive: payload?.sources?.rag === true,
+    ragSources: citations.length,
     checks,
   });
 
