@@ -169,7 +169,7 @@ serve(async (req) => {
     );
 
     const hourlyActivity = hourlyBuckets.every((bucket) => bucket !== null)
-      ? hourlyBuckets as Array<{ hourIndex: number; bucketStart: string; label: string; pageViews: number; count: number; isPeak: boolean }>
+      ? hourlyBuckets.filter((bucket) => bucket !== null)
       : [];
     const hourlyPeak = Math.max(0, ...hourlyActivity.map((bucket) => bucket.count));
     for (const bucket of hourlyActivity) {
