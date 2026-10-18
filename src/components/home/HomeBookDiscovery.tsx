@@ -16,6 +16,7 @@ import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
 import { Button } from '@/components/ui/button';
 import { createCanonicalClusterKey, normalizeAuthor } from '@/utils/catalog/metadataNormalization';
 import { identifyJunkCandidate } from '@/utils/catalog/deduplicationEngine';
+import HomeFloatingBooks from './HomeFloatingBooks';
 
 /**
  * Only accept a usable HTTP(S) cover URL saved on the catalog record.
@@ -311,6 +312,7 @@ export const HomeBookDiscovery: React.FC = () => {
       className="home-book-discovery relative isolate py-16 sm:py-20 lg:py-24 bg-[#F2F7F0] dark:bg-[#0B0D0C] border-b border-[#D8E5D6] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300"
       aria-label="Book Discovery"
     >
+      <HomeFloatingBooks placement="section" />
       <style>{`
         @keyframes sahadhyayi-marquee-scroll {
           0% {
