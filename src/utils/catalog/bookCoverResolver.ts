@@ -191,6 +191,87 @@ export async function fetchGoogleBooksCover(
 }
 
 /**
+ * Clean title for fuzzy search matching against bibliographic records.
+ */
+function cleanTitleForMatch(title: string): string {
+  if (!title) return '';
+  return title
+    .replace(/\[.*?\]|\(.*?\)/g, '')
+    .replace(/[^\w\s]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Validate that returned document title matches target title sufficiently
+ * to avoid false positive matches.
+ */
+function isTitleMatch(targetTitle: string, candidateTitle?: string | null): boolean {
+  if (!candidateTitle) return false;
+  const target = cleanTitleForMatch(targetTitle);
+  const candidate = cleanTitleForMatch(candidateTitle);
+  if (!target || !candidate) return false;
+  if (target === candidate) return true;
+  if (candidate.includes(target) || target.includes(candidate)) return true;
+
+  // Word overlap comparison for longer titles
+  const targetWords = target.split(/\s+/).filter((w) => w.length > 3);
+  if (targetWords.length > 0) {
+    const matchCount = targetWords.filter((w) => candidate.includes(w)).length;
+    if (matchCount / targetWords.length >= 0.7) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Search Open Library for genuine cover artwork using Title and optional Author.
+ */
+export async function fetchOpenLibraryCoverBySearch(
+  title: string,
+  author?: string | null
+): Promise<string | null> {
+  try {
+    const cleanTitle = normalizeTitle(title).cleanTitle;
+    if (!cleanTitle || cleanTitle.toLowerCase() === 'untitled') return null;
+
+    const normAuthor = normalizeAuthor(author).normalizedAuthor;
+    const authorParam =
+      normAuthor && normAuthor.toLowerCase() !== 'unknown author'
+        ? `&author=${encodeURIComponent(normAuthor)}`
+        : '';
+
+    const url = `https://openlibrary.org/search.json?title=${encodeURIComponent(cleanTitle)}${authorParam}&limit=5&fields=title,author_name,cover_i`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    let docWithCover = data.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title));
+
+    // Fallback: If author was specified and returned no cover, retry title-only
+    if (!docWithCover && authorParam) {
+      const fallbackUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(cleanTitle)}&limit=5&fields=title,author_name,cover_i`;
+      const fbRes = await fetch(fallbackUrl);
+      if (fbRes.ok) {
+        const fbData = await fbRes.json();
+        docWithCover = fbData.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title));
+      }
+    }
+
+    if (docWithCover && docWithCover.cover_i) {
+      return `https://covers.openlibrary.org/b/id/${docWithCover.cover_i}-L.jpg`;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Synchronous or asynchronous resolution of the best available book cover.
  */
 export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<string | null> {
@@ -216,7 +297,17 @@ export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<st
     return olCover;
   }
 
-  // 4. Try Google Books API metadata lookup
+  // 4. Try Open Library search by Title and Author
+  const olSearchCover = await fetchOpenLibraryCoverBySearch(book.title, book.author);
+  if (olSearchCover) {
+    setCachedCover(book, olSearchCover);
+    if (book.id) {
+      void persistVerifiedCoverToDatabase(book.id, olSearchCover);
+    }
+    return olSearchCover;
+  }
+
+  // 5. Try Google Books API metadata lookup
   const gbCover = await fetchGoogleBooksCover(book.title, book.author, book.isbn);
   if (gbCover) {
     setCachedCover(book, gbCover);
@@ -226,7 +317,7 @@ export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<st
     return gbCover;
   }
 
-  // 5. No genuine cover found — record negative in cache to avoid repetitive queries
+  // 6. No genuine cover found — record negative in cache to avoid repetitive queries
   setCachedCover(book, null);
   return null;
 }

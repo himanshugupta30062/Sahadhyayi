@@ -16,6 +16,7 @@ import {
   Bookmark
 } from 'lucide-react';
 import type { Book } from '@/hooks/useLibraryBooks';
+import { useResolvedBookCover } from '@/utils/catalog/bookCoverResolver';
 
 interface InteractiveBookCardProps {
   book: Book;
@@ -32,6 +33,16 @@ const InteractiveBookCard = ({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
+  const { coverUrl: resolvedCover } = useResolvedBookCover({
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    isbn: (book as any).isbn,
+    cover_image_url: book.cover_image_url,
+  });
+
+  const activeCoverUrl = book.cover_image_url || resolvedCover;
+
   const rating = book.rating || Math.floor(Math.random() * 2) + 4; // 4-5 stars
   const readingTime = Math.floor(Math.random() * 8) + 2; // 2-10 hours
   const readers = Math.floor(Math.random() * 500) + 50; // 50-550 readers
@@ -46,7 +57,7 @@ const InteractiveBookCard = ({
             <div className="flex-shrink-0">
               <div className="relative group">
                 <img
-                  src={book.cover_image_url || '/placeholder.svg'}
+                  src={activeCoverUrl || '/placeholder.svg'}
                   alt={book.title}
                   className="w-24 h-32 object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300"
                   onError={(e) => {
@@ -135,15 +146,15 @@ const InteractiveBookCard = ({
         <div 
           className="w-full h-48 bg-gradient-to-b from-library-primary to-library-secondary rounded-t-lg shadow-lg transform hover:-translate-y-2 transition-all duration-300 cursor-pointer"
           style={{
-            background: `linear-gradient(135deg, ${book.cover_image_url ? 'transparent' : 'hsl(var(--library-primary))'}, ${book.cover_image_url ? 'transparent' : 'hsl(var(--library-secondary))'})`,
-            backgroundImage: book.cover_image_url ? `url(${book.cover_image_url})` : 'none',
+            background: `linear-gradient(135deg, ${activeCoverUrl ? 'transparent' : 'hsl(var(--library-primary))'}, ${activeCoverUrl ? 'transparent' : 'hsl(var(--library-secondary))'})`,
+            backgroundImage: activeCoverUrl ? `url(${activeCoverUrl})` : 'none',
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           }}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          {!book.cover_image_url && (
+          {!activeCoverUrl && (
             <div className="flex items-center justify-center h-full">
               <BookOpen className="w-12 h-12 text-white/80" />
             </div>
@@ -183,7 +194,7 @@ const InteractiveBookCard = ({
         {/* Book Cover */}
         <div className="relative aspect-[3/4] overflow-hidden">
           <img
-            src={book.cover_image_url || '/placeholder.svg'}
+            src={activeCoverUrl || '/placeholder.svg'}
             alt={book.title}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
             onError={(e) => {
