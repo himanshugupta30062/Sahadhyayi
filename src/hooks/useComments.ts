@@ -37,12 +37,30 @@ export const useComments = (postId: string) => {
 
       if (error) throw error;
 
-      // Get user profiles for all commenters
+      // Get user profiles for all commenters (try public_profiles first, fallback to profiles)
       const userIds = [...new Set(comments?.map(c => c.user_id) || [])];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name, profile_photo_url')
-        .in('id', userIds);
+      let profiles: any[] = [];
+      try {
+        const { data: pubProfiles, error: pubErr } = await (supabase as any)
+          .from('public_profiles')
+          .select('id, full_name, profile_photo_url')
+          .in('id', userIds);
+        if (!pubErr && pubProfiles && pubProfiles.length > 0) {
+          profiles = pubProfiles;
+        } else {
+          const { data: directProfiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, profile_photo_url')
+            .in('id', userIds);
+          profiles = directProfiles || [];
+        }
+      } catch {
+        const { data: directProfiles } = await supabase
+          .from('profiles')
+          .select('id, full_name, profile_photo_url')
+          .in('id', userIds);
+        profiles = directProfiles || [];
+      }
 
       // Map comments with user data
       const commentsWithUsers = comments?.map(comment => ({

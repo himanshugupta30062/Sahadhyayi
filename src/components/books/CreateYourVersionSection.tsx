@@ -94,7 +94,9 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
       const ids = dedup.map((v) => v.id);
 
       const [profilesRes, votesRes] = await Promise.all([
-        supabase.from('profiles').select('id, full_name, username').in('id', userIds),
+        (supabase as any).from('public_profiles').select('id, full_name, username').in('id', userIds)
+          .then((r: any) => (r.data && r.data.length > 0 ? r : supabase.from('profiles').select('id, full_name, username').in('id', userIds)))
+          .catch(() => supabase.from('profiles').select('id, full_name, username').in('id', userIds)),
         supabase.from('content_votes').select('content_id, user_id, vote_type').in('content_id', ids),
       ]);
 
