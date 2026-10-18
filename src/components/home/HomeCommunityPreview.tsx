@@ -6,6 +6,7 @@ import { useReadingRooms, type ReadingRoom } from '@/hooks/useReadingRoom';
 import { useMarginNotes, type MarginNote } from '@/hooks/useMarginNotes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import HomeFloatingBooks from './HomeFloatingBooks';
 
 export const HomeCommunityPreview: React.FC = () => {
   const { data: rawGroups = [], isLoading: loadingGroups } = useGroups();
@@ -30,6 +31,7 @@ export const HomeCommunityPreview: React.FC = () => {
       className="home-community-preview relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F0F5FB] dark:bg-[#0B0D0C] border-b border-[#D8E3F0] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
       aria-label="Community Preview"
     >
+      <HomeFloatingBooks placement="section" />
       <style>{`
         @keyframes homeCommunityGlowDrift {
           0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
