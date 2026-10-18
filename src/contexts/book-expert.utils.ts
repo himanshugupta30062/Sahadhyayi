@@ -12,7 +12,8 @@ export type BookExpertBook = {
   coverImageUrl: string | null;
   publicationYear: number | null;
   language: string | null;
-  pdfUrl: string | null;
+  readingUrl: string | null;
+  isDirectPdf: boolean;
 };
 
 export interface ChatMessage {
