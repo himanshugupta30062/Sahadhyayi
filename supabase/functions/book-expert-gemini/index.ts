@@ -29,9 +29,10 @@ const STOP_WORDS = new Set([
   "about", "after", "again", "also", "and", "are", "because", "best", "can",
   "could", "did", "does", "for", "from", "give", "good", "have", "help", "how",
   "into", "just", "like", "looking", "me", "more", "most", "much", "need", "please",
-  "read", "recommend", "should", "some", "suggest", "that", "the", "their", "them",
+  "read", "reading", "recommend", "recommendation", "recommendations", "search", "searching",
+  "should", "some", "suggest", "suggestion", "suggestions", "that", "the", "their", "them",
   "there", "these", "they", "this", "those", "want", "what", "when", "where", "which",
-  "who", "why", "with", "would", "you", "your",
+  "who", "why", "with", "would", "you", "your", "book", "books", "title", "author", "find",
 ]);
 
 type HistoryItem = { role: "user" | "model"; text: string };
