@@ -9,11 +9,51 @@ const AnimatedHero: React.FC = () => {
       className="relative min-h-[calc(100vh-4rem)] flex items-center bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden py-10 sm:py-14 lg:py-20 border-b border-[#E3E5DA] dark:border-[#29332D] transition-colors duration-200"
       aria-label="Sahadhyayi Hero"
     >
-      {/* Atmospheric ambient glow matching editorial and cinematic themes */}
+      {/* Theme atmosphere: gently drifting colour in light mode; original forest glow in dark mode. */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[550px] h-[550px] rounded-full bg-[#1C442D]/5 dark:bg-[#1A1E1C]/40 blur-[140px]" />
-        <div className="absolute top-1/4 right-12 w-[400px] h-[400px] rounded-full bg-[#B68A35]/10 dark:bg-[#D5B16D]/10 blur-[130px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_72%_50%,rgba(34,83,52,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_72%_50%,rgba(213,177,109,0.035),transparent_50%)]" />
+        <div className="hero-light-wash absolute inset-0 dark:hidden" />
+        <div className="hero-light-aurora hero-light-aurora-one absolute -left-28 -top-40 h-[30rem] w-[30rem] rounded-full bg-[#CFE6CE]/75 blur-[100px] dark:hidden" />
+        <div className="hero-light-aurora hero-light-aurora-two absolute -right-32 top-[4%] h-[34rem] w-[34rem] rounded-full bg-[#F0DDB5]/65 blur-[110px] dark:hidden" />
+        <div className="hero-light-aurora hero-light-aurora-three absolute bottom-[-13rem] left-[28%] h-[30rem] w-[30rem] rounded-full bg-[#D5E2F7]/65 blur-[110px] dark:hidden" />
+        <div className="absolute inset-0 opacity-[0.2] dark:hidden [background-image:radial-gradient(rgba(36,68,45,0.22)_0.7px,transparent_0.7px)] [background-size:24px_24px] [mask-image:linear-gradient(to_right,black,transparent_88%)]" />
+        <span className="hero-light-mote absolute left-[12%] top-[24%] h-2 w-2 rounded-full bg-[#7CA785]/60 blur-[1px] dark:hidden" />
+        <span className="hero-light-mote hero-light-mote-two absolute left-[42%] top-[15%] h-1.5 w-1.5 rounded-full bg-[#C29A4C]/65 dark:hidden" />
+        <span className="hero-light-mote hero-light-mote-three absolute right-[14%] top-[28%] h-2 w-2 rounded-full bg-[#7C9AC8]/65 blur-[1px] dark:hidden" />
+        <span className="hero-light-mote hero-light-mote-four absolute right-[24%] bottom-[16%] h-1.5 w-1.5 rounded-full bg-[#C29A4C]/60 dark:hidden" />
+        <span className="hero-light-mote hero-light-mote-five absolute left-[22%] bottom-[17%] h-1.5 w-1.5 rounded-full bg-[#7CA785]/60 dark:hidden" />
+        <div className="absolute top-1/3 left-1/2 hidden h-[550px] w-[550px] -translate-x-1/2 rounded-full bg-[#1A1E1C]/40 blur-[140px] dark:block" />
+        <div className="absolute right-12 top-1/4 hidden h-[400px] w-[400px] rounded-full bg-[#D5B16D]/10 blur-[130px] dark:block" />
+        <div className="absolute inset-0 hidden bg-[radial-gradient(ellipse_at_72%_50%,rgba(213,177,109,0.035),transparent_50%)] dark:block" />
+        <style>{`
+          @keyframes sahadhyayiLightWash {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 45%; }
+          }
+          @keyframes sahadhyayiAuroraDrift {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(24px, -18px, 0) scale(1.06); }
+          }
+          @keyframes sahadhyayiMoteFloat {
+            0%, 100% { opacity: 0.35; transform: translate3d(0, 0, 0); }
+            50% { opacity: 0.85; transform: translate3d(0, -13px, 0); }
+          }
+          .hero-light-wash {
+            background: linear-gradient(118deg, #F8F8F2 0%, #F0F7EF 32%, #FFF8EB 67%, #F2F6F5 100%);
+            background-size: 180% 180%;
+            animation: sahadhyayiLightWash 28s ease-in-out infinite;
+          }
+          .hero-light-aurora { animation: sahadhyayiAuroraDrift 19s ease-in-out infinite; }
+          .hero-light-aurora-two { animation-delay: -8s; }
+          .hero-light-aurora-three { animation-delay: -13s; }
+          .hero-light-mote { animation: sahadhyayiMoteFloat 7s ease-in-out infinite; }
+          .hero-light-mote-two { animation-delay: -2s; }
+          .hero-light-mote-three { animation-delay: -4s; }
+          .hero-light-mote-four { animation-delay: -5.5s; }
+          .hero-light-mote-five { animation-delay: -1s; }
+          @media (prefers-reduced-motion: reduce) {
+            .hero-light-wash, .hero-light-aurora, .hero-light-mote { animation: none; }
+          }
+        `}</style>
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
