@@ -114,5 +114,36 @@ export interface CommunityPulseResponse {
     groupJoins?: number | { count: number; tracked: boolean; label?: string };
     discussions?: number | { count: number; tracked: boolean; label?: string };
   };
+
+  // Dual-table architecture
+  lifetime?: LifetimeAnalytics;
+  rolling?: RollingAnalytics;
+  dailyActivity?: DailyActivityPoint[];
+}
+
+export interface LifetimeAnalytics {
+  totalVisits: number;
+  sourceTable: 'public.website_visits';
+  label: string;
+}
+
+export interface RollingAnalytics {
+  sourceTable: 'public.website_visit_events';
+  collectionStartedAt: string;
+  isInitialRollout: boolean;
+  pageViews24h: number;
+  pageViews7d: number;
+  pageViews30d: number;
+  uniqueVisitors24h: number | null;
+  uniqueVisitors7d: number | null;
+  uniqueVisitors30d: number | null;
+}
+
+export interface DailyActivityPoint {
+  bucketDate: string;
+  label: string;
+  count: number;
+  pageViews: number;
+  uniqueVisitors: number;
 }
 

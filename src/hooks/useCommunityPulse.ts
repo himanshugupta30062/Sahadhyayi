@@ -23,6 +23,28 @@ export type MemberLeaderboardItem = {
   };
 };
 
+export type DailyPoint = {
+  bucketDate: string;
+  label: string;
+  count: number;
+  pageViews: number;
+  uniqueVisitors: number;
+};
+
+export type DualTableInfo = {
+  lifetimeVisits: number | null;
+  lifetimeSourceTable: string;
+  rolling24hViews: number | null;
+  rolling7dViews: number | null;
+  rolling30dViews: number | null;
+  uniqueVisitors24h: number | null;
+  uniqueVisitors7d: number | null;
+  uniqueVisitors30d: number | null;
+  rollingSourceTable: string;
+  collectionStartedAt?: string;
+  isInitialRollout?: boolean;
+};
+
 export type PulseStats = {
   pageViews: number | null;
   uniqueVisitors: number | null;
@@ -34,6 +56,9 @@ export type PulseStats = {
   newReadersChange?: Change;
   avgTimeChange?: Change;
   hourlyActivity: HourPoint[];
+  dailyActivity?: DailyPoint[];
+  lifetimeVisits?: number | null;
+  dualTable?: DualTableInfo;
   countries: BreakdownItem[];
   topPages: BreakdownItem[];
   devices: BreakdownItem[];
@@ -393,6 +418,40 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           Object.values(readingEngagement).some((value) => value === null)
         );
 
+        const dualTable: DualTableInfo = {
+          lifetimeVisits: typeof rpcData.lifetime?.totalVisits === 'number'
+            ? rpcData.lifetime.totalVisits
+            : typeof rpcData.totalVisits === 'number'
+            ? rpcData.totalVisits
+            : null,
+          lifetimeSourceTable: rpcData.lifetime?.sourceTable ?? 'public.website_visits',
+          rolling24hViews: typeof rpcData.rolling?.pageViews24h === 'number'
+            ? rpcData.rolling.pageViews24h
+            : typeof rpcData.last24hVisits === 'number'
+            ? rpcData.last24hVisits
+            : null,
+          rolling7dViews: typeof rpcData.rolling?.pageViews7d === 'number'
+            ? rpcData.rolling.pageViews7d
+            : (tf === '7d' ? rawPeriodViews : null),
+          rolling30dViews: typeof rpcData.rolling?.pageViews30d === 'number'
+            ? rpcData.rolling.pageViews30d
+            : (tf === '30d' ? rawPeriodViews : null),
+          uniqueVisitors24h: typeof rpcData.rolling?.uniqueVisitors24h === 'number'
+            ? rpcData.rolling.uniqueVisitors24h
+            : typeof rpcData.uniqueVisitors24h === 'number'
+            ? rpcData.uniqueVisitors24h
+            : null,
+          uniqueVisitors7d: typeof rpcData.rolling?.uniqueVisitors7d === 'number'
+            ? rpcData.rolling.uniqueVisitors7d
+            : (tf === '7d' ? uniqueVisitors : null),
+          uniqueVisitors30d: typeof rpcData.rolling?.uniqueVisitors30d === 'number'
+            ? rpcData.rolling.uniqueVisitors30d
+            : (tf === '30d' ? uniqueVisitors : null),
+          rollingSourceTable: rpcData.rolling?.sourceTable ?? 'public.website_visit_events',
+          collectionStartedAt: rpcData.rolling?.collectionStartedAt ?? '2026-10-19T00:00:00Z',
+          isInitialRollout: Boolean(rpcData.rolling?.isInitialRollout),
+        };
+
         return {
           pageViews,
           uniqueVisitors,
@@ -404,6 +463,9 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           newReadersChange,
           avgTimeChange: undefined,
           hourlyActivity,
+          dailyActivity: Array.isArray(rpcData.dailyActivity) ? rpcData.dailyActivity : [],
+          lifetimeVisits: dualTable.lifetimeVisits,
+          dualTable,
           countries: rawCountries,
           topPages: rawPages,
           devices: rawDevices,
@@ -675,6 +737,40 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               ),
             };
 
+            const dualTable: DualTableInfo = {
+              lifetimeVisits: typeof data.lifetime?.totalVisits === 'number'
+                ? data.lifetime.totalVisits
+                : typeof data.totalVisits === 'number'
+                ? data.totalVisits
+                : null,
+              lifetimeSourceTable: data.lifetime?.sourceTable ?? 'public.website_visits',
+              rolling24hViews: typeof data.rolling?.pageViews24h === 'number'
+                ? data.rolling.pageViews24h
+                : typeof data.last24hVisits === 'number'
+                ? data.last24hVisits
+                : null,
+              rolling7dViews: typeof data.rolling?.pageViews7d === 'number'
+                ? data.rolling.pageViews7d
+                : (timeframe === '7d' ? pageViews : null),
+              rolling30dViews: typeof data.rolling?.pageViews30d === 'number'
+                ? data.rolling.pageViews30d
+                : (timeframe === '30d' ? pageViews : null),
+              uniqueVisitors24h: typeof data.rolling?.uniqueVisitors24h === 'number'
+                ? data.rolling.uniqueVisitors24h
+                : typeof data.uniqueVisitors24h === 'number'
+                ? data.uniqueVisitors24h
+                : null,
+              uniqueVisitors7d: typeof data.rolling?.uniqueVisitors7d === 'number'
+                ? data.rolling.uniqueVisitors7d
+                : (timeframe === '7d' ? uniqueVisitors : null),
+              uniqueVisitors30d: typeof data.rolling?.uniqueVisitors30d === 'number'
+                ? data.rolling.uniqueVisitors30d
+                : (timeframe === '30d' ? uniqueVisitors : null),
+              rollingSourceTable: data.rolling?.sourceTable ?? 'public.website_visit_events',
+              collectionStartedAt: data.rolling?.collectionStartedAt ?? '2026-10-19T00:00:00Z',
+              isInitialRollout: Boolean(data.rolling?.isInitialRollout),
+            };
+
             statsPayload = {
               pageViews,
               uniqueVisitors,
@@ -686,6 +782,9 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               newReadersChange,
               avgTimeChange: undefined,
               hourlyActivity,
+              dailyActivity: Array.isArray(data.dailyActivity) ? data.dailyActivity : [],
+              lifetimeVisits: dualTable.lifetimeVisits,
+              dualTable,
               countries,
               topPages,
               devices,

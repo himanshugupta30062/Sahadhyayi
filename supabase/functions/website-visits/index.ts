@@ -193,7 +193,24 @@ Deno.serve(async (req) => {
       ? `${ua.browser} ${ua.browserVersion} on ${ua.os} (${ua.deviceType})`
       : body.userAgent || 'Unknown';
 
-    // Insert with all new columns including server-authenticated user_id
+    // 1. Dual-Table Architecture: Ingest into new rolling 30-day website_visit_events
+    // Strictly privacy-conscious: NO raw IP address, email, or browser fingerprint!
+    try {
+      await supabase.from('website_visit_events').insert({
+        session_id: body.session_id ? String(body.session_id).slice(0, 100) : null,
+        visitor_id: body.visitor_id ? String(body.visitor_id).slice(0, 100) : null,
+        page_path: String(body.page || '/').slice(0, 300),
+        referrer: body.referrer ? String(body.referrer).slice(0, 300) : null,
+        event_type: body.event_type || 'page_view',
+        event_name: body.event_name ? String(body.event_name).slice(0, 100) : null,
+        device_type: ua?.deviceType || 'Desktop',
+        country_code: geo.country_code ? String(geo.country_code).slice(0, 10) : null,
+      });
+    } catch (eventErr) {
+      console.warn('Non-fatal: could not write to website_visit_events:', eventErr);
+    }
+
+    // 2. Dual-Table Architecture: Preserve original website_visits table for lifetime analytics
     const { error } = await supabase.from('website_visits').insert({
       event_id: body.event_id || undefined,
       event_type: body.event_type || 'pageview',
@@ -221,7 +238,7 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      console.error('Error recording visit:', error);
+      console.error('Error recording legacy visit:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to record visit' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

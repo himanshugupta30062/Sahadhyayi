@@ -40,7 +40,7 @@ vi.mock('@/contexts/authHelpers', () => ({
 
 import StructuredFooter from '@/components/footer/StructuredFooter';
 import { CommunityPulseDialog } from '@/components/community-pulse/CommunityPulseDialog';
-import { useCommunityPulse } from '@/hooks/useCommunityPulse';
+import { useCommunityPulse, getCacheKey } from '@/hooks/useCommunityPulse';
 import { usePageVisitTracker } from '@/hooks/usePageVisitTracker';
 
 describe('Community Pulse Redesign & Visitor Intelligence', () => {
@@ -260,7 +260,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
   it('preserves cached data and labels it as stale without falsifying lastUpdated when refresh fails', async () => {
     const cachedTime = '2026-10-12T10:00:00.000Z';
     localStorage.setItem(
-      'sahadhyayi_pulse_stats_v2',
+      getCacheKey('24h'),
       JSON.stringify({
         pageViews: 1500,
         uniqueVisitors: 900,
@@ -297,6 +297,16 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
   // 5. Non-Admin RPC Server-Side Rejection Handling
   it('correctly handles non-admin rejection from get_admin_recent_visits without raw table fallback', async () => {
     mockCurrentUser = { id: 'regular-user', email: 'reader@sahadhyayi.com' };
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        pageViews: 100,
+        uniqueVisitors: 50,
+        newReaders: 10,
+        registeredReaders: 100,
+        hourlyActivity: [],
+      },
+      error: null,
+    });
     mockRpc.mockImplementation((name: string) => {
       if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
       if (name === 'get_admin_recent_visits') {
@@ -418,10 +428,10 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     });
 
     expect(result.current.stats).not.toBeNull();
-    expect(result.current.stats?.pageViews).toBe(3420);
+    expect(result.current.stats?.pageViews).toBe(18);
     expect(result.current.stats?.totalMembers).toBe(120);
     expect(result.current.stats?.newReaders).toBe(18);
-    expect(result.current.stats?.hourlyActivity.length).toBe(24);
+    expect(result.current.stats?.hourlyActivity).toEqual([]);
     expect(result.current.error).toBeNull();
   });
 
@@ -447,9 +457,9 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
 
     expect(result.current.stats).not.toBeNull();
     expect(result.current.stats!.totalMembers).toBe(4);
-    expect(result.current.stats!.pageViews).toBe(0);
-    expect(result.current.stats!.uniqueVisitors).toBe(0);
-    expect(result.current.stats!.hourlyActivity.length).toBe(24);
+    expect(result.current.stats!.pageViews).toBeNull();
+    expect(result.current.stats!.uniqueVisitors).toBeNull();
+    expect(result.current.stats!.hourlyActivity).toEqual([]);
     expect(result.current.stats!.countries).toEqual([]);
     expect(result.current.stats!.topPages).toEqual([]);
     expect(result.current.stats!.devices).toEqual([]);

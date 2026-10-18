@@ -246,6 +246,24 @@ serve(async (req) => {
       // This fallback deliberately marks unaggregated details as unavailable.
       // Do not invent country/page/device/referrer distributions when the SQL aggregate fails.
 
+      // Dual-table metadata
+      lifetime: {
+        totalVisits: totalPageviews,
+        sourceTable: "public.website_visits",
+        label: "All-Time Visits",
+      },
+      rolling: {
+        sourceTable: "public.website_visit_events",
+        collectionStartedAt: "2026-10-19T00:00:00Z",
+        isInitialRollout: false,
+        pageViews24h: periodPageviews,
+        pageViews7d: periodPageviews,
+        pageViews30d: periodPageviews,
+        uniqueVisitors24h: null,
+        uniqueVisitors7d: null,
+        uniqueVisitors30d: null,
+      },
+
       // Backward compatibility fields
       totalSignups: registeredReaders,
       totalMembers: registeredReaders,
