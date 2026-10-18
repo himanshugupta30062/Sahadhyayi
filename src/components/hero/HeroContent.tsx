@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
-import { ArrowRight, BookOpen, LayoutDashboard, Sparkles, Users, PenTool, Compass } from 'lucide-react';
+import { ArrowRight, BookOpen, LayoutDashboard, Sparkles, Users, PenTool } from 'lucide-react';
 
 export const HeroContent: React.FC = () => {
   const { user } = useAuth();
