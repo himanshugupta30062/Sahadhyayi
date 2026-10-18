@@ -1,0 +1,1 @@
+CREATE POLICY "Deny client access to legacy social posts" ON public.social_posts FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);

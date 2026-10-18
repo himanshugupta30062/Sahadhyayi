@@ -3488,6 +3488,14 @@ export type Database = {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
       }
+      can_view_spoiler_thread_comment: {
+        Args: {
+          _comment_user_id: string
+          _min_chapter: number
+          _thread_id: string
+        }
+        Returns: boolean
+      }
       check_rate_limit: {
         Args: {
           p_endpoint: string
@@ -3499,6 +3507,14 @@ export type Database = {
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_unused_books: { Args: never; Returns: number }
+      get_article_author_follower_count: {
+        Args: { p_author_user_id: string }
+        Returns: number
+      }
+      get_article_like_count: {
+        Args: { p_article_id: string }
+        Returns: number
+      }
       get_author_follower_count: {
         Args: { author_uuid: string }
         Returns: number
@@ -3556,6 +3572,14 @@ export type Database = {
           id: string
           message: string
           name: string
+        }[]
+      }
+      get_content_vote_counts: {
+        Args: { p_content_ids: string[] }
+        Returns: {
+          content_id: string
+          vote_count: number
+          vote_type: string
         }[]
       }
       get_friend_locations: {
@@ -3626,6 +3650,13 @@ export type Database = {
           is_friend: boolean
           reader_id: string
           reader_name: string
+        }[]
+      }
+      get_post_comment_like_counts: {
+        Args: { p_comment_ids: string[] }
+        Returns: {
+          comment_id: string
+          like_count: number
         }[]
       }
       get_public_community_pulse: { Args: never; Returns: Json }
