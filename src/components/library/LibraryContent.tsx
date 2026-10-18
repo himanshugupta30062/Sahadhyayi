@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useBooksByGenre, compareLibraryBooks } from '@/hooks/useLibraryBooks';
+import { useBooksByGenre, compareLibraryBooks, diversifyBooksPerPage } from '@/hooks/useLibraryBooks';
 import BookGridView from '@/components/library/BookGridView';
 import BookListView from '@/components/library/BookListView';
 import LibraryPagination from '@/components/library/LibraryPagination';
@@ -72,6 +72,10 @@ const LibraryContent = ({
           return compareLibraryBooks(a, b);
       }
     });
+
+    if (sortBy === 'default') {
+      return diversifyBooksPerPage(filtered, 12);
+    }
 
     return filtered;
   }, [books, searchQuery, ratingFilter, sortBy]);

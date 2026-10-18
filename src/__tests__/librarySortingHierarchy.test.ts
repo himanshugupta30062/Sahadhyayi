@@ -9,6 +9,9 @@ import {
   getBookCompletenessScore,
   compareLibraryBooks,
   sortBooksByCompleteness,
+  diversifyBooksPerPage,
+  getAuthorDiversificationKey,
+  getTitleDiversificationKey,
 } from '@/hooks/useLibraryBooks';
 
 describe('Library Book Sorting Hierarchy', () => {
@@ -376,6 +379,104 @@ describe('Library Book Sorting Hierarchy', () => {
 
       // Consistency: calling comparator twice returns identical result
       expect(compareLibraryBooks(bookA, bookB)).toBe(compareLibraryBooks(bookA, bookB));
+    });
+  });
+
+  // Per-page catalog diversity (1 book per author and title per page)
+  describe('Per-page catalog diversity (max 1 book of same name and title per page)', () => {
+    it('normalizes author and title keys for diversity matching', () => {
+      expect(getAuthorDiversificationKey('CIA Reading Room', 'Some Title')).toBe('cia reading room');
+      expect(getAuthorDiversificationKey(null, 'CIA Reading Room cia-rdp123: Note')).toBe('cia reading room');
+      expect(getAuthorDiversificationKey('Stephen Hawking', 'Title')).toBe('stephen hawking');
+      expect(getAuthorDiversificationKey('Hawking, Stephen', 'Title')).toBe('stephen hawking');
+      expect(getAuthorDiversificationKey('Unknown Author', 'Regular Book')).toBe('');
+
+      expect(getTitleDiversificationKey('CIA Reading Room cia-rdp75b00380r000700010025-1: NOTE TO GLC')).toBe('cia reading room');
+      expect(getTitleDiversificationKey('The Theory of Everything: Origin and Fate')).toBe('the theory of everything');
+    });
+
+    it('ensures each page contains at most 1 book of the same author and title, deferring others to later pages', () => {
+      // Create a test catalog with 4 CIA books, 2 Hawking books, and other distinct books
+      const catalog = [
+        { id: 'hawking-1', title: 'The Theory of Everything', author: 'Stephen Hawking', created_at: '2026-01-01' },
+        { id: 'hawking-2', title: 'A Brief History of Time', author: 'Stephen Hawking', created_at: '2026-01-02' },
+        { id: 'cia-1', title: 'CIA Reading Room cia-rdp-001: Note A', author: 'CIA Reading Room', created_at: '2026-01-03' },
+        { id: 'cia-2', title: 'CIA Reading Room cia-rdp-002: Note B', author: 'CIA Reading Room', created_at: '2026-01-04' },
+        { id: 'cia-3', title: 'CIA Reading Room cia-rdp-003: Note C', author: 'CIA Reading Room', created_at: '2026-01-05' },
+        { id: 'cia-4', title: 'CIA Reading Room cia-rdp-004: Note D', author: 'CIA Reading Room', created_at: '2026-01-06' },
+        { id: 'premchand-1', title: 'Godan', author: 'Munshi Premchand', created_at: '2026-01-07' },
+        { id: 'bharati-1', title: 'Gunahon Ka Devta', author: 'Dharamvir Bharati', created_at: '2026-01-08' },
+        { id: 'boozer-1', title: 'Heritage of Buddha', author: 'Celina LuZanne Boozer', created_at: '2026-01-09' },
+        { id: 'plato-1', title: 'The Republic', author: 'Plato', created_at: '2026-01-10' },
+        { id: 'kant-1', title: 'Critique of Pure Reason', author: 'Immanuel Kant', created_at: '2026-01-11' },
+        { id: 'austen-1', title: 'Pride and Prejudice', author: 'Jane Austen', created_at: '2026-01-12' },
+        { id: 'russell-1', title: 'Problems of Philosophy', author: 'Bertrand Russell', created_at: '2026-01-13' },
+        { id: 'dostoyevsky-1', title: 'Crime and Punishment', author: 'Fyodor Dostoyevsky', created_at: '2026-01-14' },
+        { id: 'tolstoy-1', title: 'War and Peace', author: 'Leo Tolstoy', created_at: '2026-01-15' },
+        { id: 'kafka-1', title: 'The Metamorphosis', author: 'Franz Kafka', created_at: '2026-01-16' },
+        { id: 'camus-1', title: 'The Stranger', author: 'Albert Camus', created_at: '2026-01-17' },
+        { id: 'nietzsche-1', title: 'Beyond Good and Evil', author: 'Friedrich Nietzsche', created_at: '2026-01-18' },
+      ];
+
+      // Page size = 6 books per page
+      const pageSize = 6;
+      const diversified = diversifyBooksPerPage(catalog, pageSize);
+
+      // Requirement: Full preservation - no books deleted
+      expect(diversified).toHaveLength(catalog.length);
+
+      // Page 1 (first 6 items)
+      const page1 = diversified.slice(0, pageSize);
+      const page1Authors = page1.map(b => getAuthorDiversificationKey(b.author, b.title));
+      const page1Titles = page1.map(b => getTitleDiversificationKey(b.title));
+
+      // Assert all authors on Page 1 are strictly unique
+      const uniquePage1Authors = new Set(page1Authors.filter(Boolean));
+      expect(uniquePage1Authors.size).toBe(page1Authors.filter(Boolean).length);
+
+      // Assert all titles on Page 1 are strictly unique
+      const uniquePage1Titles = new Set(page1Titles.filter(Boolean));
+      expect(uniquePage1Titles.size).toBe(page1Titles.filter(Boolean).length);
+
+      // Specifically check: only 1 CIA book and only 1 Hawking book on Page 1
+      const ciaOnPage1 = page1.filter(b => b.author.includes('CIA') || b.title.includes('CIA'));
+      expect(ciaOnPage1).toHaveLength(1);
+      expect(ciaOnPage1[0].id).toBe('cia-1');
+
+      const hawkingOnPage1 = page1.filter(b => b.author.includes('Hawking'));
+      expect(hawkingOnPage1).toHaveLength(1);
+      expect(hawkingOnPage1[0].id).toBe('hawking-1');
+
+      // Page 2 (next 6 items) receives the deferred books
+      const page2 = diversified.slice(pageSize, pageSize * 2);
+      const ciaOnPage2 = page2.filter(b => b.author.includes('CIA') || b.title.includes('CIA'));
+      const hawkingOnPage2 = page2.filter(b => b.author.includes('Hawking'));
+
+      // Page 2 also has at most 1 Hawking book (his second book) and at most 1 CIA book (second note)
+      expect(hawkingOnPage2).toHaveLength(1);
+      expect(hawkingOnPage2[0].id).toBe('hawking-2');
+      expect(ciaOnPage2).toHaveLength(1);
+      expect(ciaOnPage2[0].id).toBe('cia-2');
+
+      // Page 3 (final page) receives the remaining deferred CIA books
+      const page3 = diversified.slice(pageSize * 2, pageSize * 3);
+      const ciaOnPage3 = page3.filter(b => b.author.includes('CIA') || b.title.includes('CIA'));
+      expect(ciaOnPage3.length).toBeGreaterThanOrEqual(1);
+      expect(ciaOnPage3[0].id).toBe('cia-3');
+    });
+
+    it('gracefully handles catalogs where all books share the same author without dropping records', () => {
+      const sameAuthorBooks = [
+        { id: 'cia-1', title: 'CIA Note 1', author: 'CIA Reading Room' },
+        { id: 'cia-2', title: 'CIA Note 2', author: 'CIA Reading Room' },
+        { id: 'cia-3', title: 'CIA Note 3', author: 'CIA Reading Room' },
+        { id: 'cia-4', title: 'CIA Note 4', author: 'CIA Reading Room' },
+      ];
+
+      const diversified = diversifyBooksPerPage(sameAuthorBooks, 3);
+      // All 4 books must be preserved across pages
+      expect(diversified).toHaveLength(4);
+      expect(diversified.map(b => b.id)).toEqual(['cia-1', 'cia-2', 'cia-3', 'cia-4']);
     });
   });
 });
