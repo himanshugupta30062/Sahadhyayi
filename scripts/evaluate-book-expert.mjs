@@ -124,6 +124,22 @@ for (let index = 0; index < limit; index += 1) {
     });
   }
 
+  if (testCase.expectCatalogCount) {
+    const count = payload?.sources?.catalogRecordCount;
+    const numberTokens = reply.match(/\b\d{1,3}(?:,\d{3})+\b|\b\d{1,7}\b/g) || [];
+    const mentionedCounts = numberTokens.map((token) => Number(token.replace(/,/g, "")));
+    const countGrounded = typeof count === "number"
+      ? mentionedCounts.includes(count)
+      : /unavailable|could not verify|cannot verify|can't verify|do not have the count/i.test(reply);
+    checks.push({
+      name: "catalog_count_grounded",
+      pass: countGrounded,
+      detail: typeof count === "number"
+        ? (countGrounded ? "live count " + count + " mentioned" : "live count " + count + " not mentioned")
+        : "count lookup unavailable; answer should not guess",
+    });
+  }
+
   const linkMetadataConsistent = books.every((book) => {
     if (!book?.readingUrl) return book?.isDirectPdf !== true;
     try {
