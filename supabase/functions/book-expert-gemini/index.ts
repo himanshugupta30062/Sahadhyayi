@@ -73,14 +73,14 @@ function normalizeHistory(value: unknown): HistoryItem[] {
   if (!Array.isArray(value)) return [];
 
   const items: HistoryItem[] = value
-    .filter((item): item is { role: string; text: string } =>
-      Boolean(item) &&
-      typeof item === "object" &&
-      (item.role === "user" || item.role === "model") &&
-      typeof item.text === "string"
-    )
+    .filter((item): item is { role: "user" | "model"; text: string } => {
+      if (!item || typeof item !== "object") return false;
+      const candidate = item as Record<string, unknown>;
+      return (candidate.role === "user" || candidate.role === "model") &&
+        typeof candidate.text === "string";
+    })
     .map((item) => ({
-      role: item.role as "user" | "model",
+      role: item.role,
       text: item.text.trim().slice(0, LIMITS.maxHistoryCharacters),
     }))
     .filter((item) => item.text.length > 0)
