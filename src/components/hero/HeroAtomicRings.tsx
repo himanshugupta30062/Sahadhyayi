@@ -1,4 +1,4 @@
-// HeroAtomicRings.tsx — atoms rotate on paths; snap to arc START when hitting blank
+// HeroAtomicRings.tsx — four colourful orbits with smooth, fade-through atom motion
 // Themes: outer=RED blend, middle=GREEN blend, inner=BLUE blend, core=GOLD blend
 // Rings: single ~65% coloured arc each, rotating; thickness increases outward
 
@@ -274,7 +274,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
           </g>
         </g>
 
-        {/* ATOMS — rotate on path; snap to arc START if they hit blank */}
+        {/* ATOMS — each node follows its ring's arc and softly fades at the gap */}
         {/* Outer ring: Library */}
         <g
           ref={(el) => { atomRefs.current[0] = el; }}
