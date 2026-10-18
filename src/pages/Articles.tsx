@@ -99,7 +99,7 @@ const Articles = () => {
           />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2]/95 via-[#FAF7F2]/83 to-[#FAF7F2]/48 dark:from-[#09120D]/95 dark:via-[#09120D]/82 dark:to-[#09120D]/42" />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#FAF7F2]/70 via-transparent to-[#FAF7F2]/12 dark:from-[#09120D]/75 dark:via-transparent dark:to-[#09120D]/25" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.10] [background-image:linear-gradient(rgba(28,68,45,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(28,68,45,0.12)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_right,black,transparent_78%)] dark:opacity-[0.13] dark:[background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)] />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.10] [background-image:linear-gradient(rgba(28,68,45,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(28,68,45,0.12)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_right,black,transparent_78%)] dark:opacity-[0.13] dark:[background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)]" />
 
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
