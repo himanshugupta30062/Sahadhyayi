@@ -65,10 +65,10 @@ const Index = () => {
       {/* 1. Animated Hero */}
       <AnimatedHero />
 
-      <div className="sahadhyayi-home-sections bg-[#F7F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300">
+      <div className="sahadhyayi-home-sections bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300">
         {/* 2. Logged-in: Continue Reading first */}
         {user && (
-          <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#F6F8F1] dark:bg-[#0B0D0C] border-b border-[#DDE7D8] dark:border-[#29332D]">
+          <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-[#0B0D0C]">
             <HomeFloatingBooks placement="section" />
             <div className="relative z-10 max-w-7xl mx-auto">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
@@ -102,7 +102,7 @@ const Index = () => {
 
         {/* 3. Real Book Discovery */}
         <DeferredSection
-          fallback={<div className="min-h-[360px] bg-[#F2F7F0] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[360px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[360px]"
         >
           <ErrorBoundary fallback={null}>
@@ -112,7 +112,7 @@ const Index = () => {
 
         {/* 4. Real Community Preview */}
         <DeferredSection
-          fallback={<div className="min-h-[400px] bg-[#F2F7F0] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[400px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[400px]"
         >
           <ErrorBoundary fallback={null}>
@@ -122,7 +122,7 @@ const Index = () => {
 
         {/* 5. Explore the Platform / Capabilities */}
         <DeferredSection
-          fallback={<div className="min-h-[320px] bg-[#F2F7F0] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[320px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[320px]"
         >
           <ErrorBoundary fallback={null}>
@@ -131,7 +131,7 @@ const Index = () => {
         </DeferredSection>
 
         {/* 6. Atmospheric Final Call-to-Action with warm library aesthetic */}
-        <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#F6F8F1] via-[#F9F2E4] to-[#EEF5F2] dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden border-t border-[#D7E3D8] dark:border-[#26302A] transition-colors duration-300">
+        <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300">
           <style>{`
             @keyframes homeCtaGlowDrift {
               0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.45; }
