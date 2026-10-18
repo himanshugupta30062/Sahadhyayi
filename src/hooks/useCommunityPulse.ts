@@ -293,7 +293,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         ? rpcData.periodVisits
         : typeof rpcData.pageViews === 'number'
         ? rpcData.pageViews
-: null;
+        : null;
 
       const rawTotalMembers = typeof rpcData.metrics?.registeredReaders?.value === 'number'
         ? rpcData.metrics.registeredReaders.value
@@ -375,7 +375,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
         const readingEngagement = {
           bookViews: optionalCount(rpcData.engagement?.bookOpens?.value, rpcData.readingEngagement?.bookViews?.count, rpcData.readingEngagement?.bookViews),
-          readingProgressUpdates: optionalCount(rpcData.engagement?.readingProgressCompletions?.value, rpcData.readingEngagement?.readingProgressUpdates?.count),
+          readingProgressUpdates: optionalCount(
+            rpcData.engagement?.readingProgressCompletions?.value,
+            rpcData.readingEngagement?.readingProgressUpdates?.count,
+            rpcData.readingEngagement?.readingProgressUpdates,
+          ),
           groupJoins: optionalCount(rpcData.engagement?.groupJoins?.value, rpcData.readingEngagement?.groupJoinsCount?.count, rpcData.readingEngagement?.groupJoins),
           discussions: optionalCount(rpcData.engagement?.discussions?.value, rpcData.readingEngagement?.discussionsCount?.count, rpcData.readingEngagement?.discussions),
         };
@@ -513,7 +517,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             ? data.periodVisits
             : typeof data.pageViews === 'number'
             ? data.pageViews
-: null;
+            : null;
 
           const rawTotalMembers = typeof data.metrics?.registeredReaders?.value === 'number'
             ? data.metrics.registeredReaders.value
@@ -657,6 +661,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               readingProgressUpdates: optionalCount(
                 data.engagement?.readingProgressCompletions?.value,
                 data.readingEngagement?.readingProgressUpdates?.count,
+                data.readingEngagement?.readingProgressUpdates,
               ),
               groupJoins: optionalCount(
                 data.engagement?.groupJoins?.value,
