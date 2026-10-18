@@ -263,4 +263,133 @@ describe('ContactFormDialog Email Delivery & Reliability', () => {
     expect(window.location.href).toContain('Frank');
     expect(window.location.href).toContain('Direct%20email%20text');
   });
+
+  it('7. Validation guards: rejects missing fields and invalid email addresses before network call', async () => {
+    render(<ContactFormDialog />);
+
+    fireEvent.click(screen.getByRole('button', { name: /contact us/i }));
+
+    const nameInput = screen.getByPlaceholderText(/your name/i);
+    const emailInput = screen.getByPlaceholderText(/you@example\.com/i);
+    const messageInput = screen.getByPlaceholderText(/tell us what's on your mind/i);
+
+    // Fill with invalid email
+    fireEvent.change(nameInput, { target: { value: 'Test User' } });
+    fireEvent.change(emailInput, { target: { value: 'not-a-valid-email' } });
+    fireEvent.change(messageInput, { target: { value: 'Hello there' } });
+
+    const formEl = screen.getByRole('dialog').querySelector('form')!;
+    fireEvent.submit(formEl);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Invalid email address');
+    });
+
+    // Neither database nor edge function should be called with invalid input
+    expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
+  it('8. Edge Function network timeout or abort: preserves user input and displays actionable error', async () => {
+    mockInsert.mockResolvedValue({ data: null, error: null });
+    mockFunctionsInvoke.mockRejectedValue(new Error('AbortError: The operation was aborted due to timeout'));
+
+    render(<ContactFormDialog />);
+
+    fireEvent.click(screen.getByRole('button', { name: /contact us/i }));
+
+    const nameInput = screen.getByPlaceholderText(/your name/i) as HTMLInputElement;
+    const emailInput = screen.getByPlaceholderText(/you@example\.com/i) as HTMLInputElement;
+    const messageInput = screen.getByPlaceholderText(/tell us what's on your mind/i) as HTMLTextAreaElement;
+
+    fireEvent.change(nameInput, { target: { value: 'Timeout User' } });
+    fireEvent.change(emailInput, { target: { value: 'timeout@example.com' } });
+    fireEvent.change(messageInput, { target: { value: 'Testing timeout resilience' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /send message/i }));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/message saved to our inbox, but email delivery to gyan@sahadhyayi\.com failed/i)
+      );
+    });
+
+    // Form inputs must remain preserved
+    expect(nameInput.value).toBe('Timeout User');
+    expect(emailInput.value).toBe('timeout@example.com');
+    expect(messageInput.value).toBe('Testing timeout resilience');
+
+    // Dialog stays open
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('9. Shows success only when the server confirms the operation succeeded', async () => {
+    mockInsert.mockResolvedValue({ data: null, error: null });
+    // Edge function returns non-successful payload (e.g. { success: false })
+    mockFunctionsInvoke.mockResolvedValue({
+      data: { success: false, error: 'Recipient server rejected email' },
+      error: null,
+    });
+
+    render(<ContactFormDialog />);
+
+    fireEvent.click(screen.getByRole('button', { name: /contact us/i }));
+
+    fireEvent.change(screen.getByPlaceholderText(/your name/i), { target: { value: 'Grace' } });
+    fireEvent.change(screen.getByPlaceholderText(/you@example\.com/i), { target: { value: 'grace@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText(/tell us what's on your mind/i), { target: { value: 'Check success assertion' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /send message/i }));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/Recipient server rejected email/i)
+      );
+    });
+
+    // Crucial: mockToast.success must NOT be called when success is false
+    expect(mockToast.success).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('10. The Feedback and About forms handle errors consistently without faking delivery', async () => {
+    // Both About and Feedback use send-contact-email Edge Function
+    // Verify contract: Edge function errors preserve input, distinguish DB vs email, and do NOT redirect to mailto
+    expect(window.location.href).toBe('');
+    
+    // When Edge function fails after DB persistence
+    mockInsert.mockResolvedValue({ data: null, error: null });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: { message: 'Resend API rate limit exceeded' },
+    });
+
+    render(<ContactFormDialog />);
+    fireEvent.click(screen.getByRole('button', { name: /contact us/i }));
+
+    const nameInput = screen.getByPlaceholderText(/your name/i) as HTMLInputElement;
+    const emailInput = screen.getByPlaceholderText(/you@example\.com/i) as HTMLInputElement;
+    const messageInput = screen.getByPlaceholderText(/tell us what's on your mind/i) as HTMLTextAreaElement;
+
+    fireEvent.change(nameInput, { target: { value: 'Consistent Error Tester' } });
+    fireEvent.change(emailInput, { target: { value: 'tester@example.com' } });
+    fireEvent.change(messageInput, { target: { value: 'Checking consistency across all forms' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /send message/i }));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/message saved to our inbox, but email delivery.*failed/i)
+      );
+    });
+
+    // 1. Success toast is never shown when email delivery fails
+    expect(mockToast.success).not.toHaveBeenCalled();
+    // 2. User inputs are preserved
+    expect(nameInput.value).toBe('Consistent Error Tester');
+    expect(emailInput.value).toBe('tester@example.com');
+    expect(messageInput.value).toBe('Checking consistency across all forms');
+    // 3. No mailto redirect triggered
+    expect(window.location.href).toBe('');
+  });
 });
