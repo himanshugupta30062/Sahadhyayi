@@ -86,9 +86,9 @@ const Articles = () => {
         canonical="https://sahadhyayi.com/articles"
         url="https://sahadhyayi.com/articles"
       />
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#FAF7F2] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         {/* Editorial article hero */}
-        <section className="relative isolate overflow-hidden border-b border-[#26352C] bg-[#101711] text-white">
+        <section className="relative isolate overflow-hidden border-b border-[#DCD5C9] bg-[#FAF7F2] text-[#1C201D] transition-colors duration-300 dark:border-[#26352C] dark:bg-[#101711] dark:text-white">
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-cover bg-center"
@@ -97,21 +97,21 @@ const Articles = () => {
               backgroundPosition: 'center 48%',
             }}
           />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/82 to-[#09120D]/42" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#09120D]/75 via-transparent to-[#09120D]/25" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.13] [background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_right,black,transparent_78%)]" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2]/95 via-[#FAF7F2]/83 to-[#FAF7F2]/48 dark:from-[#09120D]/95 dark:via-[#09120D]/82 dark:to-[#09120D]/42" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#FAF7F2]/70 via-transparent to-[#FAF7F2]/12 dark:from-[#09120D]/75 dark:via-transparent dark:to-[#09120D]/25" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.10] [background-image:linear-gradient(rgba(28,68,45,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(28,68,45,0.12)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_right,black,transparent_78%)] dark:opacity-[0.13] dark:[background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)] />
 
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D5B16D]/35 bg-black/25 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#E8CC91] backdrop-blur-sm sm:mb-6">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#C8DBCB] bg-white/75 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1C442D] shadow-sm backdrop-blur-sm sm:mb-6 dark:border-[#D5B16D]/35 dark:bg-black/25 dark:text-[#E8CC91]">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                 The Sahadhyayi Journal
               </div>
-              <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
+              <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#1C201D] sm:text-5xl md:text-6xl lg:text-7xl dark:text-[#FBF7EF]">
                 Ideas worth turning
-                <span className="block text-[#E4C17B]">a page for.</span>
+                <span className="block text-[#8F681C] dark:text-[#E4C17B]">a page for.</span>
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
+              <p className="mt-5 max-w-2xl text-base leading-7 text-[#4F5D53] sm:mt-6 sm:text-lg sm:leading-8 dark:text-white/80">
                 Thoughtful essays, book reflections, and stories to spark your next idea — written by readers who have something to say.
               </p>
 
@@ -138,7 +138,7 @@ const Articles = () => {
                 </div>
                 <Button
                   onClick={() => navigate(articleWritePath)}
-                  className="h-12 shrink-0 rounded-xl bg-[#D5B16D] px-5 font-semibold text-[#171C17] shadow-lg transition hover:bg-[#E4C17B] sm:h-14 sm:px-6"
+                  className="h-12 shrink-0 rounded-xl bg-[#1C442D] px-5 font-semibold text-white shadow-lg transition hover:bg-[#143221] sm:h-14 sm:px-6 dark:bg-[#D5B16D] dark:text-[#171C17] dark:hover:bg-[#E4C17B] dark:sm:h-14 dark:sm:px-6"
                 >
                   <PenLine className="mr-2 h-4 w-4" aria-hidden="true" />
                   Write a story
@@ -148,7 +148,7 @@ const Articles = () => {
               {user && (
                 <Link
                   to="/articles/my"
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-[#E4C17B] transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] focus-visible:ring-offset-4 focus-visible:ring-offset-[#101711]"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-[#785715] transition hover:text-[#1C442D] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] focus-visible:ring-offset-4 focus-visible:ring-offset-[#FAF7F2] dark:text-[#E4C17B] dark:hover:text-white dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#101711]"
                 >
                   My articles & drafts <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
