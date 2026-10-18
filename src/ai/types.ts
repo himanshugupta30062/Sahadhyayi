@@ -1,7 +1,7 @@
 export type Intent = 'book_query' | 'general' | 'help' | 'policy';
 
 export interface SiteContext {
-  totalBooks: number;
+  totalBooks: number | null;
   topGenres: string[];
 }
 
