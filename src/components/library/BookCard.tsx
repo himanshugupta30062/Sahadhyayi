@@ -9,6 +9,7 @@ import { useAddToPersonalLibrary, usePersonalLibrary } from '@/hooks/usePersonal
 import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
 import GeneratedBookCover from '@/components/library/GeneratedBookCover';
 import { BookQualityBadge } from '@/components/library/BookQualityBadge';
+import { useResolvedBookCover } from '@/utils/catalog/bookCoverResolver';
 import type { Book } from '@/hooks/useLibraryBooks';
 
 
@@ -25,6 +26,16 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
   const addToLibrary = useAddToPersonalLibrary();
   
   const isInLibrary = personalLibrary.some(item => item.book_id === book.id);
+
+  const { coverUrl: resolvedCover } = useResolvedBookCover({
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    isbn: (book as any).isbn,
+    cover_image_url: book.cover_image_url,
+  });
+
+  const activeCoverUrl = book.cover_image_url || resolvedCover;
 
   const handleDownload = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,9 +61,9 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {book.cover_image_url ? (
+        {activeCoverUrl ? (
           <EnhancedLazyImage
-            src={book.cover_image_url}
+            src={activeCoverUrl}
             alt={book.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             fallback={

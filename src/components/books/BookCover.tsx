@@ -6,6 +6,7 @@ import AudioSummaryButton from './AudioSummaryButton';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { toast } from '@/hooks/use-toast';
 import { AddMarginNoteDialog } from '@/components/social/margins/AddMarginNoteDialog';
+import { useResolvedBookCover } from '@/utils/catalog/bookCoverResolver';
 
 interface BookCoverProps {
   title: string;
@@ -18,6 +19,14 @@ interface BookCoverProps {
 }
 
 const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl, onDownload }: BookCoverProps) => {
+  const { coverUrl: resolvedCover } = useResolvedBookCover({
+    id: bookId,
+    title,
+    cover_image_url: coverImageUrl,
+  });
+
+  const activeCoverUrl = coverImageUrl || resolvedCover;
+
   const handleDownloadPDF = () => {
     if (pdfUrl) {
       // Check if it's a direct PDF download or a preview link
@@ -53,8 +62,8 @@ const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl, o
   return (
     <div className="lg:col-span-2">
       <div className="aspect-[3/4] bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl overflow-hidden shadow-lg mb-6">
-        {coverImageUrl ? (
-          <LazyImage src={coverImageUrl} alt={`Cover of ${title}`} className="w-full h-full object-cover" />
+        {activeCoverUrl ? (
+          <LazyImage src={activeCoverUrl} alt={`Cover of ${title}`} className="w-full h-full object-cover" />
         ) : (
           <div className="flex items-center justify-center h-full text-white font-bold text-lg p-4 text-center">
             {title}

@@ -137,6 +137,30 @@ describe('bookCoverResolver', () => {
       expect(cover).toBe('https://covers.openlibrary.org/b/isbn/9780141439518-M.jpg?default=false');
       expect(fetchSpy).not.toHaveBeenCalled();
     });
+
+    it('resolves covers via Open Library search for books without ISBN', async () => {
+      const fakeResponse = {
+        ok: true,
+        json: async () => ({
+          docs: [
+            {
+              title: '1984',
+              author_name: ['George Orwell'],
+              cover_i: 8745958,
+            },
+          ],
+        }),
+      };
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(fakeResponse as unknown as Response);
+
+      const cover = await resolveGenuineBookCover({
+        id: 'book-no-isbn',
+        title: '1984',
+        author: 'George Orwell',
+      });
+      expect(cover).toBe('https://covers.openlibrary.org/b/id/8745958-L.jpg');
+    });
   });
 });
+
 
