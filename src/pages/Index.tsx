@@ -8,7 +8,6 @@ import SEO from "@/components/SEO";
 import DeferredSection from "@/components/DeferredSection";
 import AnimatedHero from "@/components/AnimatedHero";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import HomeFloatingBooks from "@/components/home/HomeFloatingBooks";
 
 const SahadhyayiCapabilities = lazy(() => import("@/components/SahadhyayiCapabilities"));
 const CurrentReads = lazy(() => import("@/components/library/CurrentReads"));
@@ -69,7 +68,6 @@ const Index = () => {
         {/* 2. Logged-in: Continue Reading first */}
         {user && (
           <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-[#0B0D0C]">
-            <HomeFloatingBooks placement="section" />
             <div className="relative z-10 max-w-7xl mx-auto">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
                 <div>
@@ -132,30 +130,17 @@ const Index = () => {
 
         {/* 6. Atmospheric Final Call-to-Action with warm library aesthetic */}
         <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300">
-          <style>{`
-            @keyframes homeCtaGlowDrift {
-              0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.45; }
-              50% { transform: translate3d(12px, -16px, 0) scale(1.08); opacity: 0.8; }
-            }
-            .home-cta-glow { animation: homeCtaGlowDrift 18s ease-in-out infinite; }
-            @media (prefers-reduced-motion: reduce) { .home-cta-glow { animation: none; } }
-          `}</style>
-          {/* Subtle warm library ambient glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,170,145,0.13),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(213,177,109,0.06),transparent_65%)] pointer-events-none" />
-          <div aria-hidden="true" className="home-cta-glow absolute -right-20 -top-24 h-80 w-80 rounded-full bg-[#D8E9CF]/65 blur-[100px] dark:hidden" />
-          <div aria-hidden="true" className="home-cta-glow absolute -left-24 bottom-[-10rem] h-72 w-72 rounded-full bg-[#F0DDB5]/45 blur-[95px] dark:hidden" />
-          <HomeFloatingBooks placement="cta" />
 
           <div className="relative z-10 max-w-3xl mx-auto text-center">
             {/* Cultural Origin Tag */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-[#141816] border border-[#DDE5D8] dark:border-[#26302A] text-xs font-medium text-[#8F681C] dark:text-[#D5B16D] mb-4 shadow-2xs">
-              <span>सहाध्यायी · Fellow Reader</span>
+            <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-4">
+              सहाध्यायी · Fellow Reader
             </div>
 
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight mb-4 text-[#1C201D] dark:text-[#F3F0E7]">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold tracking-tight mb-5 text-[#1C201D] dark:text-[#F3F0E7]">
               Ready to join Sahadhyayi?
             </h2>
-            <p className="text-sm sm:text-base text-[#636B65] dark:text-[#A5ADA6] mb-8 max-w-xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base text-[#636B65] dark:text-[#A5ADA6] mb-9 max-w-2xl mx-auto leading-relaxed">
               Explore the library, join reading groups, and be part of a community that reads, thinks, and grows together.
             </p>
             <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center">
