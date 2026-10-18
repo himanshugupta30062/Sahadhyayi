@@ -108,24 +108,43 @@ serve(async (req) => {
     const totalPageviews = totalPageviewsRes.count ?? 0;
     const periodPageviews = periodPageviewsRes.count ?? 0;
 
-    // 24 chronological hourly buckets (initialized cleanly with 0)
-    const hourlyActivity = [];
+    // If the aggregate RPC is unavailable, try exact per-hour counts instead
+    // of presenting an all-zero chart as if it were measured traffic.
     const formatter = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Kolkata",
       hour: "numeric",
       hour12: true,
     });
 
-    for (let i = 0; i < 24; i++) {
-      const d = new Date(now - (23 - i) * 3600 * 1000);
-      hourlyActivity.push({
-        hourIndex: i,
-        bucketStart: d.toISOString(),
-        label: formatter.format(d),
-        pageViews: 0,
-        count: 0,
-        isPeak: false,
-      });
+    const hourlyBuckets = await Promise.all(
+      Array.from({ length: 24 }, async (_, i) => {
+        const bucketStart = new Date(now - (24 - i) * 3600 * 1000);
+        const bucketEnd = new Date(now - (23 - i) * 3600 * 1000);
+        const { count, error } = await supabase
+          .from("website_visits")
+          .select("id", { count: "exact", head: true })
+          .eq("event_type", "pageview")
+          .gte("visited_at", bucketStart.toISOString())
+          .lt("visited_at", bucketEnd.toISOString());
+
+        if (error || typeof count !== "number") return null;
+        return {
+          hourIndex: i,
+          bucketStart: bucketStart.toISOString(),
+          label: formatter.format(bucketStart),
+          pageViews: count,
+          count,
+          isPeak: false,
+        };
+      }),
+    );
+
+    const hourlyActivity = hourlyBuckets.every((bucket) => bucket !== null)
+      ? hourlyBuckets as Array<{ hourIndex: number; bucketStart: string; label: string; pageViews: number; count: number; isPeak: boolean }>
+      : [];
+    const hourlyPeak = Math.max(0, ...hourlyActivity.map((bucket) => bucket.count));
+    for (const bucket of hourlyActivity) {
+      bucket.isPeak = hourlyPeak > 0 && bucket.count === hourlyPeak;
     }
 
     // Engagement counts from primary tables
@@ -151,6 +170,8 @@ serve(async (req) => {
     const fallbackResponse = {
       schemaVersion: 1,
       timeframe,
+      partialData: true,
+      fallbackMode: "partial",
       periodStart: timeframeStart,
       periodEnd,
       lastUpdated: new Date().toISOString(),
@@ -188,6 +209,9 @@ serve(async (req) => {
       },
 
       topMembers: [],
+
+      // This fallback deliberately marks unaggregated details as unavailable.
+      // Do not invent country/page/device/referrer distributions when the SQL aggregate fails.
 
       // Backward compatibility fields
       totalSignups: registeredReaders,
