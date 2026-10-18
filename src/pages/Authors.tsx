@@ -133,7 +133,7 @@ const Authors = () => {
 
       <div className="min-h-screen bg-[#FAF7F2] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         {/* Photo-led hero: the page starts with a literary atmosphere, not a dashboard. */}
-        <section className="relative isolate overflow-hidden border-b border-[#29332D] bg-[#101711] text-white">
+        <section className="relative isolate overflow-hidden border-b border-[#DCD5C9] bg-[#FAF7F2] text-[#1C201D] transition-colors duration-300 dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-cover bg-center"
@@ -142,21 +142,21 @@ const Authors = () => {
               backgroundPosition: 'center 42%',
             }}
           />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/79 to-[#09120D]/38" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)]" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2]/95 via-[#FAF7F2]/83 to-[#FAF7F2]/43 dark:from-[#09120D]/95 dark:via-[#09120D]/79 dark:to-[#09120D]/38" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#FAF7F2]/72 via-transparent to-[#FAF7F2]/10 dark:from-[#09120D]/70 dark:via-transparent dark:to-[#09120D]/25" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(28,68,45,0.5)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)] dark:opacity-[0.12] dark:[background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] />
 
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D5B16D]/35 bg-black/25 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#E8CC91] backdrop-blur-sm sm:mb-6">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#C8DBCB] bg-white/75 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1C442D] shadow-sm backdrop-blur-sm sm:mb-6 dark:border-[#D5B16D]/35 dark:bg-black/25 dark:text-[#E8CC91]">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                 The people behind the pages
               </div>
-              <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
+              <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#1C201D] sm:text-5xl md:text-6xl lg:text-7xl dark:text-[#FBF7EF]">
                 Meet the minds
-                <span className="block text-[#E4C17B]">behind the books.</span>
+                <span className="block text-[#8F681C] dark:text-[#E4C17B]">behind the books.</span>
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
+              <p className="mt-5 max-w-2xl text-base leading-7 text-[#4F5D53] sm:mt-6 sm:text-lg sm:leading-8 dark:text-white/80">
                 Discover the writers, ideas, and worlds behind the books you love. Explore by name or genre, then follow the voices you want to hear from.
               </p>
 
@@ -183,7 +183,7 @@ const Authors = () => {
                 </div>
                 <Link
                   to="/library"
-                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] sm:h-14"
+                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D5CEC2] bg-white/75 px-5 text-sm font-semibold text-[#1C201D] shadow-sm backdrop-blur-md transition hover:border-[#1C442D]/35 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] sm:h-14 dark:border-white/25 dark:bg-white/10 dark:text-white dark:shadow-none dark:hover:bg-white/20 dark:focus-visible:ring-[#D5B16D]"
                 >
                   Explore books <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
