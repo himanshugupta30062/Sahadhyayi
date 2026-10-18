@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const toRadTop = (degrees: number) => (degrees - 90) * (Math.PI / 180);
@@ -159,7 +159,7 @@ export default function HeroAtomicRings({
     navigate(href);
   };
 
-  const handleNodeKeyDown = (event: React.KeyboardEvent<SVGGElement>, href: string) => {
+  const handleNodeKeyDown = (event: ReactKeyboardEvent<SVGGElement>, href: string) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       navigateTo(href);
