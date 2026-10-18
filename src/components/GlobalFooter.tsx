@@ -53,7 +53,7 @@ const GlobalFooter = () => {
 
   return (
     <>
-      <footer className="relative isolate bg-black text-zinc-200">
+      <footer className="relative isolate bg-[#FAF7F2] dark:bg-black text-[#2E3430] dark:text-zinc-200 border-t border-[#E8E2D9] dark:border-zinc-900 transition-colors duration-200">
         <div className="mx-auto max-w-7xl px-6 py-16">
           {/* Community stats (toggle) */}
           {showCount && (
@@ -69,15 +69,15 @@ const GlobalFooter = () => {
                 <img
                   src="/lovable-uploads/logo-small.webp"
                   alt="Sahadhyayi"
-                  className="h-8 w-8 invert"
+                  className="h-8 w-8 dark:invert"
                   width={32}
                   height={32}
                   loading="lazy"
                 />
-                <h3 className="text-2xl font-semibold tracking-tight">Sahadhyayi</h3>
+                <h3 className="text-2xl font-semibold tracking-tight text-[#1C201D] dark:text-white">Sahadhyayi</h3>
               </div>
 
-              <p className="mt-5 max-w-md text-sm leading-6 text-zinc-400">
+              <p className="mt-5 max-w-md text-sm leading-6 text-[#636B65] dark:text-zinc-400">
                 Rediscover the joy of deep reading through community, technology, and shared knowledge.
               </p>
 
@@ -87,7 +87,7 @@ const GlobalFooter = () => {
                   size="sm"
                   onClick={handleShowStats}
                   disabled={isLoading}
-                  className="border-zinc-700 text-zinc-200 bg-transparent hover:bg-zinc-900 hover:text-white"
+                  className="border-[#D4C9BC] dark:border-zinc-700 text-[#1C201D] dark:text-zinc-200 bg-white dark:bg-transparent hover:bg-[#F4EFEA] dark:hover:bg-zinc-900 hover:text-[#1C201D] dark:hover:text-white"
                 >
                   <Users className="mr-2 h-4 w-4" />
                   {isLoading ? "Loading..." : showCount ? "Hide Community Stats" : "Show Community Stats"}
@@ -98,7 +98,7 @@ const GlobalFooter = () => {
                     onClick={handleJoinCommunity}
                     disabled={hasJoined}
                     size="sm"
-                    className="bg-zinc-800 hover:bg-zinc-700 text-white"
+                    className="bg-[#1C442D] hover:bg-[#153422] dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white"
                   >
                     {hasJoined ? "Thanks for joining!" : "Join Community"}
                   </Button>
@@ -111,7 +111,7 @@ const GlobalFooter = () => {
                   href="https://www.facebook.com/profile.php?id=61578920175928"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-800 px-3 py-1.5 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#E8E2D9] dark:border-zinc-800 px-3 py-1.5 text-sm text-[#2E3430] dark:text-zinc-300 bg-white dark:bg-transparent transition hover:bg-[#F4EFEA] dark:hover:bg-zinc-900 hover:text-[#1C201D] dark:hover:text-white shadow-2xs"
                 >
                   <Facebook className="h-4 w-4" /> Facebook
                 </a>
@@ -119,7 +119,7 @@ const GlobalFooter = () => {
                   href="https://x.com/Sahadhyayi"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-800 px-3 py-1.5 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#E8E2D9] dark:border-zinc-800 px-3 py-1.5 text-sm text-[#2E3430] dark:text-zinc-300 bg-white dark:bg-transparent transition hover:bg-[#F4EFEA] dark:hover:bg-zinc-900 hover:text-[#1C201D] dark:hover:text-white shadow-2xs"
                 >
                   <Twitter className="h-4 w-4" /> Twitter
                 </a>
@@ -127,7 +127,7 @@ const GlobalFooter = () => {
                   href="https://www.instagram.com/sahadhyayi/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-800 px-3 py-1.5 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#E8E2D9] dark:border-zinc-800 px-3 py-1.5 text-sm text-[#2E3430] dark:text-zinc-300 bg-white dark:bg-transparent transition hover:bg-[#F4EFEA] dark:hover:bg-zinc-900 hover:text-[#1C201D] dark:hover:text-white shadow-2xs"
                 >
                   <Instagram className="h-4 w-4" /> Instagram
                 </a>
@@ -135,7 +135,7 @@ const GlobalFooter = () => {
                   href="https://www.linkedin.com/company/sahadhyayi/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-800 px-3 py-1.5 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#E8E2D9] dark:border-zinc-800 px-3 py-1.5 text-sm text-[#2E3430] dark:text-zinc-300 bg-white dark:bg-transparent transition hover:bg-[#F4EFEA] dark:hover:bg-zinc-900 hover:text-[#1C201D] dark:hover:text-white shadow-2xs"
                 >
                   <Linkedin className="h-4 w-4" /> LinkedIn
                 </a>
@@ -147,7 +147,7 @@ const GlobalFooter = () => {
               <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
                 {/* Explore */}
                 <nav aria-label="Explore Sahadhyayi">
-                  <h4 className="text-sm font-semibold text-white">Explore Sahadhyayi</h4>
+                  <h4 className="text-sm font-semibold text-[#1C201D] dark:text-white">Explore Sahadhyayi</h4>
                   <ul className="mt-4 space-y-3">
                     {[
                       { label: "Digital Library", href: "/library" },
@@ -159,11 +159,11 @@ const GlobalFooter = () => {
                       <li key={i.label}>
                         <Link
                           to={i.href}
-                          className="group inline-flex items-center text-sm text-zinc-400 transition hover:text-white"
+                          className="group inline-flex items-center text-sm text-[#636B65] dark:text-zinc-400 transition hover:text-[#1C201D] dark:hover:text-white"
                         >
                           <span className="relative">
                             {i.label}
-                            <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-zinc-600 transition-all duration-200 group-hover:w-full" />
+                            <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-[#B68A35] dark:bg-zinc-600 transition-all duration-200 group-hover:w-full" />
                           </span>
                         </Link>
                       </li>
@@ -173,7 +173,7 @@ const GlobalFooter = () => {
 
                 {/* Support */}
                 <nav aria-label="Support">
-                  <h4 className="text-sm font-semibold text-white">Support</h4>
+                  <h4 className="text-sm font-semibold text-[#1C201D] dark:text-white">Support</h4>
                   <ul className="mt-4 space-y-3">
                     {[
                       { label: "Help Center", href: "/help" },
@@ -182,11 +182,11 @@ const GlobalFooter = () => {
                       <li key={i.label}>
                         <Link
                           to={i.href}
-                          className="group inline-flex items-center text-sm text-zinc-400 transition hover:text-white"
+                          className="group inline-flex items-center text-sm text-[#636B65] dark:text-zinc-400 transition hover:text-[#1C201D] dark:hover:text-white"
                         >
                           <span className="relative">
                             {i.label}
-                            <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-zinc-600 transition-all duration-200 group-hover:w-full" />
+                            <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-[#B68A35] dark:bg-zinc-600 transition-all duration-200 group-hover:w-full" />
                           </span>
                         </Link>
                       </li>
@@ -194,20 +194,20 @@ const GlobalFooter = () => {
                     <li>
                       <button
                         onClick={handleEmailClick}
-                        className="group inline-flex items-center text-sm text-zinc-400 hover:text-white"
+                        className="group inline-flex items-center text-sm text-[#636B65] dark:text-zinc-400 hover:text-[#1C201D] dark:hover:text-white"
                       >
                         <Mail className="mr-2 h-3 w-3" />
                         <span className="relative">
                           Contact Us
-                          <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-zinc-600 transition-all duration-200 group-hover:w-full" />
+                          <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-[#B68A35] dark:bg-zinc-600 transition-all duration-200 group-hover:w-full" />
                         </span>
                       </button>
                     </li>
                     <li>
-                      <Link to="/feedback" className="group inline-flex items-center text-sm text-zinc-400 hover:text-white">
+                      <Link to="/feedback" className="group inline-flex items-center text-sm text-[#636B65] dark:text-zinc-400 hover:text-[#1C201D] dark:hover:text-white">
                         <span className="relative">
                           Feedback
-                          <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-zinc-600 transition-all duration-200 group-hover:w-full" />
+                          <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-[#B68A35] dark:bg-zinc-600 transition-all duration-200 group-hover:w-full" />
                         </span>
                       </Link>
                     </li>
@@ -216,7 +216,7 @@ const GlobalFooter = () => {
 
                 {/* Company */}
                 <nav aria-label="Company">
-                  <h4 className="text-sm font-semibold text-white">Company</h4>
+                  <h4 className="text-sm font-semibold text-[#1C201D] dark:text-white">Company</h4>
                   <ul className="mt-4 space-y-3">
                     {[
                       { label: "About Us", href: "/about" },
@@ -229,11 +229,11 @@ const GlobalFooter = () => {
                       <li key={i.label}>
                         <Link
                           to={i.href}
-                          className="group inline-flex items-center text-sm text-zinc-400 transition hover:text-white"
+                          className="group inline-flex items-center text-sm text-[#636B65] dark:text-zinc-400 transition hover:text-[#1C201D] dark:hover:text-white"
                         >
                           <span className="relative">
                             {i.label}
-                            <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-zinc-600 transition-all duration-200 group-hover:w-full" />
+                            <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-[#B68A35] dark:bg-zinc-600 transition-all duration-200 group-hover:w-full" />
                           </span>
                         </Link>
                       </li>
@@ -245,12 +245,12 @@ const GlobalFooter = () => {
           </div>
 
           {/* bottom row */}
-          <div className="mt-12 border-t border-zinc-900 pt-6 text-xs text-zinc-500">
+          <div className="mt-12 border-t border-[#E8E2D9] dark:border-zinc-900 pt-6 text-xs text-[#8B938D] dark:text-zinc-500">
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
               <p>© {new Date().getFullYear()} Sahadhyayi. All rights reserved. Building a global reading community.</p>
-              <div className="text-zinc-400">
+              <div className="text-[#636B65] dark:text-zinc-400">
                 {user ? (
-                  <>Logged in as <span className="font-medium text-zinc-300">{user.email}</span></>
+                  <>Logged in as <span className="font-medium text-[#1C201D] dark:text-zinc-300">{user.email}</span></>
                 ) : (
                   <span>Welcome to Sahadhyayi</span>
                 )}
@@ -263,14 +263,14 @@ const GlobalFooter = () => {
 
       {/* sign-in dialog */}
       <Dialog open={showSignIn} onOpenChange={setShowSignIn}>
-        <DialogContent className="mx-4 sm:max-w-md">
+        <DialogContent className="mx-4 sm:max-w-md bg-white dark:bg-zinc-900 border-[#E8E2D9] dark:border-zinc-800 text-[#1C201D] dark:text-white shadow-xl">
           <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold text-gray-900">
+            <DialogTitle className="text-center text-xl font-bold text-[#1C201D] dark:text-white">
               Join the Sahadhyayi Community
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4 text-center">
-            <p className="text-gray-600">Please sign in to join our community.</p>
+            <p className="text-[#636B65] dark:text-zinc-400">Please sign in to join our community.</p>
             <Button
               onClick={() => {
                 setShowSignIn(false);
@@ -282,7 +282,7 @@ const GlobalFooter = () => {
                 const redirect = `${location.pathname}${location.search}${location.hash}`;
                 navigate(`/signin?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
               }}
-              className="w-full bg-black text-white hover:bg-zinc-900"
+              className="w-full bg-[#1C442D] hover:bg-[#153422] dark:bg-zinc-100 dark:hover:bg-white dark:text-black text-white"
             >
               <LogIn className="mr-2 h-4 w-4" /> Sign In
             </Button>

@@ -75,14 +75,14 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
     return (
       <div key={c.id} className={depth > 0 ? 'ml-8 mt-3' : ''}>
         <div className="flex space-x-3">
-          <Avatar className="w-8 h-8 flex-shrink-0 border border-[#29332D]">
+          <Avatar className="w-8 h-8 flex-shrink-0 border border-[#E8E2D9] dark:border-[#29332D]">
             <AvatarImage src={c.profiles?.profile_photo_url} />
-            <AvatarFallback className="bg-[#1C3024] text-[#D5B16D] text-xs font-semibold">
+            <AvatarFallback className="bg-[#EFEAE2] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D] text-xs font-semibold">
               {c.profiles?.full_name?.charAt(0) || 'U'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <div className="bg-[#16211A] border border-[#29332D]/70 rounded-2xl px-3.5 py-2.5">
+            <div className="bg-[#F4EFEA] dark:bg-[#16211A] border border-[#E8E2D9] dark:border-[#29332D]/70 rounded-2xl px-3.5 py-2.5">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <h5 className="font-medium text-sm text-foreground truncate">
@@ -157,15 +157,15 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
 
       <div className="pt-4 border-t border-border mt-2">
         {replyingTo && (
-          <div className="flex items-center justify-between bg-[#1C3024] text-[#D5B16D] border border-[#315C43]/50 text-xs px-3 py-1.5 rounded-lg mb-2">
+          <div className="flex items-center justify-between bg-[#EFEAE2] dark:bg-[#1C3024] text-[#1C442D] dark:text-[#D5B16D] border border-[#D5B16D]/40 dark:border-[#315C43]/50 text-xs px-3 py-1.5 rounded-lg mb-2">
             <span>Replying to <strong>{replyingTo.name}</strong></span>
-            <button onClick={() => setReplyingTo(null)} className="hover:underline text-[11px] font-semibold text-[#A5ADA6] hover:text-[#F3F0E7]">Cancel</button>
+            <button onClick={() => setReplyingTo(null)} className="hover:underline text-[11px] font-semibold text-stone-500 dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7]">Cancel</button>
           </div>
         )}
         <div className="flex space-x-3">
-          <Avatar className="w-8 h-8 border border-[#29332D]">
+          <Avatar className="w-8 h-8 border border-[#E8E2D9] dark:border-[#29332D]">
             <AvatarImage src={user?.user_metadata?.avatar_url} />
-            <AvatarFallback className="bg-[#1C3024] text-[#D5B16D] text-xs font-semibold">
+            <AvatarFallback className="bg-[#EFEAE2] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D] text-xs font-semibold">
               {user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
             </AvatarFallback>
           </Avatar>
@@ -180,14 +180,14 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
                   handleSend();
                 }
               }}
-              className="flex-1 bg-[#111614] border-[#29332D] text-xs text-[#F3F0E7] placeholder:text-[#A5ADA6]/70 rounded-xl focus-visible:ring-1 focus-visible:ring-[#D5B16D]"
+              className="flex-1 bg-[#FAF7F2] dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-xs text-[#1C201D] dark:text-[#F3F0E7] placeholder:text-stone-400 dark:placeholder:text-[#A5ADA6]/70 rounded-xl focus-visible:ring-1 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
               disabled={createComment.isPending || !user}
             />
             <Button
               onClick={handleSend}
               disabled={!newComment.trim() || createComment.isPending || !user}
               size="sm"
-              className="bg-[#D5B16D] hover:bg-[#c49f5c] text-[#0B0D0C] font-semibold rounded-xl px-3 h-9 shadow-xs"
+              className="bg-[#1C442D] hover:bg-[#153422] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold rounded-xl px-3 h-9 shadow-xs"
             >
               {createComment.isPending ? <LoadingSpinner /> : <Send className="w-4 h-4" />}
             </Button>
