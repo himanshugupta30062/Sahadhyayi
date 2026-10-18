@@ -3515,6 +3515,42 @@ export type Database = {
         Args: { p_article_id: string }
         Returns: number
       }
+      get_admin_recent_actions: {
+        Args: { p_limit?: number; p_timeframe?: string }
+        Returns: {
+          id: number
+          visited_at: string
+          event_name: string
+          page_url: string | null
+          visitor_id: string | null
+          session_id: string | null
+          user_id: string | null
+          metadata: Json
+        }[]
+      }
+      get_admin_recent_visits: {
+        Args: { p_limit?: number; p_search?: string | null }
+        Returns: {
+          id: number
+          visited_at: string
+          ip_address: string
+          country_code: string | null
+          city: string | null
+          region: string | null
+          page_url: string | null
+          browser: string | null
+          browser_version: string | null
+          os: string | null
+          device_type: string | null
+          device_model: string | null
+          referrer: string | null
+          screen_resolution: string | null
+          language: string | null
+          visitor_id: string | null
+          session_id: string | null
+          user_id: string | null
+        }[]
+      }
       get_author_follower_count: {
         Args: { author_uuid: string }
         Returns: number
@@ -3561,6 +3597,14 @@ export type Database = {
         }[]
       }
       get_community_pulse_stats: {
+        Args: { p_timeframe?: string }
+        Returns: Json
+      }
+      get_community_pulse_action_stats: {
+        Args: { p_timeframe?: string }
+        Returns: Json
+      }
+      get_community_pulse_city_stats: {
         Args: { p_timeframe?: string }
         Returns: Json
       }

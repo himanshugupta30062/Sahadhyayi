@@ -7,6 +7,37 @@ export type Change = { value: number | null; label?: string };
 export type BreakdownItem = { name: string; count?: number; percent: number; code?: string };
 export type HourPoint = { label: string; count: number; uniqueVisitors?: number; hourIndex?: number; isPeak?: boolean; bucketStart?: string };
 
+export type ActionSummaryItem = {
+  name: string;
+  label: string;
+  count: number;
+  page?: string;
+};
+
+export type ScrollDepthSummaryItem = {
+  percent: 25 | 50 | 75 | 100;
+  count: number;
+};
+
+export type RecentActionEvent = {
+  id: string;
+  visitedAt: string;
+  eventName: string;
+  page: string;
+  visitorId?: string;
+  sessionId?: string;
+  userId?: string;
+  metadata: Record<string, unknown>;
+};
+
+const formatActiveDuration = (seconds: number | null): string => {
+  if (seconds === null || !Number.isFinite(seconds) || seconds < 0) return '—';
+  if (seconds < 60) return `${Math.round(seconds)}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.round(seconds % 60);
+  return remainder ? `${minutes}m ${remainder}s` : `${minutes}m`;
+};
+
 export type MemberLeaderboardItem = {
   rank: number;
   userId: string;
@@ -48,6 +79,13 @@ export type PulseStats = {
   lastUpdated?: string;
   isStale?: boolean;
   partialData?: boolean;
+  totalActions?: number | null;
+  totalInteractions?: number | null;
+  actionSummary?: ActionSummaryItem[];
+  activeSessions?: number | null;
+  averageSessionDurationSeconds?: number | null;
+  durationSampleCount?: number | null;
+  scrollDepthSummary?: ScrollDepthSummaryItem[];
 };
 
 export type RecentVisitor = {
@@ -130,6 +168,13 @@ export function getBaselineStats(
     lastUpdated: '',
     isStale: false,
     partialData: false,
+    totalActions: null,
+    totalInteractions: null,
+    actionSummary: [],
+    activeSessions: null,
+    averageSessionDurationSeconds: null,
+    durationSampleCount: null,
+    scrollDepthSummary: [],
   };
 }
 
@@ -170,6 +215,12 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
   const [visitors, setVisitors] = useState<RecentVisitor[]>([]);
   const [visitorsLoading, setVisitorsLoading] = useState(false);
   const [visitorsError, setVisitorsError] = useState<string | null>(null);
+
+  // Individual action-event history is admin-only; aggregate metrics remain suitable for the public pulse.
+  const [recentActions, setRecentActions] = useState<RecentActionEvent[]>([]);
+  const [recentActionsLoading, setRecentActionsLoading] = useState(false);
+  const [recentActionsError, setRecentActionsError] = useState<string | null>(null);
+  const inFlightActionsRef = useRef(false);
 
   // Contributor leaderboard (admin-only detailed view)
   const [adminLeaderboard, setAdminLeaderboard] = useState<MemberLeaderboardItem[]>([]);
@@ -398,7 +449,6 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           uniqueVisitors,
           newReaders,
           totalMembers,
-          avgTimeOnSite: '—',
           pageViewsChange,
           uniqueVisitorsChange,
           newReadersChange,
@@ -410,9 +460,17 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           referrers: rawReferrers,
           readingEngagement,
           topMembers: rawTopMembers,
+          totalActions: typeof rpcData.actionAnalytics?.totalActions === 'number' ? rpcData.actionAnalytics.totalActions : null,
+          totalInteractions: typeof rpcData.actionAnalytics?.totalInteractions === 'number' ? rpcData.actionAnalytics.totalInteractions : null,
+          actionSummary: Array.isArray(rpcData.actionAnalytics?.actionSummary) ? rpcData.actionAnalytics.actionSummary : [],
+          activeSessions: typeof rpcData.actionAnalytics?.activeSessions === 'number' ? rpcData.actionAnalytics.activeSessions : null,
+          averageSessionDurationSeconds: typeof rpcData.actionAnalytics?.averageSessionDurationSeconds === 'number' ? rpcData.actionAnalytics.averageSessionDurationSeconds : null,
+          durationSampleCount: typeof rpcData.actionAnalytics?.durationSampleCount === 'number' ? rpcData.actionAnalytics.durationSampleCount : null,
+          scrollDepthSummary: Array.isArray(rpcData.actionAnalytics?.scrollDepthSummary) ? rpcData.actionAnalytics.scrollDepthSummary : [],
+          avgTimeOnSite: formatActiveDuration(typeof rpcData.actionAnalytics?.averageSessionDurationSeconds === 'number' ? rpcData.actionAnalytics.averageSessionDurationSeconds : null),
           lastUpdated: rpcData.lastUpdated || new Date().toISOString(),
           isStale: false,
-          partialData,
+          partialData: Boolean(partialData || !rpcData.actionAnalytics),
         };
       }
     }
@@ -475,6 +533,13 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       lastUpdated: new Date().toISOString(),
       isStale: false,
       partialData: true,
+      totalActions: null,
+      totalInteractions: null,
+      actionSummary: [],
+      activeSessions: null,
+      averageSessionDurationSeconds: null,
+      durationSampleCount: null,
+      scrollDepthSummary: [],
     };
   }, []);
 
@@ -633,6 +698,32 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
             const topMembers: MemberLeaderboardItem[] = Array.isArray(data.topMembers) ? data.topMembers : [];
 
+            const actionData = data.actionAnalytics && typeof data.actionAnalytics === 'object'
+              ? data.actionAnalytics
+              : null;
+            const totalActions = typeof actionData?.totalActions === 'number' ? actionData.totalActions : null;
+            const totalInteractions = typeof actionData?.totalInteractions === 'number' ? actionData.totalInteractions : null;
+            const actionSummary: ActionSummaryItem[] = Array.isArray(actionData?.actionSummary)
+              ? actionData.actionSummary
+                  .filter((item: any) => item && typeof item.name === 'string' && typeof item.count === 'number')
+                  .map((item: any) => ({
+                    name: item.name.slice(0, 80),
+                    label: typeof item.label === 'string' ? item.label.slice(0, 80) : item.name.replace(/[_-]+/g, ' '),
+                    count: Math.max(0, item.count),
+                    page: typeof item.page === 'string' ? item.page.slice(0, 120) : undefined,
+                  }))
+              : [];
+            const activeSessions = typeof actionData?.activeSessions === 'number' ? actionData.activeSessions : null;
+            const averageSessionDurationSeconds = typeof actionData?.averageSessionDurationSeconds === 'number'
+              ? actionData.averageSessionDurationSeconds
+              : null;
+            const durationSampleCount = typeof actionData?.durationSampleCount === 'number' ? actionData.durationSampleCount : null;
+            const scrollDepthSummary: ScrollDepthSummaryItem[] = Array.isArray(actionData?.scrollDepthSummary)
+              ? actionData.scrollDepthSummary
+                  .filter((item: any) => [25, 50, 75, 100].includes(item?.percent) && typeof item?.count === 'number')
+                  .map((item: any) => ({ percent: item.percent, count: Math.max(0, item.count) }))
+              : [];
+
             // Percentage Comparisons
             const pageViewsChange = data.comparisons?.pageViewsChangePercent != null
               ? { value: data.comparisons.pageViewsChangePercent, label: periodLabel }
@@ -680,7 +771,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               uniqueVisitors,
               newReaders,
               totalMembers,
-              avgTimeOnSite: '—',
+              avgTimeOnSite: formatActiveDuration(averageSessionDurationSeconds),
               pageViewsChange,
               uniqueVisitorsChange,
               newReadersChange,
@@ -692,10 +783,18 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               referrers,
               readingEngagement,
               topMembers,
+              totalActions,
+              totalInteractions,
+              actionSummary,
+              activeSessions,
+              averageSessionDurationSeconds,
+              durationSampleCount,
+              scrollDepthSummary,
               lastUpdated: data.lastUpdated || new Date().toISOString(),
               isStale: false,
               partialData: Boolean(
                 data.partialData ||
+                !actionData ||
                 !(Array.isArray(data.hourlyActivity) || Array.isArray(data.hourlyTraffic)) ||
                 !(Array.isArray(data.breakdowns?.countries) || Array.isArray(data.topCountries)) ||
                 !(Array.isArray(data.breakdowns?.pages) || Array.isArray(data.topPages)) ||
@@ -808,7 +907,50 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     }
   }, [isAdmin, visitorSearch]);
 
-  // 4. Fetch Contributor Leaderboard (Admin-Only)
+  // 4. Fetch recent action events (Strictly Admin-Only)
+  const fetchRecentActions = useCallback(async () => {
+    if (!isAdmin) {
+      setRecentActions([]);
+      setRecentActionsError(null);
+      return;
+    }
+    if (inFlightActionsRef.current) return;
+
+    inFlightActionsRef.current = true;
+    setRecentActionsLoading(true);
+    setRecentActionsError(null);
+    try {
+      const { data, error: rpcErr } = await supabase.rpc('get_admin_recent_actions', {
+        p_limit: 50,
+        p_timeframe: timeframe,
+      });
+      if (rpcErr) throw new Error(rpcErr.message || 'Failed to retrieve action history');
+
+      const rows: RecentActionEvent[] = (data || []).map((row: any) => ({
+        id: String(row.id),
+        visitedAt: String(row.visited_at || ''),
+        eventName: String(row.event_name || 'unknown_action').slice(0, 80),
+        page: String(row.page_url || '/').split(/[?#]/, 1)[0].slice(0, 200) || '/',
+        visitorId: row.visitor_id ? String(row.visitor_id) : undefined,
+        sessionId: row.session_id ? String(row.session_id) : undefined,
+        userId: row.user_id ? String(row.user_id) : undefined,
+        metadata: row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+          ? row.metadata as Record<string, unknown>
+          : {},
+      }));
+      if (isMountedRef.current) setRecentActions(rows);
+    } catch (err: any) {
+      if (isMountedRef.current) {
+        setRecentActions([]);
+        setRecentActionsError(err.message || 'Could not load recent action events');
+      }
+    } finally {
+      inFlightActionsRef.current = false;
+      if (isMountedRef.current) setRecentActionsLoading(false);
+    }
+  }, [isAdmin, timeframe]);
+
+  // 5. Fetch Contributor Leaderboard (Admin-Only)
   const fetchAdminLeaderboard = useCallback(async () => {
     if (!isAdmin) {
       setAdminLeaderboard([]);
@@ -859,10 +1001,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       void fetchStats(false);
       if (isAdmin) {
         void fetchRecentVisitors();
+        void fetchRecentActions();
         void fetchAdminLeaderboard();
       }
     }
-  }, [isOpen, timeframe, isAdmin, fetchStats, fetchRecentVisitors, fetchAdminLeaderboard]);
+  }, [isOpen, timeframe, isAdmin, fetchStats, fetchRecentVisitors, fetchRecentActions, fetchAdminLeaderboard]);
 
   // Periodic polling only when dialog is open and document is visible
   useEffect(() => {
@@ -873,6 +1016,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         void fetchStats(false);
         if (isAdmin) {
           void fetchRecentVisitors();
+          void fetchRecentActions();
           void fetchAdminLeaderboard();
         }
       }
@@ -881,7 +1025,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     return () => {
       window.clearInterval(interval);
     };
-  }, [isOpen, isAdmin, fetchStats, fetchRecentVisitors, fetchAdminLeaderboard]);
+  }, [isOpen, isAdmin, fetchStats, fetchRecentVisitors, fetchRecentActions, fetchAdminLeaderboard]);
 
   // Filter visitors by country and device
   const filteredVisitors = useMemo(() => {
@@ -922,6 +1066,10 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     visitorsLoading,
     visitorsError,
     refetchVisitors: fetchRecentVisitors,
+    recentActions,
+    recentActionsLoading,
+    recentActionsError,
+    refetchActions: fetchRecentActions,
     visitorSearch,
     setVisitorSearch,
     countryFilter,

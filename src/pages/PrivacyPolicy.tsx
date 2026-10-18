@@ -12,7 +12,7 @@ const PrivacyPolicy = () => {
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-6">Privacy Policy</h1>
-            <p className="text-gray-600 mb-8">Last updated: September 2026</p>
+            <p className="text-gray-600 mb-8">Last updated: October 2026</p>
 
             <div className="space-y-8">
               <section>
@@ -41,6 +41,12 @@ const PrivacyPolicy = () => {
                       <li>Books added to your library</li>
                       <li>Interaction with other users and content</li>
                       <li>Technical information about your device and browser</li>
+                      <li>Page paths and timestamps used to measure visits and how people navigate the site</li>
+                      <li>Pseudonymous first-party visitor and session identifiers used to calculate visitor and session totals</li>
+                      <li>Named product events and general interface interactions, such as link or button activation, form submission events, and selected control types</li>
+                      <li>Coarse scroll-depth milestones and measured foreground activity time, when your browser supports the tracking</li>
+                      <li>Browser/device details, referrer hostname, sanitized UTM campaign attribution, IP address, and approximate region inferred from IP for pageview records</li>
+                      <li>For this analytics event stream, we do not record typed field values, search text, message bodies, passwords, authentication tokens, or full URL query strings</li>
                     </ul>
                   </div>
                 </div>
@@ -92,9 +98,17 @@ const PrivacyPolicy = () => {
 
               <section>
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. Cookies and Tracking</h2>
-                <p className="text-gray-700 leading-relaxed">
-                  We use cookies and similar tracking technologies to enhance your experience on our platform. You can control cookie settings through your browser preferences. For more information, please see our Cookie Policy.
-                </p>
+                <div className="space-y-3 text-gray-700 leading-relaxed">
+                  <p>
+                    We use cookies and similar tracking technologies to enhance your experience on our platform. You can control cookie settings through your browser preferences. For more information, please see our Cookie Policy.
+                  </p>
+                  <p>
+                    Our first-party analytics uses a pseudonymous visitor identifier stored in local storage and a session identifier stored in session storage. A session identifier is refreshed after a period of inactivity. These identifiers help count visits and associate events within a session; they are not proof of a person's real-world identity.
+                  </p>
+                  <p>
+                    The analytics stream records interaction types and developer-authored labels where available, not the contents you type. We do not place raw form values, search queries, private message bodies, passwords, authentication tokens, or full URL query strings in this event stream. Sanitized UTM source, medium, and campaign values may be retained for campaign measurement. Pageview records may include the IP address and approximate location derived from it; access to individual visitor records is restricted to authorized administrators, while the Live Website Stats interface exposes aggregate metrics.
+                  </p>
+                </div>
               </section>
 
               <section>

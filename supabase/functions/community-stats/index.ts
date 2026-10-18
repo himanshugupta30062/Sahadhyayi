@@ -64,6 +64,18 @@ serve(async (req) => {
       );
     }
 
+    const fetchActionAnalytics = async (): Promise<Record<string, unknown> | null> => {
+      try {
+        const { data, error } = await supabase.rpc("get_community_pulse_action_stats", {
+          p_timeframe: timeframe,
+        });
+        if (error || !data || typeof data !== "object") return null;
+        return data as Record<string, unknown>;
+      } catch {
+        return null;
+      }
+    };
+
     // 2. Invoke the authoritative server-side PostgreSQL aggregation RPC
     const { data: rpcStats, error: rpcError } = await supabase.rpc("get_community_pulse_stats", {
       p_timeframe: timeframe,
@@ -73,18 +85,26 @@ serve(async (req) => {
       // City aggregates live in a separate, privacy-conscious RPC so the main
       // visitor aggregate remains focused on traffic, devices, pages and engagement.
       let responseStats = rpcStats as Record<string, unknown>;
-      const { data: cityStats, error: cityStatsError } = await supabase.rpc("get_community_pulse_city_stats", {
-        p_timeframe: timeframe,
-      });
+      const [cityResult, actionAnalytics] = await Promise.all([
+        supabase.rpc("get_community_pulse_city_stats", { p_timeframe: timeframe }),
+        fetchActionAnalytics(),
+      ]);
+      const cityStats = cityResult.data;
+      const cityStatsError = cityResult.error;
 
-      if (!cityStatsError && cityStats && typeof cityStats === "object") {
-        responseStats = {
-          ...responseStats,
-          topCities: Array.isArray((cityStats as Record<string, unknown>).topCities)
-            ? (cityStats as Record<string, unknown>).topCities
-            : [],
-          mostVisitedCity24h: (cityStats as Record<string, unknown>).mostVisitedCity24h ?? null,
-        };
+      responseStats = {
+        ...responseStats,
+        topCities: !cityStatsError && cityStats && typeof cityStats === "object" && Array.isArray((cityStats as Record<string, unknown>).topCities)
+          ? (cityStats as Record<string, unknown>).topCities
+          : [],
+        mostVisitedCity24h: !cityStatsError && cityStats && typeof cityStats === "object"
+          ? (cityStats as Record<string, unknown>).mostVisitedCity24h ?? null
+          : null,
+        actionAnalytics,
+        partialData: Boolean(responseStats.partialData || !actionAnalytics),
+      };
+      if (actionAnalytics && typeof actionAnalytics.averageSessionDurationSeconds === "number") {
+        responseStats.avgTimeOnSite = actionAnalytics.averageSessionDurationSeconds;
       }
 
       return new Response(JSON.stringify(responseStats), {
@@ -119,7 +139,7 @@ serve(async (req) => {
       supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview").gte("visited_at", timeframeStart),
     ]);
 
-    // Restore city panels independently when that aggregate RPC is deployed.
+    // Optional aggregates are independently fetched so one missing RPC does not block core stats.
     let cityStats: Record<string, unknown> = {};
     try {
       const { data, error } = await supabase.rpc("get_community_pulse_city_stats", {
@@ -131,6 +151,7 @@ serve(async (req) => {
     } catch {
       // Keep the response explicitly partial if city aggregation is not deployed yet.
     }
+    const actionAnalytics = await fetchActionAnalytics();
 
     const registeredReaders = totalSignupsRes.error ? null : totalSignupsRes.count;
     const newReaders = newSignupsPeriodRes.error ? null : newSignupsPeriodRes.count;
@@ -199,7 +220,7 @@ serve(async (req) => {
       : postsRes.count + commentsRes.count;
 
     const fallbackResponse = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       timeframe,
       partialData: true,
       fallbackMode: "partial",
@@ -242,6 +263,7 @@ serve(async (req) => {
       topMembers: [],
       topCities: Array.isArray(cityStats.topCities) ? cityStats.topCities : [],
       mostVisitedCity24h: cityStats.mostVisitedCity24h ?? null,
+      actionAnalytics,
 
       // This fallback deliberately marks unaggregated details as unavailable.
       // Do not invent country/page/device/referrer distributions when the SQL aggregate fails.

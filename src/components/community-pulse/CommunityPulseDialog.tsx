@@ -4,6 +4,8 @@ import {
   Activity,
   BarChart3,
   BookOpen,
+  MousePointerClick,
+  Timer,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -158,6 +160,10 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     visitorsLoading,
     visitorsError,
     refetchVisitors,
+    recentActions,
+    recentActionsLoading,
+    recentActionsError,
+    refetchActions,
     visitorSearch,
     setVisitorSearch,
     countryFilter,
@@ -172,7 +178,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   } = pulse;
 
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'visitors' | 'insights'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'visitors' | 'insights' | 'actions'>('overview');
   const [metricView, setMetricView] = useState<'views' | 'unique'>('views');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showAllCountries, setShowAllCountries] = useState(false);
@@ -240,6 +246,13 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
           discussions: null,
         },
         topMembers: Array.isArray(stats.topMembers) ? stats.topMembers : [],
+        totalActions: typeof stats.totalActions === 'number' ? stats.totalActions : null,
+        totalInteractions: typeof stats.totalInteractions === 'number' ? stats.totalInteractions : null,
+        actionSummary: Array.isArray(stats.actionSummary) ? stats.actionSummary : [],
+        activeSessions: typeof stats.activeSessions === 'number' ? stats.activeSessions : null,
+        averageSessionDurationSeconds: typeof stats.averageSessionDurationSeconds === 'number' ? stats.averageSessionDurationSeconds : null,
+        durationSampleCount: typeof stats.durationSampleCount === 'number' ? stats.durationSampleCount : null,
+        scrollDepthSummary: Array.isArray(stats.scrollDepthSummary) ? stats.scrollDepthSummary : [],
         lastUpdated: stats.lastUpdated || '',
         isStale: stats.isStale ?? false,
         partialData: stats.partialData ?? false,
@@ -262,6 +275,8 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
   const maxHourlyCount = Math.max(0, ...hourlyData.map(h => h.count));
   const chartPeak = maxHourlyCount > 0 ? Math.ceil(maxHourlyCount / 10) * 10 : 10;
+  const actionSummary = effectiveStats.actionSummary ?? [];
+  const scrollDepthSummary = effectiveStats.scrollDepthSummary ?? [];
 
   if (!open) return null;
 
@@ -354,7 +369,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 <strong className="text-stone-100">Registered readers:</strong> Authoritative member accounts directly counted from user records.
               </div>
               <div>
-                <strong className="text-stone-100">Average duration:</strong> Reported as unavailable (—) until active client in-tab duration telemetry is deployed.
+                <strong className="text-stone-100">Active time:</strong> Average measured foreground time across sessions with duration samples. Background time is excluded; sessions with tracking blocked may be missing.
               </div>
             </div>
           </div>
@@ -403,6 +418,19 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
             >
               <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>Insights</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('actions')}
+              aria-pressed={activeTab === 'actions'}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+                activeTab === 'actions'
+                  ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
+                  : 'text-stone-400 hover:text-stone-200'
+              }`}
+            >
+              <MousePointerClick className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+              <span>Actions</span>
             </button>
           </div>
 
@@ -604,7 +632,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
                       {effectiveStats.avgTimeOnSite || '—'}
                     </div>
-                    <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Avg. time on site</div>
+                    <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Avg. active session</div>
                     <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">
                       {effectiveStats.avgTimeOnSite !== '—' ? 'vs previous period' : 'Telemetry unavailable'}
                     </div>
@@ -1379,6 +1407,219 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   Sahadhyayi readers engage deeply during evening quiet hours (8:00 PM – 11:30 PM IST). 
                   Unlike ephemeral feeds, readers on Sahadhyayi focus on long-form literature, chapter completions, and reading room discussions.
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: REAL PRODUCT ACTIONS & ENGAGEMENT */}
+          {activeTab === 'actions' && (
+            <div className="space-y-4 sm:space-y-6 min-w-0">
+              <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-white/[0.09] bg-[#111614] p-4 sm:p-5 min-w-0">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="rounded-xl bg-[#18241e] border border-[#2e4034]/60 p-2.5 text-[#D5B16D] flex-shrink-0">
+                    <MousePointerClick className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-bold text-stone-100">Product actions</h3>
+                    <p className="mt-1 max-w-2xl text-xs sm:text-sm leading-relaxed text-stone-400">
+                      Real, named interactions recorded by Sahadhyayi. Navigation/UI interactions, product events, measured active time and scroll milestones are stored separately from pageviews.
+                    </p>
+                  </div>
+                </div>
+                <span className="rounded-full border border-emerald-800/40 bg-emerald-950/60 px-2.5 py-1 text-[10px] font-semibold text-emerald-400">
+                  {effectiveStats.totalActions === null || effectiveStats.totalInteractions === null
+                    ? 'Waiting for event data'
+                    : effectiveStats.totalActions === 0 && effectiveStats.totalInteractions === 0
+                      ? 'No activity recorded yet'
+                      : 'Measured events'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 min-w-0">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 min-w-0">
+                  <span className="mb-3 inline-flex rounded-lg bg-[#18241e] p-2 text-[#D5B16D]"><MousePointerClick className="h-4 w-4" /></span>
+                  <div className="text-2xl font-bold text-stone-100">{number(effectiveStats.totalActions)}</div>
+                  <div className="mt-1 text-xs text-stone-400">Product events</div>
+                  <div className="mt-1 text-[10px] text-stone-500">Excludes duration and scroll telemetry</div>
+                </div>
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 min-w-0">
+                  <span className="mb-3 inline-flex rounded-lg bg-[#18241e] p-2 text-[#D5B16D]"><Users className="h-4 w-4" /></span>
+                  <div className="text-2xl font-bold text-stone-100">{number(effectiveStats.activeSessions)}</div>
+                  <div className="mt-1 text-xs text-stone-400">Active sessions</div>
+                  <div className="mt-1 text-[10px] text-stone-500">Sessions with activity or pageviews in this period</div>
+                </div>
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 min-w-0">
+                  <span className="mb-3 inline-flex rounded-lg bg-[#18241e] p-2 text-[#D5B16D]"><Timer className="h-4 w-4" /></span>
+                  <div className="text-2xl font-bold text-stone-100">{effectiveStats.avgTimeOnSite || '—'}</div>
+                  <div className="mt-1 text-xs text-stone-400">Average active session</div>
+                  <div className="mt-1 text-[10px] text-stone-500">{effectiveStats.durationSampleCount === null ? 'Measured duration sample count unavailable' : `${number(effectiveStats.durationSampleCount)} sessions with measured duration`}</div>
+                </div>
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 min-w-0">
+                  <span className="mb-3 inline-flex rounded-lg bg-[#18241e] p-2 text-[#D5B16D]"><Activity className="h-4 w-4" /></span>
+                  <div className="text-2xl font-bold text-stone-100">{number(effectiveStats.totalInteractions)}</div>
+                  <div className="mt-1 text-xs text-stone-400">UI interactions</div>
+                  <div className="mt-1 text-[10px] text-stone-500">Clicks, navigation, control changes and form submits</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-4 min-w-0">
+                <section className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 sm:p-5 min-w-0">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-stone-100"><BarChart3 className="h-4 w-4 text-[#D5B16D]" /> Most common actions</h4>
+                      <p className="mt-1 text-[11px] text-stone-400">Counts are based on saved events for the selected period.</p>
+                    </div>
+                    <span className="text-[10px] text-stone-500">{timeframe}</span>
+                  </div>
+                  {actionSummary.length > 0 ? (
+                    <div className="space-y-3">
+                      {actionSummary.map((action) => {
+                        const maxCount = Math.max(1, ...actionSummary.map(item => item.count));
+                        const width = Math.max(2, Math.min(100, action.count / maxCount * 100));
+                        return (
+                          <div key={`${action.name}:${action.label}`} className="min-w-0">
+                            <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                              <div className="min-w-0">
+                                <p className="truncate font-medium text-stone-200">{action.label}</p>
+                                <p className="truncate font-mono text-[10px] text-stone-500">{action.name}{action.page ? ` · ${action.page}` : ''}</p>
+                              </div>
+                              <span className="flex-shrink-0 font-semibold tabular-nums text-stone-100">{number(action.count)}</span>
+                            </div>
+                            <div className="h-2 overflow-hidden rounded-full bg-[#18241e]">
+                              <div className="h-full rounded-full bg-[#D5B16D] transition-all" style={{ width: `${width}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-white/[0.12] px-4 py-8 text-center">
+                      <MousePointerClick className="mx-auto h-6 w-6 text-stone-500" />
+                      <p className="mt-2 text-xs font-medium text-stone-300">{effectiveStats.totalActions === 0 ? 'No product actions recorded in this period' : 'Action summary is not available yet'}</p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-stone-500">Past button clicks cannot be reconstructed retroactively. New tracked actions appear after the updated website is deployed.</p>
+                    </div>
+                  )}
+                </section>
+
+                <section className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 sm:p-5 min-w-0">
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-stone-100"><Eye className="h-4 w-4 text-[#D5B16D]" /> Reading depth</h4>
+                      <span className="text-[10px] tabular-nums text-stone-400">{scrollDepthSummary.length ? `${number(scrollDepthSummary.reduce((sum, item) => sum + item.count, 0))} events` : '— events'}</span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-stone-400">How often visitors reach each page-depth milestone.</p>
+                  </div>
+                  {[25, 50, 75, 100].map((percent) => {
+                    const item = scrollDepthSummary.find(summary => summary.percent === percent);
+                    const count = item?.count ?? 0;
+                    const maxCount = Math.max(1, ...scrollDepthSummary.map(summary => summary.count));
+                    return (
+                      <div key={percent} className="mb-4 last:mb-0">
+                        <div className="mb-1.5 flex items-center justify-between text-xs">
+                          <span className="text-stone-300">{percent === 100 ? 'Reached page end' : `Reached ${percent}%`}</span>
+                          <span className="tabular-nums font-semibold text-stone-100">{scrollDepthSummary.length ? number(count) : '—'}</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-[#18241e]">
+                          <div className="h-full rounded-full bg-[#D5B16D] transition-all" style={{ width: `${scrollDepthSummary.length ? Math.min(100, count / maxCount * 100) : 0}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <p className="mt-4 border-t border-white/[0.08] pt-3 text-[10px] leading-relaxed text-stone-500">
+                    Scroll depth is recorded once per milestone per route. It does not retain scroll coordinates or page content.
+                  </p>
+                </section>
+              </div>
+
+              {isAdmin && (
+                <section className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 sm:p-5 min-w-0">
+                  <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-stone-100">
+                        <Activity className="h-4 w-4 text-[#D5B16D]" />
+                        Recent action log
+                      </h4>
+                      <p className="mt-1 text-[11px] leading-relaxed text-stone-400">
+                        Admin-only event records captured in the selected period. This is separate from pageviews and includes the action type, page and safe event details.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { void refetchActions(); }}
+                      disabled={recentActionsLoading}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.1] px-2.5 py-1.5 text-[11px] font-medium text-stone-300 transition hover:border-white/20 hover:text-[#D5B16D] disabled:opacity-50"
+                    >
+                      <RefreshCw className={`h-3 w-3 ${recentActionsLoading ? 'animate-spin' : ''}`} />
+                      Refresh log
+                    </button>
+                  </div>
+
+                  {recentActionsError && (
+                    <div className="mb-3 rounded-lg border border-red-800/30 bg-red-950/20 px-3 py-2 text-xs text-red-300">
+                      {recentActionsError}
+                    </div>
+                  )}
+
+                  {recentActionsLoading && recentActions.length === 0 ? (
+                    <div className="py-8 text-center text-xs text-stone-500">Loading recent action events…</div>
+                  ) : recentActions.length > 0 ? (
+                    <div className="space-y-2">
+                      {recentActions.slice(0, 50).map((action) => {
+                        const detail =
+                          (typeof action.metadata.target_label === 'string' && action.metadata.target_label) ||
+                          (typeof action.metadata.form_name === 'string' && action.metadata.form_name) ||
+                          (typeof action.metadata.control_type === 'string' && action.metadata.control_type) ||
+                          (typeof action.metadata.scroll_depth_percent === 'number' ? `Reached ${action.metadata.scroll_depth_percent}% scroll` : '') ||
+                          (typeof action.metadata.duration_ms === 'number' ? `${Math.round(action.metadata.duration_ms / 1000)}s active time` : '');
+                        const visitor = action.visitorId
+                          ? `Visitor ${action.visitorId.slice(0, 8)}`
+                          : action.sessionId
+                            ? `Session ${action.sessionId.slice(0, 8)}`
+                            : 'Anonymous';
+                        const visitedAt = action.visitedAt
+                          ? new Date(action.visitedAt).toLocaleString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                            })
+                          : 'Time unavailable';
+                        return (
+                          <div key={action.id} className="grid grid-cols-1 gap-2 rounded-lg border border-white/[0.06] bg-[#18241e]/40 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)_auto] sm:items-center">
+                            <div className="min-w-0">
+                              <p className="truncate text-xs font-semibold text-stone-200">
+                                {detail || action.eventName.replace(/[_-]+/g, ' ')}
+                              </p>
+                              <p className="mt-0.5 truncate font-mono text-[10px] text-stone-500">
+                                {action.eventName}
+                              </p>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-xs text-stone-300" title={action.page}>{action.page}</p>
+                              <p className="mt-0.5 truncate text-[10px] text-stone-500">{visitor}</p>
+                            </div>
+                            <time className="text-[10px] tabular-nums text-stone-500 sm:text-right" dateTime={action.visitedAt}>
+                              {visitedAt}
+                            </time>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-white/[0.12] px-4 py-8 text-center">
+                      <MousePointerClick className="mx-auto h-6 w-6 text-stone-500" />
+                      <p className="mt-2 text-xs font-medium text-stone-300">No action events recorded in this period yet</p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
+                        The global click/form/scroll/time tracker starts recording after the frontend update is deployed. Existing pageviews are preserved, but earlier interactions were not stored.
+                      </p>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              <div className="rounded-xl border border-white/[0.09] bg-[#111614] px-4 py-3 text-[11px] leading-relaxed text-stone-400">
+                <strong className="text-stone-200">Privacy by design:</strong> The tracker records interaction labels and event types, not typed values, search text, message bodies, passwords, authentication tokens or full URL query strings. Anonymous visitor and session identifiers are pseudonymous, not proof of a real-world identity.
               </div>
             </div>
           )}
