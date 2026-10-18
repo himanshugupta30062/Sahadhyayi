@@ -247,22 +247,17 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     return getBaselineStats(timeframe);
   }, [stats, timeframe]);
 
-  // Hourly chart data scaled appropriately for views vs unique visitors without artificial minimums
+  // Unique visitors must use real per-hour aggregates; do not estimate them from pageviews.
+  const hourlyUniqueDataAvailable = effectiveStats.hourlyActivity.some(
+    h => typeof h.uniqueVisitors === 'number',
+  );
   const hourlyData = React.useMemo(() => {
     const raw = effectiveStats.hourlyActivity || [];
-    return raw.map(h => {
-      if (metricView === 'unique') {
-        const pageViewsNum = effectiveStats.pageViews ?? 0;
-        const uniqueNum = effectiveStats.uniqueVisitors ?? 0;
-        const ratio = pageViewsNum > 0
-          ? Math.min(1, uniqueNum / pageViewsNum)
-          : 0;
-        const count = Math.round(h.count * ratio);
-        return { ...h, count };
-      }
-      return h;
-    });
-  }, [effectiveStats.hourlyActivity, effectiveStats.pageViews, effectiveStats.uniqueVisitors, metricView]);
+    return raw.map(h => metricView === 'unique'
+      ? { ...h, count: h.uniqueVisitors ?? 0 }
+      : h,
+    );
+  }, [effectiveStats.hourlyActivity, metricView]);
 
   const maxHourlyCount = Math.max(0, ...hourlyData.map(h => h.count));
   const chartPeak = maxHourlyCount > 0 ? Math.ceil(maxHourlyCount / 10) * 10 : 10;
@@ -638,7 +633,13 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     {/* Bar Chart Container */}
                     <div className="h-44 sm:h-48 pt-3 pb-2 flex flex-col justify-end w-full min-w-0">
                       <div className="flex items-end justify-between gap-1 h-32 sm:h-36 border-b border-white/[0.08] pb-1 px-1 w-full min-w-0 overflow-x-auto sm:overflow-x-visible">
-                        {maxHourlyCount > 0 ? (
+                        {metricView === 'unique' && !hourlyUniqueDataAvailable ? (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-xs text-stone-500 py-6 gap-1.5 text-center">
+                            <Activity className="w-5 h-5 text-stone-600" />
+                            <span>Hourly unique visitor data is unavailable</span>
+                            <span className="text-[10px] text-stone-600">The backend has not supplied measured unique counts for each hour.</span>
+                          </div>
+                        ) : maxHourlyCount > 0 ? (
                           hourlyData.map((h, i) => {
                             const heightPct = Math.max(6, Math.min(100, Math.round((h.count / chartPeak) * 100)));
                             const isPeak = h.isPeak;
@@ -671,7 +672,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center text-xs text-stone-500 py-6 gap-1.5">
                             <Activity className="w-5 h-5 text-stone-600 animate-pulse" />
-                            <span>No pageviews recorded in this timeframe yet</span>
+                            <span>{metricView === 'unique' ? 'No unique visitors recorded in this timeframe yet' : 'No pageviews recorded in this timeframe yet'}</span>
                             <span className="text-[10px] text-stone-600">Hourly activity will appear here as readers browse</span>
                           </div>
                         )}
