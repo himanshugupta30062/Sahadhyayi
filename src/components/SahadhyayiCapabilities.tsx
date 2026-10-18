@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Calendar, PenTool, Gamepad2, ArrowRight, Sparkles, ChevronRight } from "lucide-react";
-import HomeFloatingBooks from "@/components/home/HomeFloatingBooks";
+import { MapPin, Calendar, PenTool, Gamepad2, ArrowRight, ChevronRight } from "lucide-react";
 
 interface CapabilityItem {
   id: string;
@@ -53,26 +52,13 @@ export const SahadhyayiCapabilities: React.FC = () => {
       className="home-capabilities relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
       aria-label="Platform Capabilities"
     >
-      <HomeFloatingBooks placement="section" />
-      <style>{`
-        @keyframes homeCapabilitiesGlowDrift {
-          0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(-16px, 14px, 0) scale(1.04); }
-        }
-        .home-capabilities-glow { animation: homeCapabilitiesGlowDrift 26s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) { .home-capabilities-glow { animation: none; } }
-      `}</style>
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden dark:hidden">
-        <div className="home-capabilities-glow absolute right-[4%] top-[-8rem] h-80 w-80 rounded-full bg-[#F0D7A0]/45 blur-[100px]" />
-        <div className="home-capabilities-glow absolute -left-24 bottom-[-10rem] h-72 w-72 rounded-full bg-[#DCE9D1]/65 blur-[90px]" />
-      </div>
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Section Header (Image 2 reference) */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF2EC] dark:bg-[#161D19] border border-[#C8DBCB] dark:border-[#29332D] text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D] mb-4">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Platform Capabilities</span>
+            <div className="flex items-center gap-2.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] text-[#6E7B6F] dark:text-[#D5B16D] mb-3">
+              <span aria-hidden="true" className="h-px w-7 bg-[#B68A35] dark:bg-[#D5B16D]" />
+              <span>03 / Beyond the page</span>
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight">
               Built for deeper reading
