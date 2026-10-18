@@ -58,7 +58,8 @@ export const BookExpertProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               coverImageUrl: typeof book.coverImageUrl === "string" ? book.coverImageUrl : null,
               publicationYear: typeof book.publicationYear === "number" ? book.publicationYear : null,
               language: typeof book.language === "string" ? book.language : null,
-              pdfUrl: typeof book.pdfUrl === "string" ? book.pdfUrl : null,
+              readingUrl: typeof book.readingUrl === "string" ? book.readingUrl : null,
+              isDirectPdf: book.isDirectPdf === true,
             }))
         : [];
 
