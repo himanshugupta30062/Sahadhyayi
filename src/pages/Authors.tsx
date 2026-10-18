@@ -144,7 +144,7 @@ const Authors = () => {
           />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2]/95 via-[#FAF7F2]/83 to-[#FAF7F2]/43 dark:from-[#09120D]/95 dark:via-[#09120D]/79 dark:to-[#09120D]/38" />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#FAF7F2]/72 via-transparent to-[#FAF7F2]/10 dark:from-[#09120D]/70 dark:via-transparent dark:to-[#09120D]/25" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(28,68,45,0.5)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)] dark:opacity-[0.12] dark:[background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(28,68,45,0.5)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)] dark:opacity-[0.12] dark:[background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)]" />
 
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
