@@ -51,13 +51,14 @@ export const BOOK_SELECT_COLUMNS = BASE_BOOK_SELECT_COLUMNS;
 export const SORTING_RULES = [
   { label: 'Verified PDF with complete metadata & cover', points: 'Top Tier (10,000+)', priority: 'highest' },
   { label: 'Verified PDF with cover photo', points: 'Tier 2 (8,800+)', priority: 'high' },
-  { label: 'Other verified full text with cover (EPUB / HTML)', points: 'Tier 3 (8,000+)', priority: 'high' },
-  { label: 'Verified full text without cover photo', points: 'Tier 4 (6,000–7,000)', priority: 'medium' },
-  { label: 'Unverified or broken reading links', points: 'Demoted (3,000+)', priority: 'demoted' },
-  { label: 'Metadata-only records (no reading files)', points: 'Bottom (1,000+)', priority: 'low' },
-  { label: 'Per-page diversity (max 1 / author & title)', points: 'Spread across pages', priority: 'info' },
-  { label: 'Bibliographic completeness & cover quality', points: '+10 to +400', priority: 'medium' },
-  { label: 'Tie-breaker', points: 'newest first', priority: 'info' },
+  { label: 'Other verified full text with cover (EPUB / HTML)', points: 'Tier 3 (8,200+)', priority: 'high' },
+  { label: 'Genuine book with cover & online reader (Google Books, etc.)', points: 'Tier 4 (7,500–7,800)', priority: 'high' },
+  { label: 'Genuine book with cover & bibliographic metadata', points: 'Tier 5 (6,200–6,500)', priority: 'medium' },
+  { label: 'Genuine book with verified PDF without cover photo', points: 'Tier 6 (4,500–4,700)', priority: 'medium' },
+  { label: 'Academic papers, technical reports & preprints', points: 'Demoted (3,200+)', priority: 'demoted' },
+  { label: 'Metadata-only records without cover photo', points: 'Bottom (1,500+)', priority: 'low' },
+  { label: 'Per-page diversity (max 1 / author & title per page)', points: 'Spread across pages', priority: 'info' },
+  { label: 'Tie-breaker', points: 'newest first, then title, then ID', priority: 'info' },
 ];
 
 /**
@@ -240,22 +241,185 @@ export function hasOtherVerifiedFullText(book: any): boolean {
 }
 
 /**
+ * Resource types distinguishing direct download from online reading interfaces.
+ */
+export type BookResourceType =
+  | 'verified_direct_pdf'
+  | 'online_reader'
+  | 'external_book_page'
+  | 'no_reading_resource';
+
+/**
+ * Checks if a book has a supported online reader interface (e.g. Google Books preview, Internet Archive reader).
+ */
+export function isOnlineReader(book: any): boolean {
+  if (!book) return false;
+  if (isVerifiedPdf(book)) return false;
+  if (book.isBrokenLink === true) return false;
+
+  const pdf = (book.pdf_url || book.pdfUrl || '').trim();
+  const epub = (book.epub_url || book.epubUrl || '').trim();
+
+  if (Array.isArray(book.assets) && book.assets.length > 0) {
+    const readerAsset = book.assets.find(
+      (a: any) =>
+        (a.format === 'official_reader' || a.format === 'web_reader' || a.format === 'google_preview') &&
+        a.verified !== false
+    );
+    if (readerAsset) {
+      const url = (readerAsset.readerUrl || readerAsset.downloadUrl || '').trim();
+      if (url && !url.includes('broken') && !url.includes('404')) {
+        return true;
+      }
+    }
+  }
+
+  const candidateUrl = pdf || epub;
+  if (
+    book.isGooglePreview === true ||
+    book.accessStatus === 'preview_only' ||
+    book.accessStatus === 'official_reader' ||
+    candidateUrl.includes('books.google.') ||
+    candidateUrl.includes('archive.org/stream') ||
+    candidateUrl.includes('archive.org/details') ||
+    candidateUrl.includes('openlibrary.org/books') ||
+    candidateUrl.includes('hathitrust.org') ||
+    candidateUrl.includes('read.amazon.') ||
+    candidateUrl.includes('play.google.com/books/reader')
+  ) {
+    if (
+      candidateUrl &&
+      candidateUrl !== '#' &&
+      !candidateUrl.startsWith('javascript:') &&
+      !candidateUrl.includes('broken') &&
+      !candidateUrl.includes('404')
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Evaluates whether a record represents an academic paper, technical report, or non-book document.
+ */
+export function isNonBookDocument(book: any): boolean {
+  if (!book) return false;
+  const title = (book.title || '').trim().toLowerCase();
+  const author = (book.author || '').trim().toLowerCase();
+  const genre = (book.genre || '').trim().toLowerCase();
+  const pdf = (book.pdf_url || book.pdfUrl || '').trim().toLowerCase();
+
+  // Document/Report repositories in URL
+  if (pdf.includes('/arxiv-') || pdf.includes('nasa_ntrs') || pdf.includes('eparlib.')) {
+    return true;
+  }
+
+  // Document/Report indicators in title
+  if (
+    title.startsWith('nasa technical reports') ||
+    title.startsWith('nasa-tm-') ||
+    title.startsWith('nasa-cr-') ||
+    title.startsWith('nasa-sp-') ||
+    title.includes('technical report') ||
+    title.includes('technical memorandum') ||
+    title.includes('technical note') ||
+    title.startsWith('cia reading room') ||
+    title.startsWith('cia-rdp') ||
+    title.startsWith('arxiv:') ||
+    title.includes('[arxiv') ||
+    title.includes('working paper') ||
+    title.includes('conference proceedings') ||
+    title.includes('legislative council') ||
+    title.includes('lok sabha secretariat') ||
+    title.includes('gazette')
+  ) {
+    return true;
+  }
+
+  // Institutional authors for reports & government docs
+  if (
+    author === 'national aeronautics and space administration' ||
+    author === 'nasa' ||
+    author === 'nasa technical reports server (ntrs)' ||
+    author === 'central intelligence agency' ||
+    author === 'cia' ||
+    author === 'cia reading room' ||
+    author === 'defense technical information center' ||
+    author === 'united states government' ||
+    author === 'lok sabha secretariat' ||
+    author === 'tamil nadu legislative council'
+  ) {
+    return true;
+  }
+
+  // Explicit document genres
+  if (
+    genre === 'technical report' ||
+    genre === 'research paper' ||
+    genre === 'academic paper' ||
+    genre === 'preprint' ||
+    genre === 'government document'
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Classifies the primary digital resource attached to a book defensively.
+ */
+export function getBookResourceType(book: any): BookResourceType {
+  if (!book) return 'no_reading_resource';
+  if (book.isBrokenLink === true) return 'no_reading_resource';
+
+  if (isVerifiedPdf(book) || hasOtherVerifiedFullText(book)) {
+    return 'verified_direct_pdf';
+  }
+
+  if (isOnlineReader(book)) {
+    return 'online_reader';
+  }
+
+  const pdf = (book.pdf_url || book.pdfUrl || '').trim();
+  const epub = (book.epub_url || book.epubUrl || '').trim();
+  const candidateUrl = pdf || epub;
+
+  if (
+    candidateUrl &&
+    candidateUrl !== '#' &&
+    !candidateUrl.startsWith('javascript:') &&
+    !candidateUrl.includes('broken') &&
+    !candidateUrl.includes('404') &&
+    (/^https?:\/\//i.test(candidateUrl) || candidateUrl.startsWith('/'))
+  ) {
+    return 'external_book_page';
+  }
+
+  return 'no_reading_resource';
+}
+
+/**
  * Checks if a book has an unverified or broken reading link.
  */
 export function hasUnverifiedOrBrokenLink(book: any): boolean {
   if (!book) return false;
   if (isVerifiedPdf(book) || hasOtherVerifiedFullText(book)) return false;
-
   if (book.isBrokenLink === true) return true;
-  if (book.accessStatus === 'access_unverified' || book.accessStatus === 'preview_only') return true;
+  if (book.accessStatus === 'access_unverified') return true;
 
   const pdf = (book.pdf_url || book.pdfUrl || '').trim();
   const epub = (book.epub_url || book.epubUrl || '').trim();
-  if (pdf || epub) {
-    return true; // Has link, but not verified
-  }
+  const candidateUrl = pdf || epub;
 
-  if (Array.isArray(book.assets) && book.assets.length > 0) {
+  if (
+    candidateUrl.includes('broken') ||
+    candidateUrl.includes('404') ||
+    candidateUrl === '#' ||
+    candidateUrl.startsWith('javascript:')
+  ) {
     return true;
   }
 
@@ -267,57 +431,82 @@ export function hasUnverifiedOrBrokenLink(book: any): boolean {
  */
 export function isMetadataOnly(book: any): boolean {
   if (!book) return false;
-  if (isVerifiedPdf(book) || hasOtherVerifiedFullText(book) || hasUnverifiedOrBrokenLink(book)) {
-    return false;
-  }
-  return true;
+  return getBookResourceType(book) === 'no_reading_resource';
 }
 
 /**
- * Calculates book ranking score according to the verified content and cover photo hierarchy:
- * 1. Verified PDF + complete metadata & cover (10,000+)
- * 2. Verified PDF + valid cover photo (8,800+)
- * 3. Other verified full-text formats (EPUB / HTML reader) + valid cover photo (8,000+)
- * 4. Verified PDF without cover photo (7,000+)
- * 5. Other verified full-text without cover photo (6,000+)
- * 6. Unverified or broken reading links (3,000–3,500)
- * 7. Metadata-only records (1,000–1,500)
- * 8. Empty / ghost records (0+)
+ * Calculates book ranking score according to the book-first hierarchy:
+ * 1. Genuine book + valid cover + complete metadata + verified direct PDF (10,000+)
+ * 2. Genuine book + valid cover + verified direct PDF (8,800+)
+ * 3. Genuine book + valid cover + other verified full text (EPUB / HTML) (8,200+)
+ * 4. Genuine book + valid cover + supported online reader (Google Books, etc.) (7,500–7,800)
+ * 5. Genuine book + valid cover + complete bibliographic metadata (6,200–6,500)
+ * 6. Genuine book with verified direct PDF without cover photo (4,500–4,700)
+ * 7. Academic papers, technical reports & preprints (3,200–3,600)
+ * 8. Other incomplete records without cover (1,500–2,400)
+ * 9. Empty / ghost records (0+)
  */
 export const getBookCompletenessScore = (book: any): number => {
   if (!book) return 0;
 
-  const verifiedPdf = isVerifiedPdf(book);
-  const completeMeta = hasCompleteMetadata(book);
-  const otherFullText = hasOtherVerifiedFullText(book);
-  const brokenOrUnverified = hasUnverifiedOrBrokenLink(book);
+  const resourceType = getBookResourceType(book);
   const withCover = hasValidCover(book);
+  const completeMeta = hasCompleteMetadata(book);
+  const isDoc = isNonBookDocument(book);
 
   // Determine base tier score
   let baseScore = 0;
-  if (verifiedPdf && completeMeta) {
-    baseScore = 10000; // Tier 1: Verified PDF + complete metadata (at the top)
-  } else if (verifiedPdf && withCover) {
-    baseScore = 8800;  // Tier 2: Verified PDF + valid cover photo
-  } else if (otherFullText && withCover) {
-    baseScore = 8000;  // Tier 3: Other verified full-text (EPUB, official HTML) + valid cover photo
-    if (completeMeta) baseScore += 200; // Sub-boost within Tier 3 for complete metadata
-  } else if (verifiedPdf) {
-    baseScore = 7000;  // Tier 4: Verified PDF without cover photo
-  } else if (otherFullText) {
-    baseScore = 6000;  // Tier 5: Other verified full-text without cover photo
-  } else if (brokenOrUnverified) {
-    baseScore = 3000;  // Tier 6: Unverified or broken reading links
-    if (withCover) baseScore += 500; // Sub-boost within unverified tier if cover exists
+
+  if (isDoc) {
+    // Non-book documents (NASA technical reports, CIA papers, preprints)
+    baseScore = 3200;
+    if (withCover) baseScore += 400;
+  } else if (isVerifiedPdf(book)) {
+    if (withCover && completeMeta) {
+      baseScore = 10000; // Tier 1: Genuine book + valid cover + complete metadata + verified direct PDF
+    } else if (withCover) {
+      baseScore = 8800;  // Tier 2: Genuine book + valid cover + verified direct PDF
+    } else {
+      baseScore = 4500;  // Tier 6: Genuine book + verified direct PDF, but NO cover
+      if (completeMeta) baseScore += 200;
+    }
+  } else if (hasOtherVerifiedFullText(book)) {
+    if (withCover && completeMeta) {
+      baseScore = 8400;  // Tier 3: Verified EPUB / official HTML + valid cover + complete metadata
+    } else if (withCover) {
+      baseScore = 8200;  // Tier 3: Verified EPUB / official HTML + valid cover
+    } else {
+      baseScore = 4500;  // Verified format without cover
+      if (completeMeta) baseScore += 200;
+    }
+  } else if (resourceType === 'online_reader') {
+    if (withCover) {
+      baseScore = 7500;  // Tier 4: Genuine book + valid cover + supported online reader
+      if (completeMeta) baseScore += 300; // 7,800
+    } else {
+      baseScore = 3500;  // Online reader without cover
+      if (completeMeta) baseScore += 200;
+    }
+  } else if (resourceType === 'external_book_page') {
+    if (withCover) {
+      baseScore = 6000;  // Genuine book + valid cover + external info page
+      if (completeMeta) baseScore += 300;
+    } else {
+      baseScore = 2000;
+    }
   } else {
-    // Check if empty ghost record
+    // resourceType === 'no_reading_resource'
     const title = (book.title || '').trim();
     const desc = (book.description || '').trim();
+
     if (!withCover && (!desc || desc.length < 20) && (!title || title.length < 3)) {
-      baseScore = 0;   // Tier 8: Empty ghost record
+      baseScore = 0;     // Empty ghost record
+    } else if (withCover) {
+      baseScore = 6200;  // Tier 5: Genuine book + valid cover + bibliographic metadata
+      if (completeMeta) baseScore += 300; // 6,500
     } else {
-      baseScore = 1000; // Tier 7: Metadata-only book with no full-text access
-      if (withCover) baseScore += 500; // Sub-boost within metadata-only if cover exists
+      baseScore = 1500;  // Metadata-only book without cover
+      if (completeMeta) baseScore += 200;
     }
   }
 
