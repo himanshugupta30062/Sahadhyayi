@@ -33,49 +33,87 @@ const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
     }
 
     setLoading(true);
-    const subject = encodeURIComponent(`[Contact] Message from ${parsed.data.name} (Sahadhyayi)`);
-    const body = encodeURIComponent(
-      `Name: ${parsed.data.name}\nEmail: ${parsed.data.email}\n\nMessage:\n${parsed.data.message}`
-    );
-    const mailtoUrl = `mailto:gyan@sahadhyayi.com?subject=${subject}&body=${body}`;
+    let dbSaved = false;
+    let dbErrorMsg: string | null = null;
+    let emailSent = false;
+    let emailErrorMsg: string | null = null;
 
     try {
+      // 1. Save to contact_messages in database
       const { error: dbError } = await supabase.from('contact_messages').insert({
         name: parsed.data.name,
         email: parsed.data.email,
         message: parsed.data.message,
       });
-      if (dbError) console.warn("contact_messages insert failed:", dbError);
 
-      let edgeSent = false;
+      if (dbError) {
+        dbSaved = false;
+        dbErrorMsg = dbError.message || 'Database error saving message';
+        console.error('[ContactFormDialog] contact_messages insert failed:', dbError);
+      } else {
+        dbSaved = true;
+      }
+
+      // 2. Dispatch via send-contact-email Edge Function
       try {
-        const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
-          body: { name: parsed.data.name, email: parsed.data.email, message: parsed.data.message },
+        const { data, error: invokeError } = await supabase.functions.invoke('send-contact-email', {
+          body: {
+            name: parsed.data.name,
+            email: parsed.data.email,
+            message: parsed.data.message,
+          },
         });
-        if (!emailError) {
-          edgeSent = true;
+
+        if (invokeError) {
+          let parsedMsg = invokeError.message;
+          try {
+            if ('context' in invokeError && typeof (invokeError as any).context?.json === 'function') {
+              const body = await (invokeError as any).context.json();
+              if (body?.error) parsedMsg = body.error;
+            }
+          } catch {
+            // Keep invokeError.message
+          }
+          emailSent = false;
+          emailErrorMsg = parsedMsg;
+          console.error('[ContactFormDialog] send-contact-email invocation failed:', invokeError);
+        } else if (data && typeof data === 'object' && data.success) {
+          emailSent = true;
         } else {
-          console.warn('Email notification failed:', emailError);
+          emailSent = false;
+          emailErrorMsg = data?.error || 'Email dispatch failed';
         }
-      } catch (invokeErr) {
-        console.warn('Edge invocation error:', invokeErr);
+      } catch (invokeErr: any) {
+        emailSent = false;
+        emailErrorMsg = invokeErr?.message || 'Network error communicating with email service';
+        console.error('[ContactFormDialog] Edge invocation exception:', invokeErr);
       }
 
-      if (!edgeSent) {
-        // Fallback: trigger mailto redirect directly
-        window.location.href = mailtoUrl;
+      // 3. Clear distinction between email sent and message saved
+      if (emailSent) {
+        if (dbSaved) {
+          toast.success("Message sent! Your email was delivered to gyan@sahadhyayi.com and saved to our inbox.");
+        } else {
+          toast.warning("Message delivered to gyan@sahadhyayi.com! (Note: saving backup copy to inbox encountered an issue).");
+        }
+        setForm({ name: '', email: '', message: '' });
+        setOpen(false);
+      } else {
+        // Email was NOT confirmed delivered by server
+        // Preserve user's input for retry, do NOT close dialog, do NOT fake delivery with mailto
+        if (dbSaved) {
+          toast.error(
+            `Message saved to our inbox, but email delivery to gyan@sahadhyayi.com failed (${emailErrorMsg || 'Email delivery error'}). You can retry or use the Email App button.`
+          );
+        } else {
+          toast.error(
+            `Failed to send message: ${emailErrorMsg || dbErrorMsg || 'Please try again or use the Email App button.'}`
+          );
+        }
       }
-
-      toast.success(
-        edgeSent
-          ? "Message sent to gyan@sahadhyayi.com! We'll get back to you soon."
-          : "Message saved! Opening email client to deliver to gyan@sahadhyayi.com directly."
-      );
-      setForm({ name: '', email: '', message: '' });
-      setOpen(false);
-    } catch {
-      window.location.href = mailtoUrl;
-      toast.error("Opening your email client to reach gyan@sahadhyayi.com directly.");
+    } catch (unexpectedError: any) {
+      console.error('[ContactFormDialog] Unexpected error in handleSubmit:', unexpectedError);
+      toast.error(unexpectedError?.message || "An unexpected error occurred while sending your message.");
     } finally {
       setLoading(false);
     }

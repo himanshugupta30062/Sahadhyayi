@@ -172,13 +172,10 @@ const About = () => {
     setLoading(true);
     setSuccess(false);
 
-    const subject = encodeURIComponent(
-      `Contact Message from ${values.name} (Sahadhyayi About Form)`
-    );
-    const body = encodeURIComponent(
-      `Name: ${values.name}\nEmail: ${values.email}\n\nMessage:\n${values.message}`
-    );
-    const mailtoUrl = `mailto:gyan@sahadhyayi.com?subject=${subject}&body=${body}`;
+    let dbSaved = false;
+    let dbErrorMsg: string | null = null;
+    let emailSent = false;
+    let emailErrorMsg: string | null = null;
 
     try {
       // 1. Record message in the database so no submission is lost
@@ -191,46 +188,80 @@ const About = () => {
       ]);
 
       if (dbError) {
-        console.warn("Could not insert into contact_messages:", dbError);
+        dbSaved = false;
+        dbErrorMsg = dbError.message || "Database insert error";
+        console.error("[About] Could not insert into contact_messages:", dbError);
+      } else {
+        dbSaved = true;
       }
 
       // 2. Dispatch email to gyan@sahadhyayi.com via the Supabase Edge Function
-      let edgeSuccess = false;
       try {
-        const { error: emailError } = await supabase.functions.invoke("send-contact-email", {
+        const { data, error: emailError } = await supabase.functions.invoke("send-contact-email", {
           body: {
             name: values.name,
             email: values.email,
             message: values.message,
           },
         });
-        if (!emailError) {
-          edgeSuccess = true;
+
+        if (emailError) {
+          let parsedMsg = emailError.message;
+          try {
+            if ("context" in emailError && typeof (emailError as any).context?.json === "function") {
+              const body = await (emailError as any).context.json();
+              if (body?.error) parsedMsg = body.error;
+            }
+          } catch {
+            // keep fallback
+          }
+          emailSent = false;
+          emailErrorMsg = parsedMsg;
+          console.error("[About] Edge email notification failed:", emailError);
+        } else if (data && typeof data === "object" && data.success) {
+          emailSent = true;
         } else {
-          console.warn("Edge email notification warning:", emailError);
+          emailSent = false;
+          emailErrorMsg = data?.error || "Email dispatch failed";
         }
-      } catch (edgeErr) {
-        console.warn("Edge function invocation error:", edgeErr);
+      } catch (edgeErr: any) {
+        emailSent = false;
+        emailErrorMsg = edgeErr?.message || "Network error invoking email service";
+        console.error("[About] Edge function invocation error:", edgeErr);
       }
 
-      // 3. If edge email wasn't delivered directly, fallback to mailto redirect
-      if (!edgeSuccess) {
-        window.location.href = mailtoUrl;
+      // 3. User feedback and state handling
+      if (emailSent) {
+        toast({
+          title: "Message sent!",
+          description: dbSaved
+            ? "Thank you! Your message was delivered to gyan@sahadhyayi.com and recorded in our inbox."
+            : "Thank you! Your message was delivered to gyan@sahadhyayi.com.",
+        });
+        form.reset();
+        setSuccess(true);
+      } else {
+        // Email failed: preserve form inputs, do not fake success with mailto redirect
+        if (dbSaved) {
+          toast({
+            title: "Message saved to inbox",
+            description: `Your message was saved to our inbox, but email delivery to gyan@sahadhyayi.com failed (${emailErrorMsg || "Email error"}). You can also send directly via the Email App button below.`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Failed to send message",
+            description: emailErrorMsg || dbErrorMsg || "Please check your connection or send via your Email App below.",
+            variant: "destructive",
+          });
+        }
       }
-
+    } catch (err: any) {
+      console.error("[About] Unexpected contact form error:", err);
       toast({
-        title: "Message sent!",
-        description: edgeSuccess
-          ? "Thank you! Your message was delivered to gyan@sahadhyayi.com."
-          : "Message saved! Opening your email app to ensure gyan@sahadhyayi.com receives it directly.",
-      });
-      form.reset();
-      setSuccess(true);
-    } catch (err) {
-      window.location.href = mailtoUrl;
-      toast({
-        title: "Opening Email Client",
-        description: "Redirecting your message to gyan@sahadhyayi.com.",
+        title: "Submission Error",
+        description: err?.message || "An unexpected error occurred. Please try again or use the Email App button.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
