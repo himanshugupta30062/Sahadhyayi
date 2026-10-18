@@ -308,7 +308,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
   return (
     <section
-      className="py-16 sm:py-20 lg:py-24 bg-[#FAF7F2] dark:bg-[#0B0D0C] border-b border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-200"
+      className="home-book-discovery relative isolate py-16 sm:py-20 lg:py-24 bg-[#F2F7F0] dark:bg-[#0B0D0C] border-b border-[#D8E5D6] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300"
       aria-label="Book Discovery"
     >
       <style>{`
@@ -332,6 +332,15 @@ export const HomeBookDiscovery: React.FC = () => {
         .sahadhyayi-marquee-animating:focus-within {
           animation-play-state: paused !important;
         }
+        @keyframes homeSectionGlowDrift {
+          0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+          50% { transform: translate3d(-18px, 16px, 0) scale(1.05); }
+        }
+        .home-section-glow { animation: homeSectionGlowDrift 22s ease-in-out infinite; }
+        .home-section-glow-delayed { animation-delay: -11s; }
+        @media (prefers-reduced-motion: reduce) {
+          .home-section-glow { animation: none; }
+        }
         @media (prefers-reduced-motion: reduce) {
           .sahadhyayi-marquee-animating {
             animation: none !important;
@@ -339,11 +348,15 @@ export const HomeBookDiscovery: React.FC = () => {
         }
       `}</style>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden dark:hidden">
+        <div className="home-section-glow absolute -right-24 top-12 h-80 w-80 rounded-full bg-[#BEDDBF]/55 blur-[90px]" />
+        <div className="home-section-glow home-section-glow-delayed absolute -left-20 bottom-[-8rem] h-72 w-72 rounded-full bg-[#F0DEB6]/45 blur-[90px]" />
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8 sm:mb-10">
           <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D] text-xs font-semibold text-[#B68A35] dark:text-[#D5B16D] mb-4 shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#161D19] border border-[#D8E5D6] dark:border-[#29332D] text-xs font-semibold text-[#B68A35] dark:text-[#D5B16D] mb-4 shadow-2xs">
               <Compass className="w-3.5 h-3.5" />
               <span>Curated Catalog</span>
             </div>
@@ -361,7 +374,7 @@ export const HomeBookDiscovery: React.FC = () => {
                 type="button"
                 onClick={() => setIsPaused((prev) => !prev)}
                 aria-label={isPaused ? 'Resume book carousel animation' : 'Pause book carousel animation'}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-[#2E3430] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] bg-white hover:bg-[#F4EFEA] dark:bg-[#161D19] dark:hover:bg-[#1E2621] border border-[#E8E2D9] dark:border-[#29332D] shadow-2xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-[#2E3430] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] bg-white hover:bg-[#EAF2E8] dark:bg-[#161D19] dark:hover:bg-[#1E2621] border border-[#D8E5D6] dark:border-[#29332D] shadow-2xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
               >
                 {isPaused ? (
                   <Play className="w-3.5 h-3.5 text-[#B68A35] dark:text-[#D5B16D]" aria-hidden="true" />
@@ -391,7 +404,7 @@ export const HomeBookDiscovery: React.FC = () => {
                 type="button"
                 onClick={() => scrollGenres('left')}
                 aria-label="Scroll genres left"
-                className="hidden sm:flex absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#161D19]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#E8E2D9] dark:border-[#29332D] shadow-md backdrop-blur-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35]"
+                className="hidden sm:flex absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#161D19]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#D8E5D6] dark:border-[#29332D] shadow-md backdrop-blur-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35]"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -401,7 +414,7 @@ export const HomeBookDiscovery: React.FC = () => {
                 type="button"
                 onClick={() => scrollGenres('right')}
                 aria-label="Scroll genres right"
-                className="hidden sm:flex absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#161D19]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#E8E2D9] dark:border-[#29332D] shadow-md backdrop-blur-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35]"
+                className="hidden sm:flex absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#161D19]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#D8E5D6] dark:border-[#29332D] shadow-md backdrop-blur-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35]"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -422,7 +435,7 @@ export const HomeBookDiscovery: React.FC = () => {
                     className={`px-4 py-2 min-h-[38px] rounded-full text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] ${
                       isSelected
                         ? 'bg-[#1C442D] text-white font-semibold shadow-xs dark:bg-[#D5B16D] dark:text-black'
-                        : 'bg-white text-[#636B65] hover:text-[#1C201D] hover:bg-[#F4EFEA] border border-[#E8E2D9] dark:bg-[#111413] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#181C1A] dark:border-[#26302A]'
+                        : 'bg-white text-[#636B65] hover:text-[#1C201D] hover:bg-[#EAF2E8] border border-[#D8E5D6] dark:bg-[#111413] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#181C1A] dark:border-[#26302A]'
                     }`}
                   >
                     {genre}
@@ -438,9 +451,9 @@ export const HomeBookDiscovery: React.FC = () => {
           <div className="flex gap-4 sm:gap-6 overflow-hidden py-2">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="w-36 sm:w-44 md:w-48 flex-shrink-0 space-y-3 animate-pulse">
-                <div className="aspect-[2/3] w-full rounded-xl bg-[#EFEBE4] dark:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D]" />
-                <div className="h-4 bg-[#EFEBE4] dark:bg-[#161D19] rounded w-3/4" />
-                <div className="h-3 bg-[#EFEBE4] dark:bg-[#161D19] rounded w-1/2" />
+                <div className="aspect-[2/3] w-full rounded-xl bg-[#E3EDE0] dark:bg-[#161D19] border border-[#D8E5D6] dark:border-[#29332D]" />
+                <div className="h-4 bg-[#E3EDE0] dark:bg-[#161D19] rounded w-3/4" />
+                <div className="h-3 bg-[#E3EDE0] dark:bg-[#161D19] rounded w-1/2" />
               </div>
             ))}
           </div>
@@ -448,7 +461,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
         {/* Error State */}
         {isError && (
-          <div className="rounded-2xl border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] p-8 text-center max-w-lg mx-auto shadow-sm">
+          <div className="rounded-2xl border border-[#D8E5D6] dark:border-[#29332D] bg-white dark:bg-[#111614] p-8 text-center max-w-lg mx-auto shadow-sm">
             <BookOpen className="w-8 h-8 text-[#636B65] dark:text-[#A5ADA6] mx-auto mb-3" />
             <h3 className="text-base font-semibold text-[#1C201D] dark:text-[#F3F0E7]">Unable to load library books</h3>
             <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-5">
@@ -459,7 +472,7 @@ export const HomeBookDiscovery: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => refetch()}
-                className="border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1B241E]"
+                className="border-[#D8E5D6] dark:border-[#29332D] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#EAF2E8] dark:hover:bg-[#1B241E]"
               >
                 Try Again
               </Button>
@@ -474,7 +487,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
         {/* Empty State */}
         {!isLoading && !isError && curatedBooks.length === 0 && (
-          <div className="rounded-2xl border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] p-8 text-center max-w-lg mx-auto shadow-sm">
+          <div className="rounded-2xl border border-[#D8E5D6] dark:border-[#29332D] bg-white dark:bg-[#111614] p-8 text-center max-w-lg mx-auto shadow-sm">
             <BookOpen className="w-8 h-8 text-[#636B65] dark:text-[#A5ADA6] mx-auto mb-3" />
             <h3 className="text-base font-semibold text-[#1C201D] dark:text-[#F3F0E7]">No real covers available in this category yet</h3>
             <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-5">
@@ -485,7 +498,7 @@ export const HomeBookDiscovery: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedGenre('All')}
-                className="border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1B241E]"
+                className="border-[#D8E5D6] dark:border-[#29332D] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#EAF2E8] dark:hover:bg-[#1B241E]"
               >
                 Reset Filter
               </Button>
@@ -504,11 +517,11 @@ export const HomeBookDiscovery: React.FC = () => {
         <div className="relative w-full overflow-hidden mt-2 py-4">
           {/* Subtle editorial fade edges */}
           <div
-            className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-[#FAF7F2] dark:from-[#0B0D0C] to-transparent z-10"
+            className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-[#F2F7F0] dark:from-[#0B0D0C] to-transparent z-10"
             aria-hidden="true"
           />
           <div
-            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-l from-[#FAF7F2] dark:from-[#0B0D0C] to-transparent z-10"
+            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-l from-[#F2F7F0] dark:from-[#0B0D0C] to-transparent z-10"
             aria-hidden="true"
           />
 
@@ -531,7 +544,7 @@ export const HomeBookDiscovery: React.FC = () => {
                   aria-label={`View details for ${book.title} by ${book.author || 'Unknown author'}`}
                 >
                   {/* Book Cover Container with 2:3 aspect ratio */}
-                  <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-white dark:bg-[#141816] border border-[#E8E2D9] dark:border-[#26302A] shadow-[0_4px_16px_rgba(28,32,29,0.08)] dark:shadow-sm transition-all duration-300 group-hover:border-[#B68A35]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.14)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
+                  <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-white dark:bg-[#141816] border border-[#D8E5D6] dark:border-[#26302A] shadow-[0_4px_16px_rgba(28,32,29,0.08)] dark:shadow-sm transition-all duration-300 group-hover:border-[#B68A35]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.14)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
                     <DiscoveryBookCover book={book} />
                     {/* Subtle Vignette on Hover */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 dark:from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
@@ -567,7 +580,7 @@ export const HomeBookDiscovery: React.FC = () => {
                     className="group flex flex-col w-36 sm:w-44 md:w-48 flex-shrink-0 rounded-xl"
                   >
                     {/* Book Cover Container with 2:3 aspect ratio */}
-                    <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-white dark:bg-[#141816] border border-[#E8E2D9] dark:border-[#26302A] shadow-[0_4px_16px_rgba(28,32,29,0.08)] dark:shadow-sm transition-all duration-300 group-hover:border-[#B68A35]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.14)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
+                    <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-white dark:bg-[#141816] border border-[#D8E5D6] dark:border-[#26302A] shadow-[0_4px_16px_rgba(28,32,29,0.08)] dark:shadow-sm transition-all duration-300 group-hover:border-[#B68A35]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.14)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
                       <DiscoveryBookCover book={book} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 dark:from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
                     </div>
