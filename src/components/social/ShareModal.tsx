@@ -66,9 +66,9 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-[#111614] border-[#29332D] text-[#F3F0E7]">
+      <DialogContent className="sm:max-w-md bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-center font-serif font-bold text-base text-[#F3F0E7]">Share this post</DialogTitle>
+          <DialogTitle className="text-center font-serif font-bold text-base text-[#1C201D] dark:text-[#F3F0E7]">Share this post</DialogTitle>
         </DialogHeader>
         
         <div className="grid grid-cols-2 gap-3 py-4">
@@ -91,13 +91,13 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
           })}
         </div>
 
-        <div className="border-t border-[#29332D] pt-4">
+        <div className="border-t border-[#E8E2D9] dark:border-[#29332D] pt-4">
           <div className="flex items-center space-x-2">
             <input
               type="text"
               value={currentUrl}
               readOnly
-              className="flex-1 px-3 py-2 text-xs bg-[#0B0D0C] border border-[#29332D] rounded-xl text-[#F3F0E7] focus:outline-none focus:ring-1 focus:ring-[#D5B16D]"
+              className="flex-1 px-3 py-2 text-xs bg-[#FAF7F2] dark:bg-[#0B0D0C] border border-[#E8E2D9] dark:border-[#29332D] rounded-xl text-[#1C201D] dark:text-[#F3F0E7] focus:outline-none focus:ring-1 focus:ring-[#1C442D] dark:focus:ring-[#D5B16D]"
             />
             <Button
               variant="outline"
@@ -106,7 +106,7 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
                 navigator.clipboard.writeText(currentUrl);
                 toast({ title: 'Link copied!', description: 'URL copied to clipboard.' });
               }}
-              className="border-[#29332D] bg-[#1C3024] text-[#D5B16D] hover:bg-[#253d2f] text-xs h-9 px-3 rounded-xl"
+              className="border-[#E8E2D9] dark:border-[#29332D] bg-[#1C442D] dark:bg-[#1C3024] text-white dark:text-[#D5B16D] hover:bg-[#153422] dark:hover:bg-[#253d2f] text-xs h-9 px-3 rounded-xl"
             >
               Copy Link
             </Button>
