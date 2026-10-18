@@ -419,7 +419,22 @@ function normalizeStatsResponse(raw: unknown): CommunityPulseData {
   const readingEngagement = result.readingEngagement && typeof result.readingEngagement === 'object'
     ? result.readingEngagement
     : {};
-  const countFrom = (key: string) => asNumber(readingEngagement?.[key]?.count);
+  // Support the authoritative aggregate contract and legacy compatibility keys.
+  // Missing values remain null so unavailable telemetry is not displayed as zero.
+  const countFrom = (...keys: string[]): number | null => {
+    for (const key of keys) {
+      const candidates = [
+        result.engagement?.[key]?.value,
+        readingEngagement?.[key]?.count,
+        readingEngagement?.[key],
+      ];
+      for (const candidate of candidates) {
+        const count = asNumber(candidate);
+        if (count !== null) return count;
+      }
+    }
+    return null;
+  };
   const topCityFromPayload = result.mostVisitedCity24h;
   const topCityVisits = asNumber(topCityFromPayload?.count);
   const topCity: CityStat | null = topCityFromPayload
@@ -440,10 +455,10 @@ function normalizeStatsResponse(raw: unknown): CommunityPulseData {
     countries,
     cities,
     engagement: {
-      bookViews: countFrom('bookViews'),
-      readingProgressUpdates: countFrom('readingProgressUpdates'),
-      groupJoins: countFrom('groupJoins'),
-      discussions: countFrom('discussions'),
+      bookViews: countFrom('bookOpens', 'bookViews'),
+      readingProgressUpdates: countFrom('readingProgressCompletions', 'readingProgressUpdates'),
+      groupJoins: countFrom('groupJoins', 'groupJoinsCount'),
+      discussions: countFrom('discussions', 'discussionsCount'),
     },
     updatedAt: typeof result.lastUpdated === 'string' ? result.lastUpdated : null,
   };
