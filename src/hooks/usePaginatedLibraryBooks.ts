@@ -2,7 +2,11 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
-import { getBookCompletenessScore, compareLibraryBooks } from './useLibraryBooks';
+import {
+  getBookCompletenessScore,
+  compareLibraryBooks,
+  diversifyBooksPerPage,
+} from './useLibraryBooks';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { mapRawToEdition, clusterEditionsIntoWorks } from '@/utils/catalog/deduplicationEngine';
 import {
@@ -173,7 +177,8 @@ async function fetchFilteredBooks(
   // Sort deterministically by library completeness hierarchy
   deduped.sort(compareLibraryBooks);
 
-  return deduped;
+  // Apply default page-1 diversification so pre-sliced or consumer calls default to 1 book per author/title per page
+  return diversifyBooksPerPage(deduped, 12);
 }
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
@@ -201,10 +206,16 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
     const allBooks = allBooksQuery.data;
     if (!allBooks) return undefined;
 
-    const totalCount = allBooks.length;
+    // Apply per-page diversity adjustment so each page contains unique authors & titles
+    const shouldDiversify = !selectedAuthor || selectedAuthor === 'All';
+    const booksToPaginate = shouldDiversify
+      ? diversifyBooksPerPage(allBooks, pageSize)
+      : allBooks;
+
+    const totalCount = booksToPaginate.length;
     const totalPages = Math.ceil(totalCount / pageSize);
     const startIndex = (page - 1) * pageSize;
-    const books = allBooks.slice(startIndex, startIndex + pageSize);
+    const books = booksToPaginate.slice(startIndex, startIndex + pageSize);
 
     return {
       books,
@@ -215,7 +226,7 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
       hasNextPage: page < totalPages,
       hasPrevPage: page > 1,
     };
-  }, [allBooksQuery.data, page, pageSize]);
+  }, [allBooksQuery.data, page, pageSize, selectedAuthor]);
 
   // Preload first 8 cover images for instant rendering
   React.useEffect(() => {

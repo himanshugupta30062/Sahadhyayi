@@ -10,6 +10,7 @@ import {
   isBookPubliclyVisible,
   filterPublicBooks,
 } from '@/utils/catalog/bookVisibility';
+import { normalizeAuthor, normalizeTitle } from '@/utils/catalog/metadataNormalization';
 
 import type { AccessStatus, LicenseEvidence } from '@/types/bookCatalog';
 
@@ -54,6 +55,7 @@ export const SORTING_RULES = [
   { label: 'Verified full text without cover photo', points: 'Tier 4 (6,000–7,000)', priority: 'medium' },
   { label: 'Unverified or broken reading links', points: 'Demoted (3,000+)', priority: 'demoted' },
   { label: 'Metadata-only records (no reading files)', points: 'Bottom (1,000+)', priority: 'low' },
+  { label: 'Per-page diversity (max 1 / author & title)', points: 'Spread across pages', priority: 'info' },
   { label: 'Bibliographic completeness & cover quality', points: '+10 to +400', priority: 'medium' },
   { label: 'Tie-breaker', points: 'newest first', priority: 'info' },
 ];
@@ -395,6 +397,98 @@ export const compareLibraryBooks = (a: any, b: any): number => {
 export const sortBooksByCompleteness = (books: any[]): any[] => {
   return [...books].sort(compareLibraryBooks);
 };
+
+/**
+ * Normalizes author key for per-page catalog diversity checks.
+ */
+export function getAuthorDiversificationKey(author?: string | null, title?: string | null): string {
+  if (author) {
+    const norm = normalizeAuthor(author).normalizedAuthor.toLowerCase().trim();
+    if (norm && norm !== 'unknown author' && norm !== 'unknown' && norm !== 'anonymous') {
+      return norm;
+    }
+  }
+  if (title) {
+    const lower = title.toLowerCase();
+    if (lower.startsWith('cia reading room') || lower.startsWith('cia-') || lower.includes('cia reading room')) {
+      return 'cia reading room';
+    }
+    if (lower.startsWith('nasa technical reports')) {
+      return 'nasa technical reports';
+    }
+    if (lower.startsWith('ncert')) {
+      return 'ncert';
+    }
+  }
+  return '';
+}
+
+/**
+ * Normalizes title key for per-page catalog diversity checks.
+ */
+export function getTitleDiversificationKey(title?: string | null): string {
+  if (!title) return '';
+  const norm = normalizeTitle(title).cleanTitle.toLowerCase().trim();
+  const clean = norm.replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  if (clean.startsWith('cia reading room')) {
+    return 'cia reading room';
+  }
+  return clean;
+}
+
+/**
+ * Distributes books across pages of size `pageSize` such that on any single page,
+ * only 1 book of the same author (name) and only 1 book of the same title appears.
+ * Subsequent books by the same author/title are deferred to subsequent pages,
+ * ensuring rich diversity without deleting, hiding, or altering any book records.
+ */
+export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12): any[] {
+  if (!sortedBooks || sortedBooks.length <= 1) return sortedBooks || [];
+  if (pageSize <= 0) return sortedBooks;
+
+  const remaining = [...sortedBooks];
+  const diversified: any[] = [];
+
+  while (remaining.length > 0) {
+    const pageBooks: any[] = [];
+    const seenAuthors = new Set<string>();
+    const seenTitles = new Set<string>();
+    const deferredForNextPages: any[] = [];
+
+    for (const book of remaining) {
+      if (pageBooks.length >= pageSize) {
+        deferredForNextPages.push(book);
+        continue;
+      }
+
+      const aKey = getAuthorDiversificationKey(book.author, book.title);
+      const tKey = getTitleDiversificationKey(book.title);
+
+      const hasAuthorCollision = Boolean(aKey && seenAuthors.has(aKey));
+      const hasTitleCollision = Boolean(tKey && seenTitles.has(tKey));
+
+      if (hasAuthorCollision || hasTitleCollision) {
+        deferredForNextPages.push(book);
+      } else {
+        pageBooks.push(book);
+        if (aKey) seenAuthors.add(aKey);
+        if (tKey) seenTitles.add(tKey);
+      }
+    }
+
+    // If remaining distinct candidates are fewer than pageSize,
+    // fill the remaining slots from deferred books so pages are never left incomplete
+    while (pageBooks.length < pageSize && deferredForNextPages.length > 0) {
+      pageBooks.push(deferredForNextPages.shift()!);
+    }
+
+    diversified.push(...pageBooks);
+    remaining.length = 0;
+    remaining.push(...deferredForNextPages);
+  }
+
+  return diversified;
+}
 
 const mapBook = (book: any): Book => ({
   id: book.id,
