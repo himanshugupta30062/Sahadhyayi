@@ -369,7 +369,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 <strong className="text-stone-100">Registered readers:</strong> Authoritative member accounts directly counted from user records.
               </div>
               <div>
-                <strong className="text-stone-100">Active time:</strong> Average measured foreground time across sessions with duration samples. Background time is excluded; sessions with tracking blocked may be missing.
+                <strong className="text-stone-100">Active time:</strong> Average time with the page visible, across sessions with duration samples. Background time is excluded; sessions with tracking blocked may be missing.
               </div>
             </div>
           </div>
@@ -632,7 +632,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
                       {effectiveStats.avgTimeOnSite || '—'}
                     </div>
-                    <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Avg. active session</div>
+                    <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">Avg. foreground time</div>
                     <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">
                       {effectiveStats.avgTimeOnSite !== '—' ? 'vs previous period' : 'Telemetry unavailable'}
                     </div>
@@ -1451,7 +1451,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 min-w-0">
                   <span className="mb-3 inline-flex rounded-lg bg-[#18241e] p-2 text-[#D5B16D]"><Timer className="h-4 w-4" /></span>
                   <div className="text-2xl font-bold text-stone-100">{effectiveStats.avgTimeOnSite || '—'}</div>
-                  <div className="mt-1 text-xs text-stone-400">Average active session</div>
+                  <div className="mt-1 text-xs text-stone-400">Avg. foreground time</div>
                   <div className="mt-1 text-[10px] text-stone-500">{effectiveStats.durationSampleCount === null ? 'Measured duration sample count unavailable' : `${number(effectiveStats.durationSampleCount)} sessions with measured duration`}</div>
                 </div>
                 <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 min-w-0">
