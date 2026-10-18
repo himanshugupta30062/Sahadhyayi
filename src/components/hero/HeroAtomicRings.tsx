@@ -264,7 +264,7 @@ export default function HeroAtomicRings({
             <text
               y="4.5"
               textAnchor="middle"
-              fontSize="13"
+              fontSize="15"
               fontWeight="800"
               fill="#FFFFFF"
               pointerEvents="none"
@@ -274,7 +274,7 @@ export default function HeroAtomicRings({
             <text
               y={index === 2 ? 33 : 31}
               textAnchor="middle"
-              fontSize={index === 2 ? 10.5 : 11}
+              fontSize={18}
               fontWeight="650"
               fill="currentColor"
               className="text-[#1C201D] dark:text-[#F3F0E7]"
