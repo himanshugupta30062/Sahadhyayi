@@ -3,6 +3,7 @@ import type { FormEvent, KeyboardEvent } from "react";
 import {
   BookOpen,
   Check,
+  Copy,
   ExternalLink,
   LoaderCircle,
   RotateCcw,
@@ -101,6 +102,7 @@ const BookExpert = () => {
   } = useBookExpert();
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState<Record<string, -1 | 1>>({});
+  const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -140,6 +142,16 @@ const BookExpert = () => {
     if (feedback[requestId]) return;
     setFeedback((current) => ({ ...current, [requestId]: rating }));
     await sendFeedback(requestId, rating);
+  };
+
+  const copyAnswer = async (text: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessageIndex(index);
+    } catch {
+      // Clipboard permissions vary by browser; never block the chat on copy failure.
+      setCopiedMessageIndex(null);
+    }
   };
 
   if (!isOpen) {
@@ -236,6 +248,22 @@ const BookExpert = () => {
                     </div>
                   )}
                   <p className="whitespace-pre-wrap break-words">{message.text}</p>
+                  {!isUser && (
+                    <div className="mt-2 flex justify-end border-t border-border/60 pt-1.5">
+                      <button
+                        type="button"
+                        onClick={() => void copyAnswer(message.text, index)}
+                        aria-label="Copy answer"
+                        title="Copy answer"
+                        className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {copiedMessageIndex === index
+                          ? <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                          : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+                        {copiedMessageIndex === index ? "Copied" : "Copy"}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {!isUser && message.books && message.books.length > 0 && (
