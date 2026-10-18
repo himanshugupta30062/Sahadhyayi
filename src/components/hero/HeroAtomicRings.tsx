@@ -160,7 +160,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
         const point = pos(orbit.radius, angle);
         atom.setAttribute("transform", `translate(${point.x}, ${point.y})`);
         const distanceFromEdge = Math.min(progress, SWEEP_DEG - progress);
-        atom.setAttribute("opacity", String(Math.max(0, Math.min(1, distanceFromEdge / ATOM_FADE_ANGLE)));
+        atom.setAttribute("opacity", String(Math.max(0, Math.min(1, distanceFromEdge / ATOM_FADE_ANGLE))));
       });
     };
 
@@ -376,7 +376,6 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
               fontWeight={600}
               fill="currentColor"
               className="text-[#1C201D] dark:text-[#f8fafc]"
-              style={{ paintOrder: "stroke", stroke: "rgba(248,248,242,0.75)", strokeWidth: 2.5, strokeLinejoin: "round" }}
             >
               {orbit.label}
             </text>
