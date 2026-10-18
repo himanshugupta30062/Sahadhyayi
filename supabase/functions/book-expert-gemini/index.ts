@@ -290,6 +290,35 @@ async function callGemini(
   }
 }
 
+function estimateStandardCostUsd(
+  model: string,
+  promptTokens: number | null | undefined,
+  outputTokens: number | null | undefined,
+): number | null {
+  if (typeof promptTokens !== "number" || typeof outputTokens !== "number") return null;
+
+  const configuredInputRate = Number(Deno.env.get("BOOK_EXPERT_INPUT_USD_PER_MILLION"));
+  const configuredOutputRate = Number(Deno.env.get("BOOK_EXPERT_OUTPUT_USD_PER_MILLION"));
+  let inputRate: number | null = Number.isFinite(configuredInputRate) && configuredInputRate >= 0
+    ? configuredInputRate
+    : null;
+  let outputRate: number | null = Number.isFinite(configuredOutputRate) && configuredOutputRate >= 0
+    ? configuredOutputRate
+    : null;
+
+  // Published Standard-tier rate card for gemini-3.8-flash. These are estimates,
+  // not the actual billed amount; free-tier and negotiated pricing can differ.
+  if (model === "gemini-3.8-flash") {
+    const introductoryRate = Date.now() < Date.UTC(2027, 0, 1);
+    if (inputRate === null) inputRate = introductoryRate ? 0.75 : 1.50;
+    if (outputRate === null) outputRate = introductoryRate ? 3.75 : 7.50;
+  }
+
+  if (inputRate === null || outputRate === null) return null;
+  const estimate = ((promptTokens * inputRate) + (outputTokens * outputRate)) / 1_000_000;
+  return Number.isFinite(estimate) ? Number(estimate.toFixed(8)) : null;
+}
+
 async function recordUsageEvent(
   supabaseClient: any,
   event: {
@@ -300,6 +329,7 @@ async function recordUsageEvent(
     retrievedBookCount: number;
     promptTokens?: number | null;
     outputTokens?: number | null;
+    estimatedStandardCostUsd?: number | null;
     upstreamStatus?: number | null;
     failureClass?: "timeout" | "provider_error" | "empty_response" | "internal_error" | null;
   },
@@ -313,6 +343,9 @@ async function recordUsageEvent(
       retrieved_book_count: Math.max(0, Math.min(5, Math.trunc(event.retrievedBookCount))),
       prompt_tokens: typeof event.promptTokens === "number" ? Math.max(0, Math.trunc(event.promptTokens)) : null,
       output_tokens: typeof event.outputTokens === "number" ? Math.max(0, Math.trunc(event.outputTokens)) : null,
+      estimated_standard_cost_usd: typeof event.estimatedStandardCostUsd === "number"
+        ? Math.max(0, event.estimatedStandardCostUsd)
+        : null,
       upstream_status: event.upstreamStatus ?? null,
       failure_class: event.failureClass ?? null,
     }, { onConflict: "request_id" });
@@ -509,14 +542,22 @@ serve(async (req: Request) => {
       return jsonResponse({ error: "Book Expert could not produce an answer. Please try again." }, 502);
     }
 
+    const promptTokens = typeof generated.body?.usageMetadata?.promptTokenCount === "number"
+      ? generated.body.usageMetadata.promptTokenCount
+      : null;
+    const outputTokens = typeof generated.body?.usageMetadata?.candidatesTokenCount === "number"
+      ? generated.body.usageMetadata.candidatesTokenCount
+      : null;
+
     await recordUsageEvent(supabaseClient, {
       requestId,
       model: modelUsed,
       success: true,
       durationMs: Date.now() - startedAt,
       retrievedBookCount,
-      promptTokens: generated.body?.usageMetadata?.promptTokenCount,
-      outputTokens: generated.body?.usageMetadata?.candidatesTokenCount,
+      promptTokens,
+      outputTokens,
+      estimatedStandardCostUsd: estimateStandardCostUsd(modelUsed, promptTokens, outputTokens),
       upstreamStatus: generated.status,
     });
 
