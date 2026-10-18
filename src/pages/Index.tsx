@@ -129,9 +129,19 @@ const Index = () => {
         </DeferredSection>
 
         {/* 6. Atmospheric Final Call-to-Action with warm library aesthetic */}
-        <section className="relative py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#FAF7F2] via-[#F4EFEA] to-[#FAF7F2] dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden border-t border-[#DDE5D8] dark:border-[#26302A] transition-colors duration-200">
+        <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#F6F8F1] via-[#F9F2E4] to-[#EEF5F2] dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden border-t border-[#D7E3D8] dark:border-[#26302A] transition-colors duration-300">
+          <style>{`
+            @keyframes homeCtaGlowDrift {
+              0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.45; }
+              50% { transform: translate3d(12px, -16px, 0) scale(1.08); opacity: 0.8; }
+            }
+            .home-cta-glow { animation: homeCtaGlowDrift 18s ease-in-out infinite; }
+            @media (prefers-reduced-motion: reduce) { .home-cta-glow { animation: none; } }
+          `}</style>
           {/* Subtle warm library ambient glow */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,170,145,0.13),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(213,177,109,0.06),transparent_65%)] pointer-events-none" />
+          <div aria-hidden="true" className="home-cta-glow absolute -right-20 -top-24 h-80 w-80 rounded-full bg-[#D8E9CF]/65 blur-[100px] dark:hidden" />
+          <div aria-hidden="true" className="home-cta-glow absolute -left-24 bottom-[-10rem] h-72 w-72 rounded-full bg-[#F0DDB5]/45 blur-[95px] dark:hidden" />
 
           <div className="relative max-w-3xl mx-auto text-center">
             {/* Cultural Origin Tag */}
