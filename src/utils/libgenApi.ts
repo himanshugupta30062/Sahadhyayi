@@ -19,8 +19,22 @@ interface LibgenHtmlResponse {
 }
 
 export async function searchLibgen(query: string): Promise<LibgenHtmlResponse> {
+  const clean = (query || '').trim();
+  if (!clean) {
+    return { success: false, books: [] };
+  }
+
+  // On client static hosting without serverless /api route, avoid triggering 404 console noise
+  if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.origin.includes(':3000')) {
+    return {
+      success: false,
+      books: [],
+      error: 'Libgen proxy is only enabled on local dev proxies or supported API backends.',
+    };
+  }
+
   try {
-    const res = await secureFetch(`/api/libgen?q=${encodeURIComponent(query)}`);
+    const res = await secureFetch(`/api/libgen?q=${encodeURIComponent(clean)}`);
     if (!res.ok) {
       return {
         success: false,
@@ -38,7 +52,6 @@ export async function searchLibgen(query: string): Promise<LibgenHtmlResponse> {
     }
     return await res.json();
   } catch (error) {
-    console.error('Error searching Libgen:', error);
     return {
       success: false,
       books: [],

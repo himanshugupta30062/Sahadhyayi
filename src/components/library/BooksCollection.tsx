@@ -134,8 +134,7 @@ const BooksCollection = ({
     } else {
       toast({
         title: 'No books found',
-        description: 'Try different keywords or check your spelling.',
-        variant: 'destructive',
+        description: 'Try different keywords, an author name, or check spelling.',
       });
     }
   };

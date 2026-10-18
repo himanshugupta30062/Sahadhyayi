@@ -7,10 +7,11 @@ import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const { mockGetSession, mockFunctionsInvoke, mockFrom, mockToast, mockUserState } = vi.hoisted(() => ({
+const { mockGetSession, mockFunctionsInvoke, mockFrom, mockRpc, mockToast, mockUserState } = vi.hoisted(() => ({
   mockGetSession: vi.fn(),
   mockFunctionsInvoke: vi.fn(),
   mockFrom: vi.fn(),
+  mockRpc: vi.fn(),
   mockToast: vi.fn(),
   mockUserState: { current: null as any },
 }));
@@ -28,6 +29,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
       invoke: (...args: any[]) => mockFunctionsInvoke(...args),
     },
     from: (...args: any[]) => mockFrom(...args),
+    rpc: (...args: any[]) => mockRpc(...args),
   },
 }));
 
@@ -44,6 +46,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       invoke: (...args: any[]) => mockFunctionsInvoke(...args),
     },
     from: (...args: any[]) => mockFrom(...args),
+    rpc: (...args: any[]) => mockRpc(...args),
   },
 }));
 
@@ -296,6 +299,112 @@ describe('useBookSearch hook reliability & caching', () => {
         },
       })
     );
+  });
+
+  it('falls back seamlessly to save_selected_books RPC when Edge Function returns 401 or error', async () => {
+    mockGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'valid-jwt-token-xyz',
+          user: { id: 'usr-123', email: 'test@example.com' },
+        },
+      },
+      error: null,
+    });
+
+    // Simulate Edge Function 401 / failure
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { error: 'Invalid authentication credentials' },
+      error: { message: 'Edge Function returned a non-2xx status code' },
+    });
+
+    // Simulate database RPC fallback succeeding
+    mockRpc.mockResolvedValueOnce({
+      data: {
+        success: true,
+        booksSaved: 1,
+        newlyInserted: 1,
+        enrichedCount: 0,
+        failedCount: 0,
+        duplicatesFound: 0,
+        books: [{ id: 'b-fallback-1', title: 'The Odyssey', author: 'Homer' }],
+        results: [{ title: 'The Odyssey', status: 'inserted', id: 'b-fallback-1' }],
+      },
+      error: null,
+    });
+
+    const { result } = renderHook(() => useBookSearch());
+
+    let outcome: any;
+    await act(async () => {
+      outcome = await result.current.saveSelectedBooks([
+        {
+          id: 'temp-odyssey',
+          title: 'The Odyssey',
+          author: 'Homer',
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    });
+
+    expect(outcome.newlyInserted).toBe(1);
+    expect(outcome.savedBooks[0].title).toBe('The Odyssey');
+    expect(mockRpc).toHaveBeenCalledWith('save_selected_books', {
+      p_books: [
+        expect.objectContaining({
+          title: 'The Odyssey',
+          author: 'Homer',
+        }),
+      ],
+    });
+  });
+
+  it('falls back to direct public provider search when search-books-preview edge function fails', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Edge Function returned a non-2xx status code' },
+    });
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('openlibrary.org')) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              docs: [
+                {
+                  key: '/works/OL12345W',
+                  title: 'Crime and Punishment',
+                  author_name: ['Fyodor Dostoevsky'],
+                  first_publish_year: 1866,
+                  cover_i: 9999,
+                },
+              ],
+            }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ items: [] }),
+      });
+    });
+
+    try {
+      const { result } = renderHook(() => useBookSearch());
+
+      let searchRes: any;
+      await act(async () => {
+        searchRes = await result.current.searchBooks('Crime and Punishment');
+      });
+
+      expect(searchRes).toHaveLength(1);
+      expect(searchRes[0].title).toBe('Crime and Punishment');
+      expect(searchRes[0].author).toBe('Fyodor Dostoevsky');
+      expect(searchRes[0].source).toBe('open_library');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });
 
