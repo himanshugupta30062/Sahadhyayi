@@ -60,11 +60,11 @@ export const PLATFORM_FEATURES: PlatformFeature[] = [
   {
     name: "Digital Library",
     route: "/library",
-    description: "Your gateway to 10,000+ books with powerful search and discovery tools",
+    description: "Your gateway to books across multiple genres with powerful search and discovery tools",
     keyFunctions: [
       "Advanced search by title, author, genre, or keywords",
       "Smart filtering by language, publication year, and category",
-      "Free PDF downloads for all books",
+      "PDF and reading options vary by title",
       "Detailed book pages with descriptions and author bios",
       "Personal bookshelf management with reading statuses"
     ]
@@ -162,12 +162,12 @@ export const RESPONSE_PATTERNS = {
 export const generateContextualResponse = (userQuery: string): string => {
   const query = userQuery.toLowerCase();
   
-  console.log('Generating contextual response for query:', query);
+  console.log('Generating contextual response');
   
   // Book search queries
   if (query.includes('book') && (query.includes('find') || query.includes('search') || query.includes('looking for'))) {
     const response = RESPONSE_PATTERNS.bookSearch[Math.floor(Math.random() * RESPONSE_PATTERNS.bookSearch.length)] + 
-           " You can explore our Library section with 10,000+ books across all genres, or tell me your preferences for personalized recommendations!";
+           " You can explore books across multiple genres in our Library, or tell me your preferences for personalized recommendations!";
     console.log('Using book search response');
     return response;
   }
@@ -193,13 +193,13 @@ export const generateContextualResponse = (userQuery: string): string => {
   // Community/social queries
   if (query.includes('community') || query.includes('social') || query.includes('friends') || query.includes('group')) {
     console.log('Using community response');
-    return "Our reading community is incredibly active! You can join reading groups, share book reviews, connect with fellow readers, and discover books through social recommendations. It's like having a book club that never sleeps! Want to explore the social features?";
+    return "Sahadhyayi's social features are designed for reading groups, book reviews, reader connections, and book discussions. Visit the Social section to explore what's available.";
   }
   
   // Download queries
   if (query.includes('download') || query.includes('pdf') || query.includes('free')) {
     console.log('Using download response');
-    return "Absolutely! Every book in our library offers free PDF downloads - we believe knowledge should be accessible to everyone. Just visit any book's page and hit the download button. Looking for a specific book to download?";
+    return "PDF availability varies by title. Open a book's detail page to check its available reading or download options. Looking for a specific book?";
   }
   
   // Hindi literature queries
