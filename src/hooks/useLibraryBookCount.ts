@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import * as React from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import {
   detectBookSchemaCapabilities,
@@ -6,8 +7,23 @@ import {
   filterPublicBooks,
 } from '@/utils/catalog/bookVisibility';
 
-export const useLibraryBookCount = () =>
-  useQuery({
+export const useLibraryBookCount = () => {
+  const queryClient = useQueryClient();
+
+  React.useEffect(() => {
+    const handleUpdate = () => {
+      queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
+    };
+
+    window.addEventListener('shelfUpdated', handleUpdate);
+    window.addEventListener('libraryUpdated', handleUpdate);
+    return () => {
+      window.removeEventListener('shelfUpdated', handleUpdate);
+      window.removeEventListener('libraryUpdated', handleUpdate);
+    };
+  }, [queryClient]);
+
+  return useQuery({
     queryKey: ['library-book-count'],
     queryFn: async () => {
       const caps = await detectBookSchemaCapabilities();
@@ -32,3 +48,5 @@ export const useLibraryBookCount = () =>
     },
     staleTime: 5 * 60 * 1000,
   });
+};
+

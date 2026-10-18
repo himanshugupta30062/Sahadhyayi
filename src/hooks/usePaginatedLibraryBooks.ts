@@ -201,6 +201,20 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
     gcTime: 30 * 60 * 1000,
   });
 
+  // Automatically refetch when books are added or shelf updates anywhere
+  React.useEffect(() => {
+    const handleUpdate = () => {
+      allBooksQuery.refetch();
+    };
+
+    window.addEventListener('shelfUpdated', handleUpdate);
+    window.addEventListener('libraryUpdated', handleUpdate);
+    return () => {
+      window.removeEventListener('shelfUpdated', handleUpdate);
+      window.removeEventListener('libraryUpdated', handleUpdate);
+    };
+  }, [allBooksQuery]);
+
   // Derive paginated view from cached data (instant, no fetch)
   const paginatedData = React.useMemo((): PaginatedBooksResponse | undefined => {
     const allBooks = allBooksQuery.data;

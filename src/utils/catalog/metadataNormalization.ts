@@ -88,10 +88,31 @@ export function normalizeAuthor(rawAuthor?: string | null): NormalizedAuthor {
   const originalAuthor = rawAuthor.normalize('NFC').trim();
   let author = originalAuthor;
 
+  // Strip lifecycle dates like ", 1942-2018" or "(1942-2018)" or "b. 1942"
+  author = author.replace(/,?\s*\(?\b(?:b\.\s*)?\d{4}\s*-\s*\d{0,4}\)?/g, '').trim();
+
+  // If multiple co-authors separated by semicolon, slash, or "et al.", take primary author
+  if (author.includes(';') || author.includes('/') || /\bet\s+al\.?/i.test(author)) {
+    author = author.split(/[;/]|(\s+et\s+al\.?)/i)[0].trim();
+  }
+
+  // If co-authors separated by "and", "&", or "with"
+  if (/\s+(?:and|&|with)\s+/i.test(author)) {
+    author = author.split(/\s+(?:and|&|with)\s+/i)[0].trim();
+  }
+
   // Invert "Last, First" if separated by comma (e.g. "Dostoevsky, Fyodor" -> "Fyodor Dostoevsky")
-  if (author.includes(',') && !author.toLowerCase().includes('and') && !author.toLowerCase().includes('&')) {
+  if (author.includes(',')) {
     const parts = author.split(',').map(p => p.trim()).filter(Boolean);
     if (parts.length === 2) {
+      // Only invert if first part is a single surname without spaces (e.g. "Dostoevsky, Fyodor")
+      // If first part has spaces (e.g. "Stephen Hawking, Leonard Mlodinow"), keep primary author parts[0]
+      if (!parts[0].includes(' ')) {
+        author = `${parts[1]} ${parts[0]}`;
+      } else {
+        author = parts[0];
+      }
+    } else if (parts.length > 2 && !parts[0].includes(' ')) {
       author = `${parts[1]} ${parts[0]}`;
     }
   }

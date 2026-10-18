@@ -43,11 +43,8 @@ DECLARE
   v_new_id uuid;
   v_enriched_fields text[];
 BEGIN
-  -- 1. Ensure user is authenticated
+  -- 1. User identification (optional - guests are permitted to save books to catalog)
   v_user_id := auth.uid();
-  IF v_user_id IS NULL THEN
-    RAISE EXCEPTION 'Authentication required. Please sign in to save books to the catalog.';
-  END IF;
 
   -- 2. Validate input is JSON array
   IF p_books IS NULL OR jsonb_typeof(p_books) <> 'array' OR jsonb_array_length(p_books) = 0 THEN
@@ -307,6 +304,7 @@ BEGIN
 END;
 $$;
 
--- Grant permissions for authenticated readers and service role
+-- Grant permissions for guests (anon), authenticated readers and service role
+GRANT EXECUTE ON FUNCTION public.save_selected_books(jsonb) TO anon;
 GRANT EXECUTE ON FUNCTION public.save_selected_books(jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.save_selected_books(jsonb) TO service_role;

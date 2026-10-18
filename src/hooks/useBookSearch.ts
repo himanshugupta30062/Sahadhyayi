@@ -336,12 +336,13 @@ export const useBookSearch = () => {
     setError(null);
 
     try {
-      // Pass the current user's JWT explicitly in the authorization header
+      // Get session if available - guest readers are also fully supported
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
 
-      if (!accessToken) {
-        throw new Error('Authentication required. Please sign in to save books to the catalog.');
+      const headers: Record<string, string> = {};
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
       }
 
       const payload = selectedBooks.map(book => {
@@ -367,9 +368,7 @@ export const useBookSearch = () => {
       // 1. Primary Attempt: Edge Function
       try {
         const { data, error: functionError } = await supabase.functions.invoke('save-selected-books', {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: Object.keys(headers).length > 0 ? headers : undefined,
           body: {
             selectedBooks: payload,
           },
@@ -404,6 +403,11 @@ export const useBookSearch = () => {
         } else {
           throw new Error((rpcData as any)?.error || 'Database save procedure returned an unhandled error');
         }
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('shelfUpdated'));
+        window.dispatchEvent(new Event('libraryUpdated'));
       }
 
       return {

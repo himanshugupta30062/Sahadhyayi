@@ -1,7 +1,8 @@
 
 import * as React from 'react';
 import { useState, useRef } from 'react';
-import { Library, Search, BookOpen } from 'lucide-react';
+import { Library, Search, BookOpen, AlertCircle, RefreshCw, Sparkles, Globe } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import PersonalLibrary from '@/components/PersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { usePaginatedLibraryBooks } from '@/hooks/usePaginatedLibraryBooks';
@@ -12,8 +13,8 @@ import BookSearchBar from '@/components/books/BookSearchBar';
 import BookSelectionModal from './BookSelectionModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -28,6 +29,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+const QUICK_SEARCH_CHIPS = [
+  'Bhagavad Gita',
+  'Munshi Premchand',
+  'Leo Tolstoy',
+  'Fyodor Dostoevsky',
+  'Rabindranath Tagore',
+  'Marcus Aurelius',
+  'Philosophy',
+  'World History',
+];
 
 interface BooksCollectionProps {
   searchQuery: string;
@@ -47,6 +59,7 @@ const BooksCollection = ({
   priceRange
 }: BooksCollectionProps) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   // All library books with server-side pagination
   const {
@@ -140,9 +153,16 @@ const BooksCollection = ({
   };
 
   const handleBooksAdded = () => {
-    // Refresh all library data when books are added
-      refetchAll();
-      window.dispatchEvent(new Event('shelfUpdated'));
+    // Invalidate all related book queries so header, catalog count, and book grid update immediately
+    queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
+    queryClient.invalidateQueries({ queryKey: ['paginated-library-books'] });
+    queryClient.invalidateQueries({ queryKey: ['paginated-library-all'] });
+    queryClient.invalidateQueries({ queryKey: ['library-books'] });
+    queryClient.invalidateQueries({ queryKey: ['community-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['all-library-books'] });
+    refetchAll();
+    window.dispatchEvent(new Event('shelfUpdated'));
+    window.dispatchEvent(new Event('libraryUpdated'));
   };
 
   // Note: Cleanup functionality has been removed for security reasons
@@ -192,8 +212,8 @@ const BooksCollection = ({
             <span>Browse Catalog ({paginatedData?.totalCount ?? 0})</span>
           </TabsTrigger>
           <TabsTrigger value="external-finder" className="flex items-center gap-2">
-            <Search className="w-4 h-4" />
-            <span>Multi-Source Finder</span>
+            <Sparkles className="w-4 h-4 text-[#B68A35] dark:text-[#D5B16D]" />
+            <span>Ultimate Book Finder</span>
           </TabsTrigger>
           {user && (
             <TabsTrigger value="my-library" className="flex items-center gap-2">
@@ -205,23 +225,32 @@ const BooksCollection = ({
           )}
         </TabsList>
 
-        {/* Tab 2: Multi-Source External Search */}
+        {/* Tab 2: Ultimate Book Finder */}
         <TabsContent value="external-finder" className="space-y-6 mt-6">
-          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Search className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Multi-Source Book Finder</h3>
-                  <p className="text-sm text-gray-600 font-normal">
-                    Search millions of books across 4 major repositories and choose which versions to add to the library
-                  </p>
+          <Card className="bg-gradient-to-br from-amber-50/50 via-white to-emerald-50/30 dark:from-[#141815] dark:via-[#101412] dark:to-[#171D19] border-[#E8E2D9] dark:border-[#26302A] shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-[#1C442D] text-white dark:bg-[#D5B16D] dark:text-black rounded-xl shadow-xs">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7]">
+                        Ultimate Book Finder
+                      </h3>
+                      <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800">
+                        Open Access — No Sign-in Required
+                      </Badge>
+                    </div>
+                    <p className="text-xs sm:text-sm text-[#636B65] dark:text-[#A5ADA6] font-normal mt-0.5">
+                      Federated search across Open Library, Project Gutenberg, Google Books, and Internet Archive. Anyone can import books directly to the library.
+                    </p>
+                  </div>
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-1">
               <div className="flex flex-col sm:flex-row items-center gap-3">
                 <div className="flex-1 w-full">
                   <BookSearchBar
@@ -232,13 +261,36 @@ const BooksCollection = ({
                 </div>
                 <Button
                   variant="outline"
-                  onClick={() => { refetchAll(); window.dispatchEvent(new Event('shelfUpdated')); }}
+                  onClick={() => {
+                    refetchAll();
+                    queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
+                    queryClient.invalidateQueries({ queryKey: ['paginated-library-all'] });
+                    window.dispatchEvent(new Event('shelfUpdated'));
+                  }}
                   disabled={searchLoading}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 border-[#E8E2D9] dark:border-[#26302A] h-12"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Refresh
                 </Button>
+              </div>
+
+              {/* Quick Search Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-xs text-[#636B65] dark:text-[#A5ADA6] font-medium mr-1 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-[#B68A35] dark:text-[#D5B16D]" /> Popular searches:
+                </span>
+                {QUICK_SEARCH_CHIPS.map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => handleSearch(chip)}
+                    disabled={searchLoading}
+                    className="text-xs px-2.5 py-1 rounded-full border border-[#E8E2D9] dark:border-[#26302A] bg-white dark:bg-[#1A201C] hover:border-[#B68A35] dark:hover:border-[#D5B16D] hover:text-[#B68A35] dark:hover:text-[#D5B16D] transition-colors shadow-2xs cursor-pointer"
+                  >
+                    {chip}
+                  </button>
+                ))}
               </div>
 
               {searchError && (
@@ -248,20 +300,38 @@ const BooksCollection = ({
                 </Alert>
               )}
 
-              <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-blue-100">
-                <div className="grid sm:grid-cols-2 gap-4 text-xs text-gray-600">
+              {/* Source badges information */}
+              <div className="bg-[#FAF7F2] dark:bg-[#161B18] p-4 rounded-xl border border-[#E8E2D9] dark:border-[#26302A]">
+                <div className="grid sm:grid-cols-2 gap-4 text-xs text-[#636B65] dark:text-[#A5ADA6]">
                   <div>
-                    <span className="font-medium text-gray-900">🔍 How it works:</span>
-                    <br />• Searches 4 major repositories simultaneously
-                    <br />• Shows all available versions with format details
-                    <br />• Select and import high-quality editions into Sahadhyayi
+                    <span className="font-semibold text-[#1C201D] dark:text-[#F3F0E7] flex items-center gap-1.5 mb-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#B68A35] dark:text-[#D5B16D]" /> How it works:
+                    </span>
+                    <ul className="space-y-1">
+                      <li>• Searches multiple verified literary repositories simultaneously</li>
+                      <li>• Displays high-resolution cover art, book descriptions, and formats</li>
+                      <li>• Single-click <strong>"Add to Library"</strong> saves the book instantly to our communal catalog</li>
+                      <li>• Immediately increments Digital Library headers and catalog counts</li>
+                    </ul>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-900">📚 Integrated Sources:</span>
-                    <br />• Open Library (metadata & covers)
-                    <br />• Google Books (descriptions & preview readers)
-                    <br />• Project Gutenberg (free public domain PDFs & EPUBs)
-                    <br />• Internet Archive (historical scans & texts)
+                    <span className="font-semibold text-[#1C201D] dark:text-[#F3F0E7] flex items-center gap-1.5 mb-1.5">
+                      <Globe className="w-3.5 h-3.5 text-emerald-600" /> Integrated Sources:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      <Badge variant="outline" className="text-[11px] bg-white dark:bg-[#1A201C] border-[#E8E2D9] dark:border-[#26302A]">
+                        Open Library (20M+ editions)
+                      </Badge>
+                      <Badge variant="outline" className="text-[11px] bg-white dark:bg-[#1A201C] border-[#E8E2D9] dark:border-[#26302A]">
+                        Project Gutenberg (70,000+ public domain)
+                      </Badge>
+                      <Badge variant="outline" className="text-[11px] bg-white dark:bg-[#1A201C] border-[#E8E2D9] dark:border-[#26302A]">
+                        Google Books (Previews & metadata)
+                      </Badge>
+                      <Badge variant="outline" className="text-[11px] bg-white dark:bg-[#1A201C] border-[#E8E2D9] dark:border-[#26302A]">
+                        Internet Archive (Historical scans)
+                      </Badge>
+                    </div>
                   </div>
                 </div>
               </div>

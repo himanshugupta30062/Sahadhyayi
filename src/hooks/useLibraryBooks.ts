@@ -598,6 +598,41 @@ export const sortBooksByCompleteness = (books: any[]): any[] => {
  * Normalizes author key for per-page catalog diversity checks.
  */
 export function getAuthorDiversificationKey(author?: string | null, title?: string | null): string {
+  const normTitle = (title || '').toLowerCase().trim();
+  const rawAuthor = (author || '').toLowerCase().trim();
+
+  // Unified Hawking detection across author and subject/biography titles
+  if (/hawking/i.test(rawAuthor) || /stephen hawking|stephen hawkings/i.test(normTitle)) {
+    return 'stephen hawking';
+  }
+
+  // Institutional or series authors
+  if (
+    normTitle.startsWith('cia reading room') ||
+    normTitle.startsWith('cia-') ||
+    normTitle.includes('cia reading room') ||
+    /cia reading room/i.test(rawAuthor)
+  ) {
+    return 'cia reading room';
+  }
+  if (normTitle.startsWith('nasa technical reports') || /nasa technical reports/i.test(rawAuthor)) {
+    return 'nasa technical reports';
+  }
+  if (normTitle.startsWith('ncert') || /ncert/i.test(rawAuthor)) {
+    return 'ncert';
+  }
+
+  // Biography / monograph subject detection: if title is "Biography of [Person]" or "The Extraordinary Life of [Person]" etc.
+  const bioMatch = normTitle.match(
+    /^(?:the extraordinary life of|biography of|who was|introducing|theoretical physicist)\s+([a-z\s]+?)(?::|$)/i
+  );
+  if (bioMatch && bioMatch[1]) {
+    const person = bioMatch[1].replace(/\b[a-z]\.?\s+/gi, ' ').replace(/\s+/g, ' ').trim();
+    if (person && person.length > 3) {
+      return person;
+    }
+  }
+
   if (author) {
     let norm = normalizeAuthor(author).normalizedAuthor.toLowerCase().trim();
     if (norm && norm !== 'unknown author' && norm !== 'unknown' && norm !== 'anonymous') {
@@ -605,18 +640,7 @@ export function getAuthorDiversificationKey(author?: string | null, title?: stri
       return norm;
     }
   }
-  if (title) {
-    const lower = title.toLowerCase();
-    if (lower.startsWith('cia reading room') || lower.startsWith('cia-') || lower.includes('cia reading room')) {
-      return 'cia reading room';
-    }
-    if (lower.startsWith('nasa technical reports')) {
-      return 'nasa technical reports';
-    }
-    if (lower.startsWith('ncert')) {
-      return 'ncert';
-    }
-  }
+
   return '';
 }
 
@@ -629,6 +653,9 @@ export function getTitleDiversificationKey(title?: string | null): string {
   const clean = norm.replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
   if (clean.startsWith('cia reading room')) {
     return 'cia reading room';
+  }
+  if (clean.includes('stephen hawking')) {
+    return 'stephen hawking';
   }
   return clean;
 }
@@ -652,6 +679,7 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
     const seenTitles = new Set<string>();
     const deferredForNextPages: any[] = [];
 
+    // Pass 1: Greedily pick unique authors and unique titles up to pageSize
     for (const book of remaining) {
       if (pageBooks.length >= pageSize) {
         deferredForNextPages.push(book);
@@ -673,8 +701,47 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
       }
     }
 
-    // If remaining distinct candidates are fewer than pageSize,
-    // fill the remaining slots from deferred books so pages are never left incomplete
+    // Pass 2: If page is not full, search deferred books for candidate with unseen author and unseen title first
+    if (pageBooks.length < pageSize && deferredForNextPages.length > 0) {
+      let idx = 0;
+      while (pageBooks.length < pageSize && idx < deferredForNextPages.length) {
+        const candidate = deferredForNextPages[idx];
+        const aKey = getAuthorDiversificationKey(candidate.author, candidate.title);
+        const tKey = getTitleDiversificationKey(candidate.title);
+
+        const hasAuthorCollision = Boolean(aKey && seenAuthors.has(aKey));
+        const hasTitleCollision = Boolean(tKey && seenTitles.has(tKey));
+
+        if (!hasAuthorCollision && !hasTitleCollision) {
+          pageBooks.push(candidate);
+          if (aKey) seenAuthors.add(aKey);
+          if (tKey) seenTitles.add(tKey);
+          deferredForNextPages.splice(idx, 1);
+        } else {
+          idx++;
+        }
+      }
+    }
+
+    // Pass 3: If still not full, allow candidates with unseen title (different book work)
+    if (pageBooks.length < pageSize && deferredForNextPages.length > 0) {
+      let idx = 0;
+      while (pageBooks.length < pageSize && idx < deferredForNextPages.length) {
+        const candidate = deferredForNextPages[idx];
+        const tKey = getTitleDiversificationKey(candidate.title);
+        const hasTitleCollision = Boolean(tKey && seenTitles.has(tKey));
+
+        if (!hasTitleCollision) {
+          pageBooks.push(candidate);
+          if (tKey) seenTitles.add(tKey);
+          deferredForNextPages.splice(idx, 1);
+        } else {
+          idx++;
+        }
+      }
+    }
+
+    // Pass 4: Final fallback only if no other unique titles exist so no page is left incomplete
     while (pageBooks.length < pageSize && deferredForNextPages.length > 0) {
       pageBooks.push(deferredForNextPages.shift()!);
     }

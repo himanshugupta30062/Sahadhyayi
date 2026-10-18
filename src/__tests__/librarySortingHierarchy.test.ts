@@ -508,6 +508,68 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(diversified).toHaveLength(4);
       expect(diversified.map(b => b.id)).toEqual(['cia-1', 'cia-2', 'cia-3', 'cia-4']);
     });
+
+    it('strictly ensures only 1 Stephen Hawking book appears on Page 1 across titles, co-authors, and biographies', () => {
+      const catalog = [
+        { id: 'h-1', title: 'The Theory of Everything', author: 'Stephen Hawking' },
+        { id: 'b-1', title: 'The Extraordinary Life of Stephen Hawking', author: 'Kate Scott' },
+        { id: 'b-2', title: 'Stephen Hawking', author: 'Cristina Oxtra' },
+        { id: 'b-3', title: 'Theoretical Physicist Stephen Hawking', author: 'Kari Cornell' },
+        { id: 'h-2', title: 'A Brief History of Time', author: 'Stephen Hawking' },
+        { id: 'h-3', title: 'Hawking on the Big Bang and Black Holes', author: 'Stephen W. Hawking' },
+        { id: 'o-1', title: 'Gunahon Ka Devta', author: 'Dharamvir Bharati' },
+        { id: 'o-2', title: 'Godan', author: 'Munshi Premchand' },
+        { id: 'o-3', title: 'Shri Durga Saptashati', author: 'Bharat Bhushan Mishra' },
+        { id: 'o-4', title: 'Black Holes in Higher Dimensions', author: 'Gary T. Horowitz' },
+        { id: 'o-5', title: 'The Geometry of Kerr Black Holes', author: 'Barrett O\'Neill' },
+        { id: 'o-6', title: 'Introduction to Black Hole Astrophysics', author: 'Gustavo E. Romero' },
+        { id: 'o-7', title: 'The Mathematical Theory of Black Holes', author: 'Subrahmanyan Chandrasekhar' },
+        { id: 'o-8', title: 'Mysteries of Black Holes and Dark Matter', author: 'Ellen Labrecque' },
+        { id: 'o-9', title: 'Frankenstein', author: 'Mary Shelley' },
+        { id: 'o-10', title: 'The Republic', author: 'Plato' },
+        { id: 'o-11', title: 'Pride and Prejudice', author: 'Jane Austen' },
+        { id: 'o-12', title: 'Moby Dick', author: 'Herman Melville' },
+        { id: 'o-13', title: '1984', author: 'George Orwell' },
+        { id: 'o-14', title: 'Brave New World', author: 'Aldous Huxley' },
+        { id: 'o-15', title: 'Crime and Punishment', author: 'Fyodor Dostoevsky' },
+        { id: 'o-16', title: 'War and Peace', author: 'Leo Tolstoy' },
+        { id: 'o-17', title: 'The Odyssey', author: 'Homer' },
+        { id: 'o-18', title: 'Hamlet', author: 'William Shakespeare' },
+        { id: 'o-19', title: 'The Metamorphosis', author: 'Franz Kafka' },
+        { id: 'o-20', title: 'The Divine Comedy', author: 'Dante Alighieri' },
+        { id: 'o-21', title: 'Don Quixote', author: 'Miguel de Cervantes' },
+        { id: 'o-22', title: 'The Iliad', author: 'Homer Ancient' },
+        { id: 'o-23', title: 'Les Misérables', author: 'Victor Hugo' },
+        { id: 'o-24', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald' },
+      ];
+
+      const pageSize = 12;
+      const diversified = diversifyBooksPerPage(catalog, pageSize);
+
+      // Must preserve all books
+      expect(diversified).toHaveLength(catalog.length);
+
+      // Page 1
+      const page1 = diversified.slice(0, pageSize);
+      const page1Hawking = page1.filter(
+        b =>
+          (b.author || '').toLowerCase().includes('hawking') ||
+          (b.title || '').toLowerCase().includes('stephen hawking')
+      );
+
+      // STRICT REQUIREMENT: Only 1 Stephen Hawking book on Page 1!
+      expect(page1Hawking).toHaveLength(1);
+      expect(page1Hawking[0].id).toBe('h-1');
+
+      // Page 2 receives deferred Hawking books (at most 1 per page)
+      const page2 = diversified.slice(pageSize, pageSize * 2);
+      const page2Hawking = page2.filter(
+        b =>
+          (b.author || '').toLowerCase().includes('hawking') ||
+          (b.title || '').toLowerCase().includes('stephen hawking')
+      );
+      expect(page2Hawking.length).toBeLessThanOrEqual(1);
+    });
   });
 
   // Section 6 of prompt: Regression tests verifying book-first ranking and resource separation

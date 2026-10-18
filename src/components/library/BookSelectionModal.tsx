@@ -18,6 +18,8 @@ import {
   FileText,
   BookMarked,
   Filter,
+  Loader2,
+  Sparkles,
 } from 'lucide-react';
 import OpenAccessBookCard from '@/components/books/OpenAccessBookCard';
 import LibgenBookCard from './LibgenBookCard';
@@ -59,6 +61,7 @@ const BookSelectionModal = ({
 
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(() => new Set(books.map((b) => b.id)));
   const [savedOutcomes, setSavedOutcomes] = useState<Map<string, BookSaveResult>>(new Map());
+  const [savingBookId, setSavingBookId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const booksPerPage = 10;
 
@@ -126,16 +129,48 @@ const BookSelectionModal = ({
     }
   };
 
-  const handleSaveSelectedBooks = async () => {
-    if (!user) {
+  const handleSaveSingle = async (book: BookSearchResult) => {
+    setSavingBookId(book.id);
+    try {
+      const outcome = await saveSelectedBooks([book]);
+      const nextOutcomes = new Map(savedOutcomes);
+      outcome.results.forEach((res) => {
+        nextOutcomes.set(book.id, res);
+      });
+      setSavedOutcomes(nextOutcomes);
+
+      const matchingResult = outcome.results[0];
+      const isInserted = matchingResult?.status === 'inserted' || outcome.newlyInserted > 0;
+      const isEnriched = matchingResult?.status === 'enriched' || outcome.enrichedCount > 0;
+
       toast({
-        title: 'Sign in required',
-        description: 'Please sign in to save books to the Sahadhyayi catalog.',
+        title: isInserted
+          ? `Added "${book.title}" to Library`
+          : isEnriched
+            ? `Enriched "${book.title}" in Library`
+            : `"${book.title}" already in Library`,
+        description: isInserted
+          ? 'Book is now available in the Sahadhyayi catalog and browse grid.'
+          : 'Catalog metadata has been preserved and verified.',
+      });
+
+      onBooksAdded?.();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('shelfUpdated'));
+        window.dispatchEvent(new Event('libraryUpdated'));
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Could not add book',
+        description: err?.message || 'Failed to save book to catalog. Please try again.',
         variant: 'destructive',
       });
-      return;
+    } finally {
+      setSavingBookId(null);
     }
+  };
 
+  const handleSaveSelectedBooks = async () => {
     if (selectedBooks.size === 0) {
       toast({
         title: 'No books selected',
@@ -183,6 +218,10 @@ const BookSelectionModal = ({
       });
 
       onBooksAdded?.();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('shelfUpdated'));
+        window.dispatchEvent(new Event('libraryUpdated'));
+      }
     } catch (error: any) {
       toast({
         title: 'Error saving books',
@@ -193,14 +232,6 @@ const BookSelectionModal = ({
   };
 
   const handleRetrySingle = async (book: BookSearchResult) => {
-    if (!user) {
-      toast({
-        title: 'Sign in required',
-        description: 'Please sign in to save books.',
-        variant: 'destructive',
-      });
-      return;
-    }
     try {
       const outcome = await saveSelectedBooks([book]);
       const nextOutcomes = new Map(savedOutcomes);
@@ -209,6 +240,10 @@ const BookSelectionModal = ({
       });
       setSavedOutcomes(nextOutcomes);
       onBooksAdded?.();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('shelfUpdated'));
+        window.dispatchEvent(new Event('libraryUpdated'));
+      }
     } catch (err: any) {
       toast({
         title: 'Retry failed',
@@ -293,14 +328,14 @@ const BookSelectionModal = ({
       <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto bg-[#FAF7F2] dark:bg-[#0E1210] border-[#E8E2D9] dark:border-[#26302A] text-[#1C201D] dark:text-[#F3F0E7]">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <BookMarked className="w-5 h-5 text-[#B68A35] dark:text-[#D5B16D]" />
+            <Sparkles className="w-5 h-5 text-[#B68A35] dark:text-[#D5B16D]" />
             <DialogTitle className="text-xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7]">
-              Book Search Results — "{searchTerm}"
+              Ultimate Book Finder — "{searchTerm}"
             </DialogTitle>
           </div>
           <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
             Found {filteredBooks.length} book{filteredBooks.length !== 1 ? 's' : ''} across verified public domain and digital library sources.
-            {" "}Select titles to save them into Sahadhyayi’s permanent catalog.
+            {" "}Add titles directly into Sahadhyayi’s permanent catalog without needing an account.
           </p>
         </DialogHeader>
 
@@ -373,10 +408,19 @@ const BookSelectionModal = ({
               onClick={handleSaveSelectedBooks}
               disabled={selectedBooks.size === 0 || isSaving}
               size="sm"
-              className="bg-[#1C442D] hover:bg-[#255438] text-white dark:bg-[#D5B16D] dark:text-black dark:hover:bg-[#e4c688] font-medium"
+              className="bg-[#1C442D] hover:bg-[#255438] text-white dark:bg-[#D5B16D] dark:text-black dark:hover:bg-[#e4c688] font-medium transition-all shadow-xs"
             >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              {isSaving ? 'Saving...' : user ? `Save Selected (${selectedBooks.size})` : `Sign In to Save (${selectedBooks.size})`}
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Saving to Library...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-3.5 h-3.5 mr-1.5" />
+                  Add Selected to Library ({selectedBooks.size})
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -516,6 +560,33 @@ const BookSelectionModal = ({
 
                         {/* Action Buttons */}
                         <div className="flex flex-row sm:flex-col gap-1.5 flex-shrink-0 self-start mt-2 sm:mt-0">
+                          {/* Direct Single-Book Add to Library Button */}
+                          {outcome?.status === 'inserted' || outcome?.status === 'already_exists' || outcome?.status === 'enriched' ? (
+                            <Badge className="text-xs h-8 px-2.5 bg-emerald-700/10 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 flex items-center justify-center gap-1 font-medium">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                              {outcome.status === 'enriched' ? 'Enriched' : 'In Library'}
+                            </Badge>
+                          ) : (
+                            <Button
+                              onClick={() => handleSaveSingle(book)}
+                              disabled={savingBookId === book.id || isSaving}
+                              size="sm"
+                              className="text-xs h-8 bg-[#1C442D] hover:bg-[#255438] text-white dark:bg-[#D5B16D] dark:text-black dark:hover:bg-[#e4c688] font-medium transition-all shadow-xs"
+                            >
+                              {savingBookId === book.id ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                                  Adding...
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-3.5 h-3.5 mr-1" />
+                                  Add to Library
+                                </>
+                              )}
+                            </Button>
+                          )}
+
                           {user && (
                             <Button
                               onClick={() => handleAddToPersonalLibrary(book.id)}
