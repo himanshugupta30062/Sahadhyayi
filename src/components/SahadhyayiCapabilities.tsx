@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { MapPin, Calendar, PenTool, Gamepad2, ArrowRight, Sparkles, ChevronRight } from "lucide-react";
+import HomeFloatingBooks from "@/components/home/HomeFloatingBooks";
 
 interface CapabilityItem {
   id: string;
@@ -52,6 +53,7 @@ export const SahadhyayiCapabilities: React.FC = () => {
       className="home-capabilities relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#FBF6E9] dark:bg-[#0B0D0C] border-b border-[#EADFC7] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
       aria-label="Platform Capabilities"
     >
+      <HomeFloatingBooks placement="section" />
       <style>{`
         @keyframes homeCapabilitiesGlowDrift {
           0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
