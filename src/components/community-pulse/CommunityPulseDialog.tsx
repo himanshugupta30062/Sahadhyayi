@@ -289,9 +289,12 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 <h2 id="pulse-modal-title" className="text-sm sm:text-lg font-bold text-stone-100 tracking-tight truncate">
                   Live Website Stats
                 </h2>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 flex-shrink-0" title="Auto-updates every 60 seconds">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Live
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold border flex-shrink-0 ${effectiveStats.partialData ? 'bg-amber-950/70 text-amber-300 border-amber-800/40' : 'bg-emerald-950/80 text-emerald-400 border-emerald-800/40'}`}
+                  title={effectiveStats.partialData ? 'Some live analytics details are unavailable' : 'Auto-updates every 60 seconds'}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${effectiveStats.partialData ? 'bg-amber-300' : 'bg-emerald-400 animate-pulse'}`} />
+                  {effectiveStats.partialData ? 'Partial' : 'Live'}
                 </span>
                 {effectiveStats.isStale && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/40 flex-shrink-0">
