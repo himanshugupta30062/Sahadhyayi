@@ -133,45 +133,80 @@ export interface BookSchemaCapabilities {
   checked: boolean;
 }
 
-let cachedCapabilities: BookSchemaCapabilities | null = null;
+const SCHEMA_CAPS_STORAGE_KEY = 'sahadhyayi_schema_caps_v1';
+
+// Baseline schema capabilities: in the production database, status columns do not exist.
+// Defaulting to false avoids firing 3-9 failing 400 Bad Request queries on every page load.
+const DEFAULT_CAPABILITIES: BookSchemaCapabilities = {
+  hasStatus: false,
+  hasCatalogStatus: false,
+  checked: true,
+};
+
+function readPersistedCapabilities(): BookSchemaCapabilities | null {
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      const stored = window.sessionStorage.getItem(SCHEMA_CAPS_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') return parsed;
+      }
+    } catch {
+      // Ignore sessionStorage errors
+    }
+  }
+  return null;
+}
+
+let cachedCapabilities: BookSchemaCapabilities = readPersistedCapabilities() || DEFAULT_CAPABILITIES;
+let pendingDetectionPromise: Promise<BookSchemaCapabilities> | null = null;
 
 /**
- * Probe database schema capabilities once and cache the result.
- * Detects whether `status` and `catalog_status` columns exist on `books_library`.
+ * Return schema capabilities with zero latency and no failing 400 probes on page load.
+ * Probing is deduplicated and results are cached for the entire session.
  */
 export async function detectBookSchemaCapabilities(): Promise<BookSchemaCapabilities> {
   if (cachedCapabilities && cachedCapabilities.checked) {
     return cachedCapabilities;
   }
 
-  try {
-    // Attempt single fast probe for both status columns
-    const { error: bothError } = await supabase
-      .from('books_library')
-      .select('status, catalog_status')
-      .limit(1);
-
-    if (!bothError) {
-      cachedCapabilities = { hasStatus: true, hasCatalogStatus: true, checked: true };
-      return cachedCapabilities;
-    }
-
-    // If both failed, probe individually
-    const [statusRes, catalogStatusRes] = await Promise.all([
-      supabase.from('books_library').select('status').limit(1),
-      supabase.from('books_library').select('catalog_status').limit(1),
-    ]);
-
-    cachedCapabilities = {
-      hasStatus: !statusRes.error,
-      hasCatalogStatus: !catalogStatusRes.error,
-      checked: true,
-    };
-    return cachedCapabilities;
-  } catch {
-    cachedCapabilities = { hasStatus: false, hasCatalogStatus: false, checked: true };
-    return cachedCapabilities;
+  if (pendingDetectionPromise) {
+    return pendingDetectionPromise;
   }
+
+  pendingDetectionPromise = (async () => {
+    try {
+      // Attempt single fast probe for both status columns
+      const { error: bothError } = await supabase
+        .from('books_library')
+        .select('status, catalog_status')
+        .limit(1);
+
+      if (!bothError) {
+        cachedCapabilities = { hasStatus: true, hasCatalogStatus: true, checked: true };
+      } else {
+        // Status columns do not exist in current database schema
+        cachedCapabilities = { hasStatus: false, hasCatalogStatus: false, checked: true };
+      }
+
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        try {
+          window.sessionStorage.setItem(SCHEMA_CAPS_STORAGE_KEY, JSON.stringify(cachedCapabilities));
+        } catch {
+          // Ignore write errors
+        }
+      }
+
+      return cachedCapabilities;
+    } catch {
+      cachedCapabilities = { hasStatus: false, hasCatalogStatus: false, checked: true };
+      return cachedCapabilities;
+    } finally {
+      pendingDetectionPromise = null;
+    }
+  })();
+
+  return pendingDetectionPromise;
 }
 
 /**
@@ -183,13 +218,28 @@ export function setDetectedBookSchemaCapabilities(capabilities: Partial<BookSche
     hasCatalogStatus: capabilities.hasCatalogStatus ?? false,
     checked: true,
   };
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      window.sessionStorage.setItem(SCHEMA_CAPS_STORAGE_KEY, JSON.stringify(cachedCapabilities));
+    } catch {
+      // Ignore sessionStorage write errors
+    }
+  }
 }
 
 /**
  * Reset schema capability detection cache.
  */
 export function resetBookSchemaCapabilities(): void {
-  cachedCapabilities = null;
+  cachedCapabilities = DEFAULT_CAPABILITIES;
+  pendingDetectionPromise = null;
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      window.sessionStorage.removeItem(SCHEMA_CAPS_STORAGE_KEY);
+    } catch {
+      // Ignore sessionStorage removal errors
+    }
+  }
 }
 
 /**

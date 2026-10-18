@@ -32,9 +32,11 @@ const LibraryHero = ({
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   
   // Fetch only 6 book suggestions — lightweight query for autocomplete
+  const isSearchActive = Boolean(debouncedSearchQuery && debouncedSearchQuery.trim().length >= 2);
   const { data: suggestions = [], isLoading } = useLibraryBooks(
-    debouncedSearchQuery && debouncedSearchQuery.length >= 2 ? debouncedSearchQuery : undefined,
-    6
+    isSearchActive ? debouncedSearchQuery : undefined,
+    6,
+    { enabled: isSearchActive }
   );
 
   // Show only top 6 suggestions

@@ -6,6 +6,7 @@ import { getBookCompletenessScore } from './useLibraryBooks';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { mapRawToEdition, clusterEditionsIntoWorks } from '@/utils/catalog/deduplicationEngine';
 import {
+  BASE_BOOK_SELECT_COLUMNS,
   detectBookSchemaCapabilities,
   getPublicBookSelectColumns,
   applyPublicBookFilter,
@@ -67,6 +68,7 @@ async function fetchFilteredBooks(
 ): Promise<Book[]> {
   const caps = await detectBookSchemaCapabilities();
   const selectColumns = getPublicBookSelectColumns(caps);
+  const safeSearchQuery = (searchQuery || '').replace(/[,()]/g, ' ').replace(/\s+/g, ' ').trim();
   const BATCH = 500;
   const all: any[] = [];
   let offset = 0;
@@ -76,13 +78,14 @@ async function fetchFilteredBooks(
     let query = supabase
       .from('books_library')
       .select(selectColumns)
+      .order('created_at', { ascending: false })
       .range(offset, offset + BATCH - 1);
 
     query = applyPublicBookFilter(query, caps);
 
-    if (searchQuery && searchQuery.trim()) {
+    if (safeSearchQuery) {
       query = query.or(
-        `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,genre.ilike.%${searchQuery}%`
+        `title.ilike.%${safeSearchQuery}%,author.ilike.%${safeSearchQuery}%,genre.ilike.%${safeSearchQuery}%`
       );
     }
     if (selectedGenre && selectedGenre !== 'All') {
@@ -103,7 +106,50 @@ async function fetchFilteredBooks(
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      if (caps.hasStatus || caps.hasCatalogStatus) {
+        console.warn('fetchFilteredBooks probe mismatch, falling back to base columns:', error.message);
+        let fallbackQuery = supabase
+          .from('books_library')
+          .select(BASE_BOOK_SELECT_COLUMNS)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + BATCH - 1);
+
+        fallbackQuery = applyPublicBookFilter(fallbackQuery, { hasStatus: false, hasCatalogStatus: false, checked: true });
+
+        if (safeSearchQuery) {
+          fallbackQuery = fallbackQuery.or(
+            `title.ilike.%${safeSearchQuery}%,author.ilike.%${safeSearchQuery}%,genre.ilike.%${safeSearchQuery}%`
+          );
+        }
+        if (selectedGenre && selectedGenre !== 'All') {
+          if (selectedGenre === 'Hindi') {
+            fallbackQuery = fallbackQuery.eq('language', 'Hindi');
+          } else {
+            fallbackQuery = fallbackQuery.eq('genre', selectedGenre);
+          }
+        }
+        if (selectedAuthor && selectedAuthor !== 'All') {
+          fallbackQuery = fallbackQuery.eq('author', selectedAuthor);
+        }
+        if (selectedYear && selectedYear.trim()) {
+          fallbackQuery = fallbackQuery.eq('publication_year', parseInt(selectedYear));
+        }
+        if (selectedLanguage && selectedLanguage !== 'All') {
+          fallbackQuery = fallbackQuery.eq('language', selectedLanguage);
+        }
+
+        const fallbackRes = await fallbackQuery;
+        if (fallbackRes.error) throw fallbackRes.error;
+        if (fallbackRes.data && fallbackRes.data.length > 0) {
+          all.push(...fallbackRes.data);
+          offset += BATCH;
+          hasMore = fallbackRes.data.length === BATCH;
+          continue;
+        }
+      }
+      throw error;
+    }
     if (data && data.length > 0) {
       all.push(...data);
       offset += BATCH;
