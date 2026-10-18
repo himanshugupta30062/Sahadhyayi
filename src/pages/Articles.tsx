@@ -81,68 +81,81 @@ const Articles = () => {
   return (
     <>
       <SEO
-        title="Articles - Sahadhyayi"
-        description="Read and write articles on books, reading, and stories. Discover writing from the Sahadhyayi community."
+        title="Essays, Stories & Book Reflections | Sahadhyayi"
+        description="Explore thoughtful essays, book reflections, and stories from the Sahadhyayi reading community. Find an idea worth carrying into your next chapter."
         canonical="https://sahadhyayi.com/articles"
         url="https://sahadhyayi.com/articles"
       />
       <div className="min-h-screen bg-background">
-        {/* Hero */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-brand-primary/10 via-background to-brand-secondary/10 border-b border-border">
-          <div className="absolute inset-0 opacity-25 pointer-events-none [background-image:radial-gradient(circle_at_1px_1px,hsl(var(--brand-primary)/0.2)_1px,transparent_0)] [background-size:24px_24px]" />
-          <div className="relative max-w-6xl mx-auto px-4 py-14 md:py-20">
-            <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs font-semibold text-brand-primary mb-5 shadow-xs">
-                <Sparkles className="w-3.5 h-3.5 text-brand-primary" />
-                Stories, essays, and reading culture
+        {/* Editorial article hero */}
+        <section className="relative isolate overflow-hidden border-b border-[#26352C] bg-[#101711] text-white">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=2400&q=85')",
+              backgroundPosition: 'center 48%',
+            }}
+          />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/82 to-[#09120D]/42" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#09120D]/75 via-transparent to-[#09120D]/25" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.13] [background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_right,black,transparent_78%)]" />
+
+          <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
+            <div className="max-w-3xl">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D5B16D]/35 bg-black/25 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#E8CC91] backdrop-blur-sm sm:mb-6">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                The Sahadhyayi Journal
               </div>
-              <h1 className="font-serif text-4xl md:text-6xl font-bold text-foreground mb-4 leading-tight tracking-tight">
-                Articles on Sahadhyayi
+              <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
+                Ideas worth turning
+                <span className="block text-[#E4C17B]">a page for.</span>
               </h1>
-              <p className="text-base md:text-lg text-muted-foreground max-w-2xl mb-8 leading-relaxed">
-                Reviews, essays, and stories from a community that loves books. Read, write, and share your ideas in a clean, distraction-free space.
+              <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
+                Thoughtful essays, book reflections, and stories to spark your next idea — written by readers who have something to say.
               </p>
 
-              {/* Search + CTA */}
-              <div className="flex flex-col sm:flex-row gap-3 w-full max-w-2xl">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <div className="mt-8 flex w-full max-w-2xl flex-col gap-3 sm:mt-9 sm:flex-row">
+                <div className="relative min-w-0 flex-1">
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#69756D]" aria-hidden="true" />
                   <Input
-                    placeholder="Search articles, authors, or tags…"
+                    placeholder="Search ideas, authors, or topics…"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-11 h-12 bg-card/80 backdrop-blur-sm border-border focus-visible:ring-brand-primary"
+                    className="h-12 rounded-xl border border-white/25 bg-white/95 pl-11 pr-11 text-[#1C201D] shadow-xl placeholder:text-[#798179] focus-visible:ring-2 focus-visible:ring-[#D5B16D] sm:h-14"
+                    aria-label="Search articles, authors, or tags"
                   />
                   {search && (
                     <button
+                      type="button"
                       onClick={() => setSearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted text-muted-foreground"
-                      aria-label="Clear search"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-[#69756D] transition hover:bg-black/5 hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D]"
+                      aria-label="Clear article search"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="h-4 w-4" />
                     </button>
                   )}
                 </div>
                 <Button
                   onClick={() => navigate(articleWritePath)}
-                  className="h-12 px-6 bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 shadow-md shadow-brand-primary/20"
+                  className="h-12 shrink-0 rounded-xl bg-[#D5B16D] px-5 font-semibold text-[#171C17] shadow-lg transition hover:bg-[#E4C17B] sm:h-14 sm:px-6"
                 >
-                  <PenLine className="w-4 h-4" />
-                  Start Writing
+                  <PenLine className="mr-2 h-4 w-4" aria-hidden="true" />
+                  Write a story
                 </Button>
               </div>
 
               {user && (
                 <Link
                   to="/articles/my"
-                  className="mt-4 inline-flex items-center gap-1 text-sm text-brand-primary hover:underline font-medium"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-[#E4C17B] transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] focus-visible:ring-offset-4 focus-visible:ring-offset-[#101711]"
                 >
-                  My articles & drafts <ArrowRight className="w-3.5 h-3.5" />
+                  My articles & drafts <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               )}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Tag filter bar */}
         {topTags.length > 0 && (
