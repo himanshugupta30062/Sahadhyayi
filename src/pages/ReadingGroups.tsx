@@ -1,6 +1,6 @@
 import SEO from "@/components/SEO";
 import ReadingGroupsDirectory from "@/components/groups/ReadingGroupsDirectory";
-import { ArrowDown, BookOpen, Sparkles, Users } from "lucide-react";
+import { ArrowDown, Sparkles, Users } from "lucide-react";
 
 const ReadingGroups = () => {
   return (
