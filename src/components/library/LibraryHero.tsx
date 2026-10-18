@@ -12,9 +12,9 @@ interface LibraryHeroProps {
   onSearchChange: (query: string) => void;
   onSearch: () => void;
   totalBooks?: number | null;
-  activeReaders?: number;
-  avgRating?: number;
-  booksAddedToday?: number;
+  activeReaders?: number | null;
+  avgRating?: number | null;
+  booksAddedToday?: number | null;
 }
 
 const LibraryHero = ({ 
@@ -22,9 +22,9 @@ const LibraryHero = ({
   onSearchChange, 
   onSearch, 
   totalBooks,
-  activeReaders = 2847,
-  avgRating = 4.8,
-  booksAddedToday = 47
+  activeReaders,
+  avgRating,
+  booksAddedToday
 }: LibraryHeroProps) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -66,12 +66,21 @@ const LibraryHero = ({
     {
       icon: BookOpen,
       label: 'Books Available',
-      value: totalBooks?.toLocaleString() ?? '—',
+      value: totalBooks != null ? totalBooks.toLocaleString() : '—',
       color: 'text-library-primary',
     },
-    { icon: Users, label: 'Active Readers', value: activeReaders.toLocaleString(), color: 'text-library-secondary' },
-    { icon: Star, label: 'Avg Rating', value: avgRating.toString(), color: 'text-yellow-600' },
-    { icon: TrendingUp, label: 'Books Added Today', value: booksAddedToday.toString(), color: 'text-green-600' },
+    {
+      icon: Users,
+      label: 'Active Readers',
+      value: activeReaders && activeReaders > 0 ? activeReaders.toLocaleString() : '—',
+      color: 'text-library-secondary',
+    },
+    ...(avgRating != null && avgRating > 0
+      ? [{ icon: Star, label: 'Avg Rating', value: avgRating.toString(), color: 'text-yellow-600' }]
+      : [{ icon: Sparkles, label: 'Curated Works', value: 'Curated', color: 'text-yellow-600' }]),
+    ...(booksAddedToday != null && booksAddedToday > 0
+      ? [{ icon: TrendingUp, label: 'Books Added Today', value: booksAddedToday.toString(), color: 'text-green-600' }]
+      : [{ icon: TrendingUp, label: 'Access Tier', value: 'Free Access', color: 'text-green-600' }]),
   ];
 
   return (
@@ -272,22 +281,31 @@ const LibraryHero = ({
           <div className="w-full max-w-2xl mx-auto px-4 pt-1">
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-2 px-4 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-medium shadow-md">
               <div className="flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-emerald-300" />
-                <span><strong className="text-white">{totalBooks?.toLocaleString() ?? '12,500+'}</strong> Books</span>
+                <BookOpen className="w-4 h-4 text-emerald-300" aria-hidden="true" />
+                <span><strong className="text-white">{totalBooks != null ? totalBooks.toLocaleString() : '—'}</strong> Books</span>
               </div>
-              <span className="text-white/40">•</span>
+              <span className="text-white/40" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-sky-300" />
-                <span><strong className="text-white">{activeReaders.toLocaleString()}</strong> Active Readers</span>
+                <Users className="w-4 h-4 text-sky-300" aria-hidden="true" />
+                <span><strong className="text-white">{activeReaders && activeReaders > 0 ? activeReaders.toLocaleString() : '—'}</strong> Readers</span>
               </div>
-              <span className="text-white/40 hidden sm:inline">•</span>
+              <span className="text-white/40 hidden sm:inline" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5 hidden sm:flex">
-                <Star className="w-4 h-4 text-amber-300 fill-amber-300" />
-                <span><strong className="text-white">{avgRating}</strong> Rating</span>
+                {avgRating != null && avgRating > 0 ? (
+                  <>
+                    <Star className="w-4 h-4 text-amber-300 fill-amber-300" aria-hidden="true" />
+                    <span><strong className="text-white">{avgRating}</strong> Rating</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-amber-300" aria-hidden="true" />
+                    <span>Curated Catalog</span>
+                  </>
+                )}
               </div>
-              <span className="text-white/40 hidden md:inline">•</span>
+              <span className="text-white/40 hidden md:inline" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5 hidden md:flex">
-                <TrendingUp className="w-4 h-4 text-emerald-300" />
+                <TrendingUp className="w-4 h-4 text-emerald-300" aria-hidden="true" />
                 <span>Free Open Access</span>
               </div>
             </div>

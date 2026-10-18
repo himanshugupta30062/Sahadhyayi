@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Mail,
   Facebook,
   Twitter,
   Instagram,
@@ -62,30 +61,30 @@ const StructuredFooter = () => {
   ];
 
   return (
-    <footer className="bg-text-primary text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-8 items-start">
-          {/* Brand Section */}
-          <div className="col-span-2 md:col-span-3 lg:col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
+    <footer className="bg-[#0B0D0C] text-stone-200 border-t border-white/[0.08]" role="contentinfo">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        {/* Main Responsive Grid Layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-8 lg:gap-8 mb-12 items-start">
+          {/* Brand & Editorial Live Stats Card */}
+          <div className="sm:col-span-2 md:col-span-4 lg:col-span-4 space-y-5">
+            <div className="flex items-center space-x-3">
               <img
                 src="/lovable-uploads/logo-small.webp"
                 alt=""
                 aria-hidden="true"
-                className="w-8 h-8"
+                className="w-8 h-8 rounded-sm"
                 width={32}
                 height={32}
                 loading="lazy"
               />
-              <span className="text-xl font-bold">Sahadhyayi</span>
+              <span className="text-xl font-serif font-bold text-stone-100 tracking-tight">Sahadhyayi</span>
             </div>
-            <p className="text-stone-300 text-sm leading-relaxed mb-6 max-w-sm">
+            <p className="text-stone-300 text-sm leading-relaxed max-w-sm">
               Rediscover the joy of deep reading through community, technology, and shared knowledge. Join fellow readers worldwide.
             </p>
 
             {/* Editorial Live Website Stats Trigger Card */}
-            <div className="max-w-md">
+            <div className="max-w-md pt-1">
               <button
                 type="button"
                 onClick={() => setIsPulseOpen(true)}
@@ -98,8 +97,8 @@ const StructuredFooter = () => {
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-stone-100 flex items-center gap-2">
-                      Live Website Stats
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>Live Website Stats</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
                     </div>
                     <p className="text-xs text-stone-300 truncate mt-0.5">
                       Real-time traffic, visitors & reading activity across Sahadhyayi.
@@ -111,16 +110,18 @@ const StructuredFooter = () => {
             </div>
           </div>
 
-          {/* Footer Links */}
+          {/* Footer Semantic Link Categories */}
           {footerSections.map((section) => (
-            <div key={section.title} className="col-span-1">
-              <h3 className="text-sm font-semibold text-white mb-4">{section.title}</h3>
-              <ul className="space-y-3">
+            <div key={section.title} className="sm:col-span-1 md:col-span-1 lg:col-span-2">
+              <h3 className="text-xs sm:text-sm font-semibold text-stone-100 uppercase tracking-wider mb-4">
+                {section.title}
+              </h3>
+              <ul className="space-y-2.5">
                 {section.links.map((link) => (
                   <li key={link.name}>
                     <Link
                       to={link.href}
-                      className="text-sm text-stone-300 hover:text-white transition-colors duration-200 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded-sm"
+                      className="text-sm text-stone-300 hover:text-white dark:hover:text-[#D5B16D] transition-colors duration-200 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] rounded-xs"
                     >
                       {link.name}
                     </Link>
@@ -131,12 +132,14 @@ const StructuredFooter = () => {
           ))}
         </div>
 
-        {/* Social Links */}
-        <div className="border-t border-gray-700 pt-8 mb-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between">
-            <div className="mb-4 sm:mb-0">
-              <h3 className="text-sm font-semibold mb-3">Follow Us</h3>
-              <div className="flex space-x-4">
+        {/* Social Links & User Status */}
+        <div className="border-t border-white/[0.08] pt-8 mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="text-xs font-semibold text-stone-300 uppercase tracking-wider mb-3 text-center sm:text-left">
+                Follow Us
+              </h3>
+              <div className="flex space-x-3">
                 {socialLinks.map((social) => {
                   const Icon = social.icon;
                   return (
@@ -145,7 +148,7 @@ const StructuredFooter = () => {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 bg-gray-700 rounded-lg hover:bg-brand-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+                      className="p-2.5 bg-white/[0.05] hover:bg-[#18241e] hover:text-[#D5B16D] border border-white/[0.06] rounded-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] text-stone-300"
                       aria-label={`Follow us on ${social.name}`}
                     >
                       <Icon className="w-4 h-4" aria-hidden="true" />
@@ -155,27 +158,27 @@ const StructuredFooter = () => {
               </div>
             </div>
 
-            {/* User Status */}
-            <div className="text-sm text-stone-300">
+            {/* User Community Status */}
+            <div className="text-xs sm:text-sm text-stone-300 text-center sm:text-right">
               {user ? (
                 <span>
-                  Welcome back, <span className="text-white font-medium">{user.email}</span>
+                  Welcome back, <span className="text-stone-100 font-medium">{user.email}</span>
                 </span>
               ) : (
-                <span>Join our reading community today</span>
+                <span className="text-stone-400">Join our reading community today</span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-700 pt-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-stone-300">
-            <div className="flex items-center mb-2 sm:mb-0">
+        {/* Bottom Editorial Bar */}
+        <div className="border-t border-white/[0.08] pt-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-stone-400 gap-2">
+            <div className="flex items-center flex-wrap gap-2 text-center sm:text-left">
               <span>© {new Date().getFullYear()} Sahadhyayi. All rights reserved.</span>
-              <span className="mx-2">•</span>
-              <span className="flex items-center">
-                Made with <Heart className="w-3 h-3 mx-1 text-red-400" aria-hidden="true" /> for readers worldwide
+              <span className="text-white/20" aria-hidden="true">•</span>
+              <span className="inline-flex items-center">
+                Made with <Heart className="w-3.5 h-3.5 mx-1 text-red-400 fill-red-400" aria-hidden="true" /> for readers worldwide
               </span>
             </div>
             <div className="text-xs text-stone-400">
