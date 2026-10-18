@@ -385,7 +385,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           !(Array.isArray(rpcData.breakdowns?.countries) || Array.isArray(rpcData.topCountries)) ||
           !(Array.isArray(rpcData.breakdowns?.pages) || Array.isArray(rpcData.topPages)) ||
           !(Array.isArray(rpcData.breakdowns?.devices) || Array.isArray(rpcData.devices)) ||
-          !(Array.isArray(rpcData.breakdowns?.referrers) || Array.isArray(rpcData.referrers))
+          !(Array.isArray(rpcData.breakdowns?.referrers) || Array.isArray(rpcData.referrers)) ||
+          Object.values(readingEngagement).some((value) => value === null)
         );
 
         return {
@@ -541,7 +542,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
                   uniqueVisitorsChange: undefined,
                   newReadersChange: undefined,
                   avgTimeChange: undefined,
-                  hourlyActivity: buildEmptyHourlyBuckets(),
+                  // This is a count-only emergency fallback; hourly values are unavailable.
+                  hourlyActivity: [],
                   countries: [],
                   topPages: [],
                   devices: [],
@@ -693,7 +695,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
                 !(Array.isArray(data.breakdowns?.countries) || Array.isArray(data.topCountries)) ||
                 !(Array.isArray(data.breakdowns?.pages) || Array.isArray(data.topPages)) ||
                 !(Array.isArray(data.breakdowns?.devices) || Array.isArray(data.devices)) ||
-                !(Array.isArray(data.breakdowns?.referrers) || Array.isArray(data.referrers))
+                !(Array.isArray(data.breakdowns?.referrers) || Array.isArray(data.referrers)) ||
+                Object.values(readingEngagement).some((value) => value === null)
               ),
             };
           }
