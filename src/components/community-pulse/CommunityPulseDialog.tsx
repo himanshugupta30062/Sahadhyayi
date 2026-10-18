@@ -526,7 +526,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
               )}
 
               {/* Dual-Table Telemetry Ribbon */}
-              <div className="rounded-xl border border-[#D5B16D]/25 bg-[#141B17] p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="rounded-xl border border-[#D5B16D]/25 bg-[#141b17] p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="flex items-start sm:items-center gap-2.5 min-w-0">
                   <div className="w-7 h-7 rounded-lg bg-[#D5B16D]/15 border border-[#D5B16D]/30 flex items-center justify-center text-[#D5B16D] shrink-0 mt-0.5 sm:mt-0">
                     <Sparkles className="w-3.5 h-3.5" />
@@ -552,7 +552,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
               {/* Multi-Period Activity Strip: All-Time, 24 Hours, 7 Days, 30 Days */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                 {/* Lifetime All-Time */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0E1310] p-3 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
                     <span className="uppercase tracking-wider font-medium text-stone-400">All-Time</span>
                     <span className="px-1.5 py-0.2 rounded bg-stone-800/60 text-stone-300 text-[9px] font-semibold border border-white/5">
@@ -566,7 +566,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 </div>
 
                 {/* Rolling 24 Hours */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0E1310] p-3 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
                     <span className="uppercase tracking-wider font-medium text-stone-400">Past 24h</span>
                     <span className="px-1.5 py-0.2 rounded bg-emerald-950/60 text-emerald-400 text-[9px] font-semibold border border-emerald-800/30">
@@ -582,7 +582,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 </div>
 
                 {/* Rolling 7 Days */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0E1310] p-3 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
                     <span className="uppercase tracking-wider font-medium text-stone-400">Past 7 Days</span>
                     <span className="px-1.5 py-0.2 rounded bg-indigo-950/60 text-indigo-300 text-[9px] font-semibold border border-indigo-800/30">
@@ -598,7 +598,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 </div>
 
                 {/* Rolling 30 Days */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0E1310] p-3 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
                     <span className="uppercase tracking-wider font-medium text-stone-400">Past 30 Days</span>
                     <span className="px-1.5 py-0.2 rounded bg-amber-950/60 text-amber-300 text-[9px] font-semibold border border-amber-800/30">
