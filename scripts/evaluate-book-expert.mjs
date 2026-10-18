@@ -124,6 +124,22 @@ for (let index = 0; index < limit; index += 1) {
     });
   }
 
+  const linkMetadataConsistent = books.every((book) => {
+    if (!book?.readingUrl) return book?.isDirectPdf !== true;
+    try {
+      const url = new URL(book.readingUrl);
+      const directPdfByUrl = url.protocol.startsWith("http") && url.pathname.toLowerCase().endsWith(".pdf");
+      return Boolean(book.isDirectPdf) === directPdfByUrl;
+    } catch {
+      return false;
+    }
+  });
+  checks.push({
+    name: "reading_link_type_consistent",
+    pass: linkMetadataConsistent,
+    detail: linkMetadataConsistent ? "link type matches URL" : "reading/PDF metadata conflicts with URL",
+  });
+
   const unsupportedClaim = unsupportedClaimPatterns.some((pattern) => pattern.test(reply));
   checks.push({
     name: "no_known_unsupported_catalog_claim",
