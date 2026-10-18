@@ -305,3 +305,4 @@ $$;
 GRANT EXECUTE ON FUNCTION public.save_selected_books(jsonb) TO anon;
 GRANT EXECUTE ON FUNCTION public.save_selected_books(jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.save_selected_books(jsonb) TO service_role;
+
