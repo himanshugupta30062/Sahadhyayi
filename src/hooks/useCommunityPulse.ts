@@ -68,7 +68,7 @@ export type RecentVisitor = {
   userId?: string;
 };
 
-export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v7`;
+export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v8`;
 
 /**
  * Builds 24 empty hourly buckets for Asia/Kolkata timezone with 0 counts.
@@ -148,13 +148,9 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>('24h');
   const [stats, setStats] = useState<PulseStats | null>(() => {
     try {
-      const cached =
-        localStorage.getItem(getCacheKey('24h')) ||
-        localStorage.getItem('sahadhyayi_pulse_stats_24h_v6') ||
-        localStorage.getItem('sahadhyayi_pulse_stats_24h_v5') ||
-        localStorage.getItem('sahadhyayi_pulse_stats_24h_v4') ||
-        localStorage.getItem('sahadhyayi_pulse_stats_24h_v3') ||
-        localStorage.getItem('sahadhyayi_pulse_stats_v2');
+      // Deliberately ignore old cache versions because they could contain lifetime
+      // totals mislabeled as period pageviews and synthetic zeroes for missing details.
+      const cached = localStorage.getItem(getCacheKey('24h'));
       if (cached) {
         const parsed = JSON.parse(cached) as PulseStats;
         if (parsed && typeof parsed.pageViews === 'number') {
