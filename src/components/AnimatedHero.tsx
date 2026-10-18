@@ -16,11 +16,11 @@ const AnimatedHero: React.FC = () => {
         <div className="hero-light-wash absolute inset-0 dark:hidden" />
         <div className="hero-light-aurora hero-light-aurora-one absolute -left-28 -top-40 h-[30rem] w-[30rem] rounded-full bg-[#CFE6CE]/75 blur-[100px] dark:hidden" />
         <div className="hero-light-aurora hero-light-aurora-two absolute -right-32 top-[4%] h-[34rem] w-[34rem] rounded-full bg-[#F0DDB5]/65 blur-[110px] dark:hidden" />
-        <div className="hero-light-aurora hero-light-aurora-three absolute bottom-[-13rem] left-[28%] h-[30rem] w-[30rem] rounded-full bg-[#D5E2F7]/65 blur-[110px] dark:hidden" />
+        <div className="hero-light-aurora hero-light-aurora-three absolute bottom-[-13rem] left-[28%] h-[30rem] w-[30rem] rounded-full bg-[#CFE6CE]/45 blur-[110px] dark:hidden" />
         <div className="absolute inset-0 opacity-[0.2] dark:hidden [background-image:radial-gradient(rgba(36,68,45,0.22)_0.7px,transparent_0.7px)] [background-size:24px_24px] [mask-image:linear-gradient(to_right,black,transparent_88%)]" />
         <span className="hero-light-mote absolute left-[12%] top-[24%] h-2 w-2 rounded-full bg-[#7CA785]/60 blur-[1px] dark:hidden" />
         <span className="hero-light-mote hero-light-mote-two absolute left-[42%] top-[15%] h-1.5 w-1.5 rounded-full bg-[#C29A4C]/65 dark:hidden" />
-        <span className="hero-light-mote hero-light-mote-three absolute right-[14%] top-[28%] h-2 w-2 rounded-full bg-[#7C9AC8]/65 blur-[1px] dark:hidden" />
+        <span className="hero-light-mote hero-light-mote-three absolute right-[14%] top-[28%] h-2 w-2 rounded-full bg-[#7CA785]/60 blur-[1px] dark:hidden" />
         <span className="hero-light-mote hero-light-mote-four absolute right-[24%] bottom-[16%] h-1.5 w-1.5 rounded-full bg-[#C29A4C]/60 dark:hidden" />
         <span className="hero-light-mote hero-light-mote-five absolute left-[22%] bottom-[17%] h-1.5 w-1.5 rounded-full bg-[#7CA785]/60 dark:hidden" />
         <div className="absolute top-1/3 left-1/2 hidden h-[550px] w-[550px] -translate-x-1/2 rounded-full bg-[#1A1E1C]/40 blur-[140px] dark:block" />
