@@ -353,7 +353,7 @@ const About = () => {
                 backgroundPosition: 'center 48%',
               }}
             />
-            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-[#FAF7F2]/94 via-[#FAF7F2]/86 to-[#FAF7F2]/94 dark:from-[#09120D]/94 dark:via-[#09120D]/86 dark:to-[#09120D]/95" />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-[#FAF7F2]/90 via-[#FAF7F2]/78 to-[#FAF7F2]/69 dark:from-[#09120D]/93 dark:via-[#09120D]/84 dark:to-[#09120D]/90" />
             <div aria-hidden="true" className="absolute inset-0 opacity-[0.10] [background-image:radial-gradient(rgba(28,68,45,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px] dark:opacity-[0.08] dark:[background-image:radial-gradient(rgba(255,255,255,0.7)_0.7px,transparent_0.7px)]" />
             <div className="relative z-10 mx-auto max-w-4xl px-5 py-10 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#C8DBCB] bg-white/80 px-4 py-1.5 text-xs font-semibold text-[#1C442D] shadow-sm backdrop-blur-sm dark:border-[#D5B16D]/35 dark:bg-black/25 dark:text-[#E8CC91] sm:text-sm">
