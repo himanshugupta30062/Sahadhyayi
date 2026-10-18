@@ -289,6 +289,39 @@ async function callGemini(
   }
 }
 
+async function recordUsageEvent(
+  supabaseClient: any,
+  event: {
+    requestId: string;
+    model: string;
+    success: boolean;
+    durationMs: number;
+    retrievedBookCount: number;
+    promptTokens?: number | null;
+    outputTokens?: number | null;
+    upstreamStatus?: number | null;
+    failureClass?: "timeout" | "provider_error" | "empty_response" | "internal_error" | null;
+  },
+): Promise<void> {
+  try {
+    const { error } = await supabaseClient.from("book_expert_usage_events").upsert({
+      request_id: event.requestId,
+      model: event.model.slice(0, 100),
+      success: event.success,
+      duration_ms: Math.max(0, Math.min(600000, Math.trunc(event.durationMs))),
+      retrieved_book_count: Math.max(0, Math.min(5, Math.trunc(event.retrievedBookCount))),
+      prompt_tokens: typeof event.promptTokens === "number" ? Math.max(0, Math.trunc(event.promptTokens)) : null,
+      output_tokens: typeof event.outputTokens === "number" ? Math.max(0, Math.trunc(event.outputTokens)) : null,
+      upstream_status: event.upstreamStatus ?? null,
+      failure_class: event.failureClass ?? null,
+    }, { onConflict: "request_id" });
+    if (error) console.error("Book Expert usage telemetry could not be stored.");
+  } catch {
+    // Telemetry must never break an otherwise useful answer.
+    console.error("Book Expert usage telemetry could not be stored.");
+  }
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -393,6 +426,12 @@ serve(async (req: Request) => {
     return jsonResponse({ error: "Book Expert is temporarily unable to verify usage limits. Please try again shortly." }, 503);
   }
 
+  const requestId = crypto.randomUUID();
+  const startedAt = Date.now();
+  const configuredModel = Deno.env.get("BOOK_EXPERT_MODEL") || "gemini-3.8-flash";
+  let modelUsed = configuredModel;
+  let retrievedBookCount = 0;
+
   try {
     const history = normalizeHistory(body.history);
     let libraryBooks: BookRecord[] = [];
@@ -404,6 +443,7 @@ serve(async (req: Request) => {
     }
 
     const publicBooks = libraryBooks.map(toPublicBook);
+    retrievedBookCount = publicBooks.length;
     const searchWasRelevant = isBookRelatedQuestion(text) || libraryBooks.some((book) => {
       const title = normalizeSearchText(book.title || "");
       const author = normalizeSearchText(book.author || "");
@@ -419,14 +459,15 @@ serve(async (req: Request) => {
         : "No matching Sahadhyayi catalog records were retrieved for this message. Do not pretend that a title is listed in the library.",
     ].join("\n\n");
 
-    const requestId = crypto.randomUUID();
-    const configuredModel = Deno.env.get("BOOK_EXPERT_MODEL") || "gemini-3.8-flash";
-    let modelUsed = configuredModel;
     let generated: Awaited<ReturnType<typeof callGemini>>;
     try {
       generated = await callGemini(configuredModel, geminiApiKey, history, latestPrompt);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
+        await recordUsageEvent(supabaseClient, {
+          requestId, model: modelUsed, success: false, durationMs: Date.now() - startedAt,
+          retrievedBookCount, upstreamStatus: 504, failureClass: "timeout",
+        });
         return jsonResponse({ error: "Book Expert took too long to respond. Please try again." }, 504);
       }
       throw error;
@@ -443,6 +484,10 @@ serve(async (req: Request) => {
 
     if (!generated.ok) {
       console.error("Gemini Book Expert upstream request failed with status " + generated.status + ".");
+      await recordUsageEvent(supabaseClient, {
+        requestId, model: modelUsed, success: false, durationMs: Date.now() - startedAt,
+        retrievedBookCount, upstreamStatus: generated.status, failureClass: "provider_error",
+      });
       if (generated.status === 429) {
         return jsonResponse({ error: "Book Expert is busy right now. Please try again in a moment." }, 503);
       }
@@ -456,8 +501,23 @@ serve(async (req: Request) => {
 
     if (!reply) {
       console.error("Gemini Book Expert returned no text.");
+      await recordUsageEvent(supabaseClient, {
+        requestId, model: modelUsed, success: false, durationMs: Date.now() - startedAt,
+        retrievedBookCount, upstreamStatus: 502, failureClass: "empty_response",
+      });
       return jsonResponse({ error: "Book Expert could not produce an answer. Please try again." }, 502);
     }
+
+    await recordUsageEvent(supabaseClient, {
+      requestId,
+      model: modelUsed,
+      success: true,
+      durationMs: Date.now() - startedAt,
+      retrievedBookCount,
+      promptTokens: generated.body?.usageMetadata?.promptTokenCount,
+      outputTokens: generated.body?.usageMetadata?.candidatesTokenCount,
+      upstreamStatus: generated.status,
+    });
 
     return jsonResponse({
       requestId,
@@ -472,6 +532,10 @@ serve(async (req: Request) => {
   } catch (error) {
     const name = error instanceof Error ? error.name : "UnknownError";
     console.error("Book Expert request failed: " + name);
+    await recordUsageEvent(supabaseClient, {
+      requestId, model: modelUsed, success: false, durationMs: Date.now() - startedAt,
+      retrievedBookCount, upstreamStatus: 500, failureClass: "internal_error",
+    });
     return jsonResponse({ error: "Something went wrong while answering. Please try again." }, 500);
   }
 });
