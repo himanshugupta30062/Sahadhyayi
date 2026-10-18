@@ -8,7 +8,7 @@ import {
   diversifyBooksPerPage,
 } from './useLibraryBooks';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
-import { mapRawToEdition, clusterEditionsIntoWorks } from '@/utils/catalog/deduplicationEngine';
+import { mapRawToEdition } from '@/utils/catalog/deduplicationEngine';
 import {
   BASE_BOOK_SELECT_COLUMNS,
   detectBookSchemaCapabilities,
@@ -137,48 +137,45 @@ async function fetchFilteredBooks(
     }
   }
 
-  // Filter out archived/superseded books and cluster into Works
+  // Filter out archived/superseded books
   const visibleRows = filterPublicBooks(all);
-  const editions = visibleRows.map((row: any) => mapRawToEdition(row));
-  const works = clusterEditionsIntoWorks(editions);
 
-  // Convert preferred editions of each work into catalog books with quality metadata
-  const deduped: Book[] = works.map(w => {
-    const p = w.preferredEdition;
-    const rawMatch = all.find(r => r.id === p.id);
+  // Map every visible database record into a rich catalog Book
+  const catalogBooks: Book[] = visibleRows.map((row: any) => {
+    const p = mapRawToEdition(row);
     return {
-      id: p.id,
-      title: p.title,
-      author: p.author || 'Unknown Author',
-      genre: p.genre || rawMatch?.genre,
-      cover_image_url: p.coverImageUrl || rawMatch?.cover_image_url,
-      description: p.description || rawMatch?.description,
-      publication_year: p.publicationYear || rawMatch?.publication_year,
-      language: p.language || rawMatch?.language || 'English',
-      pdf_url: p.assets.find(a => a.format === 'pdf')?.downloadUrl || rawMatch?.pdf_url,
-      epub_url: p.assets.find(a => a.format === 'epub')?.downloadUrl,
-      created_at: rawMatch?.created_at || new Date().toISOString(),
+      id: String(row.id),
+      title: row.title || p.title,
+      author: row.author || p.author || 'Unknown Author',
+      genre: row.genre || p.genre,
+      cover_image_url: row.cover_image_url || p.coverImageUrl,
+      description: row.description || p.description,
+      publication_year: row.publication_year || p.publicationYear,
+      language: row.language || p.language || 'English',
+      pdf_url: row.pdf_url || p.assets.find(a => a.format === 'pdf')?.downloadUrl,
+      epub_url: row.epub_url || p.assets.find(a => a.format === 'epub')?.downloadUrl,
+      created_at: row.created_at || new Date().toISOString(),
       price: 0,
-      isbn: p.isbn13 || p.isbn10 || rawMatch?.isbn,
-      pages: p.pages || rawMatch?.pages,
-      author_bio: rawMatch?.author_bio,
+      isbn: row.isbn || p.isbn13 || p.isbn10,
+      pages: row.pages || p.pages,
+      author_bio: row.author_bio,
       accessStatus: p.accessStatus,
       licenseEvidence: p.licenseEvidence,
       qualityScore: p.qualityScore,
       qualityReasons: p.qualityReasons,
       whyThisEdition: p.whyThisEdition,
       isPreferredEdition: true,
-      alternativeEditionsCount: w.alternativeEditions.length,
-      alternativeEditions: w.alternativeEditions,
       assets: p.assets,
+      status: row.status,
+      catalog_status: row.catalog_status,
     };
   });
 
   // Sort deterministically by library completeness hierarchy
-  deduped.sort(compareLibraryBooks);
+  catalogBooks.sort(compareLibraryBooks);
 
   // Return deterministically sorted catalog; paginatedData applies dynamic diversification per active pageSize
-  return deduped;
+  return catalogBooks;
 }
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
