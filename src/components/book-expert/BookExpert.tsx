@@ -1,10 +1,10 @@
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent } from "react";
 import {
   BookOpen,
   Check,
   ExternalLink,
   LoaderCircle,
-  MessageCircle,
   RotateCcw,
   Send,
   Sparkles,
