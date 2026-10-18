@@ -1,0 +1,193 @@
+/*
+ * Light theme treatment for Live Website Stats.
+ * The original dashboard was authored with dark-only Tailwind colors. Keep
+ * those existing dark values untouched and remap them only under html.light.
+ */
+html.light .community-pulse-dialog {
+  background-color: rgb(22 33 25 / 36%) !important;
+  color: #26332a;
+  color-scheme: light;
+}
+
+html.light .community-pulse-dialog > div {
+  border-color: #e0e5dc !important;
+  box-shadow: 0 24px 72px rgb(26 41 30 / 22%);
+}
+
+/* Main shell, header, control strip and panels */
+html.light .community-pulse-dialog [class*="bg-[#0B0D0C]"] {
+  background-color: #fbfaf6 !important;
+}
+html.light .community-pulse-dialog [class*="bg-[#0E1210]"] {
+  background-color: #f3f4ee !important;
+}
+html.light .community-pulse-dialog [class*="bg-[#111614]"],
+html.light .community-pulse-dialog [class*="bg-[#121915]"] {
+  background-color: #ffffff !important;
+}
+html.light .community-pulse-dialog [class*="bg-[#141b17]"],
+html.light .community-pulse-dialog [class*="bg-[#161e1a]"] {
+  background-color: #f4f6f0 !important;
+}
+html.light .community-pulse-dialog [class*="bg-[#16201b]"],
+html.light .community-pulse-dialog [class*="bg-[#18241e]"] {
+  background-color: #eaf1e8 !important;
+}
+
+/* Neutralize dark-only borders while retaining the green editorial accents. */
+html.light .community-pulse-dialog [class*="border-white/"] {
+  border-color: #e2e6de !important;
+}
+html.light .community-pulse-dialog [class*="border-[#27392f]"],
+html.light .community-pulse-dialog [class*="border-[#2f4639]"],
+html.light .community-pulse-dialog [class*="border-[#2e4034]"],
+html.light .community-pulse-dialog [class*="border-[#2e4235]"] {
+  border-color: #cbd8ca !important;
+}
+html.light .community-pulse-dialog [class*="hover:border-white/"]:hover {
+  border-color: #b8c8b7 !important;
+}
+
+/* Legible text hierarchy on warm white surfaces. */
+html.light .community-pulse-dialog [class*="text-stone-100"] {
+  color: #202b23 !important;
+}
+html.light .community-pulse-dialog [class*="text-stone-200"] {
+  color: #2e3931 !important;
+}
+html.light .community-pulse-dialog [class*="text-stone-300"] {
+  color: #465249 !important;
+}
+html.light .community-pulse-dialog [class*="text-stone-400"] {
+  color: #657168 !important;
+}
+html.light .community-pulse-dialog [class*="text-stone-500"] {
+  color: #747e75 !important;
+}
+html.light .community-pulse-dialog [class*="text-stone-600"] {
+  color: #838d84 !important;
+}
+html.light .community-pulse-dialog [class*="text-[#D5B16D]"] {
+  color: #775510 !important;
+}
+html.light .community-pulse-dialog [class*="hover:text-white"]:hover {
+  color: #1c442d !important;
+}
+html.light .community-pulse-dialog [class*="hover:text-stone-200"]:hover {
+  color: #202b23 !important;
+}
+html.light .community-pulse-dialog [class*="hover:text-[#D5B16D]"]:hover {
+  color: #775510 !important;
+}
+
+/* Gold indicators: darker for text contrast, softer for tinted chips. */
+html.light .community-pulse-dialog [class*="bg-[#D5B16D]/"] {
+  background-color: #f5ecd5 !important;
+}
+html.light .community-pulse-dialog [class~="bg-[#D5B16D]"] {
+  background-color: #a77a27 !important;
+}
+html.light .community-pulse-dialog [class*="from-[#B8934E]"] {
+  --tw-gradient-from: #a77a27 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(167 122 39 / 0) var(--tw-gradient-to-position) !important;
+}
+html.light .community-pulse-dialog [class*="to-[#F1D79E]"] {
+  --tw-gradient-to: #d6b66d var(--tw-gradient-to-position) !important;
+}
+html.light .community-pulse-dialog [class*="hover:bg-white/"]:hover {
+  background-color: #edf2eb !important;
+}
+
+/* Status chips stay soft in light mode instead of using near-black fills. */
+html.light .community-pulse-dialog [class*="bg-amber-950/"] {
+  background-color: #fff4d6 !important;
+}
+html.light .community-pulse-dialog [class*="text-amber-300"] {
+  color: #79520a !important;
+}
+html.light .community-pulse-dialog [class*="border-amber-800"] {
+  border-color: #e6cf8b !important;
+}
+html.light .community-pulse-dialog [class*="bg-emerald-950/"] {
+  background-color: #e7f5e9 !important;
+}
+html.light .community-pulse-dialog [class*="text-emerald-400"] {
+  color: #25613b !important;
+}
+html.light .community-pulse-dialog [class*="border-emerald-800"] {
+  border-color: #b8d9bd !important;
+}
+html.light .community-pulse-dialog [class*="text-sky-400"] {
+  color: #176184 !important;
+}
+
+/* Inputs and data table need explicit light surfaces and readable placeholders. */
+html.light .community-pulse-dialog input,
+html.light .community-pulse-dialog select,
+html.light .community-pulse-dialog textarea {
+  color: #26332a;
+  background-color: #ffffff;
+  border-color: #d6ded4;
+}
+html.light .community-pulse-dialog input::placeholder,
+html.light .community-pulse-dialog textarea::placeholder {
+  color: #7c877e !important;
+}
+html.light .community-pulse-dialog [class*="bg-[#161e1a]"] {
+  color: #536158 !important;
+}
+html.light .community-pulse-dialog [class*="bg-[#18241e]"][class~="text-white"] {
+  color: #1c442d !important;
+}
+html.light .community-pulse-dialog table tbody tr {
+  border-color: #e7eae4;
+}
+html.light .community-pulse-dialog table tbody tr:hover {
+  background-color: #f3f6f0;
+}
+
+/* Preserve the semantic error treatment and make its white label readable. */
+html.light .community-pulse-dialog [class*="bg-red-900/"] {
+  background-color: #a92e2e !important;
+}
+
+
+/* Finish the editorial treatment with a clearer keyboard focus and calm scrolling. */
+html.light .community-pulse-dialog button:focus-visible,
+html.light .community-pulse-dialog input:focus-visible,
+html.light .community-pulse-dialog select:focus-visible,
+html.light .community-pulse-dialog textarea:focus-visible {
+  outline-color: #2f6845 !important;
+  outline-offset: 2px;
+}
+html.light .community-pulse-dialog input:focus,
+html.light .community-pulse-dialog select:focus,
+html.light .community-pulse-dialog textarea:focus {
+  border-color: #719879 !important;
+  box-shadow: 0 0 0 3px rgb(47 104 69 / 12%);
+}
+html.light .community-pulse-dialog option {
+  color: #26332a;
+  background-color: #ffffff;
+}
+html.light .community-pulse-dialog ::selection {
+  color: #1c2c20;
+  background-color: #dcebdc;
+}
+html.light .community-pulse-dialog::-webkit-scrollbar,
+html.light .community-pulse-dialog *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html.light .community-pulse-dialog::-webkit-scrollbar-thumb,
+html.light .community-pulse-dialog *::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: #cbd5c9;
+  background-clip: padding-box;
+}
+html.light .community-pulse-dialog::-webkit-scrollbar-thumb:hover,
+html.light .community-pulse-dialog *::-webkit-scrollbar-thumb:hover {
+  background: #9eaf9e;
+  background-clip: padding-box;
+}
