@@ -103,10 +103,10 @@ serve(async (req) => {
       supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview").gte("visited_at", timeframeStart),
     ]);
 
-    const registeredReaders = totalSignupsRes.count ?? 0;
-    const newReaders = newSignupsPeriodRes.count ?? 0;
-    const totalPageviews = totalPageviewsRes.count ?? 0;
-    const periodPageviews = periodPageviewsRes.count ?? 0;
+    const registeredReaders = totalSignupsRes.error ? null : totalSignupsRes.count;
+    const newReaders = newSignupsPeriodRes.error ? null : newSignupsPeriodRes.count;
+    const totalPageviews = totalPageviewsRes.error ? null : totalPageviewsRes.count;
+    const periodPageviews = periodPageviewsRes.error ? null : periodPageviewsRes.count;
 
     // If the aggregate RPC is unavailable, try exact per-hour counts instead
     // of presenting an all-zero chart as if it were measured traffic.
@@ -162,10 +162,12 @@ serve(async (req) => {
       supabase.from("post_comments").select("*", { count: "exact", head: true }).gte("created_at", timeframeStart),
     ]);
 
-    const bookOpens = bookOpensRes.count ?? 0;
-    const readingProgressCompletions = progressRes.count ?? 0;
-    const groupJoins = groupJoinsRes.count ?? 0;
-    const discussions = (postsRes.count ?? 0) + (commentsRes.count ?? 0);
+    const bookOpens = bookOpensRes.error ? null : bookOpensRes.count;
+    const readingProgressCompletions = progressRes.error ? null : progressRes.count;
+    const groupJoins = groupJoinsRes.error ? null : groupJoinsRes.count;
+    const discussions = postsRes.error || commentsRes.error || postsRes.count == null || commentsRes.count == null
+      ? null
+      : postsRes.count + commentsRes.count;
 
     const fallbackResponse = {
       schemaVersion: 1,
@@ -178,11 +180,11 @@ serve(async (req) => {
       freshness: "fresh",
 
       metrics: {
-        registeredReaders: { value: registeredReaders, status: "available", definition: "Authoritative count of registered reader accounts" },
-        totalPageViews: { value: totalPageviews, status: "available", definition: "Total recorded pageviews across platform lifetime" },
-        periodPageViews: { value: periodPageviews, status: "available", definition: "Recorded pageviews in the selected timeframe" },
+        registeredReaders: { value: registeredReaders, status: registeredReaders === null ? "unavailable" : "available", definition: "Authoritative count of registered reader accounts" },
+        totalPageViews: { value: totalPageviews, status: totalPageviews === null ? "unavailable" : "available", definition: "Total recorded pageviews across platform lifetime" },
+        periodPageViews: { value: periodPageviews, status: periodPageviews === null ? "unavailable" : "available", definition: "Recorded pageviews in the selected timeframe" },
         uniqueVisitors: { value: null, status: "unavailable", definition: "Unique visitor deduplication unavailable during fallback mode" },
-        newReaders: { value: newReaders, status: "available", definition: "New accounts registered in the selected timeframe" },
+        newReaders: { value: newReaders, status: newReaders === null ? "unavailable" : "available", definition: "New accounts registered in the selected timeframe" },
         averageSessionDurationSeconds: { value: null, status: "unavailable", definition: "Active session duration telemetry not currently instrumented" },
       },
 
@@ -202,10 +204,10 @@ serve(async (req) => {
       },
 
       engagement: {
-        bookOpens: { value: bookOpens, status: "available", definition: "Unique book and reader page views or explicit open events" },
-        readingProgressCompletions: { value: readingProgressCompletions, status: "available", definition: "Completed reading room chapters recorded" },
-        groupJoins: { value: groupJoins, status: "available", definition: "New reading group memberships formed" },
-        discussions: { value: discussions, status: "available", definition: "Community posts and comment responses published" },
+        bookOpens: { value: bookOpens, status: bookOpens === null ? "unavailable" : "available", definition: "Unique book and reader page views or explicit open events" },
+        readingProgressCompletions: { value: readingProgressCompletions, status: readingProgressCompletions === null ? "unavailable" : "available", definition: "Completed reading room chapters recorded" },
+        groupJoins: { value: groupJoins, status: groupJoins === null ? "unavailable" : "available", definition: "New reading group memberships formed" },
+        discussions: { value: discussions, status: discussions === null ? "unavailable" : "available", definition: "Community posts and comment responses published" },
       },
 
       topMembers: [],
