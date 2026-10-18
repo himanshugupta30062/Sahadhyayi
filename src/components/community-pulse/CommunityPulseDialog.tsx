@@ -38,6 +38,7 @@ import {
   buildEmptyHourlyBuckets,
 } from '@/hooks/useCommunityPulse';
 import { useToast } from '@/hooks/use-toast';
+import './CommunityPulseDialog.theme.css';
 
 export type CommunityPulseDialogProps = {
   open: boolean;
@@ -238,35 +239,31 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
         devices: Array.isArray(stats.devices) ? stats.devices : [],
         referrers: Array.isArray(stats.referrers) ? stats.referrers : [],
         readingEngagement: stats.readingEngagement ?? {
-          bookViews: 0,
-          readingProgressUpdates: 0,
-          groupJoins: 0,
-          discussions: 0,
+          bookViews: null,
+          readingProgressUpdates: null,
+          groupJoins: null,
+          discussions: null,
         },
         topMembers: Array.isArray(stats.topMembers) ? stats.topMembers : [],
         lastUpdated: stats.lastUpdated || '',
         isStale: stats.isStale ?? false,
+        partialData: stats.partialData ?? false,
       };
     }
     return getBaselineStats(timeframe);
   }, [stats, timeframe]);
 
-  // Hourly chart data scaled appropriately for views vs unique visitors without artificial minimums
+  // Unique visitors must use real per-hour aggregates; do not estimate them from pageviews.
+  const hourlyUniqueDataAvailable = effectiveStats.hourlyActivity.some(
+    h => typeof h.uniqueVisitors === 'number',
+  );
   const hourlyData = React.useMemo(() => {
     const raw = effectiveStats.hourlyActivity || [];
-    return raw.map(h => {
-      if (metricView === 'unique') {
-        const pageViewsNum = effectiveStats.pageViews ?? 0;
-        const uniqueNum = effectiveStats.uniqueVisitors ?? 0;
-        const ratio = pageViewsNum > 0
-          ? Math.min(1, uniqueNum / pageViewsNum)
-          : 0;
-        const count = Math.round(h.count * ratio);
-        return { ...h, count };
-      }
-      return h;
-    });
-  }, [effectiveStats.hourlyActivity, effectiveStats.pageViews, effectiveStats.uniqueVisitors, metricView]);
+    return raw.map(h => metricView === 'unique'
+      ? { ...h, count: h.uniqueVisitors ?? 0 }
+      : h,
+    );
+  }, [effectiveStats.hourlyActivity, metricView]);
 
   // Daily chart data for 30-day trend
   const dailyData = React.useMemo(() => {
@@ -288,7 +285,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pulse-modal-title"
-      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto"
+      className="community-pulse-dialog fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto"
       onClick={e => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -308,9 +305,12 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 <h2 id="pulse-modal-title" className="text-sm sm:text-lg font-bold text-stone-100 tracking-tight truncate">
                   Live Website Stats
                 </h2>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 flex-shrink-0" title="Auto-updates every 60 seconds">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Live
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold border flex-shrink-0 ${effectiveStats.partialData ? 'bg-amber-950/70 text-amber-300 border-amber-800/40' : 'bg-emerald-950/80 text-emerald-400 border-emerald-800/40'}`}
+                  title={effectiveStats.partialData ? 'Some live analytics details are unavailable' : 'Auto-updates every 60 seconds'}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${effectiveStats.partialData ? 'bg-amber-300' : 'bg-emerald-400 animate-pulse'}`} />
+                  {effectiveStats.partialData ? 'Partial' : 'Live'}
                 </span>
                 {effectiveStats.isStale && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-950/60 text-amber-300 border border-amber-800/40 flex-shrink-0">
@@ -505,6 +505,23 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   >
                     Retry
                   </button>
+                </div>
+              )}
+
+              {effectiveStats.partialData && (
+                <div
+                  role="status"
+                  className="rounded-xl border border-amber-500/25 bg-amber-950/20 px-3.5 py-3 text-xs leading-relaxed text-amber-200"
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                    <div>
+                      <p className="font-semibold">Some analytics details are unavailable</p>
+                      <p className="mt-1 text-amber-100/75">
+                        The backend returned partial statistics. Missing breakdowns are not treated as zero activity. Refresh again after the analytics backend is restored.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -752,7 +769,13 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     {/* Bar Chart Container */}
                     <div className="h-44 sm:h-48 pt-3 pb-2 flex flex-col justify-end w-full min-w-0">
                       <div className="flex items-end justify-between gap-1 h-32 sm:h-36 border-b border-white/[0.08] pb-1 px-1 w-full min-w-0 overflow-x-auto sm:overflow-x-visible">
-                        {maxChartCount > 0 ? (
+                        {metricView === 'unique' && !hourlyUniqueDataAvailable && chartInterval === 'hourly' ? (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-xs text-stone-500 py-6 gap-1.5 text-center">
+                            <Activity className="w-5 h-5 text-stone-600" />
+                            <span>Hourly unique visitor data is unavailable</span>
+                            <span className="text-[10px] text-stone-600">The backend has not supplied measured unique counts for each hour.</span>
+                          </div>
+                        ) : maxChartCount > 0 ? (
                           activeChartData.map((h: any, i: number) => {
                             const heightPct = Math.max(6, Math.min(100, Math.round((h.count / chartPeak) * 100)));
                             const isPeak = Boolean(h.isPeak);
@@ -785,7 +808,11 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center text-xs text-stone-500 py-6 gap-1.5">
                             <Activity className="w-5 h-5 text-stone-600 animate-pulse" />
-                            <span>No pageviews recorded in this timeframe yet</span>
+                            <span>
+                              {metricView === 'unique'
+                                ? 'No unique visitors recorded in this timeframe yet'
+                                : 'No pageviews recorded in this timeframe yet'}
+                            </span>
                             <span className="text-[10px] text-stone-600">
                               {chartInterval === 'daily'
                                 ? 'Daily trend will appear as events accumulate'
@@ -1394,7 +1421,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <BookOpen className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(effectiveStats.readingEngagement?.bookViews ?? 0)}
+                    {number(effectiveStats.readingEngagement?.bookViews)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Book Opens & Discovery</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
@@ -1407,7 +1434,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <Activity className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(effectiveStats.readingEngagement?.readingProgressUpdates ?? 0)}
+                    {number(effectiveStats.readingEngagement?.readingProgressUpdates)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Chapters Completed</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
@@ -1420,7 +1447,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <Users className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(effectiveStats.readingEngagement?.discussions ?? 0)}
+                    {number(effectiveStats.readingEngagement?.discussions)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Community Discussions</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
@@ -1433,7 +1460,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <Sparkles className="w-4 h-4" />
                   </span>
                   <div className="text-xl sm:text-2xl font-bold text-stone-100 truncate">
-                    {number(effectiveStats.readingEngagement?.groupJoins ?? 0)}
+                    {number(effectiveStats.readingEngagement?.groupJoins)}
                   </div>
                   <div className="text-xs text-stone-400 mt-1 truncate">Reading Circles Joined</div>
                   <div className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">

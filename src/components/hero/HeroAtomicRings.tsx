@@ -1,31 +1,122 @@
-// HeroAtomicRings.tsx — atoms rotate on paths; snap to arc START when hitting blank
-// Themes: outer=RED blend, middle=GREEN blend, inner=BLUE blend, core=GOLD blend
-// Rings: single ~65% coloured arc each, rotating; thickness increases outward
+// HeroAtomicRings.tsx — five animated orbits for the Sahadhyayi reading ecosystem.
 
-import React, { useEffect, useRef, ReactNode } from "react";
+import React, { useEffect, useId, useRef } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 
-// ---------- Geometry helpers ----------
-const toRadTop = (deg: number) => (deg - 90) * (Math.PI / 180); // 0° at top
-const norm = (a: number) => ((a % 360) + 360) % 360;
-const pos = (r: number, deg: number) => ({ x: r * Math.cos(toRadTop(deg)), y: r * Math.sin(toRadTop(deg)) });
+const toRadTop = (deg: number) => (deg - 90) * (Math.PI / 180);
+const norm = (angle: number) => ((angle % 360) + 360) % 360;
+const pos = (radius: number, deg: number) => ({
+  x: radius * Math.cos(toRadTop(deg)),
+  y: radius * Math.sin(toRadTop(deg)),
+});
 
-function arcPath(r: number, startDeg: number, endDeg: number) {
+function arcPath(radius: number, startDeg: number, endDeg: number) {
   const a0 = toRadTop(startDeg);
   const a1 = toRadTop(endDeg);
-  const large = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
-  const x0 = r * Math.cos(a0);
-  const y0 = r * Math.sin(a0);
-  const x1 = r * Math.cos(a1);
-  const y1 = r * Math.sin(a1);
-  return `M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`;
+  const largeArc = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
+  const x0 = radius * Math.cos(a0);
+  const y0 = radius * Math.sin(a0);
+  const x1 = radius * Math.cos(a1);
+  const y1 = radius * Math.sin(a1);
+  return `M ${x0} ${y0} A ${radius} ${radius} 0 ${largeArc} 1 ${x1} ${y1}`;
 }
 
-// Is angle a inside circular interval [start, end] modulo 360 (inclusive)
-function inInterval(a: number, start: number, end: number) {
-  a = norm(a); start = norm(start); end = norm(end);
-  if (start <= end) return a >= start && a <= end;
-  return a >= start || a <= end; // wrapped
+type OrbitIcon = "book" | "quill" | "people" | "article" | "games";
+
+interface OrbitConfig {
+  id: string;
+  label: string;
+  href: string;
+  icon: OrbitIcon;
+  radius: number;
+  strokeWidth: number;
+  atomRadius: number;
+  atomColor: string;
+  gradientColors: [string, string, string, string];
+  start: number;
+  duration: number;
+  direction: 1 | -1;
+  initialProgress: number;
 }
+
+const ORBITS: OrbitConfig[] = [
+  {
+    id: "library",
+    label: "Library",
+    href: "/library",
+    icon: "book",
+    radius: 285,
+    strokeWidth: 20,
+    atomRadius: 15,
+    atomColor: "#ef4444",
+    gradientColors: ["#ff9ecf", "#ff4d8d", "#ff1f5a", "#be123c"],
+    start: -18,
+    duration: 42,
+    direction: 1,
+    initialProgress: 48,
+  },
+  {
+    id: "authors",
+    label: "Authors",
+    href: "/authors",
+    icon: "quill",
+    radius: 255,
+    strokeWidth: 14,
+    atomRadius: 14,
+    atomColor: "#22c55e",
+    gradientColors: ["#86efac", "#4ade80", "#22c55e", "#166534"],
+    start: 12,
+    duration: 37,
+    direction: -1,
+    initialProgress: 112,
+  },
+  {
+    id: "social",
+    label: "Social Media",
+    href: "/social",
+    icon: "people",
+    radius: 225,
+    strokeWidth: 10,
+    atomRadius: 14,
+    atomColor: "#3b82f6",
+    gradientColors: ["#93c5fd", "#60a5fa", "#3b82f6", "#1e3a8a"],
+    start: -36,
+    duration: 32,
+    direction: 1,
+    initialProgress: 190,
+  },
+  {
+    id: "articles",
+    label: "Articles",
+    href: "/articles",
+    icon: "article",
+    radius: 210,
+    strokeWidth: 8,
+    atomRadius: 13,
+    atomColor: "#d99a24",
+    gradientColors: ["#f8d887", "#eab545", "#d99a24", "#986515"],
+    start: 24,
+    duration: 28,
+    direction: -1,
+    initialProgress: 84,
+  },
+  {
+    id: "games",
+    label: "Games",
+    href: "/games",
+    icon: "games",
+    radius: 198,
+    strokeWidth: 6,
+    atomRadius: 13,
+    atomColor: "#8b5cf6",
+    gradientColors: ["#c4b5fd", "#a78bfa", "#8b5cf6", "#5b21b6"],
+    start: -8,
+    duration: 24,
+    direction: 1,
+    initialProgress: 150,
+  },
+];
 
 interface HeroAtomicRingsProps {
   size?: number | string;
@@ -34,118 +125,168 @@ interface HeroAtomicRingsProps {
 }
 
 export default function HeroAtomicRings({ size = 720, className = "", children }: HeroAtomicRingsProps) {
-  // ===== Visual config =====
-  const CORE  = 210;  // innermost
-  const INNER = 225;
-  const MID   = 255;
-  const OUTER = 285;  // thickest
+  const navigate = useNavigate();
+  const generatedId = useId().replace(/:/g, "");
+  const softFilterId = `soft-${generatedId}`;
+  const gradientId = (orbitId: string) => `g-${orbitId}-${generatedId}`;
 
-  const STROKES = { core: 8, inner: 10, mid: 14, outer: 20 } as const;
-
-  // Coloured arc coverage: ~65% of circumference
+  const ringRefs = useRef<(SVGGElement | null)[]>([]);
+  const atomRefs = useRef<(SVGGElement | null)[]>([]);
+  const ringAngles = useRef(ORBITS.map(() => 0));
+  // Each atom moves only along its own coloured arc and fades near the gap.
+  const atomProgress = useRef(ORBITS.map((orbit) => orbit.initialProgress));
+  const pausedForKeyboard = useRef(false);
   const COVERAGE = 0.65;
   const SWEEP_DEG = 360 * COVERAGE;
-
-  // Rotating arc start angles + speeds
-  const ROTOR_START = { outer: -18, mid: 12, inner: -36, core: 24 } as const;
-  const ROTOR_DUR   = { outer: 42,  mid: 36, inner: 30,  core: 26 } as const;
-  const ROTOR_DIR   = { outer: 1,   mid: -1, inner: 1,   core: -1 } as const;
-
-  // Atom motion — continuous path rotation
-  const ATOM_SPEED = 30;  // deg/sec
-
-  // ---------- Refs ----------
-  const ringRefs = [useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null)];
-  const atomRefs = [useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null), useRef<SVGGElement | null>(null)];
-
-  const ringAngles = useRef([0, 0, 0, 0]);
-  const atomAngles = useRef([0, 120, 240, 60]);
-  const atomRings = useRef([0, 1, 2, 3]); // 0=outer,1=mid,2=inner,3=core
-
-  const paused = useRef(false);
-  const last = useRef(performance.now());
-
-  const radii   = [OUTER, MID, INNER, CORE];
-  const rotorStart = [ROTOR_START.outer, ROTOR_START.mid, ROTOR_START.inner, ROTOR_START.core];
-  const rotorDur   = [ROTOR_DUR.outer,   ROTOR_DUR.mid,   ROTOR_DUR.inner,   ROTOR_DUR.core];
-  const rotorDir   = [ROTOR_DIR.outer,   ROTOR_DIR.mid,   ROTOR_DIR.inner,   ROTOR_DIR.core];
-
-  // Initial placement so nothing looks frozen pre-RAF
-  useEffect(() => {
-    for (let i = 0; i < 4; i++) {
-      const g = ringRefs[i].current;
-      if (g) g.setAttribute("transform", `rotate(${ringAngles.current[i]} 0 0)`);
-    }
-    for (let k = 0; k < 4; k++) {
-      const ri = atomRings.current[k];
-      const p = pos(radii[ri], atomAngles.current[k]);
-      atomRefs[k].current?.setAttribute("transform", `translate(${p.x}, ${p.y})`);
-    }
-  }, []);
+  const ATOM_SPEED = 30;
+  const ATOM_FADE_ANGLE = 18;
 
   useEffect(() => {
-    // Check user preference for reduced motion
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (prefersReducedMotion) {
-      return; // static elegant rings without animation loops
-    }
-
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let prefersReducedMotion = motionQuery.matches;
     let raf: number | null = null;
+    let lastFrameTime = performance.now();
 
-    const step = (now: number) => {
-      const dtRaw = (now - last.current) / 1000;
-      last.current = now;
+    const renderScene = () => {
+      ringRefs.current.forEach((ring, index) => {
+        ring?.setAttribute("transform", `rotate(${ringAngles.current[index] || 0} 0 0)`);
+      });
 
-      if (!paused.current) {
-        const dt = Math.max(0, Math.min(0.05, dtRaw)); // clamp for background tabs
+      atomRefs.current.forEach((atom, index) => {
+        if (!atom) return;
+        const orbit = ORBITS[index];
+        const progress = atomProgress.current[index] ?? 0;
+        const angle = norm(orbit.start + (ringAngles.current[index] || 0) + progress);
+        const point = pos(orbit.radius, angle);
+        atom.setAttribute("transform", `translate(${point.x}, ${point.y})`);
+        const distanceFromEdge = Math.min(progress, SWEEP_DEG - progress);
+        atom.setAttribute("opacity", String(Math.max(0, Math.min(1, distanceFromEdge / ATOM_FADE_ANGLE))));
+      });
+    };
 
-        // 1) advance ring arcs
-        for (let i = 0; i < 4; i++) {
-          const speed = (360 / rotorDur[i]) * rotorDir[i];
-          ringAngles.current[i] = norm(ringAngles.current[i] + speed * dt);
-          ringRefs[i].current?.setAttribute("transform", `rotate(${ringAngles.current[i]} 0 0)`);
-        }
+    const tick = (now: number) => {
+      const elapsed = Math.min(0.05, Math.max(0, (now - lastFrameTime) / 1000));
+      lastFrameTime = now;
 
-        // 2) move atoms; if they hit blank, SNAP to arc START on their ring
-        for (let k = 0; k < 4; k++) {
-          atomAngles.current[k] = norm(atomAngles.current[k] + ATOM_SPEED * dt);
-
-          const ringIndex = atomRings.current[k]; // fixed ring
-          const start = norm(rotorStart[ringIndex] + ringAngles.current[ringIndex]);
-          const end = norm(start + SWEEP_DEG);
-
-          if (!inInterval(atomAngles.current[k], start, end)) {
-            atomAngles.current[k] = start;
-          }
-
-          const r = radii[ringIndex];
-          const p = pos(r, atomAngles.current[k]);
-          atomRefs[k].current?.setAttribute("transform", `translate(${p.x}, ${p.y})`);
-        }
+      if (!pausedForKeyboard.current && !document.hidden && !prefersReducedMotion) {
+        ringAngles.current = ringAngles.current.map((angle, index) =>
+          norm(angle + (360 / ORBITS[index].duration) * ORBITS[index].direction * elapsed),
+        );
+        atomProgress.current = atomProgress.current.map(
+          (progress) => (progress + ATOM_SPEED * elapsed) % SWEEP_DEG,
+        );
       }
 
-      raf = requestAnimationFrame(step);
+      renderScene();
+      if (!prefersReducedMotion && !document.hidden) {
+        raf = window.requestAnimationFrame(tick);
+      } else {
+        raf = null;
+      }
     };
 
-    raf = requestAnimationFrame(step);
+    const stopAnimation = () => {
+      if (raf !== null) {
+        window.cancelAnimationFrame(raf);
+        raf = null;
+      }
+    };
+    const startAnimation = () => {
+      if (prefersReducedMotion || document.hidden || raf !== null) return;
+      lastFrameTime = performance.now();
+      raf = window.requestAnimationFrame(tick);
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) stopAnimation();
+      else startAnimation();
+    };
+    const onMotionPreferenceChange = (event: MediaQueryListEvent) => {
+      prefersReducedMotion = event.matches;
+      if (prefersReducedMotion) {
+        stopAnimation();
+        renderScene();
+      } else {
+        startAnimation();
+      }
+    };
+
+    renderScene();
+    startAnimation();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    if (typeof motionQuery.addEventListener === "function") {
+      motionQuery.addEventListener("change", onMotionPreferenceChange);
+    } else {
+      motionQuery.addListener(onMotionPreferenceChange);
+    }
+
     return () => {
-      if (raf) cancelAnimationFrame(raf);
+      stopAnimation();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (typeof motionQuery.removeEventListener === "function") {
+        motionQuery.removeEventListener("change", onMotionPreferenceChange);
+      } else {
+        motionQuery.removeListener(onMotionPreferenceChange);
+      }
     };
   }, []);
 
-  const handleEnter = () => {
-    paused.current = true;
+  const setKeyboardPause = (paused: boolean) => {
+    pausedForKeyboard.current = paused;
   };
 
-  const handleLeave = () => {
-    paused.current = false;
-    last.current = performance.now();
+  const handleNodeKeyDown = (event: ReactKeyboardEvent<SVGGElement>, href: string) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      navigate(href);
+    }
   };
 
-  const COVER_SWEEP = (r: number, start: number) => arcPath(r, start, start + SWEEP_DEG);
+  const coverSweep = (radius: number, start: number) => arcPath(radius, start, start + SWEEP_DEG);
+
+  const renderOrbitIcon = (icon: OrbitIcon) => {
+    switch (icon) {
+      case "book":
+        return (
+          <path
+            d="M -6 -3.5 C -3 -4.5 -1 -4.5 0 -2.5 C 1 -4.5 3 -4.5 6 -3.5 L 6 3.5 C 3 2.5 1 2.5 0 4.5 C -1 2.5 -3 2.5 -6 3.5 Z M 0 -2.5 L 0 4.5"
+            fill="none" stroke="#ffffff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"
+          />
+        );
+      case "quill":
+        return (
+          <path
+            d="M 3.5 -5 L 4.5 -4 L -2.2 2.7 C -3.5 4.2 -4.7 4.4 -4.7 4.4 C -4.7 4.4 -4.5 3 -3.1 1.8 Z M -1.5 2 L 1.6 3.1"
+            fill="none" stroke="#ffffff" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
+          />
+        );
+      case "people":
+        return (
+          <>
+            <circle cx="-2" cy="-2.5" r="2.2" fill="#ffffff" />
+            <path d="M -5.5 3.5 C -5.5 1.5 -3 1.5 -2 1.5 C -1 1.5 1.5 1.5 1.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" />
+            <circle cx="2.5" cy="-2" r="1.8" fill="#ffffff" />
+            <path d="M 2 1.8 C 2.5 1.8 4.5 2 4.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
+          </>
+        );
+      case "article":
+        return (
+          <path
+            d="M -4.5 -5.5 H 1.8 L 5 -2.3 V 5.5 H -4.5 Z M 1.8 -5.5 V -2.3 H 5 M -2 0.2 H 2.5 M -2 2.7 H 2"
+            fill="none" stroke="#ffffff" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round"
+          />
+        );
+      case "games":
+        return (
+          <>
+            <rect x="-4.5" y="-4.5" width="9" height="9" rx="1.8" fill="none" stroke="#ffffff" strokeWidth="1.2" />
+            <circle cx="-2" cy="-2" r="0.9" fill="#ffffff" />
+            <circle cx="2" cy="2" r="0.9" fill="#ffffff" />
+            <circle cx="2" cy="-2" r="0.9" fill="#ffffff" />
+            <circle cx="-2" cy="2" r="0.9" fill="#ffffff" />
+          </>
+        );
+    }
+  };
 
   return (
     <div
@@ -161,159 +302,91 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
       <svg
         className="block w-full h-full max-w-full max-h-full"
         viewBox="-360 -360 720 720"
-        aria-hidden="true"
+        role="group"
+        aria-label="Explore Sahadhyayi through the Library, Authors, Social Media, Articles, and Games orbits"
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
-          {/* atom glow */}
-          <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+          <filter id={softFilterId} x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2" result="b" />
             <feMerge>
               <feMergeNode in="b" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-
-          {/* gradients: outer RED, middle GREEN, inner BLUE, core GOLD */}
-          <linearGradient id="g-outer" gradientUnits="userSpaceOnUse" x1={-OUTER} y1={-OUTER} x2={OUTER} y2={OUTER}>
-            <stop offset="0%"   stopColor="#ff9ecf" />
-            <stop offset="35%"  stopColor="#ff4d8d" />
-            <stop offset="70%"  stopColor="#ff1f5a" />
-            <stop offset="100%" stopColor="#be123c" />
-          </linearGradient>
-          <linearGradient id="g-mid" gradientUnits="userSpaceOnUse" x1={-255} y1={-255} x2={255} y2={255}>
-            <stop offset="0%"   stopColor="#86efac" />
-            <stop offset="50%"  stopColor="#22c55e" />
-            <stop offset="100%" stopColor="#166534" />
-          </linearGradient>
-          <linearGradient id="g-inner" gradientUnits="userSpaceOnUse" x1={-INNER} y1={-INNER} x2={INNER} y2={INNER}>
-            <stop offset="0%"   stopColor="#93c5fd" />
-            <stop offset="50%"  stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#1e3a8a" />
-          </linearGradient>
-          <linearGradient id="g-core" gradientUnits="userSpaceOnUse" x1={-CORE} y1={-CORE} x2={CORE} y2={CORE}>
-            <stop offset="0%"   stopColor="#fbbf24" />
-            <stop offset="50%"  stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#b45309" />
-          </linearGradient>
+          {ORBITS.map((orbit) => (
+            <linearGradient
+              key={orbit.id}
+              id={gradientId(orbit.id)}
+              gradientUnits="userSpaceOnUse"
+              x1={-orbit.radius}
+              y1={-orbit.radius}
+              x2={orbit.radius}
+              y2={orbit.radius}
+            >
+              {orbit.gradientColors.map((color, index) => (
+                <stop key={color} offset={`${(index / (orbit.gradientColors.length - 1)) * 100}%`} stopColor={color} />
+              ))}
+            </linearGradient>
+          ))}
         </defs>
 
-        {/* Outer ring */}
-        <g>
-          <circle r={OUTER} cx={0} cy={0} fill="none" stroke="rgba(0,0,0,0.06)" className="dark:stroke-[rgba(255,255,255,0.08)]" strokeWidth={STROKES.outer} />
-          <g ref={el => (ringRefs[0].current = el)}>
-            <path d={COVER_SWEEP(OUTER, ROTOR_START.outer)} fill="none" stroke="url(#g-outer)" strokeWidth={STROKES.outer} strokeLinecap="round" />
-          </g>
-        </g>
-
-        {/* Middle ring */}
-        <g>
-          <circle r={MID} cx={0} cy={0} fill="none" stroke="rgba(0,0,0,0.06)" className="dark:stroke-[rgba(255,255,255,0.08)]" strokeWidth={STROKES.mid} />
-          <g ref={el => (ringRefs[1].current = el)}>
-            <path
-              d={COVER_SWEEP(MID, ROTOR_START.mid)}
+        {ORBITS.map((orbit, index) => (
+          <g key={orbit.id}>
+            <circle
+              r={orbit.radius}
+              cx={0}
+              cy={0}
               fill="none"
-              stroke="url(#g-mid)"
-              strokeWidth={STROKES.mid}
-              strokeLinecap="round"
+              stroke="rgba(0,0,0,0.06)"
+              className="dark:stroke-[rgba(255,255,255,0.09)]"
+              strokeWidth={orbit.strokeWidth}
             />
+            <g ref={(element) => { ringRefs.current[index] = element; }}>
+              <path
+                d={coverSweep(orbit.radius, orbit.start)}
+                fill="none"
+                stroke={`url(#${gradientId(orbit.id)})`}
+                strokeWidth={orbit.strokeWidth}
+                strokeLinecap="round"
+              />
+            </g>
           </g>
-        </g>
+        ))}
 
-        {/* Inner ring */}
-        <g>
-          <circle r={INNER} cx={0} cy={0} fill="none" stroke="rgba(0,0,0,0.08)" className="dark:stroke-[rgba(255,255,255,0.10)]" strokeWidth={STROKES.inner} />
-          <g ref={el => (ringRefs[2].current = el)}>
-            <path
-              d={COVER_SWEEP(INNER, ROTOR_START.inner)}
-              fill="none"
-              stroke="url(#g-inner)"
-              strokeWidth={STROKES.inner}
-              strokeLinecap="round"
-            />
+        {ORBITS.map((orbit, index) => (
+          <g
+            key={`${orbit.id}-atom`}
+            ref={(element) => { atomRefs.current[index] = element; }}
+            role="link"
+            tabIndex={0}
+            aria-label={`Explore ${orbit.label}`}
+            onClick={() => navigate(orbit.href)}
+            onKeyDown={(event) => handleNodeKeyDown(event, orbit.href)}
+            onFocus={() => setKeyboardPause(true)}
+            onBlur={() => setKeyboardPause(false)}
+            className="pointer-events-auto cursor-pointer outline-none"
+          >
+            <circle r={orbit.atomRadius} fill={orbit.atomColor} filter={`url(#${softFilterId})`} />
+            {renderOrbitIcon(orbit.icon)}
+            <text
+              y={orbit.label === "Social Media" ? 27 : 26}
+              textAnchor="middle"
+              fontSize={orbit.label === "Social Media" ? 8 : 9}
+              fontWeight={600}
+              fill="currentColor"
+              className="text-[#1C201D] dark:text-[#f8fafc]"
+            >
+              {orbit.label}
+            </text>
           </g>
-        </g>
-
-        {/* Core ring */}
-        <g>
-          <circle r={CORE} cx={0} cy={0} fill="none" stroke="rgba(0,0,0,0.08)" className="dark:stroke-[rgba(255,255,255,0.10)]" strokeWidth={STROKES.core} />
-          <g ref={el => (ringRefs[3].current = el)}>
-            <path
-              d={COVER_SWEEP(CORE, ROTOR_START.core)}
-              fill="none"
-              stroke="url(#g-core)"
-              strokeWidth={STROKES.core}
-              strokeLinecap="round"
-            />
-          </g>
-        </g>
-
-        {/* ATOMS — rotate on path; snap to arc START if they hit blank */}
-        {/* Outer ring: Library */}
-        <g
-          ref={el => (atomRefs[0].current = el)}
-          onMouseEnter={handleEnter}
-          onMouseLeave={handleLeave}
-          className="pointer-events-auto cursor-pointer"
-        >
-          <circle r={16} fill="#ef4444" filter="url(#soft)" />
-          {/* Mini open book vector icon */}
-          <path
-            d="M -6 -3.5 C -3 -4.5 -1 -4.5 0 -2.5 C 1 -4.5 3 -4.5 6 -3.5 L 6 3.5 C 3 2.5 1 2.5 0 4.5 C -1 2.5 -3 2.5 -6 3.5 Z M 0 -2.5 L 0 4.5"
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <text y={30} textAnchor="middle" fontSize={10} fontWeight={500} fill="currentColor" className="text-[#1C201D] dark:text-[#f8fafc]">Library</text>
-        </g>
-        {/* Mid ring: Authors */}
-        <g
-          ref={el => (atomRefs[1].current = el)}
-          onMouseEnter={handleEnter}
-          onMouseLeave={handleLeave}
-          className="pointer-events-auto cursor-pointer"
-        >
-          <circle r={15} fill="#22c55e" filter="url(#soft)" />
-          {/* Quill / Pen vector icon */}
-          <path
-            d="M 3.5 -4.5 L 4.5 -3.5 L -2 3 C -3 4.5 -4.5 4.5 -4.5 4.5 C -4.5 4.5 -4.5 3 -3 2 Z"
-            fill="#ffffff"
-          />
-          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="currentColor" className="text-[#1C201D] dark:text-[#f8fafc]">Authors</text>
-        </g>
-        {/* Inner ring: Social Media */}
-        <g
-          ref={el => (atomRefs[2].current = el)}
-          onMouseEnter={handleEnter}
-          onMouseLeave={handleLeave}
-          className="pointer-events-auto cursor-pointer"
-        >
-          <circle r={15} fill="#3b82f6" filter="url(#soft)" />
-          {/* Users group vector icon */}
-          <circle cx="-2" cy="-2.5" r="2.2" fill="#ffffff" />
-          <path d="M -5.5 3.5 C -5.5 1.5 -3 1.5 -2 1.5 C -1 1.5 1.5 1.5 1.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" />
-          <circle cx="2.5" cy="-2" r="1.8" fill="#ffffff" />
-          <path d="M 2 1.8 C 2.5 1.8 4.5 2 4.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
-          <text y={28} textAnchor="middle" fontSize={9} fontWeight={500} fill="currentColor" className="text-[#1C201D] dark:text-[#f8fafc]">Social Media</text>
-        </g>
-        {/* Core ring: Discovery */}
-        <g
-          ref={el => (atomRefs[3].current = el)}
-          onMouseEnter={handleEnter}
-          onMouseLeave={handleLeave}
-          className="pointer-events-auto cursor-pointer"
-        >
-          <circle r={14} fill="#f59e0b" filter="url(#soft)" />
-          {/* 4-point star vector icon */}
-          <path d="M 0 -4.5 L 1.2 -1.2 L 4.5 0 L 1.2 1.2 L 0 4.5 L -1.2 1.2 L -4.5 0 L -1.2 -1.2 Z" fill="#ffffff" />
-          <text y={27} textAnchor="middle" fontSize={9} fontWeight={500} fill="currentColor" className="text-[#1C201D] dark:text-[#f8fafc]">Discovery</text>
-        </g>
+        ))}
       </svg>
       {children && (
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <div className="w-full max-w-[92%] sm:max-w-[88%] pointer-events-auto flex items-center justify-center">{children}</div>
+          <div className="w-full max-w-[92%] sm:max-w-[88%] pointer-events-auto flex items-center justify-center">
+            {children}
+          </div>
         </div>
       )}
     </div>

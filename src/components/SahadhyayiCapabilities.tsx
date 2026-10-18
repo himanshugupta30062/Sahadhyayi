@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Calendar, PenTool, Gamepad2, ArrowRight, Sparkles, ChevronRight } from "lucide-react";
+import { MapPin, Calendar, PenTool, Gamepad2, ArrowRight, ChevronRight } from "lucide-react";
 
 interface CapabilityItem {
   id: string;
@@ -49,16 +49,16 @@ const capabilities: CapabilityItem[] = [
 export const SahadhyayiCapabilities: React.FC = () => {
   return (
     <section
-      className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#FAF7F2] dark:bg-[#0B0D0C] border-b border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200"
+      className="home-capabilities relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
       aria-label="Platform Capabilities"
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="relative z-10 max-w-7xl mx-auto">
         {/* Section Header (Image 2 reference) */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBF2EC] dark:bg-[#161D19] border border-[#C8DBCB] dark:border-[#29332D] text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D] mb-4">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Platform Capabilities</span>
+            <div className="flex items-center gap-2.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] text-[#6E7B6F] dark:text-[#D5B16D] mb-3">
+              <span aria-hidden="true" className="h-px w-7 bg-[#B68A35] dark:bg-[#D5B16D]" />
+              <span>03 / Beyond the page</span>
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight">
               Built for deeper reading
@@ -85,10 +85,10 @@ export const SahadhyayiCapabilities: React.FC = () => {
               <Link
                 key={item.id}
                 to={item.href}
-                className="group flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-[#111413] hover:bg-[#F4EFEA] dark:hover:bg-[#161A18] border border-[#E8E2D9] dark:border-[#26302A] hover:border-[#1C442D]/40 dark:hover:border-[#D5B16D]/50 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
+                className="group flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-[#111413] hover:bg-[#F5EEDC] dark:hover:bg-[#161A18] border border-[#EADFC7] dark:border-[#26302A] hover:border-[#BDA56B]/55 dark:hover:border-[#D5B16D]/50 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
               >
                 {/* Glowing Icon Box */}
-                <div className="w-12 h-12 rounded-xl bg-[#F4EFEA] dark:bg-[#161A18] group-hover:bg-[#EBF2EC] dark:group-hover:bg-[#1E1C15] border border-[#E8E2D9] dark:border-[#26302A] group-hover:border-[#1C442D]/30 dark:group-hover:border-[#D5B16D]/40 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D] shrink-0 transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-[#F5EEDC] dark:bg-[#161A18] group-hover:bg-[#EBF2EC] dark:group-hover:bg-[#1E1C15] border border-[#EADFC7] dark:border-[#26302A] group-hover:border-[#1C442D]/30 dark:group-hover:border-[#D5B16D]/40 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D] shrink-0 transition-colors">
                   <Icon className="w-5 h-5" />
                 </div>
 
