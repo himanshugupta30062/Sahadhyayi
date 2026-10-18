@@ -8,6 +8,7 @@ import SEO from "@/components/SEO";
 import DeferredSection from "@/components/DeferredSection";
 import AnimatedHero from "@/components/AnimatedHero";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import HomeFloatingBooks from "@/components/home/HomeFloatingBooks";
 
 const SahadhyayiCapabilities = lazy(() => import("@/components/SahadhyayiCapabilities"));
 const CurrentReads = lazy(() => import("@/components/library/CurrentReads"));
@@ -67,8 +68,9 @@ const Index = () => {
       <div className="sahadhyayi-home-sections bg-[#F7F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300">
         {/* 2. Logged-in: Continue Reading first */}
         {user && (
-          <section className="py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#F6F8F1] dark:bg-[#0B0D0C] border-b border-[#DDE7D8] dark:border-[#29332D]">
-            <div className="max-w-7xl mx-auto">
+          <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#F6F8F1] dark:bg-[#0B0D0C] border-b border-[#DDE7D8] dark:border-[#29332D]">
+            <HomeFloatingBooks placement="section" />
+            <div className="relative z-10 max-w-7xl mx-auto">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7]">
@@ -142,8 +144,9 @@ const Index = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,170,145,0.13),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(213,177,109,0.06),transparent_65%)] pointer-events-none" />
           <div aria-hidden="true" className="home-cta-glow absolute -right-20 -top-24 h-80 w-80 rounded-full bg-[#D8E9CF]/65 blur-[100px] dark:hidden" />
           <div aria-hidden="true" className="home-cta-glow absolute -left-24 bottom-[-10rem] h-72 w-72 rounded-full bg-[#F0DDB5]/45 blur-[95px] dark:hidden" />
+          <HomeFloatingBooks placement="cta" />
 
-          <div className="relative max-w-3xl mx-auto text-center">
+          <div className="relative z-10 max-w-3xl mx-auto text-center">
             {/* Cultural Origin Tag */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-[#141816] border border-[#DDE5D8] dark:border-[#26302A] text-xs font-medium text-[#8F681C] dark:text-[#D5B16D] mb-4 shadow-2xs">
               <span>सहाध्यायी · Fellow Reader</span>
