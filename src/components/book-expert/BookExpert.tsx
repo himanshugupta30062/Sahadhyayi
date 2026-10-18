@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useBookExpert } from "@/contexts/book-expert.utils";
-import type { BookExpertBook } from "@/contexts/book-expert.utils";
+import type { BookExpertBook, BookExpertCitation } from "@/contexts/book-expert.utils";
 import { cn } from "@/lib/utils";
 
 const bookIcon = new URL("./Sahadhyayi_Book_optimized.webp", import.meta.url).href;
@@ -34,6 +34,54 @@ function validHttpUrl(value: string | null | undefined): string | null {
   } catch {
     return null;
   }
+}
+
+function RagCitationCard({ citation }: { citation: BookExpertCitation }) {
+  const externalUrl = validHttpUrl(citation.url);
+  const href = citation.bookId
+    ? "/book/" + encodeURIComponent(citation.bookId)
+    : externalUrl;
+  const sourceLabel: Record<string, string> = {
+    book_metadata: "Catalog record",
+    book_summary: "Book summary",
+    approved_text: "Approved text",
+    site_article: "Sahadhyayi article",
+  };
+
+  return (
+    <details className="group rounded-xl border border-border bg-background px-3 py-2.5">
+      <summary className="flex cursor-pointer list-none items-start gap-2 text-sm">
+        <span className="shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+          [{citation.id}]
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block line-clamp-2 font-medium">{citation.title}</span>
+          <span className="mt-0.5 block text-[11px] text-muted-foreground">
+            {sourceLabel[citation.sourceType] ?? "Indexed source"}
+            {citation.author ? " · " + citation.author : ""}
+            {citation.similarity ? " · relevance " + Math.round(citation.similarity * 100) + "%" : ""}
+          </span>
+        </span>
+        <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-open:rotate-45" aria-hidden="true" />
+      </summary>
+      <div className="mt-2 space-y-2 border-t border-border/70 pt-2">
+        <p className="whitespace-pre-wrap break-words text-xs leading-relaxed text-muted-foreground">{citation.excerpt}</p>
+        {citation.sourceLicense && (
+          <p className="text-[10px] text-muted-foreground">Source licence: {citation.sourceLicense}</p>
+        )}
+        {href && (
+          <a
+            href={href}
+            target={citation.bookId ? undefined : "_blank"}
+            rel={citation.bookId ? undefined : "noopener noreferrer"}
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            {citation.bookId ? "Open book page" : "Open source"} <ExternalLink className="h-3 w-3" aria-hidden="true" />
+          </a>
+        )}
+      </div>
+    </details>
+  );
 }
 
 function BookResultCard({ book }: { book: BookExpertBook }) {
@@ -270,6 +318,20 @@ const BookExpert = () => {
                   <div className="space-y-2 pl-1">
                     <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">From Sahadhyayi library</p>
                     {message.books.map((book) => <BookResultCard key={book.id} book={book} />)}
+                  </div>
+                )}
+
+                {!isUser && message.citations && message.citations.length > 0 && (
+                  <div className="space-y-2 pl-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sources used</p>
+                      <span className="text-[10px] text-muted-foreground">Answers cite these as [S1], [S2]…</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {message.citations.map((citation) => (
+                        <RagCitationCard key={citation.id} citation={citation} />
+                      ))}
+                    </div>
                   </div>
                 )}
 
