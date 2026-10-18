@@ -306,9 +306,9 @@ function estimateStandardCostUsd(
     ? configuredOutputRate
     : null;
 
-  // Published Standard-tier rates for Gemini 3.8/3.7/3.6 Flash through 2026-12-31.
+  // Published Standard-tier rates for Gemini 3.8 Flash and 3.6 Flash through 2026-12-31.
   // Estimates are not actual invoices; free-tier/negotiated pricing can differ.
-  if (["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash"].includes(model)) {
+  if (["gemini-3.8-flash", "gemini-3.6-flash"].includes(model)) {
     const introductoryRate = Date.now() < Date.UTC(2027, 0, 1);
     if (inputRate === null) inputRate = introductoryRate ? 0.75 : 1.50;
     if (outputRate === null) outputRate = introductoryRate ? 3.75 : 7.50;
@@ -507,15 +507,15 @@ serve(async (req: Request) => {
       throw error;
     }
 
-    // Fall back to the currently listed stable previous-generation Flash model
-    // only when the configured model is explicitly unavailable.
+    // Fall back to the stable previous-generation Flash model only when
+    // the configured model is explicitly unavailable.
     const modelErrorText = String(generated.raw || "").toLowerCase();
     const modelUnavailable = generated.status === 404 ||
       (generated.status === 400 && modelErrorText.includes("model") &&
         (modelErrorText.includes("not found") || modelErrorText.includes("not supported")));
-    if (!generated.ok && modelUnavailable && configuredModel !== "gemini-3.7-flash") {
-      modelUsed = "gemini-3.7-flash";
-      generated = await callGemini("gemini-3.7-flash", geminiApiKey, history, latestPrompt);
+    if (!generated.ok && modelUnavailable && configuredModel !== "gemini-3.6-flash") {
+      modelUsed = "gemini-3.6-flash";
+      generated = await callGemini("gemini-3.6-flash", geminiApiKey, history, latestPrompt);
     }
 
     if (!generated.ok) {
