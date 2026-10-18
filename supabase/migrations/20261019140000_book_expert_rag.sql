@@ -55,7 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_book_expert_chunks_document
 CREATE INDEX IF NOT EXISTS idx_book_expert_chunks_search
   ON public.book_expert_chunks USING gin(search_vector);
 CREATE INDEX IF NOT EXISTS idx_book_expert_chunks_embedding
-  ON public.book_expert_chunks USING hnsw (embedding vector_cosine_ops);
+  ON public.book_expert_chunks USING hnsw (embedding extensions.vector_cosine_ops);
 
 ALTER TABLE public.book_expert_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.book_expert_chunks ENABLE ROW LEVEL SECURITY;
