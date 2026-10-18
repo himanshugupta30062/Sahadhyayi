@@ -1,45 +1,47 @@
-import React from 'react';
-import HeroAtomicRings from './hero/HeroAtomicRings';
-import { HeroContent } from './hero/HeroContent';
-import { BookOpen } from 'lucide-react';
+import React from "react";
+import HeroAtomicRings from "./hero/HeroAtomicRings";
+import { HeroContent } from "./hero/HeroContent";
+import { BookOpen } from "lucide-react";
 
 const AnimatedHero: React.FC = () => {
   return (
     <section
-      className="relative isolate flex min-h-[calc(100svh-4rem)] items-center overflow-hidden border-b border-[#E8E2D9] bg-[#FAF7F2] py-10 text-[#1C201D] transition-colors duration-300 dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7] sm:py-14 lg:py-16"
-      aria-label="Sahadhyayi home hero"
+      className="relative min-h-[calc(100vh-4rem)] flex items-center bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden py-10 sm:py-14 lg:py-20 border-b border-[#E3E5DA] dark:border-[#29332D] transition-colors duration-200"
+      aria-label="Sahadhyayi Hero"
     >
-      {/* The light theme is deliberately warm and airy; dark mode has its own
-          restrained forest glow. These layers sit behind, never over, the orbit SVG. */}
+      {/* Atmospheric ambient glow matching editorial and cinematic themes */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -left-36 -top-40 h-[34rem] w-[34rem] rounded-full bg-[#DCC79B]/25 blur-[110px] dark:bg-[#1C442D]/25" />
-        <div className="absolute -bottom-40 right-[4%] h-[36rem] w-[36rem] rounded-full bg-[#C8DBCB]/55 blur-[130px] dark:bg-[#D5B16D]/[0.07]" />
-        <div className="absolute right-[7%] top-[7%] h-[min(72vw,720px)] w-[min(72vw,720px)] rounded-full border border-[#1C442D]/[0.055] dark:border-[#D5B16D]/[0.08]" />
-        <div className="absolute right-[10%] top-[11%] h-[min(64vw,640px)] w-[min(64vw,640px)] rounded-full border border-[#B68A35]/[0.07] dark:border-white/[0.04]" />
-        <div className="absolute inset-0 opacity-[0.19] [background-image:radial-gradient(#1C442D_0.55px,transparent_0.55px)] [background-size:20px_20px] [mask-image:linear-gradient(to_right,black,transparent_82%)] dark:opacity-[0.08] dark:[background-image:radial-gradient(#D5B16D_0.55px,transparent_0.55px)]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[550px] h-[550px] rounded-full bg-[#1C442D]/5 dark:bg-[#1A1E1C]/40 blur-[140px]" />
+        <div className="absolute top-1/4 right-12 w-[400px] h-[400px] rounded-full bg-[#B68A35]/10 dark:bg-[#D5B16D]/10 blur-[130px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_72%_50%,rgba(34,83,52,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_72%_50%,rgba(213,177,109,0.035),transparent_50%)]" />
       </div>
 
-      <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-6 px-4 sm:px-6 md:gap-8 lg:grid-cols-12 lg:gap-8 lg:px-8 xl:gap-10">
-        <div className="order-1 flex justify-center lg:col-span-6 lg:justify-start">
-          <HeroContent />
-        </div>
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-center">
+          {/* Left Column: Editorial Headline & CTAs (stacked on mobile, left-aligned on desktop) */}
+          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-start order-1">
+            <HeroContent />
+          </div>
 
-        <div className="order-2 flex items-center justify-center lg:col-span-6">
-          <div className="relative flex aspect-square w-full max-w-[320px] items-center justify-center sm:max-w-[410px] md:max-w-[470px] lg:max-w-[520px] xl:max-w-[590px]">
-            <HeroAtomicRings size="100%" className="h-full w-full max-h-full max-w-full">
-              <div className="flex h-28 w-28 select-none flex-col items-center justify-center rounded-full border border-[#D4C9BC]/80 bg-white/65 text-center shadow-[0_8px_28px_rgba(28,32,29,0.08)] backdrop-blur-md dark:border-[#38483D]/80 dark:bg-[#0B0D0C]/55 dark:shadow-[0_12px_34px_rgba(0,0,0,0.28)] sm:h-32 sm:w-32">
-                <div className="relative mb-1 flex items-center justify-center">
-                  <div className="absolute inset-0 rounded-full bg-[#B68A35]/20 blur-md dark:bg-[#D5B16D]/25" />
-                  <BookOpen className="relative h-7 w-7 text-[#1C442D] dark:text-[#F3F0E7] sm:h-8 sm:w-8" aria-hidden="true" />
+          {/* Right Column: Original Signature Animated Atomic Rings */}
+          <div className="lg:col-span-6 xl:col-span-5 flex items-center justify-center order-2">
+            <div className="relative w-full max-w-[320px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-[540px] xl:max-w-[580px] aspect-square flex items-center justify-center">
+              <HeroAtomicRings size="100%" className="w-full h-full max-w-full max-h-full">
+                {/* Center Core Brand Sigil — kept inside the animated rings */}
+                <div className="text-center p-3 select-none pointer-events-none flex flex-col items-center justify-center">
+                  <div className="relative mb-1 flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full bg-[#B68A35]/20 dark:bg-[#D5B16D]/30 blur-md" />
+                    <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-[#1C442D] dark:text-[#F3F0E7] relative drop-shadow-[0_0_12px_rgba(28,68,45,0.4)] dark:drop-shadow-[0_0_14px_rgba(213,177,109,0.8)]" aria-hidden="true" />
+                  </div>
+                  <span className="block text-[9px] sm:text-[11px] uppercase tracking-[0.24em] text-[#B68A35] dark:text-[#D5B16D] font-semibold">
+                    सहाध्यायी
+                  </span>
+                  <span className="block text-xs sm:text-sm font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mt-0.5">
+                    Sahadhyayi
+                  </span>
                 </div>
-                <span className="block text-[9px] font-semibold uppercase tracking-[0.22em] text-[#8F681C] dark:text-[#D5B16D] sm:text-[10px]">
-                  सहाध्यायी
-                </span>
-                <span className="mt-0.5 block font-serif text-xs font-bold text-[#1C201D] dark:text-[#F3F0E7] sm:text-sm">
-                  Sahadhyayi
-                </span>
-              </div>
-            </HeroAtomicRings>
+              </HeroAtomicRings>
+            </div>
           </div>
         </div>
       </div>
