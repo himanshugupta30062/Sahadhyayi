@@ -237,6 +237,8 @@ export interface LibraryBookQueryOptions {
   requireCover?: boolean;
   /** Optional exact genre filter, used by homepage discovery. */
   genre?: string;
+  /** Whether the query is enabled (defaults to true) */
+  enabled?: boolean;
 }
 
 export const useLibraryBooks = (
@@ -246,8 +248,12 @@ export const useLibraryBooks = (
 ) => {
   const requireCover = options.requireCover === true;
   const genre = options.genre && options.genre !== 'All' ? options.genre : undefined;
+  const enabled = options.enabled !== false;
+  const cleanedQuery = (searchQuery || '').replace(/[,()]/g, ' ').replace(/\s+/g, ' ').trim();
+
   return useQuery({
-    queryKey: ['library-books', searchQuery, limit, requireCover, genre ?? 'All'],
+    queryKey: ['library-books', cleanedQuery, limit, requireCover, genre ?? 'All'],
+    enabled,
     queryFn: async (): Promise<Book[]> => {
       const caps = await detectBookSchemaCapabilities();
       const columns = getPublicBookSelectColumns(caps);
@@ -263,9 +269,9 @@ export const useLibraryBooks = (
       if (genre) {
         query = query.ilike('genre', genre.trim());
       }
-      if (searchQuery && searchQuery.trim()) {
+      if (cleanedQuery) {
         query = query.or(
-          `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,genre.ilike.%${searchQuery}%`
+          `title.ilike.%${cleanedQuery}%,author.ilike.%${cleanedQuery}%,genre.ilike.%${cleanedQuery}%`
         );
       }
 
@@ -294,9 +300,9 @@ export const useLibraryBooks = (
         if (genre) {
           fallbackQuery = fallbackQuery.ilike('genre', genre.trim());
         }
-        if (searchQuery && searchQuery.trim()) {
+        if (cleanedQuery) {
           fallbackQuery = fallbackQuery.or(
-            `title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,genre.ilike.%${searchQuery}%`
+            `title.ilike.%${cleanedQuery}%,author.ilike.%${cleanedQuery}%,genre.ilike.%${cleanedQuery}%`
           );
         }
         if (requireCover) {

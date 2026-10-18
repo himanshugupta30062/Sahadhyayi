@@ -52,6 +52,8 @@ const BooksCollection = ({
   const {
     data: paginatedData,
     isLoading: isLoadingAll,
+    isError: isErrorAll,
+    error: errorAll,
     page,
     pageSize,
     totalPages,
@@ -329,6 +331,18 @@ const BooksCollection = ({
           <div ref={allGridRef} className="space-y-6">
             {isLoadingAll ? (
               <LoadingSpinner />
+            ) : isErrorAll ? (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center space-y-4">
+                <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
+                <h3 className="text-lg font-semibold text-red-900">Unable to load library catalog</h3>
+                <p className="text-sm text-red-600 max-w-md mx-auto">
+                  {errorAll instanceof Error ? errorAll.message : 'An unexpected error occurred while fetching books.'}
+                </p>
+                <Button onClick={() => refetchAll()} variant="outline" className="border-red-300 text-red-700 hover:bg-red-100">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Try Again
+                </Button>
+              </div>
             ) : (
               <>
                 <BooksGrid books={displayBooks} onDownloadPDF={handleDownloadPDF} />
