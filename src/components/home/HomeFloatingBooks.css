@@ -9,7 +9,7 @@
   position: absolute;
   width: 22px;
   height: 30px;
-  opacity: 0.52;
+  opacity: 0.40;
   transform-origin: center;
   animation: sahadhyayiTinyBookFloat 20s ease-in-out infinite;
   filter: drop-shadow(0 5px 5px rgba(36, 55, 42, 0.09));
@@ -65,11 +65,11 @@
 }
 
 .home-floating-book--blue .home-floating-book__cover {
-  background: linear-gradient(145deg, #B5CBEA, #6F8FBE);
+  background: linear-gradient(145deg, #C6D0BE, #82977D);
 }
 
 .home-floating-book--rose .home-floating-book__cover {
-  background: linear-gradient(145deg, #E9BCC0, #BA7C8B);
+  background: linear-gradient(145deg, #E9DFC9, #B7A17A);
 }
 
 @media (max-width: 639px) {
