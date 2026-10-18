@@ -106,7 +106,7 @@ const ORBITS: OrbitConfig[] = [
     label: "Games",
     href: "/games",
     icon: "games",
-    radius: 180,
+    radius: 198,
     strokeWidth: 6,
     atomRadius: 13,
     atomColor: "#8b5cf6",
