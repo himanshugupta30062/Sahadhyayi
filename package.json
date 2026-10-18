@@ -12,6 +12,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:book-expert": "node scripts/evaluate-book-expert.mjs",
+    "test:book-expert:smoke": "node scripts/evaluate-book-expert.mjs --limit=10",
     "preview": "vite preview",
     "start:server": "node server.js",
     "generate:sitemap": "node scripts/generateSitemap.js",
