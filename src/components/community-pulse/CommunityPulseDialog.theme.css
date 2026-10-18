@@ -15,16 +15,21 @@ html.light .community-pulse-dialog > div {
 }
 
 /* Main shell, header, control strip and panels */
-html.light .community-pulse-dialog [class*="bg-[#0B0D0C]"] {
+html.light .community-pulse-dialog [class*="bg-[#0B0D0C]"],
+html.light .community-pulse-dialog [class*="bg-[#0b0d0c]"] {
   background-color: #fbfaf6 !important;
 }
-html.light .community-pulse-dialog [class*="bg-[#0E1210]"] {
+html.light .community-pulse-dialog [class*="bg-[#0E1210]"],
+html.light .community-pulse-dialog [class*="bg-[#0e1210]"],
+html.light .community-pulse-dialog [class*="bg-[#0E1310]"],
+html.light .community-pulse-dialog [class*="bg-[#0e1310]"] {
   background-color: #f3f4ee !important;
 }
 html.light .community-pulse-dialog [class*="bg-[#111614]"],
 html.light .community-pulse-dialog [class*="bg-[#121915]"] {
   background-color: #ffffff !important;
 }
+html.light .community-pulse-dialog [class*="bg-[#141B17]"],
 html.light .community-pulse-dialog [class*="bg-[#141b17]"],
 html.light .community-pulse-dialog [class*="bg-[#161e1a]"] {
   background-color: #f4f6f0 !important;
@@ -99,29 +104,77 @@ html.light .community-pulse-dialog [class*="hover:bg-white/"]:hover {
 }
 
 /* Status chips stay soft in light mode instead of using near-black fills. */
-html.light .community-pulse-dialog [class*="bg-amber-950/"] {
+html.light .community-pulse-dialog [class*="bg-amber-950"] {
   background-color: #fff4d6 !important;
 }
+html.light .community-pulse-dialog [class*="text-amber-100"],
+html.light .community-pulse-dialog [class*="text-amber-200"],
 html.light .community-pulse-dialog [class*="text-amber-300"] {
   color: #79520a !important;
 }
+html.light .community-pulse-dialog [class*="border-amber-500"],
 html.light .community-pulse-dialog [class*="border-amber-800"] {
   border-color: #e6cf8b !important;
 }
-html.light .community-pulse-dialog [class*="bg-emerald-950/"] {
+html.light .community-pulse-dialog [class*="bg-emerald-950"],
+html.light .community-pulse-dialog [class*="bg-emerald-900"] {
   background-color: #e7f5e9 !important;
 }
+html.light .community-pulse-dialog [class*="text-emerald-300"],
 html.light .community-pulse-dialog [class*="text-emerald-400"] {
   color: #25613b !important;
 }
-html.light .community-pulse-dialog [class*="border-emerald-800"] {
+html.light .community-pulse-dialog [class*="border-emerald-600"],
+html.light .community-pulse-dialog [class*="border-emerald-700"],
+html.light .community-pulse-dialog [class*="border-emerald-800"],
+html.light .community-pulse-dialog [class*="border-emerald-900"] {
   border-color: #b8d9bd !important;
 }
 html.light .community-pulse-dialog [class*="text-sky-400"] {
   color: #176184 !important;
 }
 
-/* Inputs and data table need explicit light surfaces and readable placeholders. */
+/* Badges: Lifetime, Rolling 7d, and Negative comparisons */
+html.light .community-pulse-dialog [class*="bg-stone-800"] {
+  background-color: #e8eee6 !important;
+  color: #374239 !important;
+  border-color: #cbd5c9 !important;
+}
+html.light .community-pulse-dialog [class*="bg-indigo-950"] {
+  background-color: #eef2ff !important;
+}
+html.light .community-pulse-dialog [class*="text-indigo-300"] {
+  color: #3730a3 !important;
+}
+html.light .community-pulse-dialog [class*="border-indigo-800"] {
+  border-color: #c7d2fe !important;
+}
+html.light .community-pulse-dialog [class*="bg-rose-950"] {
+  background-color: #ffe4e6 !important;
+}
+html.light .community-pulse-dialog [class*="text-rose-400"] {
+  color: #9f1239 !important;
+}
+html.light .community-pulse-dialog [class*="border-rose-500"],
+html.light .community-pulse-dialog [class*="border-rose-800"] {
+  border-color: #fecdd3 !important;
+}
+
+/* Contributor avatar placeholders */
+html.light .community-pulse-dialog [class*="bg-stone-700"] {
+  background-color: #dce3d9 !important;
+  color: #202b23 !important;
+}
+
+/* Code badges in telemetry ribbon */
+html.light .community-pulse-dialog code {
+  color: #775510 !important;
+  background-color: #f2eee3;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+/* Inputs, table elements, and data rows */
 html.light .community-pulse-dialog input,
 html.light .community-pulse-dialog select,
 html.light .community-pulse-dialog textarea {
@@ -139,11 +192,41 @@ html.light .community-pulse-dialog [class*="bg-[#161e1a]"] {
 html.light .community-pulse-dialog [class*="bg-[#18241e]"][class~="text-white"] {
   color: #1c442d !important;
 }
+
+/* Table light mode styling */
+html.light .community-pulse-dialog table {
+  color: #2e3931;
+}
+html.light .community-pulse-dialog table thead {
+  background-color: #edf2eb !important;
+  border-bottom-color: #dce3d9 !important;
+}
+html.light .community-pulse-dialog table thead th {
+  color: #465249 !important;
+}
+html.light .community-pulse-dialog table tbody {
+  background-color: #ffffff !important;
+}
 html.light .community-pulse-dialog table tbody tr {
-  border-color: #e7eae4;
+  border-color: #e7eae4 !important;
 }
 html.light .community-pulse-dialog table tbody tr:hover {
-  background-color: #f3f6f0;
+  background-color: #f3f6f0 !important;
+}
+html.light .community-pulse-dialog [class*="divide-white"] > * {
+  border-color: #e7eae4 !important;
+}
+html.light .community-pulse-dialog table td {
+  color: #2e3931;
+}
+html.light .community-pulse-dialog table td [class*="text-stone-400"] {
+  color: #5d6960 !important;
+}
+html.light .community-pulse-dialog table td [class*="text-stone-300"] {
+  color: #374239 !important;
+}
+html.light .community-pulse-dialog table td [class*="text-stone-200"] {
+  color: #202b23 !important;
 }
 
 /* Preserve the semantic error treatment and make its white label readable. */
