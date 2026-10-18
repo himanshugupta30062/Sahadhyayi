@@ -2,6 +2,7 @@ import React from "react";
 import HeroAtomicRings from "./hero/HeroAtomicRings";
 import { HeroContent } from "./hero/HeroContent";
 import { BookOpen } from "lucide-react";
+import HomeFloatingBooks from "./home/HomeFloatingBooks";
 
 const AnimatedHero: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ const AnimatedHero: React.FC = () => {
     >
       {/* Theme atmosphere: gently drifting colour in light mode; original forest glow in dark mode. */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <HomeFloatingBooks placement="hero" />
         <div className="hero-light-wash absolute inset-0 dark:hidden" />
         <div className="hero-light-aurora hero-light-aurora-one absolute -left-28 -top-40 h-[30rem] w-[30rem] rounded-full bg-[#CFE6CE]/75 blur-[100px] dark:hidden" />
         <div className="hero-light-aurora hero-light-aurora-two absolute -right-32 top-[4%] h-[34rem] w-[34rem] rounded-full bg-[#F0DDB5]/65 blur-[110px] dark:hidden" />
