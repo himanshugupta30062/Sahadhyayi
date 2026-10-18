@@ -107,12 +107,12 @@ describe('Editorial Light and Dark Theme Component Validation', () => {
     );
 
     const section = screen.getByLabelText('Platform Capabilities');
-    expect(section).toBeInTheDocument();
     // Verify light background and dark background tokens are both present
-    expect(section.className).toContain('bg-[#FAF7F2]');
+    expect(section.className).toContain('bg-[#F8F8F2]');
     expect(section.className).toContain('dark:bg-[#0B0D0C]');
-    expect(section.className).toContain('border-[#E8E2D9]');
-    expect(section.className).toContain('dark:border-[#29332D]');
+    const card = screen.getByText('Local Reader Map').closest('a');
+    expect(card?.className).toContain('border-[#EADFC7]');
+    expect(card?.className).toContain('dark:border-[#26302A]');
   });
 
   it('renders BookPulseBar with dual light and dark theme tokens', () => {

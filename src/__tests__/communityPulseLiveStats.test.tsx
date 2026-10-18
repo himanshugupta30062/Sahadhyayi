@@ -392,12 +392,12 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     render(<CommunityPulseDialog open={true} onClose={() => {}} />);
 
     await waitFor(() => {
-      const pageViewsLabel = screen.getByText('Page views');
+      const pageViewsLabel = screen.getAllByText('Page views').find(el => el.closest('.rounded-xl')) || screen.getAllByText('Page views')[0];
       expect(pageViewsLabel.closest('.rounded-xl')).toHaveTextContent('7');
       expect(pageViewsLabel.closest('.rounded-xl')).not.toHaveTextContent('9,920');
 
       // Unique visitor identity is not available through the count-only fallback.
-      const uniqueLabel = screen.getByText('Unique visitors');
+      const uniqueLabel = screen.getAllByText('Unique visitors').find(el => el.closest('.rounded-xl')) || screen.getAllByText('Unique visitors')[0];
       expect(uniqueLabel.closest('.rounded-xl')).toHaveTextContent('—');
       expect(screen.getByText('4 Total')).toBeInTheDocument();
       expect(screen.getByText('Some analytics details are unavailable')).toBeInTheDocument();

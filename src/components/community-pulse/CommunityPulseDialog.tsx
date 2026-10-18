@@ -577,7 +577,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     {number(effectiveStats.dualTable?.rolling24hViews ?? (timeframe === '24h' ? effectiveStats.pageViews : 0))} views
                   </div>
                   <div className="text-[10px] text-stone-500 mt-0.5 truncate">
-                    {effectiveStats.dualTable?.uniqueVisitors24h != null ? `${number(effectiveStats.dualTable.uniqueVisitors24h)} unique visitors` : 'Page views'}
+                    {effectiveStats.dualTable?.uniqueVisitors24h != null ? `${number(effectiveStats.dualTable.uniqueVisitors24h)} unique visitors` : 'Recent pageviews'}
                   </div>
                 </div>
 
@@ -593,7 +593,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     {number(effectiveStats.dualTable?.rolling7dViews ?? (timeframe === '7d' ? effectiveStats.pageViews : 0))} views
                   </div>
                   <div className="text-[10px] text-stone-500 mt-0.5 truncate">
-                    {effectiveStats.dualTable?.uniqueVisitors7d != null ? `${number(effectiveStats.dualTable.uniqueVisitors7d)} unique visitors` : 'Page views'}
+                    {effectiveStats.dualTable?.uniqueVisitors7d != null ? `${number(effectiveStats.dualTable.uniqueVisitors7d)} unique visitors` : '7d pageviews'}
                   </div>
                 </div>
 
@@ -609,7 +609,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     {number(effectiveStats.dualTable?.rolling30dViews ?? (timeframe === '30d' ? effectiveStats.pageViews : 0))} views
                   </div>
                   <div className="text-[10px] text-stone-500 mt-0.5 truncate">
-                    {effectiveStats.dualTable?.uniqueVisitors30d != null ? `${number(effectiveStats.dualTable.uniqueVisitors30d)} unique visitors` : 'Page views'}
+                    {effectiveStats.dualTable?.uniqueVisitors30d != null ? `${number(effectiveStats.dualTable.uniqueVisitors30d)} unique visitors` : '30d pageviews'}
                   </div>
                 </div>
               </div>
@@ -759,7 +759,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                             onChange={e => setMetricView(e.target.value as 'views' | 'unique')}
                             className="bg-[#18241e] border border-white/10 rounded px-2 py-0.5 text-stone-200 text-xs focus:outline-none cursor-pointer"
                           >
-                            <option value="views">Page views</option>
+                            <option value="views">Pageviews</option>
                             <option value="unique">Unique visitors</option>
                           </select>
                         </div>
