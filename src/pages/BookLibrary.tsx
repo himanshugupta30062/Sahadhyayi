@@ -96,7 +96,7 @@ const BookLibrary = () => {
     <>
       <SEO
         title="Digital Book Library - Discover & Read Books Online | Sahadhyayi"
-        description="Explore our comprehensive digital library with thousands of books across all genres. Read online, track progress, and join discussions with fellow readers worldwide."
+        description="Explore our digital library of books across multiple genres. Check each title's available reading options, track progress, and join discussions with fellow readers."
         canonical="https://sahadhyayi.com/library"
         keywords={['digital library', 'online books', 'read books online', 'ebooks', 'book collection', 'reading platform']}
       />
@@ -120,13 +120,13 @@ const BookLibrary = () => {
               Discover Your Next Great Read
             </h2>
             <p className="text-gray-600 text-lg max-w-3xl mx-auto mb-8 leading-relaxed">
-              Browse our extensive digital library with 10,000+ books across all genres. Find your next great read with free PDFs, community reviews, and personalized recommendations from fellow readers.
+              Browse books across multiple genres and discover your next great read. Reading and PDF availability varies by title; book details show the options currently available.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
-              <span>📚 10,000+ Books</span>
+              <span>📚 Books Across Genres</span>
               <span>🌍 Multiple Languages</span>
               <span>👥 Active Reading Community</span>
-              <span>📖 Free PDF Downloads</span>
+              <span>📖 Title-Specific Reading Options</span>
             </div>
           </div>
         </div>
