@@ -16,7 +16,7 @@ export interface BookData {
 }
 
 export interface WebsiteContext {
-  totalBooks: number;
+  totalBooks: number | null;
   genres: string[];
   features: string[];
   recentBooks: BookData[];
@@ -38,8 +38,8 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
 
     const { data: titleData, error: titleError } = await titleQuery;
 
-    let totalBooks = 0;
-    if (!titleError && Array.isArray(titleData) && titleData.length > 0) {
+    let totalBooks: number | null = null;
+    if (!titleError && Array.isArray(titleData)) {
       const visible = filterPublicBooks(titleData);
       const uniqueTitles = new Set<string>();
       visible.forEach((b: { title?: string | null }) => {
@@ -52,8 +52,8 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
         .from('books_library')
         .select('*', { count: 'exact', head: true });
       countQuery = applyPublicBookFilter(countQuery, caps);
-      const { count } = await countQuery;
-      totalBooks = count || 0;
+      const { count, error: countError } = await countQuery;
+      totalBooks = countError ? null : (count ?? 0);
     }
 
     // Get available genres
@@ -89,8 +89,8 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
       totalBooks: totalBooks || 0,
       genres,
       features: [
-        'Digital Library with 10,000+ books',
-        'Free PDF downloads',
+        'Digital Library with books across multiple genres',
+        'Reading or PDF availability varies by title',
         'Reading progress tracking',
         'Author connections',
         'Social reading community',
@@ -102,9 +102,9 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
   } catch (error) {
     console.error('Error fetching website context:', error);
     return {
-      totalBooks: 10000,
+      totalBooks: null,
       genres: ['Fiction', 'Science', 'Hindi Literature', 'Devotional', 'Biography', 'History'],
-      features: ['Digital Library', 'Free Downloads', 'Progress Tracking', 'Author Connections'],
+      features: ['Digital Library', 'Title-specific reading options', 'Progress Tracking', 'Author Connections'],
       recentBooks: []
     };
   }
@@ -117,7 +117,11 @@ export const generateEnhancedPrompt = (
   const { totalBooks, genres, features, recentBooks } = context;
   let prompt =
     'You are an AI assistant for the Sahadhyayi digital library. Use the website context to answer user questions.\n\n';
-  prompt += `Total books in library: ${totalBooks}.\n`;
+  if (totalBooks !== null) {
+    prompt += `Current catalog count: ${totalBooks}.\n`;
+  } else {
+    prompt += 'Current catalog count is unavailable; do not guess the number of books.\n';
+  }
   if (genres.length > 0) {
     prompt += `Available genres include: ${genres.join(', ')}.\n`;
   }
@@ -188,7 +192,7 @@ export const populateInitialTrainingData = async (userId: string) => {
           interaction_type: "knowledge_base"
         }
       }),
-      completion: "Sahadhyayi is a digital library platform with 10,000+ free books across Fiction, Science, Hindi Literature, Devotional, Biography, and History genres. You can download PDFs for free, track reading progress, and connect with authors and readers."
+      completion: "Sahadhyayi is a digital library and reading community with books across genres such as Fiction, Science, Hindi Literature, Devotional, Biography, and History. Reading and PDF availability varies by title. Readers can also track progress and connect with authors and other readers."
     },
     {
       prompt: JSON.stringify({
@@ -214,7 +218,7 @@ export const populateInitialTrainingData = async (userId: string) => {
           interaction_type: "features"
         }
       }),
-      completion: "Key features include: free PDF downloads, reading progress tracking (/dashboard), author connections (/authors), social reading community (/social), book recommendations, and reading goals. All books are completely free to access."
+      completion: "Key features include the digital library, reading progress tracking (/dashboard), author connections (/authors), the social reading community (/social), book recommendations, and reading goals. Reading or PDF availability varies by title; check each book's detail page for available options."
     },
     {
       prompt: JSON.stringify({
@@ -227,7 +231,7 @@ export const populateInitialTrainingData = async (userId: string) => {
           interaction_type: "process"
         }
       }),
-      completion: "Find any book in our library, click on it to open the detail page, then click 'Download PDF'. All 10,000+ books are completely free to download with no registration required."
+      completion: "Search for a title in /library and open its detail page to check its available reading or download options. PDF availability varies by title."
     },
     {
       prompt: JSON.stringify({
