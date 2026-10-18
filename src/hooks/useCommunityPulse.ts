@@ -24,10 +24,10 @@ export type MemberLeaderboardItem = {
 };
 
 export type PulseStats = {
-  pageViews: number;
-  uniqueVisitors: number;
-  newReaders: number;
-  totalMembers?: number;
+  pageViews: number | null;
+  uniqueVisitors: number | null;
+  newReaders: number | null;
+  totalMembers?: number | null;
   avgTimeOnSite: string;
   pageViewsChange?: Change;
   uniqueVisitorsChange?: Change;
@@ -67,7 +67,7 @@ export type RecentVisitor = {
   userId?: string;
 };
 
-export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v6`;
+export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v7`;
 
 /**
  * Builds 24 empty hourly buckets for Asia/Kolkata timezone with 0 counts.
@@ -97,24 +97,24 @@ export function buildEmptyHourlyBuckets(): HourPoint[] {
 
 export function getBaselineStats(
   tf: AnalyticsTimeframe = '24h',
-  _totalVisits = 0,
-  _totalMembers = 0
+  _totalVisits: number | null = null,
+  _totalMembers: number | null = null
 ): PulseStats {
   const is30d = tf === '30d';
   const is7d = tf === '7d';
   const periodLabel = is30d ? 'vs previous 30 days' : is7d ? 'vs previous 7 days' : 'vs previous 24 hours';
 
   return {
-    pageViews: 0,
-    uniqueVisitors: 0,
-    newReaders: 0,
-    totalMembers: 0,
+    pageViews: _totalVisits,
+    uniqueVisitors: null,
+    newReaders: null,
+    totalMembers: _totalMembers,
     avgTimeOnSite: '—',
     pageViewsChange: undefined,
     uniqueVisitorsChange: undefined,
     newReadersChange: undefined,
     avgTimeChange: undefined,
-    hourlyActivity: buildEmptyHourlyBuckets(),
+    hourlyActivity: [],
     countries: [],
     topPages: [],
     devices: [],
@@ -143,6 +143,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     try {
       const cached =
         localStorage.getItem(getCacheKey('24h')) ||
+        localStorage.getItem('sahadhyayi_pulse_stats_24h_v6') ||
         localStorage.getItem('sahadhyayi_pulse_stats_24h_v5') ||
         localStorage.getItem('sahadhyayi_pulse_stats_24h_v4') ||
         localStorage.getItem('sahadhyayi_pulse_stats_24h_v3') ||
@@ -231,9 +232,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     statsRef.current = stats;
   }, [stats]);
 
+  const requestSeqRef = useRef(0);
+
   /**
    * Resilient fallback fetching directly from database RPCs and exact table counts
-   * when edge functions are offline or not deployed.
+   * when edge functions are offline, not deployed, or return legacy schemas.
    */
   const fetchDatabaseFallbackStats = useCallback(async (tf: AnalyticsTimeframe): Promise<PulseStats> => {
     const is30d = tf === '30d';
@@ -253,11 +256,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       }
     };
 
-    const safeCount = async (table: string, filterField?: string, filterGte?: string, eqField?: string, eqVal?: string) => {
+    const safeCount = async (table: string, filterField?: string, filterGte?: string, eqField?: string, eqVal?: string): Promise<number | null> => {
       try {
-        if (typeof supabase?.from !== 'function') return 0;
+        if (typeof supabase?.from !== 'function') return null;
         let q = supabase.from(table)?.select?.('*', { count: 'exact', head: true });
-        if (!q) return 0;
+        if (!q) return null;
         if (eqField && eqVal && typeof q.eq === 'function') {
           q = q.eq(eqField, eqVal);
         }
@@ -265,112 +268,140 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           q = q.gte(filterField, filterGte);
         }
         const res = await q;
-        return Number(res?.count ?? 0);
+        if (res?.error) {
+          return null;
+        }
+        return typeof res?.count === 'number' ? res.count : null;
       } catch {
-        return 0;
+        return null;
       }
     };
 
-    // 1. Try authoritative PostgreSQL RPC directly
+    // 1. Try authoritative PostgreSQL RPC directly (if available)
     const rpcRes = await safeRpc('get_community_pulse_stats', { p_timeframe: tf });
     const rpcData = (rpcRes as any)?.data;
 
-    if (rpcData && typeof rpcData === 'object') {
-      const pageViews = typeof rpcData.metrics?.periodPageViews?.value === 'number'
+    if (rpcData && typeof rpcData === 'object' && !rpcRes?.error) {
+      const rawPeriodViews = typeof rpcData.metrics?.periodPageViews?.value === 'number'
         ? rpcData.metrics.periodPageViews.value
-        : Number(rpcData.last24hVisits ?? rpcData.periodVisits ?? 0);
+        : typeof rpcData.last24hVisits === 'number'
+        ? rpcData.last24hVisits
+        : typeof rpcData.periodVisits === 'number'
+        ? rpcData.periodVisits
+        : typeof rpcData.pageViews === 'number'
+        ? rpcData.pageViews
+        : typeof rpcData.totalVisits === 'number'
+        ? rpcData.totalVisits
+        : null;
 
-      const uniqueVisitors = typeof rpcData.metrics?.uniqueVisitors?.value === 'number'
-        ? rpcData.metrics.uniqueVisitors.value
-        : Number(rpcData.uniqueVisitors24h ?? rpcData.uniqueVisitors ?? 0);
-
-      const newReaders = typeof rpcData.metrics?.newReaders?.value === 'number'
-        ? rpcData.metrics.newReaders.value
-        : Number(rpcData.newSignups24h ?? rpcData.newReaders ?? 0);
-
-      const totalMembers = typeof rpcData.metrics?.registeredReaders?.value === 'number'
+      const rawTotalMembers = typeof rpcData.metrics?.registeredReaders?.value === 'number'
         ? rpcData.metrics.registeredReaders.value
-        : Number(rpcData.totalMembers ?? rpcData.totalSignups ?? 0);
+        : typeof rpcData.totalMembers === 'number'
+        ? rpcData.totalMembers
+        : typeof rpcData.totalSignups === 'number'
+        ? rpcData.totalSignups
+        : null;
 
-      const rawHourly = Array.isArray(rpcData.hourlyActivity) ? rpcData.hourlyActivity : [];
-      const hourlyActivity: HourPoint[] = rawHourly.length > 0
-        ? rawHourly.map((h: any, i: number) => ({
-            label: h.label || `${i}:00`,
-            count: Number(h.pageViews ?? h.count ?? 0),
-            hourIndex: h.hourIndex ?? i,
-            isPeak: Boolean(h.isPeak),
-            bucketStart: h.bucketStart,
-          }))
-        : buildEmptyHourlyBuckets();
+      if (rawPeriodViews !== null || rawTotalMembers !== null) {
+        const pageViews = rawPeriodViews;
+        const uniqueVisitors = typeof rpcData.metrics?.uniqueVisitors?.value === 'number'
+          ? rpcData.metrics.uniqueVisitors.value
+          : typeof rpcData.uniqueVisitors24h === 'number'
+          ? rpcData.uniqueVisitors24h
+          : typeof rpcData.uniqueVisitors === 'number'
+          ? rpcData.uniqueVisitors
+          : null;
 
-      const rawCountries = Array.isArray(rpcData.breakdowns?.countries)
-        ? rpcData.breakdowns.countries
-        : Array.isArray(rpcData.topCountries)
-        ? rpcData.topCountries
-        : [];
+        const newReaders = typeof rpcData.metrics?.newReaders?.value === 'number'
+          ? rpcData.metrics.newReaders.value
+          : typeof rpcData.newSignups24h === 'number'
+          ? rpcData.newSignups24h
+          : typeof rpcData.newReaders === 'number'
+          ? rpcData.newReaders
+          : null;
 
-      const rawPages = Array.isArray(rpcData.breakdowns?.pages)
-        ? rpcData.breakdowns.pages
-        : Array.isArray(rpcData.topPages)
-        ? rpcData.topPages
-        : [];
+        const totalMembers = rawTotalMembers;
 
-      const rawDevices = Array.isArray(rpcData.breakdowns?.devices)
-        ? rpcData.breakdowns.devices
-        : Array.isArray(rpcData.devices)
-        ? rpcData.devices
-        : [];
+        const rawHourly = Array.isArray(rpcData.hourlyActivity) ? rpcData.hourlyActivity : [];
+        const hourlyActivity: HourPoint[] = rawHourly.length > 0
+          ? rawHourly.map((h: any, i: number) => ({
+              label: h.label || `${i}:00`,
+              count: Number(h.pageViews ?? h.count ?? 0),
+              hourIndex: h.hourIndex ?? i,
+              isPeak: Boolean(h.isPeak),
+              bucketStart: h.bucketStart,
+            }))
+          : [];
 
-      const rawReferrers = Array.isArray(rpcData.breakdowns?.referrers)
-        ? rpcData.breakdowns.referrers
-        : Array.isArray(rpcData.referrers)
-        ? rpcData.referrers
-        : [];
+        const rawCountries = Array.isArray(rpcData.breakdowns?.countries)
+          ? rpcData.breakdowns.countries
+          : Array.isArray(rpcData.topCountries)
+          ? rpcData.topCountries
+          : [];
 
-      const rawTopMembers = Array.isArray(rpcData.topMembers) ? rpcData.topMembers : [];
+        const rawPages = Array.isArray(rpcData.breakdowns?.pages)
+          ? rpcData.breakdowns.pages
+          : Array.isArray(rpcData.topPages)
+          ? rpcData.topPages
+          : [];
 
-      const pageViewsChange = rpcData.comparisons?.pageViewsChangePercent != null
-        ? { value: rpcData.comparisons.pageViewsChangePercent, label: periodLabel }
-        : undefined;
+        const rawDevices = Array.isArray(rpcData.breakdowns?.devices)
+          ? rpcData.breakdowns.devices
+          : Array.isArray(rpcData.devices)
+          ? rpcData.devices
+          : [];
 
-      const uniqueVisitorsChange = rpcData.comparisons?.uniqueVisitorsChangePercent != null
-        ? { value: rpcData.comparisons.uniqueVisitorsChangePercent, label: periodLabel }
-        : undefined;
+        const rawReferrers = Array.isArray(rpcData.breakdowns?.referrers)
+          ? rpcData.breakdowns.referrers
+          : Array.isArray(rpcData.referrers)
+          ? rpcData.referrers
+          : [];
 
-      const newReadersChange = rpcData.comparisons?.newReadersChangePercent != null
-        ? { value: rpcData.comparisons.newReadersChangePercent, label: periodLabel }
-        : undefined;
+        const rawTopMembers = Array.isArray(rpcData.topMembers) ? rpcData.topMembers : [];
 
-      const readingEngagement = {
-        bookViews: Number(rpcData.engagement?.bookOpens?.value ?? rpcData.readingEngagement?.bookViews?.count ?? rpcData.readingEngagement?.bookViews ?? 0),
-        readingProgressUpdates: Number(rpcData.engagement?.readingProgressCompletions?.value ?? rpcData.readingEngagement?.readingProgressUpdates?.count ?? 0),
-        groupJoins: Number(rpcData.engagement?.groupJoins?.value ?? rpcData.readingEngagement?.groupJoinsCount?.count ?? rpcData.readingEngagement?.groupJoins ?? 0),
-        discussions: Number(rpcData.engagement?.discussions?.value ?? rpcData.readingEngagement?.discussionsCount?.count ?? rpcData.readingEngagement?.discussions ?? 0),
-      };
+        const pageViewsChange = rpcData.comparisons?.pageViewsChangePercent != null
+          ? { value: rpcData.comparisons.pageViewsChangePercent, label: periodLabel }
+          : undefined;
 
-      return {
-        pageViews,
-        uniqueVisitors,
-        newReaders,
-        totalMembers,
-        avgTimeOnSite: '—',
-        pageViewsChange,
-        uniqueVisitorsChange,
-        newReadersChange,
-        avgTimeChange: undefined,
-        hourlyActivity,
-        countries: rawCountries,
-        topPages: rawPages,
-        devices: rawDevices,
-        referrers: rawReferrers,
-        readingEngagement,
-        topMembers: rawTopMembers,
-        lastUpdated: rpcData.lastUpdated || new Date().toISOString(),
-        isStale: false,
-      };
+        const uniqueVisitorsChange = rpcData.comparisons?.uniqueVisitorsChangePercent != null
+          ? { value: rpcData.comparisons.uniqueVisitorsChangePercent, label: periodLabel }
+          : undefined;
+
+        const newReadersChange = rpcData.comparisons?.newReadersChangePercent != null
+          ? { value: rpcData.comparisons.newReadersChangePercent, label: periodLabel }
+          : undefined;
+
+        const readingEngagement = {
+          bookViews: Number(rpcData.engagement?.bookOpens?.value ?? rpcData.readingEngagement?.bookViews?.count ?? rpcData.readingEngagement?.bookViews ?? 0),
+          readingProgressUpdates: Number(rpcData.engagement?.readingProgressCompletions?.value ?? rpcData.readingEngagement?.readingProgressUpdates?.count ?? 0),
+          groupJoins: Number(rpcData.engagement?.groupJoins?.value ?? rpcData.readingEngagement?.groupJoinsCount?.count ?? rpcData.readingEngagement?.groupJoins ?? 0),
+          discussions: Number(rpcData.engagement?.discussions?.value ?? rpcData.readingEngagement?.discussionsCount?.count ?? rpcData.readingEngagement?.discussions ?? 0),
+        };
+
+        return {
+          pageViews,
+          uniqueVisitors,
+          newReaders,
+          totalMembers,
+          avgTimeOnSite: '—',
+          pageViewsChange,
+          uniqueVisitorsChange,
+          newReadersChange,
+          avgTimeChange: undefined,
+          hourlyActivity,
+          countries: rawCountries,
+          topPages: rawPages,
+          devices: rawDevices,
+          referrers: rawReferrers,
+          readingEngagement,
+          topMembers: rawTopMembers,
+          lastUpdated: rpcData.lastUpdated || new Date().toISOString(),
+          isStale: false,
+        };
+      }
     }
 
-    // 2. Head-count queries fallback if RPC does not exist
+    // 2. Head-count / public RPC fallback: query authoritative counts directly
     const [
       usersRpcRes,
       visitsRpcRes,
@@ -391,14 +422,19 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       safeCount('post_comments', 'created_at', timeframeStart),
     ]);
 
-    const rpcUsers = Number((usersRpcRes as any)?.data) || 0;
-    const finalTotalMembers = rpcUsers > 0 ? rpcUsers : totalProfiles;
-    const rpcVisits = Number((visitsRpcRes as any)?.data) || 0;
+    const rpcUsers = typeof (usersRpcRes as any)?.data === 'number' ? (usersRpcRes as any).data : null;
+    const rpcVisits = typeof (visitsRpcRes as any)?.data === 'number' ? (visitsRpcRes as any).data : null;
+
+    if (rpcVisits === null && rpcUsers === null && totalProfiles === null) {
+      throw new Error('Database statistics unavailable');
+    }
+
+    const finalTotalMembers = rpcUsers !== null ? rpcUsers : (typeof totalProfiles === 'number' ? totalProfiles : 0);
 
     return {
-      pageViews: rpcVisits,
+      pageViews: rpcVisits ?? 0,
       uniqueVisitors: 0,
-      newReaders: newProfiles,
+      newReaders: newProfiles ?? 0,
       totalMembers: finalTotalMembers,
       avgTimeOnSite: '—',
       pageViewsChange: undefined,
@@ -412,9 +448,9 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       referrers: [],
       readingEngagement: {
         bookViews: 0,
-        readingProgressUpdates: progressUpdates,
-        groupJoins: groupJoins,
-        discussions: postsCount + commentsCount,
+        readingProgressUpdates: progressUpdates ?? 0,
+        groupJoins: groupJoins ?? 0,
+        discussions: (postsCount ?? 0) + (commentsCount ?? 0),
       },
       topMembers: [],
       lastUpdated: new Date().toISOString(),
@@ -425,8 +461,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
   // 2. Fetch Aggregate Stats with Seamless Fallback
   const fetchStats = useCallback(
     async (manual: boolean = false) => {
-      if (inFlightStatsRef.current) return;
-      inFlightStatsRef.current = true;
+      const currentSeq = ++requestSeqRef.current;
 
       if (manual || !statsRef.current) {
         setLoading(true);
@@ -452,7 +487,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             throw new Error('Invalid statistics payload returned');
           }
 
-          // Modern schema or legacy fields extraction
+          // Check for valid traffic telemetry in modern payload
+          // Note: DO NOT map communityActivity (which represents post/comment actions) to pageViews!
           const rawPeriodViews = typeof data.metrics?.periodPageViews?.value === 'number'
             ? data.metrics.periodPageViews.value
             : typeof data.last24hVisits === 'number'
@@ -463,8 +499,6 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             ? data.pageViews
             : typeof data.totalVisits === 'number'
             ? data.totalVisits
-            : typeof data.communityActivity === 'number'
-            ? data.communityActivity
             : null;
 
           const rawTotalMembers = typeof data.metrics?.registeredReaders?.value === 'number'
@@ -477,15 +511,53 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             ? data.totalSignups
             : null;
 
-          if (rawPeriodViews !== null || rawTotalMembers !== null) {
-            const pageViews = rawPeriodViews ?? 0;
+          // If rawPeriodViews is null, the Edge Function returned an outdated legacy payload without traffic metrics!
+          // Fall back to direct database queries!
+          if (rawPeriodViews === null) {
+            try {
+              statsPayload = await fetchDatabaseFallbackStats(timeframe);
+            } catch {
+              if (rawTotalMembers !== null) {
+                statsPayload = {
+                  pageViews: 0,
+                  uniqueVisitors: 0,
+                  newReaders: 0,
+                  totalMembers: rawTotalMembers,
+                  avgTimeOnSite: '—',
+                  pageViewsChange: undefined,
+                  uniqueVisitorsChange: undefined,
+                  newReadersChange: undefined,
+                  avgTimeChange: undefined,
+                  hourlyActivity: buildEmptyHourlyBuckets(),
+                  countries: [],
+                  topPages: [],
+                  devices: [],
+                  referrers: [],
+                  readingEngagement: {
+                    bookViews: 0,
+                    readingProgressUpdates: 0,
+                    groupJoins: 0,
+                    discussions: 0,
+                  },
+                  topMembers: [],
+                  lastUpdated: data.lastUpdated || new Date().toISOString(),
+                  isStale: false,
+                };
+              }
+            }
+            if (statsPayload && rawTotalMembers !== null) {
+              statsPayload.totalMembers = Math.max(statsPayload.totalMembers ?? 0, rawTotalMembers);
+            }
+          } else {
+            // Modern or traffic-enabled payload
+            const pageViews = rawPeriodViews;
             const uniqueVisitors = typeof data.metrics?.uniqueVisitors?.value === 'number'
               ? data.metrics.uniqueVisitors.value
               : typeof data.uniqueVisitors24h === 'number'
               ? data.uniqueVisitors24h
               : typeof data.uniqueVisitors === 'number'
               ? data.uniqueVisitors
-              : 0;
+              : null;
 
             const newReaders = typeof data.metrics?.newReaders?.value === 'number'
               ? data.metrics.newReaders.value
@@ -493,12 +565,16 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               ? data.newSignups24h
               : typeof data.newReaders === 'number'
               ? data.newReaders
-              : 0;
+              : null;
 
-            const totalMembers = rawTotalMembers ?? 0;
+            const totalMembers = rawTotalMembers;
 
             // Hourly Activity
-            const rawHourly = Array.isArray(data.hourlyActivity) ? data.hourlyActivity : [];
+            const rawHourly = Array.isArray(data.hourlyActivity)
+              ? data.hourlyActivity
+              : Array.isArray(data.hourlyTraffic)
+              ? data.hourlyTraffic
+              : [];
             const hourlyActivity: HourPoint[] = rawHourly.length > 0
               ? rawHourly.map((h: any, i: number) => ({
                   label: h.label || `${i}:00`,
@@ -507,7 +583,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
                   isPeak: Boolean(h.isPeak),
                   bucketStart: h.bucketStart,
                 }))
-              : buildEmptyHourlyBuckets();
+              : [];
 
             // Breakdowns
             const countries: BreakdownItem[] = Array.isArray(data.breakdowns?.countries)
@@ -536,17 +612,23 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
             const topMembers: MemberLeaderboardItem[] = Array.isArray(data.topMembers) ? data.topMembers : [];
 
-            // Percentage Comparisons (null when previous period baseline was 0)
+            // Percentage Comparisons
             const pageViewsChange = data.comparisons?.pageViewsChangePercent != null
               ? { value: data.comparisons.pageViewsChangePercent, label: periodLabel }
+              : data.metrics?.periodPageViews?.comparison?.percentChange != null
+              ? { value: data.metrics.periodPageViews.comparison.percentChange, label: periodLabel }
               : undefined;
 
             const uniqueVisitorsChange = data.comparisons?.uniqueVisitorsChangePercent != null
               ? { value: data.comparisons.uniqueVisitorsChangePercent, label: periodLabel }
+              : data.metrics?.uniqueVisitors?.comparison?.percentChange != null
+              ? { value: data.metrics.uniqueVisitors.comparison.percentChange, label: periodLabel }
               : undefined;
 
             const newReadersChange = data.comparisons?.newReadersChangePercent != null
               ? { value: data.comparisons.newReadersChangePercent, label: periodLabel }
+              : data.metrics?.newReaders?.comparison?.percentChange != null
+              ? { value: data.metrics.newReaders.comparison.percentChange, label: periodLabel }
               : undefined;
 
             const readingEngagement = {
@@ -594,20 +676,17 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               lastUpdated: data.lastUpdated || new Date().toISOString(),
               isStale: false,
             };
-          } else {
-            // Edge Function returned without metrics, fall back to DB
-            statsPayload = await fetchDatabaseFallbackStats(timeframe);
           }
         } catch (edgeErr: any) {
           // If we already had cached stats, preserve them and label them as stale!
           if (statsRef.current && typeof statsRef.current.pageViews === 'number') {
             throw edgeErr;
           }
-          // Edge function failed, fall back to direct DB queries
+          // Edge function failed with no prior cache, fall back to direct DB queries
           statsPayload = await fetchDatabaseFallbackStats(timeframe);
         }
 
-        if (isMountedRef.current && statsPayload) {
+        if (isMountedRef.current && currentSeq === requestSeqRef.current && statsPayload) {
           setStats(statsPayload);
           setError(null);
           try {
@@ -617,14 +696,13 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           }
         }
       } catch (err: any) {
-        if (isMountedRef.current) {
+        if (isMountedRef.current && currentSeq === requestSeqRef.current) {
           // Preserve last successful result when refresh fails, but label it as stale
           setStats(prev => (prev ? { ...prev, isStale: true } : null));
           setError(err.message || 'Network error fetching community stats');
         }
       } finally {
-        inFlightStatsRef.current = false;
-        if (isMountedRef.current) {
+        if (isMountedRef.current && currentSeq === requestSeqRef.current) {
           setLoading(false);
         }
       }
@@ -735,7 +813,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       const cached = localStorage.getItem(getCacheKey(newTf));
       if (cached) {
         const parsed = JSON.parse(cached) as PulseStats;
-        if (parsed && typeof parsed.pageViews === 'number') {
+        if (parsed && ((typeof parsed.pageViews === 'number' && parsed.pageViews > 0) || (typeof parsed.totalMembers === 'number' && parsed.totalMembers > 0))) {
           setStats({ ...parsed, isStale: true });
           return;
         }
