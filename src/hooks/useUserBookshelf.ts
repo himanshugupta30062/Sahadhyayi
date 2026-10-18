@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from '@/components/ui/use-toast';
 import { uniqueChannelName } from '@/lib/realtime';
+import { trackUiEvent } from '@/lib/analytics';
 
 export interface BookshelfItem {
   id: string;
@@ -133,7 +134,12 @@ export const useAddToBookshelf = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, { bookId, status }) => {
+      trackUiEvent(status === 'completed' ? 'book_marked_completed' : status === 'reading' ? 'reading_started' : 'book_added_to_shelf', {
+        item_type: 'book',
+        book_id: bookId,
+        action: status,
+      });
       notifyShelfChanged(queryClient);
       toast({ title: 'Success', description: 'Book added to your shelf!' });
     },
@@ -162,7 +168,15 @@ export const useUpdateBookshelfItem = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (updatedItem, { updates }) => {
+      if (updatedItem?.book_id) {
+        const nextStatus = updates.status;
+        trackUiEvent(nextStatus === 'completed' ? 'book_marked_completed' : nextStatus === 'reading' ? 'reading_started' : 'bookshelf_item_updated', {
+          item_type: 'book',
+          book_id: updatedItem.book_id,
+          ...(nextStatus ? { action: nextStatus } : {}),
+        });
+      }
       notifyShelfChanged(queryClient);
       toast({ title: 'Success', description: 'Book updated!' });
     },
@@ -181,7 +195,8 @@ export const useRemoveFromBookshelf = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, deletedItemId) => {
+      trackUiEvent('book_removed_from_shelf', { item_type: 'shelf_item', item_id: deletedItemId });
       notifyShelfChanged(queryClient);
       toast({ title: 'Success', description: 'Book removed from shelf!' });
     },
