@@ -10,11 +10,11 @@ const ReadingGroups = () => {
         canonical="https://sahadhyayi.com/groups"
         keywords={['reading groups', 'book clubs', 'book discussions', 'reading community', 'literary discussions', 'book lovers']}
       />
-      <main className="min-h-screen px-4 py-8">
+      <div className="min-h-screen px-4 py-8">
         <div className="mx-auto max-w-7xl">
           <ReadingGroupsDirectory />
         </div>
-      </main>
+      </div>
     </>
   );
 };

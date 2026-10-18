@@ -75,7 +75,7 @@ const LibraryHero = ({
   ];
 
   return (
-    <div className="relative min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] overflow-hidden">
+    <div className="relative py-8 sm:py-12 md:py-16 overflow-hidden">
       {/* Background with overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -105,24 +105,23 @@ const LibraryHero = ({
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] px-4 sm:px-6 py-8 sm:py-12 text-center overflow-hidden">
-        <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 w-full">
+      <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 text-center overflow-hidden">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 w-full">
           {/* Title */}
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
-              <div className="p-2 sm:p-3 md:p-4 bg-gradient-to-br from-library-primary to-library-secondary rounded-xl sm:rounded-2xl shadow-2xl transform rotate-3">
-                <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" />
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-2 sm:mb-4">
+              <div className="p-2 sm:p-3 md:p-3.5 bg-gradient-to-br from-library-primary to-library-secondary rounded-xl sm:rounded-2xl shadow-2xl transform rotate-3">
+                <BookOpen className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 text-white" />
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
                 Digital Library
               </h1>
             </div>
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 font-medium px-2">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 font-medium px-2">
               Discover Your Next Great Adventure
             </p>
-            <p className="text-sm sm:text-base md:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed px-4">
-              Explore our vast collection of digital books. From timeless classics to contemporary masterpieces, 
-              find your perfect read with our intelligent search and personalized recommendations.
+            <p className="text-xs sm:text-sm md:text-base text-white/80 max-w-2xl mx-auto leading-relaxed px-4">
+              Explore our vast collection of verified digital books. From timeless classics and spiritual texts to contemporary literature.
             </p>
           </div>
 
@@ -269,24 +268,28 @@ const LibraryHero = ({
             </div>
           </div>
 
-          {/* Stats - Improved design with smaller cards */}
-          <div className="w-full max-w-4xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-              {stats.map((stat, index) => (
-                <div 
-                  key={stat.label}
-                  className="bg-white/95 backdrop-blur-sm rounded-lg p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-200"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="flex flex-col items-center space-y-1 sm:space-y-2">
-                    <div className={`p-1.5 sm:p-2 rounded-full bg-gray-100 ${stat.color}`}>
-                      <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </div>
-                    <div className="text-base sm:text-lg md:text-xl font-bold text-gray-900 whitespace-nowrap">{stat.value}</div>
-                    <div className="text-[10px] sm:text-xs text-gray-600 text-center leading-tight px-1">{stat.label}</div>
-                  </div>
-                </div>
-              ))}
+          {/* Stats Bar - Sleek compact horizontal strip */}
+          <div className="w-full max-w-2xl mx-auto px-4 pt-1">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-2 px-4 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-medium shadow-md">
+              <div className="flex items-center gap-1.5">
+                <BookOpen className="w-4 h-4 text-emerald-300" />
+                <span><strong className="text-white">{totalBooks?.toLocaleString() ?? '12,500+'}</strong> Books</span>
+              </div>
+              <span className="text-white/40">•</span>
+              <div className="flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-sky-300" />
+                <span><strong className="text-white">{activeReaders.toLocaleString()}</strong> Active Readers</span>
+              </div>
+              <span className="text-white/40 hidden sm:inline">•</span>
+              <div className="flex items-center gap-1.5 hidden sm:flex">
+                <Star className="w-4 h-4 text-amber-300 fill-amber-300" />
+                <span><strong className="text-white">{avgRating}</strong> Rating</span>
+              </div>
+              <span className="text-white/40 hidden md:inline">•</span>
+              <div className="flex items-center gap-1.5 hidden md:flex">
+                <TrendingUp className="w-4 h-4 text-emerald-300" />
+                <span>Free Open Access</span>
+              </div>
             </div>
           </div>
         </div>

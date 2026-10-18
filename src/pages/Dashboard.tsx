@@ -99,7 +99,7 @@ const Dashboard = () => {
         <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
           
           {/* Welcome Header - Clean & Contextual */}
-          <Card className="border-0 bg-gradient-to-r from-[hsl(var(--brand-primary))] to-[hsl(var(--brand-secondary))] text-white overflow-hidden relative">
+          <Card className="border-0 bg-gradient-to-r from-[hsl(var(--brand-primary))] to-[hsl(var(--brand-secondary))] dark:from-[#78350F] dark:to-[#7C2D12] text-white overflow-hidden relative shadow-sm">
             <CardContent className="p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
                 <div className="space-y-2">
@@ -108,7 +108,7 @@ const Dashboard = () => {
                       ? `Continue reading, ${userName}` 
                       : `Welcome back, ${userName}!`}
                   </h1>
-                  <p className="text-white/90 text-sm sm:text-base max-w-md">
+                  <p className="text-white/95 text-sm sm:text-base max-w-md">
                     {currentBook 
                       ? `Pick up where you left off with "${currentBook.books_library?.title}"`
                       : currentlyReading === 0 
@@ -119,15 +119,15 @@ const Dashboard = () => {
                 <div className="flex gap-3">
                   {currentBook ? (
                     <Link to={`/book/${currentBook.book_id}`}>
-                      <Button className="bg-white text-[hsl(var(--brand-primary))] hover:bg-white/90 shadow-lg font-semibold">
-                        <BookOpen className="w-4 h-4 mr-2" />
+                      <Button className="bg-white text-stone-900 hover:bg-stone-100 shadow-md font-semibold">
+                        <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
                         Continue Reading
                       </Button>
                     </Link>
                   ) : (
                     <Link to="/library">
-                      <Button className="bg-white text-[hsl(var(--brand-primary))] hover:bg-white/90 shadow-lg font-semibold">
-                        <Plus className="w-4 h-4 mr-2" />
+                      <Button className="bg-white text-stone-900 hover:bg-stone-100 shadow-md font-semibold">
+                        <Plus className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
                         Add First Book
                       </Button>
                     </Link>
@@ -153,7 +153,7 @@ const Dashboard = () => {
               {/* Quick Actions */}
               <Card className="border-border">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-semibold">Getting Started Checklist</CardTitle>
+                  <CardTitle as="h2" className="text-base font-semibold">Getting Started Checklist</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
@@ -178,7 +178,7 @@ const Dashboard = () => {
 
               <Card className="border-border">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <CardTitle as="h2" className="text-base font-semibold flex items-center gap-2">
                     <Library className="w-4 h-4 text-[hsl(var(--brand-primary))]" />
                     Quick Actions
                   </CardTitle>
@@ -211,7 +211,7 @@ const Dashboard = () => {
               {userBooks.length > 0 && (
                 <Card className="border-border">
                   <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                    <CardTitle className="text-base font-semibold">Recent Additions</CardTitle>
+                    <CardTitle as="h2" className="text-base font-semibold">Recent Additions</CardTitle>
                     <Link to="/bookshelf">
                       <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                         View All <ChevronRight className="w-4 h-4 ml-1" />
@@ -255,7 +255,7 @@ const Dashboard = () => {
               {/* Reading Goal - Clean Circular Progress */}
               <Card className="border-border overflow-hidden">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <CardTitle as="h2" className="text-base font-semibold flex items-center gap-2">
                     <Flame className="w-4 h-4 text-[hsl(var(--brand-primary))]" />
                     {currentYear} Reading Goal
                   </CardTitle>

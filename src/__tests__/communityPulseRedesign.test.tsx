@@ -401,6 +401,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     mockRpc.mockImplementation((name: string) => {
       if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
       if (name === 'get_website_visit_count') return Promise.resolve({ data: 3420, error: null });
+      if (name === 'get_total_users_count') return Promise.resolve({ data: 120, error: null });
       return Promise.resolve({ data: null, error: null });
     });
     mockFrom.mockImplementation((table: string) => ({
@@ -417,11 +418,10 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     });
 
     expect(result.current.stats).not.toBeNull();
-    expect(result.current.stats?.pageViews).toBeGreaterThan(0);
-    expect(result.current.stats?.uniqueVisitors).toBeGreaterThan(0);
+    expect(result.current.stats?.pageViews).toBe(3420);
+    expect(result.current.stats?.totalMembers).toBe(120);
+    expect(result.current.stats?.newReaders).toBe(18);
     expect(result.current.stats?.hourlyActivity.length).toBe(24);
-    expect(result.current.stats?.countries.length).toBeGreaterThan(0);
-    expect(result.current.stats?.topPages.length).toBeGreaterThan(0);
     expect(result.current.error).toBeNull();
   });
 
@@ -446,16 +446,14 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     });
 
     expect(result.current.stats).not.toBeNull();
-    // Proportional metrics derived from real database visit and member base
-    expect(result.current.stats!.pageViews).toBeGreaterThan(0);
-    expect(result.current.stats!.uniqueVisitors).toBeGreaterThan(0);
-    expect(result.current.stats!.newReaders).toBe(10);
-    expect(result.current.stats!.totalMembers).toBe(9612);
+    expect(result.current.stats!.totalMembers).toBe(4);
+    expect(result.current.stats!.pageViews).toBe(0);
+    expect(result.current.stats!.uniqueVisitors).toBe(0);
     expect(result.current.stats!.hourlyActivity.length).toBe(24);
-    expect(result.current.stats!.countries.length).toBeGreaterThan(0);
-    expect(result.current.stats!.topPages.length).toBeGreaterThan(0);
-    expect(result.current.stats!.devices.length).toBeGreaterThan(0);
-    expect(result.current.stats!.referrers.length).toBeGreaterThan(0);
+    expect(result.current.stats!.countries).toEqual([]);
+    expect(result.current.stats!.topPages).toEqual([]);
+    expect(result.current.stats!.devices).toEqual([]);
+    expect(result.current.stats!.referrers).toEqual([]);
     expect(result.current.error).toBeNull();
   });
 
@@ -495,9 +493,27 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
 
   // 11. Timeframe Switching Produces Distinct, Timeframe-Aware Metrics (No duplicate or static data)
   it('updates metrics dynamically when switching timeframe between 24h, 7d, and 30d without duplicate data', async () => {
-    mockRpc.mockImplementation((name: string) => {
-      if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
-      if (name === 'get_website_visit_count') return Promise.resolve({ data: 9596, error: null });
+    mockFunctionsInvoke.mockImplementation((fn: string, options?: any) => {
+      if (fn === 'community-stats') {
+        const tf = options?.body?.timeframe || '24h';
+        const views = tf === '30d' ? 4500 : tf === '7d' ? 1200 : 250;
+        const newReaders = tf === '30d' ? 65 : tf === '7d' ? 18 : 3;
+        return Promise.resolve({
+          data: {
+            timeframe: tf,
+            totalVisits: 10000,
+            last24hVisits: views,
+            uniqueVisitors24h: Math.round(views * 0.6),
+            totalMembers: 450,
+            newSignups24h: newReaders,
+            comparisons: {
+              pageViewsChangePercent: 12,
+            },
+            hourlyActivity: [{ hourIndex: 0, label: '12 AM', pageViews: 10 }],
+            lastUpdated: new Date().toISOString(),
+          },
+        });
+      }
       return Promise.resolve({ data: null, error: null });
     });
 
@@ -507,34 +523,37 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    // 24h baseline / metrics
+    // 24h metrics
     const stats24h = result.current.stats!;
-    expect(stats24h.pageViews).toBeGreaterThan(0);
-    expect(stats24h.newReaders).toBe(10);
-    expect(stats24h.totalMembers).toBe(9612);
-    expect(stats24h.pageViewsChange?.label).toContain('previous day');
+    expect(stats24h.pageViews).toBe(250);
+    expect(stats24h.newReaders).toBe(3);
+    expect(stats24h.totalMembers).toBe(450);
 
     // Switch to 7d
     act(() => {
       result.current.setTimeframe('7d');
     });
 
+    await waitFor(() => {
+      expect(result.current.stats?.pageViews).toBe(1200);
+    });
+
     const stats7d = result.current.stats!;
-    expect(stats7d.pageViews).toBeGreaterThan(0);
-    expect(stats7d.newReaders).toBe(62);
-    expect(stats7d.totalMembers).toBe(9612);
-    expect(stats7d.pageViewsChange?.label).toContain('previous 7 days');
+    expect(stats7d.newReaders).toBe(18);
+    expect(stats7d.totalMembers).toBe(450);
 
     // Switch to 30d
     act(() => {
       result.current.setTimeframe('30d');
     });
 
+    await waitFor(() => {
+      expect(result.current.stats?.pageViews).toBe(4500);
+    });
+
     const stats30d = result.current.stats!;
-    expect(stats30d.pageViews).toBeGreaterThan(0);
-    expect(stats30d.newReaders).toBe(245);
-    expect(stats30d.totalMembers).toBe(9612);
-    expect(stats30d.pageViewsChange?.label).toContain('previous 30 days');
+    expect(stats30d.newReaders).toBe(65);
+    expect(stats30d.totalMembers).toBe(450);
 
     // Ensure 24h, 7d, 30d are distinct and not identical
     expect(stats24h.pageViews).not.toBe(stats7d.pageViews);

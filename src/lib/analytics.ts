@@ -46,12 +46,32 @@ export const getAnalyticsIds = () => {
 const cleanCampaignValue = (value: string | null) =>
   value ? value.replace(/[^a-zA-Z0-9 _.-]/g, '').trim().slice(0, 100) || null : null;
 
+// In-memory deduplication set to avoid duplicate event insertion within 4 seconds
+const recentEvents = new Map<string, number>();
+
 export const trackAnalyticsEvent = async (
   eventType: 'pageview' | 'activity',
   eventName?: string,
   pagePath?: string,
+  _metadata?: Record<string, any>,
 ) => {
   if (typeof window === 'undefined') return;
+
+  const dedupKey = `${eventType}:${eventName || ''}:${pagePath || window.location.pathname}`;
+  const now = Date.now();
+  const lastEmitted = recentEvents.get(dedupKey);
+  if (lastEmitted && now - lastEmitted < 4000) {
+    return; // Suppress duplicate events within 4 seconds
+  }
+  recentEvents.set(dedupKey, now);
+
+  // Clean old deduplication entries
+  if (recentEvents.size > 100) {
+    for (const [k, time] of recentEvents.entries()) {
+      if (now - time > 10000) recentEvents.delete(k);
+    }
+  }
+
   try {
     const { visitorId, sessionId } = getAnalyticsIds();
     const query = new URLSearchParams(window.location.search);
@@ -59,7 +79,14 @@ export const trackAnalyticsEvent = async (
     let referrer: string | null = null;
     try { referrer = document.referrer ? new URL(document.referrer).hostname.slice(0, 200) : null; } catch { referrer = null; }
 
+    const { data: authData } = await supabase.auth.getSession();
+    const headers: Record<string, string> = {};
+    if (authData?.session?.access_token) {
+      headers['Authorization'] = `Bearer ${authData.session.access_token}`;
+    }
+
     await supabase.functions.invoke('website-visits', {
+      headers,
       body: {
         event_id: newId(),
         event_type: eventType,
@@ -78,5 +105,20 @@ export const trackAnalyticsEvent = async (
   }
 };
 
-export const trackUiEvent = (eventName: string) =>
-  trackAnalyticsEvent('activity', eventName);
+export const trackUiEvent = (eventName: string, metadata?: Record<string, any>) =>
+  trackAnalyticsEvent('activity', eventName, undefined, metadata);
+
+export const trackBookOpened = (bookId: string, _title?: string) =>
+  trackAnalyticsEvent('activity', 'book_opened', `/book/${bookId}`);
+
+export const trackReadingStarted = (bookId: string, _title?: string) =>
+  trackAnalyticsEvent('activity', 'reading_started', `/reader/${bookId}`);
+
+export const trackReadingCompleted = (bookId: string, _title?: string) =>
+  trackAnalyticsEvent('activity', 'reading_completed', `/reader/${bookId}`);
+
+export const trackGroupJoined = (groupId: string, _groupName?: string) =>
+  trackAnalyticsEvent('activity', 'group_joined', `/groups/${groupId}`);
+
+export const trackDiscussionCreated = (postId: string) =>
+  trackAnalyticsEvent('activity', 'discussion_created', `/social?post=${postId}`);

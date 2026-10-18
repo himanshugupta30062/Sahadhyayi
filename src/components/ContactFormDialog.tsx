@@ -146,7 +146,7 @@ const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
           <div className="space-y-2">
             <Label htmlFor="contact-name" className="text-stone-700 dark:text-gray-300 text-xs uppercase tracking-wider font-medium">Name</Label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 dark:text-gray-500" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 dark:text-gray-500" aria-hidden="true" />
               <Input
                 id="contact-name"
                 placeholder="Your name"
@@ -161,7 +161,7 @@ const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
           <div className="space-y-2">
             <Label htmlFor="contact-email" className="text-stone-700 dark:text-gray-300 text-xs uppercase tracking-wider font-medium">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 dark:text-gray-500" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 dark:text-gray-500" aria-hidden="true" />
               <Input
                 id="contact-email"
                 type="email"
@@ -177,7 +177,7 @@ const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
           <div className="space-y-2">
             <Label htmlFor="contact-message" className="text-stone-700 dark:text-gray-300 text-xs uppercase tracking-wider font-medium">Message</Label>
             <div className="relative">
-              <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-stone-400 dark:text-gray-500" />
+              <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-stone-400 dark:text-gray-500" aria-hidden="true" />
               <Textarea
                 id="contact-message"
                 placeholder="Tell us what's on your mind..."

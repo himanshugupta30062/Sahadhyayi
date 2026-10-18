@@ -67,9 +67,9 @@ const About = () => {
 
   const stats = [
     { icon: Target, number: "12,500+", label: "Curated Books" },
-    { icon: Users, number: "50K+", label: "Active Readers" },
-    { icon: BookOpen, number: "500+", label: "Reading Circles" },
-    { icon: TrendingUp, number: "95%", label: "Satisfaction Rate" },
+    { icon: Sparkles, number: "Heritage", label: "Sanskrit Roots" },
+    { icon: Radio, number: "Live Rooms", label: "Silent Sprints" },
+    { icon: Quote, number: "Marginalia", label: "Shared Notes" },
   ];
 
   const pillars = [
@@ -556,7 +556,7 @@ const About = () => {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
                           <label htmlFor="contact_name" className="block text-xs font-medium text-foreground mb-1">
-                            Your Name
+                            Your Name <span className="text-destructive" aria-hidden="true">*</span>
                           </label>
                           <Input
                             id="contact_name"
@@ -564,6 +564,8 @@ const About = () => {
                             placeholder="e.g. Aditi Sharma"
                             disabled={loading}
                             autoComplete="name"
+                            aria-required="true"
+                            aria-invalid={!!form.formState.errors.name}
                             className="bg-background border-border"
                           />
                           {form.formState.errors.name && (
@@ -574,7 +576,7 @@ const About = () => {
                         </div>
                         <div>
                           <label htmlFor="contact_email" className="block text-xs font-medium text-foreground mb-1">
-                            Your Email
+                            Your Email <span className="text-destructive" aria-hidden="true">*</span>
                           </label>
                           <Input
                             id="contact_email"
@@ -583,6 +585,8 @@ const About = () => {
                             placeholder="you@example.com"
                             disabled={loading}
                             autoComplete="email"
+                            aria-required="true"
+                            aria-invalid={!!form.formState.errors.email}
                             className="bg-background border-border"
                           />
                           {form.formState.errors.email && (
@@ -595,7 +599,7 @@ const About = () => {
 
                       <div>
                         <label htmlFor="contact_message" className="block text-xs font-medium text-foreground mb-1">
-                          Your Note or Feedback
+                          Your Note or Feedback <span className="text-destructive" aria-hidden="true">*</span>
                         </label>
                         <Textarea
                           id="contact_message"
@@ -603,6 +607,8 @@ const About = () => {
                           placeholder="Share your thoughts, suggestions, or what you're reading right now…"
                           disabled={loading}
                           rows={4}
+                          aria-required="true"
+                          aria-invalid={!!form.formState.errors.message}
                           className="bg-background border-border"
                         />
                         {form.formState.errors.message && (

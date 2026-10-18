@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
   AlertCircle,
   Loader2,
@@ -124,7 +124,7 @@ const ReadingGroupsDirectory = () => {
   const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
   const [chatGroup, setChatGroup] = useState<Pick<Group, 'id' | 'name'> | null>(null);
 
-  const memberships = membershipsQuery.data ?? [];
+  const memberships = useMemo(() => membershipsQuery.data ?? [], [membershipsQuery.data]);
   const membershipByGroup = useMemo(
     () => new Map(memberships.map((m) => [m.group_id, m])),
     [memberships],
@@ -132,7 +132,7 @@ const ReadingGroupsDirectory = () => {
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
-  const allGroups = groupsQuery.data ?? [];
+  const allGroups = useMemo(() => groupsQuery.data ?? [], [groupsQuery.data]);
 
   const invitedGroup = useMemo(
     () => allGroups.find((g) => g.id === joinGroupId),
@@ -395,40 +395,51 @@ const ReadingGroupsDirectory = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-foreground break-words leading-snug">{group.name}</h3>
+                        <h3 className="font-semibold text-foreground break-words leading-snug">
+                          <Link to={`/groups/${group.id}`} className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:underline">
+                            {group.name}
+                          </Link>
+                        </h3>
                         <div className="flex items-center gap-1 shrink-0">
                           {isJoined && (
                             <Badge variant="outline" className="text-[10px] h-5 px-1.5 border-brand-primary/40 text-brand-primary bg-brand-primary/5">
                               Joined
                             </Badge>
                           )}
-                          {/* Admin/manage menu */}
-                          {canEdit && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label={`Manage ${group.name}`}>
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => copyInviteLink(group)}>
-                                  <Link2 className="mr-2 h-4 w-4" /> Copy Invite Link
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => setEditGroup({ id: group.id, name: group.name, description: group.description ?? '' })}>
-                                  <Pencil className="mr-2 h-4 w-4" /> Edit group
-                                </DropdownMenuItem>
-                                {canDelete && (
-                                  <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
-                                    onClick={() => setDeleteGroupId(group.id)}
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete group
+                          {/* Options menu */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label={`Options for ${group.name}`}>
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link to={`/groups/${group.id}`} className="cursor-pointer flex items-center">
+                                  <Users className="mr-2 h-4 w-4" /> View Details
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => copyInviteLink(group)}>
+                                <Link2 className="mr-2 h-4 w-4" /> Copy Invite Link
+                              </DropdownMenuItem>
+                              {canEdit && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => setEditGroup({ id: group.id, name: group.name, description: group.description ?? '' })}>
+                                    <Pencil className="mr-2 h-4 w-4" /> Edit group
                                   </DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
+                                  {canDelete && (
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      onClick={() => setDeleteGroupId(group.id)}
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" /> Delete group
+                                    </DropdownMenuItem>
+                                  )}
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                       <p className="mt-1 line-clamp-2 text-xs text-muted-foreground leading-relaxed">

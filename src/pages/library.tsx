@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, PenTool } from 'lucide-react';
 import SortingInfoTooltip from '@/components/library/SortingInfoTooltip';
 import LibraryHero from '@/components/library/LibraryHero';
+import LibraryFilters from '@/components/library/LibraryFilters';
 import BooksCollection from '@/components/library/BooksCollection';
 import { useCommunityStats } from '@/hooks/useCommunityStats';
 import { useLibraryBookCount } from '@/hooks/useLibraryBookCount';
@@ -140,6 +141,30 @@ export default function Library() {
             </Button>
           </div>
         </div>
+
+        <LibraryFilters
+          selectedGenre={selectedGenre}
+          onGenreChange={(genre) => {
+            setSelectedGenre(genre);
+            updateLibraryParams({ genre, search: searchQuery, author: selectedAuthor, year: selectedYear, language: selectedLanguage });
+          }}
+          selectedLanguage={selectedLanguage}
+          onLanguageChange={(language) => {
+            setSelectedLanguage(language);
+            updateLibraryParams({ language, search: searchQuery, genre: selectedGenre, author: selectedAuthor, year: selectedYear });
+          }}
+          selectedYear={selectedYear}
+          onYearChange={(year) => {
+            setSelectedYear(year);
+            updateLibraryParams({ year, search: searchQuery, genre: selectedGenre, author: selectedAuthor, language: selectedLanguage });
+          }}
+          searchQuery={searchQuery}
+          onClearSearch={() => {
+            setSearchQuery('');
+            updateLibraryParams({ search: '', genre: selectedGenre, author: selectedAuthor, year: selectedYear, language: selectedLanguage });
+          }}
+          onResetAll={handleReset}
+        />
 
         <BooksCollection
           searchQuery={searchQuery}

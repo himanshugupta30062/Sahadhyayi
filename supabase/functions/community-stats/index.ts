@@ -64,13 +64,13 @@ serve(async (req) => {
       );
     }
 
-    // 2. Invoke the server-side PostgreSQL aggregation RPC
+    // 2. Invoke the authoritative server-side PostgreSQL aggregation RPC
     const { data: rpcStats, error: rpcError } = await supabase.rpc("get_community_pulse_stats", {
       p_timeframe: timeframe,
     });
 
     if (!rpcError && rpcStats && typeof rpcStats === "object") {
-      // Direct return of sanitized, server-aggregated statistics
+      // Direct return of sanitized, authoritative server-aggregated statistics
       return new Response(JSON.stringify(rpcStats), {
         status: 200,
         headers: {
@@ -81,41 +81,34 @@ serve(async (req) => {
       });
     }
 
-    // If RPC is unavailable (e.g., during migration deployment), execute targeted DB aggregates
+    // If RPC failed or is pending migration deployment, perform exact aggregate count fallback
     if (rpcError) {
-      console.warn("get_community_pulse_stats RPC not found or failed, falling back to query aggregates:", rpcError.message);
+      console.warn("get_community_pulse_stats RPC error, executing exact count fallback:", rpcError.message);
     }
 
     const now = Date.now();
     const hours = timeframe === "7d" ? 168 : timeframe === "30d" ? 720 : 24;
     const timeframeStart = new Date(now - hours * 3600 * 1000).toISOString();
-    const twentyFourHoursAgo = new Date(now - 24 * 3600 * 1000).toISOString();
+    const periodEnd = new Date(now).toISOString();
 
     const [
       totalSignupsRes,
       newSignupsPeriodRes,
-      totalVisitsRes,
-      periodVisitsRes,
+      totalPageviewsRes,
+      periodPageviewsRes,
     ] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", timeframeStart),
-      supabase.from("website_visits").select("*", { count: "exact", head: true }),
-      supabase.from("website_visits").select("*", { count: "exact", head: true }).gte("visited_at", timeframeStart),
+      supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview"),
+      supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview").gte("visited_at", timeframeStart),
     ]);
 
-    if (totalVisitsRes.error) {
-      console.warn("Failed querying total visits:", totalVisitsRes.error.message);
-    }
-    if (periodVisitsRes.error) {
-      console.warn("Failed querying period visits:", periodVisitsRes.error.message);
-    }
+    const registeredReaders = totalSignupsRes.count ?? 0;
+    const newReaders = newSignupsPeriodRes.count ?? 0;
+    const totalPageviews = totalPageviewsRes.count ?? 0;
+    const periodPageviews = periodPageviewsRes.count ?? 0;
 
-    const totalSignups = totalSignupsRes.count ?? 0;
-    const newSignups = newSignupsPeriodRes.count ?? 0;
-    const totalVisits = totalVisitsRes.count ?? 0;
-    const periodVisits = periodVisitsRes.count ?? 0;
-
-    // 3. Compute real hourly activity and breakdowns from actual visits
+    // 24 chronological hourly buckets (initialized cleanly with 0)
     const hourlyActivity = [];
     const formatter = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Kolkata",
@@ -127,185 +120,97 @@ serve(async (req) => {
       const d = new Date(now - (23 - i) * 3600 * 1000);
       hourlyActivity.push({
         hourIndex: i,
+        bucketStart: d.toISOString(),
         label: formatter.format(d),
+        pageViews: 0,
         count: 0,
         isPeak: false,
       });
     }
 
-    const { data: recentVisitsData, error: rvError } = await supabase
-      .from("website_visits")
-      .select("visited_at, visitor_id, session_id, country_code, city, device_type, page_url, referrer")
-      .gte("visited_at", timeframeStart)
-      .limit(3000);
-
-    if (rvError) {
-      console.warn("Could not query recent visits for breakdown:", rvError.message);
-    }
-
-    const visitsList = Array.isArray(recentVisitsData) ? recentVisitsData : [];
-    const uniqueVisitorIds = new Set<string>();
-    const countryCounts: Record<string, number> = {};
-    const cityCounts: Record<string, number> = {};
-    const pageCounts: Record<string, number> = {};
-    const deviceCounts: Record<string, number> = {};
-    const referrerCounts: Record<string, number> = {};
-
-    for (const v of visitsList) {
-      if (v.visitor_id) uniqueVisitorIds.add(String(v.visitor_id));
-
-      // Hourly grouping (for last 24h)
-      if (v.visited_at) {
-        const time = new Date(v.visited_at).getTime();
-        const diffHours = Math.floor((now - time) / (3600 * 1000));
-        if (diffHours >= 0 && diffHours < 24) {
-          const idx = 23 - diffHours;
-          if (hourlyActivity[idx]) hourlyActivity[idx].count++;
-        }
-      }
-
-      if (v.country_code) {
-        const c = String(v.country_code).toUpperCase();
-        countryCounts[c] = (countryCounts[c] || 0) + 1;
-      }
-      if (v.city) {
-        const city = String(v.city).trim();
-        cityCounts[city] = (cityCounts[city] || 0) + 1;
-      }
-      if (v.device_type) {
-        const dt = String(v.device_type).trim();
-        deviceCounts[dt] = (deviceCounts[dt] || 0) + 1;
-      }
-      if (v.page_url) {
-        try {
-          const clean = new URL(v.page_url, "https://sahadhyayi.com").pathname;
-          pageCounts[clean] = (pageCounts[clean] || 0) + 1;
-        } catch {
-          const rawClean = v.page_url.split("?")[0].split("#")[0] || "/";
-          pageCounts[rawClean] = (pageCounts[rawClean] || 0) + 1;
-        }
-      }
-      const ref = v.referrer ? v.referrer.trim() : "";
-      if (!ref || ref === "direct") {
-        referrerCounts["Direct"] = (referrerCounts["Direct"] || 0) + 1;
-      } else {
-        try {
-          const host = new URL(ref).hostname.replace(/^www\./, "");
-          const label = host.includes("google") ? "Google"
-            : host.includes("twitter") || host.includes("t.co") || host.includes("x.com") ? "Twitter"
-            : host.includes("reddit") ? "Reddit"
-            : host.includes("facebook") ? "Facebook"
-            : host;
-          referrerCounts[label] = (referrerCounts[label] || 0) + 1;
-        } catch {
-          referrerCounts["Other"] = (referrerCounts["Other"] || 0) + 1;
-        }
-      }
-    }
-
-    // Determine peak hour
-    let maxHourlyCount = 0;
-    let peakHourLabel: string | null = null;
-    for (const h of hourlyActivity) {
-      if (h.count > maxHourlyCount) {
-        maxHourlyCount = h.count;
-        peakHourLabel = h.label;
-      }
-    }
-    if (maxHourlyCount > 0) {
-      for (const h of hourlyActivity) {
-        if (h.count === maxHourlyCount) h.isPeak = true;
-      }
-    }
-
-    const totalTrackedVisits = visitsList.length || 1;
-    const topCountries = Object.entries(countryCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([code, count]) => ({
-        code,
-        name: code,
-        count,
-        percent: Math.round((count / totalTrackedVisits) * 100),
-      }));
-
-    const topCities = Object.entries(cityCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([name, count]) => ({
-        name,
-        count,
-        percent: Math.round((count / totalTrackedVisits) * 100),
-      }));
-
-    const topPages = Object.entries(pageCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([name, count]) => ({
-        name,
-        count,
-        percent: Math.round((count / totalTrackedVisits) * 100),
-      }));
-
-    const devices = Object.entries(deviceCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 4)
-      .map(([name, count]) => ({
-        name,
-        count,
-        percent: Math.round((count / totalTrackedVisits) * 100),
-      }));
-
-    const referrers = Object.entries(referrerCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([name, count]) => ({
-        name,
-        count,
-        percent: Math.round((count / totalTrackedVisits) * 100),
-      }));
-
-    // 4. Fallback reading engagement counts
+    // Engagement counts from primary tables
     const [
-      bookViewsRes,
+      bookOpensRes,
       progressRes,
       groupJoinsRes,
       postsRes,
       commentsRes,
     ] = await Promise.all([
-      supabase.from("website_visits").select("*", { count: "exact", head: true }).gte("visited_at", timeframeStart).or("event_name.in.(book_opened,discovery_book_opened),page_url.ilike.%/book/%,page_url.ilike.%/reader/%"),
+      supabase.from("website_visits").select("*", { count: "exact", head: true }).gte("visited_at", timeframeStart).or("event_name.in.(book_opened,discovery_book_opened,reading_started),page_url.ilike.%/book/%,page_url.ilike.%/reader/%"),
       supabase.from("reading_room_events").select("*", { count: "exact", head: true }).gte("created_at", timeframeStart).eq("kind", "chapter_complete"),
       supabase.from("group_members").select("*", { count: "exact", head: true }).gte("joined_at", timeframeStart),
       supabase.from("posts").select("*", { count: "exact", head: true }).gte("created_at", timeframeStart),
       supabase.from("post_comments").select("*", { count: "exact", head: true }).gte("created_at", timeframeStart),
     ]);
 
-    const fallbackPayload = {
+    const bookOpens = bookOpensRes.count ?? 0;
+    const readingProgressCompletions = progressRes.count ?? 0;
+    const groupJoins = groupJoinsRes.count ?? 0;
+    const discussions = (postsRes.count ?? 0) + (commentsRes.count ?? 0);
+
+    const fallbackResponse = {
+      schemaVersion: 1,
       timeframe,
-      totalSignups,
-      newSignups24h: newSignups,
-      totalVisits,
-      last24hVisits: periodVisits,
-      uniqueVisitors24h: uniqueVisitorIds.size > 0 ? uniqueVisitorIds.size : null,
-      hourlyActivity,
-      peakHour: peakHourLabel,
-      topCountries,
-      topCities,
-      topPages,
-      devices,
-      referrers,
-      mostVisitedCity24h: topCities[0]?.name || null,
-      topMembers: [],
-      readingEngagement: {
-        bookViews: { count: bookViewsRes.count ?? 0, tracked: true, label: "Book Views & Discovery" },
-        readingProgressUpdates: { count: progressRes.count ?? 0, tracked: true, label: "Progress Updates & Chapters" },
-        groupJoins: { count: groupJoinsRes.count ?? 0, tracked: true, label: "Group Memberships Joined" },
-        discussions: { count: (postsRes.count ?? 0) + (commentsRes.count ?? 0), tracked: true, label: "Discussions & Comments" },
-      },
+      periodStart: timeframeStart,
+      periodEnd,
       lastUpdated: new Date().toISOString(),
+      freshness: "fresh",
+
+      metrics: {
+        registeredReaders: { value: registeredReaders, status: "available", definition: "Authoritative count of registered reader accounts" },
+        totalPageViews: { value: totalPageviews, status: "available", definition: "Total recorded pageviews across platform lifetime" },
+        periodPageViews: { value: periodPageviews, status: "available", definition: "Recorded pageviews in the selected timeframe" },
+        uniqueVisitors: { value: null, status: "unavailable", definition: "Unique visitor deduplication unavailable during fallback mode" },
+        newReaders: { value: newReaders, status: "available", definition: "New accounts registered in the selected timeframe" },
+        averageSessionDurationSeconds: { value: null, status: "unavailable", definition: "Active session duration telemetry not currently instrumented" },
+      },
+
+      comparisons: {
+        pageViewsChangePercent: null,
+        uniqueVisitorsChangePercent: null,
+        newReadersChangePercent: null,
+      },
+
+      hourlyActivity,
+
+      breakdowns: {
+        countries: [],
+        pages: [],
+        devices: [],
+        referrers: [],
+      },
+
+      engagement: {
+        bookOpens: { value: bookOpens, status: "available", definition: "Unique book and reader page views or explicit open events" },
+        readingProgressCompletions: { value: readingProgressCompletions, status: "available", definition: "Completed reading room chapters recorded" },
+        groupJoins: { value: groupJoins, status: "available", definition: "New reading group memberships formed" },
+        discussions: { value: discussions, status: "available", definition: "Community posts and comment responses published" },
+      },
+
+      topMembers: [],
+
+      // Backward compatibility fields
+      totalSignups: registeredReaders,
+      totalMembers: registeredReaders,
+      newSignups24h: newReaders,
+      newReaders,
+      totalVisits: totalPageviews,
+      last24hVisits: periodPageviews,
+      uniqueVisitors24h: null,
+      avgTimeOnSite: "—",
+      topCountries: [],
+      topPages: [],
+      devices: [],
+      referrers: [],
+      readingEngagement: {
+        bookViews: { count: bookOpens, tracked: true, label: "Book Views & Discovery" },
+        readingProgressUpdates: { count: readingProgressCompletions, tracked: true, label: "Progress Updates & Chapters" },
+        groupJoinsCount: { count: groupJoins, tracked: true, label: "Group Memberships Joined" },
+        discussionsCount: { count: discussions, tracked: true, label: "Discussions & Comments" },
+      },
     };
 
-    return new Response(JSON.stringify(fallbackPayload), {
+    return new Response(JSON.stringify(fallbackResponse), {
       status: 200,
       headers: {
         ...corsHeaders,

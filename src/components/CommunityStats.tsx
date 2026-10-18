@@ -283,7 +283,7 @@ export function CommunityPulseDashboard({ data, loading = false, error = null, o
   const topCityDetail = data.topCity ? `${displayNumber(data.topCity.visits)} visits` : 'No city data';
 
   return (
-    <main className="min-h-screen bg-slate-50 px-3 py-5 text-slate-900 transition-colors dark:bg-[#121417] dark:text-slate-100 sm:px-5 lg:px-8">
+    <div className="min-h-screen bg-slate-50 px-3 py-5 text-slate-900 transition-colors dark:bg-[#121417] dark:text-slate-100 sm:px-5 lg:px-8">
       <div className="mx-auto max-w-[1500px] space-y-4">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -352,7 +352,7 @@ export function CommunityPulseDashboard({ data, loading = false, error = null, o
           <span>{formatUpdatedAt(data.updatedAt)}</span><span>Display only aggregate analytics and public profile fields.</span>
         </footer>
       </div>
-    </main>
+    </div>
   );
 }
 

@@ -157,8 +157,17 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               <Textarea
                 id="feed-composer-textarea"
                 placeholder="What are you reading or thinking about?"
+                aria-label="What are you reading or thinking about?"
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
+                onKeyDown={(e) => {
+                  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!((!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting || createPost.isPending)) {
+                      handlePost();
+                    }
+                  }
+                }}
                 className="min-h-[80px] border border-[#E8E2D9] dark:border-[#29332D] bg-[#FAF7F2] dark:bg-[#0B0D0C]/70 text-[#1C201D] dark:text-[#F3F0E7] rounded-xl resize-none focus-visible:ring-1 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] transition-colors text-sm placeholder:text-[#636B65]/70 dark:placeholder:text-[#A5ADA6]/70"
               />
             </div>
@@ -173,6 +182,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                   <Button
                     size="sm"
                     variant="ghost"
+                    aria-label="Remove selected image"
                     className="absolute top-2 right-2 bg-black/70 text-white hover:bg-black/90 rounded-full h-8 w-8 p-0"
                     onClick={() => {
                       setSelectedImage(null);
@@ -217,7 +227,13 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                       Reading
                     </Badge>
                   </div>
-                  <Button size="sm" variant="ghost" onClick={() => setSelectedBook(null)} className="ml-2 rounded-full h-8 w-8 p-0 text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7]">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label="Remove selected book"
+                    onClick={() => setSelectedBook(null)}
+                    className="ml-2 rounded-full h-8 w-8 p-0 text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7]"
+                  >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -227,7 +243,13 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                 <div className="flex items-center space-x-2 p-2 bg-[#EBF2EC]/70 dark:bg-[#16211A]/60 rounded-xl border border-[#C8DBCB] dark:border-[#315C43]/50">
                   <span className="text-2xl">{selectedFeeling.emoji}</span>
                   <span className="text-sm text-[#1C201D] dark:text-[#F3F0E7]">feeling <span className="font-medium text-[#1C442D] dark:text-[#D5B16D]">{selectedFeeling.label}</span></span>
-                  <Button size="sm" variant="ghost" onClick={() => setSelectedFeeling(null)} className="ml-auto rounded-full h-8 w-8 p-0 text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7]">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label="Remove selected feeling"
+                    onClick={() => setSelectedFeeling(null)}
+                    className="ml-auto rounded-full h-8 w-8 p-0 text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7]"
+                  >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -244,10 +266,12 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                 accept="image/*"
                 onChange={handleImageSelect}
                 className="hidden"
+                aria-label="Upload post image"
               />
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label="Add image to post"
                 className="text-[#636B65] hover:text-[#1C442D] hover:bg-[#EBF2EC] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D] dark:hover:bg-[#1C3024] rounded-lg gap-1.5 text-xs h-8"
                 onClick={() => fileInputRef.current?.click()}
               >
@@ -257,6 +281,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label="Add book to post"
                 className="text-[#636B65] hover:text-[#1C442D] hover:bg-[#EBF2EC] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D] dark:hover:bg-[#1C3024] rounded-lg gap-1.5 text-xs h-8"
                 onClick={() => setShowBookModal(true)}
               >
@@ -266,6 +291,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label="Add feeling to post"
                 className="text-[#636B65] hover:text-[#1C442D] hover:bg-[#EBF2EC] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D] dark:hover:bg-[#1C3024] rounded-lg gap-1.5 text-xs h-8"
                 onClick={() => setShowEmojiPicker(true)}
               >

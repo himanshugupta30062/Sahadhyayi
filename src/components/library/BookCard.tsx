@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { BookOpen, Download, Info, Plus, Check } from 'lucide-react';
+import { BookOpen, Download, Info, Plus, Check, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { slugify } from '@/utils/slugify';
 import { useAuth } from '@/contexts/authHelpers';
@@ -10,7 +10,13 @@ import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
 import GeneratedBookCover from '@/components/library/GeneratedBookCover';
 import { BookQualityBadge } from '@/components/library/BookQualityBadge';
 import { useResolvedBookCover } from '@/utils/catalog/bookCoverResolver';
-import type { Book } from '@/hooks/useLibraryBooks';
+import {
+  type Book,
+  getBookResourceType,
+  isVerifiedPdf,
+  isOnlineReader,
+} from '@/hooks/useLibraryBooks';
+import { trackBookOpened } from '@/lib/analytics';
 
 
 interface BookCardProps {
@@ -36,6 +42,9 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
   });
 
   const activeCoverUrl = book.cover_image_url || resolvedCover;
+  const resourceType = getBookResourceType(book);
+  const hasDirectPdf = isVerifiedPdf(book);
+  const hasOnlineReader = isOnlineReader(book);
 
   const handleDownload = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -151,36 +160,57 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
             </div>
           </button>
 
-          {/* Download Button - Icon Only */}
-          <button
-            onClick={handleDownload}
-            disabled={!book.pdf_url}
-            className={`
-              group/btn relative flex items-center justify-center w-12 h-12 rounded-full
-              transition-all duration-300 transform hover:scale-110 active:scale-95
-              shadow-lg hover:shadow-xl backdrop-blur-sm
-              ${
-                book.pdf_url 
-                  ? 'bg-sahadhyayi-orange text-white hover:bg-sahadhyayi-orange/90' 
-                  : 'bg-muted/80 text-muted-foreground cursor-not-allowed opacity-60'
-              }
-            `}
-            title={book.pdf_url ? "Download PDF" : "PDF not available"}
-            aria-label={book.pdf_url ? "Download PDF" : "PDF not available"}
-          >
-            <Download className="w-5 h-5" />
-            
-            {/* Hover Text Tooltip */}
-            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none">
-              <div className="bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                {book.pdf_url ? 'Download' : 'No PDF'}
+          {/* Main Action Button: Direct PDF Download vs Online Reader vs External Link */}
+          {hasDirectPdf ? (
+            <button
+              onClick={handleDownload}
+              className="group/btn relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl backdrop-blur-sm bg-sahadhyayi-orange text-white hover:bg-sahadhyayi-orange/90"
+              title="Download PDF"
+              aria-label="Download PDF"
+            >
+              <Download className="w-5 h-5" />
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <div className="bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                  Download PDF
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
+          ) : hasOnlineReader ? (
+            <Link
+              to={`/book/${book.id}`}
+              onClick={() => void trackBookOpened(book.id, book.title)}
+              className="group/btn relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl backdrop-blur-sm bg-amber-600 text-white hover:bg-amber-500"
+              title="Read Online"
+              aria-label={`Read ${book.title} online`}
+            >
+              <BookOpen className="w-5 h-5" />
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <div className="bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                  Read Online
+                </div>
+              </div>
+            </Link>
+          ) : resourceType === 'external_book_page' ? (
+            <Link
+              to={`/book/${book.id}`}
+              onClick={() => void trackBookOpened(book.id, book.title)}
+              className="group/btn relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl backdrop-blur-sm bg-purple-600 text-white hover:bg-purple-500"
+              title="View Resource"
+              aria-label={`View resources for ${book.title}`}
+            >
+              <ExternalLink className="w-5 h-5" />
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <div className="bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                  View Resource
+                </div>
+              </div>
+            </Link>
+          ) : null}
           
           {/* Details Button - Icon Only */}
           <Link
             to={`/book/${book.id}`}
+            onClick={() => void trackBookOpened(book.id, book.title)}
             className="
               group/btn relative flex items-center justify-center w-12 h-12 rounded-full
               bg-white/10 hover:bg-white/20 text-white border border-white/20
@@ -249,23 +279,34 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
               )}
             </button>
 
-            <button
-              onClick={handleDownload}
-              disabled={!book.pdf_url}
-              className={`
-                flex items-center justify-center w-10 h-10 rounded-full
-                transition-all duration-200 backdrop-blur-sm
-                ${
-                  book.pdf_url 
-                    ? 'bg-sahadhyayi-orange text-white hover:bg-sahadhyayi-orange/90' 
-                    : 'bg-muted/60 text-muted-foreground cursor-not-allowed opacity-60'
-                }
-              `}
-              title={book.pdf_url ? "Download PDF" : "PDF not available"}
-              aria-label={book.pdf_url ? "Download PDF" : "PDF not available"}
-            >
-              <Download className="w-4 h-4" />
-            </button>
+            {hasDirectPdf ? (
+              <button
+                onClick={handleDownload}
+                className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 backdrop-blur-sm bg-sahadhyayi-orange text-white hover:bg-sahadhyayi-orange/90"
+                title="Download PDF"
+                aria-label="Download PDF"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            ) : hasOnlineReader ? (
+              <Link
+                to={`/book/${book.id}`}
+                className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 backdrop-blur-sm bg-amber-600 text-white hover:bg-amber-500"
+                title="Read Online"
+                aria-label="Read Online"
+              >
+                <BookOpen className="w-4 h-4" />
+              </Link>
+            ) : resourceType === 'external_book_page' ? (
+              <Link
+                to={`/book/${book.id}`}
+                className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 backdrop-blur-sm bg-purple-600 text-white hover:bg-purple-500"
+                title="View Resource"
+                aria-label="View Resource"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </Link>
+            ) : null}
             
             <Link
               to={`/book/${book.id}`}
@@ -324,9 +365,19 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
                 EPUB
               </span>
             )}
-            {book.pdf_url && (
+            {hasDirectPdf && (
               <span className="inline-block bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-bold px-1.5 py-0.5 rounded text-[10px] tracking-wide border border-blue-300 dark:border-blue-800">
                 PDF
+              </span>
+            )}
+            {hasOnlineReader && (
+              <span className="inline-block bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold px-1.5 py-0.5 rounded text-[10px] tracking-wide border border-amber-300 dark:border-amber-800">
+                {book.accessStatus === 'preview_only' ? 'Preview' : 'Online Reader'}
+              </span>
+            )}
+            {resourceType === 'external_book_page' && !hasDirectPdf && !hasOnlineReader && (
+              <span className="inline-block bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 font-bold px-1.5 py-0.5 rounded text-[10px] tracking-wide border border-purple-300 dark:border-purple-800">
+                Book Page
               </span>
             )}
           </div>

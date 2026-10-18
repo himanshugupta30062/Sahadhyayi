@@ -133,9 +133,12 @@ const ArticleDetail = () => {
               {article.cover_image_url && (
                 <img
                   src={article.cover_image_url}
-                  alt=""
+                  alt={article.title ? `Cover for ${article.title}` : "Article cover image"}
                   className="w-full h-64 md:h-96 object-cover rounded-2xl mb-8 shadow-sm"
                   loading="lazy"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = 'none';
+                  }}
                 />
               )}
 

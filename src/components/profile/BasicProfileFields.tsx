@@ -80,12 +80,14 @@ const BasicProfileFields: React.FC<BasicProfileFieldsProps> = ({ form }) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-sm font-medium">Gender</FormLabel>
-            <FormControl>
-              <select {...field} className="border rounded w-full h-9 text-sm px-3 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <select
+                {...field}
+                aria-label="Gender"
+                className="border border-input rounded-xl w-full h-9 text-sm px-3 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[#1C442D] dark:focus:ring-[#D5B16D]"
+              >
                 <option value="">Select gender</option>
                 {GENDER_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
               </select>
-            </FormControl>
           </FormItem>
         )}
       />

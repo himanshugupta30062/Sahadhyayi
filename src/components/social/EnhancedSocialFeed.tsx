@@ -60,12 +60,20 @@ const EmbeddedOriginalPost: React.FC<{ post?: SocialPost | null }> = ({ post }) 
       <p className="text-sm text-[#1C201D] dark:text-[#F3F0E7] whitespace-pre-wrap">{post.content}</p>
       {post.image_url && (
         <div className="mt-2 rounded-lg overflow-hidden border border-[#E8E2D9] dark:border-[#29332D]">
-          <img src={post.image_url} alt="" className="w-full max-h-72 object-cover" />
+          <img
+            src={post.image_url}
+            alt=""
+            onError={(e) => {
+              (e.currentTarget as HTMLElement).style.display = 'none';
+            }}
+            className="w-full max-h-72 object-cover"
+          />
         </div>
       )}
       {book && (
         <Link
           to={`/book/${post.book_id || book.id}`}
+          aria-label={`View book: ${book.title}`}
           className="mt-2 flex items-center gap-2 text-xs text-[#636B65] hover:text-[#1C442D] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D] transition-colors"
         >
           <span>📖</span>
@@ -327,14 +335,18 @@ export const EnhancedSocialFeed = () => {
                   {!isRepost && postBook && (
                     <Link
                       to={`/book/${post.book_id || postBook.id}`}
-                      className="block group"
+                      className="block group my-3"
+                      aria-label={`View book: ${postBook.title}`}
                     >
                       <div className="bg-[#FAF7F2] dark:bg-[#16211A]/80 border border-[#E8E2D9] dark:border-[#315C43]/50 rounded-xl p-3 flex items-center gap-3 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#D5B16D]/50 hover:bg-[#F4EFEA] dark:hover:bg-[#1A261F]">
-                        <div className="w-12 h-16 bg-[#EBF2EC] dark:bg-[#1C3024] rounded-md flex-shrink-0 overflow-hidden shadow-xs border border-[#E8E2D9] dark:border-[#315C43]/40">
+                        <div className="w-12 h-16 bg-[#EBF2EC] dark:bg-[#1C3024] rounded-md flex-shrink-0 overflow-hidden shadow-xs border border-[#E8E2D9] dark:border-[#315C43]/40 flex items-center justify-center">
                           {postBook.cover_image_url ? (
                             <img
                               src={postBook.cover_image_url}
                               alt={postBook.title || 'Book cover'}
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = 'none';
+                              }}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                             />
                           ) : (
@@ -343,19 +355,26 @@ export const EnhancedSocialFeed = () => {
                             </div>
                           )}
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <h5 className="font-semibold text-[#1C201D] dark:text-[#F3F0E7] text-sm truncate group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">
                             {postBook.title}
                           </h5>
                           {postBook.author && (
-                            <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] truncate">{postBook.author}</p>
+                            <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] truncate mt-0.5">{postBook.author}</p>
                           )}
-                          <Badge
-                            variant="outline"
-                            className="mt-1.5 text-[10px] border-[#C8DBCB] dark:border-[#315C43] text-[#1C442D] dark:text-[#D5B16D] bg-white dark:bg-[#111614]"
-                          >
-                            Currently Reading
-                          </Badge>
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] border-[#C8DBCB] dark:border-[#315C43] text-[#1C442D] dark:text-[#D5B16D] bg-white dark:bg-[#111614] px-1.5 py-0 h-4 font-medium"
+                            >
+                              Currently Reading
+                            </Badge>
+                            {postBook.genre && (
+                              <span className="text-[10px] text-[#636B65] dark:text-[#A5ADA6]">
+                                • {postBook.genre}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </Link>
@@ -364,7 +383,14 @@ export const EnhancedSocialFeed = () => {
                   {/* Image (only on non-reposts) */}
                   {!isRepost && post.image_url && (
                     <div className="mt-3 rounded-xl overflow-hidden border border-[#E8E2D9] dark:border-[#29332D]">
-                      <img src={post.image_url} alt="Post" className="w-full max-h-96 object-cover" />
+                      <img
+                        src={post.image_url}
+                        alt="Post attachment"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                        }}
+                        className="w-full max-h-96 object-cover"
+                      />
                     </div>
                   )}
                 </div>
@@ -374,6 +400,7 @@ export const EnhancedSocialFeed = () => {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label={post.user_liked ? `Unlike post, ${post.likes_count} likes` : `Like post, ${post.likes_count} likes`}
                     onClick={() => handleLike(post)}
                     disabled={toggleLike.isPending || !user}
                     className={`flex-1 rounded-lg gap-2 text-xs h-8 ${post.user_liked ? 'text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/20' : 'text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAF7F2] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]'}`}
@@ -384,6 +411,7 @@ export const EnhancedSocialFeed = () => {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label={showComments[post.id] ? `Hide comments, ${post.comments_count} comments` : `Show comments, ${post.comments_count} comments`}
                     className="flex-1 rounded-lg gap-2 text-xs h-8 text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAF7F2] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]"
                     onClick={() => toggleComments(post.id)}
                   >
@@ -393,6 +421,7 @@ export const EnhancedSocialFeed = () => {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label={post.user_reposted ? `Undo repost, ${post.reposts_count || 0} reposts` : `Repost, ${post.reposts_count || 0} reposts`}
                     onClick={() => handleRepostClick(post)}
                     disabled={toggleRepost.isPending || !user}
                     className={`flex-1 rounded-lg gap-2 text-xs h-8 ${post.user_reposted ? 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20' : 'text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAF7F2] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]'}`}
@@ -403,6 +432,7 @@ export const EnhancedSocialFeed = () => {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label="Share post"
                     className="flex-1 rounded-lg gap-2 text-xs h-8 text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAF7F2] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]"
                     onClick={() => handleShare(post)}
                   >

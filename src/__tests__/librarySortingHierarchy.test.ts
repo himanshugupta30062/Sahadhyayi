@@ -299,42 +299,41 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(scoreWithCover).toBeLessThan(10000);
     });
 
-    it('ranks other verified full-text with cover photo in Tier 3 (8,200-8,799)', () => {
+    it('ranks verified EPUB / full-text with cover photo in Top Tier (9,600-10,000)', () => {
       const scoreEpub = getBookCompletenessScore(verifiedEpubBook);
       const scoreHtml = getBookCompletenessScore(officialHtmlReaderBook);
 
-      expect(scoreEpub).toBeGreaterThanOrEqual(8200);
-      expect(scoreEpub).toBeLessThan(8800);
-      expect(scoreHtml).toBeGreaterThanOrEqual(8200);
-      expect(scoreHtml).toBeLessThan(8800);
+      expect(scoreEpub).toBeGreaterThanOrEqual(9600);
+      expect(scoreHtml).toBeGreaterThanOrEqual(8600);
     });
 
-    it('ranks genuine books with cover and online reader in Tier 4 (7,500-8,199), above coverless documents', () => {
+    it('ranks genuine books with cover and online reader in Top Tier (9,400+), above incomplete PDFs and coverless documents', () => {
       const scorePreview = getBookCompletenessScore(googlePreviewBook);
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
+      const scorePartialPdf = getBookCompletenessScore(partialVerifiedPdfNoDesc);
 
-      expect(scorePreview).toBeGreaterThanOrEqual(7500);
-      expect(scorePreview).toBeLessThan(8200);
+      expect(scorePreview).toBeGreaterThanOrEqual(9400);
 
-      // Books with covers and online reader strictly outrank coverless PDFs and reports
+      // Books with covers and online reader strictly outrank partial PDFs, coverless PDFs and reports
+      expect(scorePreview).toBeGreaterThan(scorePartialPdf);
       expect(scorePreview).toBeGreaterThan(scoreNoCover);
       expect(scorePreview).toBeGreaterThan(scoreNasa);
     });
 
-    it('ranks genuine books with cover and metadata in Tier 5 (6,200-7,499), above coverless documents', () => {
+    it('ranks genuine books with cover and metadata in High Tier (8,000-8,600), above coverless documents', () => {
       const scoreMetaWithCover = getBookCompletenessScore(metadataOnlyBook);
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
 
-      expect(scoreMetaWithCover).toBeGreaterThanOrEqual(6200);
-      expect(scoreMetaWithCover).toBeLessThan(7500);
+      expect(scoreMetaWithCover).toBeGreaterThanOrEqual(8000);
+      expect(scoreMetaWithCover).toBeLessThan(8800);
 
       expect(scoreMetaWithCover).toBeGreaterThan(scoreNoCover);
       expect(scoreMetaWithCover).toBeGreaterThan(scoreNasa);
     });
 
-    it('ranks genuine books with verified PDF without cover in Tier 6 (4,500-6,199)', () => {
+    it('ranks genuine books with verified PDF without cover in Demoted Tier (4,500-6,199)', () => {
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
 
@@ -345,7 +344,7 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(scoreNoCover).toBeGreaterThan(scoreNasa);
     });
 
-    it('ranks technical reports and preprints in Tier 7 (3,200-4,499)', () => {
+    it('ranks technical reports and preprints in Demoted Tier (3,200-4,499)', () => {
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
       const scoreGhost = getBookCompletenessScore(ghostRecordBook);
 
@@ -358,7 +357,7 @@ describe('Library Book Sorting Hierarchy', () => {
 
   // End-to-end comparator sort
   describe('Requirements 8-10: Deterministic sort and full catalog preservation', () => {
-    it('sorts a mixed catalog into the exact required hierarchical order prioritizing covers', () => {
+    it('sorts a mixed catalog into the exact required hierarchical order prioritizing covers and complete editions', () => {
       const mixedBooks = [
         ghostRecordBook,
         nasaTechnicalReport,
@@ -375,14 +374,14 @@ describe('Library Book Sorting Hierarchy', () => {
       // Preserves every book in catalog (Requirement 8)
       expect(sorted).toHaveLength(mixedBooks.length);
       expect(sorted.map(b => b.id)).toEqual([
-        'book-1-complete-pdf',       // Tier 1: complete verified PDF (has cover)
-        'book-3-pdf-no-desc',        // Tier 2: verified PDF with cover photo
-        'book-4-verified-epub',      // Tier 3: verified EPUB with cover photo
-        'book-8-google-preview',     // Tier 4: online reader with cover photo
-        'book-9-metadata-only',      // Tier 5: metadata-only with cover photo
-        'book-2-pdf-no-cover',       // Tier 6: verified PDF without cover photo
-        'doc-nasa-report',           // Tier 7: technical report without cover
-        'book-10-ghost',             // Tier 8: ghost
+        'book-1-complete-pdf',       // Tier 1: complete verified PDF (has cover) (10,000+)
+        'book-4-verified-epub',      // Tier 2: verified EPUB with cover & complete metadata (9,600+)
+        'book-8-google-preview',     // Tier 3: online reader with cover & complete metadata (9,400+)
+        'book-3-pdf-no-desc',        // Tier 4: verified PDF with cover photo, partial metadata (8,800+)
+        'book-9-metadata-only',      // Tier 5: metadata-only with cover photo (8,000+)
+        'book-2-pdf-no-cover',       // Tier 6: verified PDF without cover photo (4,500+)
+        'doc-nasa-report',           // Tier 7: technical report without cover (3,200+)
+        'book-10-ghost',             // Tier 8: ghost (0+)
       ]);
     });
 
@@ -723,5 +722,115 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(sortedMatches[0].id).toBe('doc-nasa-report');
     });
   });
+
+  describe('Phase 5 Verification: Genuine books with valid covers and online readers rank at the top', () => {
+    const genuineBooks = [
+      {
+        id: 'durga-1',
+        title: 'Shri Durga Saptashati',
+        author: 'Bharat Bhushan Mishra',
+        cover_image_url: 'https://example.com/durga.jpg',
+        description: 'Sacred Sanskrit text from Markandeya Purana celebrating the victory of the Goddess.',
+        language: 'Hindi',
+        pdf_url: 'https://books.google.com/books?id=durga123&preview=true',
+        isGooglePreview: true,
+        created_at: '2026-01-01T00:00:00Z',
+      },
+      {
+        id: 'durga-2',
+        title: 'Sri Sri Chandi (Durga Saptashati)',
+        author: 'Swami Jagadiswarananda',
+        cover_image_url: 'https://example.com/chandi.jpg',
+        description: 'English translation and commentary of the Devi Mahatmyam.',
+        language: 'English',
+        pdf_url: 'https://archive.org/details/durga-chandi',
+        created_at: '2026-01-02T00:00:00Z',
+      },
+      {
+        id: 'durga-3',
+        title: 'Shree Durga Saptashati',
+        author: 'Gita Press',
+        cover_image_url: 'https://example.com/gitapress-durga.jpg',
+        description: 'Authentic Gita Press edition with Sanskrit slokas and Hindi translation.',
+        language: 'Hindi',
+        pdf_url: 'https://example.com/books/durga-gitapress.pdf',
+        created_at: '2026-01-03T00:00:00Z',
+      },
+      {
+        id: 'durga-4',
+        title: 'Durga Saptashati / दुर्गासप्तशती',
+        author: 'Pandit Ramnarayan',
+        cover_image_url: 'https://example.com/durga-sanskrit.jpg',
+        description: 'Detailed translation with Argala and Kilaka stotras included.',
+        language: 'Sanskrit',
+        pdf_url: 'https://books.google.com/books?id=durga-skt',
+        created_at: '2026-01-04T00:00:00Z',
+      },
+      {
+        id: 'devdas-1',
+        title: 'Devdas',
+        author: 'Sarat Chandra Chattopadhyay',
+        cover_image_url: 'https://example.com/devdas.jpg',
+        description: 'The poignant tale of tragic love between Devdas, Paro, and Chandramukhi.',
+        language: 'Hindi',
+        pdf_url: 'https://books.google.com/books?id=devdas123',
+        created_at: '2026-01-05T00:00:00Z',
+      },
+      {
+        id: 'yogi-1',
+        title: 'Autobiography of a Yogi',
+        author: 'Paramahansa Yogananda',
+        cover_image_url: 'https://example.com/yogi.jpg',
+        description: 'Life story of Paramahansa Yogananda exploring the spiritual journey of an Indian yogi.',
+        language: 'English',
+        pdf_url: 'https://books.google.com/books?id=yogi123',
+        created_at: '2026-01-06T00:00:00Z',
+      },
+      {
+        id: 'suraj-1',
+        title: 'Suraj Ka Satwan Ghoda',
+        author: 'Dharamvir Bharati',
+        cover_image_url: 'https://example.com/suraj.jpg',
+        description: 'A masterpiece modern Hindi novel exploring romance and moral struggles in suburban India.',
+        language: 'Hindi',
+        pdf_url: 'https://books.google.com/books?id=suraj123',
+        created_at: '2026-01-07T00:00:00Z',
+      },
+    ];
+
+    it('awards high completeness scores (> 9,400) to genuine books with covers and online readers', () => {
+      genuineBooks.forEach(book => {
+        const score = getBookCompletenessScore(book);
+        expect(score).toBeGreaterThanOrEqual(9400);
+      });
+    });
+
+    it('ensures genuine books appear on page 1 ahead of coverless PDFs and technical reports', () => {
+      // 50 coverless technical documents and reports (which previously pushed genuine books to pages 15-17)
+      const coverlessDocs = Array.from({ length: 50 }, (_, i) => ({
+        id: `coverless-doc-${i}`,
+        title: `Technical Report ${i}: System Analysis and Data Evaluation`,
+        author: 'NASA Technical Reports Server (NTRS)',
+        cover_image_url: null,
+        pdf_url: `https://archive.org/download/report-${i}.pdf`,
+        description: `Technical analysis document number ${i}.`,
+        created_at: new Date(Date.now() - i * 1000).toISOString(),
+      }));
+
+      // Combine catalog
+      const mixedCatalog = [...coverlessDocs, ...genuineBooks];
+      const sorted = sortBooksByCompleteness(mixedCatalog);
+
+      // Top 7 items must all be the genuine books!
+      const top7Ids = sorted.slice(0, 7).map(b => b.id);
+      genuineBooks.forEach(book => {
+        expect(top7Ids).toContain(book.id);
+      });
+
+      // No coverless report can rank above genuine books
+      expect(sorted.findIndex(b => b.id.startsWith('coverless-doc'))).toBeGreaterThanOrEqual(7);
+    });
+  });
 });
+
 

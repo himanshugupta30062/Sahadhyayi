@@ -19,7 +19,7 @@ const ReadingStreakCard = () => {
   return (
     <Card className="border-border overflow-hidden">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold flex items-center gap-2">
+        <CardTitle as="h2" className="text-base font-semibold flex items-center gap-2">
           <Flame className={`w-4 h-4 ${current > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} />
           Reading Streak
         </CardTitle>

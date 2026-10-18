@@ -177,8 +177,8 @@ async function fetchFilteredBooks(
   // Sort deterministically by library completeness hierarchy
   deduped.sort(compareLibraryBooks);
 
-  // Apply default page-1 diversification so pre-sliced or consumer calls default to 1 book per author/title per page
-  return diversifyBooksPerPage(deduped, 12);
+  // Return deterministically sorted catalog; paginatedData applies dynamic diversification per active pageSize
+  return deduped;
 }
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {

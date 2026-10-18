@@ -1,132 +1,203 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
-import { Filter } from 'lucide-react';
+import { Filter, X, Sparkles } from 'lucide-react';
 
 interface LibraryFiltersProps {
   selectedGenre: string;
   onGenreChange: (genre: string) => void;
-  selectedAuthor: string;
-  onAuthorChange: (author: string) => void;
-  selectedYear: string;
-  onYearChange: (year: string) => void;
   selectedLanguage: string;
   onLanguageChange: (language: string) => void;
-  priceRange: [number, number];
-  onPriceRangeChange: (range: [number, number]) => void;
+  selectedYear: string;
+  onYearChange: (year: string) => void;
+  searchQuery?: string;
+  onClearSearch?: () => void;
+  onResetAll?: () => void;
 }
+
+const POPULAR_GENRES = [
+  'All',
+  'Spiritual',
+  'Fiction',
+  'Hindi',
+  'Philosophy',
+  'Classics',
+  'History',
+  'Science',
+  'Biography',
+];
+
+const LANGUAGES = [
+  'All',
+  'Hindi',
+  'English',
+  'Sanskrit',
+  'Bengali',
+  'Tamil',
+  'Marathi',
+  'Gujarati',
+  'German',
+  'French',
+  'Spanish',
+];
 
 const LibraryFilters = ({
   selectedGenre,
   onGenreChange,
-  selectedAuthor,
-  onAuthorChange,
-  selectedYear,
-  onYearChange,
   selectedLanguage,
   onLanguageChange,
-  priceRange,
-  onPriceRangeChange
+  selectedYear,
+  onYearChange,
+  searchQuery,
+  onClearSearch,
+  onResetAll,
 }: LibraryFiltersProps) => {
-  const genres = ['All', 'Fiction', 'Science', 'History', 'Biography', 'Philosophy', 'Technology', 'Self-Help'];
-  const authors = ['All', 'J.K. Rowling', 'Stephen King', 'Agatha Christie', 'Isaac Asimov', 'Maya Angelou'];
-  const languages = ['All', 'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'];
+  const hasActiveFilters =
+    Boolean(searchQuery?.trim()) ||
+    (selectedGenre && selectedGenre !== 'All') ||
+    (selectedLanguage && selectedLanguage !== 'All') ||
+    Boolean(selectedYear?.trim());
 
   return (
-    <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Filter Books</h2>
+    <div className="space-y-4 mb-6">
+      {/* Genre Navigation Pills */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          Genres:
+        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {POPULAR_GENRES.map((genre) => {
+            const isSelected = selectedGenre === genre;
+            return (
+              <button
+                key={genre}
+                onClick={() => onGenreChange(genre)}
+                className={`
+                  px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200
+                  ${
+                    isSelected
+                      ? 'bg-primary text-primary-foreground shadow-sm scale-105'
+                      : 'bg-card text-muted-foreground hover:bg-muted hover:text-foreground border border-border/60'
+                  }
+                `}
+                aria-pressed={isSelected}
+              >
+                {genre}
+              </button>
+            );
+          })}
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Genre Filter */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Genre</label>
-            <Select value={selectedGenre} onValueChange={onGenreChange}>
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Select genre" />
+      </div>
+
+      {/* Secondary Controls: Language & Publication Year */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-card/60 backdrop-blur-xs rounded-xl border border-border/60">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Language Selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground font-medium">Language:</span>
+            <Select value={selectedLanguage} onValueChange={onLanguageChange}>
+              <SelectTrigger className="h-8 w-32 text-xs bg-background">
+                <SelectValue placeholder="All Languages" />
               </SelectTrigger>
-              <SelectContent>
-                {genres.map((genre) => (
-                  <SelectItem key={genre} value={genre}>
-                    {genre}
+              <SelectContent className="bg-popover z-50">
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang} value={lang} className="text-xs">
+                    {lang === 'All' ? 'All Languages' : lang}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Author Filter */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Author</label>
-            <Select value={selectedAuthor} onValueChange={onAuthorChange}>
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Select author" />
-              </SelectTrigger>
-              <SelectContent>
-                {authors.map((author) => (
-                  <SelectItem key={author} value={author}>
-                    {author}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Year Filter */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Publication Year</label>
+          {/* Publication Year Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground font-medium">Year:</span>
             <Input
               type="number"
-              placeholder="e.g. 2020"
+              placeholder="e.g. 1950"
               value={selectedYear}
               onChange={(e) => onYearChange(e.target.value)}
-              className="h-10"
+              className="h-8 w-24 text-xs bg-background"
+              min={1500}
+              max={new Date().getFullYear()}
             />
           </div>
-
-          {/* Language Filter */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Language</label>
-            <Select value={selectedLanguage} onValueChange={onLanguageChange}>
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                {languages.map((language) => (
-                  <SelectItem key={language} value={language}>
-                    {language}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Price Range Filter */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Price Range: ${priceRange[0]} - ${priceRange[1]}
-            </label>
-            <div className="pt-2">
-              <Slider
-                value={priceRange}
-                onValueChange={(value) => onPriceRangeChange(value as [number, number])}
-                max={100}
-                min={0}
-                step={5}
-                className="w-full"
-              />
-            </div>
-          </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Reset All Button */}
+        {hasActiveFilters && onResetAll && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onResetAll}
+            className="h-8 text-xs text-muted-foreground hover:text-destructive gap-1 px-2.5"
+          >
+            <Filter className="w-3.5 h-3.5" />
+            Reset all filters
+          </Button>
+        )}
+      </div>
+
+      {/* Active Filter Badges */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="text-xs text-muted-foreground">Active filters:</span>
+          {searchQuery?.trim() && onClearSearch && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-primary/10 text-primary border border-primary/20">
+              Query: "{searchQuery}"
+              <button
+                onClick={onClearSearch}
+                aria-label="Remove search filter"
+                className="hover:opacity-75"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {selectedGenre && selectedGenre !== 'All' && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-primary/10 text-primary border border-primary/20">
+              Genre: {selectedGenre}
+              <button
+                onClick={() => onGenreChange('All')}
+                aria-label={`Remove genre ${selectedGenre} filter`}
+                className="hover:opacity-75"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {selectedLanguage && selectedLanguage !== 'All' && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-accent text-accent-foreground border border-border">
+              Language: {selectedLanguage}
+              <button
+                onClick={() => onLanguageChange('All')}
+                aria-label={`Remove language ${selectedLanguage} filter`}
+                className="hover:opacity-75"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {selectedYear?.trim() && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-muted text-foreground border border-border">
+              Year: {selectedYear}
+              <button
+                onClick={() => onYearChange('')}
+                aria-label="Remove year filter"
+                className="hover:opacity-75"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
 export default LibraryFilters;
+

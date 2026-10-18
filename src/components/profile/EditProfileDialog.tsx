@@ -72,27 +72,27 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] sm:max-h-[85vh] p-0 gap-0">
-        <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b">
-          <DialogTitle className="text-lg">Edit Profile</DialogTitle>
-          <DialogDescription className="text-sm">Update your details and click Save.</DialogDescription>
+      <DialogContent className="max-w-lg max-h-[90vh] sm:max-h-[85vh] p-0 gap-0 bg-card border-border text-foreground">
+        <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b border-border">
+          <DialogTitle className="text-lg font-bold text-foreground">Edit Profile</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">Update your details and click Save.</DialogDescription>
         </DialogHeader>
         
         <ScrollArea className="flex-1 px-4 sm:px-6 max-h-[60vh]">
           <ProfileFormContent form={form} onSubmit={handleSubmit} />
         </ScrollArea>
         
-        <DialogFooter className="px-4 py-3 sm:px-6 sm:py-4 border-t bg-gray-50/50 gap-2">
+        <DialogFooter className="px-4 py-3 sm:px-6 sm:py-4 border-t border-border bg-muted/30 gap-2">
           <Button 
             type="submit" 
             disabled={upsertProfilePending}
             onClick={form.handleSubmit(handleSubmit)}
-            className="flex-1 sm:flex-none bg-amber-600 hover:bg-amber-700 h-9"
+            className="flex-1 sm:flex-none bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold text-xs h-9 rounded-xl"
           >
             {upsertProfilePending ? "Saving..." : "Save Changes"}
           </Button>
           <DialogClose asChild>
-            <Button type="button" variant="outline" className="flex-1 sm:flex-none h-9">Cancel</Button>
+            <Button type="button" variant="outline" className="flex-1 sm:flex-none h-9 border-border text-xs rounded-xl">Cancel</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

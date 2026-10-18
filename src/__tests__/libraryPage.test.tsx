@@ -103,4 +103,39 @@ describe('Library page', () => {
     expect(screen.getByTestId('collection-query')).toHaveTextContent('updated query');
     expect(screen.getByTestId('location-search')).toHaveTextContent('?search=updated+query');
   });
+
+  it('updates genre selection and URL when a genre pill is clicked', () => {
+    render(
+      <MemoryRouter initialEntries={['/library']}>
+        <Routes>
+          <Route path="/library" element={<><LocationSearch /><Library /></>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    const spiritualPill = screen.getByRole('button', { name: /^spiritual$/i });
+    fireEvent.click(spiritualPill);
+
+    expect(screen.getByTestId('collection-genre')).toHaveTextContent('Spiritual');
+    expect(screen.getByTestId('location-search')).toHaveTextContent('?genre=Spiritual');
+  });
+
+  it('resets all filters when the reset filters button is clicked', () => {
+    render(
+      <MemoryRouter initialEntries={['/library?genre=Spiritual&language=Hindi']}>
+        <Routes>
+          <Route path="/library" element={<><LocationSearch /><Library /></>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('collection-genre')).toHaveTextContent('Spiritual');
+    expect(screen.getByTestId('collection-language')).toHaveTextContent('Hindi');
+
+    const resetButtons = screen.getAllByRole('button', { name: /reset/i });
+    fireEvent.click(resetButtons[0]);
+
+    expect(screen.getByTestId('collection-genre')).toHaveTextContent('All');
+    expect(screen.getByTestId('collection-language')).toHaveTextContent('All');
+  });
 });
