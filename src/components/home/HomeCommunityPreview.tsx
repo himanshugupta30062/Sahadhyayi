@@ -28,7 +28,7 @@ export const HomeCommunityPreview: React.FC = () => {
 
   return (
     <section
-      className="home-community-preview relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F0F5FB] dark:bg-[#0B0D0C] border-b border-[#D8E3F0] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
+      className="home-community-preview relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
       aria-label="Community Preview"
     >
       <HomeFloatingBooks placement="section" />
