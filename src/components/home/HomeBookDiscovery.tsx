@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ArrowRight, Compass, Pause, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, ArrowRight, Pause, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   useLibraryBooks,
   useGenres,
@@ -16,7 +16,6 @@ import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
 import { Button } from '@/components/ui/button';
 import { createCanonicalClusterKey, normalizeAuthor } from '@/utils/catalog/metadataNormalization';
 import { identifyJunkCandidate } from '@/utils/catalog/deduplicationEngine';
-import HomeFloatingBooks from './HomeFloatingBooks';
 
 /**
  * Only accept a usable HTTP(S) cover URL saved on the catalog record.
@@ -312,7 +311,6 @@ export const HomeBookDiscovery: React.FC = () => {
       className="home-book-discovery relative isolate py-16 sm:py-20 lg:py-24 bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300"
       aria-label="Book Discovery"
     >
-      <HomeFloatingBooks placement="section" />
       <style>{`
         @keyframes sahadhyayi-marquee-scroll {
           0% {
@@ -334,15 +332,6 @@ export const HomeBookDiscovery: React.FC = () => {
         .sahadhyayi-marquee-animating:focus-within {
           animation-play-state: paused !important;
         }
-        @keyframes homeSectionGlowDrift {
-          0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(-18px, 16px, 0) scale(1.05); }
-        }
-        .home-section-glow { animation: homeSectionGlowDrift 22s ease-in-out infinite; }
-        .home-section-glow-delayed { animation-delay: -11s; }
-        @media (prefers-reduced-motion: reduce) {
-          .home-section-glow { animation: none; }
-        }
         @media (prefers-reduced-motion: reduce) {
           .sahadhyayi-marquee-animating {
             animation: none !important;
@@ -350,17 +339,13 @@ export const HomeBookDiscovery: React.FC = () => {
         }
       `}</style>
 
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden dark:hidden">
-        <div className="home-section-glow absolute -right-24 top-12 h-80 w-80 rounded-full bg-[#BEDDBF]/55 blur-[90px]" />
-        <div className="home-section-glow home-section-glow-delayed absolute -left-20 bottom-[-8rem] h-72 w-72 rounded-full bg-[#F0DEB6]/45 blur-[90px]" />
-      </div>
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8 sm:mb-10">
           <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#161D19] border border-[#D8E5D6] dark:border-[#29332D] text-xs font-semibold text-[#B68A35] dark:text-[#D5B16D] mb-4 shadow-2xs">
-              <Compass className="w-3.5 h-3.5" />
-              <span>Curated Catalog</span>
+            <div className="flex items-center gap-2.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] text-[#6E7B6F] dark:text-[#D5B16D] mb-3">
+              <span aria-hidden="true" className="h-px w-7 bg-[#B68A35] dark:bg-[#D5B16D]" />
+              <span>01 / The library</span>
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight">
               Discover your next read
@@ -519,7 +504,7 @@ export const HomeBookDiscovery: React.FC = () => {
         <div className="relative w-full overflow-hidden mt-2 py-4">
           {/* Subtle editorial fade edges */}
           <div
-            className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-[#F2F7F0] dark:from-[#0B0D0C] to-transparent z-10"
+            className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-[#F8F8F2] dark:from-[#0B0D0C] to-transparent z-10"
             aria-hidden="true"
           />
           <div
