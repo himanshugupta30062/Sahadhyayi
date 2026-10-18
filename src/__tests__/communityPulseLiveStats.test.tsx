@@ -325,8 +325,8 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     });
   });
 
-  // 7. Legacy Edge function payload without traffic metrics triggers database fallback
-  it('falls back to get_website_visit_count (9,920) and get_total_users_count (4) when edge function returns legacy payload lacking page views', async () => {
+  // 7. A lifetime visit RPC cannot stand in for selected-period page views.
+  it('shows period page views as unavailable when only lifetime visit totals are available', async () => {
     // Legacy schema from un-deployed Edge function
     mockFunctionsInvoke.mockResolvedValue({
       data: {
@@ -350,14 +350,12 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     render(<CommunityPulseDialog open={true} onClose={() => {}} />);
 
     await waitFor(() => {
-      // 9,920 real visits must be displayed from database RPC
-      expect(screen.getByText('9,920')).toBeInTheDocument();
-      // 4 registered readers displayed
+      // 9,920 is the lifetime count, not this period's page views.
+      const pageViewsLabel = screen.getByText('Page views');
+      expect(pageViewsLabel.closest('.rounded-xl')).toHaveTextContent('—');
+      expect(pageViewsLabel.closest('.rounded-xl')).not.toHaveTextContent('9,920');
       expect(screen.getByText('4 Total')).toBeInTheDocument();
     });
-
-    // Zero page views must NOT be rendered when 9,920 visits exist in the database!
-    expect(screen.queryByText(/^0 Page views/)).not.toBeInTheDocument();
   });
 
   // Fallback must never show a lifetime visit count as period page views.
