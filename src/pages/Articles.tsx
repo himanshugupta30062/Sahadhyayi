@@ -138,7 +138,7 @@ const Articles = () => {
                 </div>
                 <Button
                   onClick={() => navigate(articleWritePath)}
-                  className="h-12 shrink-0 rounded-xl bg-[#1C442D] px-5 font-semibold text-white shadow-lg transition hover:bg-[#143221] sm:h-14 sm:px-6 dark:bg-[#D5B16D] dark:text-[#171C17] dark:hover:bg-[#E4C17B] dark:sm:h-14 dark:sm:px-6"
+                  className="h-12 shrink-0 rounded-xl bg-[#1C442D] px-5 font-semibold text-white shadow-lg transition hover:bg-[#143221] sm:h-14 sm:px-6 dark:bg-[#D5B16D] dark:text-[#171C17] dark:hover:bg-[#E4C17B]"
                 >
                   <PenLine className="mr-2 h-4 w-4" aria-hidden="true" />
                   Write a story
