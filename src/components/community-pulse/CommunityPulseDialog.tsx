@@ -25,6 +25,8 @@ import {
   Sparkles,
   Info,
   Trophy,
+  AlertCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   PulseStats,
@@ -50,7 +52,12 @@ export type CommunityPulseDialogProps = {
   pulseState?: ReturnType<typeof useCommunityPulse>;
 };
 
-const number = (value: number) => new Intl.NumberFormat().format(value);
+const formatMetric = (value: number | null | undefined, prefix = '', fallback = '—') => {
+  if (value === null || value === undefined) return fallback;
+  return `${prefix}${new Intl.NumberFormat().format(value)}`;
+};
+
+const number = (value: number | null | undefined) => formatMetric(value);
 
 const changeLabel = (change?: Change) =>
   change ? `${change.value > 0 ? '+' : ''}${change.value}%` : null;
@@ -209,10 +216,10 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   const effectiveStats: PulseStats = React.useMemo(() => {
     if (stats) {
       return {
-        pageViews: typeof stats.pageViews === 'number' ? stats.pageViews : 0,
-        uniqueVisitors: typeof stats.uniqueVisitors === 'number' ? stats.uniqueVisitors : 0,
-        newReaders: typeof stats.newReaders === 'number' ? stats.newReaders : 0,
-        totalMembers: typeof stats.totalMembers === 'number' ? stats.totalMembers : 0,
+        pageViews: typeof stats.pageViews === 'number' ? stats.pageViews : null,
+        uniqueVisitors: typeof stats.uniqueVisitors === 'number' ? stats.uniqueVisitors : null,
+        newReaders: typeof stats.newReaders === 'number' ? stats.newReaders : null,
+        totalMembers: typeof stats.totalMembers === 'number' ? stats.totalMembers : null,
         avgTimeOnSite: stats.avgTimeOnSite || '—',
         pageViewsChange: stats.pageViewsChange,
         uniqueVisitorsChange: stats.uniqueVisitorsChange,
@@ -220,7 +227,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
         avgTimeChange: stats.avgTimeChange,
         hourlyActivity: Array.isArray(stats.hourlyActivity) && stats.hourlyActivity.length > 0
           ? stats.hourlyActivity
-          : buildEmptyHourlyBuckets(),
+          : [],
         countries: Array.isArray(stats.countries) ? stats.countries : [],
         topPages: Array.isArray(stats.topPages) ? stats.topPages : [],
         devices: Array.isArray(stats.devices) ? stats.devices : [],
@@ -244,8 +251,10 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     const raw = effectiveStats.hourlyActivity || [];
     return raw.map(h => {
       if (metricView === 'unique') {
-        const ratio = effectiveStats.pageViews > 0
-          ? Math.min(1, effectiveStats.uniqueVisitors / effectiveStats.pageViews)
+        const pageViewsNum = effectiveStats.pageViews ?? 0;
+        const uniqueNum = effectiveStats.uniqueVisitors ?? 0;
+        const ratio = pageViewsNum > 0
+          ? Math.min(1, uniqueNum / pageViewsNum)
           : 0;
         const count = Math.round(h.count * ratio);
         return { ...h, count };
@@ -304,7 +313,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 </button>
               </div>
               <p className="text-[11px] sm:text-xs text-stone-400 truncate mt-0.5">
-                Real-time traffic, visitor analytics & reading activity across our {effectiveStats.totalMembers ? `${number(effectiveStats.totalMembers)}-reader` : 'reader'} community
+                Real-time traffic, visitor analytics & reading activity across our {effectiveStats.totalMembers !== null ? `${number(effectiveStats.totalMembers)}-reader` : 'reader'} community
               </p>
             </div>
           </div>
@@ -438,6 +447,52 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <>
+              {/* Error Alert State (when no stats exist and error occurs) */}
+              {error && !stats && (
+                <div className="rounded-xl border border-rose-500/30 bg-rose-950/25 p-4 sm:p-5 text-center space-y-2">
+                  <div className="flex items-center justify-center gap-2 text-rose-400 font-semibold text-sm">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>Unable to load live community statistics</span>
+                  </div>
+                  <p className="text-xs text-stone-400 max-w-md mx-auto">
+                    {error}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (propOnRefresh) propOnRefresh();
+                      else refetchStats();
+                    }}
+                    className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#18241e] border border-white/10 hover:border-white/20 text-xs text-stone-200 hover:text-white transition-colors"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Retry</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Stale Warning Banner (when refresh fails but cached stats are preserved) */}
+              {error && stats?.isStale && (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-950/30 p-3 text-xs flex items-center justify-between gap-3 text-amber-300">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                    <span className="truncate">
+                      Live refresh delayed ({error}). Showing cached metrics from {stats.lastUpdated ? new Date(stats.lastUpdated).toLocaleTimeString() : 'previous session'}.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (propOnRefresh) propOnRefresh();
+                      else refetchStats();
+                    }}
+                    className="text-[11px] underline hover:text-white flex-shrink-0 font-medium"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+
               {/* Top 4 KPI Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 min-w-0">
                 {/* 1. Page Views */}
@@ -502,16 +557,16 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     </span>
                     <span className="text-[10px] sm:text-[11px] font-semibold text-[#D5B16D] bg-[#D5B16D]/10 px-2 py-0.5 rounded-full border border-[#D5B16D]/20 flex items-center gap-1 flex-shrink-0">
                       <Users className="w-3 h-3" />
-                      {effectiveStats.totalMembers ? `${number(effectiveStats.totalMembers)} Total` : '—'}
+                      {effectiveStats.totalMembers !== null ? `${number(effectiveStats.totalMembers)} Total` : '—'}
                     </span>
                   </div>
                   <div className="min-w-0">
                     <div className="text-lg sm:text-2xl font-bold text-stone-100 tracking-tight truncate">
-                      +{number(effectiveStats.newReaders)}
+                      {effectiveStats.newReaders !== null ? `+${number(effectiveStats.newReaders)}` : '—'}
                     </div>
                     <div className="text-[11px] sm:text-xs text-stone-400 mt-0.5 truncate">New readers</div>
                     <div className="text-[9px] sm:text-[10px] text-stone-500 mt-0.5 truncate">
-                      {effectiveStats.totalMembers ? `${number(effectiveStats.totalMembers)} total registered readers` : 'Registered readers'}
+                      {effectiveStats.totalMembers !== null ? `${number(effectiveStats.totalMembers)} total registered readers` : 'Registered readers'}
                     </div>
                   </div>
                 </div>

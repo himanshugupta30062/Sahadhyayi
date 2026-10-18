@@ -324,4 +324,109 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       expect(mockRpc).toHaveBeenCalledWith('get_admin_contributor_leaderboard', { p_timeframe: '24h' });
     });
   });
+
+  // 7. Legacy Edge function payload without traffic metrics triggers database fallback
+  it('falls back to get_website_visit_count (9,920) and get_total_users_count (4) when edge function returns legacy payload lacking page views', async () => {
+    // Legacy schema from un-deployed Edge function
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        activeRooms: 0,
+        lastUpdated: '2026-10-17T13:04:50.447121+00:00',
+        activityTrend: [],
+        eligibleBooks: 830,
+        communityActivity: 0,
+        registeredReaders: 4,
+      },
+      error: null,
+    });
+
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
+      if (fn === 'get_website_visit_count') return Promise.resolve({ data: 9920, error: null });
+      if (fn === 'get_total_users_count') return Promise.resolve({ data: 4, error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    render(<CommunityPulseDialog open={true} onClose={() => {}} />);
+
+    await waitFor(() => {
+      // 9,920 real visits must be displayed from database RPC
+      expect(screen.getByText('9,920')).toBeInTheDocument();
+      // 4 registered readers displayed
+      expect(screen.getByText('4 Total')).toBeInTheDocument();
+    });
+
+    // Zero page views must NOT be rendered when 9,920 visits exist in the database!
+    expect(screen.queryByText(/^0 Page views/)).not.toBeInTheDocument();
+  });
+
+  // 8. Distinguishes between measured 0 and unavailable null ('—')
+  it('displays "—" when unique visitors is null (telemetry unavailable) but displays "0" when measured zero', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        timeframe: '24h',
+        metrics: {
+          periodPageViews: { value: 150 },
+          uniqueVisitors: { value: null }, // Telemetry unavailable
+          registeredReaders: { value: 4 },
+          newReaders: { value: 0 }, // Measured zero
+        },
+        hourlyActivity: [],
+        breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+        engagement: {},
+        topMembers: [],
+        lastUpdated: new Date().toISOString(),
+      },
+      error: null,
+    });
+
+    render(<CommunityPulseDialog open={true} onClose={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('150')).toBeInTheDocument();
+      // New readers was measured 0, so should show +0
+      expect(screen.getByText('+0')).toBeInTheDocument();
+    });
+  });
+
+  // 9. Renders Error Alert Card with Retry button when fetch fails and no cache exists
+  it('renders error alert card with retry button when initial fetch fails and no cache exists', async () => {
+    mockFunctionsInvoke.mockRejectedValue(new Error('Backend connection refused'));
+    mockRpc.mockImplementation(() => Promise.reject(new Error('Connection error')));
+
+    render(<CommunityPulseDialog open={true} onClose={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Unable to load live community statistics')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+    });
+  });
+
+  // 10. Renders Stale Warning Banner when refresh fails but previous stats exist in cache
+  it('renders stale warning banner when refresh fails but previous stats exist in cache', async () => {
+    const cachedStats = {
+      pageViews: 9920,
+      uniqueVisitors: 450,
+      newReaders: 2,
+      totalMembers: 4,
+      avgTimeOnSite: '—',
+      hourlyActivity: [],
+      countries: [],
+      topPages: [],
+      devices: [],
+      referrers: [],
+      lastUpdated: '2026-10-18T10:00:00.000Z',
+    };
+    localStorage.setItem('sahadhyayi_pulse_stats_24h_v7', JSON.stringify(cachedStats));
+
+    // Refresh attempt fails
+    mockFunctionsInvoke.mockRejectedValue(new Error('Gateway timeout'));
+
+    render(<CommunityPulseDialog open={true} onClose={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('9,920')).toBeInTheDocument();
+      expect(screen.getByText(/Live refresh delayed/)).toBeInTheDocument();
+    });
+  });
 });
