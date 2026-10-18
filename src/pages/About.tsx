@@ -341,11 +341,22 @@ const About = () => {
         breadcrumbs={aboutBreadcrumbs}
       />
 
-      <div className="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#FAF7F2] px-4 py-10 text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7] sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-20">
           {/* ── 1. Hero Section ── */}
-          <section className="text-center pt-4 sm:pt-8 max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-xs sm:text-sm font-medium text-brand-primary mb-6 shadow-xs">
+          <section className="relative isolate mx-auto w-full max-w-6xl overflow-hidden rounded-[2rem] border border-[#DCD5C9] bg-[#FAF7F2] text-center text-[#1C201D] shadow-[0_16px_55px_rgba(28,32,29,0.07)] transition-colors duration-300 dark:border-[#29332D] dark:bg-[#101711] dark:text-[#F3F0E7] dark:shadow-none">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: "url('https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=2200&q=85')",
+                backgroundPosition: 'center 48%',
+              }}
+            />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-[#FAF7F2]/94 via-[#FAF7F2]/86 to-[#FAF7F2]/94 dark:from-[#09120D]/94 dark:via-[#09120D]/86 dark:to-[#09120D]/95" />
+            <div aria-hidden="true" className="absolute inset-0 opacity-[0.10] [background-image:radial-gradient(rgba(28,68,45,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px] dark:opacity-[0.08] dark:[background-image:radial-gradient(rgba(255,255,255,0.7)_0.7px,transparent_0.7px)]" />
+            <div className="relative z-10 mx-auto max-w-4xl px-5 py-10 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#C8DBCB] bg-white/80 px-4 py-1.5 text-xs font-semibold text-[#1C442D] shadow-sm backdrop-blur-sm dark:border-[#D5B16D]/35 dark:bg-black/25 dark:text-[#E8CC91] sm:text-sm">
               <Sparkles className="w-4 h-4" />
               <span>सहाध्यायी · Fellow Reader &amp; Study Companion</span>
             </div>
@@ -358,29 +369,30 @@ const About = () => {
               />
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-foreground mb-6 leading-tight">
-              Reviving the Lost Art of <span className="text-brand-primary">Deep Reading</span>
+            <h1 className="mb-6 font-serif text-4xl font-bold leading-tight tracking-tight text-[#1C201D] dark:text-[#FBF7EF] sm:text-5xl lg:text-6xl">
+              Reviving the Lost Art of <span className="text-[#8F681C] dark:text-[#E4C17B]">Deep Reading</span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+            <p className="mx-auto max-w-3xl text-base leading-relaxed text-[#4F5D53] dark:text-[#D0D5D0] sm:text-lg sm:leading-8">
               In an age of infinite scrolls and fleeting attention, Sahadhyayi is a quiet sanctuary.
               We unite readers worldwide to read thoughtfully, annotate openly, and grow as intellectual companions.
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
               <Link to="/library">
-                <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 h-12 px-6 shadow-md shadow-brand-primary/20">
+                <Button size="lg" className="h-12 gap-2 bg-[#1C442D] px-6 text-white shadow-md shadow-[#1C442D]/20 hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:shadow-none dark:hover:bg-[#E4C17B]">
                   <BookOpen className="w-4 h-4" />
                   Explore Free Library
                 </Button>
               </Link>
               <Link to="/social">
-                <Button size="lg" variant="outline" className="border-border hover:bg-muted gap-2 h-12 px-6">
+                <Button size="lg" variant="outline" className="h-12 gap-2 border-[#D5CEC2] bg-white/75 px-6 text-[#1C201D] hover:bg-white dark:border-[#34443A] dark:bg-[#111614]/85 dark:text-[#F3F0E7] dark:hover:bg-[#161D19]">
                   <Users className="w-4 h-4" />
                   Join the Community
                 </Button>
               </Link>
             </div>
+          </div>
           </section>
 
           {/* ── 2. Sanskrit Roots & Etymology ── */}
