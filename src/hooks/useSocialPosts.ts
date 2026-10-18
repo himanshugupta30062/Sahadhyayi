@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { uniqueChannelName } from '@/lib/realtime';
+import { trackUiEvent } from '@/lib/analytics';
 
 export interface SocialPost {
   id: string;
@@ -380,6 +381,13 @@ export const useCreatePost = () => {
       );
     },
     onSuccess: (newPost) => {
+      if (newPost?.id) {
+        trackUiEvent('post_created', {
+          item_type: 'post',
+          item_id: newPost.id,
+          ...(newPost.book_id ? { book_id: newPost.book_id } : {}),
+        });
+      }
       if (newPost) {
         queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
           if (old.some((p) => p.id === newPost.id)) return old;
@@ -432,6 +440,7 @@ export const useTogglePostLike = () => {
       return { postId, isLiked: !isLiked };
     },
     onSuccess: ({ postId, isLiked }) => {
+      trackUiEvent(isLiked ? 'post_liked' : 'post_unliked', { item_type: 'post', item_id: postId });
       // Update the posts in cache across all queries with matching prefix
       queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
         return old.map(post => 
@@ -512,7 +521,12 @@ export const useCreateComment = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, { postId }) => {
+    onSuccess: (createdComment, { postId }) => {
+      trackUiEvent('comment_created', {
+        item_type: 'comment',
+        ...(createdComment?.id ? { item_id: createdComment.id } : {}),
+        target_id: postId,
+      });
       queryClient.invalidateQueries({ queryKey: ['post-comments', postId] });
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({
@@ -558,7 +572,8 @@ export const useToggleRepost = () => {
       }
       return { targetId, isReposted: !isReposted };
     },
-    onSuccess: ({ isReposted }) => {
+    onSuccess: ({ targetId, isReposted }) => {
+      trackUiEvent(isReposted ? 'post_reposted' : 'post_repost_removed', { item_type: 'post', item_id: targetId });
       queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({
         title: isReposted ? 'Reposted' : 'Repost removed',
@@ -594,6 +609,7 @@ export const useToggleCommentLike = (postId: string) => {
       return { commentId, isLiked: !isLiked };
     },
     onSuccess: ({ commentId, isLiked }) => {
+      trackUiEvent(isLiked ? 'comment_liked' : 'comment_unliked', { item_type: 'comment', item_id: commentId, target_id: postId });
       queryClient.setQueryData<any[]>(['post-comments', postId], (old = []) =>
         (old || []).map((c) =>
           c.id === commentId
@@ -617,6 +633,7 @@ export const useDeletePost = () => {
       return postId;
     },
     onSuccess: (deletedId) => {
+      trackUiEvent('post_deleted', { item_type: 'post', item_id: deletedId });
       queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
         return old.filter(post => post.id !== deletedId);
       });
