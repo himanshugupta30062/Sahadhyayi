@@ -48,9 +48,10 @@ export const BOOK_SELECT_COLUMNS = BASE_BOOK_SELECT_COLUMNS;
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
-  { label: 'Verified PDF with complete metadata', points: 'Top Tier (10,000+)', priority: 'highest' },
-  { label: 'Verified PDF with partial metadata', points: 'Tier 2 (7,000+)', priority: 'high' },
-  { label: 'Other verified full text (EPUB / HTML reader)', points: 'Tier 3 (5,000+)', priority: 'high' },
+  { label: 'Verified PDF with complete metadata & cover', points: 'Top Tier (10,000+)', priority: 'highest' },
+  { label: 'Verified PDF with cover photo', points: 'Tier 2 (8,800+)', priority: 'high' },
+  { label: 'Other verified full text with cover (EPUB / HTML)', points: 'Tier 3 (8,000+)', priority: 'high' },
+  { label: 'Verified full text without cover photo', points: 'Tier 4 (6,000–7,000)', priority: 'medium' },
   { label: 'Unverified or broken reading links', points: 'Demoted (3,000+)', priority: 'demoted' },
   { label: 'Metadata-only records (no reading files)', points: 'Bottom (1,000+)', priority: 'low' },
   { label: 'Bibliographic completeness & cover quality', points: '+10 to +400', priority: 'medium' },
@@ -132,6 +133,27 @@ export function isVerifiedPdf(book: any): boolean {
 }
 
 /**
+ * Evaluates whether a book has a valid cover image (not null, empty, or placeholder).
+ */
+export function hasValidCover(book: any): boolean {
+  if (!book) return false;
+  const cover = normalizeCoverUrl(book.cover_image_url || book.coverImageUrl);
+  if (!cover) return false;
+  const lower = cover.toLowerCase();
+  if (
+    lower.includes('placeholder') ||
+    lower.includes('default') ||
+    lower.includes('no-cover') ||
+    lower.includes('nocover') ||
+    lower === '#' ||
+    lower.startsWith('javascript:')
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Evaluates whether a book has complete metadata:
  * title, author, cover, description, language, etc.
  */
@@ -155,9 +177,8 @@ export function hasCompleteMetadata(book: any): boolean {
     return false;
   }
 
-  // Cover: normalized cover image URL present and not placeholder
-  const cover = normalizeCoverUrl(book.cover_image_url || book.coverImageUrl);
-  if (!cover || cover.includes('placeholder') || cover.includes('default')) {
+  // Cover: valid cover image present and not placeholder
+  if (!hasValidCover(book)) {
     return false;
   }
 
@@ -251,13 +272,15 @@ export function isMetadataOnly(book: any): boolean {
 }
 
 /**
- * Calculates book ranking score according to the verified content hierarchy:
- * 1. Verified PDF + complete metadata (10,000+)
- * 2. Verified PDF + incomplete metadata (7,000+)
- * 3. Other verified full-text formats (EPUB / HTML reader) (5,000+)
- * 4. Unverified or broken reading links (3,000+)
- * 5. Metadata-only records (1,000+)
- * 6. Empty / ghost records (0+)
+ * Calculates book ranking score according to the verified content and cover photo hierarchy:
+ * 1. Verified PDF + complete metadata & cover (10,000+)
+ * 2. Verified PDF + valid cover photo (8,800+)
+ * 3. Other verified full-text formats (EPUB / HTML reader) + valid cover photo (8,000+)
+ * 4. Verified PDF without cover photo (7,000+)
+ * 5. Other verified full-text without cover photo (6,000+)
+ * 6. Unverified or broken reading links (3,000–3,500)
+ * 7. Metadata-only records (1,000–1,500)
+ * 8. Empty / ghost records (0+)
  */
 export const getBookCompletenessScore = (book: any): number => {
   if (!book) return 0;
@@ -266,27 +289,33 @@ export const getBookCompletenessScore = (book: any): number => {
   const completeMeta = hasCompleteMetadata(book);
   const otherFullText = hasOtherVerifiedFullText(book);
   const brokenOrUnverified = hasUnverifiedOrBrokenLink(book);
+  const withCover = hasValidCover(book);
 
   // Determine base tier score
   let baseScore = 0;
   if (verifiedPdf && completeMeta) {
     baseScore = 10000; // Tier 1: Verified PDF + complete metadata (at the top)
+  } else if (verifiedPdf && withCover) {
+    baseScore = 8800;  // Tier 2: Verified PDF + valid cover photo
+  } else if (otherFullText && withCover) {
+    baseScore = 8000;  // Tier 3: Other verified full-text (EPUB, official HTML) + valid cover photo
+    if (completeMeta) baseScore += 200; // Sub-boost within Tier 3 for complete metadata
   } else if (verifiedPdf) {
-    baseScore = 7000;  // Tier 2: Verified PDF + incomplete metadata
+    baseScore = 7000;  // Tier 4: Verified PDF without cover photo
   } else if (otherFullText) {
-    baseScore = 5000;  // Tier 3: Other verified full-text (EPUB, official HTML)
-    if (completeMeta) baseScore += 500; // Sub-boost within Tier 3 for complete metadata
+    baseScore = 6000;  // Tier 5: Other verified full-text without cover photo
   } else if (brokenOrUnverified) {
-    baseScore = 3000;  // Tier 4: Unverified or broken reading links
+    baseScore = 3000;  // Tier 6: Unverified or broken reading links
+    if (withCover) baseScore += 500; // Sub-boost within unverified tier if cover exists
   } else {
     // Check if empty ghost record
     const title = (book.title || '').trim();
     const desc = (book.description || '').trim();
-    const cover = normalizeCoverUrl(book.cover_image_url || book.coverImageUrl);
-    if (!cover && (!desc || desc.length < 20) && (!title || title.length < 3)) {
-      baseScore = 0;   // Tier 6: Empty ghost record
+    if (!withCover && (!desc || desc.length < 20) && (!title || title.length < 3)) {
+      baseScore = 0;   // Tier 8: Empty ghost record
     } else {
-      baseScore = 1000; // Tier 5: Metadata-only book with no full-text access
+      baseScore = 1000; // Tier 7: Metadata-only book with no full-text access
+      if (withCover) baseScore += 500; // Sub-boost within metadata-only if cover exists
     }
   }
 
@@ -321,10 +350,12 @@ export const getBookCompletenessScore = (book: any): number => {
   if (book.author_bio) subScore += 30;
 
   // Cover quality (max 60)
-  const cover = normalizeCoverUrl(book.cover_image_url || book.coverImageUrl);
-  if (cover) {
+  if (withCover) {
     subScore += 30;
-    subScore += Math.min(30, Math.round(getCoverQualityScore(cover) / 25) * 5);
+    const cover = normalizeCoverUrl(book.cover_image_url || book.coverImageUrl);
+    if (cover) {
+      subScore += Math.min(30, Math.round(getCoverQualityScore(cover) / 25) * 5);
+    }
   }
 
   // Provenance / QualityScore bonus (max 40)

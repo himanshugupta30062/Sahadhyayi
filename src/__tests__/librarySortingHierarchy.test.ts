@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   isVerifiedPdf,
+  hasValidCover,
   hasCompleteMetadata,
   hasOtherVerifiedFullText,
   hasUnverifiedOrBrokenLink,
@@ -169,6 +170,30 @@ describe('Library Book Sorting Hierarchy', () => {
     });
   });
 
+  // Cover photo validity checks
+  describe('Cover photo validity checks', () => {
+    it('accepts valid cover image URLs', () => {
+      expect(hasValidCover(completeVerifiedPdf)).toBe(true);
+      expect(hasValidCover(partialVerifiedPdfNoDesc)).toBe(true);
+      expect(hasValidCover(verifiedEpubBook)).toBe(true);
+    });
+
+    it('rejects missing or null cover images', () => {
+      expect(hasValidCover(partialVerifiedPdfNoCover)).toBe(false);
+      expect(hasValidCover({ cover_image_url: null })).toBe(false);
+      expect(hasValidCover({ cover_image_url: '' })).toBe(false);
+      expect(hasValidCover({})).toBe(false);
+    });
+
+    it('rejects placeholder or default cover images', () => {
+      expect(hasValidCover({ cover_image_url: 'https://example.com/placeholder-cover.jpg' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: 'https://example.com/default_book.png' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: 'https://example.com/no-cover.png' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: '#' })).toBe(false);
+      expect(hasValidCover({ cover_image_url: 'javascript:void(0)' })).toBe(false);
+    });
+  });
+
   // Metadata completeness validation
   describe('Metadata completeness checks', () => {
     it('recognizes complete metadata when title, author, cover, description, and language exist', () => {
@@ -232,43 +257,44 @@ describe('Library Book Sorting Hierarchy', () => {
     });
   });
 
-  // End-to-end score ranking order
-  describe('Requirements 2-6: Ranking hierarchy & score boundaries', () => {
-    it('ranks verified PDF with complete metadata at the top (Tier 1 > 10,000)', () => {
+  // End-to-end score ranking order & cover photo preference
+  describe('Ranking hierarchy & cover photo preference', () => {
+    it('ranks verified PDF with complete metadata & cover at the top (Tier 1 > 10,000)', () => {
       const score = getBookCompletenessScore(completeVerifiedPdf);
       expect(score).toBeGreaterThanOrEqual(10000);
     });
 
-    it('ranks verified PDF with incomplete metadata strictly below complete verified books (Tier 2: 7,000-9,999)', () => {
-      const scoreComplete = getBookCompletenessScore(completeVerifiedPdf);
-      const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
-      const scoreNoDesc = getBookCompletenessScore(partialVerifiedPdfNoDesc);
-
-      expect(scoreNoCover).toBeGreaterThanOrEqual(7000);
-      expect(scoreNoCover).toBeLessThan(10000);
-      expect(scoreNoDesc).toBeGreaterThanOrEqual(7000);
-      expect(scoreNoDesc).toBeLessThan(10000);
-
-      expect(scoreComplete).toBeGreaterThan(scoreNoCover);
-      expect(scoreComplete).toBeGreaterThan(scoreNoDesc);
+    it('ranks verified PDF with cover photo in Tier 2 (8,800-9,999)', () => {
+      const scoreWithCover = getBookCompletenessScore(partialVerifiedPdfNoDesc);
+      expect(scoreWithCover).toBeGreaterThanOrEqual(8800);
+      expect(scoreWithCover).toBeLessThan(10000);
     });
 
-    it('ranks other verified full-text formats after verified-PDF group (Tier 3: 5,000-6,999)', () => {
-      const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
+    it('ranks other verified full-text with cover photo in Tier 3 (8,000-8,799)', () => {
       const scoreEpub = getBookCompletenessScore(verifiedEpubBook);
       const scoreHtml = getBookCompletenessScore(officialHtmlReaderBook);
 
-      expect(scoreEpub).toBeGreaterThanOrEqual(5000);
-      expect(scoreEpub).toBeLessThan(7000);
-      expect(scoreHtml).toBeGreaterThanOrEqual(5000);
-      expect(scoreHtml).toBeLessThan(7000);
-
-      expect(scoreNoCover).toBeGreaterThan(scoreEpub);
-      expect(scoreNoCover).toBeGreaterThan(scoreHtml);
+      expect(scoreEpub).toBeGreaterThanOrEqual(8000);
+      expect(scoreEpub).toBeLessThan(8800);
+      expect(scoreHtml).toBeGreaterThanOrEqual(8000);
+      expect(scoreHtml).toBeLessThan(8800);
     });
 
-    it('ranks unverified or broken reading links below verified-content books (Tier 4: 3,000-4,999)', () => {
-      const scoreEpub = getBookCompletenessScore(verifiedEpubBook);
+    it('ranks verified PDF without cover photo in Tier 4 (7,000-7,999), below covered books', () => {
+      const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
+      const scoreEpubWithCover = getBookCompletenessScore(verifiedEpubBook);
+      const scorePdfWithCover = getBookCompletenessScore(partialVerifiedPdfNoDesc);
+
+      expect(scoreNoCover).toBeGreaterThanOrEqual(7000);
+      expect(scoreNoCover).toBeLessThan(8000);
+
+      // Books with covers strictly outrank books without covers
+      expect(scorePdfWithCover).toBeGreaterThan(scoreNoCover);
+      expect(scoreEpubWithCover).toBeGreaterThan(scoreNoCover);
+    });
+
+    it('ranks unverified or broken reading links below verified-content books (Tier 6: 3,000-4,999)', () => {
+      const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreBroken = getBookCompletenessScore(brokenLinkBook);
       const scoreUnverified = getBookCompletenessScore(unverifiedAccessBook);
       const scorePreview = getBookCompletenessScore(googlePreviewBook);
@@ -280,12 +306,12 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(scorePreview).toBeGreaterThanOrEqual(3000);
       expect(scorePreview).toBeLessThan(5000);
 
-      expect(scoreEpub).toBeGreaterThan(scoreBroken);
-      expect(scoreEpub).toBeGreaterThan(scoreUnverified);
-      expect(scoreEpub).toBeGreaterThan(scorePreview);
+      expect(scoreNoCover).toBeGreaterThan(scoreBroken);
+      expect(scoreNoCover).toBeGreaterThan(scoreUnverified);
+      expect(scoreNoCover).toBeGreaterThan(scorePreview);
     });
 
-    it('ranks metadata-only books near the bottom (Tier 5: 1,000-2,999)', () => {
+    it('ranks metadata-only books near the bottom (Tier 7: 1,000-2,999)', () => {
       const scoreBroken = getBookCompletenessScore(brokenLinkBook);
       const scoreMetaOnly = getBookCompletenessScore(metadataOnlyBook);
       const scoreGhost = getBookCompletenessScore(ghostRecordBook);
@@ -300,13 +326,14 @@ describe('Library Book Sorting Hierarchy', () => {
 
   // End-to-end comparator sort
   describe('Requirements 8-10: Deterministic sort and full catalog preservation', () => {
-    it('sorts a mixed catalog into the exact required hierarchical order', () => {
+    it('sorts a mixed catalog into the exact required hierarchical order prioritizing covers', () => {
       const mixedBooks = [
         ghostRecordBook,
         metadataOnlyBook,
         brokenLinkBook,
-        verifiedEpubBook,
         partialVerifiedPdfNoCover,
+        verifiedEpubBook,
+        partialVerifiedPdfNoDesc,
         completeVerifiedPdf,
       ];
 
@@ -315,12 +342,13 @@ describe('Library Book Sorting Hierarchy', () => {
       // Preserves every book in catalog (Requirement 8)
       expect(sorted).toHaveLength(mixedBooks.length);
       expect(sorted.map(b => b.id)).toEqual([
-        'book-1-complete-pdf',
-        'book-2-pdf-no-cover',
-        'book-4-verified-epub',
-        'book-6-broken-link',
-        'book-9-metadata-only',
-        'book-10-ghost',
+        'book-1-complete-pdf',       // Tier 1: complete verified PDF (has cover)
+        'book-3-pdf-no-desc',        // Tier 2: verified PDF with cover photo
+        'book-4-verified-epub',      // Tier 3: verified EPUB with cover photo
+        'book-2-pdf-no-cover',       // Tier 4: verified PDF without cover photo
+        'book-6-broken-link',        // Tier 6: broken / unverified link
+        'book-9-metadata-only',      // Tier 7: metadata-only
+        'book-10-ghost',             // Tier 8: ghost
       ]);
     });
 
@@ -351,3 +379,4 @@ describe('Library Book Sorting Hierarchy', () => {
     });
   });
 });
+
