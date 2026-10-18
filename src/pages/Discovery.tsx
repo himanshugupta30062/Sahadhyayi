@@ -13,7 +13,6 @@ import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
 import { useAuth } from '@/contexts/authHelpers';
 import { BookOpen, Plus, Search, Sparkles } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import libraryBg from '@/assets/library-hero-bg.jpg';
 
 const Discovery = () => {
   const { user } = useAuth();
@@ -52,124 +51,76 @@ const Discovery = () => {
   const languages = useMemo(() => [...new Set(books.map((book) => book.language).filter(Boolean))].sort(), [books]);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
+    <div className="min-h-screen pt-20 pb-10 px-4">
       <SEO
         title="Book Discovery"
         description="Discover books from the Sahadhyayi library with personalized recommendations and reader-friendly filters."
         url="https://sahadhyayi.com/discovery"
       />
-      <section className="relative isolate overflow-hidden border-b border-[#DCD5C9] bg-[#F4EFEA] dark:border-[#29332D] dark:bg-[#101711]">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${libraryBg})`, backgroundPosition: 'center 47%' }}
-        />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2]/95 via-[#FAF7F2]/83 to-[#FAF7F2]/48 dark:from-[#09120D]/95 dark:via-[#09120D]/83 dark:to-[#09120D]/42" />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#FAF7F2]/70 via-transparent to-[#FAF7F2]/12 dark:from-[#09120D]/70 dark:via-transparent dark:to-[#09120D]/20" />
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:radial-gradient(#1C442D_0.6px,transparent_0.6px)] [background-size:22px_22px] [mask-image:linear-gradient(to_right,black,transparent_85%)] dark:opacity-[0.08] dark:[background-image:radial-gradient(#D5B16D_0.6px,transparent_0.6px)]" />
+      <h1 className="text-3xl font-bold mb-6 text-center">Discover New Books</h1>
 
-        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-22">
-          <div className="max-w-3xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#C8DBCB] bg-white/75 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.17em] text-[#1C442D] shadow-sm backdrop-blur-sm dark:border-[#D5B16D]/35 dark:bg-black/25 dark:text-[#E8CC91]">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-              A shelf full of possibilities
-            </div>
-            <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#1C201D] dark:text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
-              A new world
-              <span className="block text-[#8F681C] dark:text-[#E4C17B]">is one book away.</span>
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-[#4F5D53] dark:text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
-              Explore stories, ideas, and perspectives across genres and languages. Find something worth carrying with you.
-            </p>
-
-            <div className="mt-8 flex w-full max-w-2xl flex-col gap-3 sm:mt-9 sm:flex-row">
-              <div className="relative min-w-0 flex-1">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#69756D]" aria-hidden="true" />
-                <Input
-                  aria-label="Search books by title, author, or genre"
-                  placeholder="Search by title, author, or genre…"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    void trackUiEvent('discovery_filter_changed', { filter: 'search' });
-                  }}
-                  className="h-12 rounded-xl border border-[#DCD5C9] bg-white/95 pl-11 pr-4 text-[#1C201D] shadow-lg placeholder:text-[#798179] focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:border-white/20 dark:bg-white/95 dark:text-[#1C201D] sm:h-14"
-                />
-              </div>
-              <Button asChild className="h-12 shrink-0 rounded-xl bg-[#1C442D] px-5 font-semibold text-white shadow-md transition hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#E4C17B] sm:h-14 sm:px-6">
-                <Link to="/library">
-                  <BookOpen className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Browse library
-                </Link>
-              </Button>
-            </div>
+      <Card className="mb-8 border-border">
+        <CardContent className="pt-6 space-y-4">
+          <div className="grid md:grid-cols-2 gap-3">
+            <Input
+              placeholder="Search by title, author, or keyword"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                void trackUiEvent('discovery_filter_changed', { filter: 'search' });
+              }}
+            />
+            <Select value={sortBy} onValueChange={(value: 'relevance' | 'newest' | 'title_asc') => {
+              setSortBy(value);
+              void trackUiEvent('discovery_filter_changed', { filter: 'sort', value });
+            }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="relevance">Sort: Relevance</SelectItem>
+                <SelectItem value="newest">Sort: Newest added</SelectItem>
+                <SelectItem value="title_asc">Sort: Title A-Z</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={availabilityFilter} onValueChange={(value) => {
+              setAvailabilityFilter(value);
+              void trackUiEvent('discovery_filter_changed', { filter: 'availability', value });
+            }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Availability" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All availability</SelectItem>
+                <SelectItem value="readable">Readable online</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-      </section>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <Card className="mb-8 rounded-2xl border-[#E5DED2] bg-white shadow-[0_8px_30px_rgba(28,32,29,0.035)] dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none">
-          <CardContent className="space-y-4 p-4 sm:p-5">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-[#1C201D] dark:text-[#F3F0E7]">Refine your discovery</h2>
-                <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">Narrow the shelf by reading format, language, genre, or title.</p>
-              </div>
-              {searchQuery && <Badge variant="outline" className="mt-1 w-fit rounded-full border-[#C8DBCB] text-[#1C442D] dark:border-[#315C43] dark:text-[#D5B16D]">Search: {searchQuery}</Badge>}
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Select value={sortBy} onValueChange={(value: 'relevance' | 'newest' | 'title_asc') => {
-                setSortBy(value);
-                void trackUiEvent('discovery_filter_changed', { filter: 'sort', value });
-              }}>
-                <SelectTrigger aria-label="Sort books" className="h-11 rounded-xl border-[#E5DED2] bg-[#FAF7F2] dark:border-[#29332D] dark:bg-[#0B0D0C]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="relevance">Sort: Relevance</SelectItem>
-                  <SelectItem value="newest">Sort: Newest added</SelectItem>
-                  <SelectItem value="title_asc">Sort: Title A–Z</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={availabilityFilter} onValueChange={(value) => {
-                setAvailabilityFilter(value);
-                void trackUiEvent('discovery_filter_changed', { filter: 'availability', value });
-              }}>
-                <SelectTrigger aria-label="Filter by availability" className="h-11 rounded-xl border-[#E5DED2] bg-[#FAF7F2] dark:border-[#29332D] dark:bg-[#0B0D0C]">
-                  <SelectValue placeholder="Availability" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All availability</SelectItem>
-                  <SelectItem value="readable">Readable online</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={languageFilter} onValueChange={(value) => {
-                setLanguageFilter(value);
-                void trackUiEvent('discovery_filter_changed', { filter: 'language', value });
-              }}>
-                <SelectTrigger aria-label="Filter by language" className="h-11 rounded-xl border-[#E5DED2] bg-[#FAF7F2] dark:border-[#29332D] dark:bg-[#0B0D0C]">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All languages</SelectItem>
-                  {languages.map((language) => <SelectItem key={language} value={language}>{language}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={genreFilter} onValueChange={(value) => {
-                setGenreFilter(value);
-                void trackUiEvent('discovery_filter_changed', { filter: 'genre', value });
-              }}>
-                <SelectTrigger aria-label="Filter by genre" className="h-11 rounded-xl border-[#E5DED2] bg-[#FAF7F2] dark:border-[#29332D] dark:bg-[#0B0D0C]">
-                  <SelectValue placeholder="Genre" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All genres</SelectItem>
-                  {genres.map((genre) => <SelectItem key={genre} value={genre}>{genre}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="grid md:grid-cols-3 gap-3">
+            <Select value={languageFilter} onValueChange={(value) => {
+              setLanguageFilter(value);
+              void trackUiEvent('discovery_filter_changed', { filter: 'language', value });
+            }}>
+              <SelectTrigger><SelectValue placeholder="Language" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All languages</SelectItem>
+                {languages.map((language) => <SelectItem key={language} value={language}>{language}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={genreFilter} onValueChange={(value) => {
+              setGenreFilter(value);
+              void trackUiEvent('discovery_filter_changed', { filter: 'genre', value });
+            }}>
+              <SelectTrigger><SelectValue placeholder="Genre" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All genres</SelectItem>
+                {genres.map((genre) => <SelectItem key={genre} value={genre}>{genre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {user && recommendations.length > 0 && (
         <section className="mb-10" aria-labelledby="recommended-heading">
@@ -235,10 +186,9 @@ const Discovery = () => {
         )}
       </section>
 
-      <div className="pb-10 text-center">
-        <Button asChild variant="outline" className="rounded-xl border-[#D5CEC2] text-[#1C442D] dark:border-[#34443A] dark:text-[#D5B16D]"><Link to="/library"><Search className="mr-2 h-4 w-4" />Browse the full library</Link></Button>
+      <div className="text-center">
+        <Button asChild variant="outline"><Link to="/library"><Search className="w-4 h-4 mr-2" />Browse the full library</Link></Button>
       </div>
-      </main>
     </div>
   );
 };
