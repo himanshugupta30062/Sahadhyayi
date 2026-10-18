@@ -140,7 +140,7 @@ const Articles = () => {
                   className="h-12 shrink-0 rounded-xl bg-[#D5B16D] px-5 font-semibold text-[#171C17] shadow-lg transition hover:bg-[#E4C17B] sm:h-14 sm:px-6"
                 >
                   <PenLine className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Write a story
+                  Write an article
                 </Button>
               </div>
 
