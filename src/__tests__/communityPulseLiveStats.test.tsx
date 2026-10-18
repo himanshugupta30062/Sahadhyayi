@@ -400,6 +400,12 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       const uniqueLabel = screen.getByText('Unique visitors');
       expect(uniqueLabel.closest('.rounded-xl')).toHaveTextContent('—');
       expect(screen.getByText('4 Total')).toBeInTheDocument();
+      expect(screen.getByText('Some analytics details are unavailable')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText('Select metric'), { target: { value: 'unique' } });
+    await waitFor(() => {
+      expect(screen.getByText('Hourly unique visitor data is unavailable')).toBeInTheDocument();
     });
   });
 
