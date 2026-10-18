@@ -86,7 +86,7 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
     const recentBooks = filterPublicBooks(recentBooksRaw || []).slice(0, 10);
 
     return {
-      totalBooks: totalBooks || 0,
+      totalBooks,
       genres,
       features: [
         'Digital Library with books across multiple genres',
