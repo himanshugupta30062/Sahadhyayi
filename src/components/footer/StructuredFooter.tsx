@@ -23,6 +23,7 @@ const footerSections = [
       { name: 'Discover Books', href: '/discovery' },
       { name: 'Authors', href: '/authors' },
       { name: 'Articles & Stories', href: '/articles' },
+      { name: 'Reader Map', href: '/map' },
     ],
   },
   {
@@ -31,12 +32,11 @@ const footerSections = [
       { name: 'Reading Feed', href: '/social' },
       { name: 'Reading Groups', href: '/groups' },
       { name: 'Live Reading Rooms', href: '/social?tab=rooms' },
-      { name: 'Reader Map', href: '/map' },
       { name: 'Community Guidelines', href: '/community-guidelines' },
     ],
   },
   {
-    title: 'Support',
+    title: 'Support & About',
     links: [
       { name: 'About Sahadhyayi', href: '/about' },
       { name: 'Help Center', href: '/help-center' },
@@ -44,7 +44,7 @@ const footerSections = [
     ],
   },
   {
-    title: 'Legal',
+    title: 'Legal & Policies',
     links: [
       { name: 'Privacy Policy', href: '/privacy-policy' },
       { name: 'Terms of Service', href: '/terms-of-service' },
@@ -68,13 +68,17 @@ const StructuredFooter = () => {
   const [isPulseOpen, setIsPulseOpen] = useState(false);
 
   return (
-    <footer className="relative mt-auto overflow-hidden border-t border-[#E8E2D9] bg-[#F4EFEA] text-[#1C201D] transition-colors duration-200 dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
+    <footer
+      className="relative mt-auto overflow-hidden border-t border-[#E8E2D9] bg-[#F4EFEA] text-[#1C201D] transition-colors duration-200 dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]"
+      role="contentinfo"
+    >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -right-32 -top-40 h-96 w-96 rounded-full bg-[#B68A35]/[0.07] blur-3xl dark:bg-[#D5B16D]/[0.06]" />
         <div className="absolute -left-40 bottom-20 h-80 w-80 rounded-full bg-[#1C442D]/[0.06] blur-3xl dark:bg-[#1C442D]/20" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+        {/* Editorial Community Invitation Card */}
         <section
           aria-labelledby="footer-invitation-title"
           className="relative mb-12 overflow-hidden rounded-[1.75rem] border border-[#DCD5C9] bg-gradient-to-br from-white via-[#FBF8F2] to-[#EBF2EC] p-6 shadow-[0_12px_40px_rgba(28,32,29,0.05)] dark:border-[#29332D] dark:from-[#111614] dark:via-[#111614] dark:to-[#14251B] dark:shadow-none sm:p-8 lg:mb-16 lg:p-10"
@@ -116,7 +120,9 @@ const StructuredFooter = () => {
           </div>
         </section>
 
+        {/* 12-Column Responsive Layout */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 sm:gap-x-8 lg:grid-cols-12 lg:gap-x-6 xl:gap-x-8">
+          {/* Brand & Live Stats Column */}
           <div className="col-span-2 sm:col-span-3 lg:col-span-4">
             <Link
               to={user ? '/dashboard' : '/'}
@@ -139,6 +145,7 @@ const StructuredFooter = () => {
               Sahadhyayi means “fellow reader” — a place to discover books, share ideas, and make reading a more connected experience.
             </p>
 
+            {/* Live Website Stats Trigger Card */}
             <button
               type="button"
               onClick={() => setIsPulseOpen(true)}
@@ -150,15 +157,17 @@ const StructuredFooter = () => {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-2 text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
-                  Live Website Stats
+                  <span>Live Website Stats</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
                 </span>
                 <span className="mt-0.5 block text-xs leading-5 text-[#636B65] dark:text-[#A5ADA6]">
-                  View aggregated visits and community activity
+                  Real-time traffic, visitors & reading activity
                 </span>
               </span>
               <ChevronRight className="h-4 w-4 shrink-0 text-[#8B938D] transition group-hover:translate-x-0.5 group-hover:text-[#B68A35] dark:group-hover:text-[#D5B16D]" aria-hidden="true" />
             </button>
 
+            {/* Social Links */}
             <div className="mt-5 flex flex-wrap items-center gap-2">
               {socialLinks.map((social) => {
                 const Icon = social.icon;
@@ -168,7 +177,7 @@ const StructuredFooter = () => {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`Sahadhyayi on ${social.name}`}
+                    aria-label={`Follow us on ${social.name}`}
                     title={social.name}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#DCD5C9] bg-white/70 text-[#636B65] transition hover:-translate-y-0.5 hover:border-[#B68A35]/60 hover:text-[#1C442D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4EFEA] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#A5ADA6] dark:hover:border-[#D5B16D]/50 dark:hover:text-[#D5B16D] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
                   >
@@ -179,6 +188,7 @@ const StructuredFooter = () => {
             </div>
           </div>
 
+          {/* Navigation Section Columns */}
           {footerSections.map((section) => (
             <nav
               key={section.title}
@@ -201,6 +211,7 @@ const StructuredFooter = () => {
           ))}
         </div>
 
+        {/* Bottom Bar */}
         <div className="mt-12 border-t border-[#DCD5C9] pt-6 dark:border-[#29332D] sm:mt-14">
           <div className="flex flex-col gap-3 text-xs leading-5 text-[#737B75] dark:text-[#89938B] sm:flex-row sm:items-center sm:justify-between">
             <p className="flex flex-wrap items-center gap-x-2">

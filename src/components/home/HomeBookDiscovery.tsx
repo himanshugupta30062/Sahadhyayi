@@ -125,9 +125,12 @@ export const HomeBookDiscovery: React.FC = () => {
 
     // If specific genre is selected, strictly enforce 1 book per author and 1 per title within that genre
     if (selectedGenre !== 'All') {
-      const genreBooks = sorted.filter(
-        (b) => b.genre?.trim().toLowerCase() === selectedGenre.trim().toLowerCase()
-      );
+      const targetGenre = selectedGenre.trim().toLowerCase();
+      const genreBooks = sorted.filter((b) => {
+        if (!b.genre) return false;
+        const bg = b.genre.trim().toLowerCase();
+        return bg === targetGenre || bg.includes(targetGenre);
+      });
       const seenAuthors = new Set<string>();
       const seenTitles = new Set<string>();
       const uniqueGenreBooks: Book[] = [];
@@ -140,6 +143,16 @@ export const HomeBookDiscovery: React.FC = () => {
         uniqueGenreBooks.push(b);
         if (aKey) seenAuthors.add(aKey);
         if (tKey) seenTitles.add(tKey);
+      }
+      // If fewer than 8 books and more exist in this genre, backfill while preserving title uniqueness
+      if (uniqueGenreBooks.length < 8) {
+        for (const b of genreBooks) {
+          if (uniqueGenreBooks.length >= 24) break;
+          const tKey = getTitleDiversificationKey(b.title);
+          if (tKey && seenTitles.has(tKey)) continue;
+          uniqueGenreBooks.push(b);
+          if (tKey) seenTitles.add(tKey);
+        }
       }
       return uniqueGenreBooks;
     }

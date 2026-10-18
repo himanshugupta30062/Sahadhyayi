@@ -115,9 +115,7 @@ export default function Library() {
         onSearchChange={setSearchQuery}
         onSearch={handleSearch}
         totalBooks={totalBooks}
-        activeReaders={communityStats?.totalSignups || 3200}
-        avgRating={4.8}
-        booksAddedToday={47}
+        activeReaders={communityStats?.totalSignups && communityStats.totalSignups > 0 ? communityStats.totalSignups : null}
       />
 
       <div className="container mx-auto px-4 py-8">

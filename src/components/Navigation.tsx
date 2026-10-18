@@ -191,20 +191,21 @@ const Navigation = () => {
 
               {/* User Actions */}
               <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchOpen(true)}
+                  className="flex items-center gap-2 text-foreground hover:bg-muted"
+                  aria-label="Search library and books (Cmd+K)"
+                >
+                  <Search className="w-4 h-4" aria-hidden="true" />
+                  <span className="text-xs text-muted-foreground hidden lg:inline">
+                    Cmd+K
+                  </span>
+                </Button>
+
                 {user ? (
                   <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSearchOpen(true)}
-                      className="flex items-center gap-2"
-                      aria-label="Search library and books (Cmd+K)"
-                    >
-                      <Search className="w-4 h-4" aria-hidden="true" />
-                      <span className="text-xs text-muted-foreground hidden lg:inline">
-                        Cmd+K
-                      </span>
-                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -316,6 +317,16 @@ const Navigation = () => {
           {/* Mobile menu button */}
           {isMobile && (
             <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search library and books"
+                title="Search library and books"
+                className="h-9 w-9 text-foreground hover:bg-muted p-1"
+              >
+                <Search className="w-4 h-4" aria-hidden="true" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
