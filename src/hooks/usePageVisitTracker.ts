@@ -6,6 +6,9 @@ import { getAnalyticsIds } from '@/lib/analytics';
 const cleanCampaignValue = (value: string | null) =>
   value ? value.replace(/[^a-zA-Z0-9 _.-]/g, '').trim().slice(0, 100) || null : null;
 
+// Global in-memory cache preventing duplicate ingestion across React Strict Mode & remounts
+const recentPageHits = new Map<string, number>();
+
 export const usePageVisitTracker = () => {
   const location = useLocation();
   const lastTrackedRef = useRef<{ page: string; time: number }>({ page: '', time: 0 });
@@ -16,11 +19,26 @@ export const usePageVisitTracker = () => {
     const currentPage = `${location.pathname}${location.search}`;
     const now = Date.now();
 
-    // Prevent spamming identical page hit within 3 seconds (e.g. fast state re-renders)
-    if (lastTrackedRef.current.page === currentPage && now - lastTrackedRef.current.time < 3000) {
+    // Prevent spamming identical page hit within 3.5 seconds (React Strict Mode & re-renders)
+    const lastGlobalHit = recentPageHits.get(currentPage);
+    if (lastGlobalHit && now - lastGlobalHit < 3500) {
       return;
     }
+    if (lastTrackedRef.current.page === currentPage && now - lastTrackedRef.current.time < 3500) {
+      return;
+    }
+
+    recentPageHits.set(currentPage, now);
     lastTrackedRef.current = { page: currentPage, time: now };
+
+    // Prune cache if it grows large
+    if (recentPageHits.size > 50) {
+      for (const [key, timestamp] of recentPageHits.entries()) {
+        if (now - timestamp > 10000) {
+          recentPageHits.delete(key);
+        }
+      }
+    }
 
     const recordVisit = async () => {
       try {

@@ -212,6 +212,8 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     }
   };
 
+  const [chartInterval, setChartInterval] = useState<'hourly' | 'daily'>('hourly');
+
   // Authoritative metrics computation: measured zero stays zero, missing data stays unavailable
   const effectiveStats: PulseStats = React.useMemo(() => {
     if (stats) {
@@ -228,6 +230,9 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
         hourlyActivity: Array.isArray(stats.hourlyActivity) && stats.hourlyActivity.length > 0
           ? stats.hourlyActivity
           : [],
+        dailyActivity: Array.isArray(stats.dailyActivity) ? stats.dailyActivity : [],
+        lifetimeVisits: stats.lifetimeVisits ?? stats.pageViews ?? null,
+        dualTable: stats.dualTable,
         countries: Array.isArray(stats.countries) ? stats.countries : [],
         topPages: Array.isArray(stats.topPages) ? stats.topPages : [],
         devices: Array.isArray(stats.devices) ? stats.devices : [],
@@ -263,8 +268,18 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     });
   }, [effectiveStats.hourlyActivity, effectiveStats.pageViews, effectiveStats.uniqueVisitors, metricView]);
 
-  const maxHourlyCount = Math.max(0, ...hourlyData.map(h => h.count));
-  const chartPeak = maxHourlyCount > 0 ? Math.ceil(maxHourlyCount / 10) * 10 : 10;
+  // Daily chart data for 30-day trend
+  const dailyData = React.useMemo(() => {
+    const raw = effectiveStats.dailyActivity || [];
+    return raw.map(d => {
+      const count = metricView === 'unique' ? d.uniqueVisitors : d.pageViews;
+      return { ...d, count };
+    });
+  }, [effectiveStats.dailyActivity, metricView]);
+
+  const activeChartData = chartInterval === 'daily' && dailyData.length > 0 ? dailyData : hourlyData;
+  const maxChartCount = Math.max(0, ...activeChartData.map(h => h.count));
+  const chartPeak = maxChartCount > 0 ? Math.ceil(maxChartCount / 10) * 10 : 10;
 
   if (!open) return null;
 
@@ -493,6 +508,95 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 </div>
               )}
 
+              {/* Dual-Table Telemetry Ribbon */}
+              <div className="rounded-xl border border-[#D5B16D]/25 bg-[#141B17] p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-start sm:items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#D5B16D]/15 border border-[#D5B16D]/30 flex items-center justify-center text-[#D5B16D] shrink-0 mt-0.5 sm:mt-0">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-stone-100">Dual-Table Analytics Architecture</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-400 border border-emerald-800/40">
+                        Rolling 30-Day Active
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-400 mt-0.5 leading-relaxed">
+                      All-time traffic preserved from original <code className="text-[#D5B16D]">website_visits</code> records. Rolling 30-day activity powered by clean telemetry in <code className="text-[#D5B16D]">website_visit_events</code>.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-stone-400 shrink-0 self-end sm:self-center">
+                  <Clock3 className="w-3 h-3 text-[#D5B16D]" />
+                  <span>Telemetry active • Rolling 30d</span>
+                </div>
+              </div>
+
+              {/* Multi-Period Activity Strip: All-Time, 24 Hours, 7 Days, 30 Days */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+                {/* Lifetime All-Time */}
+                <div className="rounded-xl border border-white/[0.08] bg-[#0E1310] p-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
+                    <span className="uppercase tracking-wider font-medium text-stone-400">All-Time</span>
+                    <span className="px-1.5 py-0.2 rounded bg-stone-800/60 text-stone-300 text-[9px] font-semibold border border-white/5">
+                      Lifetime
+                    </span>
+                  </div>
+                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
+                    {number(effectiveStats.lifetimeVisits ?? effectiveStats.pageViews)} visits
+                  </div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">Total historical records</div>
+                </div>
+
+                {/* Rolling 24 Hours */}
+                <div className="rounded-xl border border-white/[0.08] bg-[#0E1310] p-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
+                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 24h</span>
+                    <span className="px-1.5 py-0.2 rounded bg-emerald-950/60 text-emerald-400 text-[9px] font-semibold border border-emerald-800/30">
+                      Recent
+                    </span>
+                  </div>
+                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
+                    {number(effectiveStats.dualTable?.rolling24hViews ?? (timeframe === '24h' ? effectiveStats.pageViews : 0))} views
+                  </div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
+                    {effectiveStats.dualTable?.uniqueVisitors24h != null ? `${number(effectiveStats.dualTable.uniqueVisitors24h)} unique visitors` : 'Page views'}
+                  </div>
+                </div>
+
+                {/* Rolling 7 Days */}
+                <div className="rounded-xl border border-white/[0.08] bg-[#0E1310] p-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
+                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 7 Days</span>
+                    <span className="px-1.5 py-0.2 rounded bg-indigo-950/60 text-indigo-300 text-[9px] font-semibold border border-indigo-800/30">
+                      Rolling
+                    </span>
+                  </div>
+                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
+                    {number(effectiveStats.dualTable?.rolling7dViews ?? (timeframe === '7d' ? effectiveStats.pageViews : 0))} views
+                  </div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
+                    {effectiveStats.dualTable?.uniqueVisitors7d != null ? `${number(effectiveStats.dualTable.uniqueVisitors7d)} unique visitors` : 'Page views'}
+                  </div>
+                </div>
+
+                {/* Rolling 30 Days */}
+                <div className="rounded-xl border border-white/[0.08] bg-[#0E1310] p-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
+                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 30 Days</span>
+                    <span className="px-1.5 py-0.2 rounded bg-amber-950/60 text-amber-300 text-[9px] font-semibold border border-amber-800/30">
+                      Rolling 30d
+                    </span>
+                  </div>
+                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
+                    {number(effectiveStats.dualTable?.rolling30dViews ?? (timeframe === '30d' ? effectiveStats.pageViews : 0))} views
+                  </div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
+                    {effectiveStats.dualTable?.uniqueVisitors30d != null ? `${number(effectiveStats.dualTable.uniqueVisitors30d)} unique visitors` : 'Page views'}
+                  </div>
+                </div>
+              </div>
+
               {/* Top 4 KPI Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 min-w-0">
                 {/* 1. Page Views */}
@@ -603,31 +707,59 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     title="Visitor Activity"
                     icon={<Eye className="w-4 h-4" />}
                     action={
-                      <div className="flex items-center gap-1.5 text-xs text-stone-400">
-                        <span className="hidden sm:inline">Metric:</span>
-                        <select
-                          aria-label="Select metric"
-                          value={metricView}
-                          onChange={e => setMetricView(e.target.value as 'views' | 'unique')}
-                          className="bg-[#18241e] border border-white/10 rounded px-2 py-0.5 text-stone-200 text-xs focus:outline-none"
-                        >
-                          <option value="views">Page views</option>
-                          <option value="unique">Unique visitors</option>
-                        </select>
+                      <div className="flex items-center gap-2 text-xs text-stone-400 flex-wrap">
+                        {dailyData.length > 0 && (
+                          <div className="flex items-center p-0.5 rounded bg-[#18241e] border border-white/10 text-[11px]">
+                            <button
+                              type="button"
+                              onClick={() => setChartInterval('hourly')}
+                              className={`px-2 py-0.5 rounded transition-colors ${
+                                chartInterval === 'hourly'
+                                  ? 'bg-[#D5B16D] text-[#0B0D0C] font-semibold'
+                                  : 'text-stone-300 hover:text-white'
+                              }`}
+                            >
+                              Hourly
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setChartInterval('daily')}
+                              className={`px-2 py-0.5 rounded transition-colors ${
+                                chartInterval === 'daily'
+                                  ? 'bg-[#D5B16D] text-[#0B0D0C] font-semibold'
+                                  : 'text-stone-300 hover:text-white'
+                              }`}
+                            >
+                              Daily (30d)
+                            </button>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="hidden sm:inline">Metric:</span>
+                          <select
+                            aria-label="Select metric"
+                            value={metricView}
+                            onChange={e => setMetricView(e.target.value as 'views' | 'unique')}
+                            className="bg-[#18241e] border border-white/10 rounded px-2 py-0.5 text-stone-200 text-xs focus:outline-none cursor-pointer"
+                          >
+                            <option value="views">Page views</option>
+                            <option value="unique">Unique visitors</option>
+                          </select>
+                        </div>
                       </div>
                     }
                   >
                     {/* Bar Chart Container */}
                     <div className="h-44 sm:h-48 pt-3 pb-2 flex flex-col justify-end w-full min-w-0">
                       <div className="flex items-end justify-between gap-1 h-32 sm:h-36 border-b border-white/[0.08] pb-1 px-1 w-full min-w-0 overflow-x-auto sm:overflow-x-visible">
-                        {maxHourlyCount > 0 ? (
-                          hourlyData.map((h, i) => {
+                        {maxChartCount > 0 ? (
+                          activeChartData.map((h: any, i: number) => {
                             const heightPct = Math.max(6, Math.min(100, Math.round((h.count / chartPeak) * 100)));
-                            const isPeak = h.isPeak;
+                            const isPeak = Boolean(h.isPeak);
                             return (
                               <div
                                 key={i}
-                                className="group relative flex-1 flex flex-col items-center justify-end h-full min-w-[8px] sm:min-w-0"
+                                className="group relative flex-1 flex flex-col items-center justify-end h-full min-w-[6px] sm:min-w-0"
                               >
                                 {/* Tooltip */}
                                 <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
@@ -654,22 +786,34 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                           <div className="w-full h-full flex flex-col items-center justify-center text-xs text-stone-500 py-6 gap-1.5">
                             <Activity className="w-5 h-5 text-stone-600 animate-pulse" />
                             <span>No pageviews recorded in this timeframe yet</span>
-                            <span className="text-[10px] text-stone-600">Hourly activity will appear here as readers browse</span>
+                            <span className="text-[10px] text-stone-600">
+                              {chartInterval === 'daily'
+                                ? 'Daily trend will appear as events accumulate'
+                                : 'Hourly activity will appear here as readers browse'}
+                            </span>
                           </div>
                         )}
                       </div>
 
                       {/* X-axis labels */}
-                      <div className="flex justify-between text-[9px] sm:text-[10px] text-stone-500 pt-2 px-1 w-full">
-                        <span>12AM</span>
-                        <span className="hidden sm:inline">3AM</span>
-                        <span>6AM</span>
-                        <span className="hidden sm:inline">9AM</span>
-                        <span>12PM</span>
-                        <span className="hidden sm:inline">3PM</span>
-                        <span>6PM</span>
-                        <span>9PM</span>
-                      </div>
+                      {chartInterval === 'daily' ? (
+                        <div className="flex justify-between text-[9px] sm:text-[10px] text-stone-500 pt-2 px-1 w-full">
+                          <span>30 days ago</span>
+                          <span>15 days ago</span>
+                          <span>Today</span>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between text-[9px] sm:text-[10px] text-stone-500 pt-2 px-1 w-full">
+                          <span>12AM</span>
+                          <span className="hidden sm:inline">3AM</span>
+                          <span>6AM</span>
+                          <span className="hidden sm:inline">9AM</span>
+                          <span>12PM</span>
+                          <span className="hidden sm:inline">3PM</span>
+                          <span>6PM</span>
+                          <span>9PM</span>
+                        </div>
+                      )}
                     </div>
                   </Panel>
                 </div>
