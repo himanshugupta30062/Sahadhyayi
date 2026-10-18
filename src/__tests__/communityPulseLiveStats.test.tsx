@@ -360,6 +360,51 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     expect(screen.queryByText(/^0 Page views/)).not.toBeInTheDocument();
   });
 
+  // Fallback must never show a lifetime visit count as period page views.
+  it('uses the exact selected-period count and never substitutes lifetime visits or guessed zeros', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        registeredReaders: 4,
+        totalVisits: 9920,
+        lastUpdated: new Date().toISOString(),
+      },
+      error: null,
+    });
+
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
+      if (fn === 'get_total_users_count') return Promise.resolve({ data: 4, error: null });
+      if (fn === 'get_website_visit_count') return Promise.resolve({ data: 9920, error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    mockFrom.mockImplementation((table: string) => {
+      const query: any = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        then: (resolve: (value: any) => unknown) => Promise.resolve({
+          count: table === 'website_visits' ? 7 : table === 'profiles' ? 4 : 0,
+          error: null,
+        }).then(resolve),
+      };
+      return query;
+    });
+
+    render(<CommunityPulseDialog open={true} onClose={() => {}} />);
+
+    await waitFor(() => {
+      const pageViewsLabel = screen.getByText('Page views');
+      expect(pageViewsLabel.closest('.rounded-xl')).toHaveTextContent('7');
+      expect(pageViewsLabel.closest('.rounded-xl')).not.toHaveTextContent('9,920');
+
+      // Unique visitor identity is not available through the count-only fallback.
+      const uniqueLabel = screen.getByText('Unique visitors');
+      expect(uniqueLabel.closest('.rounded-xl')).toHaveTextContent('—');
+      expect(screen.getByText('4 Total')).toBeInTheDocument();
+    });
+  });
+
   // 8. Distinguishes between measured 0 and unavailable null ('—')
   it('displays "—" when unique visitors is null (telemetry unavailable) but displays "0" when measured zero', async () => {
     mockFunctionsInvoke.mockResolvedValue({
@@ -417,7 +462,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       referrers: [],
       lastUpdated: '2026-10-18T10:00:00.000Z',
     };
-    localStorage.setItem('sahadhyayi_pulse_stats_24h_v7', JSON.stringify(cachedStats));
+    localStorage.setItem('sahadhyayi_pulse_stats_24h_v8', JSON.stringify(cachedStats));
 
     // Refresh attempt fails
     mockFunctionsInvoke.mockRejectedValue(new Error('Gateway timeout'));
