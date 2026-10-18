@@ -328,6 +328,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           ? rawHourly.map((h: any, i: number) => ({
               label: h.label || `${i}:00`,
               count: Number(h.pageViews ?? h.count ?? 0),
+              uniqueVisitors: typeof h.uniqueVisitors === 'number' ? h.uniqueVisitors : undefined,
               hourIndex: h.hourIndex ?? i,
               isPeak: Boolean(h.isPeak),
               bucketStart: h.bucketStart,
@@ -592,6 +593,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               ? rawHourly.map((h: any, i: number) => ({
                   label: h.label || `${i}:00`,
                   count: Number(h.pageViews ?? h.count ?? 0),
+                  uniqueVisitors: typeof h.uniqueVisitors === 'number' ? h.uniqueVisitors : undefined,
                   hourIndex: h.hourIndex ?? i,
                   isPeak: Boolean(h.isPeak),
                   bucketStart: h.bucketStart,
