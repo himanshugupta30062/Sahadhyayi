@@ -49,10 +49,22 @@ const capabilities: CapabilityItem[] = [
 export const SahadhyayiCapabilities: React.FC = () => {
   return (
     <section
-      className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#FAF7F2] dark:bg-[#0B0D0C] border-b border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200"
+      className="home-capabilities relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#FBF6E9] dark:bg-[#0B0D0C] border-b border-[#EADFC7] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
       aria-label="Platform Capabilities"
     >
-      <div className="max-w-7xl mx-auto">
+      <style>{`
+        @keyframes homeCapabilitiesGlowDrift {
+          0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+          50% { transform: translate3d(-16px, 14px, 0) scale(1.04); }
+        }
+        .home-capabilities-glow { animation: homeCapabilitiesGlowDrift 26s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .home-capabilities-glow { animation: none; } }
+      `}</style>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden dark:hidden">
+        <div className="home-capabilities-glow absolute right-[4%] top-[-8rem] h-80 w-80 rounded-full bg-[#F0D7A0]/45 blur-[100px]" />
+        <div className="home-capabilities-glow absolute -left-24 bottom-[-10rem] h-72 w-72 rounded-full bg-[#DCE9D1]/65 blur-[90px]" />
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto">
         {/* Section Header (Image 2 reference) */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div className="max-w-2xl">
@@ -85,10 +97,10 @@ export const SahadhyayiCapabilities: React.FC = () => {
               <Link
                 key={item.id}
                 to={item.href}
-                className="group flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-[#111413] hover:bg-[#F4EFEA] dark:hover:bg-[#161A18] border border-[#E8E2D9] dark:border-[#26302A] hover:border-[#1C442D]/40 dark:hover:border-[#D5B16D]/50 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
+                className="group flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-[#111413] hover:bg-[#F5EEDC] dark:hover:bg-[#161A18] border border-[#EADFC7] dark:border-[#26302A] hover:border-[#BDA56B]/55 dark:hover:border-[#D5B16D]/50 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
               >
                 {/* Glowing Icon Box */}
-                <div className="w-12 h-12 rounded-xl bg-[#F4EFEA] dark:bg-[#161A18] group-hover:bg-[#EBF2EC] dark:group-hover:bg-[#1E1C15] border border-[#E8E2D9] dark:border-[#26302A] group-hover:border-[#1C442D]/30 dark:group-hover:border-[#D5B16D]/40 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D] shrink-0 transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-[#F5EEDC] dark:bg-[#161A18] group-hover:bg-[#EBF2EC] dark:group-hover:bg-[#1E1C15] border border-[#EADFC7] dark:border-[#26302A] group-hover:border-[#1C442D]/30 dark:group-hover:border-[#D5B16D]/40 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D] shrink-0 transition-colors">
                   <Icon className="w-5 h-5" />
                 </div>
 
