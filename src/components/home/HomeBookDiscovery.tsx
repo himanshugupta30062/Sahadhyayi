@@ -1,7 +1,17 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, ArrowRight, Compass, Pause, Play, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useLibraryBooks, useGenres, getBookCompletenessScore, type Book } from '@/hooks/useLibraryBooks';
+import {
+  useLibraryBooks,
+  useGenres,
+  getBookCompletenessScore,
+  compareLibraryBooks,
+  hasValidCover,
+  getAuthorDiversificationKey,
+  getTitleDiversificationKey,
+  diversifyBooksPerPage,
+  type Book,
+} from '@/hooks/useLibraryBooks';
 import { EnhancedLazyImage } from '@/components/ui/EnhancedLazyImage';
 import { Button } from '@/components/ui/button';
 import { createCanonicalClusterKey, normalizeAuthor } from '@/utils/catalog/metadataNormalization';
@@ -93,16 +103,16 @@ export const HomeBookDiscovery: React.FC = () => {
 
   /**
    * Filter and curate diverse books across distinct authors and genres.
-   * - Clusters multiple editions into unified works using canonical key to prevent duplicate titles.
-   * - Selects each author's single most complete masterpiece.
+   * - Enforces at most 1 book per author (name) and at most 1 book per title.
+   * - Only includes real books with valid, verified covers (no placeholders).
+   * - Selects each author's and title's single most complete masterpiece based on library completeness score.
    * - In "All", performs fair stratified round-robin sampling across all available genres.
-   * - Guarantees no author (including prolific authors like Stephen Hawking) dominates the carousel.
-   * - Ensures adjacent books never share the same author.
+   * - Guarantees no author (including prolific authors like CIA Reading Room or Stephen Hawking) dominates the carousel.
    */
   const curatedBooks = useMemo(() => {
     const validBooks = allBooks.filter((book) => {
       const cover = getDatabaseCoverUrl(book.cover_image_url);
-      if (!cover) return false;
+      if (!cover || !hasValidCover(book)) return false;
       const junk = identifyJunkCandidate(book);
       if (junk.isJunk) return false;
       return true;
@@ -110,108 +120,62 @@ export const HomeBookDiscovery: React.FC = () => {
 
     if (validBooks.length === 0) return [];
 
-    // 1. Cluster editions into canonical works by title and author
-    const workMap = new Map<string, { book: Book; score: number }>();
-    for (const book of validBooks) {
-      const clusterKey = createCanonicalClusterKey(book.title, book.author);
-      const score = getBookCompletenessScore(book);
-      const existing = workMap.get(clusterKey);
-      if (!existing || score > existing.score) {
-        workMap.set(clusterKey, { book, score });
-      }
-    }
-    const uniqueWorks = Array.from(workMap.values());
+    // Sort valid books by library completeness and cover priority
+    const sorted = [...validBooks].sort(compareLibraryBooks);
 
-    // 2. Filter by selected genre if specific genre is active
-    const filteredWorks =
-      selectedGenre === 'All'
-        ? uniqueWorks
-        : uniqueWorks.filter(
-            ({ book }) =>
-              book.genre?.trim().toLowerCase() === selectedGenre.trim().toLowerCase()
-          );
-
-    if (filteredWorks.length === 0) return [];
-
-    // 3. Group by author to select best masterpiece per author
-    const authorBestMap = new Map<string, { book: Book; score: number }>();
-    const authorOthersMap = new Map<string, Array<{ book: Book; score: number }>>();
-    const unknownAuthorWorks: Array<{ book: Book; score: number }> = [];
-
-    for (const item of filteredWorks) {
-      const rawAuthor = item.book.author?.trim();
-      const normAuthor = normalizeAuthor(rawAuthor).normalizedAuthor;
-      if (!rawAuthor || normAuthor.toLowerCase() === 'unknown author') {
-        unknownAuthorWorks.push(item);
-        continue;
-      }
-
-      const aKey = normAuthor.toLowerCase();
-      const existing = authorBestMap.get(aKey);
-      if (!existing) {
-        authorBestMap.set(aKey, item);
-      } else if (item.score > existing.score) {
-        if (!authorOthersMap.has(aKey)) authorOthersMap.set(aKey, []);
-        authorOthersMap.get(aKey)!.push(existing);
-        authorBestMap.set(aKey, item);
-      } else {
-        if (!authorOthersMap.has(aKey)) authorOthersMap.set(aKey, []);
-        authorOthersMap.get(aKey)!.push(item);
-      }
-    }
-
-    // Specific genre view
+    // If specific genre is selected, strictly enforce 1 book per author and 1 per title within that genre
     if (selectedGenre !== 'All') {
-      const uniqueAuthorBooks = Array.from(authorBestMap.values())
-        .sort((a, b) => b.score - a.score)
-        .map((x) => x.book);
-
-      const unknownBooks = unknownAuthorWorks
-        .sort((a, b) => b.score - a.score)
-        .map((x) => x.book);
-
-      const result = [...uniqueAuthorBooks, ...unknownBooks];
-
-      // If fewer than 10 books in this genre and authors have other works, backfill without consecutive authors
-      if (result.length < 10 && authorOthersMap.size > 0) {
-        const others: Book[] = [];
-        for (const list of authorOthersMap.values()) {
-          for (const item of list) {
-            others.push(item.book);
-          }
-        }
-        for (const cand of others) {
-          if (result.length >= 16) break;
-          const lastAuthor = result[result.length - 1]?.author?.trim().toLowerCase();
-          const candAuthor = cand.author?.trim().toLowerCase();
-          if (lastAuthor !== candAuthor) {
-            result.push(cand);
-          }
-        }
+      const genreBooks = sorted.filter(
+        (b) => b.genre?.trim().toLowerCase() === selectedGenre.trim().toLowerCase()
+      );
+      const seenAuthors = new Set<string>();
+      const seenTitles = new Set<string>();
+      const uniqueGenreBooks: Book[] = [];
+      for (const b of genreBooks) {
+        if (uniqueGenreBooks.length >= 24) break;
+        const aKey = getAuthorDiversificationKey(b.author, b.title);
+        const tKey = getTitleDiversificationKey(b.title);
+        if (aKey && seenAuthors.has(aKey)) continue;
+        if (tKey && seenTitles.has(tKey)) continue;
+        uniqueGenreBooks.push(b);
+        if (aKey) seenAuthors.add(aKey);
+        if (tKey) seenTitles.add(tKey);
       }
-
-      return result.slice(0, 24);
+      return uniqueGenreBooks;
     }
 
-    // "All" view: Fair stratified sampling across genres & authors
-    const genreBuckets = new Map<string, Array<{ book: Book; score: number }>>();
-    for (const item of authorBestMap.values()) {
-      const g = item.book.genre?.trim() || 'General';
+    // "All" view: Select each author's and each title's single best masterpiece
+    const authorBestMap = new Map<string, Book>();
+    const titleBestMap = new Map<string, Book>();
+
+    for (const book of sorted) {
+      const aKey = getAuthorDiversificationKey(book.author, book.title);
+      const tKey = getTitleDiversificationKey(book.title);
+
+      if (aKey && !authorBestMap.has(aKey)) {
+        authorBestMap.set(aKey, book);
+      }
+      if (tKey && !titleBestMap.has(tKey)) {
+        titleBestMap.set(tKey, book);
+      }
+    }
+
+    // Stratify by genre so the ribbon features diverse literary categories
+    const genreBuckets = new Map<string, Book[]>();
+    for (const book of sorted) {
+      const aKey = getAuthorDiversificationKey(book.author, book.title);
+      const tKey = getTitleDiversificationKey(book.title);
+
+      // Only allow the author's single best book and title's single best book
+      if (aKey && authorBestMap.get(aKey)?.id !== book.id) continue;
+      if (tKey && titleBestMap.get(tKey)?.id !== book.id) continue;
+
+      const g = book.genre?.trim() || 'General';
       if (!genreBuckets.has(g)) genreBuckets.set(g, []);
-      genreBuckets.get(g)!.push(item);
-    }
-    for (const item of unknownAuthorWorks) {
-      const g = item.book.genre?.trim() || 'General';
-      if (!genreBuckets.has(g)) genreBuckets.set(g, []);
-      genreBuckets.get(g)!.push(item);
+      genreBuckets.get(g)!.push(book);
     }
 
-    // Sort items within each bucket by score descending
-    for (const list of genreBuckets.values()) {
-      list.sort((a, b) => b.score - a.score);
-    }
-
-    // Sort genre buckets so populated literary genres rotate first, followed by others
+    // Sort genre buckets so populated literary genres rotate first
     const sortedGenreNames = Array.from(genreBuckets.keys()).sort((a, b) => {
       if (a === 'General') return 1;
       if (b === 'General') return -1;
@@ -219,8 +183,8 @@ export const HomeBookDiscovery: React.FC = () => {
     });
 
     const curated: Book[] = [];
-    const usedAuthors = new Set<string>();
-    const usedIds = new Set<string>();
+    const usedAuthorKeys = new Set<string>();
+    const usedTitleKeys = new Set<string>();
     const TARGET_COUNT = 24;
     const maxRounds = 12;
 
@@ -228,51 +192,36 @@ export const HomeBookDiscovery: React.FC = () => {
       for (const gName of sortedGenreNames) {
         if (curated.length >= TARGET_COUNT) break;
         const bucket = genreBuckets.get(gName) || [];
-        const candItem = bucket.find((it) => {
-          if (usedIds.has(it.book.id)) return false;
-          const aKey = normalizeAuthor(it.book.author).normalizedAuthor.toLowerCase();
-          if (aKey !== 'unknown author' && usedAuthors.has(aKey)) return false;
+
+        const cand = bucket.find((b) => {
+          const aKey = getAuthorDiversificationKey(b.author, b.title);
+          const tKey = getTitleDiversificationKey(b.title);
+          if (aKey && usedAuthorKeys.has(aKey)) return false;
+          if (tKey && usedTitleKeys.has(tKey)) return false;
           return true;
         });
 
-        if (candItem) {
-          const aKey = normalizeAuthor(candItem.book.author).normalizedAuthor.toLowerCase();
-          const lastBook = curated[curated.length - 1];
-          const lastAuthor = lastBook ? normalizeAuthor(lastBook.author).normalizedAuthor.toLowerCase() : null;
-
-          if (aKey !== 'unknown author' && lastAuthor === aKey) {
-            continue;
-          }
-
-          curated.push(candItem.book);
-          usedIds.add(candItem.book.id);
-          if (aKey !== 'unknown author') {
-            usedAuthors.add(aKey);
-          }
+        if (cand) {
+          const aKey = getAuthorDiversificationKey(cand.author, cand.title);
+          const tKey = getTitleDiversificationKey(cand.title);
+          curated.push(cand);
+          if (aKey) usedAuthorKeys.add(aKey);
+          if (tKey) usedTitleKeys.add(tKey);
         }
       }
     }
 
-    // Fallback if target count isn't reached: add remaining high-scoring works from authors not yet included
+    // Fallback if target count isn't reached: backfill from remaining sorted candidates with diversity
     if (curated.length < TARGET_COUNT) {
-      const remainingCandidates = [
-        ...Array.from(authorBestMap.values()),
-        ...unknownAuthorWorks,
-      ].sort((a, b) => b.score - a.score);
-
-      for (const item of remainingCandidates) {
+      for (const b of sorted) {
         if (curated.length >= TARGET_COUNT) break;
-        if (usedIds.has(item.book.id)) continue;
-        const aKey = normalizeAuthor(item.book.author).normalizedAuthor.toLowerCase();
-        if (aKey !== 'unknown author' && usedAuthors.has(aKey)) continue;
-
-        const lastBook = curated[curated.length - 1];
-        const lastAuthor = lastBook ? normalizeAuthor(lastBook.author).normalizedAuthor.toLowerCase() : null;
-        if (lastAuthor === aKey && aKey !== 'unknown author') continue;
-
-        curated.push(item.book);
-        usedIds.add(item.book.id);
-        if (aKey !== 'unknown author') usedAuthors.add(aKey);
+        const aKey = getAuthorDiversificationKey(b.author, b.title);
+        const tKey = getTitleDiversificationKey(b.title);
+        if (aKey && usedAuthorKeys.has(aKey)) continue;
+        if (tKey && usedTitleKeys.has(tKey)) continue;
+        curated.push(b);
+        if (aKey) usedAuthorKeys.add(aKey);
+        if (tKey) usedTitleKeys.add(tKey);
       }
     }
 

@@ -403,8 +403,9 @@ export const sortBooksByCompleteness = (books: any[]): any[] => {
  */
 export function getAuthorDiversificationKey(author?: string | null, title?: string | null): string {
   if (author) {
-    const norm = normalizeAuthor(author).normalizedAuthor.toLowerCase().trim();
+    let norm = normalizeAuthor(author).normalizedAuthor.toLowerCase().trim();
     if (norm && norm !== 'unknown author' && norm !== 'unknown' && norm !== 'anonymous') {
+      norm = norm.replace(/\b[a-z]\.?\s+/gi, ' ').replace(/\s+/g, ' ').trim();
       return norm;
     }
   }
