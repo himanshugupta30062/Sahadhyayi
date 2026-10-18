@@ -2,6 +2,7 @@ import React, { ReactNode, FC, memo } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getSafeRedirectUrl } from '@/utils/security';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -34,7 +35,10 @@ const OptimizedProtectedRoute: FC<ProtectedRouteProps> = memo(({ children }) => 
       sessionStorage.setItem('redirectScrollY', String(window.scrollY));
     }
     
-    const redirect = `${location.pathname}${location.search}${location.hash}`;
+    const redirect = getSafeRedirectUrl(
+      `${location.pathname}${location.search}${location.hash}`,
+      '/dashboard'
+    );
     return (
       <Navigate
         to={`/signin?redirect=${encodeURIComponent(redirect)}`}

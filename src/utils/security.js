@@ -38,3 +38,15 @@ export function createSecureHeaders(includeCSRF = true) {
   const h = { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
   return h;
 }
+
+export function getSafeRedirectUrl(target, defaultUrl = '/dashboard') {
+  if (!target || typeof target !== 'string') return defaultUrl;
+  const trimmed = target.trim();
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.startsWith('/\\')) {
+    return defaultUrl;
+  }
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed) || /javascript:/i.test(trimmed) || /data:/i.test(trimmed)) {
+    return defaultUrl;
+  }
+  return trimmed;
+}

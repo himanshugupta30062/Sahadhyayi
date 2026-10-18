@@ -159,17 +159,18 @@ const App = memo(() => {
                     <ScrollToTop />
                     <PageTracker />
                   <div className="min-h-screen bg-background text-foreground flex flex-col">
-                    {/* Skip to content link for accessibility */}
+                    {/* Skip to main content link for keyboard accessibility */}
                     <a
-                      href="#main"
-                      className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 bg-background border rounded px-2 py-1 z-50"
+                      href="#main-content"
+                      className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:font-semibold focus:shadow-lg focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:rounded-md transition-none"
                     >
-                      Skip to content
+                      Skip to main content
                     </a>
                     
                     <Navigation />
                     
-                    <main id="main" tabIndex={-1} className="flex-1 pt-16">
+                    <main id="main-content" tabIndex={-1} className="flex-1 pt-16 outline-none">
+                      <span id="main" className="sr-only" />
                       <Routes>
                         {/* Critical routes - no lazy loading */}
                         <Route path="/" element={<Index />} />
@@ -178,7 +179,6 @@ const App = memo(() => {
                         <Route path="/signin" element={<Auth />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/confirm-email" element={<ConfirmEmail />} />
-                        <Route path="*" element={<NotFound />} />
                         
                         {/* Primary routes - optimized lazy loading */}
                         <Route
@@ -489,6 +489,7 @@ const App = memo(() => {
                             </Suspense>
                           }
                         />
+                        <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
                     

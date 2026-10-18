@@ -135,7 +135,7 @@ const Index = () => {
 
           <div className="relative max-w-3xl mx-auto text-center">
             {/* Cultural Origin Tag */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#141816] border border-[#E8E2D9] dark:border-[#26302A] text-xs font-medium text-[#B68A35] dark:text-[#D5B16D] mb-4 shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#141816] border border-[#E8E2D9] dark:border-[#26302A] text-xs font-medium text-[#8F681C] dark:text-[#D5B16D] mb-4 shadow-2xs">
               <span>सहाध्यायी · Fellow Reader</span>
             </div>
 
@@ -148,14 +148,14 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center">
               <Link
                 to={user ? "/dashboard" : "/signup"}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#B68A35] hover:bg-[#A3792A] text-white dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] dark:text-black font-semibold text-sm sm:text-base shadow-md shadow-[#B68A35]/20 dark:shadow-[#D5B16D]/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#8F681C] hover:bg-[#785715] text-white dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] dark:text-stone-950 font-semibold text-sm sm:text-base shadow-md shadow-[#8F681C]/20 dark:shadow-[#D5B16D]/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D]"
               >
                 <span>{user ? 'Open Dashboard' : 'Get started'}</span>
-                <ArrowRight className="w-4 h-4 text-white/90 dark:text-black/80" />
+                <ArrowRight className="w-4 h-4 text-white/90 dark:text-stone-950/80" />
               </Link>
               <Link
                 to="/library"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border border-[#E8E2D9] hover:border-[#D4C9BC] bg-white hover:bg-[#F4EFEA] text-[#1C201D] dark:border-[#26302A] dark:hover:border-[#38483D] dark:bg-[#111413] dark:hover:bg-[#181C1A] dark:text-[#F3F0E7] text-sm sm:text-base font-medium transition-all shadow-2xs dark:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border border-[#E8E2D9] hover:border-[#D4C9BC] bg-white hover:bg-[#F4EFEA] text-[#1C201D] dark:border-[#26302A] dark:hover:border-[#38483D] dark:bg-[#111413] dark:hover:bg-[#181C1A] dark:text-[#F3F0E7] text-sm sm:text-base font-medium transition-all shadow-2xs dark:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D]"
               >
                 <span>Explore the library</span>
               </Link>

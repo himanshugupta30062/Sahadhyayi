@@ -212,22 +212,31 @@ const StatsCard = ({ label, value }: { label: string; value: string | number }) 
 
 const BookCard = ({ book }: { book: any }) => (
   <Card className="group border-border hover:shadow-[var(--shadow-card)] transition-all duration-300 overflow-hidden h-full flex flex-col">
-    <div className="aspect-[3/4] bg-gradient-to-br from-brand-primary/10 to-brand-secondary/10 relative overflow-hidden">
-      {book.cover_image_url ? (
-        <img
-          src={book.cover_image_url}
-          alt={book.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
+    <Link to={`/book/${book.id}`} className="block">
+      <div className="aspect-[3/4] bg-gradient-to-br from-brand-primary/10 to-brand-secondary/10 relative overflow-hidden">
+        {book.cover_image_url ? (
+          <img
+            src={book.cover_image_url}
+            alt={book.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+        ) : null}
+        <div className={`w-full h-full flex items-center justify-center ${book.cover_image_url ? 'hidden' : ''}`}>
           <BookOpen className="w-10 h-10 text-muted-foreground/30" />
         </div>
-      )}
-    </div>
+      </div>
+    </Link>
     <CardContent className="p-3 flex-1 flex flex-col">
-      <h3 className="text-sm font-semibold text-foreground line-clamp-2 mb-1">{book.title}</h3>
+      <h3 className="text-sm font-semibold text-foreground line-clamp-2 mb-1">
+        <Link to={`/book/${book.id}`} className="hover:text-brand-primary transition-colors">
+          {book.title}
+        </Link>
+      </h3>
       {book.genre && (
         <Badge variant="outline" className="text-[10px] border-border text-muted-foreground w-fit mb-2">{book.genre}</Badge>
       )}

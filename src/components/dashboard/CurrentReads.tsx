@@ -53,7 +53,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
     return (
       <Card className="border-border">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center text-base font-semibold">
+          <CardTitle as="h2" className="flex items-center text-base font-semibold">
             <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
             Currently Reading
           </CardTitle>
@@ -77,7 +77,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
     return (
       <Card className="border-border">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center text-base font-semibold">
+          <CardTitle as="h2" className="flex items-center text-base font-semibold">
             <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
             Currently Reading
           </CardTitle>
@@ -96,7 +96,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
     return (
       <Card className="border-border">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center text-base font-semibold">
+          <CardTitle as="h2" className="flex items-center text-base font-semibold">
             <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
             Currently Reading
           </CardTitle>
@@ -186,7 +186,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
   return (
     <Card className="border-border">
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center text-base font-semibold">
+        <CardTitle as="h2" className="flex items-center text-base font-semibold">
           <BookOpen className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
           Currently Reading ({readingBooks.length})
         </CardTitle>

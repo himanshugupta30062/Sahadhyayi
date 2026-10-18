@@ -1,22 +1,32 @@
-
 import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { uniqueChannelName } from '@/lib/realtime';
 
 const LOCAL_STORAGE_KEY = 'community-stats';
 
-interface CountryVisit {
-  code: string;
+export interface CountryVisit {
+  code?: string;
+  name?: string;
   count: number;
+  percent?: number;
 }
 
-interface CommunityStats {
+export interface CommunityStats {
   totalSignups: number;
   totalVisits: number;
   last24hVisits: number;
   topCountries: CountryVisit[];
   lastUpdated: string;
+  isCached?: boolean;
 }
+
+const DEFAULT_STATS: CommunityStats = {
+  totalSignups: 0,
+  totalVisits: 0,
+  last24hVisits: 0,
+  topCountries: [],
+  lastUpdated: '',
+  isCached: false,
+};
 
 export const useCommunityStats = (autoFetch: boolean = true) => {
   const safeGetItem = React.useCallback((key: string): string | null => {
@@ -41,7 +51,8 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     const cached = safeGetItem(LOCAL_STORAGE_KEY);
     if (!cached) return null;
     try {
-      return JSON.parse(cached) as CommunityStats;
+      const parsed = JSON.parse(cached) as CommunityStats;
+      return { ...parsed, isCached: true };
     } catch {
       return null;
     }
@@ -49,15 +60,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
   const [stats, setStats] = React.useState<CommunityStats>(() => {
     const cached = getCachedStats();
-    return (
-      cached || {
-        totalSignups: 0,
-        totalVisits: 0,
-        last24hVisits: 0,
-        topCountries: [],
-        lastUpdated: new Date().toISOString(),
-      }
-    );
+    return cached || DEFAULT_STATS;
   });
   const [isLoading, setIsLoading] = React.useState(autoFetch);
   const [error, setError] = React.useState<string | null>(null);
@@ -66,56 +69,99 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     setIsLoading(true);
     setError(null);
 
-    const cached = getCachedStats();
-    if (cached) {
-      setStats(cached);
-    }
-
     let edgeSignups: number | null = null;
     let edgeVisits: number | null = null;
     let edge24h: number | null = null;
     let topCountries: CountryVisit[] = [];
+    let edgeLastUpdated: string | null = null;
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('community-stats');
-      if (!fnError && data) {
-        edgeSignups = typeof data.totalSignups === 'number' ? data.totalSignups : null;
-        edgeVisits = typeof data.totalVisits === 'number' ? data.totalVisits : null;
-        edge24h = typeof data.last24hVisits === 'number' ? data.last24hVisits : null;
-        topCountries = data.topCountries ?? [];
+      const { data, error: fnError } = await supabase.functions.invoke('community-stats', {
+        body: { timeframe: '24h' },
+      });
+      if (!fnError && data && typeof data === 'object') {
+        // Modern analytics schema with legacy fallback support
+        edgeSignups = typeof data.metrics?.registeredReaders?.value === 'number'
+          ? data.metrics.registeredReaders.value
+          : typeof data.totalSignups === 'number'
+          ? data.totalSignups
+          : typeof data.totalMembers === 'number'
+          ? data.totalMembers
+          : null;
+
+        edgeVisits = typeof data.metrics?.totalPageViews?.value === 'number'
+          ? data.metrics.totalPageViews.value
+          : typeof data.totalVisits === 'number'
+          ? data.totalVisits
+          : null;
+
+        edge24h = typeof data.metrics?.periodPageViews?.value === 'number'
+          ? data.metrics.periodPageViews.value
+          : typeof data.last24hVisits === 'number'
+          ? data.last24hVisits
+          : null;
+
+        topCountries = Array.isArray(data.breakdowns?.countries)
+          ? data.breakdowns.countries
+          : Array.isArray(data.topCountries)
+          ? data.topCountries
+          : [];
+
+        edgeLastUpdated = typeof data.lastUpdated === 'string' ? data.lastUpdated : null;
       }
     } catch {
       // Fallback to direct DB RPCs below
     }
 
     try {
-      const [usersRpc, visitsRpc] = await Promise.all([
-        supabase.rpc('get_total_users_count').catch(() => ({ data: null })),
-        supabase.rpc('get_website_visit_count').catch(() => ({ data: null })),
-      ]);
+      // If Edge Function did not provide counts, check direct database RPCs
+      let rpcUsers: number | null = edgeSignups;
+      let rpcVisits: number | null = edgeVisits;
 
-      const rpcUsers = Number(usersRpc?.data) || 0;
-      const rpcVisits = Number(visitsRpc?.data) || 0;
+      if (rpcUsers === null || rpcVisits === null) {
+        const [usersRpc, visitsRpc] = await Promise.all([
+          typeof supabase?.rpc === 'function' ? supabase.rpc('get_total_users_count').catch(() => ({ data: null })) : { data: null },
+          typeof supabase?.rpc === 'function' ? supabase.rpc('get_website_visit_count').catch(() => ({ data: null })) : { data: null },
+        ]);
 
-      // Prefer live data from edge function or counting RPCs; only fall back to cached data if live values are unavailable
+        if (rpcUsers === null && usersRpc && typeof usersRpc.data === 'number') {
+          rpcUsers = usersRpc.data;
+        }
+        if (rpcVisits === null && visitsRpc && typeof visitsRpc.data === 'number') {
+          rpcVisits = visitsRpc.data;
+        }
+      }
+
+      // Check if we retrieved actual metrics from the network/RPCs
       const liveSignups = edgeSignups !== null ? edgeSignups : rpcUsers;
       const liveVisits = edgeVisits !== null ? edgeVisits : rpcVisits;
+      const live24h = edge24h;
 
-      const totalSignups = liveSignups > 0 ? liveSignups : (cached?.totalSignups ?? 0);
-      const totalVisits = liveVisits > 0 ? liveVisits : (cached?.totalVisits ?? 0);
+      if (liveSignups !== null || liveVisits !== null) {
+        // We have genuine live numbers. Even if they are 0, they MUST remain 0!
+        const updated: CommunityStats = {
+          totalSignups: liveSignups ?? 0,
+          totalVisits: liveVisits ?? 0,
+          last24hVisits: live24h ?? 0,
+          topCountries: topCountries,
+          lastUpdated: edgeLastUpdated || new Date().toISOString(),
+          isCached: false,
+        };
 
-      const updated: CommunityStats = {
-        totalSignups,
-        totalVisits,
-        last24hVisits: edge24h ?? cached?.last24hVisits ?? 0,
-        topCountries: topCountries.length > 0 ? topCountries : (cached?.topCountries ?? []),
-        lastUpdated: new Date().toISOString(),
-      };
-
-      setStats(updated);
-      safeSetItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        setStats(updated);
+        safeSetItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      } else {
+        // Complete network failure: use cached data but mark it stale/cached; do NOT invent fresh timestamp
+        const cached = getCachedStats();
+        if (cached) {
+          setStats(cached);
+        } else {
+          setError('Failed to load community stats');
+        }
+      }
     } catch (err) {
       console.error('Failed to fetch community stats:', err);
+      const cached = getCachedStats();
       if (cached) {
         setStats(cached);
       } else {
@@ -142,60 +188,26 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
         .maybeSingle();
 
       if (!existingProfile) {
-        const { error } = await supabase
+        const { error: insertError } = await supabase
           .from('profiles')
           .insert({ id: userId });
 
-        if (error) throw error;
-
-        setStats(prev => ({
-          ...prev,
-          totalSignups: prev.totalSignups + 1,
-          lastUpdated: new Date().toISOString(),
-        }));
+        if (insertError) throw insertError;
       }
 
+      // Re-fetch authoritative stats from server
       await fetchStats();
-
       return true;
-    } catch (err) {
-      console.error('Failed to join community:', err);
+    } catch (error) {
+      console.error('Failed to join community:', error);
       return false;
     }
   }, [fetchStats]);
 
   React.useEffect(() => {
-    if (!autoFetch) return;
-    fetchStats();
-
-    const profilesChannel = supabase
-      .channel(uniqueChannelName('community-stats-profiles'))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchStats();
-      })
-      .subscribe();
-
-    const visitsChannel = supabase
-      .channel(uniqueChannelName('community-stats-visits'))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'website_visits' }, () => {
-        fetchStats();
-      })
-      .subscribe();
-
-    const handleLocal = () => fetchStats();
-    window.addEventListener('communityStatsUpdate', handleLocal);
-
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'sahadhyayi_stats_sync') fetchStats();
-    };
-    window.addEventListener('storage', handleStorage);
-
-    return () => {
-      void supabase.removeChannel(profilesChannel);
-      void supabase.removeChannel(visitsChannel);
-      window.removeEventListener('communityStatsUpdate', handleLocal);
-      window.removeEventListener('storage', handleStorage);
-    };
+    if (autoFetch) {
+      fetchStats();
+    }
   }, [autoFetch, fetchStats]);
 
   return {
@@ -203,6 +215,8 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     isLoading,
     error,
     fetchStats,
-    joinCommunity
+    joinCommunity,
   };
 };
+
+export default useCommunityStats;

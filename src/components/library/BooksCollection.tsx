@@ -1,11 +1,11 @@
 
 import * as React from 'react';
 import { useState, useRef } from 'react';
-import { Library, Search } from 'lucide-react';
+import { Library, Search, BookOpen } from 'lucide-react';
 import PersonalLibrary from '@/components/PersonalLibrary';
 import { useBookSearch } from '@/hooks/useBookSearch';
 import { usePaginatedLibraryBooks } from '@/hooks/usePaginatedLibraryBooks';
-import type { Book } from '@/hooks/useLibraryBooks';
+import { isVerifiedPdf, type Book } from '@/hooks/useLibraryBooks';
 import BooksGrid from './BooksGrid';
 import LoadingGrid from './LoadingGrid';
 import BookSearchBar from '@/components/books/BookSearchBar';
@@ -154,8 +154,12 @@ const BooksCollection = ({
   // No need for redundant client-side filtering
 
   const handleDownloadPDF = async (book: Book) => {
-    if (!book.pdf_url) {
-      toast({ title: 'PDF not available', description: 'This book does not have a PDF file.', variant: 'destructive' });
+    if (!book.pdf_url || !isVerifiedPdf(book)) {
+      toast({
+        title: 'Direct PDF not available',
+        description: 'This edition is available via online reader or external source rather than direct file download.',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -180,88 +184,94 @@ const BooksCollection = ({
   }
 
   return (
-    <div className="space-y-8">
-      {/* API Search Section */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Search className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">Ultimate Book Finder</h3>
-              <p className="text-sm text-gray-600 font-normal">
-                Search millions of books from 4 major sources & choose which versions to add to your library
-              </p>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <div className="flex-1 w-full">
-              <BookSearchBar
-                onSearch={handleSearch}
-                loading={searchLoading}
-                onToggleExternal={setUseExternalSources}
-              />
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => { refetchAll(); window.dispatchEvent(new Event('shelfUpdated')); }}
-              disabled={searchLoading}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </Button>
-          </div>
-
-          {searchError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{searchError}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-blue-100">
-            <div className="grid sm:grid-cols-2 gap-4 text-xs text-gray-600">
-              <div>
-                <span className="font-medium text-gray-900">🔍 How it works:</span>
-                <br />• Searches 4 APIs simultaneously
-                <br />• Shows all available versions
-                <br />• You choose which to add to your library
-                <br />• Auto-cleanup removes unused older versions
-              </div>
-              <div>
-                <span className="font-medium text-gray-900">📚 Sources:</span>
-                <br />• Open Library (metadata & covers)
-                <br />• Google Books (descriptions & previews)
-                <br />• Project Gutenberg (free PDFs)
-                <br />• Internet Archive (historical texts)
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
+    <div className="space-y-6">
       {/* Books Collection with Tabs */}
       <Tabs defaultValue="all-books" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${user ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <TabsTrigger value="all-books" className="flex items-center gap-2">
-            <Library className="w-4 h-4" />
-            All Books ({paginatedData?.totalCount ?? 0})
+            <BookOpen className="w-4 h-4" />
+            <span>Browse Catalog ({paginatedData?.totalCount ?? 0})</span>
+          </TabsTrigger>
+          <TabsTrigger value="external-finder" className="flex items-center gap-2">
+            <Search className="w-4 h-4" />
+            <span>Multi-Source Finder</span>
           </TabsTrigger>
           {user && (
             <TabsTrigger value="my-library" className="flex items-center gap-2">
               <div className="p-1 bg-gradient-to-br from-amber-500 to-orange-600 rounded">
                 <Library className="w-3 h-3 text-white" />
               </div>
-                My Personal Library
+              <span>My Personal Library</span>
             </TabsTrigger>
           )}
         </TabsList>
 
-        <TabsContent value="all-books" className="space-y-6">
+        {/* Tab 2: Multi-Source External Search */}
+        <TabsContent value="external-finder" className="space-y-6 mt-6">
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Search className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Multi-Source Book Finder</h3>
+                  <p className="text-sm text-gray-600 font-normal">
+                    Search millions of books across 4 major repositories and choose which versions to add to the library
+                  </p>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <div className="flex-1 w-full">
+                  <BookSearchBar
+                    onSearch={handleSearch}
+                    loading={searchLoading}
+                    onToggleExternal={setUseExternalSources}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => { refetchAll(); window.dispatchEvent(new Event('shelfUpdated')); }}
+                  disabled={searchLoading}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Refresh
+                </Button>
+              </div>
+
+              {searchError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{searchError}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-blue-100">
+                <div className="grid sm:grid-cols-2 gap-4 text-xs text-gray-600">
+                  <div>
+                    <span className="font-medium text-gray-900">🔍 How it works:</span>
+                    <br />• Searches 4 major repositories simultaneously
+                    <br />• Shows all available versions with format details
+                    <br />• Select and import high-quality editions into Sahadhyayi
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900">📚 Integrated Sources:</span>
+                    <br />• Open Library (metadata & covers)
+                    <br />• Google Books (descriptions & preview readers)
+                    <br />• Project Gutenberg (free public domain PDFs & EPUBs)
+                    <br />• Internet Archive (historical scans & texts)
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab 1: Primary Catalog Browsing */}
+        <TabsContent value="all-books" className="space-y-6 mt-6">
           {/* Enhanced All Books Header */}
           <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6 shadow-sm">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

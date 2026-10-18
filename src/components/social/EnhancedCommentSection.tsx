@@ -97,15 +97,16 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
                   <span>{safeFormatDistanceToNow(c.created_at, { addSuffix: true })}</span>
                 </div>
               </div>
-              <p className="text-sm text-foreground whitespace-pre-wrap mt-0.5">{c.content}</p>
+              <p className="text-sm text-[#1C201D] dark:text-[#F3F0E7] whitespace-pre-wrap mt-0.5">{c.content}</p>
             </div>
             <div className="flex items-center space-x-3 mt-1 ml-1">
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label={c.user_liked ? `Unlike comment, ${c.likes_count || 0} likes` : `Like comment, ${c.likes_count || 0} likes`}
                 disabled={!user || toggleLike.isPending}
                 onClick={() => toggleLike.mutate({ commentId: c.id, isLiked: !!c.user_liked })}
-                className={`h-auto p-1 text-xs ${c.user_liked ? 'text-rose-500 hover:text-rose-600' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`h-auto p-1 text-xs ${c.user_liked ? 'text-rose-500 hover:text-rose-600' : 'text-[#636B65] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7]'}`}
               >
                 <Heart className={`w-3 h-3 mr-1 ${c.user_liked ? 'fill-current' : ''}`} />
                 {c.likes_count || 0}
@@ -113,9 +114,10 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label={`Reply to ${c.profiles?.full_name || 'user'}`}
                 disabled={!user}
                 onClick={() => setReplyingTo({ id: c.id, name: c.profiles?.full_name || 'user' })}
-                className="text-muted-foreground hover:text-foreground h-auto p-1 text-xs"
+                className="text-[#636B65] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] h-auto p-1 text-xs"
               >
                 <Reply className="w-3 h-3 mr-1" />
                 Reply
@@ -143,11 +145,11 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
   const roots = tree.get(null) || [];
 
   return (
-    <div className="mt-4 pt-4 border-t border-border">
+    <div className="mt-4 pt-4 border-t border-[#E8E2D9] dark:border-[#29332D]">
       <div className="space-y-4 max-h-96 overflow-y-auto">
         {roots.length === 0 ? (
-          <div className="text-center text-muted-foreground py-4">
-            <MessageCircle className="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
+          <div className="text-center text-[#636B65] dark:text-[#A5ADA6] py-4">
+            <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-40" />
             <p className="text-sm">No comments yet. Be the first to comment!</p>
           </div>
         ) : (
@@ -155,11 +157,17 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
         )}
       </div>
 
-      <div className="pt-4 border-t border-border mt-2">
+      <div className="pt-4 border-t border-[#E8E2D9] dark:border-[#29332D] mt-2">
         {replyingTo && (
           <div className="flex items-center justify-between bg-[#EFEAE2] dark:bg-[#1C3024] text-[#1C442D] dark:text-[#D5B16D] border border-[#D5B16D]/40 dark:border-[#315C43]/50 text-xs px-3 py-1.5 rounded-lg mb-2">
             <span>Replying to <strong>{replyingTo.name}</strong></span>
-            <button onClick={() => setReplyingTo(null)} className="hover:underline text-[11px] font-semibold text-stone-500 dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7]">Cancel</button>
+            <button
+              onClick={() => setReplyingTo(null)}
+              aria-label="Cancel reply"
+              className="hover:underline text-[11px] font-semibold text-stone-500 dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7]"
+            >
+              Cancel
+            </button>
           </div>
         )}
         <div className="flex space-x-3">
@@ -172,6 +180,7 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
           <div className="flex-1 flex space-x-2">
             <Input
               placeholder={replyingTo ? `Reply to ${replyingTo.name}...` : 'Write a comment...'}
+              aria-label={replyingTo ? `Reply to ${replyingTo.name}` : 'Write a comment'}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={(e) => {
@@ -185,6 +194,7 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
             />
             <Button
               onClick={handleSend}
+              aria-label="Send comment"
               disabled={!newComment.trim() || createComment.isPending || !user}
               size="sm"
               className="bg-[#1C442D] hover:bg-[#153422] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold rounded-xl px-3 h-9 shadow-xs"

@@ -52,6 +52,11 @@ export function EnhancedLazyImage({
   useEffect(() => {
     if (priority || !containerRef.current) return;
 
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsInView(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

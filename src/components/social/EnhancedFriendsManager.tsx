@@ -417,7 +417,13 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
   <div className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
     <div className="flex items-center gap-3 min-w-0">
       <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
-        <AvatarImage src={user.profile_photo_url || ''} />
+        <AvatarImage
+          src={user.profile_photo_url || ''}
+          alt={user.full_name || 'User'}
+          onError={(e) => {
+            (e.currentTarget as HTMLElement).style.display = 'none';
+          }}
+        />
         <AvatarFallback className="bg-gradient-button text-white font-semibold">
           {getInitials(user.full_name || '')}
         </AvatarFallback>
@@ -446,7 +452,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
         <Button
           size="sm"
           variant="outline"
-          aria-label="Add friend"
+          aria-label={`Send friend request to ${user.full_name || 'user'}`}
           onClick={() => onSendRequest(user.id, user.full_name || 'User')}
           className="border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg"
         >
@@ -454,7 +460,13 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
           Add
         </Button>
       ) : isFriend ? (
-        <Button size="sm" variant="ghost" aria-label="Message user" onClick={() => onMessage?.(user.id)} className="text-brand-primary hover:bg-brand-primary/10 rounded-lg">
+        <Button
+          size="sm"
+          variant="ghost"
+          aria-label={`Message ${user.full_name || 'user'}`}
+          onClick={() => onMessage?.(user.id)}
+          className="text-brand-primary hover:bg-brand-primary/10 rounded-lg"
+        >
           <MessageCircle className="w-4 h-4 mr-1" />
           Message
         </Button>

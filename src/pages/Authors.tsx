@@ -395,12 +395,20 @@ const FeaturedAuthorCard = ({ author, books }: { author: Author; books: Book[] }
                 style={{ transform: `translateY(${i === 1 ? -4 : 0}px)` }}
               >
                 {book.cover_image_url ? (
-                  <img src={book.cover_image_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted">
-                    <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/40" />
-                  </div>
-                )}
+                  <img
+                    src={book.cover_image_url}
+                    alt={book.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                <div className={`w-full h-full flex items-center justify-center bg-muted ${book.cover_image_url ? 'hidden' : ''}`}>
+                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/40" />
+                </div>
               </div>
             )) : (
               <div className="flex items-center justify-center h-full w-full">
@@ -541,12 +549,20 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
                 {topBooks.slice(0, 3).map(book => (
                   <div key={book.id} className="w-9 h-12 sm:w-12 sm:h-[62px] rounded overflow-hidden border border-border/40 bg-muted flex-shrink-0 shadow-sm transition-transform group-hover:scale-[1.02]">
                     {book.cover_image_url ? (
-                      <img src={book.cover_image_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground/30" />
-                      </div>
-                    )}
+                      <img
+                        src={book.cover_image_url}
+                        alt={book.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div className={`w-full h-full flex items-center justify-center ${book.cover_image_url ? 'hidden' : ''}`}>
+                      <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground/30" />
+                    </div>
                   </div>
                 ))}
                 {author.books_count > 3 && (

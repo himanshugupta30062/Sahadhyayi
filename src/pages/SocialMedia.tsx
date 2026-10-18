@@ -521,7 +521,7 @@ const SocialMedia: React.FC = () => {
         </header>
 
         {/* ── Main Viewport Content ── */}
-        <main className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             {/* Tablet & Mobile Horizontal Tab Navigation */}
             <div className="xl:hidden overflow-x-auto scrollbar-none pb-2 mb-6 -mx-1 px-1">
@@ -1077,7 +1077,7 @@ const SocialMedia: React.FC = () => {
               </aside>
             </div>
           </Tabs>
-        </main>
+        </div>
       </div>
     </>
   );

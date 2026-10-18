@@ -96,15 +96,18 @@ const AuthorSlugPage = () => {
 
           {/* Hero/Profile Section */}
           <div className="relative mb-20">
-          <div className="h-48 md:h-64 rounded-lg overflow-hidden relative">
-            <img
-              src={author.profile_image_url || '/placeholder.svg'}
-              alt={`${author.name} banner`}
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
-          </div>
+            <div className="h-48 md:h-64 rounded-lg overflow-hidden relative">
+              <img
+                src={author.profile_image_url || '/placeholder.svg'}
+                alt={`${author.name} banner`}
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
+            </div>
 
             {/* Avatar overlapping */}
             <div className="absolute left-4 bottom-0 translate-y-1/2">
@@ -173,12 +176,12 @@ const AuthorSlugPage = () => {
           {/* Content Tabs */}
           <Tabs defaultValue="about" className="w-full">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 mb-6 bg-muted rounded-lg overflow-x-auto">
-              <TabsTrigger value="about" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">About</TabsTrigger>
-              <TabsTrigger value="books" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Bibliography</TabsTrigger>
-              <TabsTrigger value="updates" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Updates</TabsTrigger>
-              <TabsTrigger value="qa" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Q&A</TabsTrigger>
-              <TabsTrigger value="events" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Events</TabsTrigger>
-              <TabsTrigger value="connect" className="data-[state=active]:bg-[hsl(var(--brand-orange))] data-[state=active]:text-white text-muted-foreground">Connect</TabsTrigger>
+              <TabsTrigger value="about" className="data-[state=active]:bg-[#1C442D] data-[state=active]:text-white dark:data-[state=active]:bg-[#D5B16D] dark:data-[state=active]:text-[#0B0D0C] text-muted-foreground">About</TabsTrigger>
+              <TabsTrigger value="books" className="data-[state=active]:bg-[#1C442D] data-[state=active]:text-white dark:data-[state=active]:bg-[#D5B16D] dark:data-[state=active]:text-[#0B0D0C] text-muted-foreground">Bibliography</TabsTrigger>
+              <TabsTrigger value="updates" className="data-[state=active]:bg-[#1C442D] data-[state=active]:text-white dark:data-[state=active]:bg-[#D5B16D] dark:data-[state=active]:text-[#0B0D0C] text-muted-foreground">Updates</TabsTrigger>
+              <TabsTrigger value="qa" className="data-[state=active]:bg-[#1C442D] data-[state=active]:text-white dark:data-[state=active]:bg-[#D5B16D] dark:data-[state=active]:text-[#0B0D0C] text-muted-foreground">Q&A</TabsTrigger>
+              <TabsTrigger value="events" className="data-[state=active]:bg-[#1C442D] data-[state=active]:text-white dark:data-[state=active]:bg-[#D5B16D] dark:data-[state=active]:text-[#0B0D0C] text-muted-foreground">Events</TabsTrigger>
+              <TabsTrigger value="connect" className="data-[state=active]:bg-[#1C442D] data-[state=active]:text-white dark:data-[state=active]:bg-[#D5B16D] dark:data-[state=active]:text-[#0B0D0C] text-muted-foreground">Connect</TabsTrigger>
             </TabsList>
 
             <TabsContent value="about" className="space-y-6">
@@ -252,34 +255,38 @@ const AuthorSlugPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {authorBooks.map((book) => (
                         <Card key={book.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-                          <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 to-primary/30 relative overflow-hidden">
-                            {book.cover_image_url ? (
-                              <img
-                                src={book.cover_image_url}
-                                alt={book.title}
-                                loading="lazy"
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : null}
-                            
-                            <div className={`w-full h-full flex items-center justify-center text-muted-foreground p-4 ${book.cover_image_url ? 'hidden' : ''}`}>
-                              <div className="text-center">
-                                <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-60" />
-                                <div className="text-sm font-medium leading-tight">
-                                  {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
+                          <Link to={`/book/${book.id}`} className="block">
+                            <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 to-primary/30 relative overflow-hidden">
+                              {book.cover_image_url ? (
+                                <img
+                                  src={book.cover_image_url}
+                                  alt={book.title}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                  }}
+                                />
+                              ) : null}
+                              
+                              <div className={`w-full h-full flex items-center justify-center text-muted-foreground p-4 ${book.cover_image_url ? 'hidden' : ''}`}>
+                                <div className="text-center">
+                                  <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-60" />
+                                  <div className="text-sm font-medium leading-tight">
+                                    {book.title.length > 30 ? book.title.substring(0, 30) + '...' : book.title}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </Link>
 
                           <CardContent className="p-4 space-y-3">
                             <div>
                               <h3 className="font-semibold text-base line-clamp-2 group-hover:text-primary transition-colors duration-200">
-                                {book.title}
+                                <Link to={`/book/${book.id}`} className="hover:underline">
+                                  {book.title}
+                                </Link>
                               </h3>
                               <p className="text-muted-foreground text-sm">{book.author}</p>
                             </div>

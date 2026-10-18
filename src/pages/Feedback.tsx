@@ -58,7 +58,7 @@ const Feedback = () => {
 
       if (error) throw error;
 
-      // Best-effort email notification via the deployed edge function
+      // Email notification via the deployed edge function
       const emailMessage = [
         formData.subject ? `Subject: ${formData.subject}` : null,
         `Type: ${formData.type}`,
@@ -66,19 +66,36 @@ const Feedback = () => {
         formData.message,
       ].filter(Boolean).join('\n');
 
+      let emailSent = false;
       try {
-        const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
-          body: { name: formData.name, email: formData.email, message: emailMessage },
+        const { data, error: emailError } = await supabase.functions.invoke('send-contact-email', {
+          body: {
+            name: formData.name,
+            email: formData.email,
+            message: emailMessage,
+            subject: `Feedback: ${formData.subject || formData.type}`,
+          },
         });
-        if (emailError) console.error('Email notification failed:', emailError);
+        if (!emailError && data && typeof data === 'object' && data.success) {
+          emailSent = true;
+        } else {
+          console.error('Email notification failed:', emailError || data?.error);
+        }
       } catch (emailError) {
         console.error('Email notification failed:', emailError);
       }
 
-      toast({
-        title: 'Feedback Submitted!',
-        description: "Thank you for your feedback. We'll review it and get back to you soon.",
-      });
+      if (emailSent) {
+        toast({
+          title: 'Feedback Submitted!',
+          description: "Thank you for your feedback! It was saved and delivered to our team.",
+        });
+      } else {
+        toast({
+          title: 'Feedback Saved!',
+          description: "Thank you! Your feedback has been recorded in our database.",
+        });
+      }
 
       setFormData({
         name: '',
@@ -88,9 +105,13 @@ const Feedback = () => {
         message: '',
         rating: 0
       });
-    } catch (err) {
-      console.error(err);
-      toast({ title: 'Failed to submit feedback', variant: 'destructive' });
+    } catch (err: any) {
+      console.error('[Feedback] Submission error:', err);
+      toast({
+        title: 'Failed to submit feedback',
+        description: err?.message || 'Please check your connection and try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -26,7 +26,7 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => 
     return (
       <Card className="border-border">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center text-base font-semibold">
+          <CardTitle as="h2" className="flex items-center text-base font-semibold">
             <Sparkles className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
             For You
           </CardTitle>
@@ -52,7 +52,7 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => 
     return (
       <Card className="border-border">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center text-base font-semibold">
+          <CardTitle as="h2" className="flex items-center text-base font-semibold">
             <Sparkles className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
             For You
           </CardTitle>
@@ -71,7 +71,7 @@ const BookRecommendations: React.FC<BookRecommendationsProps> = ({ userId }) => 
   return (
     <Card className="border-border">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center text-base font-semibold">
+        <CardTitle as="h2" className="flex items-center text-base font-semibold">
           <Sparkles className="w-4 h-4 mr-2 text-[hsl(var(--brand-primary))]" />
           For You
         </CardTitle>

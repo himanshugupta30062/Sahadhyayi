@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown, User, LogOut, Settings, Search, MessageCircle, LogIn, Sun, Moon } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Search, MessageCircle, LogIn, Sun, Moon, BookOpen, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ContactFormDialog from "@/components/ContactFormDialog";
 import { useAuth } from "@/contexts/authHelpers";
@@ -59,6 +59,18 @@ const Navigation = () => {
     }
   }, [isOpen, isMobile]);
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   // Updated navigation items with core functionality only
   const navItems = user ? [
     { name: "Home", href: "/dashboard" },
@@ -77,41 +89,75 @@ const Navigation = () => {
     { name: "Social Media", href: "/social" },
   ];
 
+  const userDisplayName =
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email?.split('@')[0] ||
+    'Reader';
+
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    navigate('/signin');
     setIsOpen(false);
   };
 
-  const getUserInitials = (email?: string | null) => {
-    if (!email || typeof email !== 'string') return 'U';
-    return email.charAt(0).toUpperCase();
+  const getUserInitials = (nameOrEmail?: string | null) => {
+    if (!nameOrEmail || typeof nameOrEmail !== 'string') return 'U';
+    const trimmed = nameOrEmail.trim();
+    if (!trimmed) return 'U';
+    const parts = trimmed.split(' ');
+    if (parts.length >= 2 && parts[0] && parts[1]) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return trimmed.charAt(0).toUpperCase();
+  };
+
+  const isCurrentRoute = (href: string) => {
+    if (href === '/') {
+      return location.pathname === '/';
+    }
+    if (href === '/dashboard') {
+      return location.pathname === '/dashboard' || (Boolean(user) && location.pathname === '/');
+    }
+    if (href === '/authors') {
+      return (
+        location.pathname === '/authors' ||
+        location.pathname.startsWith('/authors/') ||
+        location.pathname.startsWith('/author/')
+      );
+    }
+    if (href === '/library') {
+      return (
+        location.pathname === '/library' ||
+        location.pathname.startsWith('/library/') ||
+        location.pathname.startsWith('/book/') ||
+        location.pathname.startsWith('/books/') ||
+        location.pathname.startsWith('/reader/')
+      );
+    }
+    return location.pathname === href || location.pathname.startsWith(`${href}/`);
   };
 
   return (
-    <nav
-      role="navigation"
-      aria-label="Main"
+    <header
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
         scrolled
           ? 'bg-background/95 backdrop-blur-md shadow-xs border-b border-border'
           : 'bg-background/85 backdrop-blur-sm border-b border-border/40'
       }`}
     >
-      {/* Skip to Content accessibility link */}
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only absolute left-2 top-2 bg-background text-foreground border border-border p-2 rounded z-50"
-      >
-        Skip to main content
-      </a>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-3 font-bold text-2xl text-foreground">
+          <Link
+            to={user ? "/dashboard" : "/"}
+            className="flex items-center space-x-3 font-bold text-2xl text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+            aria-label="Sahadhyayi Home"
+          >
             <EnhancedLazyImage
               src="/lovable-uploads/logo-small.webp"
-              alt="Sahadhyayi navigation logo"
+              alt=""
+              aria-hidden="true"
               className="w-8 h-8 flex-shrink-0"
               width={32}
               height={32}
@@ -123,22 +169,25 @@ const Navigation = () => {
           {!isMobile && (
             <div className="hidden md:flex items-center space-x-8">
               {/* Navigation Links */}
-              <div className="flex items-center space-x-6">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] ${
-                      (location.pathname === item.href || 
-                       (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                        ? 'text-[hsl(var(--brand-primary))] border-b-2 border-[hsl(var(--brand-primary))] pb-1 font-semibold' 
-                        : 'text-muted-foreground'
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
+              <nav aria-label="Main navigation" className="flex items-center space-x-6">
+                {navItems.map((item) => {
+                  const isActive = isCurrentRoute(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm ${
+                        isActive 
+                          ? 'text-[hsl(var(--brand-primary))] border-b-2 border-[hsl(var(--brand-primary))] pb-1 font-semibold' 
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
 
               {/* User Actions */}
               <div className="flex items-center space-x-4">
@@ -149,8 +198,9 @@ const Navigation = () => {
                       size="sm"
                       onClick={() => setSearchOpen(true)}
                       className="flex items-center gap-2"
+                      aria-label="Search library and books (Cmd+K)"
                     >
-                      <Search className="w-4 h-4" />
+                      <Search className="w-4 h-4" aria-hidden="true" />
                       <span className="text-xs text-muted-foreground hidden lg:inline">
                         Cmd+K
                       </span>
@@ -173,31 +223,54 @@ const Navigation = () => {
                     <NotificationDropdown />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="flex items-center space-x-2 p-2">
+                        <Button
+                          variant="ghost"
+                          className="flex items-center space-x-2 p-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          aria-label={`User account menu for ${userDisplayName}`}
+                        >
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.user_metadata?.avatar_url} />
-                            <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
-                              {getUserInitials(user.email || 'U')}
+                            <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
+                            <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white font-medium text-xs">
+                              {getUserInitials(user.user_metadata?.full_name || user.email)}
                             </AvatarFallback>
                           </Avatar>
-                          <ChevronDown className="h-4 w-4 text-gray-500" />
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-56">
+                        <div className="px-3 py-2 border-b border-border mb-1">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {userDisplayName}
+                          </p>
+                          {user.email && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {user.email}
+                            </p>
+                          )}
+                        </div>
                         <DropdownMenuItem asChild>
-                          <Link to="/profile" className="flex items-center">
+                          <Link to="/profile" className="flex items-center cursor-pointer">
                             <User className="mr-2 h-4 w-4" />
                             Profile
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link to="/profile" className="flex items-center">
-                            <Settings className="mr-2 h-4 w-4" />
-                            Account Settings
+                          <Link to="/bookshelf" className="flex items-center cursor-pointer">
+                            <BookOpen className="mr-2 h-4 w-4" />
+                            My Bookshelf
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/articles/my" className="flex items-center cursor-pointer">
+                            <FileText className="mr-2 h-4 w-4" />
+                            My Articles
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleSignOut}>
+                        <DropdownMenuItem
+                          onClick={handleSignOut}
+                          className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                        >
                           <LogOut className="mr-2 h-4 w-4" />
                           Sign Out
                         </DropdownMenuItem>
@@ -222,7 +295,7 @@ const Navigation = () => {
                     </Button>
                     <ContactFormDialog
                       trigger={
-                        <Button variant="outline" size="sm" className="border-amber-500 text-amber-600 hover:bg-amber-50 font-medium">
+                        <Button variant="outline" size="sm" className="border-border text-foreground hover:bg-muted font-medium">
                           <MessageCircle className="w-4 h-4 mr-1.5" />
                           Contact me
                         </Button>
@@ -267,11 +340,13 @@ const Navigation = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 border border-border text-foreground hover:bg-muted"
+                className="p-2 border border-border text-foreground hover:bg-muted min-h-[40px] min-w-[40px]"
                 aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                aria-expanded={isOpen}
+                aria-controls="mobile-navigation-menu"
                 ref={menuButtonRef}
               >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isOpen ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
               </Button>
             </div>
           )}
@@ -279,62 +354,75 @@ const Navigation = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobile && isOpen && (
-          <div
+          <nav
+            id="mobile-navigation-menu"
+            aria-label="Mobile navigation"
             className="md:hidden border-t border-border bg-background/98 backdrop-blur-md"
             ref={menuRef}
           >
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                    (location.pathname === item.href || 
-                     (item.href === "/" && location.pathname === "/dashboard" && user)) 
-                      ? 'text-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.1)] font-semibold' 
-                      : 'text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const isActive = isCurrentRoute(item.href);
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => setIsOpen(false)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 min-h-[44px] flex items-center ${
+                      isActive 
+                        ? 'text-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.1)] font-semibold' 
+                        : 'text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
 
               {user ? (
                 <div className="pt-4 border-t border-border">
                   <div className="flex items-center px-3 py-2">
                     <Avatar className="h-10 w-10 mr-3">
-                      <AvatarImage src={user.user_metadata?.avatar_url} />
-                      <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
-                        {getUserInitials(user.email || 'U')}
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
+                      <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white font-medium">
+                        {getUserInitials(user.user_metadata?.full_name || user.email)}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <div className="text-sm font-medium text-foreground">
-                        {user.user_metadata?.full_name || user.email}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-foreground truncate">
+                        {userDisplayName}
                       </div>
-                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                      <div className="text-xs text-muted-foreground truncate">{user.email}</div>
                     </div>
                   </div>
                   <Link
                     to="/profile"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted rounded-md"
+                    className="block px-3 py-2 text-sm font-medium text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted rounded-md min-h-[44px] flex items-center"
                   >
                     <User className="inline mr-2 h-4 w-4" />
                     Profile
                   </Link>
                   <Link
-                    to="/profile"
+                    to="/bookshelf"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted rounded-md"
+                    className="block px-3 py-2 text-sm font-medium text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted rounded-md min-h-[44px] flex items-center"
                   >
-                    <Settings className="inline mr-2 h-4 w-4" />
-                    Account Settings
+                    <BookOpen className="inline mr-2 h-4 w-4" />
+                    My Bookshelf
+                  </Link>
+                  <Link
+                    to="/articles/my"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-2 text-sm font-medium text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted rounded-md min-h-[44px] flex items-center"
+                  >
+                    <FileText className="inline mr-2 h-4 w-4" />
+                    My Articles
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="block w-full text-left px-3 py-2 text-sm font-medium text-foreground hover:text-destructive hover:bg-muted rounded-md"
+                    className="block w-full text-left px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-md min-h-[44px] flex items-center cursor-pointer"
                   >
                     <LogOut className="inline mr-2 h-4 w-4" />
                     Sign Out
@@ -343,7 +431,7 @@ const Navigation = () => {
               ) : (
                 <div className="pt-4 space-y-3 border-t border-border">
                   <Link to="/auth" onClick={() => setIsOpen(false)} className="block">
-                    <Button size="sm" className="w-full bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white">
+                    <Button size="sm" className="w-full bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white min-h-[44px]">
                       <LogIn className="w-4 h-4 mr-1.5" />
                       Sign In
                     </Button>
@@ -351,13 +439,13 @@ const Navigation = () => {
                 </div>
               )}
             </div>
-          </div>
+          </nav>
         )}
       </div>
 
       {/* Global Search Dialog */}
       <EnhancedGlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-    </nav>
+    </header>
   );
 };
 

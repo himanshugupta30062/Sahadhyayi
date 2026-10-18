@@ -43,8 +43,9 @@ export const FollowButton = ({
                 variant={variant}
                 size={size}
                 disabled
+                aria-label="Follow author (sign in required)"
                 className={cn(
-                  'rounded-full bg-[hsl(var(--brand-orange))] text-white hover:bg-[hsl(var(--brand-orange)/.85)]',
+                  'rounded-full bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]',
                   variant !== 'default' && ''
                 )}
               >
@@ -71,7 +72,7 @@ export const FollowButton = ({
 
   if (isLoading) {
     return (
-      <Button variant={variant} size={size} disabled>
+      <Button variant={variant} size={size} disabled aria-label="Loading follow status">
         <Loader2 className="w-4 h-4 animate-spin" />
         {showText && <span className="ml-2">Loading...</span>}
       </Button>
@@ -84,9 +85,10 @@ export const FollowButton = ({
       size={size}
       onClick={handleClick}
       disabled={isProcessing}
+      aria-label={isFollowing ? 'Unfollow author' : 'Follow author'}
       className={cn(
-        'rounded-full bg-[hsl(var(--brand-orange))] text-white hover:bg-[hsl(var(--brand-orange)/.85)]',
-        isFollowing && 'bg-transparent text-foreground hover:bg-muted',
+        'rounded-full bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]',
+        isFollowing && 'bg-transparent text-foreground hover:bg-muted border border-border dark:text-[#F3F0E7]',
         variant !== 'default' && ''
       )}
     >

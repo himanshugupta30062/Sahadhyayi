@@ -63,3 +63,24 @@ export const initializeSecureSession = (): void => {
 export const initializeSecurity = (): void => {
   initializeSecureSession();
 };
+
+/**
+ * Validates and sanitizes a post-login redirect path to prevent open redirects.
+ * Only internal application paths starting with a single '/' are permitted.
+ */
+export const getSafeRedirectUrl = (
+  target: string | null | undefined,
+  defaultUrl: string = '/dashboard'
+): string => {
+  if (!target || typeof target !== 'string') return defaultUrl;
+  const trimmed = target.trim();
+  // Must start with '/' and not '//' or '/\' (protocol-relative URLs)
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.startsWith('/\\')) {
+    return defaultUrl;
+  }
+  // Disallow absolute protocol schemes or script execution
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed) || /javascript:/i.test(trimmed) || /data:/i.test(trimmed)) {
+    return defaultUrl;
+  }
+  return trimmed;
+};

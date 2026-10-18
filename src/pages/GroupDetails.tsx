@@ -65,7 +65,7 @@ const GroupDetails = () => {
   });
 
   const group = cachedGroup || directGroup;
-  const isMember = group ? joinedGroups.some(g => g.id === group.id) : false;
+  const isMember = group ? joinedGroups.some(g => g.id === group.id || (g as any).group_id === group.id) : false;
   const memberCount = group?.group_members?.[0]?.count ?? members.length;
 
   const copyInviteLink = () => {
@@ -181,6 +181,7 @@ const GroupDetails = () => {
                       <Button
                         variant="outline"
                         onClick={copyInviteLink}
+                        aria-label="Copy group invite link"
                         className="gap-1.5 border-border"
                       >
                         {isCopied ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
@@ -191,6 +192,7 @@ const GroupDetails = () => {
                         variant="ghost"
                         onClick={handleMembership}
                         disabled={leaveGroup.isPending}
+                        aria-label="Leave reading group"
                         className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-xs"
                       >
                         {leaveGroup.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />}
@@ -202,6 +204,7 @@ const GroupDetails = () => {
                       <Button
                         onClick={handleMembership}
                         disabled={joinGroup.isPending}
+                        aria-label="Join reading group"
                         className="bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white gap-1.5"
                       >
                         {joinGroup.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
@@ -211,6 +214,7 @@ const GroupDetails = () => {
                       <Button
                         variant="outline"
                         onClick={copyInviteLink}
+                        aria-label="Share reading group link"
                         className="gap-1.5 border-border"
                       >
                         {isCopied ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
@@ -293,7 +297,10 @@ const GroupDetails = () => {
                       className="flex items-center gap-2.5 p-2 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/60 transition-colors"
                     >
                       <Avatar className="w-8 h-8 shrink-0">
-                        <AvatarImage src={member.user_profile?.profile_photo_url || ''} />
+                        <AvatarImage 
+                          src={member.user_profile?.profile_photo_url || ''} 
+                          alt={member.user_profile?.full_name || 'Member'} 
+                        />
                         <AvatarFallback className="text-xs bg-[hsl(var(--brand-primary)/0.1)] text-[hsl(var(--brand-primary))]">
                           {member.user_profile?.full_name?.charAt(0) || 'U'}
                         </AvatarFallback>
