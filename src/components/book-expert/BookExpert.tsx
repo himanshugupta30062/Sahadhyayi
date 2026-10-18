@@ -1,55 +1,163 @@
-import { useEffect, useRef, useState } from 'react';
-import { X, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useBookExpert } from '@/contexts/book-expert.utils';
-import { cn } from '@/lib/utils';
-// Use dynamic import so the 1.7MB image doesn't block initial load
-const bookIcon = new URL('./Sahadhyayi_Book_optimized.webp', import.meta.url).href;
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import {
+  BookOpen,
+  Check,
+  ExternalLink,
+  LoaderCircle,
+  MessageCircle,
+  RotateCcw,
+  Send,
+  Sparkles,
+  ThumbsDown,
+  ThumbsUp,
+  X,
+} from "lucide-react";
+import { useBookExpert } from "@/contexts/book-expert.utils";
+import type { BookExpertBook } from "@/contexts/book-expert.utils";
+import { cn } from "@/lib/utils";
+
+const bookIcon = new URL("./Sahadhyayi_Book_optimized.webp", import.meta.url).href;
+
+const suggestedPrompts = [
+  "Find my next read",
+  "Recommend a beginner-friendly philosophy book",
+  "Help me explore a new author",
+  "Compare two books",
+];
+
+function validHttpUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function BookResultCard({ book }: { book: BookExpertBook }) {
+  const coverUrl = validHttpUrl(book.coverImageUrl);
+  const pdfUrl = validHttpUrl(book.pdfUrl);
+
+  return (
+    <article className="flex min-w-0 gap-3 rounded-xl border border-border bg-background p-2.5">
+      <div className="flex h-24 w-[68px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
+        {coverUrl ? (
+          <img
+            src={coverUrl}
+            alt={"Cover of " + book.title}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <BookOpen className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <h4 className="line-clamp-2 text-sm font-semibold leading-snug">{book.title}</h4>
+        {book.author && <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{book.author}</p>}
+        <div className="mt-1 flex flex-wrap gap-x-2 text-[11px] text-muted-foreground">
+          {book.genre && <span>{book.genre}</span>}
+          {book.publicationYear && <span>{book.publicationYear}</span>}
+          {book.language && <span>{book.language}</span>}
+        </div>
+        {book.description && (
+          <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{book.description}</p>
+        )}
+        <div className="mt-2 flex flex-wrap gap-2">
+          <a
+            href={"/book/" + encodeURIComponent(book.id)}
+            className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            View book <ExternalLink className="h-3 w-3" aria-hidden="true" />
+          </a>
+          {pdfUrl && (
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Open PDF <ExternalLink className="h-3 w-3" aria-hidden="true" />
+            </a>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
 
 const BookExpert = () => {
-  const { isOpen, toggleChat, closeChat, messages, sendMessage } = useBookExpert();
-  const [input, setInput] = useState('');
-  const [colorIndex, setColorIndex] = useState(0);
+  const {
+    isOpen,
+    toggleChat,
+    closeChat,
+    clearConversation,
+    messages,
+    loading,
+    sendMessage,
+    sendFeedback,
+  } = useBookExpert();
+  const [input, setInput] = useState("");
+  const [feedback, setFeedback] = useState<Record<string, -1 | 1>>({});
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const colors = ['from-violet-500 to-purple-600', 'from-blue-500 to-cyan-600', 'from-emerald-500 to-teal-600', 'from-amber-500 to-orange-600', 'from-pink-500 to-rose-600'];
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView?.({ behavior: "smooth", block: "end" });
+  }, [messages, loading, isOpen]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setColorIndex(prev => (prev + 1) % colors.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!isOpen) return;
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") closeChat();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, closeChat]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isOpen]);
+  const handleSend = (prompt?: string) => {
+    const text = (prompt ?? input).trim();
+    if (!text || loading) return;
+    void sendMessage(text);
+    setInput("");
+  };
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    sendMessage(input);
-    setInput('');
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    handleSend();
+  };
+
+  const handleInputKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleFeedback = async (requestId: string, rating: -1 | 1) => {
+    if (feedback[requestId]) return;
+    setFeedback((current) => ({ ...current, [requestId]: rating }));
+    await sendFeedback(requestId, rating);
   };
 
   if (!isOpen) {
     return (
       <button
+        type="button"
         onClick={toggleChat}
-        aria-label="Open Book Expert"
-        className="fixed bottom-6 right-6 z-50 focus:outline-none"
+        aria-label="Open AI Book Expert"
+        aria-expanded={false}
+        aria-controls="book-expert-panel"
+        className="fixed bottom-5 right-4 z-50 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-border bg-background shadow-xl transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6 sm:h-[76px] sm:w-[76px]"
       >
         <img
           src={bookIcon}
-          alt="Book Expert (AI)"
+          alt=""
           loading="eager"
           decoding="async"
-          className="
-            w-20 h-20 md:w-24 md:h-24
-            rounded-full object-cover
-            shadow-lg ring-1 ring-white/10
-            hover:scale-105 active:scale-95 transition-transform
-            select-none pointer-events-auto
-          "
+          className="h-full w-full object-cover"
           draggable={false}
         />
       </button>
@@ -57,65 +165,175 @@ const BookExpert = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex h-96 w-80 flex-col overflow-hidden rounded-xl border-2 border-white/20 bg-background/95 shadow-2xl backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      {/* Book-like header with changing colors */}
-      <div className={`relative flex items-center justify-between bg-gradient-to-r ${colors[colorIndex]} p-4 text-white transition-all duration-1000`}>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
-        <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-white/40 rounded-full"></div>
-        <div className="relative flex items-center gap-2">
-          <img
-            src={bookIcon}
-            alt="Book Expert AI"
-            className="h-6 w-6 object-contain"
-          />
-          <span className="font-bold text-lg">AI Book Expert</span>
-        </div>
-        <button onClick={closeChat} aria-label="Close chat" className="relative p-1 hover:bg-white/20 rounded transition-colors">
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-      <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm bg-gradient-to-b from-background to-background/90">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={cn(
-              'max-w-[85%] rounded-xl px-4 py-3 shadow-md',
-              m.sender === 'user'
-                ? `ml-auto bg-gradient-to-r ${colors[colorIndex]} text-white`
-                : 'bg-white/90 text-gray-800 border border-gray-200'
-            )}
-          >
-            <div className="text-sm leading-relaxed">{m.text}</div>
-            {m.sender === 'bot' && (
-              <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                <Sparkles className="h-3 w-3" />
-                <span>Powered by Gemini AI</span>
-              </div>
-            )}
+    <section
+      id="book-expert-panel"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="book-expert-title"
+      className="fixed inset-x-2 bottom-2 z-50 flex h-[min(720px,calc(100dvh-1rem))] max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-border bg-background text-foreground shadow-2xl sm:inset-x-auto sm:bottom-24 sm:right-6 sm:h-[min(720px,calc(100dvh-7rem))] sm:w-[420px] md:w-[460px]"
+    >
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-background">
+            <img src={bookIcon} alt="" className="h-full w-full object-cover" />
           </div>
-        ))}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 id="book-expert-title" className="truncate text-sm font-semibold sm:text-base">AI Book Expert</h2>
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                <Sparkles className="h-3 w-3" aria-hidden="true" />
+                Reading companion
+              </span>
+            </div>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">Discover books from Sahadhyayi's library</p>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={clearConversation}
+            disabled={loading || messages.length <= 1}
+            aria-label="Start a new conversation"
+            title="Start a new conversation"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={closeChat}
+            aria-label="Close Book Expert"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      </header>
+
+      <div
+        className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4"
+        aria-live="polite"
+        aria-relevant="additions text"
+      >
+        {messages.map((message, index) => {
+          const isUser = message.sender === "user";
+          return (
+            <div key={index} className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
+              <div className={cn("min-w-0 space-y-2", isUser ? "max-w-[88%]" : "w-full max-w-full")}>
+                <div
+                  className={cn(
+                    "rounded-2xl px-3.5 py-3 text-sm leading-relaxed shadow-sm",
+                    isUser
+                      ? "rounded-br-md bg-primary text-primary-foreground"
+                      : "rounded-bl-md border border-border bg-muted/60 text-foreground",
+                    message.error && "border-destructive/50"
+                  )}
+                >
+                  {!isUser && (
+                    <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                      <Sparkles className="h-3 w-3 text-primary" aria-hidden="true" />
+                      Book Expert
+                    </div>
+                  )}
+                  <p className="whitespace-pre-wrap break-words">{message.text}</p>
+                </div>
+
+                {!isUser && message.books && message.books.length > 0 && (
+                  <div className="space-y-2 pl-1">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">From Sahadhyayi library</p>
+                    {message.books.map((book) => <BookResultCard key={book.id} book={book} />)}
+                  </div>
+                )}
+
+                {!isUser && message.requestId && (
+                  <div className="flex items-center gap-2 px-1 text-muted-foreground">
+                    <span className="text-[11px]">Was this helpful?</span>
+                    <button
+                      type="button"
+                      aria-label="This answer was helpful"
+                      aria-pressed={feedback[message.requestId] === 1}
+                      disabled={Boolean(feedback[message.requestId])}
+                      onClick={() => void handleFeedback(message.requestId!, 1)}
+                      className={cn("rounded-md p-1.5 hover:bg-muted disabled:cursor-default", feedback[message.requestId] === 1 && "text-primary")}
+                    >
+                      {feedback[message.requestId] === 1 ? <Check className="h-4 w-4" /> : <ThumbsUp className="h-4 w-4" />}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="This answer was not helpful"
+                      aria-pressed={feedback[message.requestId] === -1}
+                      disabled={Boolean(feedback[message.requestId])}
+                      onClick={() => void handleFeedback(message.requestId!, -1)}
+                      className={cn("rounded-md p-1.5 hover:bg-muted disabled:cursor-default", feedback[message.requestId] === -1 && "text-primary")}
+                    >
+                      {feedback[message.requestId] === -1 ? <Check className="h-4 w-4" /> : <ThumbsDown className="h-4 w-4" />}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {messages.length === 1 && !loading && (
+          <div className="space-y-2 pt-1">
+            <p className="px-1 text-xs font-medium text-muted-foreground">Try asking</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestedPrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => handleSend(prompt)}
+                  className="rounded-full border border-border bg-card px-3 py-2 text-left text-xs transition-colors hover:border-primary/50 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex justify-start">
+            <div className="inline-flex items-center gap-2 rounded-2xl rounded-bl-md border border-border bg-muted/60 px-3.5 py-3 text-sm text-muted-foreground">
+              <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+              Finding context and thinking…
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
-      <div className="border-t border-gray-200/50 bg-white/50 backdrop-blur p-3">
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
+
+      <form onSubmit={handleSubmit} className="shrink-0 border-t border-border bg-card p-3 sm:p-4">
+        <label htmlFor="book-expert-input" className="sr-only">Your question for Book Expert</label>
+        <div className="flex items-end gap-2 rounded-2xl border border-input bg-background p-2 shadow-sm focus-within:ring-2 focus-within:ring-ring">
+          <textarea
+            id="book-expert-input"
+            ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Ask me anything about books..."
-            className="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent shadow-sm"
+            onChange={(event) => setInput(event.target.value.slice(0, 2000))}
+            onKeyDown={handleInputKeyDown}
+            placeholder="Ask about a book, author, or your next read…"
+            rows={2}
+            maxLength={2000}
+            disabled={loading}
+            className="max-h-28 min-h-[44px] flex-1 resize-none bg-transparent px-2 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
           />
-          <Button 
-            size="sm" 
-            onClick={handleSend}
-            className={`rounded-xl bg-gradient-to-r ${colors[colorIndex]} text-white px-4 py-3 hover:shadow-lg transition-all duration-300 hover:scale-105`}
+          <button
+            type="submit"
+            disabled={loading || !input.trim()}
+            aria-label="Send message"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Send
-          </Button>
+            {loading ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Send className="h-4 w-4" aria-hidden="true" />}
+          </button>
         </div>
-      </div>
-    </div>
+        <div className="mt-2 flex items-center justify-between gap-2 px-1">
+          <span className="text-[10px] text-muted-foreground">Library matches are shown only when retrieved from real records.</span>
+          <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{input.length}/2000</span>
+        </div>
+      </form>
+    </section>
   );
 };
 
