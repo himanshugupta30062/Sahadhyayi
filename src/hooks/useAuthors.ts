@@ -1,7 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { mockAuthors } from '@/mockAuthors';
 
 export interface SocialLinks {
   [key: string]: string;
@@ -29,43 +28,6 @@ export interface Author {
 }
 
 // Mock fallback data for when API fails
-const fallbackAuthors: Author[] = [
-  {
-    id: '1',
-    name: 'Jane Smith',
-    bio: 'Award-winning fiction writer with over 10 published novels.',
-    profile_image_url: null,
-    location: 'New York, USA',
-    website_url: 'https://janesmith.com',
-    social_links: {},
-    genres: ['Fiction', 'Romance', 'Drama'],
-    books_count: 12,
-    followers_count: 2500,
-    rating: 4.5,
-    upcoming_events: 3,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    availableSlots: ['Monday 10:00 AM', 'Wednesday 2:00 PM']
-  },
-  {
-    id: '2',
-    name: 'Michael Johnson',
-    bio: 'Science fiction author and technology enthusiast.',
-    profile_image_url: null,
-    location: 'San Francisco, USA',
-    website_url: 'https://mjohnson.com',
-    social_links: {},
-    genres: ['Science Fiction', 'Technology', 'Thriller'],
-    books_count: 8,
-    followers_count: 1800,
-    rating: 4.2,
-    upcoming_events: 1,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    availableSlots: ['Tuesday 3:00 PM', 'Friday 11:00 AM']
-  }
-];
-
 export const useAuthors = () => {
   return useQuery({
     queryKey: ['authors'],
@@ -115,52 +77,38 @@ export const usePaginatedAuthors = (page = 1, pageSize = 10) => {
       const startIndex = (page - 1) * pageSize;
       const endIndex = page * pageSize - 1;
 
-      try {
-        const { data, error, count } = await supabase
-          .rpc('get_authors_with_books', {}, { count: 'exact' })
-          .range(startIndex, endIndex)
-          .order('name', { ascending: true });
+      const { data, error, count } = await supabase
+        .rpc('get_authors_with_books', {}, { count: 'exact' })
+        .range(startIndex, endIndex)
+        .order('name', { ascending: true });
 
-        if (error || !data) {
-          return {
-            authors: fallbackAuthors.slice(startIndex, endIndex + 1),
-            total: fallbackAuthors.length,
-          };
-        }
+      if (error) throw error;
 
-        const authors = data.map((author: any) => ({
-          id: author.id,
-          name: author.name,
-          bio: author.bio || 'Bio will be updated by the author.',
-          profile_image_url: author.profile_image_url,
-          location: author.location || 'Unknown',
-          website_url: author.website_url,
-          social_links: author.social_links || {},
-          genres: author.genres || [],
-          books_count: parseInt(author.actual_books_count) || 0,
-          followers_count: author.followers_count || 0,
-          rating: parseFloat(author.rating) || 4.0,
-          upcoming_events: author.upcoming_events || 0,
-          created_at: author.created_at,
-          updated_at: author.updated_at,
-          verified: author.verified || false,
-          verification_type: author.verification_type,
-          availableSlots:
-            author.actual_books_count > 0
-              ? [`Meet the author of ${author.actual_books_count} book${author.actual_books_count > 1 ? 's' : ''}`]
-              : ['Available for consultation'],
-        })) as Author[];
+      const authors = (data || []).map((author: any) => ({
+        id: author.id,
+        name: author.name,
+        bio: author.bio || null,
+        profile_image_url: author.profile_image_url,
+        location: author.location || '',
+        website_url: author.website_url,
+        social_links: author.social_links || {},
+        genres: author.genres || [],
+        books_count: Number.parseInt(author.actual_books_count, 10) || 0,
+        followers_count: Number(author.followers_count) || 0,
+        rating: Number.parseFloat(author.rating) || 0,
+        upcoming_events: Number(author.upcoming_events) || 0,
+        created_at: author.created_at,
+        updated_at: author.updated_at,
+        verified: author.verified || false,
+        verification_type: author.verification_type,
+        availableSlots: [],
+      })) as Author[];
 
-        return { authors, total: count ?? authors.length };
-      } catch {
-        return {
-          authors: fallbackAuthors.slice(startIndex, endIndex + 1),
-          total: fallbackAuthors.length,
-        };
-      }
+      return { authors, total: count ?? authors.length };
     },
     placeholderData: (previousData) => previousData,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 };
+
