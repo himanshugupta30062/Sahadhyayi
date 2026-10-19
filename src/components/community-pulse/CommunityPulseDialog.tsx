@@ -15,7 +15,9 @@ import {
   Laptop,
   Link2,
   Monitor,
+  MousePointerClick,
   RefreshCw,
+  Timer,
   Search,
   ShieldCheck,
   Smartphone,
@@ -158,6 +160,10 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     visitorsLoading,
     visitorsError,
     refetchVisitors,
+    recentActions,
+    recentActionsLoading,
+    recentActionsError,
+    refetchActions,
     visitorSearch,
     setVisitorSearch,
     countryFilter,
@@ -172,7 +178,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   } = pulse;
 
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'visitors' | 'insights'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'visitors' | 'insights' | 'actions'>('overview');
   const [metricView, setMetricView] = useState<'views' | 'unique'>('views');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showAllCountries, setShowAllCountries] = useState(false);
@@ -245,6 +251,13 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
           discussions: null,
         },
         topMembers: Array.isArray(stats.topMembers) ? stats.topMembers : [],
+        totalActions: typeof stats.totalActions === 'number' ? stats.totalActions : null,
+        totalInteractions: typeof stats.totalInteractions === 'number' ? stats.totalInteractions : null,
+        actionSummary: Array.isArray(stats.actionSummary) ? stats.actionSummary : [],
+        activeSessions: typeof stats.activeSessions === 'number' ? stats.activeSessions : null,
+        averageSessionDurationSeconds: typeof stats.averageSessionDurationSeconds === 'number' ? stats.averageSessionDurationSeconds : null,
+        durationSampleCount: typeof stats.durationSampleCount === 'number' ? stats.durationSampleCount : null,
+        scrollDepthSummary: Array.isArray(stats.scrollDepthSummary) ? stats.scrollDepthSummary : [],
         lastUpdated: stats.lastUpdated || '',
         isStale: stats.isStale ?? false,
         partialData: stats.partialData ?? false,
@@ -409,6 +422,19 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
             )}
 
             <button
+              onClick={() => setActiveTab('actions')}
+              aria-pressed={activeTab === 'actions'}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+                activeTab === 'actions'
+                  ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
+                  : 'text-stone-400 hover:text-stone-200'
+              }`}
+            >
+              <MousePointerClick className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+              <span>Actions</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('insights')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'insights'
@@ -442,12 +468,15 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 if (propOnRefresh) {
                   propOnRefresh();
                 } else if (activeTab === 'visitors') {
-                  refetchVisitors();
+                  void refetchVisitors();
+                } else if (activeTab === 'actions') {
+                  void refetchActions();
+                  void refetchStats();
                 } else {
                   refetchStats();
                 }
               }}
-              disabled={loading || visitorsLoading}
+              disabled={loading || visitorsLoading || recentActionsLoading}
               title="Refresh metrics"
               aria-label="Refresh metrics"
               className="p-1.5 sm:p-2 rounded-lg bg-[#111614] border border-white/[0.09] hover:border-white/20 text-stone-300 hover:text-[#D5B16D] transition-colors disabled:opacity-50 flex-shrink-0"
@@ -533,85 +562,35 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-stone-100">Dual-Table Analytics Architecture</span>
+                      <span className="font-semibold text-stone-100">Live audience overview</span>
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-400 border border-emerald-800/40">
-                        Rolling 30-Day Active
+                        {timeframe === '24h' ? 'Last 24 hours' : timeframe === '7d' ? 'Last 7 days' : 'Last 30 days'}
                       </span>
                     </div>
                     <p className="text-[11px] text-stone-400 mt-0.5 leading-relaxed">
-                      All-time traffic preserved from original <code className="text-[#D5B16D]">website_visits</code> records. Rolling 30-day activity powered by clean telemetry in <code className="text-[#D5B16D]">website_visit_events</code>.
+                      Audience and behaviour metrics use the selected period. Lifetime pageviews remain separate; rolling event details are automatically removed after 30 days.
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-[10px] text-stone-400 shrink-0 self-end sm:self-center">
                   <Clock3 className="w-3 h-3 text-[#D5B16D]" />
-                  <span>Telemetry active • Rolling 30d</span>
+                  <span>Data refreshed: {effectiveStats.lastUpdated ? new Date(effectiveStats.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'waiting for data'}</span>
                 </div>
               </div>
 
-              {/* Multi-Period Activity Strip: All-Time, 24 Hours, 7 Days, 30 Days */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
-                {/* Lifetime All-Time */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
-                    <span className="uppercase tracking-wider font-medium text-stone-400">All-Time</span>
-                    <span className="px-1.5 py-0.2 rounded bg-stone-800/60 text-stone-300 text-[9px] font-semibold border border-white/5">
-                      Lifetime
-                    </span>
-                  </div>
-                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
-                    {number(effectiveStats.lifetimeVisits ?? effectiveStats.pageViews)} visits
-                  </div>
-                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">Total historical records</div>
-                </div>
-
-                {/* Rolling 24 Hours */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
-                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 24h</span>
-                    <span className="px-1.5 py-0.2 rounded bg-emerald-950/60 text-emerald-400 text-[9px] font-semibold border border-emerald-800/30">
-                      Recent
-                    </span>
-                  </div>
-                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
-                    {number(effectiveStats.dualTable?.rolling24hViews ?? (timeframe === '24h' ? effectiveStats.pageViews : 0))} views
-                  </div>
-                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
-                    {effectiveStats.dualTable?.uniqueVisitors24h != null ? `${number(effectiveStats.dualTable.uniqueVisitors24h)} unique visitors` : 'Recent pageviews'}
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/[0.08] bg-[#0e1210] px-3.5 py-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#18241e] text-[#D5B16D]">
+                    <Globe2 className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-stone-100">Lifetime pageviews</p>
+                    <p className="text-[10px] text-stone-500">Permanent history · includes visits before rolling analytics launched</p>
                   </div>
                 </div>
-
-                {/* Rolling 7 Days */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
-                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 7 Days</span>
-                    <span className="px-1.5 py-0.2 rounded bg-indigo-950/60 text-indigo-300 text-[9px] font-semibold border border-indigo-800/30">
-                      Rolling
-                    </span>
-                  </div>
-                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
-                    {number(effectiveStats.dualTable?.rolling7dViews ?? (timeframe === '7d' ? effectiveStats.pageViews : 0))} views
-                  </div>
-                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
-                    {effectiveStats.dualTable?.uniqueVisitors7d != null ? `${number(effectiveStats.dualTable.uniqueVisitors7d)} unique visitors` : '7d pageviews'}
-                  </div>
-                </div>
-
-                {/* Rolling 30 Days */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
-                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 30 Days</span>
-                    <span className="px-1.5 py-0.2 rounded bg-amber-950/60 text-amber-300 text-[9px] font-semibold border border-amber-800/30">
-                      Rolling 30d
-                    </span>
-                  </div>
-                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
-                    {number(effectiveStats.dualTable?.rolling30dViews ?? (timeframe === '30d' ? effectiveStats.pageViews : 0))} views
-                  </div>
-                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
-                    {effectiveStats.dualTable?.uniqueVisitors30d != null ? `${number(effectiveStats.dualTable.uniqueVisitors30d)} unique visitors` : '30d pageviews'}
-                  </div>
-                </div>
+                <span className="text-lg font-bold tabular-nums text-stone-100">
+                  {number(effectiveStats.lifetimeVisits)}
+                </span>
               </div>
 
               {/* Top 4 KPI Cards */}
@@ -1530,6 +1509,214 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
               </div>
             </div>
           )}
+          {/* TAB 4: SELECTED-PERIOD ACTION ANALYTICS */}
+          {activeTab === 'actions' && (
+            <div className="space-y-4 sm:space-y-5 min-w-0">
+              <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-white/[0.09] bg-[#111614] p-4 sm:p-5">
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-100">
+                    <MousePointerClick className="h-4 w-4 text-[#D5B16D]" />
+                    User behaviour · {timeframe === '24h' ? '24-hour window' : timeframe === '7d' ? '7-day window' : '30-day window'}
+                  </h3>
+                  <p className="mt-1 max-w-3xl text-xs leading-relaxed text-stone-400">
+                    Pageviews come from the rolling event stream. Product actions, UI interactions, foreground time and scroll milestones are measured separately so clicks never inflate visit totals.
+                  </p>
+                </div>
+                <span className="rounded-full border border-white/[0.1] px-2.5 py-1 text-[10px] font-medium text-stone-300">
+                  {effectiveStats.totalActions === null || effectiveStats.totalInteractions === null
+                    ? 'Waiting for measured events'
+                    : effectiveStats.totalActions === 0 && effectiveStats.totalInteractions === 0
+                      ? 'No activity recorded yet'
+                      : 'Live event data'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 min-w-0">
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3.5 sm:p-4 min-w-0">
+                  <span className="mb-3 inline-flex rounded-lg bg-[#18241e] p-2 text-[#D5B16D]"><MousePointerClick className="h-4 w-4" /></span>
+                  <div className="text-xl sm:text-2xl font-bold tabular-nums text-stone-100">{number(effectiveStats.totalActions)}</div>
+                  <p className="mt-1 text-xs text-stone-400">Product actions</p>
+                  <p className="mt-1 text-[10px] leading-relaxed text-stone-500">Named events such as book opens, joins and reading actions</p>
+                </div>
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3.5 sm:p-4 min-w-0">
+                  <span className="mb-3 inline-flex rounded-lg bg-[#18241e] p-2 text-sky-300"><Activity className="h-4 w-4" /></span>
+                  <div className="text-xl sm:text-2xl font-bold tabular-nums text-stone-100">{number(effectiveStats.totalInteractions)}</div>
+                  <p className="mt-1 text-xs text-stone-400">UI interactions</p>
+                  <p className="mt-1 text-[10px] leading-relaxed text-stone-500">Navigation, buttons, control changes and form submits</p>
+                </div>
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3.5 sm:p-4 min-w-0">
+                  <span className="mb-3 inline-flex rounded-lg bg-[#18241e] p-2 text-emerald-300"><Users className="h-4 w-4" /></span>
+                  <div className="text-xl sm:text-2xl font-bold tabular-nums text-stone-100">{number(effectiveStats.activeSessions)}</div>
+                  <p className="mt-1 text-xs text-stone-400">Active sessions</p>
+                  <p className="mt-1 text-[10px] leading-relaxed text-stone-500">Unique measured sessions in the selected period</p>
+                </div>
+                <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3.5 sm:p-4 min-w-0">
+                  <span className="mb-3 inline-flex rounded-lg bg-[#18241e] p-2 text-amber-300"><Timer className="h-4 w-4" /></span>
+                  <div className="text-xl sm:text-2xl font-bold tabular-nums text-stone-100">{effectiveStats.avgTimeOnSite || '—'}</div>
+                  <p className="mt-1 text-xs text-stone-400">Average active session</p>
+                  <p className="mt-1 text-[10px] leading-relaxed text-stone-500">
+                    {effectiveStats.durationSampleCount === null
+                      ? 'Waiting for duration samples'
+                      : `${number(effectiveStats.durationSampleCount)} sessions with measured active time`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
+                <section className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 sm:p-5 min-w-0">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-sm font-semibold text-stone-100">Most common actions</h4>
+                      <p className="mt-1 text-[11px] text-stone-400">Counts grouped by action, safe label and normalized route.</p>
+                    </div>
+                    <span className="text-[10px] text-stone-500">{timeframe}</span>
+                  </div>
+                  {(effectiveStats.actionSummary ?? []).length > 0 ? (
+                    <div className="space-y-3">
+                      {(effectiveStats.actionSummary ?? []).map((action) => {
+                        const maxCount = Math.max(1, ...(effectiveStats.actionSummary ?? []).map(item => item.count));
+                        const width = Math.max(2, Math.min(100, action.count / maxCount * 100));
+                        return (
+                          <div key={`${action.name}:${action.page || '/'}:${action.label}`} className="min-w-0">
+                            <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                              <div className="min-w-0">
+                                <p className="truncate font-medium text-stone-200">{action.label}</p>
+                                <p className="truncate font-mono text-[10px] text-stone-500">{action.name}{action.page ? ` · ${action.page}` : ''}</p>
+                              </div>
+                              <span className="font-semibold tabular-nums text-stone-100">{number(action.count)}</span>
+                            </div>
+                            <div className="h-2 overflow-hidden rounded-full bg-[#18241e]">
+                              <div className="h-full rounded-full bg-[#D5B16D] transition-all" style={{ width: `${width}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-white/[0.12] px-4 py-8 text-center">
+                      <MousePointerClick className="mx-auto h-6 w-6 text-stone-500" />
+                      <p className="mt-2 text-xs font-medium text-stone-300">
+                        {effectiveStats.totalActions === 0 && effectiveStats.totalInteractions === 0
+                          ? 'No product actions recorded for this period'
+                          : 'Action breakdown unavailable'}
+                      </p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
+                        Older button clicks weren’t stored and can’t be reconstructed. New events appear once the updated tracker is deployed.
+                      </p>
+                    </div>
+                  )}
+                </section>
+
+                <section className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 sm:p-5 min-w-0">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-sm font-semibold text-stone-100">Scroll depth</h4>
+                      <p className="mt-1 text-[11px] text-stone-400">How often visitors reach each depth milestone.</p>
+                    </div>
+                    <span className="text-[10px] tabular-nums text-stone-500">
+                      {(effectiveStats.scrollDepthSummary ?? []).length
+                        ? `${number((effectiveStats.scrollDepthSummary ?? []).reduce((sum, item) => sum + item.count, 0))} milestones`
+                        : 'Not measured yet'}
+                    </span>
+                  </div>
+                  {[25, 50, 75, 100].map((percent) => {
+                    const items = effectiveStats.scrollDepthSummary ?? [];
+                    const item = items.find((summary) => summary.percent === percent);
+                    const count = item?.count ?? 0;
+                    const maxCount = Math.max(1, ...items.map(summary => summary.count));
+                    return (
+                      <div key={percent} className="mb-4 last:mb-0">
+                        <div className="mb-1.5 flex items-center justify-between text-xs">
+                          <span className="text-stone-300">{percent === 100 ? 'Reached page end' : `Reached ${percent}%`}</span>
+                          <span className="font-semibold tabular-nums text-stone-100">{items.length ? number(count) : '—'}</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-[#18241e]">
+                          <div className="h-full rounded-full bg-[#D5B16D] transition-all" style={{ width: `${items.length ? Math.min(100, count / maxCount * 100) : 0}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <p className="mt-4 border-t border-white/[0.08] pt-3 text-[10px] leading-relaxed text-stone-500">
+                    Only coarse 25/50/75/100% milestones are stored, not scroll coordinates or page contents.
+                  </p>
+                </section>
+              </div>
+
+              {isAdmin && (
+                <section className="rounded-xl border border-white/[0.09] bg-[#111614] p-4 sm:p-5 min-w-0">
+                  <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-stone-100">
+                        <Activity className="h-4 w-4 text-[#D5B16D]" /> Recent action log
+                      </h4>
+                      <p className="mt-1 text-[11px] leading-relaxed text-stone-400">Admin-only individual event rows · not mixed with lifetime visits.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { void refetchActions(); }}
+                      disabled={recentActionsLoading}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.1] px-2.5 py-1.5 text-[11px] font-medium text-stone-300 transition hover:border-white/20 hover:text-[#D5B16D] disabled:opacity-50"
+                    >
+                      <RefreshCw className={`h-3 w-3 ${recentActionsLoading ? 'animate-spin' : ''}`} />
+                      Refresh log
+                    </button>
+                  </div>
+                  {recentActionsError && (
+                    <div role="status" className="mb-3 rounded-lg border border-red-800/30 bg-red-950/20 px-3 py-2 text-xs text-red-300">
+                      Could not load recent events: {recentActionsError}
+                    </div>
+                  )}
+                  {recentActionsLoading && recentActions.length === 0 ? (
+                    <div className="py-8 text-center text-xs text-stone-500">Loading recent events…</div>
+                  ) : recentActions.length > 0 ? (
+                    <div className="space-y-2">
+                      {recentActions.map((action) => {
+                        const detail =
+                          (typeof action.metadata.target_label === 'string' && action.metadata.target_label) ||
+                          (typeof action.metadata.form_name === 'string' && action.metadata.form_name) ||
+                          (typeof action.metadata.control_type === 'string' && action.metadata.control_type) ||
+                          (typeof action.metadata.scroll_depth_percent === 'number' ? `Reached ${action.metadata.scroll_depth_percent}% scroll` : '') ||
+                          (typeof action.metadata.duration_ms === 'number' ? `${Math.round(action.metadata.duration_ms / 1000)}s active time` : '');
+                        const visitor = action.visitorId
+                          ? `Visitor ${action.visitorId.slice(0, 8)}`
+                          : action.sessionId
+                            ? `Session ${action.sessionId.slice(0, 8)}`
+                            : 'Anonymous';
+                        const visitedAt = action.visitedAt
+                          ? new Date(action.visitedAt).toLocaleString(undefined, {
+                              month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
+                            })
+                          : 'Time unavailable';
+                        return (
+                          <div key={action.id} className="grid grid-cols-1 gap-2 rounded-lg border border-white/[0.06] bg-[#18241e]/40 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)_auto] sm:items-center">
+                            <div className="min-w-0">
+                              <p className="truncate text-xs font-semibold text-stone-200">{detail || action.eventName.replace(/[_-]+/g, ' ')}</p>
+                              <p className="mt-0.5 truncate font-mono text-[10px] text-stone-500">{action.eventName}</p>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-xs text-stone-300" title={action.page}>{action.page}</p>
+                              <p className="mt-0.5 truncate text-[10px] text-stone-500">{visitor}</p>
+                            </div>
+                            <time className="text-[10px] tabular-nums text-stone-500 sm:text-right" dateTime={action.visitedAt}>{visitedAt}</time>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-white/[0.12] px-4 py-7 text-center">
+                      <p className="text-xs font-medium text-stone-300">No action rows yet</p>
+                      <p className="mt-1 text-[11px] text-stone-500">The action log starts populating when the rolling tracker is deployed and visitors use the site.</p>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              <div className="rounded-xl border border-white/[0.09] bg-[#111614] px-4 py-3 text-[11px] leading-relaxed text-stone-400">
+                <strong className="text-stone-200">Privacy and retention:</strong> event-level telemetry is pseudonymous and automatically expires after 30 days. It records interaction types and approved labels, not typed values, search queries, message bodies, passwords or authentication tokens.
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>
