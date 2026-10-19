@@ -35,7 +35,7 @@ const Publishers = () => {
         .order('name', { ascending: true });
       if (publisherError) throw publisherError;
 
-      const { data: bookRows, error: bookError } = await supabase
+      const { data: bookRows, error: bookError } = await (supabase as any)
         .from('books_library')
         .select('id,title,cover_image_url,publisher_id')
         .not('publisher_id', 'is', null);
@@ -127,7 +127,6 @@ const Publishers = () => {
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.map((publisher) => {
                 const books = booksByPublisher.get(publisher.id) ?? [];
-                const initials = publisher.name.trim().split(/\s+/).map((part) => part[0] || '').slice(0, 2).join('').toUpperCase();
                 return (
                   <Card key={publisher.id} className="overflow-hidden rounded-2xl border-[#E5DED2] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-[#29332D] dark:bg-[#111614]">
                     <div className="flex items-start gap-4">
