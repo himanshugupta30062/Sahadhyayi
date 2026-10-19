@@ -62,7 +62,7 @@ export const usePageVisitTracker = () => {
           headers['Authorization'] = `Bearer ${authData.session.access_token}`;
         }
 
-        await supabase.functions.invoke('website-visits', {
+        const { error: invokeErr } = await supabase.functions.invoke('website-visits', {
           headers,
           body: {
             event_type: 'pageview',
@@ -79,8 +79,31 @@ export const usePageVisitTracker = () => {
             timezone,
           },
         });
+
+        // If Edge function reported error, fallback directly to secure RPC
+        if (invokeErr) {
+          await supabase.rpc('record_pageview', {
+            p_page_path: currentPage,
+            p_session_id: sessionId,
+            p_visitor_id: visitorId,
+            p_referrer: referrer || null,
+            p_event_type: 'pageview',
+          });
+        }
       } catch {
-        // Silently ignore — visit tracking is non-blocking
+        // Fallback directly to secure database RPC if function invoke throws
+        try {
+          const { visitorId, sessionId } = getAnalyticsIds();
+          await supabase.rpc('record_pageview', {
+            p_page_path: currentPage,
+            p_session_id: sessionId,
+            p_visitor_id: visitorId,
+            p_referrer: document.referrer || null,
+            p_event_type: 'pageview',
+          });
+        } catch {
+          // Analytics is completely non-blocking
+        }
       }
     };
 

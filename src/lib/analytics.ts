@@ -85,7 +85,7 @@ export const trackAnalyticsEvent = async (
       headers['Authorization'] = `Bearer ${authData.session.access_token}`;
     }
 
-    await supabase.functions.invoke('website-visits', {
+    const { error: invokeErr } = await supabase.functions.invoke('website-visits', {
       headers,
       body: {
         event_id: newId(),
@@ -100,8 +100,32 @@ export const trackAnalyticsEvent = async (
         utm_campaign: cleanCampaignValue(query.get('utm_campaign')),
       },
     });
+
+    if (invokeErr) {
+      await supabase.rpc('record_pageview', {
+        p_page_path: page,
+        p_session_id: sessionId,
+        p_visitor_id: visitorId,
+        p_referrer: referrer,
+        p_event_name: eventName || null,
+        p_event_type: eventType,
+      });
+    }
   } catch {
     // Analytics never blocks product actions or navigation.
+    try {
+      const { visitorId, sessionId } = getAnalyticsIds();
+      const page = (pagePath || window.location.pathname).split(/[?#]/, 1)[0].slice(0, 200) || '/';
+      await supabase.rpc('record_pageview', {
+        p_page_path: page,
+        p_session_id: sessionId,
+        p_visitor_id: visitorId,
+        p_event_name: eventName || null,
+        p_event_type: eventType,
+      });
+    } catch {
+      // Ignored
+    }
   }
 };
 

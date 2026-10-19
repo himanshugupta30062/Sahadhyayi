@@ -147,3 +147,51 @@ export interface DailyActivityPoint {
   uniqueVisitors: number;
 }
 
+export interface DualTableAnalyticsContract {
+  success: boolean;
+  timeframe: AnalyticsTimeframe;
+  generatedAt: string;
+  collectionStartedAt: string | null;
+  dataCoverage: {
+    legacyLifetimeAvailable: boolean;
+    rollingEventsAvailable: boolean;
+    isInitialRollout: boolean;
+    isPartial: boolean;
+    sourceTable?: string;
+    totalRollingRows?: number;
+  };
+  lifetime: {
+    totalVisits: number;
+    source: string;
+  };
+  period: {
+    pageViews: number | null;
+    uniqueVisitors: number | null;
+    sessions: number | null;
+    newVisitors: number | null;
+    returningVisitors: number | null;
+    registeredReaders: number | null;
+    newRegistrations: number | null;
+  };
+  comparison: {
+    previousPeriodPageViews: number | null;
+    pageViewsChangePercent: number | null;
+    uniqueVisitorsChangePercent?: number | null;
+    newRegistrationsChangePercent?: number | null;
+  };
+  timeseries: HourlyBucket[];
+  breakdowns: {
+    pages: BreakdownStat[];
+    countries: BreakdownStat[];
+    devices: BreakdownStat[];
+    referrers: BreakdownStat[];
+  };
+  engagement: {
+    bookViews: number | null;
+    readingProgressUpdates: number | null;
+    groupJoins: number | null;
+    discussions: number | null;
+    searches: number | null;
+  };
+}
+
