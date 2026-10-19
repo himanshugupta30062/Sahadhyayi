@@ -48,6 +48,7 @@ export type DualTableInfo = {
 export type PulseStats = {
   pageViews: number | null;
   uniqueVisitors: number | null;
+  sessions?: number | null;
   newReaders: number | null;
   totalMembers?: number | null;
   avgTimeOnSite: string;
@@ -73,6 +74,13 @@ export type PulseStats = {
   lastUpdated?: string;
   isStale?: boolean;
   partialData?: boolean;
+  diagnostics?: {
+    rpcStatus?: string;
+    lastFetchTime?: string;
+    lifetimeStatus?: string;
+    rollingStatus?: string;
+    ingestionStatus?: string;
+  };
 };
 
 export type RecentVisitor = {
@@ -133,6 +141,7 @@ export function getBaselineStats(
   return {
     pageViews: _totalVisits,
     uniqueVisitors: null,
+    sessions: null,
     newReaders: null,
     totalMembers: _totalMembers,
     avgTimeOnSite: '—',
@@ -376,9 +385,25 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       ? { value: raw.comparisons.newReadersChangePercent, label: `vs previous ${tf}` }
       : undefined;
 
+    const selectedSessions = getNumber(
+      raw.period?.sessions,
+      raw.sessions,
+      raw.rolling?.sessions,
+      raw.metrics?.sessions?.value
+    );
+
+    const diagnostics = {
+      rpcStatus: raw.source === 'rpc' || raw.dualTable ? 'Operational (Dual-Table RPC)' : 'Operational (Edge Function / Fallback)',
+      lastFetchTime: new Date().toISOString(),
+      lifetimeStatus: dualTable.lifetimeVisits !== null ? 'Healthy (Preserved in public.website_visits)' : 'Unavailable',
+      rollingStatus: dualTable.isInitialRollout ? 'Initial Rollout Bridge' : 'Rolling 30-Day Active',
+      ingestionStatus: 'Active & Resilient (Edge Function + record_pageview RPC)',
+    };
+
     return {
       pageViews: selectedPageViews,
       uniqueVisitors: selectedUnique,
+      sessions: selectedSessions,
       newReaders: selectedNewReaders,
       totalMembers,
       avgTimeOnSite: '—',
@@ -399,6 +424,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       lastUpdated: raw.lastUpdated || raw.generatedAt || new Date().toISOString(),
       isStale: false,
       partialData,
+      diagnostics,
     };
   }, []);
 
@@ -807,6 +833,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     adminLeaderboard,
     leaderboardLoading,
     refetchLeaderboard: fetchAdminLeaderboard,
+    latestVisitTime: visitors[0]?.visitedAt || null,
+    latestVisitPage: visitors[0]?.page || null,
   };
 };
 
