@@ -21,6 +21,7 @@ interface VisitData {
   screenResolution?: string;
   language?: string;
   timezone?: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface ParsedUserAgent {
@@ -116,7 +117,10 @@ interface GeoData {
 async function getGeoFromIP(ip: string): Promise<GeoData> {
   const empty: GeoData = { country_code: null, city: null, region: null };
   try {
-    if (!ip || ip === '0.0.0.0' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+    if (!ip || ip === '0.0.0.0') return empty;
+    const isPrivateV4 = ip.startsWith('192.168.') || ip.startsWith('10.') ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(ip);
+    if (ip === '127.0.0.1' || ip === '::1' || isPrivateV4) {
       return { country_code: 'LOCAL', city: null, region: null };
     }
 
@@ -149,111 +153,280 @@ function getRealIP(request: Request): string {
   );
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const EVENT_NAME_RE = /^[a-z][a-z0-9_.-]{0,79}$/i;
+const ANALYTICS_METADATA_KEYS = new Set([
+  'target_type', 'target_label', 'target_id', 'target_href', 'component', 'section',
+  'action', 'cta', 'filter', 'completed', 'step', 'item_type', 'item_id',
+  'book_id', 'group_id', 'post_id', 'form_id', 'form_name', 'input_type',
+  'field_name', 'control_type', 'query_length', 'result_count', 'duration_ms',
+  'scroll_depth_percent', 'tab', 'method', 'status', 'source', 'category',
+  'is_authenticated', 'success', 'opened',
+]);
+
+function validUuid(value: unknown): string | null {
+  return typeof value === 'string' && UUID_RE.test(value) ? value : null;
+}
+
+function cleanText(value: unknown, maxLength: number): string | null {
+  if (typeof value !== 'string') return null;
+  const cleaned = value.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
+  return cleaned ? cleaned.slice(0, maxLength) : null;
+}
+
+function normalizePath(value: unknown): string {
+  if (typeof value !== 'string') return '/';
+  const raw = value.trim().slice(0, 1000);
+  if (!raw || raw.startsWith('//')) return '/';
+  try {
+    const parsed = new URL(raw, 'https://www.sahadhyayi.com');
+    if (parsed.origin !== 'https://www.sahadhyayi.com') return '/';
+    return cleanText(parsed.pathname, 200) || '/';
+  } catch {
+    return '/';
+  }
+}
+
+function normalizeReferrer(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  try {
+    const hostname = new URL(value.startsWith('http') ? value : `https://${value}`).hostname.toLowerCase();
+    return hostname.slice(0, 200) || null;
+  } catch {
+    return null;
+  }
+}
+
+function sanitizeMetadata(value: unknown): Record<string, string | number | boolean> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const source = value as Record<string, unknown>;
+  const result: Record<string, string | number | boolean> = {};
+  for (const [rawKey, rawValue] of Object.entries(source)) {
+    const key = rawKey.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 40);
+    if (!ANALYTICS_METADATA_KEYS.has(key)) continue;
+    if (typeof rawValue === 'string') {
+      const normalized = cleanText(rawValue, key === 'target_label' ? 80 : 120);
+      if (normalized) result[key] = normalized;
+    } else if (typeof rawValue === 'number' && Number.isFinite(rawValue)) {
+      result[key] = Math.max(0, Math.min(rawValue, key === 'duration_ms' ? 1800000 : 1000000000));
+    } else if (typeof rawValue === 'boolean') {
+      result[key] = rawValue;
+    }
+  }
+  return result;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  const jsonHeaders = { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
+  // Do not let CI/Netlify/Cloudflare preview builds pollute production analytics.
+  const origin = req.headers.get('origin');
+  if (origin) {
+    let normalizedOrigin = '';
+    try { normalizedOrigin = new URL(origin).origin; } catch { normalizedOrigin = ''; }
+    if (!['https://sahadhyayi.com', 'https://www.sahadhyayi.com'].includes(normalizedOrigin)) {
+      return new Response(JSON.stringify({ error: 'Analytics accepts events only from the production site' }), { status: 403, headers: jsonHeaders });
+    }
+  }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders });
+  }
+
+  const contentLength = Number(req.headers.get('content-length') || 0);
+  if (Number.isFinite(contentLength) && contentLength > 12000) {
+    return new Response(JSON.stringify({ error: 'Event payload too large' }), { status: 413, headers: jsonHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    if (req.method !== 'POST') {
-      return new Response(
-        JSON.stringify({ error: 'Method not allowed' }),
-        { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return new Response(JSON.stringify({ error: 'Analytics service unavailable' }), { status: 503, headers: jsonHeaders });
     }
 
-    const body: VisitData = await req.json();
-    const ipAddress = getRealIP(req);
-    const geo = await getGeoFromIP(ipAddress);
-    const ua = body.userAgent ? parseUserAgent(body.userAgent) : null;
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), { status: 400, headers: jsonHeaders });
+    }
+    if (!rawBody || typeof rawBody !== 'object' || Array.isArray(rawBody)) {
+      return new Response(JSON.stringify({ error: 'Invalid event payload' }), { status: 400, headers: jsonHeaders });
+    }
 
-    // Extract authenticated user ID exclusively from server-side JWT verification
+    const body = rawBody as VisitData;
+    const eventType = body.event_type || 'pageview';
+    if (eventType !== 'pageview' && eventType !== 'activity') {
+      return new Response(JSON.stringify({ error: 'Unsupported event type' }), { status: 400, headers: jsonHeaders });
+    }
+
+    const eventName = eventType === 'activity'
+      ? cleanText(body.event_name, 80)?.toLowerCase() || null
+      : null;
+    if (eventType === 'activity' && (!eventName || !EVENT_NAME_RE.test(eventName))) {
+      return new Response(JSON.stringify({ error: 'Invalid activity event name' }), { status: 400, headers: jsonHeaders });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    // Bound ingestion by source IP without persisting another raw IP copy in rate_limits.
+    // The existing pageview row keeps the configured analytics location context.
+    const rateLimitSource = getRealIP(req);
+    const rateLimitFallback = validUuid(body.session_id) || validUuid(body.visitor_id) || 'unknown';
+    const rateLimitInput = rateLimitSource && rateLimitSource !== '0.0.0.0'
+      ? `ip:${rateLimitSource}`
+      : `session:${rateLimitFallback}`;
+    const rateLimitDigest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rateLimitInput));
+    const rateLimitIdentifier = Array.from(new Uint8Array(rateLimitDigest))
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('');
+    const { data: withinRateLimit, error: rateLimitError } = await supabase.rpc('check_rate_limit', {
+      p_identifier: rateLimitIdentifier,
+      p_endpoint: eventType === 'pageview' ? 'website-analytics-pageview' : 'website-analytics-activity',
+      p_max_requests: eventType === 'pageview' ? 90 : 300,
+      p_window_minutes: 1,
+    });
+    if (rateLimitError) {
+      // Do not lose real analytics because an optional limiter is temporarily unavailable.
+      console.error('Analytics rate limiter unavailable:', rateLimitError.code || 'rate_limit_error');
+    } else if (withinRateLimit === false) {
+      return new Response(JSON.stringify({ error: 'Analytics request rate exceeded' }), {
+        status: 429,
+        headers: { ...jsonHeaders, 'Retry-After': '60' },
+      });
+    }
+
+    // Always derive user_id from a verified Auth token; never trust a body-provided user id.
     let authUserId: string | null = null;
-    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-      if (token) {
-        try {
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+        if (token) {
           const { data: userData } = await supabase.auth.getUser(token);
-          if (userData?.user?.id) {
-            authUserId = userData.user.id;
-          }
-        } catch {
-          // Token invalid or expired — treat as anonymous visitor
+          authUserId = userData?.user?.id || null;
         }
+      } catch {
+        // Expired/invalid token: safely record as anonymous.
       }
     }
 
-    // Build a readable user_agent summary for legacy column
-    const userAgentDisplay = ua
-      ? `${ua.browser} ${ua.browserVersion} on ${ua.os} (${ua.deviceType})`
-      : body.userAgent || 'Unknown';
+    const isPageView = eventType === 'pageview';
+    const userAgent = isPageView
+      ? cleanText(body.userAgent || req.headers.get('user-agent'), 500) || 'Unknown'
+      : null;
+    const ua = userAgent ? parseUserAgent(userAgent) : null;
 
-    // 1. Dual-Table Architecture: Ingest into new rolling 30-day website_visit_events
-    // Strictly privacy-conscious: NO raw IP address, email, or browser fingerprint!
-    try {
-      await supabase.from('website_visit_events').insert({
-        session_id: body.session_id ? String(body.session_id).slice(0, 100) : null,
-        visitor_id: body.visitor_id ? String(body.visitor_id).slice(0, 100) : null,
-        page_path: String(body.page || '/').slice(0, 300),
-        referrer: body.referrer ? String(body.referrer).slice(0, 300) : null,
-        event_type: body.event_type || 'page_view',
-        event_name: body.event_name ? String(body.event_name).slice(0, 100) : null,
-        device_type: ua?.deviceType || 'Desktop',
-        country_code: geo.country_code ? String(geo.country_code).slice(0, 10) : null,
-      });
-    } catch (eventErr) {
-      console.warn('Non-fatal: could not write to website_visit_events:', eventErr);
+    // Geo/IP data is only retained once per pageview, never for individual UI actions.
+    let ipAddress: string | null = null;
+    let geo: GeoData = { country_code: null, city: null, region: null };
+    if (isPageView) {
+      const candidate = getRealIP(req);
+      if (candidate && candidate !== '0.0.0.0' && candidate !== '127.0.0.1') {
+        ipAddress = candidate.slice(0, 100);
+      }
+      geo = await getGeoFromIP(candidate);
     }
 
-    // 2. Dual-Table Architecture: Preserve original website_visits table for lifetime analytics
-    const { error } = await supabase.from('website_visits').insert({
-      event_id: body.event_id || undefined,
-      event_type: body.event_type || 'pageview',
-      event_name: body.event_name || null,
-      session_id: body.session_id || null,
-      visitor_id: body.visitor_id || null,
+    const eventId = validUuid(body.event_id) || crypto.randomUUID();
+    const visitorId = validUuid(body.visitor_id);
+    const sessionId = validUuid(body.session_id);
+    const page = normalizePath(body.page);
+    const referrer = normalizeReferrer(body.referrer);
+
+    const campaign = (value: unknown) => cleanText(value, 100)?.replace(/[^a-zA-Z0-9 _.-]/g, '') || null;
+    const metadata = eventType === 'activity' ? sanitizeMetadata(body.metadata) : {};
+
+    const userAgentSummary = userAgent && ua
+      ? `${ua.browser} ${ua.browserVersion} on ${ua.os} (${ua.deviceType})`
+      : userAgent;
+
+    // Rolling telemetry is the authoritative source for the selected 24h/7d/30d window.
+    // It contains no raw IP address or raw user-agent string; visitor/session IDs are pseudonymous.
+    const rollingRecord = {
+      event_id: eventId,
+      event_type: eventType,
+      event_name: eventName,
+      visitor_id: visitorId,
+      session_id: sessionId,
       user_id: authUserId,
-      utm_source: body.utm_source || null,
-      utm_medium: body.utm_medium || null,
-      utm_campaign: body.utm_campaign || null,
-      ip_address: ipAddress === '0.0.0.0' ? null : ipAddress,
-      user_agent: userAgentDisplay,
-      page_url: body.page || null,
-      country_code: geo.country_code,
-      city: geo.city,
-      region: geo.region,
+      page_path: page,
+      referrer,
+      country_code: isPageView ? geo.country_code : null,
+      city: isPageView ? geo.city : null,
+      region: isPageView ? geo.region : null,
+      device_type: ua?.deviceType || null,
       browser: ua?.browser || null,
       browser_version: ua?.browserVersion || null,
       os: ua?.os || null,
-      device_type: ua?.deviceType || 'Desktop',
       device_model: ua?.deviceModel || null,
-      referrer: body.referrer || null,
-      screen_resolution: body.screenResolution || null,
-      language: body.language || null,
-    });
+      screen_resolution: isPageView ? cleanText(body.screenResolution, 40) : null,
+      language: isPageView ? cleanText(body.language, 40) : null,
+      timezone: isPageView ? cleanText(body.timezone, 80) : null,
+      utm_source: campaign(body.utm_source),
+      utm_medium: campaign(body.utm_medium),
+      utm_campaign: campaign(body.utm_campaign),
+      metadata,
+    };
 
-    if (error) {
-      console.error('Error recording legacy visit:', error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to record visit' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const { error: rollingError } = await supabase
+      .from('website_visit_events')
+      .upsert(rollingRecord, { onConflict: 'event_id', ignoreDuplicates: true });
+
+    if (rollingError) {
+      // Do not quietly fall back to the legacy table: action metrics must show a real collection error.
+      console.error('Failed to record rolling analytics:', rollingError.code || 'database_error');
+      return new Response(JSON.stringify({ error: 'Failed to record rolling analytics event' }), { status: 500, headers: jsonHeaders });
     }
 
-    return new Response(
-      JSON.stringify({ success: true }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Keep the existing website_visits table as the permanent lifetime pageview ledger only.
+    // Product/UI activity stays in website_visit_events and can never inflate all-time visits.
+    if (isPageView) {
+      const legacyRecord = {
+        event_id: eventId,
+        event_type: 'pageview',
+        event_name: null,
+        visitor_id: visitorId,
+        session_id: sessionId,
+        user_id: authUserId,
+        utm_source: campaign(body.utm_source),
+        utm_medium: campaign(body.utm_medium),
+        utm_campaign: campaign(body.utm_campaign),
+        ip_address: ipAddress,
+        user_agent: userAgentSummary,
+        page_url: page,
+        country_code: geo.country_code,
+        city: geo.city,
+        region: geo.region,
+        browser: ua?.browser || null,
+        browser_version: ua?.browserVersion || null,
+        os: ua?.os || null,
+        device_type: ua?.deviceType || null,
+        device_model: ua?.deviceModel || null,
+        referrer,
+        screen_resolution: cleanText(body.screenResolution, 40),
+        language: cleanText(body.language, 40),
+        timezone: cleanText(body.timezone, 80),
+        metadata: {},
+      };
+      const { error: legacyError } = await supabase
+        .from('website_visits')
+        .upsert(legacyRecord, { onConflict: 'event_id', ignoreDuplicates: true });
+
+      if (legacyError) {
+        console.error('Failed to record lifetime pageview:', legacyError.code || 'database_error');
+        return new Response(JSON.stringify({ error: 'Rolling event saved; lifetime pageview ledger failed' }), { status: 500, headers: jsonHeaders });
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, event_type: eventType, event_id: eventId }), { status: 202, headers: jsonHeaders });
   } catch (error) {
-    console.error('Function error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error('Analytics function error:', error instanceof Error ? error.message : 'unknown_error');
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500, headers: jsonHeaders });
   }
 });
