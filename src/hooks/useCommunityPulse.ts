@@ -555,261 +555,78 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         const is7d = timeframe === '7d';
         const periodLabel = is30d ? 'vs previous 30 days' : is7d ? 'vs previous 7 days' : 'vs previous 24 hours';
 
-        // Step A: Attempt primary Edge Function
+        // Read the authoritative database aggregate first. This is the single source of truth
+        // for both tables and returns the selected timeframe plus trend/breakdown arrays.
         try {
-          const { data, error: invokeErr } = await supabase.functions.invoke('community-stats', {
-            body: { timeframe },
+          const { data, error: rpcError } = await supabase.rpc('get_dual_table_website_analytics', {
+            p_timeframe: timeframe,
           });
+          if (rpcError) throw new Error(rpcError.message || 'Analytics RPC unavailable');
+          if (!data || typeof data !== 'object') throw new Error('Analytics RPC returned an invalid payload');
 
-          if (invokeErr) {
-            throw new Error(invokeErr.message || 'Failed to fetch community stats');
-          }
-
-          if (!data || typeof data !== 'object') {
-            throw new Error('Invalid statistics payload returned');
-          }
-
-          // Check for valid traffic telemetry in modern payload
-          // Note: DO NOT map communityActivity (which represents post/comment actions) to pageViews!
-          const rawPeriodViews = typeof data.metrics?.periodPageViews?.value === 'number'
-            ? data.metrics.periodPageViews.value
-            : typeof data.last24hVisits === 'number'
-            ? data.last24hVisits
-            : typeof data.periodVisits === 'number'
-            ? data.periodVisits
-            : typeof data.pageViews === 'number'
-            ? data.pageViews
-            : null;
-
-          const rawTotalMembers = typeof data.metrics?.registeredReaders?.value === 'number'
-            ? data.metrics.registeredReaders.value
-            : typeof data.registeredReaders === 'number'
-            ? data.registeredReaders
-            : typeof data.totalMembers === 'number'
-            ? data.totalMembers
-            : typeof data.totalSignups === 'number'
-            ? data.totalSignups
-            : null;
-
-          // If rawPeriodViews is null, the Edge Function returned an outdated legacy payload without traffic metrics!
-          // Fall back to direct database queries!
-          if (rawPeriodViews === null) {
-            try {
-              statsPayload = await fetchDatabaseFallbackStats(timeframe);
-            } catch {
-              if (rawTotalMembers !== null) {
-                statsPayload = {
-                  pageViews: null,
-                  uniqueVisitors: null,
-                  newReaders: null,
-                  totalMembers: rawTotalMembers,
-                  avgTimeOnSite: '—',
-                  pageViewsChange: undefined,
-                  uniqueVisitorsChange: undefined,
-                  newReadersChange: undefined,
-                  avgTimeChange: undefined,
-                  // This is a count-only emergency fallback; hourly values are unavailable.
-                  hourlyActivity: [],
-                  countries: [],
-                  topPages: [],
-                  devices: [],
-                  referrers: [],
-                  readingEngagement: {
-                    bookViews: null,
-                    readingProgressUpdates: null,
-                    groupJoins: null,
-                    discussions: null,
-                  },
-                  topMembers: [],
-                  lastUpdated: data.lastUpdated || new Date().toISOString(),
-                  isStale: false,
-                  partialData: true,
-                };
-              }
-            }
-            if (statsPayload && rawTotalMembers !== null) {
-              statsPayload.totalMembers = Math.max(statsPayload.totalMembers ?? 0, rawTotalMembers);
-            }
-          } else {
-            // Modern or traffic-enabled payload
-            const pageViews = rawPeriodViews;
-            const uniqueVisitors = typeof data.metrics?.uniqueVisitors?.value === 'number'
-              ? data.metrics.uniqueVisitors.value
-              : typeof data.uniqueVisitors24h === 'number'
-              ? data.uniqueVisitors24h
-              : typeof data.uniqueVisitors === 'number'
-              ? data.uniqueVisitors
-              : null;
-
-            const newReaders = typeof data.metrics?.newReaders?.value === 'number'
-              ? data.metrics.newReaders.value
-              : typeof data.newSignups24h === 'number'
-              ? data.newSignups24h
-              : typeof data.newReaders === 'number'
-              ? data.newReaders
-              : null;
-
-            const totalMembers = rawTotalMembers;
-
-            // Hourly Activity
-            const rawHourly = Array.isArray(data.hourlyActivity)
-              ? data.hourlyActivity
-              : Array.isArray(data.hourlyTraffic)
-              ? data.hourlyTraffic
-              : [];
-            const hourlyActivity: HourPoint[] = rawHourly.length > 0
-              ? rawHourly.map((h: any, i: number) => ({
-                  label: h.label || `${i}:00`,
-                  count: Number(h.pageViews ?? h.count ?? 0),
-                  uniqueVisitors: typeof h.uniqueVisitors === 'number' ? h.uniqueVisitors : undefined,
-                  hourIndex: h.hourIndex ?? i,
-                  isPeak: Boolean(h.isPeak),
-                  bucketStart: h.bucketStart,
-                }))
-              : [];
-
-            // Breakdowns
-            const countries: BreakdownItem[] = Array.isArray(data.breakdowns?.countries)
-              ? data.breakdowns.countries
-              : Array.isArray(data.topCountries)
-              ? data.topCountries
-              : [];
-
-            const topPages: BreakdownItem[] = Array.isArray(data.breakdowns?.pages)
-              ? data.breakdowns.pages
-              : Array.isArray(data.topPages)
-              ? data.topPages
-              : [];
-
-            const devices: BreakdownItem[] = Array.isArray(data.breakdowns?.devices)
-              ? data.breakdowns.devices
-              : Array.isArray(data.devices)
-              ? data.devices
-              : [];
-
-            const referrers: BreakdownItem[] = Array.isArray(data.breakdowns?.referrers)
-              ? data.breakdowns.referrers
-              : Array.isArray(data.referrers)
-              ? data.referrers
-              : [];
-
-            const topMembers: MemberLeaderboardItem[] = Array.isArray(data.topMembers) ? data.topMembers : [];
-
-            // Percentage Comparisons
-            const pageViewsChange = data.comparisons?.pageViewsChangePercent != null
-              ? { value: data.comparisons.pageViewsChangePercent, label: periodLabel }
-              : data.metrics?.periodPageViews?.comparison?.percentChange != null
-              ? { value: data.metrics.periodPageViews.comparison.percentChange, label: periodLabel }
-              : undefined;
-
-            const uniqueVisitorsChange = data.comparisons?.uniqueVisitorsChangePercent != null
-              ? { value: data.comparisons.uniqueVisitorsChangePercent, label: periodLabel }
-              : data.metrics?.uniqueVisitors?.comparison?.percentChange != null
-              ? { value: data.metrics.uniqueVisitors.comparison.percentChange, label: periodLabel }
-              : undefined;
-
-            const newReadersChange = data.comparisons?.newReadersChangePercent != null
-              ? { value: data.comparisons.newReadersChangePercent, label: periodLabel }
-              : data.metrics?.newReaders?.comparison?.percentChange != null
-              ? { value: data.metrics.newReaders.comparison.percentChange, label: periodLabel }
-              : undefined;
-
-            const readingEngagement = {
-              bookViews: optionalCount(
-                data.engagement?.bookOpens?.value,
-                data.readingEngagement?.bookViews?.count,
-                data.readingEngagement?.bookViews,
-              ),
-              readingProgressUpdates: optionalCount(
-                data.engagement?.readingProgressCompletions?.value,
-                data.readingEngagement?.readingProgressUpdates?.count,
-                data.readingEngagement?.readingProgressUpdates,
-              ),
-              groupJoins: optionalCount(
-                data.engagement?.groupJoins?.value,
-                data.readingEngagement?.groupJoinsCount?.count,
-                data.readingEngagement?.groupJoins,
-              ),
-              discussions: optionalCount(
-                data.engagement?.discussions?.value,
-                data.readingEngagement?.discussionsCount?.count,
-                data.readingEngagement?.discussions,
-              ),
-            };
-
-            const dualTable: DualTableInfo = {
-              lifetimeVisits: typeof data.lifetime?.totalVisits === 'number'
-                ? data.lifetime.totalVisits
-                : typeof data.totalVisits === 'number'
-                ? data.totalVisits
-                : null,
-              lifetimeSourceTable: data.lifetime?.sourceTable ?? 'public.website_visits',
-              rolling24hViews: typeof data.rolling?.pageViews24h === 'number'
-                ? data.rolling.pageViews24h
-                : typeof data.last24hVisits === 'number'
-                ? data.last24hVisits
-                : null,
-              rolling7dViews: typeof data.rolling?.pageViews7d === 'number'
-                ? data.rolling.pageViews7d
-                : (timeframe === '7d' ? pageViews : null),
-              rolling30dViews: typeof data.rolling?.pageViews30d === 'number'
-                ? data.rolling.pageViews30d
-                : (timeframe === '30d' ? pageViews : null),
-              uniqueVisitors24h: typeof data.rolling?.uniqueVisitors24h === 'number'
-                ? data.rolling.uniqueVisitors24h
-                : typeof data.uniqueVisitors24h === 'number'
-                ? data.uniqueVisitors24h
-                : null,
-              uniqueVisitors7d: typeof data.rolling?.uniqueVisitors7d === 'number'
-                ? data.rolling.uniqueVisitors7d
-                : (timeframe === '7d' ? uniqueVisitors : null),
-              uniqueVisitors30d: typeof data.rolling?.uniqueVisitors30d === 'number'
-                ? data.rolling.uniqueVisitors30d
-                : (timeframe === '30d' ? uniqueVisitors : null),
-              rollingSourceTable: data.rolling?.sourceTable ?? 'public.website_visit_events',
-              collectionStartedAt: data.rolling?.collectionStartedAt ?? '2026-10-19T00:00:00Z',
-              isInitialRollout: Boolean(data.rolling?.isInitialRollout),
-            };
-
-            statsPayload = {
-              pageViews,
-              uniqueVisitors,
-              newReaders,
-              totalMembers,
-              avgTimeOnSite: '—',
-              pageViewsChange,
-              uniqueVisitorsChange,
-              newReadersChange,
-              avgTimeChange: undefined,
-              hourlyActivity,
-              dailyActivity: Array.isArray(data.dailyActivity) ? data.dailyActivity : [],
-              lifetimeVisits: dualTable.lifetimeVisits,
-              dualTable,
-              countries,
-              topPages,
-              devices,
-              referrers,
-              readingEngagement,
-              topMembers,
-              lastUpdated: data.lastUpdated || new Date().toISOString(),
-              isStale: false,
-              partialData: Boolean(
-                data.partialData ||
-                !(Array.isArray(data.hourlyActivity) || Array.isArray(data.hourlyTraffic)) ||
-                !(Array.isArray(data.breakdowns?.countries) || Array.isArray(data.topCountries)) ||
-                !(Array.isArray(data.breakdowns?.pages) || Array.isArray(data.topPages)) ||
-                !(Array.isArray(data.breakdowns?.devices) || Array.isArray(data.devices)) ||
-                !(Array.isArray(data.breakdowns?.referrers) || Array.isArray(data.referrers)) ||
-                Object.values(readingEngagement).some((value) => value === null)
-              ),
-            };
-          }
-        } catch (edgeErr: any) {
-          // If we already had cached stats, preserve them and label them as stale!
-          if (statsRef.current && typeof statsRef.current.pageViews === 'number') {
-            throw edgeErr;
-          }
-          // Edge function failed with no prior cache, fall back to direct DB queries
+          const raw = data as any;
+          const periodViews = typeof raw.pageViews === 'number' ? raw.pageViews : null;
+          const uniqueVisitors = typeof raw.uniqueVisitors === 'number' ? raw.uniqueVisitors : null;
+          const totalMembers = typeof raw.totalMembers === 'number' ? raw.totalMembers
+            : typeof raw.registeredReaders === 'number' ? raw.registeredReaders : null;
+          const newReaders = typeof raw.newReaders === 'number' ? raw.newReaders : null;
+          const hourlyActivity: HourPoint[] = Array.isArray(raw.hourlyActivity)
+            ? raw.hourlyActivity.map((h: any, i: number) => ({
+                label: String(h.label ?? `${i}:00`),
+                count: Number(h.pageViews ?? h.count ?? 0),
+                uniqueVisitors: typeof h.uniqueVisitors === 'number' ? h.uniqueVisitors : undefined,
+                hourIndex: typeof h.hourIndex === 'number' ? h.hourIndex : i,
+                isPeak: Boolean(h.isPeak),
+                bucketStart: h.bucketStart,
+              }))
+            : [];
+          const countries = Array.isArray(raw.breakdowns?.countries) ? raw.breakdowns.countries : [];
+          const topPages = Array.isArray(raw.breakdowns?.pages) ? raw.breakdowns.pages : [];
+          const devices = Array.isArray(raw.breakdowns?.devices) ? raw.breakdowns.devices : [];
+          const referrers = Array.isArray(raw.breakdowns?.referrers) ? raw.breakdowns.referrers : [];
+          const dualTable: DualTableInfo = {
+            lifetimeVisits: typeof raw.lifetime?.totalVisits === 'number' ? raw.lifetime.totalVisits : null,
+            lifetimeSourceTable: raw.lifetime?.sourceTable ?? 'public.website_visits',
+            rolling24hViews: typeof raw.rolling?.pageViews24h === 'number' ? raw.rolling.pageViews24h : null,
+            rolling7dViews: typeof raw.rolling?.pageViews7d === 'number' ? raw.rolling.pageViews7d : null,
+            rolling30dViews: typeof raw.rolling?.pageViews30d === 'number' ? raw.rolling.pageViews30d : null,
+            uniqueVisitors24h: typeof raw.rolling?.uniqueVisitors24h === 'number' ? raw.rolling.uniqueVisitors24h : null,
+            uniqueVisitors7d: typeof raw.rolling?.uniqueVisitors7d === 'number' ? raw.rolling.uniqueVisitors7d : null,
+            uniqueVisitors30d: typeof raw.rolling?.uniqueVisitors30d === 'number' ? raw.rolling.uniqueVisitors30d : null,
+            rollingSourceTable: raw.rolling?.sourceTable ?? 'public.website_visit_events',
+            collectionStartedAt: raw.rolling?.collectionStartedAt,
+            isInitialRollout: Boolean(raw.rolling?.isInitialRollout),
+          };
+          statsPayload = {
+            pageViews: periodViews,
+            uniqueVisitors,
+            newReaders,
+            totalMembers,
+            avgTimeOnSite: '—',
+            pageViewsChange: raw.comparisons?.pageViewsChangePercent == null ? undefined : { value: raw.comparisons.pageViewsChangePercent, label: `vs previous ${timeframe}` },
+            uniqueVisitorsChange: raw.comparisons?.uniqueVisitorsChangePercent == null ? undefined : { value: raw.comparisons.uniqueVisitorsChangePercent, label: `vs previous ${timeframe}` },
+            newReadersChange: raw.comparisons?.newReadersChangePercent == null ? undefined : { value: raw.comparisons.newReadersChangePercent, label: `vs previous ${timeframe}` },
+            hourlyActivity,
+            dailyActivity: Array.isArray(raw.dailyActivity) ? raw.dailyActivity : [],
+            lifetimeVisits: dualTable.lifetimeVisits,
+            dualTable,
+            countries,
+            topPages,
+            devices,
+            referrers,
+            readingEngagement: {
+              bookViews: optionalCount(raw.readingEngagement?.bookViews?.count, raw.readingEngagement?.bookViews),
+              readingProgressUpdates: optionalCount(raw.readingEngagement?.readingProgressUpdates?.count, raw.readingEngagement?.readingProgressUpdates),
+              groupJoins: optionalCount(raw.readingEngagement?.groupJoinsCount?.count, raw.readingEngagement?.groupJoins),
+              discussions: optionalCount(raw.readingEngagement?.discussionsCount?.count, raw.readingEngagement?.discussions),
+            },
+            topMembers: Array.isArray(raw.topMembers) ? raw.topMembers : [],
+            lastUpdated: raw.lastUpdated || new Date().toISOString(),
+            isStale: false,
+            partialData: Boolean(raw.error || raw.partialData),
+          };
+        } catch (primaryErr) {
+          // Compatibility path while the authoritative SQL migration is being deployed.
           statsPayload = await fetchDatabaseFallbackStats(timeframe);
         }
 
