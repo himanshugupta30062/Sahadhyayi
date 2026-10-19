@@ -31,6 +31,29 @@ export type DailyPoint = {
   uniqueVisitors: number;
 };
 
+export type ActionSummaryItem = {
+  name: string;
+  label: string;
+  count: number;
+  page?: string;
+};
+
+export type ScrollDepthSummaryItem = {
+  percent: 25 | 50 | 75 | 100;
+  count: number;
+};
+
+export type RecentActionEvent = {
+  id: string;
+  visitedAt: string;
+  eventName: string;
+  page: string;
+  visitorId?: string;
+  sessionId?: string;
+  userId?: string;
+  metadata: Record<string, unknown>;
+};
+
 export type DualTableInfo = {
   lifetimeVisits: number | null;
   lifetimeSourceTable: string;
@@ -70,6 +93,13 @@ export type PulseStats = {
     discussions: number | null;
   };
   topMembers?: MemberLeaderboardItem[];
+  totalActions?: number | null;
+  totalInteractions?: number | null;
+  actionSummary?: ActionSummaryItem[];
+  activeSessions?: number | null;
+  averageSessionDurationSeconds?: number | null;
+  durationSampleCount?: number | null;
+  scrollDepthSummary?: ScrollDepthSummaryItem[];
   lastUpdated?: string;
   isStale?: boolean;
   partialData?: boolean;
@@ -93,7 +123,7 @@ export type RecentVisitor = {
   userId?: string;
 };
 
-export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v8`;
+export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v9`;
 
 /**
  * Builds 24 empty hourly buckets for Asia/Kolkata timezone with 0 counts.
@@ -152,6 +182,13 @@ export function getBaselineStats(
       discussions: null,
     },
     topMembers: [],
+    totalActions: null,
+    totalInteractions: null,
+    actionSummary: [],
+    activeSessions: null,
+    averageSessionDurationSeconds: null,
+    durationSampleCount: null,
+    scrollDepthSummary: [],
     lastUpdated: '',
     isStale: false,
     partialData: false,
@@ -163,6 +200,14 @@ export const DEFAULT_BASELINE_STATS: PulseStats = getBaselineStats('24h');
 const optionalCount = (...values: unknown[]): number | null => {
   const value = values.find((candidate) => typeof candidate === 'number' && Number.isFinite(candidate));
   return typeof value === 'number' ? value : null;
+};
+
+const formatActiveDuration = (seconds: number | null): string => {
+  if (seconds === null || !Number.isFinite(seconds) || seconds < 0) return '—';
+  if (seconds < 60) return `${Math.round(seconds)}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.round(seconds % 60);
+  return remainder ? `${minutes}m ${remainder}s` : `${minutes}m`;
 };
 
 export const useCommunityPulse = (isOpen: boolean = false) => {
@@ -195,6 +240,12 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
   const [visitors, setVisitors] = useState<RecentVisitor[]>([]);
   const [visitorsLoading, setVisitorsLoading] = useState(false);
   const [visitorsError, setVisitorsError] = useState<string | null>(null);
+
+  // Raw event rows are admin-only. Public visitors only see aggregate metrics.
+  const [recentActions, setRecentActions] = useState<RecentActionEvent[]>([]);
+  const [recentActionsLoading, setRecentActionsLoading] = useState(false);
+  const [recentActionsError, setRecentActionsError] = useState<string | null>(null);
+  const inFlightActionsRef = useRef(false);
 
   // Contributor leaderboard (admin-only detailed view)
   const [adminLeaderboard, setAdminLeaderboard] = useState<MemberLeaderboardItem[]>([]);
@@ -418,6 +469,31 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           Object.values(readingEngagement).some((value) => value === null)
         );
 
+        const actionSummary: ActionSummaryItem[] = Array.isArray(rpcData.rolling?.actionSummary)
+          ? rpcData.rolling.actionSummary
+              .filter((item: any) => item && typeof item.name === 'string' && typeof item.count === 'number')
+              .map((item: any) => ({
+                name: item.name.slice(0, 80),
+                label: typeof item.label === 'string' ? item.label.slice(0, 80) : item.name.replace(/[_-]+/g, ' '),
+                count: Math.max(0, item.count),
+                page: typeof item.page === 'string' ? item.page.slice(0, 120) : undefined,
+              }))
+          : [];
+        const totalActions = typeof rpcData.rolling?.totalActions === 'number' ? rpcData.rolling.totalActions : null;
+        const totalInteractions = typeof rpcData.rolling?.totalInteractions === 'number' ? rpcData.rolling.totalInteractions : null;
+        const activeSessions = typeof rpcData.rolling?.activeSessions === 'number' ? rpcData.rolling.activeSessions : null;
+        const averageSessionDurationSeconds = typeof rpcData.rolling?.averageSessionDurationSeconds === 'number'
+          ? rpcData.rolling.averageSessionDurationSeconds
+          : null;
+        const durationSampleCount = typeof rpcData.rolling?.durationSampleCount === 'number'
+          ? rpcData.rolling.durationSampleCount
+          : null;
+        const scrollDepthSummary: ScrollDepthSummaryItem[] = Array.isArray(rpcData.rolling?.scrollDepthSummary)
+          ? rpcData.rolling.scrollDepthSummary
+              .filter((item: any) => [25, 50, 75, 100].includes(item?.percent) && typeof item?.count === 'number')
+              .map((item: any) => ({ percent: item.percent, count: Math.max(0, item.count) }))
+          : [];
+
         const dualTable: DualTableInfo = {
           lifetimeVisits: typeof rpcData.lifetime?.totalVisits === 'number'
             ? rpcData.lifetime.totalVisits
@@ -457,7 +533,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           uniqueVisitors,
           newReaders,
           totalMembers,
-          avgTimeOnSite: '—',
+          avgTimeOnSite: formatActiveDuration(averageSessionDurationSeconds),
           pageViewsChange,
           uniqueVisitorsChange,
           newReadersChange,
@@ -465,6 +541,13 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           hourlyActivity,
           dailyActivity: Array.isArray(rpcData.dailyActivity) ? rpcData.dailyActivity : [],
           lifetimeVisits: dualTable.lifetimeVisits,
+          totalActions,
+          totalInteractions,
+          actionSummary,
+          activeSessions,
+          averageSessionDurationSeconds,
+          durationSampleCount,
+          scrollDepthSummary,
           dualTable,
           countries: rawCountries,
           topPages: rawPages,
@@ -737,6 +820,31 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               ),
             };
 
+            const actionSummary: ActionSummaryItem[] = Array.isArray(data.rolling?.actionSummary)
+              ? data.rolling.actionSummary
+                  .filter((item: any) => item && typeof item.name === 'string' && typeof item.count === 'number')
+                  .map((item: any) => ({
+                    name: item.name.slice(0, 80),
+                    label: typeof item.label === 'string' ? item.label.slice(0, 80) : item.name.replace(/[_-]+/g, ' '),
+                    count: Math.max(0, item.count),
+                    page: typeof item.page === 'string' ? item.page.slice(0, 120) : undefined,
+                  }))
+              : [];
+            const totalActions = typeof data.rolling?.totalActions === 'number' ? data.rolling.totalActions : null;
+            const totalInteractions = typeof data.rolling?.totalInteractions === 'number' ? data.rolling.totalInteractions : null;
+            const activeSessions = typeof data.rolling?.activeSessions === 'number' ? data.rolling.activeSessions : null;
+            const averageSessionDurationSeconds = typeof data.rolling?.averageSessionDurationSeconds === 'number'
+              ? data.rolling.averageSessionDurationSeconds
+              : null;
+            const durationSampleCount = typeof data.rolling?.durationSampleCount === 'number'
+              ? data.rolling.durationSampleCount
+              : null;
+            const scrollDepthSummary: ScrollDepthSummaryItem[] = Array.isArray(data.rolling?.scrollDepthSummary)
+              ? data.rolling.scrollDepthSummary
+                  .filter((item: any) => [25, 50, 75, 100].includes(item?.percent) && typeof item?.count === 'number')
+                  .map((item: any) => ({ percent: item.percent, count: Math.max(0, item.count) }))
+              : [];
+
             const dualTable: DualTableInfo = {
               lifetimeVisits: typeof data.lifetime?.totalVisits === 'number'
                 ? data.lifetime.totalVisits
@@ -776,7 +884,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               uniqueVisitors,
               newReaders,
               totalMembers,
-              avgTimeOnSite: '—',
+              avgTimeOnSite: formatActiveDuration(averageSessionDurationSeconds),
               pageViewsChange,
               uniqueVisitorsChange,
               newReadersChange,
@@ -784,6 +892,13 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               hourlyActivity,
               dailyActivity: Array.isArray(data.dailyActivity) ? data.dailyActivity : [],
               lifetimeVisits: dualTable.lifetimeVisits,
+              totalActions,
+              totalInteractions,
+              actionSummary,
+              activeSessions,
+              averageSessionDurationSeconds,
+              durationSampleCount,
+              scrollDepthSummary,
               dualTable,
               countries,
               topPages,
@@ -907,7 +1022,49 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     }
   }, [isAdmin, visitorSearch]);
 
-  // 4. Fetch Contributor Leaderboard (Admin-Only)
+  // 4. Fetch recent action event records (admin-only; aggregates are available to all visitors).
+  const fetchRecentActions = useCallback(async () => {
+    if (!isAdmin) {
+      setRecentActions([]);
+      setRecentActionsError(null);
+      return;
+    }
+    if (inFlightActionsRef.current) return;
+    inFlightActionsRef.current = true;
+    setRecentActionsLoading(true);
+    setRecentActionsError(null);
+    try {
+      const { data, error: rpcErr } = await supabase.rpc('get_admin_recent_actions', {
+        p_limit: 50,
+        p_timeframe: timeframe,
+      });
+      if (rpcErr) throw new Error(rpcErr.message || 'Failed to retrieve action events');
+
+      const rows: RecentActionEvent[] = (data || []).map((row: any) => ({
+        id: String(row.id),
+        visitedAt: String(row.created_at || ''),
+        eventName: String(row.event_name || 'unknown_action').slice(0, 80),
+        page: String(row.page_path || '/').split(/[?#]/, 1)[0].slice(0, 200) || '/',
+        visitorId: row.visitor_id ? String(row.visitor_id) : undefined,
+        sessionId: row.session_id ? String(row.session_id) : undefined,
+        userId: row.user_id ? String(row.user_id) : undefined,
+        metadata: row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+          ? row.metadata as Record<string, unknown>
+          : {},
+      }));
+      if (isMountedRef.current) setRecentActions(rows);
+    } catch (err: any) {
+      if (isMountedRef.current) {
+        setRecentActions([]);
+        setRecentActionsError(err.message || 'Could not load recent action events');
+      }
+    } finally {
+      inFlightActionsRef.current = false;
+      if (isMountedRef.current) setRecentActionsLoading(false);
+    }
+  }, [isAdmin, timeframe]);
+
+  // 5. Fetch Contributor Leaderboard (Admin-Only)
   const fetchAdminLeaderboard = useCallback(async () => {
     if (!isAdmin) {
       setAdminLeaderboard([]);
@@ -958,10 +1115,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       void fetchStats(false);
       if (isAdmin) {
         void fetchRecentVisitors();
+        void fetchRecentActions();
         void fetchAdminLeaderboard();
       }
     }
-  }, [isOpen, timeframe, isAdmin, fetchStats, fetchRecentVisitors, fetchAdminLeaderboard]);
+  }, [isOpen, timeframe, isAdmin, fetchStats, fetchRecentVisitors, fetchRecentActions, fetchAdminLeaderboard]);
 
   // Periodic polling only when dialog is open and document is visible
   useEffect(() => {
@@ -972,6 +1130,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         void fetchStats(false);
         if (isAdmin) {
           void fetchRecentVisitors();
+          void fetchRecentActions();
           void fetchAdminLeaderboard();
         }
       }
@@ -980,7 +1139,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     return () => {
       window.clearInterval(interval);
     };
-  }, [isOpen, isAdmin, fetchStats, fetchRecentVisitors, fetchAdminLeaderboard]);
+  }, [isOpen, isAdmin, fetchStats, fetchRecentVisitors, fetchRecentActions, fetchAdminLeaderboard]);
 
   // Filter visitors by country and device
   const filteredVisitors = useMemo(() => {
@@ -1021,6 +1180,10 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     visitorsLoading,
     visitorsError,
     refetchVisitors: fetchRecentVisitors,
+    recentActions,
+    recentActionsLoading,
+    recentActionsError,
+    refetchActions: fetchRecentActions,
     visitorSearch,
     setVisitorSearch,
     countryFilter,
