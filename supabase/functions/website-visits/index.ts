@@ -3,7 +3,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+  'Content-Type': 'application/json',
 }
 
 interface VisitData {
@@ -38,225 +40,180 @@ function parseUserAgent(userAgent: string): ParsedUserAgent {
   let deviceType = 'Desktop';
   let deviceModel = '';
 
-  // Browser detection
-  if (userAgent.includes('Chrome') && !userAgent.includes('Edg') && !userAgent.includes('OPR')) {
-    browser = 'Chrome';
-    const match = userAgent.match(/Chrome\/([0-9.]+)/);
-    browserVersion = match ? match[1] : '';
-  } else if (userAgent.includes('Firefox')) {
-    browser = 'Firefox';
-    const match = userAgent.match(/Firefox\/([0-9.]+)/);
-    browserVersion = match ? match[1] : '';
-  } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-    browser = 'Safari';
-    const match = userAgent.match(/Version\/([0-9.]+)/);
-    browserVersion = match ? match[1] : '';
-  } else if (userAgent.includes('Edg')) {
+  if (userAgent.includes('Edg')) {
     browser = 'Edge';
-    const match = userAgent.match(/Edg\/([0-9.]+)/);
-    browserVersion = match ? match[1] : '';
+    browserVersion = userAgent.match(/Edg\/([0-9.]+)/)?.[1] ?? '';
   } else if (userAgent.includes('OPR') || userAgent.includes('Opera')) {
     browser = 'Opera';
-    const match = userAgent.match(/(OPR|Opera)\/([0-9.]+)/);
-    browserVersion = match ? match[2] : '';
+    browserVersion = userAgent.match(/(OPR|Opera)\/([0-9.]+)/)?.[2] ?? '';
+  } else if (userAgent.includes('Chrome')) {
+    browser = 'Chrome';
+    browserVersion = userAgent.match(/Chrome\/([0-9.]+)/)?.[1] ?? '';
+  } else if (userAgent.includes('Firefox')) {
+    browser = 'Firefox';
+    browserVersion = userAgent.match(/Firefox\/([0-9.]+)/)?.[1] ?? '';
+  } else if (userAgent.includes('Safari')) {
+    browser = 'Safari';
+    browserVersion = userAgent.match(/Version\/([0-9.]+)/)?.[1] ?? '';
   }
 
-  // OS detection
-  if (userAgent.includes('Windows NT 10.0')) {
+  if (userAgent.includes('iPhone')) {
+    os = 'iOS'; deviceType = 'Mobile'; deviceModel = 'iPhone';
+  } else if (userAgent.includes('iPad')) {
+    os = 'iPadOS'; deviceType = 'Tablet'; deviceModel = 'iPad';
+  } else if (userAgent.includes('Android')) {
+    os = 'Android'; deviceType = /Mobile/i.test(userAgent) ? 'Mobile' : 'Tablet';
+    deviceModel = userAgent.match(/;\s*([^;)]+)\s*Build\//)?.[1]?.trim() ?? '';
+  } else if (userAgent.includes('Windows NT 10.0')) {
     os = 'Windows 10/11';
   } else if (userAgent.includes('Windows')) {
     os = 'Windows';
   } else if (userAgent.includes('Mac OS X')) {
-    const match = userAgent.match(/Mac OS X ([0-9_]+)/);
-    os = match ? `macOS ${match[1].replace(/_/g, '.')}` : 'macOS';
-  } else if (userAgent.includes('Android')) {
-    const match = userAgent.match(/Android ([0-9.]+)/);
-    os = match ? `Android ${match[1]}` : 'Android';
-    deviceType = 'Mobile';
-  } else if (userAgent.includes('iPhone')) {
-    os = 'iOS';
-    deviceType = 'Mobile';
-  } else if (userAgent.includes('iPad')) {
-    os = 'iPadOS';
-    deviceType = 'Tablet';
-  } else if (userAgent.includes('Linux')) {
-    os = 'Linux';
+    const version = userAgent.match(/Mac OS X ([0-9_]+)/)?.[1];
+    os = version ? 'macOS ' + version.replace(/_/g, '.') : 'macOS';
+    if (userAgent.includes('Macintosh')) deviceModel = 'Mac';
   } else if (userAgent.includes('CrOS')) {
     os = 'Chrome OS';
+  } else if (userAgent.includes('Linux')) {
+    os = 'Linux';
   }
-
-  // Device type refinement
-  if (userAgent.includes('Mobile') && !userAgent.includes('iPad')) {
-    deviceType = 'Mobile';
-  } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
-    deviceType = 'Tablet';
-  }
-
-  // Device model extraction
-  const androidModel = userAgent.match(/;\s*([^;)]+)\s*Build\//);
-  if (androidModel) {
-    deviceModel = androidModel[1].trim();
-  } else if (userAgent.includes('iPhone')) {
-    deviceModel = 'iPhone';
-  } else if (userAgent.includes('iPad')) {
-    deviceModel = 'iPad';
-  } else if (userAgent.includes('Macintosh')) {
-    deviceModel = 'Mac';
-  }
-
+  if (userAgent.includes('Mobile') && !userAgent.includes('iPad')) deviceType = 'Mobile';
   return { browser, browserVersion, os, deviceType, deviceModel };
 }
 
-interface GeoData {
-  country_code: string | null;
-  city: string | null;
-  region: string | null;
+function clean(value: unknown, max: number): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed.slice(0, max) : null;
 }
 
-async function getGeoFromIP(ip: string): Promise<GeoData> {
-  const empty: GeoData = { country_code: null, city: null, region: null };
+function parseCountryCode(req: Request): string | null {
+  const cloudflareCountry = req.headers.get('cf-ipcountry');
+  if (cloudflareCountry && /^[A-Z]{2}$/.test(cloudflareCountry)) return cloudflareCountry;
+  return null;
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders });
+  }
+
   try {
-    if (!ip || ip === '0.0.0.0' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-      return { country_code: 'LOCAL', city: null, region: null };
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error('Analytics ingest is missing Supabase environment configuration');
+      return new Response(JSON.stringify({ error: 'Analytics ingestion unavailable' }), { status: 503, headers: corsHeaders });
     }
 
-    const response = await fetch(`https://ipapi.co/${ip}/json/`, {
-      headers: { 'User-Agent': 'Sahadhyayi-Analytics/1.0' },
+    const body = await req.json().catch(() => null) as VisitData | null;
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return new Response(JSON.stringify({ error: 'Expected a JSON event body' }), { status: 400, headers: corsHeaders });
+    }
+
+    const eventType = clean(body.event_type, 40) || 'pageview';
+    if (!['pageview', 'page_view', 'activity', 'event'].includes(eventType)) {
+      return new Response(JSON.stringify({ error: 'Unsupported event_type' }), { status: 400, headers: corsHeaders });
+    }
+    const page = (clean(body.page, 300)?.split(/[?#]/, 1)[0] || '/').slice(0, 300);
+    const referrer = clean(body.referrer, 300);
+    const userAgent = clean(body.userAgent || req.headers.get('user-agent') || '', 500) || '';
+    const ua = parseUserAgent(userAgent);
+    const visitorId = clean(body.visitor_id, 100);
+    const sessionId = clean(body.session_id, 100);
+    const eventName = clean(body.event_name, 100);
+    const countryCode = parseCountryCode(req);
+    const screenResolution = clean(body.screenResolution, 32);
+    const language = clean(body.language, 32);
+    const timezone = clean(body.timezone, 64);
+    const eventId = clean(body.event_id, 100);
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      return {
-        country_code: data.country_code || null,
-        city: data.city || null,
-        region: data.region || null,
-      };
-    }
-    return empty;
-  } catch {
-    return empty;
-  }
-}
-
-function getRealIP(request: Request): string {
-  const h = request.headers;
-  return (
-    h.get('CF-Connecting-IP') ||
-    h.get('X-Forwarded-For')?.split(',')[0].trim() ||
-    h.get('X-Real-IP') ||
-    h.get('X-Client-IP') ||
-    '0.0.0.0'
-  );
-}
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    if (req.method !== 'POST') {
-      return new Response(
-        JSON.stringify({ error: 'Method not allowed' }),
-        { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const body: VisitData = await req.json();
-    const ipAddress = getRealIP(req);
-    const geo = await getGeoFromIP(ipAddress);
-    const ua = body.userAgent ? parseUserAgent(body.userAgent) : null;
-
-    // Extract authenticated user ID exclusively from server-side JWT verification
+    // Authenticate an attached user only from a server-verified JWT; a body user_id is never trusted.
     let authUserId: string | null = null;
-    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const authorization = req.headers.get('authorization');
+    if (authorization?.startsWith('Bearer ')) {
+      const token = authorization.slice(7).trim();
       if (token) {
         try {
-          const { data: userData } = await supabase.auth.getUser(token);
-          if (userData?.user?.id) {
-            authUserId = userData.user.id;
-          }
+          const { data } = await supabase.auth.getUser(token);
+          authUserId = data.user?.id ?? null;
         } catch {
-          // Token invalid or expired — treat as anonymous visitor
+          authUserId = null;
         }
       }
     }
 
-    // Build a readable user_agent summary for legacy column
-    const userAgentDisplay = ua
-      ? `${ua.browser} ${ua.browserVersion} on ${ua.os} (${ua.deviceType})`
-      : body.userAgent || 'Unknown';
+    // Stable id is used for a single ingestion operation. Client-generated event IDs are accepted only as UUIDs.
+    const validEventId = eventId && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(eventId)
+      ? eventId : crypto.randomUUID();
 
-    // 1. Dual-Table Architecture: Ingest into new rolling 30-day website_visit_events
-    // Strictly privacy-conscious: NO raw IP address, email, or browser fingerprint!
-    try {
-      const { error: rollingInsertError } = await supabase.from('website_visit_events').insert({
-        session_id: body.session_id ? String(body.session_id).slice(0, 100) : null,
-        visitor_id: body.visitor_id ? String(body.visitor_id).slice(0, 100) : null,
-        page_path: String(body.page || '/').slice(0, 300),
-        referrer: body.referrer ? String(body.referrer).slice(0, 300) : null,
-        event_type: body.event_type || 'pageview',
-        event_name: body.event_name ? String(body.event_name).slice(0, 100) : null,
-        device_type: ua?.deviceType || 'Desktop',
-        country_code: geo.country_code ? String(geo.country_code).slice(0, 10) : null,
-      });
-      if (rollingInsertError) {
-        console.warn('Non-fatal: could not write to website_visit_events:', rollingInsertError.message);
-      }
-    } catch (eventErr) {
-      console.warn('Non-fatal: could not write to website_visit_events:', eventErr);
-    }
-
-    // 2. Dual-Table Architecture: Preserve original website_visits table for lifetime analytics
-    const { error } = await supabase.from('website_visits').insert({
-      event_id: body.event_id || undefined,
-      event_type: body.event_type || 'pageview',
-      event_name: body.event_name || null,
-      session_id: body.session_id || null,
-      visitor_id: body.visitor_id || null,
-      user_id: authUserId,
-      utm_source: body.utm_source || null,
-      utm_medium: body.utm_medium || null,
-      utm_campaign: body.utm_campaign || null,
-      ip_address: ipAddress === '0.0.0.0' ? null : ipAddress,
-      user_agent: userAgentDisplay,
-      page_url: body.page || null,
-      country_code: geo.country_code,
-      city: geo.city,
-      region: geo.region,
-      browser: ua?.browser || null,
-      browser_version: ua?.browserVersion || null,
-      os: ua?.os || null,
-      device_type: ua?.deviceType || 'Desktop',
-      device_model: ua?.deviceModel || null,
-      referrer: body.referrer || null,
-      screen_resolution: body.screenResolution || null,
-      language: body.language || null,
+    // Primary write: recent analytics table.
+    const { error: rollingError } = await supabase.from('website_visit_events').insert({
+      id: validEventId,
+      session_id: sessionId,
+      visitor_id: visitorId,
+      page_path: page,
+      referrer,
+      event_type: ['activity', 'event'].includes(eventType) ? 'activity' : 'pageview',
+      created_at: new Date().toISOString(),
+      event_name: eventName,
+      device_type: ua.deviceType,
+      country_code: countryCode,
     });
 
-    if (error) {
-      console.error('Error recording legacy visit:', error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to record visit' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (rollingError) {
+      console.error('Failed to write website_visit_events', {
+        code: rollingError.code,
+        message: rollingError.message,
+        details: rollingError.details,
+      });
+      return new Response(JSON.stringify({ error: 'Failed to record analytics event', stage: 'rolling_write' }), { status: 500, headers: corsHeaders });
     }
 
-    return new Response(
-      JSON.stringify({ success: true }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Lifetime/visitor detail mirror: preserve compatibility with existing admin tools.
+    const { error: legacyError } = await supabase.from('website_visits').insert({
+      event_id: validEventId,
+      event_type: ['activity', 'event'].includes(eventType) ? 'activity' : 'pageview',
+      event_name: eventName,
+      session_id: sessionId,
+      visitor_id: visitorId,
+      user_id: authUserId,
+      utm_source: clean(body.utm_source, 100),
+      utm_medium: clean(body.utm_medium, 100),
+      utm_campaign: clean(body.utm_campaign, 100),
+      user_agent: userAgent.slice(0, 500) || 'Unknown',
+      page_url: page,
+      country_code: countryCode,
+      browser: ua.browser,
+      browser_version: ua.browserVersion || null,
+      os: ua.os,
+      device_type: ua.deviceType,
+      device_model: ua.deviceModel || null,
+      referrer,
+      screen_resolution: screenResolution,
+      language,
+      timezone,
+      metadata: {},
+    });
+
+    if (legacyError) {
+      // Recent analytics has already been safely recorded. Surface this as a partial failure for logs.
+      console.error('Rolling analytics was recorded but legacy mirror failed', {
+        code: legacyError.code,
+        message: legacyError.message,
+        details: legacyError.details,
+      });
+      return new Response(JSON.stringify({ success: true, partial: true, recordedIn: 'website_visit_events' }), { status: 200, headers: corsHeaders });
+    }
+
+    return new Response(JSON.stringify({ success: true, eventId: validEventId, recordedIn: ['website_visit_events', 'website_visits'] }), { status: 200, headers: corsHeaders });
   } catch (error) {
-    console.error('Function error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error('website-visits ingestion error', error);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500, headers: corsHeaders });
   }
 });
