@@ -72,6 +72,7 @@ const AdminLibraryQuality = lazy(() => import('./pages/AdminLibraryQuality'));
 const AdminLibraryArchive = lazy(() => import('./pages/AdminLibraryArchive'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 const AdminBookExpertRag = lazy(() => import('./pages/AdminBookExpertRag'));
+const AdminAuthorEnrichment = lazy(() => import('./pages/AdminAuthorEnrichment'));
 
 // Optimized loading fallback
 const LoadingFallback = memo(({ message = "Loading..." }: { message?: string }) => (
@@ -464,6 +465,16 @@ const App = memo(() => {
                             <AdminRoute>
                               <Suspense fallback={<LoadingFallback message="Loading Book Expert RAG..." />}>
                                 <AdminBookExpertRag />
+                              </Suspense>
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/author-enrichment"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading author enrichment..." />}>
+                                <AdminAuthorEnrichment />
                               </Suspense>
                             </AdminRoute>
                           }
