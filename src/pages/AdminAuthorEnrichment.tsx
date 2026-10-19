@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, Image, LoaderCircle, RefreshCw, Sparkles, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client-universal";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ export default function AdminAuthorEnrichment() {
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
   const [stopRequested, setStopRequested] = useState(false);
+  const stopRef = useRef(false);
   const [progress, setProgress] = useState({ processed: 0, enriched: 0, notFound: 0, failed: 0 });
   const [logs, setLogs] = useState<string[]>([]);
   const [lastRun, setLastRun] = useState<string>("Not run yet");
@@ -44,13 +45,13 @@ export default function AdminAuthorEnrichment() {
 
   const run = async (refresh: boolean) => {
     if (running) return;
-    setRunning(true); setStopRequested(false);
+    setRunning(true); setStopRequested(false); stopRef.current = false;
     setProgress({ processed: 0, enriched: 0, notFound: 0, failed: 0 }); setLogs([]);
     let totals = { processed: 0, enriched: 0, notFound: 0, failed: 0 };
     try {
       // Run small sequential batches to respect free public API rate limits.
       for (let i = 0; i < 500; i++) {
-        if (stopRequested) break;
+        if (stopRef.current) break;
         const { data, error } = await supabase.functions.invoke("enrich-authors", { body: { limit: BATCH_SIZE, refresh } });
         if (error) throw error;
         if (!data || typeof data !== "object") throw new Error("Invalid response from enrichment function.");
@@ -68,12 +69,12 @@ export default function AdminAuthorEnrichment() {
         if (i < 499) await new Promise((resolve) => window.setTimeout(resolve, 900));
       }
       setLastRun(new Date().toLocaleString());
-      toast({ title: stopRequested ? "Stopped after current batch" : "Author import finished", description: totals.processed + " processed · " + totals.enriched + " enriched · " + totals.notFound + " not found · " + totals.failed + " failed." });
+      toast({ title: stopRef.current ? "Stopped after current batch" : "Author import finished", description: totals.processed + " processed · " + totals.enriched + " enriched · " + totals.notFound + " not found · " + totals.failed + " failed." });
     } catch (e) {
       const message = e instanceof Error ? e.message : "Author import failed";
       setLogs((old) => [message, ...old].slice(0, 60));
       toast({ title: "Author import failed", description: message, variant: "destructive" });
-    } finally { setRunning(false); setStopRequested(false); await loadStats(); }
+    } finally { setRunning(false); setStopRequested(false); stopRef.current = false; await loadStats(); }
   };
 
   const percent = stats.total ? Math.round(stats.enriched / stats.total * 100) : 0;
@@ -92,8 +93,8 @@ export default function AdminAuthorEnrichment() {
         <CardContent className="space-y-5">
           <div className="flex flex-wrap gap-3">
             <Button disabled={running || loading || stats.missingImage+stats.pending===0} onClick={() => void run(false)} className="bg-[#1C442D] text-white hover:bg-[#143221]"><Image className="mr-2 h-4 w-4"/>Import missing portraits / metadata</Button>
-            <Button disabled={running || loading} variant="outline" onClick={() => void run(true)}>Retry not-found / failed records</Button>
-            {running && <Button variant="destructive" onClick={() => setStopRequested(true)}>Stop after current batch</Button>}
+            <Button disabled={running || loading} variant="outline" onClick={() => void run(true)}>Retry failed records</Button>
+            {running && <Button variant="destructive" onClick={() => { stopRef.current = true; setStopRequested(true); }}>Stop after current batch</Button>}
           </div>
           {running && <div className="space-y-2"><div className="flex justify-between text-sm"><span>Processing authors</span><span>{progress.processed} processed</span></div><Progress value={Math.min(100, stats.total ? progress.processed / stats.total * 100 : 0)}/><p className="text-xs text-muted-foreground">A batch already in progress will finish before stopping.</p></div>}
           <div className="grid gap-3 sm:grid-cols-4"><div className="rounded-xl bg-muted/60 p-4"><div className="text-xs text-muted-foreground">Processed this run</div><div className="text-2xl font-semibold">{progress.processed}</div></div><div className="rounded-xl bg-muted/60 p-4"><div className="text-xs text-muted-foreground">Enriched</div><div className="text-2xl font-semibold">{progress.enriched}</div></div><div className="rounded-xl bg-muted/60 p-4"><div className="text-xs text-muted-foreground">Not found</div><div className="text-2xl font-semibold">{progress.notFound}</div></div><div className="rounded-xl bg-muted/60 p-4"><div className="text-xs text-muted-foreground">Failed</div><div className="text-2xl font-semibold">{progress.failed}</div></div></div>
