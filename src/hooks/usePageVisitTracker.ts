@@ -150,16 +150,18 @@ export const usePageVisitTracker = () => {
       lastHeartbeatAt = Date.now();
     };
     document.addEventListener('visibilitychange', handleVisibility);
-    window.addEventListener('pagehide', () => {
+    const handlePageHide = () => {
       const now = Date.now();
       const elapsedSeconds = Math.floor(Math.min(15_000, now - lastHeartbeatAt) / 1000);
       void sendEngagement(elapsedSeconds);
-    }, { once: true });
+    };
+    window.addEventListener('pagehide', handlePageHide, { once: true });
     
     return () => {
       window.clearInterval(heartbeat);
       activityEvents.forEach(eventName => window.removeEventListener(eventName, markActivity));
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', handlePageHide);
     };
   }, [location.pathname, location.search]);
 };
