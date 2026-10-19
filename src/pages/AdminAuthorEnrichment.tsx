@@ -16,7 +16,6 @@ export default function AdminAuthorEnrichment() {
   const [stats, setStats] = useState<Stats>({ total: 0, missingImage: 0, pending: 0, enriched: 0, notFound: 0, failed: 0 });
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
-  const [stopRequested, setStopRequested] = useState(false);
   const stopRef = useRef(false);
   const [progress, setProgress] = useState({ processed: 0, enriched: 0, notFound: 0, failed: 0 });
   const [logs, setLogs] = useState<string[]>([]);
@@ -45,7 +44,7 @@ export default function AdminAuthorEnrichment() {
 
   const run = async (refresh: boolean) => {
     if (running) return;
-    setRunning(true); setStopRequested(false); stopRef.current = false;
+    setRunning(true); stopRef.current = false;
     setProgress({ processed: 0, enriched: 0, notFound: 0, failed: 0 }); setLogs([]);
     let totals = { processed: 0, enriched: 0, notFound: 0, failed: 0 };
     try {
@@ -74,7 +73,7 @@ export default function AdminAuthorEnrichment() {
       const message = e instanceof Error ? e.message : "Author import failed";
       setLogs((old) => [message, ...old].slice(0, 60));
       toast({ title: "Author import failed", description: message, variant: "destructive" });
-    } finally { setRunning(false); setStopRequested(false); stopRef.current = false; await loadStats(); }
+    } finally { setRunning(false); stopRef.current = false; await loadStats(); }
   };
 
   const percent = stats.total ? Math.round(stats.enriched / stats.total * 100) : 0;
@@ -94,7 +93,7 @@ export default function AdminAuthorEnrichment() {
           <div className="flex flex-wrap gap-3">
             <Button disabled={running || loading || stats.missingImage+stats.pending===0} onClick={() => void run(false)} className="bg-[#1C442D] text-white hover:bg-[#143221]"><Image className="mr-2 h-4 w-4"/>Import missing portraits / metadata</Button>
             <Button disabled={running || loading} variant="outline" onClick={() => void run(true)}>Retry failed records</Button>
-            {running && <Button variant="destructive" onClick={() => { stopRef.current = true; setStopRequested(true); }}>Stop after current batch</Button>}
+            {running && <Button variant="destructive" onClick={() => { stopRef.current = true; }}>Stop after current batch</Button>}
           </div>
           {running && <div className="space-y-2"><div className="flex justify-between text-sm"><span>Processing authors</span><span>{progress.processed} processed</span></div><Progress value={Math.min(100, stats.total ? progress.processed / stats.total * 100 : 0)}/><p className="text-xs text-muted-foreground">A batch already in progress will finish before stopping.</p></div>}
           <div className="grid gap-3 sm:grid-cols-4"><div className="rounded-xl bg-muted/60 p-4"><div className="text-xs text-muted-foreground">Processed this run</div><div className="text-2xl font-semibold">{progress.processed}</div></div><div className="rounded-xl bg-muted/60 p-4"><div className="text-xs text-muted-foreground">Enriched</div><div className="text-2xl font-semibold">{progress.enriched}</div></div><div className="rounded-xl bg-muted/60 p-4"><div className="text-xs text-muted-foreground">Not found</div><div className="text-2xl font-semibold">{progress.notFound}</div></div><div className="rounded-xl bg-muted/60 p-4"><div className="text-xs text-muted-foreground">Failed</div><div className="text-2xl font-semibold">{progress.failed}</div></div></div>
