@@ -196,16 +196,19 @@ Deno.serve(async (req) => {
     // 1. Dual-Table Architecture: Ingest into new rolling 30-day website_visit_events
     // Strictly privacy-conscious: NO raw IP address, email, or browser fingerprint!
     try {
-      await supabase.from('website_visit_events').insert({
+      const { error: rollingInsertError } = await supabase.from('website_visit_events').insert({
         session_id: body.session_id ? String(body.session_id).slice(0, 100) : null,
         visitor_id: body.visitor_id ? String(body.visitor_id).slice(0, 100) : null,
         page_path: String(body.page || '/').slice(0, 300),
         referrer: body.referrer ? String(body.referrer).slice(0, 300) : null,
-        event_type: body.event_type || 'page_view',
+        event_type: body.event_type || 'pageview',
         event_name: body.event_name ? String(body.event_name).slice(0, 100) : null,
         device_type: ua?.deviceType || 'Desktop',
         country_code: geo.country_code ? String(geo.country_code).slice(0, 10) : null,
       });
+      if (rollingInsertError) {
+        console.warn('Non-fatal: could not write to website_visit_events:', rollingInsertError.message);
+      }
     } catch (eventErr) {
       console.warn('Non-fatal: could not write to website_visit_events:', eventErr);
     }
