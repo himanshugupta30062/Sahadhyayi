@@ -5,6 +5,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import Auth from '@/pages/Auth';
+import SignUp from '@/pages/SignUp';
 import ResetPassword from '@/pages/ResetPassword';
 import ConfirmEmail from '@/pages/ConfirmEmail';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
@@ -236,6 +237,31 @@ describe('Phase 3: Authentication and Account Entry', () => {
       expect(await screen.findByText(/Check your email/i)).toBeInTheDocument();
       expect(screen.getByText(/aarav@example\.com/)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Back to Sign In/i })).toBeInTheDocument();
+    });
+
+    it('displays clear error messages in standalone SignUp page when registration fails', async () => {
+      mockSignUp.mockResolvedValueOnce({
+        error: { message: 'Database error saving new user' } as any,
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/signup']}>
+          <SignUp />
+        </MemoryRouter>
+      );
+
+      fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: 'Priya Patel' } });
+      fireEvent.change(screen.getByLabelText(/^Email$/i), { target: { value: 'priya@example.com' } });
+      fireEvent.change(screen.getByLabelText(/^Password/i, { selector: 'input' }), { target: { value: 'ValidPass1' } });
+      fireEvent.change(screen.getByLabelText(/Confirm Password/i, { selector: 'input' }), { target: { value: 'ValidPass1' } });
+
+      fireEvent.click(screen.getByRole('button', { name: /^Create Account$/i }));
+
+      await waitFor(() => {
+        expect(mockSignUp).toHaveBeenCalledWith('priya@example.com', 'ValidPass1', 'Priya Patel');
+      });
+
+      expect(await screen.findByText(/Database error saving new user/i)).toBeInTheDocument();
     });
   });
 
