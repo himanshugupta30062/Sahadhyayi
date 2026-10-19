@@ -43,6 +43,7 @@ const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
 const Profile = lazy(() => import('./pages/Profile'));
 const SocialMedia = lazy(() => import('./pages/SocialMedia'));
 const Authors = lazy(() => import('./pages/Authors'));
+const Publishers = lazy(() => import('./pages/Publishers'));
 const AuthorSlugPage = lazy(() => import('./pages/authors/[slug]'));
 const AuthorDetails = lazy(() => import('./pages/AuthorDetails'));
 const ReadingGroups = lazy(() => import('./pages/ReadingGroups'));
@@ -250,6 +251,14 @@ const App = memo(() => {
                           element={
                             <Suspense fallback={<LoadingFallback />}>
                               <Authors />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/publishers"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading publishers..." />}>
+                              <Publishers />
                             </Suspense>
                           }
                         />
