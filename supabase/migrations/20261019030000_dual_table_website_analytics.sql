@@ -445,16 +445,16 @@ BEGIN
   -- D. Community Members
   BEGIN
     SELECT count(*) INTO v_registered_readers FROM auth.users;
-    SELECT count(*) INTO v_new_readers_period FROM auth.users WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now;
-    SELECT count(*) INTO v_prev_new_readers FROM auth.users WHERE event_type = 'pageview' AND created_at >= v_prev_start AND created_at < v_prev_end;
+    SELECT count(*) INTO v_new_readers_period FROM auth.users WHERE created_at >= v_period_start AND created_at <= v_now;
+    SELECT count(*) INTO v_prev_new_readers FROM auth.users WHERE created_at >= v_prev_start AND created_at < v_prev_end;
   EXCEPTION WHEN OTHERS THEN
     v_registered_readers := 0;
   END;
 
   IF v_registered_readers = 0 THEN
     SELECT count(*) INTO v_registered_readers FROM public.profiles;
-    SELECT count(*) INTO v_new_readers_period FROM public.profiles WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now;
-    SELECT count(*) INTO v_prev_new_readers FROM public.profiles WHERE event_type = 'pageview' AND created_at >= v_prev_start AND created_at < v_prev_end;
+    SELECT count(*) INTO v_new_readers_period FROM public.profiles WHERE created_at >= v_period_start AND created_at <= v_now;
+    SELECT count(*) INTO v_prev_new_readers FROM public.profiles WHERE created_at >= v_prev_start AND created_at < v_prev_end;
   END IF;
 
   IF v_prev_new_readers > 0 THEN
