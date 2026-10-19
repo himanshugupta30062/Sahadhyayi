@@ -323,7 +323,8 @@ BEGIN
       ) AS day_item
       FROM days d
       LEFT JOIN public.website_visit_events e
-        ON date_trunc('day', e.created_at) = d.day_ts
+        ON e.event_type = 'pageview'
+       AND date_trunc('day', e.created_at) = d.day_ts
       GROUP BY d.day_ts
     ) sub;
 
@@ -429,7 +430,8 @@ BEGIN
         CASE WHEN v_rolling_total_events > 0 THEN (
           SELECT count(*)
           FROM public.website_visit_events e
-          WHERE date_trunc('hour', e.created_at AT TIME ZONE 'Asia/Kolkata') = s.bucket_ist
+          WHERE e.event_type = 'pageview'
+            AND date_trunc('hour', e.created_at AT TIME ZONE 'Asia/Kolkata') = s.bucket_ist
         ) ELSE (
           SELECT count(*)
           FROM public.website_visits w
