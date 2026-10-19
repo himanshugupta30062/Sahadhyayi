@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.website_visit_events (
   visitor_id TEXT,
   page_path TEXT NOT NULL,
   referrer TEXT,
-  event_type TEXT NOT NULL DEFAULT 'page_view',
+  event_type TEXT NOT NULL DEFAULT 'pageview',
   event_name TEXT,
   device_type TEXT DEFAULT 'Desktop',
   country_code TEXT
@@ -188,8 +188,8 @@ BEGIN
   -- A. Lifetime visits from original website_visits table
   SELECT count(*) INTO v_lifetime_visits FROM public.website_visits;
 
-  -- B. Check rolling table event count
-  SELECT count(*) INTO v_rolling_total_events FROM public.website_visit_events;
+  -- B. Check rolling table pageview count. Non-pageview telemetry must not make us switch away from legacy bridge.
+  SELECT count(*) INTO v_rolling_total_events FROM public.website_visit_events WHERE event_type = 'pageview';
 
   IF v_rolling_total_events = 0 THEN
     v_is_initial_rollout := true;
@@ -203,48 +203,48 @@ BEGIN
     -- 24h, 7d, 30d views from website_visit_events
     SELECT count(*) INTO v_rolling_24h_views
     FROM public.website_visit_events
-    WHERE created_at >= v_now - interval '24 hours';
+    WHERE event_type = 'pageview' AND created_at >= v_now - interval '24 hours';
 
     SELECT count(*) INTO v_rolling_7d_views
     FROM public.website_visit_events
-    WHERE created_at >= v_now - interval '7 days';
+    WHERE event_type = 'pageview' AND created_at >= v_now - interval '7 days';
 
     SELECT count(*) INTO v_rolling_30d_views
     FROM public.website_visit_events
-    WHERE created_at >= v_now - interval '30 days';
+    WHERE event_type = 'pageview' AND created_at >= v_now - interval '30 days';
 
     SELECT count(*) INTO v_period_views
     FROM public.website_visit_events
-    WHERE created_at >= v_period_start AND created_at <= v_now;
+    WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now;
 
     SELECT count(*) INTO v_prev_period_views
     FROM public.website_visit_events
-    WHERE created_at >= v_prev_start AND created_at < v_prev_end;
+    WHERE event_type = 'pageview' AND created_at >= v_prev_start AND created_at < v_prev_end;
 
     -- Distinct visitors from website_visit_events
     SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_unique_visitors_24h
     FROM public.website_visit_events
-    WHERE created_at >= v_now - interval '24 hours'
+    WHERE event_type = 'pageview' AND created_at >= v_now - interval '24 hours'
       AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
 
     SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_unique_visitors_7d
     FROM public.website_visit_events
-    WHERE created_at >= v_now - interval '7 days'
+    WHERE event_type = 'pageview' AND created_at >= v_now - interval '7 days'
       AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
 
     SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_unique_visitors_30d
     FROM public.website_visit_events
-    WHERE created_at >= v_now - interval '30 days'
+    WHERE event_type = 'pageview' AND created_at >= v_now - interval '30 days'
       AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
 
     SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_period_unique
     FROM public.website_visit_events
-    WHERE created_at >= v_period_start AND created_at <= v_now
+    WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now
       AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
 
     SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_prev_period_unique
     FROM public.website_visit_events
-    WHERE created_at >= v_prev_start AND created_at < v_prev_end
+    WHERE event_type = 'pageview' AND created_at >= v_prev_start AND created_at < v_prev_end
       AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
 
     -- Top pages from website_visit_events
@@ -255,7 +255,7 @@ BEGIN
         count(*)::integer AS count,
         round((count(*)::numeric / NULLIF(v_period_views, 0)::numeric) * 100)::integer AS percent
       FROM public.website_visit_events
-      WHERE created_at >= v_period_start AND created_at <= v_now
+      WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now
       GROUP BY page_path
       ORDER BY count(*) DESC
       LIMIT 6
@@ -269,7 +269,7 @@ BEGIN
         count(*)::integer AS count,
         round((count(*)::numeric / NULLIF(v_period_views, 0)::numeric) * 100)::integer AS percent
       FROM public.website_visit_events
-      WHERE created_at >= v_period_start AND created_at <= v_now
+      WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now
       GROUP BY 1
       ORDER BY count(*) DESC
       LIMIT 5
@@ -283,7 +283,7 @@ BEGIN
         count(*)::integer AS count,
         round((count(*)::numeric / NULLIF(v_period_views, 0)::numeric) * 100)::integer AS percent
       FROM public.website_visit_events
-      WHERE created_at >= v_period_start AND created_at <= v_now
+      WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now
       GROUP BY 1
       ORDER BY count(*) DESC
     ) item;
@@ -297,7 +297,7 @@ BEGIN
         count(*)::integer AS count,
         round((count(*)::numeric / NULLIF(v_period_views, 0)::numeric) * 100)::integer AS percent
       FROM public.website_visit_events
-      WHERE created_at >= v_period_start AND created_at <= v_now
+      WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now
         AND country_code IS NOT NULL
       GROUP BY country_code
       ORDER BY count(*) DESC
@@ -415,7 +415,8 @@ BEGIN
         CASE WHEN v_rolling_total_events > 0 THEN (
           SELECT count(*)
           FROM public.website_visit_events e
-          WHERE date_trunc('hour', e.created_at AT TIME ZONE 'Asia/Kolkata') = s.bucket_ist
+          WHERE e.event_type = 'pageview'
+            AND date_trunc('hour', e.created_at AT TIME ZONE 'Asia/Kolkata') = s.bucket_ist
         ) ELSE (
           SELECT count(*)
           FROM public.website_visits w
