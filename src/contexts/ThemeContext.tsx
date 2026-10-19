@@ -57,14 +57,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
+const fallbackThemeContext: ThemeContextType = {
+  theme: 'light',
+  setTheme: () => {},
+  toggleTheme: () => {},
+};
+
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    return {
-      theme: 'light' as Theme,
-      setTheme: () => {},
-      toggleTheme: () => {},
-    };
+    return fallbackThemeContext;
   }
   return context;
 };
