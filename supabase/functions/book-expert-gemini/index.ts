@@ -307,16 +307,29 @@ async function generateQueryEmbedding(text: string, apiKey: string): Promise<num
   }
 }
 
+function buildContextualRetrievalQuery(text: string, history: HistoryItem[]): string {
+  const recentContext = history.slice(-4).map((item) => {
+    const clipped = item.text.trim().slice(0, 420);
+    return (item.role === "user" ? "Reader previously asked: " : "Assistant previously replied: ") + clipped;
+  });
+  return [
+    ...recentContext,
+    "Current reader question: " + text.slice(0, 2000),
+  ].join("\n").slice(0, 4200);
+}
+
 async function retrieveRagChunks(
   supabaseClient: any,
   text: string,
+  history: HistoryItem[],
   apiKey: string,
 ): Promise<RagChunk[]> {
   try {
-    const embedding = await generateQueryEmbedding(text, apiKey);
+    const retrievalQuery = buildContextualRetrievalQuery(text, history);
+    const embedding = await generateQueryEmbedding(retrievalQuery, apiKey);
     const { data, error } = await supabaseClient.rpc("match_book_expert_chunks", {
       p_query_embedding: embedding,
-      p_query_text: text,
+      p_query_text: retrievalQuery,
       p_match_count: 8,
       p_match_threshold: 0.34,
     });
@@ -627,7 +640,7 @@ serve(async (req: Request) => {
   try {
     const history = normalizeHistory(body.history);
     const libraryCountPromise = getLibraryRecordCount(supabaseClient);
-    const ragPromise = retrieveRagChunks(supabaseClient, text, geminiApiKey);
+    const ragPromise = retrieveRagChunks(supabaseClient, text, history, geminiApiKey);
     let libraryBooks: BookRecord[] = [];
     try {
       libraryBooks = await retrieveLibraryBooks(supabaseClient, text);
