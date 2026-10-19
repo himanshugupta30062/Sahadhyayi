@@ -135,6 +135,7 @@ DECLARE
 
   -- Rolling 30-day event telemetry metrics
   v_rolling_total_events bigint := 0;
+  v_rolling_total_rows bigint := 0;
   v_rolling_24h_views bigint := 0;
   v_rolling_7d_views bigint := 0;
   v_rolling_30d_views bigint := 0;
@@ -189,9 +190,10 @@ BEGIN
   SELECT count(*) INTO v_lifetime_visits FROM public.website_visits;
 
   -- B. Check rolling table pageview count. Non-pageview telemetry must not make us switch away from legacy bridge.
+  SELECT count(*) INTO v_rolling_total_rows FROM public.website_visit_events;
   SELECT count(*) INTO v_rolling_total_events FROM public.website_visit_events WHERE event_type = 'pageview';
 
-  IF v_rolling_total_events = 0 THEN
+  IF v_rolling_total_rows = 0 THEN
     v_is_initial_rollout := true;
   END IF;
 
@@ -199,7 +201,7 @@ BEGIN
   -- If rolling table has accumulated events, calculate from website_visit_events.
   -- Otherwise, if initial rollout, provide fallback from website_visits where event_type = 'pageview'
   -- so the UI transitions smoothly without breaking.
-  IF v_rolling_total_events > 0 THEN
+  IF v_rolling_total_rows > 0 THEN
     -- 24h, 7d, 30d views from website_visit_events
     SELECT count(*) INTO v_rolling_24h_views
     FROM public.website_visit_events
