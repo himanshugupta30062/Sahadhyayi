@@ -32,13 +32,26 @@ const emptyStats: RagStats = {
   embeddedChunks: 0,
 };
 
+const readSavedOffsets = (): Record<SourceType, number> => {
+  const fallback: Record<SourceType, number> = { book_metadata: 0, book_summary: 0 };
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = window.sessionStorage.getItem("sahadhyayi_book_expert_rag_offsets_v1");
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return {
+      book_metadata: Number.isInteger(parsed?.book_metadata) && parsed.book_metadata >= 0 ? parsed.book_metadata : 0,
+      book_summary: Number.isInteger(parsed?.book_summary) && parsed.book_summary >= 0 ? parsed.book_summary : 0,
+    };
+  } catch {
+    return fallback;
+  }
+};
+
 const AdminBookExpertRag = () => {
   const { toast } = useToast();
   const [stats, setStats] = useState<RagStats>(emptyStats);
-  const [offsets, setOffsets] = useState<Record<SourceType, number>>({
-    book_metadata: 0,
-    book_summary: 0,
-  });
+  const [offsets, setOffsets] = useState<Record<SourceType, number>>(readSavedOffsets);
   const [running, setRunning] = useState<RunState>(null);
   const [autoRun, setAutoRun] = useState(false);
   const [progress, setProgress] = useState({ processed: 0, indexed: 0, unchanged: 0, failed: 0 });
@@ -85,6 +98,14 @@ const AdminBookExpertRag = () => {
   useEffect(() => {
     void loadStats();
   }, [loadStats]);
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem("sahadhyayi_book_expert_rag_offsets_v1", JSON.stringify(offsets));
+    } catch {
+      // The admin workflow still works if session storage is unavailable.
+    }
+  }, [offsets]);
 
   const delay = (milliseconds: number) =>
     new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds));
