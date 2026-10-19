@@ -27,7 +27,6 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client-universal';
 import useDebouncedValue from '@/lib/useDebouncedValue';
 import { slugify } from '@/utils/slugify';
-import { getSearchShortcutLabel } from '@/hooks/useKeyboardShortcuts';
 import { useTheme } from '@/contexts/ThemeContext';
 import { BookExpertContext } from '@/contexts/book-expert.utils';
 
@@ -102,7 +101,6 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
 
   const { theme, toggleTheme } = useTheme();
   const bookExpertContext = useContext(BookExpertContext);
-  const shortcutLabel = useMemo(() => getSearchShortcutLabel(), []);
 
   const debouncedQuery = useDebouncedValue(searchQuery, 300);
 
@@ -608,14 +606,14 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
               <X className="w-4 h-4" />
             </button>
           ) : (
-            <div className="flex items-center gap-1.5">
-              <span className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-semibold text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-white/[0.06] border border-stone-200 dark:border-white/[0.1] rounded tracking-wide">
-                {shortcutLabel.display}
-              </span>
-              <span className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-semibold text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-white/[0.06] border border-stone-200 dark:border-white/[0.1] rounded tracking-wide uppercase">
-                Esc
-              </span>
-            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 transition-colors rounded"
+              aria-label="Close search"
+            >
+              <X className="w-4 h-4" />
+            </button>
           )}
         </div>
 
@@ -890,10 +888,6 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
             <div className="flex items-center gap-1.5">
               <kbd className="px-1.5 h-[18px] flex items-center justify-center bg-white dark:bg-white/[0.08] border border-stone-200 dark:border-white/[0.1] rounded text-[10px] text-stone-700 dark:text-stone-300">Enter</kbd>
               <span>Open</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <kbd className="px-1.5 h-[18px] flex items-center justify-center bg-white dark:bg-white/[0.08] border border-stone-200 dark:border-white/[0.1] rounded text-[10px] text-stone-700 dark:text-stone-300">{shortcutLabel.display}</kbd>
-              <span>Toggle</span>
             </div>
             <div className="flex items-center gap-1.5">
               <kbd className="px-1.5 h-[18px] flex items-center justify-center bg-white dark:bg-white/[0.08] border border-stone-200 dark:border-white/[0.1] rounded text-[10px] text-stone-700 dark:text-stone-300">Esc</kbd>
