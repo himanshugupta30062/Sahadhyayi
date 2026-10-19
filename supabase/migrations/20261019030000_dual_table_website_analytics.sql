@@ -159,7 +159,7 @@ BEGIN
       FOR v_job_id IN SELECT jobid FROM cron.job
         WHERE jobname IN ('website-action-events-retention', 'cleanup-website-visit-events', 'website-visit-events-retention')
       LOOP PERFORM cron.unschedule(v_job_id); END LOOP;
-      PERFORM cron.schedule('website-visit-events-retention', '17 * * * *',
+      PERFORM cron.schedule('website-visit-events-retention', '* * * * *',
         'SELECT public.cleanup_old_website_visit_events();');
     EXCEPTION WHEN OTHERS THEN
       RAISE WARNING 'Could not schedule rolling analytics retention: %', SQLERRM;
@@ -287,30 +287,40 @@ BEGIN
     WHERE event_type = 'pageview' AND created_at >= v_prev_start AND created_at < v_prev_end;
 
     -- Distinct visitors from website_visit_events
-    SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_unique_visitors_24h
-    FROM public.website_visit_events
-    WHERE event_type = 'pageview' AND created_at >= v_now - interval '24 hours'
-      AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
+    SELECT CASE
+       WHEN count(*) FILTER (WHERE visitor_id IS NOT NULL OR session_id IS NOT NULL) = 0 THEN NULL::bigint
+       ELSE count(DISTINCT coalesce(visitor_id, session_id))
+     END INTO v_unique_visitors_24h
+     FROM public.website_visit_events
+     WHERE event_type = 'pageview' AND created_at >= v_now - interval '24 hours'
 
-    SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_unique_visitors_7d
-    FROM public.website_visit_events
-    WHERE event_type = 'pageview' AND created_at >= v_now - interval '7 days'
-      AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
+    SELECT CASE
+       WHEN count(*) FILTER (WHERE visitor_id IS NOT NULL OR session_id IS NOT NULL) = 0 THEN NULL::bigint
+       ELSE count(DISTINCT coalesce(visitor_id, session_id))
+     END INTO v_unique_visitors_7d
+     FROM public.website_visit_events
+     WHERE event_type = 'pageview' AND created_at >= v_now - interval '7 days'
 
-    SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_unique_visitors_30d
-    FROM public.website_visit_events
-    WHERE event_type = 'pageview' AND created_at >= v_now - interval '30 days'
-      AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
+    SELECT CASE
+       WHEN count(*) FILTER (WHERE visitor_id IS NOT NULL OR session_id IS NOT NULL) = 0 THEN NULL::bigint
+       ELSE count(DISTINCT coalesce(visitor_id, session_id))
+     END INTO v_unique_visitors_30d
+     FROM public.website_visit_events
+     WHERE event_type = 'pageview' AND created_at >= v_now - interval '30 days'
 
-    SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_period_unique
-    FROM public.website_visit_events
-    WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now
-      AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
+    SELECT CASE
+       WHEN count(*) FILTER (WHERE visitor_id IS NOT NULL OR session_id IS NOT NULL) = 0 THEN NULL::bigint
+       ELSE count(DISTINCT coalesce(visitor_id, session_id))
+     END INTO v_period_unique
+     FROM public.website_visit_events
+     WHERE event_type = 'pageview' AND created_at >= v_period_start AND created_at <= v_now
 
-    SELECT count(DISTINCT coalesce(visitor_id, session_id)) INTO v_prev_period_unique
-    FROM public.website_visit_events
-    WHERE event_type = 'pageview' AND created_at >= v_prev_start AND created_at < v_prev_end
-      AND (visitor_id IS NOT NULL OR session_id IS NOT NULL);
+    SELECT CASE
+       WHEN count(*) FILTER (WHERE visitor_id IS NOT NULL OR session_id IS NOT NULL) = 0 THEN NULL::bigint
+       ELSE count(DISTINCT coalesce(visitor_id, session_id))
+     END INTO v_prev_period_unique
+     FROM public.website_visit_events
+     WHERE event_type = 'pageview' AND created_at >= v_prev_start AND created_at < v_prev_end
 
     -- Top pages from website_visit_events
     SELECT coalesce(jsonb_agg(item), '[]'::jsonb) INTO v_top_pages
@@ -414,17 +424,26 @@ BEGIN
     FROM public.website_visits
     WHERE event_type = 'pageview' AND visited_at >= v_prev_start AND visited_at < v_prev_end;
 
-    SELECT count(DISTINCT coalesce(visitor_id::text, session_id::text)) INTO v_unique_visitors_24h
-    FROM public.website_visits
-    WHERE event_type = 'pageview' AND visited_at >= v_now - interval '24 hours';
+    SELECT CASE
+       WHEN count(*) FILTER (WHERE visitor_id IS NOT NULL OR session_id IS NOT NULL) = 0 THEN NULL::bigint
+       ELSE count(DISTINCT coalesce(visitor_id::text, session_id::text))
+     END INTO v_unique_visitors_24h
+     FROM public.website_visits
+     WHERE event_type = 'pageview' AND visited_at >= v_now - interval '24 hours'
 
-    SELECT count(DISTINCT coalesce(visitor_id::text, session_id::text)) INTO v_unique_visitors_7d
-    FROM public.website_visits
-    WHERE event_type = 'pageview' AND visited_at >= v_now - interval '7 days';
+    SELECT CASE
+       WHEN count(*) FILTER (WHERE visitor_id IS NOT NULL OR session_id IS NOT NULL) = 0 THEN NULL::bigint
+       ELSE count(DISTINCT coalesce(visitor_id::text, session_id::text))
+     END INTO v_unique_visitors_7d
+     FROM public.website_visits
+     WHERE event_type = 'pageview' AND visited_at >= v_now - interval '7 days'
 
-    SELECT count(DISTINCT coalesce(visitor_id::text, session_id::text)) INTO v_unique_visitors_30d
-    FROM public.website_visits
-    WHERE event_type = 'pageview' AND visited_at >= v_now - interval '30 days';
+    SELECT CASE
+       WHEN count(*) FILTER (WHERE visitor_id IS NOT NULL OR session_id IS NOT NULL) = 0 THEN NULL::bigint
+       ELSE count(DISTINCT coalesce(visitor_id::text, session_id::text))
+     END INTO v_unique_visitors_30d
+     FROM public.website_visits
+     WHERE event_type = 'pageview' AND visited_at >= v_now - interval '30 days'
 
     v_period_unique := CASE
       WHEN v_timeframe = '7d' THEN v_unique_visitors_7d
@@ -540,10 +559,12 @@ BEGIN
 
   -- Aggregate activity metrics from the rolling event store.
   SELECT
-    count(*) FILTER (WHERE event_name IS NOT NULL AND event_name NOT IN (
-      'page_engagement_duration', 'scroll_depth', 'navigation_click', 'ui_click', 'control_changed', 'form_submitted'
-    ))::bigint,
-    count(*) FILTER (WHERE event_name IN ('navigation_click', 'ui_click', 'control_changed', 'form_submitted'))::bigint
+    CASE WHEN v_rolling_total_events = 0 THEN NULL::bigint
+         ELSE count(*) FILTER (WHERE event_name IS NOT NULL AND event_name NOT IN (
+           'page_engagement_duration', 'scroll_depth', 'navigation_click', 'ui_click', 'control_changed', 'form_submitted'
+         ))::bigint END,
+    CASE WHEN v_rolling_total_events = 0 THEN NULL::bigint
+         ELSE count(*) FILTER (WHERE event_name IN ('navigation_click', 'ui_click', 'control_changed', 'form_submitted'))::bigint END
   INTO v_total_actions, v_total_interactions
   FROM public.website_visit_events
   WHERE event_type = 'activity'
@@ -565,7 +586,8 @@ BEGIN
     HAVING sum(CASE WHEN (metadata->>'duration_ms') ~ '^[0-9]{1,8}$'
       THEN least((metadata->>'duration_ms')::numeric, 1800000) ELSE 0 END) > 0
   )
-  SELECT round(avg(duration_ms) / 1000.0)::integer, count(*)::bigint
+  SELECT round(avg(duration_ms) / 1000.0)::integer,
+         CASE WHEN v_rolling_total_events = 0 THEN NULL::bigint ELSE count(*)::bigint END
   INTO v_average_session_duration_seconds, v_duration_sample_count
   FROM session_durations;
 
