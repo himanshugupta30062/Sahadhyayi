@@ -201,7 +201,7 @@ Deno.serve(async (req) => {
         visitor_id: body.visitor_id ? String(body.visitor_id).slice(0, 100) : null,
         page_path: String(body.page || '/').slice(0, 300),
         referrer: body.referrer ? String(body.referrer).slice(0, 300) : null,
-        event_type: body.event_type || 'page_view',
+        event_type: body.event_type || 'pageview',
         event_name: body.event_name ? String(body.event_name).slice(0, 100) : null,
         device_type: ua?.deviceType || 'Desktop',
         country_code: geo.country_code ? String(geo.country_code).slice(0, 10) : null,
