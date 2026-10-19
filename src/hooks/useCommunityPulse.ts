@@ -271,9 +271,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
    * Never query raw visitor-event rows from the browser.
    */
   const fetchDatabaseFallbackStats = useCallback(async (tf: AnalyticsTimeframe): Promise<PulseStats> => {
-    const { data, error: rpcErr } = await supabase.rpc('get_community_pulse_stats', {
-      p_timeframe: tf,
-    });
+    const { data, error: rpcErr } = await supabase.rpc('get_community_pulse_stats', { p_timeframe: tf });
     if (rpcErr || !data || typeof data !== 'object') {
       throw new Error(rpcErr?.message || 'Analytics aggregate is unavailable');
     }
@@ -310,7 +308,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     const readingEngagement = {
       bookViews: getNumber(reading.bookViews?.count, reading.bookViews, reading.bookOpens?.value),
       readingProgressUpdates: getNumber(reading.readingProgressUpdates?.count, reading.readingProgressUpdates, reading.readingProgressCompletions?.value),
-      groupJoins: getNumber(reading.groupJoinsCount?.count, reading.groupJoins, reading.groupJoinsCount, reading.groupJoinsCount?.value),
+      groupJoins: getNumber(reading.groupJoinsCount?.count, reading.groupJoins, reading.groupJoinsCount?.value),
       discussions: getNumber(reading.discussionsCount?.count, reading.discussions, reading.discussionsCount?.value),
     };
 
@@ -327,7 +325,6 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       !Array.isArray(breakdowns.referrers)
     );
 
-    const timeframeStart = raw.periodStart || '';
     const selectedPageViews = getNumber(raw.pageViews, raw.metrics?.periodPageViews?.value);
     const selectedUnique = getNumber(raw.uniqueVisitors, raw.metrics?.uniqueVisitors?.value);
     const selectedNewReaders = getNumber(raw.newReaders, raw.metrics?.newReaders?.value);
