@@ -1,23 +1,104 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "npm:@supabase/supabase-js@2.112.3"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const SITE_URL = 'https://read-revive-connect.lovable.app'
+const SITE_URL = 'https://sahadhyayi.com'
 
-serve(async (req) => {
+function escapeHtml(value: unknown): string {
+  return String(value ?? 'Reader')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function isValidEmail(value: unknown): value is string {
+  return typeof value === 'string' &&
+    value.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function isPlaceholderEmail(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase() ?? '';
+  return ['example.com', 'example.org', 'example.net', 'test.com', 'invalid'].includes(domain) ||
+    domain.endsWith('.test') || domain.endsWith('.invalid') || domain.endsWith('.example');
+}
+
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { email, name } = await req.json()
-
-    if (!email) {
-      return new Response(JSON.stringify({ error: 'Email is required' }), {
+    const body = await req.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return new Response(JSON.stringify({ error: 'Expected a JSON body' }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
+    const name = typeof body.name === 'string' ? body.name.trim().slice(0, 100) : ''
+    if (!isValidEmail(email)) {
+      return new Response(JSON.stringify({ error: 'A valid recipient email is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if (isPlaceholderEmail(email)) {
+      return new Response(JSON.stringify({ error: 'Placeholder email domains are not accepted' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const userId = typeof body.user_id === 'string' ? body.user_id.trim() : ''
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId)) {
+      return new Response(JSON.stringify({ error: 'A valid registered user is required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!supabaseUrl || !serviceRoleKey) {
+      return new Response(JSON.stringify({ error: 'Welcome email service unavailable' }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const admin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+    const { data: authLookup, error: authLookupError } = await admin.auth.admin.getUserById(userId)
+    if (authLookupError || !authLookup?.user || authLookup.user.email?.toLowerCase() !== email) {
+      return new Response(JSON.stringify({ error: 'Recipient does not match a registered user' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const { data: allowed, error: rateLimitError } = await admin.rpc('check_rate_limit', {
+      p_identifier: userId,
+      p_endpoint: 'send-welcome-email',
+      p_max_requests: 1,
+      p_window_minutes: 1440,
+    })
+    if (rateLimitError || typeof allowed !== 'boolean') {
+      console.error('Welcome email rate-limit check unavailable')
+      return new Response(JSON.stringify({ error: 'Welcome email service temporarily unavailable' }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: 'Welcome email already requested recently' }), {
+        status: 429,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -27,7 +108,7 @@ serve(async (req) => {
       throw new Error('RESEND_API_KEY not configured')
     }
 
-    const displayName = name || 'Reader'
+    const displayName = escapeHtml(name || 'Reader')
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -123,7 +204,7 @@ serve(async (req) => {
 
     <!-- Footer -->
     <div style="text-align:center;padding:24px 0;">
-      <p style="font-size:12px;color:#9ca3af;margin:0 0 4px;">© 2025 Sahadhyayi · Made with ❤️ for readers</p>
+      <p style="font-size:12px;color:#9ca3af;margin:0 0 4px;">© 2026 Sahadhyayi · Made with ❤️ for readers</p>
       <p style="font-size:12px;color:#9ca3af;margin:0;">
         <a href="${SITE_URL}" style="color:#f97316;text-decoration:none;">sahadhyayi.com</a>
       </p>
@@ -139,7 +220,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Sahadhyayi <onboarding@resend.dev>',
+        from: Deno.env.get('RESEND_FROM_EMAIL')?.trim() || 'Sahadhyayi <onboarding@resend.dev>',
         to: [email],
         subject: '📚 Welcome to Sahadhyayi — Your Reading Journey Begins!',
         html: htmlContent,
