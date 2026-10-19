@@ -1,5 +1,5 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.112.3'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -87,6 +87,8 @@ function clean(value: unknown, max: number): string | null {
   return trimmed ? trimmed.slice(0, max) : null;
 }
 
+function isUuid(value: string | null): value is string { return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value); }
+
 function parseCountryCode(req: Request): string | null {
   const cloudflareCountry = req.headers.get('cf-ipcountry');
   if (cloudflareCountry && /^[A-Z]{2}$/.test(cloudflareCountry)) return cloudflareCountry;
@@ -121,7 +123,9 @@ Deno.serve(async (req: Request) => {
     const userAgent = clean(body.userAgent || req.headers.get('user-agent') || '', 500) || '';
     const ua = parseUserAgent(userAgent);
     const visitorId = clean(body.visitor_id, 100);
+    const visitorUuid = isUuid(visitorId) ? visitorId : null;
     const sessionId = clean(body.session_id, 100);
+    const sessionUuid = isUuid(sessionId) ? sessionId : null;
     const eventName = clean(body.event_name, 100);
     const countryCode = parseCountryCode(req);
     const screenResolution = clean(body.screenResolution, 32);
@@ -138,7 +142,7 @@ Deno.serve(async (req: Request) => {
     const authorization = req.headers.get('authorization');
     if (authorization?.startsWith('Bearer ')) {
       const token = authorization.slice(7).trim();
-      if (token) {
+      if (token && token !== Deno.env.get('SUPABASE_ANON_KEY')) {
         try {
           const { data } = await supabase.auth.getUser(token);
           authUserId = data.user?.id ?? null;
@@ -153,7 +157,7 @@ Deno.serve(async (req: Request) => {
       ? eventId : crypto.randomUUID();
 
     // Primary write: recent analytics table.
-    const { error: rollingError } = await supabase.from('website_visit_events').insert({
+    const { error: rollingError } = await supabase.from('website_visit_events').upsert({
       id: validEventId,
       session_id: sessionId,
       visitor_id: visitorId,
@@ -164,7 +168,7 @@ Deno.serve(async (req: Request) => {
       event_name: eventName,
       device_type: ua.deviceType,
       country_code: countryCode,
-    });
+    }, { onConflict: 'id', ignoreDuplicates: true });
 
     if (rollingError) {
       console.error('Failed to write website_visit_events', {
@@ -176,12 +180,12 @@ Deno.serve(async (req: Request) => {
     }
 
     // Lifetime/visitor detail mirror: preserve compatibility with existing admin tools.
-    const { error: legacyError } = await supabase.from('website_visits').insert({
+    const { error: legacyError } = await supabase.from('website_visits').upsert({
       event_id: validEventId,
       event_type: ['activity', 'event'].includes(eventType) ? 'activity' : 'pageview',
       event_name: eventName,
-      session_id: sessionId,
-      visitor_id: visitorId,
+      session_id: sessionUuid,
+      visitor_id: visitorUuid,
       user_id: authUserId,
       utm_source: clean(body.utm_source, 100),
       utm_medium: clean(body.utm_medium, 100),
@@ -199,7 +203,7 @@ Deno.serve(async (req: Request) => {
       language,
       timezone,
       metadata: {},
-    });
+    }, { onConflict: 'event_id', ignoreDuplicates: true });
 
     if (legacyError) {
       // Recent analytics has already been safely recorded. Surface this as a partial failure for logs.
