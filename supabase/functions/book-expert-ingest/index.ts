@@ -98,7 +98,7 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
         },
         body: JSON.stringify({
           content: { parts: [{ text: text.slice(0, 7800) }] },
-          output_dimensionality: EMBEDDING_DIMENSIONS,
+          outputDimensionality: EMBEDDING_DIMENSIONS,
         }),
         signal: controller.signal,
       },
@@ -428,7 +428,12 @@ serve(async (req: Request) => {
     if (body.sourceUrl && !sourceUrl) {
       return jsonResponse({ error: "sourceUrl must be an HTTP(S) URL." }, 400);
     }
-    const license = typeof body.sourceLicense === "string" ? body.sourceLicense.trim().slice(0, 160) : null;
+    const license = typeof body.sourceLicense === "string" ? body.sourceLicense.trim().slice(0, 160) : "";
+    if (body.rightsConfirmed !== true || license.length < 3) {
+      return jsonResponse({
+        error: "Explicit rights confirmation and a source licence/rights statement are required before indexing text.",
+      }, 400);
+    }
     const metadata = body.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata)
       ? body.metadata
       : {};
