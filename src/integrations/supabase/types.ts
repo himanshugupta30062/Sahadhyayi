@@ -597,6 +597,189 @@ export type Database = {
         }
         Relationships: []
       }
+      book_expert_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          content_sha256: string
+          created_at: string
+          document_id: string
+          embedding: string | null
+          embedding_model: string
+          id: string
+          metadata: Json
+          search_vector: unknown
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          content_sha256: string
+          created_at?: string
+          document_id: string
+          embedding?: string | null
+          embedding_model?: string
+          id?: string
+          metadata?: Json
+          search_vector?: unknown
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          content_sha256?: string
+          created_at?: string
+          document_id?: string
+          embedding?: string | null
+          embedding_model?: string
+          id?: string
+          metadata?: Json
+          search_vector?: unknown
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_expert_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "book_expert_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_expert_documents: {
+        Row: {
+          author: string | null
+          book_id: string | null
+          content: string
+          content_sha256: string
+          created_at: string
+          failure_reason: string | null
+          id: string
+          indexed_at: string | null
+          ingest_status: string
+          is_active: boolean
+          metadata: Json
+          source_license: string | null
+          source_ref: string
+          source_type: string
+          source_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          book_id?: string | null
+          content: string
+          content_sha256: string
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          indexed_at?: string | null
+          ingest_status?: string
+          is_active?: boolean
+          metadata?: Json
+          source_license?: string | null
+          source_ref: string
+          source_type: string
+          source_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          book_id?: string | null
+          content?: string
+          content_sha256?: string
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          indexed_at?: string | null
+          ingest_status?: string
+          is_active?: boolean
+          metadata?: Json
+          source_license?: string | null
+          source_ref?: string
+          source_type?: string
+          source_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_expert_documents_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_expert_feedback: {
+        Row: {
+          created_at: string
+          rating: number
+          request_id: string
+        }
+        Insert: {
+          created_at?: string
+          rating: number
+          request_id: string
+        }
+        Update: {
+          created_at?: string
+          rating?: number
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_expert_feedback_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "book_expert_usage_events"
+            referencedColumns: ["request_id"]
+          },
+        ]
+      }
+      book_expert_usage_events: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          estimated_standard_cost_usd: number | null
+          failure_class: string | null
+          model: string
+          output_tokens: number | null
+          prompt_tokens: number | null
+          request_id: string
+          retrieved_book_count: number
+          success: boolean
+          upstream_status: number | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms: number
+          estimated_standard_cost_usd?: number | null
+          failure_class?: string | null
+          model: string
+          output_tokens?: number | null
+          prompt_tokens?: number | null
+          request_id: string
+          retrieved_book_count?: number
+          success: boolean
+          upstream_status?: number | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          estimated_standard_cost_usd?: number | null
+          failure_class?: string | null
+          model?: string
+          output_tokens?: number | null
+          prompt_tokens?: number | null
+          request_id?: string
+          retrieved_book_count?: number
+          success?: boolean
+          upstream_status?: number | null
+        }
+        Relationships: []
+      }
       book_quiz_questions: {
         Row: {
           book_id: string | null
@@ -3250,7 +3433,7 @@ export type Database = {
         }
         Relationships: []
       }
-      website_visits: {
+      website_action_events: {
         Row: {
           browser: string | null
           browser_version: string | null
@@ -3258,16 +3441,25 @@ export type Database = {
           country_code: string | null
           device_model: string | null
           device_type: string | null
+          event_id: string
+          event_name: string | null
+          event_type: string
           id: number
-          ip_address: string | null
           language: string | null
+          metadata: Json
           os: string | null
-          page_url: string | null
+          page_url: string
           referrer: string | null
           region: string | null
           screen_resolution: string | null
-          user_agent: string | null
+          session_id: string | null
+          timezone: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
           visited_at: string
+          visitor_id: string | null
         }
         Insert: {
           browser?: string | null
@@ -3276,16 +3468,25 @@ export type Database = {
           country_code?: string | null
           device_model?: string | null
           device_type?: string | null
+          event_id?: string
+          event_name?: string | null
+          event_type: string
           id?: number
-          ip_address?: string | null
           language?: string | null
+          metadata?: Json
           os?: string | null
-          page_url?: string | null
+          page_url?: string
           referrer?: string | null
           region?: string | null
           screen_resolution?: string | null
-          user_agent?: string | null
+          session_id?: string | null
+          timezone?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           visited_at?: string
+          visitor_id?: string | null
         }
         Update: {
           browser?: string | null
@@ -3294,16 +3495,115 @@ export type Database = {
           country_code?: string | null
           device_model?: string | null
           device_type?: string | null
+          event_id?: string
+          event_name?: string | null
+          event_type?: string
+          id?: number
+          language?: string | null
+          metadata?: Json
+          os?: string | null
+          page_url?: string
+          referrer?: string | null
+          region?: string | null
+          screen_resolution?: string | null
+          session_id?: string | null
+          timezone?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          visited_at?: string
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      website_visits: {
+        Row: {
+          browser: string | null
+          browser_version: string | null
+          city: string | null
+          country_code: string | null
+          device_model: string | null
+          device_type: string | null
+          event_id: string
+          event_name: string | null
+          event_type: string
+          id: number
+          ip_address: string | null
+          language: string | null
+          metadata: Json
+          os: string | null
+          page_url: string | null
+          referrer: string | null
+          region: string | null
+          screen_resolution: string | null
+          session_id: string | null
+          timezone: string | null
+          user_agent: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          visited_at: string
+          visitor_id: string | null
+        }
+        Insert: {
+          browser?: string | null
+          browser_version?: string | null
+          city?: string | null
+          country_code?: string | null
+          device_model?: string | null
+          device_type?: string | null
+          event_id?: string
+          event_name?: string | null
+          event_type?: string
           id?: number
           ip_address?: string | null
           language?: string | null
+          metadata?: Json
           os?: string | null
           page_url?: string | null
           referrer?: string | null
           region?: string | null
           screen_resolution?: string | null
+          session_id?: string | null
+          timezone?: string | null
           user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           visited_at?: string
+          visitor_id?: string | null
+        }
+        Update: {
+          browser?: string | null
+          browser_version?: string | null
+          city?: string | null
+          country_code?: string | null
+          device_model?: string | null
+          device_type?: string | null
+          event_id?: string
+          event_name?: string | null
+          event_type?: string
+          id?: number
+          ip_address?: string | null
+          language?: string | null
+          metadata?: Json
+          os?: string | null
+          page_url?: string | null
+          referrer?: string | null
+          region?: string | null
+          screen_resolution?: string | null
+          session_id?: string | null
+          timezone?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          visited_at?: string
+          visitor_id?: string | null
         }
         Relationships: []
       }
@@ -3507,6 +3807,42 @@ export type Database = {
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_unused_books: { Args: never; Returns: number }
+      get_admin_recent_actions: {
+        Args: { p_limit?: number; p_timeframe?: string }
+        Returns: {
+          event_name: string
+          id: number
+          metadata: Json
+          page_url: string
+          session_id: string
+          user_id: string
+          visited_at: string
+          visitor_id: string
+        }[]
+      }
+      get_admin_recent_visits: {
+        Args: { p_limit?: number; p_search?: string }
+        Returns: {
+          browser: string
+          browser_version: string
+          city: string
+          country_code: string
+          device_model: string
+          device_type: string
+          id: number
+          ip_address: string
+          language: string
+          os: string
+          page_url: string
+          referrer: string
+          region: string
+          screen_resolution: string
+          session_id: string
+          user_id: string
+          visited_at: string
+          visitor_id: string
+        }[]
+      }
       get_article_author_follower_count: {
         Args: { p_author_user_id: string }
         Returns: number
@@ -3559,6 +3895,14 @@ export type Database = {
           verified: boolean
           website_url: string
         }[]
+      }
+      get_community_pulse_action_stats: {
+        Args: { p_timeframe?: string }
+        Returns: Json
+      }
+      get_community_pulse_city_stats: {
+        Args: { p_timeframe?: string }
+        Returns: Json
       }
       get_community_pulse_stats: {
         Args: { p_timeframe?: string }
@@ -3728,6 +4072,29 @@ export type Database = {
         Returns: boolean
       }
       link_books_to_authors: { Args: never; Returns: number }
+      match_book_expert_chunks: {
+        Args: {
+          p_match_count?: number
+          p_match_threshold?: number
+          p_query_embedding: string
+          p_query_text: string
+        }
+        Returns: {
+          author: string
+          book_id: string
+          chunk_id: string
+          content: string
+          document_id: string
+          keyword_score: number
+          metadata: Json
+          similarity: number
+          source_license: string
+          source_ref: string
+          source_type: string
+          source_url: string
+          title: string
+        }[]
+      }
       normalize_name: { Args: { name: string }; Returns: string }
       notify_author_followers: {
         Args: {
