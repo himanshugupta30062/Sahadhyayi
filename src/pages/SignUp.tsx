@@ -105,7 +105,7 @@ const SignUp = () => {
           setLoading(false);
           return;
         } else {
-          errorMessage = 'Registration failed. Please try again.';
+          errorMessage = error.message || 'Registration failed. Please try again.';
         }
         setError(errorMessage);
         setLoading(false);
