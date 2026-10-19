@@ -623,7 +623,14 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             topMembers: Array.isArray(raw.topMembers) ? raw.topMembers : [],
             lastUpdated: raw.lastUpdated || new Date().toISOString(),
             isStale: false,
-            partialData: Boolean(raw.error || raw.partialData),
+            partialData: Boolean(
+              raw.error || raw.partialData ||
+              !Array.isArray(raw.hourlyActivity) ||
+              !Array.isArray(raw.breakdowns?.countries) ||
+              !Array.isArray(raw.breakdowns?.pages) ||
+              !Array.isArray(raw.breakdowns?.devices) ||
+              !Array.isArray(raw.breakdowns?.referrers)
+            ),
           };
         } catch (primaryErr) {
           // Compatibility path while the authoritative SQL migration is being deployed.
