@@ -35,7 +35,9 @@ Only authenticated administrators can select source/chunk records. The public ch
 
 Apply the database migration before deploying the updated chat or ingest functions. Deploy the ingest function with JWT verification enabled. Then run one small test batch before the full backfill.
 
-Required client-side environment for the seed script:
+The admin indexing page is available at /admin/book-expert-rag after deployment. It uses the current signed-in admin session, displays document/chunk counts, remembers offsets for the browser session, and lets an admin index one batch or run a full catalog backfill. The page is additionally wrapped in AdminRoute; the Edge Function independently checks the admin role.
+
+Required client-side environment for the optional seed script:
 
 - SUPABASE_URL
 - SUPABASE_ANON_KEY
@@ -56,6 +58,8 @@ npm run rag:seed -- --source=all
 ```
 
 The seed is idempotent. It skips documents whose source content hash is unchanged and which already have embeddings. Use the progress output to detect any failed sources. The all-catalog run sends embedding requests and may take several minutes; do not run it automatically on each deploy.
+
+For custom text, both the admin page and ingestion API require a non-empty licence/rights statement plus an explicit rights confirmation. Only index text that Sahadhyayi owns or has permission/licensing to process.
 
 ## Validate
 
