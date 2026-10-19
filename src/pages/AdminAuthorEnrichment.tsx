@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, Image, LoaderCircle, RefreshCw, Sparkles, Users } from "lucide-react";
+import { AlertCircle, CheckCircle2, Image, RefreshCw, Sparkles, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client-universal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
