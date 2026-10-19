@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:book-expert": "node scripts/evaluate-book-expert.mjs",
+    "rag:seed": "node scripts/seed-book-expert-rag.mjs",
     "test:book-expert:smoke": "node scripts/evaluate-book-expert.mjs --limit=10",
     "preview": "vite preview",
     "start:server": "node server.js",

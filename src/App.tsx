@@ -71,6 +71,7 @@ const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const AdminLibraryQuality = lazy(() => import('./pages/AdminLibraryQuality'));
 const AdminLibraryArchive = lazy(() => import('./pages/AdminLibraryArchive'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
+const AdminBookExpertRag = lazy(() => import('./pages/AdminBookExpertRag'));
 
 // Optimized loading fallback
 const LoadingFallback = memo(({ message = "Loading..." }: { message?: string }) => (
@@ -453,6 +454,16 @@ const App = memo(() => {
                             <AdminRoute>
                               <Suspense fallback={<LoadingFallback message="Loading feedback..." />}>
                                 <AdminFeedback />
+                              </Suspense>
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/book-expert-rag"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading Book Expert RAG..." />}>
+                                <AdminBookExpertRag />
                               </Suspense>
                             </AdminRoute>
                           }

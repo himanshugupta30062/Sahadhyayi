@@ -16,10 +16,23 @@ export type BookExpertBook = {
   isDirectPdf: boolean;
 };
 
+export type BookExpertCitation = {
+  id: string;
+  title: string;
+  author: string | null;
+  sourceType: string;
+  bookId: string | null;
+  url: string | null;
+  excerpt: string;
+  similarity: number;
+  sourceLicense: string | null;
+};
+
 export interface ChatMessage {
   sender: "user" | "bot";
   text: string;
   books?: BookExpertBook[];
+  citations?: BookExpertCitation[];
   error?: boolean;
   requestId?: string;
   model?: string;

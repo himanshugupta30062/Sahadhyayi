@@ -5,6 +5,7 @@ import {
   BookExpertContext,
   toBookExpertHistory,
   type BookExpertBook,
+  type BookExpertCitation,
   type ChatMessage,
 } from "./book-expert.utils";
 
@@ -63,12 +64,36 @@ export const BookExpertProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             }))
         : [];
 
+      const citations: BookExpertCitation[] = Array.isArray(data.citations)
+        ? data.citations
+            .filter((citation: any) =>
+              citation &&
+              typeof citation.id === "string" &&
+              /^S[1-9]\d?$/.test(citation.id) &&
+              typeof citation.title === "string" &&
+              typeof citation.excerpt === "string"
+            )
+            .slice(0, 6)
+            .map((citation: any) => ({
+              id: citation.id,
+              title: citation.title.slice(0, 240),
+              author: typeof citation.author === "string" ? citation.author : null,
+              sourceType: typeof citation.sourceType === "string" ? citation.sourceType : "indexed_source",
+              bookId: typeof citation.bookId === "string" ? citation.bookId : null,
+              url: typeof citation.url === "string" ? citation.url : null,
+              excerpt: citation.excerpt.slice(0, 360),
+              similarity: typeof citation.similarity === "number" ? citation.similarity : 0,
+              sourceLicense: typeof citation.sourceLicense === "string" ? citation.sourceLicense : null,
+            }))
+        : [];
+
       setMessages((current) => [
         ...current,
         {
           sender: "bot",
           text: data.reply,
           books,
+          citations,
           requestId: typeof data.requestId === "string" ? data.requestId : undefined,
           model: typeof data.sources?.model === "string" ? data.sources.model : undefined,
         },
