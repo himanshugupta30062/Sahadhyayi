@@ -8,23 +8,22 @@ SELECT
   t.book_id,
   t.user_id,
   t.title,
+  t.min_chapter,
+  t.created_at,
+  t.updated_at,
   CASE
     WHEN public.user_chapter_progress(auth.uid(), t.book_id) >= t.min_chapter
       THEN t.body
     ELSE NULL::text
   END AS body,
-  t.min_chapter,
-  public.user_chapter_progress(auth.uid(), t.book_id) >= t.min_chapter AS is_unlocked,
-  t.created_at,
-  t.updated_at
+  public.user_chapter_progress(auth.uid(), t.book_id) >= t.min_chapter AS is_unlocked
 FROM public.spoiler_threads AS t;
 
 GRANT SELECT ON public.spoiler_threads_safe TO authenticated;
 
 -- Analytics event tables intentionally have no client-readable policies:
--- writes are performed by the SECURITY DEFINER ingest RPC / Edge Function,
--- and the analytics RPC returns aggregated data only. Explicitly document and
--- retain deny-by-default table access so the RLS advisor warning is understood.
+-- writes are performed by the ingest Edge Function / controlled RPC, and
+-- the analytics RPC returns aggregated data only. Keep deny-by-default access.
 ALTER TABLE public.website_visit_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.website_visit_events FROM PUBLIC, anon, authenticated;
 GRANT ALL ON TABLE public.website_visit_events TO service_role;
