@@ -97,16 +97,16 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
       </BrowserRouter>
     );
 
-    // Verifies lifetime count is rendered with distinct designation
+    // Lifetime history stays visible once; period-specific data comes from the single dropdown.
     await waitFor(() => {
-      expect(screen.getByText(/28,450 visits/i)).toBeInTheDocument();
-      expect(screen.getByText(/Lifetime/i)).toBeInTheDocument();
+      expect(screen.getByText('28,450')).toBeInTheDocument();
+      expect(screen.getByText(/Lifetime pageviews/i)).toBeInTheDocument();
+      expect(screen.getByText(/Page views/i)).toBeInTheDocument();
     });
 
-    // Verifies rolling 24h, 7d, 30d stats are shown
-    expect(screen.getByText(/340 views/i)).toBeInTheDocument();
-    expect(screen.getByText(/2,150 views/i)).toBeInTheDocument();
-    expect(screen.getByText(/9,400 views/i)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /select timeframe/i })).toHaveValue('24h');
+    expect(screen.queryByText(/2,150 views/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/9,400 views/i)).not.toBeInTheDocument();
   });
 
   // 2. Genuine Page Visit Emits Tracking Event
@@ -130,7 +130,7 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
         expect.objectContaining({
           body: expect.objectContaining({
             event_type: 'pageview',
-            page: '/library?genre=fiction',
+            page: '/library',
             session_id: expect.any(String),
             visitor_id: expect.any(String),
           }),
@@ -250,8 +250,8 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Dual-Table Analytics Architecture/i)).toBeInTheDocument();
-      expect(screen.getByText(/Telemetry active • Rolling 30d/i)).toBeInTheDocument();
+      expect(screen.getByText(/Live audience overview/i)).toBeInTheDocument();
+      expect(screen.getByText(/Data refreshed:/i)).toBeInTheDocument();
     });
   });
 
