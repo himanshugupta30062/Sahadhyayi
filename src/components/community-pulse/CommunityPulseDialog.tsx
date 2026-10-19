@@ -535,7 +535,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-stone-100">Dual-Table Analytics Architecture</span>
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-400 border border-emerald-800/40">
-                        Rolling 30-Day Active
+                        {effectiveStats.dualTable?.isInitialRollout ? 'Initial Rollout Bridge' : 'Rolling 30-Day Active'}
                       </span>
                     </div>
                     <p className="text-[11px] text-stone-400 mt-0.5 leading-relaxed">
@@ -549,72 +549,45 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 </div>
               </div>
 
-              {/* Multi-Period Activity Strip: All-Time, 24 Hours, 7 Days, 30 Days */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
-                {/* Lifetime All-Time */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
-                    <span className="uppercase tracking-wider font-medium text-stone-400">All-Time</span>
-                    <span className="px-1.5 py-0.2 rounded bg-stone-800/60 text-stone-300 text-[9px] font-semibold border border-white/5">
-                      Lifetime
-                    </span>
+              {/* Visibly Separate Lifetime Universal Analytics */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-white/[0.08] bg-[#0E1210]/95">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-[#18241e] border border-white/10 flex items-center justify-center text-[#D5B16D] shrink-0">
+                    <Globe2 className="w-4 h-4" />
                   </div>
-                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
-                    {number(effectiveStats.lifetimeVisits ?? effectiveStats.pageViews)} visits
-                  </div>
-                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">Total historical records</div>
-                </div>
-
-                {/* Rolling 24 Hours */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
-                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 24h</span>
-                    <span className="px-1.5 py-0.2 rounded bg-emerald-950/60 text-emerald-400 text-[9px] font-semibold border border-emerald-800/30">
-                      Recent
-                    </span>
-                  </div>
-                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
-                    {number(effectiveStats.dualTable?.rolling24hViews ?? (timeframe === '24h' ? effectiveStats.pageViews : 0))} views
-                  </div>
-                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
-                    {effectiveStats.dualTable?.uniqueVisitors24h != null ? `${number(effectiveStats.dualTable.uniqueVisitors24h)} unique visitors` : 'Recent pageviews'}
-                  </div>
-                </div>
-
-                {/* Rolling 7 Days */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
-                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 7 Days</span>
-                    <span className="px-1.5 py-0.2 rounded bg-indigo-950/60 text-indigo-300 text-[9px] font-semibold border border-indigo-800/30">
-                      Rolling
-                    </span>
-                  </div>
-                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
-                    {number(effectiveStats.dualTable?.rolling7dViews ?? (timeframe === '7d' ? effectiveStats.pageViews : 0))} views
-                  </div>
-                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
-                    {effectiveStats.dualTable?.uniqueVisitors7d != null ? `${number(effectiveStats.dualTable.uniqueVisitors7d)} unique visitors` : '7d pageviews'}
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs uppercase tracking-wider font-semibold text-stone-300">All-Time Platform Visits</span>
+                      <span className="px-1.5 py-0.2 rounded bg-stone-800/80 text-stone-200 text-[10px] font-semibold border border-white/10">
+                        Lifetime
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-stone-400 mt-0.5">
+                      Universal historical traffic preserved from <code className="text-[#D5B16D]">{effectiveStats.dualTable?.lifetimeSourceTable ?? 'public.website_visits'}</code>
+                    </div>
+                    {effectiveStats.dualTable?.rolling24hViews != null && (
+                      <div className="flex items-center gap-2 text-[10px] text-stone-400 mt-1 flex-wrap">
+                        <span className="text-stone-500">Rolling window:</span>
+                        <span className="font-medium text-stone-300">{effectiveStats.dualTable.rolling24hViews.toLocaleString()} views (24h)</span>
+                        {effectiveStats.dualTable.rolling7dViews != null && (
+                          <span>• <span className="font-medium text-stone-300">{effectiveStats.dualTable.rolling7dViews.toLocaleString()} views (7d)</span></span>
+                        )}
+                        {effectiveStats.dualTable.rolling30dViews != null && (
+                          <span>• <span className="font-medium text-stone-300">{effectiveStats.dualTable.rolling30dViews.toLocaleString()} views (30d)</span></span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                {/* Rolling 30 Days */}
-                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
-                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 30 Days</span>
-                    <span className="px-1.5 py-0.2 rounded bg-amber-950/60 text-amber-300 text-[9px] font-semibold border border-amber-800/30">
-                      Rolling 30d
-                    </span>
-                  </div>
+                <div className="text-right self-end sm:self-center shrink-0">
                   <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
-                    {number(effectiveStats.dualTable?.rolling30dViews ?? (timeframe === '30d' ? effectiveStats.pageViews : 0))} views
+                    {number(effectiveStats.lifetimeVisits ?? effectiveStats.totalMembers)} visits
                   </div>
-                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
-                    {effectiveStats.dualTable?.uniqueVisitors30d != null ? `${number(effectiveStats.dualTable.uniqueVisitors30d)} unique visitors` : '30d pageviews'}
-                  </div>
+                  <div className="text-[10px] text-stone-500">Historical records intact</div>
                 </div>
               </div>
 
-              {/* Top 4 KPI Cards */}
+              {/* Top 4 KPI Cards (Authoritatively driven by selected timeframe) */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 min-w-0">
                 {/* 1. Page Views */}
                 <div className="rounded-xl border border-white/[0.09] bg-[#111614] p-3 sm:p-4 flex flex-col justify-between min-w-0">
