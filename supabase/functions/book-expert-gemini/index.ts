@@ -278,8 +278,12 @@ async function generateQueryEmbedding(text: string, apiKey: string): Promise<num
           "x-goog-api-key": apiKey,
         },
         body: JSON.stringify({
-          content: { parts: [{ text: text.slice(0, 7800) }] },
-          output_dimensionality: 768,
+          content: {
+            parts: [{
+              text: "Represent the following reader question as a search query for relevant Sahadhyayi book content.\n" + text.slice(0, 7700),
+            }],
+          },
+          outputDimensionality: 768,
         }),
         signal: controller.signal,
       },
