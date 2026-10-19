@@ -290,6 +290,7 @@ async function indexSource(
   try {
     const prepared = await mapWithConcurrency(pieces, 3, async (piece, index) => {
       const embeddingText = [
+        "Represent this text as a knowledge-base document for answering readers' book-related questions.",
         "Title: " + item.title,
         item.author ? "Author: " + item.author : "",
         "Source type: " + item.sourceType,
