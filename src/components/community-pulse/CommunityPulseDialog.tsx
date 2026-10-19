@@ -533,19 +533,84 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-stone-100">Website analytics</span>
+                      <span className="font-semibold text-stone-100">Dual-Table Analytics Architecture</span>
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-400 border border-emerald-800/40">
                         Rolling 30-Day Active
                       </span>
                     </div>
                     <p className="text-[11px] text-stone-400 mt-0.5 leading-relaxed">
-                      All-time visits are preserved separately. Recent metrics and breakdowns follow the selected timeframe.
+                      All-time traffic preserved from original <code className="text-[#D5B16D]">website_visits</code> records. Rolling 30-day activity powered by clean telemetry in <code className="text-[#D5B16D]">website_visit_events</code>.
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-[10px] text-stone-400 shrink-0 self-end sm:self-center">
                   <Clock3 className="w-3 h-3 text-[#D5B16D]" />
-                  <span>{timeframe === '24h' ? 'Last 24 hours' : timeframe === '7d' ? 'Last 7 days' : 'Last 30 days'} · Updated {effectiveStats.lastUpdated ? new Date(effectiveStats.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                  <span>Telemetry active • Rolling 30d</span>
+                </div>
+              </div>
+
+              {/* Multi-Period Activity Strip: All-Time, 24 Hours, 7 Days, 30 Days */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+                {/* Lifetime All-Time */}
+                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
+                    <span className="uppercase tracking-wider font-medium text-stone-400">All-Time</span>
+                    <span className="px-1.5 py-0.2 rounded bg-stone-800/60 text-stone-300 text-[9px] font-semibold border border-white/5">
+                      Lifetime
+                    </span>
+                  </div>
+                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
+                    {number(effectiveStats.lifetimeVisits ?? effectiveStats.pageViews)} visits
+                  </div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">Total historical records</div>
+                </div>
+
+                {/* Rolling 24 Hours */}
+                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
+                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 24h</span>
+                    <span className="px-1.5 py-0.2 rounded bg-emerald-950/60 text-emerald-400 text-[9px] font-semibold border border-emerald-800/30">
+                      Recent
+                    </span>
+                  </div>
+                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
+                    {number(effectiveStats.dualTable?.rolling24hViews ?? (timeframe === '24h' ? effectiveStats.pageViews : 0))} views
+                  </div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
+                    {effectiveStats.dualTable?.uniqueVisitors24h != null ? `${number(effectiveStats.dualTable.uniqueVisitors24h)} unique visitors` : 'Recent pageviews'}
+                  </div>
+                </div>
+
+                {/* Rolling 7 Days */}
+                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
+                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 7 Days</span>
+                    <span className="px-1.5 py-0.2 rounded bg-indigo-950/60 text-indigo-300 text-[9px] font-semibold border border-indigo-800/30">
+                      Rolling
+                    </span>
+                  </div>
+                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
+                    {number(effectiveStats.dualTable?.rolling7dViews ?? (timeframe === '7d' ? effectiveStats.pageViews : 0))} views
+                  </div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
+                    {effectiveStats.dualTable?.uniqueVisitors7d != null ? `${number(effectiveStats.dualTable.uniqueVisitors7d)} unique visitors` : '7d pageviews'}
+                  </div>
+                </div>
+
+                {/* Rolling 30 Days */}
+                <div className="rounded-xl border border-white/[0.08] bg-[#0e1210] p-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
+                    <span className="uppercase tracking-wider font-medium text-stone-400">Past 30 Days</span>
+                    <span className="px-1.5 py-0.2 rounded bg-amber-950/60 text-amber-300 text-[9px] font-semibold border border-amber-800/30">
+                      Rolling 30d
+                    </span>
+                  </div>
+                  <div className="text-base sm:text-xl font-bold text-stone-100 tracking-tight">
+                    {number(effectiveStats.dualTable?.rolling30dViews ?? (timeframe === '30d' ? effectiveStats.pageViews : 0))} views
+                  </div>
+                  <div className="text-[10px] text-stone-500 mt-0.5 truncate">
+                    {effectiveStats.dualTable?.uniqueVisitors30d != null ? `${number(effectiveStats.dualTable.uniqueVisitors30d)} unique visitors` : '30d pageviews'}
+                  </div>
                 </div>
               </div>
 

@@ -131,21 +131,25 @@ describe('Universal Search & Cmd+K Shortcut Architecture', () => {
   });
 
   describe('Navigation Desktop and Mobile Search Triggers', () => {
-    it('renders a prominent search trigger with accessible label and kbd badge', () => {
+    it('renders a clean search trigger without any shortcut or K badge', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
           <Navigation />
         </MemoryRouter>
       );
 
-      const searchBtn = screen.getByRole('button', { name: /search library, authors, and books/i });
+      const searchBtn = screen.getByRole('button', { name: /^search library, authors, and books$/i });
       expect(searchBtn).toBeInTheDocument();
       expect(searchBtn).toHaveAttribute('type', 'button');
 
-      // Click to toggle search
+      // Verify no 'K' or 'Cmd+K' or '<kbd>' inside search button
+      expect(searchBtn.querySelector('kbd')).toBeNull();
+      expect(searchBtn.textContent).not.toMatch(/Cmd\+K|Ctrl\+K|⌘K|\bK\b/);
+
+      // Click to open search
       fireEvent.click(searchBtn);
 
-      // Search dialog should open
+      // Search dialog should open cleanly without any shortcut badges
       expect(screen.getByPlaceholderText(/search books, authors, or articles/i)).toBeInTheDocument();
     });
   });

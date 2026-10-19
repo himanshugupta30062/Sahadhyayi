@@ -17,7 +17,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { MessageDropdown } from "@/components/messages/MessageDropdown";
 import { EnhancedGlobalSearch } from "@/components/EnhancedGlobalSearch";
-import { useGlobalSearchShortcut, getSearchShortcutLabel } from "@/hooks/useKeyboardShortcuts";
 import { EnhancedLazyImage } from "@/components/ui/EnhancedLazyImage";
 
 const Navigation = () => {
@@ -31,13 +30,6 @@ const Navigation = () => {
   const isMobile = useIsMobile();
   const menuRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
-
-  // OS-aware shortcut label (⌘K on macOS, Ctrl+K on Windows/Linux)
-  const shortcutLabel = React.useMemo(() => getSearchShortcutLabel(), []);
-
-  // Global search keyboard shortcut (Cmd+K / Ctrl+K and '/')
-  const toggleSearch = React.useCallback(() => setSearchOpen((prev) => !prev), []);
-  useGlobalSearchShortcut(toggleSearch);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -197,22 +189,15 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <button
                   type="button"
-                  onClick={() => setSearchOpen((prev) => !prev)}
-                  className="group relative flex items-center gap-2.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-muted/50 hover:bg-muted hover:text-foreground border border-border/70 hover:border-border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer shadow-2xs"
-                  aria-label={`Search library, authors, and books (${shortcutLabel.display})`}
-                  title={`Search library, authors, and books (${shortcutLabel.display})`}
+                  onClick={() => setSearchOpen(true)}
+                  className="group relative flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-muted/50 hover:bg-muted hover:text-foreground border border-border/70 hover:border-border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer shadow-2xs"
+                  aria-label="Search library, authors, and books"
+                  title="Search library, authors, and books"
                 >
                   <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true" />
-                  <span className="hidden xl:inline text-xs text-foreground/80 font-normal">
+                  <span className="text-xs text-foreground/80 font-normal">
                     Search library & authors...
                   </span>
-                  <span className="hidden lg:inline xl:hidden text-xs text-foreground/80 font-normal">
-                    Search...
-                  </span>
-                  <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground group-hover:text-foreground bg-background/80 rounded border border-border/80 shadow-2xs tracking-tight">
-                    <span>{shortcutLabel.key}</span>
-                    <span>{shortcutLabel.symbol}</span>
-                  </kbd>
                 </button>
 
                 {user ? (
@@ -331,9 +316,9 @@ const Navigation = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setSearchOpen((prev) => !prev)}
-                aria-label={`Search library and books (${shortcutLabel.display})`}
-                title={`Search library and books (${shortcutLabel.display})`}
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search library and books"
+                title="Search library and books"
                 className="h-9 w-9 text-foreground hover:bg-muted p-1"
               >
                 <Search className="w-4 h-4" aria-hidden="true" />
@@ -390,16 +375,11 @@ const Navigation = () => {
                   setIsOpen(false);
                   setSearchOpen(true);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 mb-2 rounded-xl bg-muted/60 hover:bg-muted border border-border/70 text-left text-sm text-muted-foreground transition-colors cursor-pointer"
-                aria-label={`Search books, authors, and commands (${shortcutLabel.display})`}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 mb-2 rounded-xl bg-muted/60 hover:bg-muted border border-border/70 text-left text-sm text-muted-foreground transition-colors cursor-pointer"
+                aria-label="Search books, authors, and articles"
               >
-                <div className="flex items-center gap-2.5">
-                  <Search className="w-4 h-4 text-foreground/70" />
-                  <span className="text-foreground/90 font-medium">Search books & authors...</span>
-                </div>
-                <kbd className="px-1.5 py-0.5 text-[10px] font-semibold bg-background rounded border border-border text-foreground/80">
-                  {shortcutLabel.display}
-                </kbd>
+                <Search className="w-4 h-4 text-foreground/70" />
+                <span className="text-foreground/90 font-medium">Search books & authors...</span>
               </button>
               {navItems.map((item) => {
                 const isActive = isCurrentRoute(item.href);
