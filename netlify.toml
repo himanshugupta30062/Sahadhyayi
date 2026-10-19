@@ -34,6 +34,12 @@
   to = "/404"
   status = 404
 
+# Ensure the author enrichment SPA route is served by the app shell on direct navigation/reload.
+[[redirects]]
+  from = "/admin/author-enrichment"
+  to = "/index.html"
+  status = 200
+
 # SPA routing - redirect all paths to index.html
 [[redirects]]
   from = "/*"
