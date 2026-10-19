@@ -92,6 +92,10 @@ function isUuid(value: string | null): value is string {
   return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
+function isUuid(value: string | null): value is string {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 function parseCountryCode(req: Request): string | null {
   const cloudflareCountry = req.headers.get('cf-ipcountry');
   if (cloudflareCountry && /^[A-Z]{2}$/.test(cloudflareCountry)) return cloudflareCountry;
@@ -127,6 +131,8 @@ Deno.serve(async (req: Request) => {
     const ua = parseUserAgent(userAgent);
     const visitorId = clean(body.visitor_id, 100);
     const sessionId = clean(body.session_id, 100);
+    const visitorUuid = isUuid(visitorId) ? visitorId : null;
+    const sessionUuid = isUuid(sessionId) ? sessionId : null;
     const visitorUuid = isUuid(visitorId) ? visitorId : null;
     const sessionUuid = isUuid(sessionId) ? sessionId : null;
     const eventName = clean(body.event_name, 100);
