@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -66,6 +66,12 @@ const footerLinkClass =
 const StructuredFooter = () => {
   const { user } = useAuth();
   const [isPulseOpen, setIsPulseOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenPulse = () => setIsPulseOpen(true);
+    window.addEventListener('open-community-pulse', handleOpenPulse);
+    return () => window.removeEventListener('open-community-pulse', handleOpenPulse);
+  }, []);
 
   return (
     <footer

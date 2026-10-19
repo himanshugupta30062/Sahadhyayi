@@ -39,6 +39,8 @@ vi.mock('@/hooks/use-mobile', () => ({
 
 vi.mock('@/hooks/useKeyboardShortcuts', () => ({
   useGlobalSearchShortcut: vi.fn(),
+  getSearchShortcutLabel: () => ({ display: '⌘K', key: '⌘', symbol: 'K' }),
+  isApplePlatform: () => true,
 }));
 
 vi.mock('@/components/notifications/NotificationDropdown', () => ({
