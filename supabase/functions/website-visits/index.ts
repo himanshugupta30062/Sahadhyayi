@@ -205,6 +205,7 @@ Deno.serve(async (req) => {
         event_name: body.event_name ? String(body.event_name).slice(0, 100) : null,
         device_type: ua?.deviceType || 'Desktop',
         country_code: geo.country_code ? String(geo.country_code).slice(0, 10) : null,
+        created_at: new Date().toISOString(),
       });
       if (rollingInsertError) {
         console.warn('Non-fatal: could not write to website_visit_events:', rollingInsertError.message);
@@ -238,6 +239,7 @@ Deno.serve(async (req) => {
       referrer: body.referrer || null,
       screen_resolution: body.screenResolution || null,
       language: body.language || null,
+      visited_at: new Date().toISOString(),
     });
 
     if (error) {
