@@ -231,8 +231,8 @@ const BookExpert = () => {
       <div className="fixed bottom-5 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
         {showWelcomeBubble && (
           <div
-            role="status"
-            aria-live="polite"
+            role="group"
+            aria-label="Talking book welcome message"
             className="relative w-[min(270px,calc(100vw-2rem))] rounded-2xl border border-border bg-background p-3.5 text-foreground shadow-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
           >
             <button
