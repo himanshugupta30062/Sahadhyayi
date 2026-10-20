@@ -251,6 +251,51 @@ describe('Phase 6: Social Media & Reading Community Experience', () => {
       });
     });
 
+    it('shows a retry state instead of an empty-feed message when loading fails', () => {
+      const retryFeed = vi.fn();
+      mockUseSocialPosts.mockReturnValue({
+        posts: [],
+        isLoading: false,
+        error: new Error('Permission denied'),
+        refetch: retryFeed,
+        hasMore: false,
+      });
+
+      render(
+        <MemoryRouter>
+          <EnhancedSocialFeed />
+        </MemoryRouter>
+      );
+
+      expect(screen.getByText(/unable to load feed posts: permission denied/i)).toBeInTheDocument();
+      expect(screen.queryByText(/no posts yet/i)).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+      expect(retryFeed).toHaveBeenCalledTimes(1);
+    });
+
+    it('offers cursor-based loading for older feed posts', () => {
+      const loadMore = vi.fn().mockResolvedValue(undefined);
+      mockUseSocialPosts.mockReturnValue({
+        posts: mockPosts,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+        hasMore: true,
+        isLoadingMore: false,
+        loadMore,
+        loadMoreError: null,
+      });
+
+      render(
+        <MemoryRouter>
+          <EnhancedSocialFeed />
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /load older posts/i }));
+      expect(loadMore).toHaveBeenCalledTimes(1);
+    });
+
     it('toggles comment section when clicking comments button', () => {
       render(
         <MemoryRouter>
