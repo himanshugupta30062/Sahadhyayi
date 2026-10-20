@@ -12,6 +12,7 @@ interface VisitData {
   event_id?: string;
   event_type?: string;
   event_name?: string | null;
+  engaged_seconds?: number;
   visitor_id?: string;
   session_id?: string;
   utm_source?: string | null;
@@ -87,6 +88,14 @@ function clean(value: unknown, max: number): string | null {
   return trimmed ? trimmed.slice(0, max) : null;
 }
 
+function isUuid(value: string | null): value is string {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function isUuid(value: string | null): value is string {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 function parseCountryCode(req: Request): string | null {
   const cloudflareCountry = req.headers.get('cf-ipcountry');
   if (cloudflareCountry && /^[A-Z]{2}$/.test(cloudflareCountry)) return cloudflareCountry;
@@ -113,7 +122,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const eventType = clean(body.event_type, 40) || 'pageview';
-    if (!['pageview', 'page_view', 'activity', 'event'].includes(eventType)) {
+    if (!['pageview', 'page_view', 'activity', 'event', 'engagement'].includes(eventType)) {
       return new Response(JSON.stringify({ error: 'Unsupported event_type' }), { status: 400, headers: corsHeaders });
     }
     const page = (clean(body.page, 300)?.split(/[?#]/, 1)[0] || '/').slice(0, 300);
@@ -122,6 +131,10 @@ Deno.serve(async (req: Request) => {
     const ua = parseUserAgent(userAgent);
     const visitorId = clean(body.visitor_id, 100);
     const sessionId = clean(body.session_id, 100);
+    const visitorUuid = isUuid(visitorId) ? visitorId : null;
+    const sessionUuid = isUuid(sessionId) ? sessionId : null;
+    const visitorUuid = isUuid(visitorId) ? visitorId : null;
+    const sessionUuid = isUuid(sessionId) ? sessionId : null;
     const eventName = clean(body.event_name, 100);
     const countryCode = parseCountryCode(req);
     const screenResolution = clean(body.screenResolution, 32);
@@ -146,6 +159,31 @@ Deno.serve(async (req: Request) => {
           authUserId = null;
         }
       }
+    }
+
+
+    // Engagement heartbeats are written to a separate, short-retention table and
+    // deliberately do not increment page-view/lifetime counters.
+    if (eventType === 'engagement') {
+      const engagedSeconds = typeof body.engaged_seconds === 'number' && Number.isFinite(body.engaged_seconds)
+        ? Math.max(0, Math.min(15, Math.floor(body.engaged_seconds)))
+        : 0;
+      if (!sessionUuid || !visitorUuid || engagedSeconds < 1) {
+        return new Response(JSON.stringify({ success: true, ignored: true, reason: 'invalid_engagement_sample' }), { status: 200, headers: corsHeaders });
+      }
+      const { error: engagementError } = await supabase.from('website_engagement_events').insert({
+        event_id: eventId && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(eventId) ? eventId : crypto.randomUUID(),
+        session_id: sessionUuid,
+        visitor_id: visitorUuid,
+        page_path: page,
+        engaged_seconds: engagedSeconds,
+        created_at: new Date().toISOString(),
+      });
+      if (engagementError) {
+        console.error('Failed to record engagement heartbeat', { code: engagementError.code, message: engagementError.message });
+        return new Response(JSON.stringify({ error: 'Failed to record engagement' }), { status: 500, headers: corsHeaders });
+      }
+      return new Response(JSON.stringify({ success: true, recordedIn: 'website_engagement_events' }), { status: 200, headers: corsHeaders });
     }
 
     // Stable id is used for a single ingestion operation. Client-generated event IDs are accepted only as UUIDs.

@@ -611,6 +611,30 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         }
 
         if (isMountedRef.current && currentSeq === requestSeqRef.current && statsPayload) {
+          // Average engaged session time is unavailable until real heartbeat samples exist.
+          try {
+            const { data: engagement, error: engagementError } = await supabase.rpc('get_website_engagement_stats', {
+              p_timeframe: timeframe,
+            });
+            if (!engagementError && engagement && typeof engagement === 'object') {
+              const averageSeconds = typeof engagement.average_seconds_per_session === 'number'
+                ? engagement.average_seconds_per_session
+                : null;
+              statsPayload = {
+                ...statsPayload,
+                avgTimeOnSite: averageSeconds === null
+                  ? 'Not tracked yet'
+                  : averageSeconds < 60
+                    ? `${Math.round(averageSeconds)} sec`
+                    : `${Math.floor(averageSeconds / 60)} min ${Math.round(averageSeconds % 60)} sec`,
+                avgTimeChange: undefined,
+              };
+            } else {
+              statsPayload = { ...statsPayload, avgTimeOnSite: 'Not tracked yet' };
+            }
+          } catch {
+            statsPayload = { ...statsPayload, avgTimeOnSite: 'Not tracked yet' };
+          }
           setStats(statsPayload);
           setError(null);
           try {

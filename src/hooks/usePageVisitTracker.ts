@@ -108,6 +108,61 @@ export const usePageVisitTracker = () => {
     };
 
     recordVisit();
+
+    // Measure engaged time only while this page is visible and the reader has interacted
+    // recently. Heartbeats are bounded to 15 seconds and never count hidden-tab time.
+    let lastActivityAt = Date.now();
+    let lastHeartbeatAt = Date.now();
+    const markActivity = () => { lastActivityAt = Date.now(); };
+    const activityEvents: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+    activityEvents.forEach(eventName => window.addEventListener(eventName, markActivity, { passive: true }));
+    const sendEngagement = async (seconds: number) => {
+      if (seconds <= 0 || document.visibilityState !== 'visible' || Date.now() - lastActivityAt > 30_000) return;
+      try {
+        const { visitorId, sessionId } = getAnalyticsIds();
+        const { data: authData } = await supabase.auth.getSession();
+        const headers: Record<string, string> = {};
+        if (authData?.session?.access_token) headers.Authorization = `Bearer ${authData.session.access_token}`;
+        await supabase.functions.invoke('website-visits', {
+          headers,
+          body: {
+            event_type: 'engagement',
+            event_name: 'engaged_time',
+            engaged_seconds: Math.min(15, seconds),
+            page: window.location.pathname,
+            visitor_id: visitorId,
+            session_id: sessionId,
+            event_id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : undefined,
+          },
+        });
+      } catch {
+        // Engagement measurement is best-effort and never blocks navigation.
+      }
+    };
+    const heartbeat = window.setInterval(() => {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor(Math.min(15_000, now - lastHeartbeatAt) / 1000);
+      lastHeartbeatAt = now;
+      void sendEngagement(elapsedSeconds);
+    }, 15_000);
+    const handleVisibility = () => {
+      // Reset the clock on resume so time spent in a background tab is not counted.
+      lastHeartbeatAt = Date.now();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    const handlePageHide = () => {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor(Math.min(15_000, now - lastHeartbeatAt) / 1000);
+      void sendEngagement(elapsedSeconds);
+    };
+    window.addEventListener('pagehide', handlePageHide, { once: true });
+    
+    return () => {
+      window.clearInterval(heartbeat);
+      activityEvents.forEach(eventName => window.removeEventListener(eventName, markActivity));
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
   }, [location.pathname, location.search]);
 };
 
