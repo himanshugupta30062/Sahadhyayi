@@ -2,8 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { uniqueChannelName } from '@/lib/realtime';
+
+const SOCIAL_POST_PAGE_SIZE = 25;
 
 export interface SocialPost {
   id: string;
@@ -40,6 +42,9 @@ export const useSocialPosts = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState<Error | null>(null);
 
   // Fetch posts with user info and book details
   const { data: posts = [], isLoading, error, refetch } = useQuery({
@@ -55,7 +60,8 @@ export const useSocialPosts = () => {
             books_library(id, title, author, cover_image_url)
           `)
           .order('created_at', { ascending: false })
-          .limit(50);
+          .order('id', { ascending: false })
+          .limit(SOCIAL_POST_PAGE_SIZE);
 
         if (postsError) {
           console.warn('Posts fetch with relations failed, attempting plain fallback:', postsError);
@@ -63,7 +69,8 @@ export const useSocialPosts = () => {
             .from('posts')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(50);
+            .order('id', { ascending: false })
+            .limit(SOCIAL_POST_PAGE_SIZE);
           if (fbError) {
             console.error('Plain posts fallback also failed:', fbError);
             throw fbError;
@@ -216,6 +223,89 @@ export const useSocialPosts = () => {
     enabled: true,
   });
 
+  // An empty/short first page means there is no older page to request.
+  useEffect(() => {
+    if (!isLoading && !error && posts.length < SOCIAL_POST_PAGE_SIZE) {
+      setHasMore(false);
+    } else if (posts.length >= SOCIAL_POST_PAGE_SIZE) {
+      setHasMore(true);
+    }
+  }, [posts.length, isLoading, error]);
+
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore || !hasMore || posts.length === 0) return;
+    const cursor = posts[posts.length - 1];
+    if (!cursor?.created_at || !cursor?.id) return;
+
+    setIsLoadingMore(true);
+    setLoadMoreError(null);
+    try {
+      const cursorFilter = `created_at.lt.${cursor.created_at},and(created_at.eq.${cursor.created_at},id.lt.${cursor.id})`;
+      const { data: page, error: pageError } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
+          books_library(id, title, author, cover_image_url)
+        `)
+        .or(cursorFilter)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(SOCIAL_POST_PAGE_SIZE);
+
+      let olderPosts = page || [];
+      if (pageError) {
+        const fallback = await supabase
+          .from('posts')
+          .select('*')
+          .or(cursorFilter)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .limit(SOCIAL_POST_PAGE_SIZE);
+        if (fallback.error) throw fallback.error;
+        olderPosts = fallback.data || [];
+      }
+
+      if (olderPosts.length > 0) {
+        const missingProfileIds = Array.from(new Set(olderPosts.filter((post: any) => !post.profiles && post.user_id).map((post: any) => post.user_id)));
+        const missingBookIds = Array.from(new Set(olderPosts.filter((post: any) => !post.books_library && post.book_id).map((post: any) => post.book_id)));
+        const [profileResult, bookResult] = await Promise.all([
+          missingProfileIds.length
+            ? (supabase as any).from('public_profiles').select('id, full_name, username, profile_photo_url').in('id', missingProfileIds)
+            : Promise.resolve({ data: [] }),
+          missingBookIds.length
+            ? supabase.from('books_library').select('id, title, author, cover_image_url').in('id', missingBookIds)
+            : Promise.resolve({ data: [] }),
+        ]);
+        const profileMap = new Map((profileResult.data || []).map((profile: any) => [profile.id, profile]));
+        const bookMap = new Map((bookResult.data || []).map((book: any) => [book.id, book]));
+        olderPosts = olderPosts.map((post: any) => ({
+          ...post,
+          profiles: post.profiles || profileMap.get(post.user_id) || null,
+          books_library: post.books_library || bookMap.get(post.book_id) || null,
+        }));
+
+        if (user?.id) {
+          const ids = olderPosts.map((post: any) => post.id);
+          const { data: likes } = await supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', ids);
+          const likedIds = new Set((likes || []).map((like: any) => like.post_id));
+          olderPosts = olderPosts.map((post: any) => ({ ...post, user_liked: likedIds.has(post.id) }));
+        }
+
+        queryClient.setQueryData<SocialPost[]>(['social-posts', user?.id], (current = []) => {
+          const existingIds = new Set(current.map((post) => post.id));
+          return [...current, ...olderPosts.filter((post: any) => !existingIds.has(post.id))];
+        });
+      }
+      setHasMore(olderPosts.length === SOCIAL_POST_PAGE_SIZE);
+    } catch (loadError) {
+      console.error('Failed to load more social posts:', loadError);
+      setLoadMoreError(loadError instanceof Error ? loadError : new Error('Unable to load more posts.'));
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [hasMore, isLoadingMore, posts, queryClient, user?.id]);
+
   // Real-time subscription for new posts
   useEffect(() => {
     if (!user?.id) return;
@@ -281,7 +371,7 @@ export const useSocialPosts = () => {
     };
   }, [user?.id, queryClient, toast]);
 
-  return { posts, isLoading, error, refetch };
+  return { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError };
 };
 
 export const useCreatePost = () => {
