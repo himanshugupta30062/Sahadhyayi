@@ -3787,6 +3787,20 @@ export type Database = {
       }
     }
     Functions: {
+      get_profiles_for_social_context: {
+        Args: { profile_ids: string[] }
+        Returns: {
+          id: string
+          username: string | null
+          full_name: string | null
+          bio: string | null
+          profile_photo_url: string | null
+          location_lat: number | null
+          location_lng: number | null
+          location_sharing: boolean | null
+          last_seen: string | null
+        }[]
+      }
       are_friends: {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
