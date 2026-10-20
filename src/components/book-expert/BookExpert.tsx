@@ -179,7 +179,7 @@ const BookExpert = () => {
     setShowWelcomeBubble(false);
     toggleChat();
     void sendMessage(
-      "Introduce me to one real book from the Sahadhyayi library that could appeal to a curious new reader. Speak playfully in first person as the book itself, but identify its exact title and author only from verified library records supplied to you. Invite me to explore it. Never invent a library listing; if no matching record is available, say so and ask what genre I would like to explore."
+      "Introduce me to up to three different real books from the Sahadhyayi library for a curious new reader. Give each book its own short, playful first-person introduction, clearly stating its exact title and author only from verified library records supplied to you. Make each voice feel distinct and invite me to explore the book. Use only the supplied catalog candidates; never invent a library listing. If no matching record is available, say so and ask what genre I would like to explore."
     );
   };
 
