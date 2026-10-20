@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, UserPlus, MessageCircle, Users, Loader2, Check, X } from 'lucide-react';
 import { useUserSearch, useAllUsers } from '@/hooks/useUserSearch';
 import { useFriends, useSendFriendRequest, useFriendRequests, useRespondToFriendRequest, useCancelFriendRequest } from '@/hooks/useFriends';
+import { useToggleUserFollow, useUserFollows } from '@/hooks/useUserFollows';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/authHelpers';
 import { ChatWindow } from '@/components/social/ChatWindow';
@@ -27,6 +28,8 @@ export const EnhancedFriendsManager = () => {
   const sendFriendRequest = useSendFriendRequest();
   const respondToFriendRequest = useRespondToFriendRequest();
   const cancelFriendRequest = useCancelFriendRequest();
+  const { data: followingIds = [] } = useUserFollows();
+  const toggleUserFollow = useToggleUserFollow();
 
   const handleSendFriendRequest = async (userId: string, userName: string) => {
     try {
@@ -41,6 +44,23 @@ export const EnhancedFriendsManager = () => {
         variant: 'destructive',
         title: 'Error',
         description: 'Failed to send friend request. Please try again.',
+      });
+    }
+  };
+
+  const handleToggleFollow = async (targetUserId: string, targetUserName: string, isFollowing: boolean) => {
+    try {
+      await toggleUserFollow.mutateAsync({ targetUserId, isFollowing });
+      toast({
+        title: isFollowing ? 'Unfollowed reader' : 'Following reader',
+        description: isFollowing ? `You no longer follow ${targetUserName}.` : `You will see more from ${targetUserName} as the Following feed is introduced.`,
+      });
+    } catch (error) {
+      console.error('Failed to update reader follow:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Could not update follow',
+        description: error instanceof Error ? error.message : 'Please try again.',
       });
     }
   };
@@ -165,6 +185,9 @@ export const EnhancedFriendsManager = () => {
                         getInitials={getInitials}
                         isFriend={friends.some(f => f.friend_profile?.id === user.id)}
                         hasPendingRequest={pendingUserIds.has(user.id)}
+                        isFollowing={followingIds.includes(user.id)}
+                        isFollowPending={toggleUserFollow.isPending}
+                        onToggleFollow={handleToggleFollow}
                         onMessage={(id) => setChatId(id)}
                       />
                     ))
@@ -194,6 +217,9 @@ export const EnhancedFriendsManager = () => {
                           getInitials={getInitials}
                           isFriend={friends.some(f => f.friend_profile?.id === user.id)}
                           hasPendingRequest={pendingUserIds.has(user.id)}
+                          isFollowing={followingIds.includes(user.id)}
+                          isFollowPending={toggleUserFollow.isPending}
+                          onToggleFollow={handleToggleFollow}
                           onMessage={(id) => setChatId(id)}
                         />
                       ))
@@ -411,9 +437,12 @@ interface UserCardProps {
   isFriend?: boolean;
   hasPendingRequest?: boolean;
   onMessage?: (userId: string) => void;
+  isFollowing?: boolean;
+  isFollowPending?: boolean;
+  onToggleFollow?: (userId: string, userName: string, isFollowing: boolean) => void;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, hasPendingRequest = false, onMessage }) => (
+const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, hasPendingRequest = false, onMessage, isFollowing = false, isFollowPending = false, onToggleFollow }) => (
   <div className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
     <div className="flex items-center gap-3 min-w-0">
       <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
@@ -448,6 +477,19 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
       </div>
     </div>
     <div className="flex gap-2 flex-shrink-0">
+      <Button
+        size="sm"
+        variant={isFollowing ? 'secondary' : 'outline'}
+        aria-label={isFollowing ? `Unfollow ${user.full_name || 'reader'}` : `Follow ${user.full_name || 'reader'}`}
+        disabled={isFollowPending}
+        onClick={() => onToggleFollow?.(user.id, user.full_name || 'Reader', isFollowing)}
+        className={isFollowing
+          ? 'rounded-lg bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/15'
+          : 'rounded-lg border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10'}
+      >
+        {isFollowing ? <Check className="w-4 h-4 mr-1" /> : <Users className="w-4 h-4 mr-1" />}
+        {isFollowing ? 'Following' : 'Follow'}
+      </Button>
       {!isFriend && !hasPendingRequest ? (
         <Button
           size="sm"
