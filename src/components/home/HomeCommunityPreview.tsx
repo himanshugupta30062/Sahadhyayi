@@ -104,7 +104,7 @@ export const HomeCommunityPreview: React.FC = () => {
               ) : (
                 <div className="space-y-3">
                   {groups.map((group) => {
-                    const memberCount = (group as any).group_members?.[0]?.count ?? group.member_count ?? 1;
+                    const memberCount = group.member_count;
                     return (
                       <Link
                         key={group.id}
@@ -116,7 +116,7 @@ export const HomeCommunityPreview: React.FC = () => {
                             {group.name}
                           </h4>
                           <span className="shrink-0 text-[10px] font-medium text-[#636B65] dark:text-[#A5ADA6] bg-white dark:bg-[#111614] px-2 py-0.5 rounded-full border border-[#DDE4D9] dark:border-[#29332D]">
-                            {memberCount} {memberCount === 1 ? 'member' : 'members'}
+                            {typeof memberCount === 'number' ? `${memberCount} ${memberCount === 1 ? 'member' : 'members'}` : 'Private group'}
                           </span>
                         </div>
                         {group.description && (

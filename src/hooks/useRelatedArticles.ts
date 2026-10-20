@@ -62,7 +62,7 @@ export function useRelatedArticles(
       let profiles: any[] = [];
       try {
         const { data: pubProfiles, error: pubErr } = await (supabase as any)
-          .from('public_profiles')
+          .from('profiles_public')
           .select('id, full_name, profile_photo_url')
           .in('id', userIds);
         if (!pubErr && pubProfiles && pubProfiles.length > 0) {

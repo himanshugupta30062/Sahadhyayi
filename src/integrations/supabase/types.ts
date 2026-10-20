@@ -4154,6 +4154,10 @@ export type Database = {
         }[]
       }
       get_public_community_pulse: { Args: never; Returns: Json }
+      get_public_group_member_counts: {
+        Args: never
+        Returns: { group_id: string; member_count: number }[]
+      }
       get_public_profiles_for_search: {
         Args: { search_term?: string }
         Returns: {

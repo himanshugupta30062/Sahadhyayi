@@ -47,7 +47,7 @@ export const useSpoilerThreads = (bookId?: string) => {
       const userIds = [...new Set(threads.map((t) => t.user_id))];
       const [booksResult, profilesResult] = await Promise.all([
         bookIds.length ? supabase.from("books_library").select("id, title, author, cover_image_url").in("id", bookIds) : Promise.resolve({ data: [], error: null } as any),
-        userIds.length ? (supabase as any).from("public_profiles").select("*").in("id", userIds) : Promise.resolve({ data: [], error: null } as any),
+        userIds.length ? (supabase as any).from("profiles_public").select("*").in("id", userIds) : Promise.resolve({ data: [], error: null } as any),
       ]);
       if (booksResult.error) throw booksResult.error;
       const booksById = new Map((booksResult.data ?? []).map((b: any) => [b.id, b]));
@@ -74,7 +74,7 @@ export const useSpoilerThreadComments = (threadId?: string, isUnlocked?: boolean
       if (error) throw error;
       const comments = (data ?? []) as unknown as SpoilerComment[];
       const userIds = [...new Set(comments.map((comment) => comment.user_id))];
-      const { data: profiles } = userIds.length ? await (supabase as any).from("public_profiles").select("*").in("id", userIds) : { data: [] };
+      const { data: profiles } = userIds.length ? await (supabase as any).from("profiles_public").select("*").in("id", userIds) : { data: [] };
       const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
       return comments.map((comment) => ({ ...comment, profiles: byId.get(comment.user_id) ?? null }));
     },

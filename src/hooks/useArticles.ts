@@ -55,7 +55,7 @@ export function usePublishedArticles() {
       let profiles: any[] = [];
       try {
         const { data: pubProfiles, error: pubErr } = await (supabase as any)
-          .from('public_profiles')
+          .from('profiles_public')
           .select('id, full_name, profile_photo_url')
           .in('id', userIds);
         if (!pubErr && pubProfiles && pubProfiles.length > 0) {
@@ -126,7 +126,7 @@ export function useArticleBySlug(slug: string | undefined) {
       let profile: any = null;
       try {
         const { data: pubProfile, error: pubErr } = await (supabase as any)
-          .from('public_profiles')
+          .from('profiles_public')
           .select('id, full_name, profile_photo_url')
           .eq('id', (data as Article).user_id)
           .maybeSingle();

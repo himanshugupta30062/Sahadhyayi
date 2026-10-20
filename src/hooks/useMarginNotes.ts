@@ -70,7 +70,7 @@ export const useMarginNotes = (options?: { bookId?: string; filter?: "all" | "fr
       const userIds = [...new Set(rawNotes.map((n) => n.user_id).filter(Boolean))];
       const [booksResult, profilesResult] = await Promise.all([
         bookIds.length ? supabase.from("books_library").select("id, title, author, cover_image_url").in("id", bookIds) : Promise.resolve({ data: [], error: null } as any),
-        userIds.length ? (supabase as any).from("public_profiles").select("*").in("id", userIds) : Promise.resolve({ data: [], error: null } as any),
+        userIds.length ? (supabase as any).from("profiles_public").select("*").in("id", userIds) : Promise.resolve({ data: [], error: null } as any),
       ]);
       if (booksResult.error) throw booksResult.error;
       const booksById = new Map((booksResult.data ?? []).map((b: any) => [b.id, b]));
@@ -121,7 +121,7 @@ export const useMarginNoteReplies = (noteId?: string) => {
       if (error) throw error;
       const replies = (data ?? []) as unknown as MarginNoteReply[];
       const userIds = [...new Set(replies.map((r) => r.user_id))];
-      const { data: profiles } = userIds.length ? await (supabase as any).from("public_profiles").select("*").in("id", userIds) : { data: [] };
+      const { data: profiles } = userIds.length ? await (supabase as any).from("profiles_public").select("*").in("id", userIds) : { data: [] };
       const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
       return replies.map((reply) => ({ ...reply, profiles: byId.get(reply.user_id) ?? null }));
     },

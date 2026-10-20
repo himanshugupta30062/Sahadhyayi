@@ -103,7 +103,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
       const ids = matching.map((m) => m.id);
 
       const [profilesRes, votesRes] = await Promise.all([
-        (supabase as any).from('public_profiles').select('id, full_name, username').in('id', userIds)
+        (supabase as any).from('profiles_public').select('id, full_name, username').in('id', userIds)
           .then((r: any) => (r.data && r.data.length > 0 ? r : supabase.from('profiles').select('id, full_name, username').in('id', userIds)))
           .catch(() => supabase.from('profiles').select('id, full_name, username').in('id', userIds)),
         (supabase as any).rpc('get_book_feedback_vote_summary', { p_content_ids: ids }),

@@ -53,17 +53,29 @@ export const useGroups = () => {
   return useQuery({
     queryKey: ['all-groups', user?.id],
     queryFn: async () => {
+      // Public group discovery must not embed group_chat_members: anonymous visitors
+      // are intentionally not allowed to read membership rows.
       const { data, error } = await supabase
         .from('group_chats')
-        .select(`
-          *,
-          group_members:group_chat_members(count)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      
-      return data || [];
+
+      const groups = data ?? [];
+      const { data: memberCounts, error: memberCountsError } = await supabase.rpc('get_public_group_member_counts');
+      if (memberCountsError) {
+        // Keep discovery available if the count RPC is not deployed yet.
+        return groups;
+      }
+
+      const countsByGroupId = new Map(
+        (memberCounts ?? []).map((row) => [row.group_id, Number(row.member_count)])
+      );
+      return groups.map((group) => ({
+        ...group,
+        member_count: countsByGroupId.get(group.id),
+      }));
     },
   });
 };

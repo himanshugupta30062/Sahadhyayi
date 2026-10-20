@@ -51,22 +51,27 @@ const GroupDetails = () => {
       if (!id) return null;
       const { data, error } = await supabase
         .from('group_chats')
-        .select(`
-          *,
-          group_members:group_chat_members(count)
-        `)
+        .select('*')
         .eq('id', id)
         .maybeSingle();
 
       if (error) throw error;
-      return data as Group | null;
+      if (!data) return null;
+
+      // Counts are exposed only for public groups; private-group membership stays private.
+      const { data: memberCounts, error: memberCountsError } = await supabase.rpc('get_public_group_member_counts');
+      const memberCount = memberCountsError
+        ? undefined
+        : (memberCounts ?? []).find((row) => row.group_id === data.id)?.member_count;
+
+      return { ...data, member_count: memberCount === undefined ? undefined : Number(memberCount) } as Group;
     },
     enabled: !cachedGroup && !!id,
   });
 
   const group = cachedGroup || directGroup;
   const isMember = group ? joinedGroups.some(g => g.id === group.id || (g as any).group_id === group.id) : false;
-  const memberCount = group?.group_members?.[0]?.count ?? members.length;
+  const memberCount = group?.member_count ?? (user ? members.length : undefined);
 
   const copyInviteLink = () => {
     if (!group) return;
@@ -163,7 +168,9 @@ const GroupDetails = () => {
                   </h1>
                   <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5" />
-                    {memberCount} {memberCount === 1 ? 'member' : 'members'}
+                    {typeof memberCount === 'number'
+                      ? `${memberCount} ${memberCount === 1 ? 'member' : 'members'}`
+                      : 'Private group'}
                   </p>
                 </div>
 
@@ -285,6 +292,10 @@ const GroupDetails = () => {
                     </div>
                   ))}
                 </div>
+              ) : !user ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  Sign in to view group member profiles.
+                </p>
               ) : members.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">
                   No member profiles loaded yet.

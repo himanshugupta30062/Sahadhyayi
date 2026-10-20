@@ -688,7 +688,7 @@ const SocialMedia: React.FC = () => {
                     ) : (
                       <div className="space-y-2.5">
                         {groups.slice(0, 3).map((group) => {
-                          const memberCount = group.group_members?.[0]?.count ?? group.member_count ?? 1;
+                          const memberCount = group.member_count;
                           return (
                             <div
                               key={group.id}
@@ -711,7 +711,7 @@ const SocialMedia: React.FC = () => {
                                     {group.name}
                                   </p>
                                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
-                                    {memberCount} {memberCount === 1 ? 'member' : 'members'}
+                                    {typeof memberCount === 'number' ? `${memberCount} ${memberCount === 1 ? 'member' : 'members'}` : 'Private group'}
                                   </p>
                                 </div>
                               </div>

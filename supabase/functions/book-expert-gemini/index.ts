@@ -449,45 +449,83 @@ async function callGemini(
   history: HistoryItem[],
   latestPrompt: string,
 ): Promise<{ ok: boolean; status: number; body: any; raw: string }> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), LIMITS.requestTimeoutMs);
-  try {
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: getSystemInstruction() }] },
-          contents: [
-            ...history.map((item) => ({
-              role: item.role,
-              parts: [{ text: item.text }],
-            })),
-            { role: "user", parts: [{ text: latestPrompt }] },
-          ],
-          generationConfig: {
-            thinkingConfig: { thinkingLevel: "medium" },
-            maxOutputTokens: 1000,
-          },
-        }),
-        signal: controller.signal,
-      },
-    );
-    const raw = await response.text();
-    let body: any = null;
+  // Retry once for transient provider/network failures; cap total wait time.
+  const maxAttempts = 2;
+  const retryableStatuses = new Set([429, 500, 502, 503, 504]);
+  const requestBody = JSON.stringify({
+    systemInstruction: { parts: [{ text: getSystemInstruction() }] },
+    contents: [
+      ...history.map((item) => ({
+        role: item.role,
+        parts: [{ text: item.text }],
+      })),
+      { role: "user", parts: [{ text: latestPrompt }] },
+    ],
+    generationConfig: {
+      thinkingConfig: { thinkingLevel: "medium" },
+      maxOutputTokens: 1000,
+    },
+  });
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), LIMITS.requestTimeoutMs);
+    let retryDelayMs = 0;
+
     try {
-      body = JSON.parse(raw);
-    } catch {
-      body = null;
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
+          },
+          body: requestBody,
+          signal: controller.signal,
+        },
+      );
+      const raw = await response.text();
+
+      if (retryableStatuses.has(response.status) && attempt < maxAttempts - 1) {
+        const retryAfterSeconds = Number.parseFloat(response.headers.get("retry-after") ?? "");
+        const exponentialDelay = Math.min(2000, 250 * 2 ** attempt);
+        retryDelayMs = Number.isFinite(retryAfterSeconds)
+          ? Math.min(3000, Math.max(0, retryAfterSeconds * 1000))
+          : exponentialDelay;
+        retryDelayMs += Math.floor(Math.random() * 150);
+        console.warn("Gemini returned a retryable status; retrying once.", {
+          status: response.status,
+          attempt: attempt + 1,
+        });
+      } else {
+        let body: any = null;
+        try {
+          body = JSON.parse(raw);
+        } catch {
+          body = null;
+        }
+        return { ok: response.ok, status: response.status, body, raw: raw.slice(0, 1800) };
+      }
+    } catch (error) {
+      if (attempt >= maxAttempts - 1) {
+        throw error;
+      }
+      retryDelayMs = Math.min(2000, 250 * 2 ** attempt) + Math.floor(Math.random() * 150);
+      console.warn("Gemini request failed; retrying once.", {
+        name: error instanceof Error ? error.name : "UnknownError",
+        attempt: attempt + 1,
+      });
+    } finally {
+      clearTimeout(timeout);
     }
-    return { ok: response.ok, status: response.status, body, raw: raw.slice(0, 1800) };
-  } finally {
-    clearTimeout(timeout);
+
+    if (retryDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    }
   }
+
+  throw new Error("Gemini request failed after retry.");
 }
 
 function estimateStandardCostUsd(

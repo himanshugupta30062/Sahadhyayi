@@ -114,7 +114,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
         if (missingProfileUserIds.length > 0) {
           try {
             const { data: pubProfs, error: pubErr } = await (supabase as any)
-              .from('public_profiles')
+              .from('profiles_public')
               .select('id, full_name, username, profile_photo_url')
               .in('id', missingProfileUserIds);
             if (!pubErr && pubProfs && pubProfs.length > 0) {
@@ -306,7 +306,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
         const missingBookIds = Array.from(new Set(olderPosts.filter((post: any) => !post.books_library && post.book_id).map((post: any) => post.book_id)));
         const [profileResult, bookResult] = await Promise.all([
           missingProfileIds.length
-            ? (supabase as any).from('public_profiles').select('id, full_name, username, profile_photo_url').in('id', missingProfileIds)
+            ? (supabase as any).from('profiles_public').select('id, full_name, username, profile_photo_url').in('id', missingProfileIds)
             : Promise.resolve({ data: [] }),
           missingBookIds.length
             ? supabase.from('books_library').select('id, title, author, cover_image_url').in('id', missingBookIds)
@@ -330,7 +330,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
             const originalBookIds = Array.from(new Set(originals.map((post: any) => post.book_id).filter(Boolean)));
             const [originalProfiles, originalBooks] = await Promise.all([
               originalUserIds.length
-                ? (supabase as any).from('public_profiles').select('id, full_name, username, profile_photo_url').in('id', originalUserIds)
+                ? (supabase as any).from('profiles_public').select('id, full_name, username, profile_photo_url').in('id', originalUserIds)
                 : Promise.resolve({ data: [] }),
               originalBookIds.length
                 ? supabase.from('books_library').select('id, title, author, cover_image_url').in('id', originalBookIds)

@@ -98,6 +98,8 @@ export const useGroupMessages = (groupId: string) => {
 };
 
 export const useGroupMembers = (groupId: string) => {
+  const { user } = useAuth();
+
   return useQuery({
     queryKey: ['group-members', groupId],
     queryFn: async () => {
@@ -114,7 +116,7 @@ export const useGroupMembers = (groupId: string) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!groupId,
+    enabled: !!groupId && !!user?.id,
   });
 };
 

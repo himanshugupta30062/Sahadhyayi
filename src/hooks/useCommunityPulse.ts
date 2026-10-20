@@ -180,22 +180,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
 
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>('24h');
-  const [stats, setStats] = useState<PulseStats | null>(() => {
-    try {
-      // Deliberately ignore old cache versions because they could contain lifetime
-      // totals mislabeled as period pageviews and synthetic zeroes for missing details.
-      const cached = localStorage.getItem(getCacheKey('24h'));
-      if (cached) {
-        const parsed = JSON.parse(cached) as PulseStats;
-        if (parsed && typeof parsed.pageViews === 'number') {
-          return { ...parsed, isStale: true };
-        }
-      }
-    } catch {
-      // ignore localStorage errors
-    }
-    return null;
-  });
+  // Do not hydrate potentially admin-only analytics from shared browser storage.
+  const [stats, setStats] = useState<PulseStats | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -234,24 +220,46 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       if (!user) {
         if (active) {
           setIsAdmin(false);
+          setStats(null);
+          setVisitors([]);
+          setAdminLeaderboard([]);
           setCheckingAdmin(false);
         }
         return;
       }
 
+      setCheckingAdmin(true);
+      setIsAdmin(false);
       try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !sessionData.session?.access_token) {
+          if (active) {
+            setIsAdmin(false);
+            setStats(null);
+            setVisitors([]);
+            setAdminLeaderboard([]);
+            setCheckingAdmin(false);
+          }
+          return;
+        }
+
         const { data, error: rpcErr } = await supabase.rpc('is_admin');
         if (active) {
-          if (!rpcErr && Boolean(data)) {
-            setIsAdmin(true);
-          } else {
-            setIsAdmin(false);
+          const authorized = !rpcErr && Boolean(data);
+          setIsAdmin(authorized);
+          if (!authorized) {
+            setStats(null);
+            setVisitors([]);
+            setAdminLeaderboard([]);
           }
           setCheckingAdmin(false);
         }
       } catch {
         if (active) {
           setIsAdmin(false);
+          setStats(null);
+          setVisitors([]);
+          setAdminLeaderboard([]);
           setCheckingAdmin(false);
         }
       }
@@ -555,6 +563,21 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     async (manual: boolean = false) => {
       const currentSeq = ++requestSeqRef.current;
 
+      // This hook powers the protected analytics dialog. Do not send admin-only
+      // RPCs with the public anon key while Auth is restoring or for non-admins.
+      if (checkingAdmin) {
+        setLoading(false);
+        return;
+      }
+      if (!isAdmin) {
+        setStats(null);
+        setVisitors([]);
+        setAdminLeaderboard([]);
+        setLoading(false);
+        setError('Administrator access is required to view website analytics.');
+        return;
+      }
+
       if (manual || !statsRef.current) {
         setLoading(true);
       }
@@ -661,7 +684,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         }
       }
     },
-    [timeframe, fetchDatabaseFallbackStats, parseStatsPayload, safeCount]
+    [timeframe, fetchDatabaseFallbackStats, parseStatsPayload, safeCount, isAdmin, checkingAdmin]
   );
 
   // 3. Fetch Recent Visitors (Strictly Admin-Only)
