@@ -48,8 +48,10 @@ export const useMarkChapterAsRead = (bookId: string) => {
           completion_percentage: 100,
           total_pages: 1,
           pages_read: 1,
+          time_spent_minutes: 0,
           completed_at: new Date().toISOString(),
-        })
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,book_id,chapter_number' })
         .select()
         .single();
 
