@@ -333,3 +333,27 @@ DROP POLICY IF EXISTS "Users can update own draft/rejected books" ON public.user
 DROP POLICY IF EXISTS "Users can view their own WhatsApp contacts" ON public.whatsapp_contacts;
 
 NOTIFY pgrst, 'reload schema';
+
+
+-- The latest post-audience migration added one unoptimized RLS expression; keep it consistent.
+ALTER POLICY "Readers can view posts allowed by audience" ON public.posts
+  USING (
+    (SELECT auth.uid()) = user_id
+    OR audience = 'public'::text
+    OR (
+      audience = 'friends'::text
+      AND EXISTS (
+        SELECT 1 FROM public.friends AS f
+        WHERE (f.user1_id = (SELECT auth.uid()) AND f.user2_id = posts.user_id)
+           OR (f.user2_id = (SELECT auth.uid()) AND f.user1_id = posts.user_id)
+      )
+    )
+    OR (
+      audience = 'followers'::text
+      AND EXISTS (
+        SELECT 1 FROM public.user_follows AS uf
+        WHERE uf.follower_id = (SELECT auth.uid())
+          AND uf.following_id = posts.user_id
+      )
+    )
+  );
