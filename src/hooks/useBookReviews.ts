@@ -14,9 +14,10 @@ export interface BookReview {
 }
 
 export function useBookReviews(bookId: string | undefined) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['book-reviews', bookId],
-    enabled: !!bookId,
+    queryKey: ['book-reviews', bookId, user?.id],
+    enabled: !!bookId && !!user?.id,
     queryFn: async (): Promise<BookReview[]> => {
       if (!bookId) return [];
       const client = supabase as any;
