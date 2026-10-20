@@ -29,13 +29,13 @@ import WebsiteTour from "./components/onboarding/WebsiteTour";
 
 // Immediate load pages (critical path)
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import ConfirmEmail from "./pages/ConfirmEmail";
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded pages (optimized chunks)
 const Library = lazy(() => import('./pages/library'));
+const Auth = lazy(() => import('./pages/Auth'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const ConfirmEmail = lazy(() => import('./pages/ConfirmEmail'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
@@ -190,11 +190,11 @@ const App = memo(() => {
                       <Routes>
                         {/* Critical routes - no lazy loading */}
                         <Route path="/" element={<Index />} />
-                        <Route path="/auth" element={<Auth />} />
+                        <Route path="/auth" element={<Suspense fallback={<LoadingFallback />}><Auth /></Suspense>} />
                         <Route path="/signup" element={<Suspense fallback={<LoadingFallback />}><SignUp /></Suspense>} />
                         <Route path="/signin" element={<Suspense fallback={<LoadingFallback />}><SignIn /></Suspense>} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/confirm-email" element={<ConfirmEmail />} />
+                        <Route path="/reset-password" element={<Suspense fallback={<LoadingFallback />}><ResetPassword /></Suspense>} />
+                        <Route path="/confirm-email" element={<Suspense fallback={<LoadingFallback />}><ConfirmEmail /></Suspense>} />
                         
                         {/* Primary routes - optimized lazy loading */}
                         <Route
