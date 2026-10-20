@@ -112,26 +112,13 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
   });
 
   // 2. Public User vs Administrator Views (Access Control)
-  it('presents aggregate analytics to public visitors but denies access to individual visitor logs', async () => {
+  it('shows only safe aggregate counts to public visitors and denies detailed visitor analytics', async () => {
     mockCurrentUser = null;
     mockRpc.mockImplementation((name: string) => {
       if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
+      if (name === 'get_website_visit_count') return Promise.resolve({ data: 500, error: null });
+      if (name === 'get_total_users_count') return Promise.resolve({ data: 20, error: null });
       return Promise.resolve({ data: null, error: null });
-    });
-
-    mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        totalVisits: 500,
-        last24hVisits: 500,
-        uniqueVisitors24h: 300,
-        newSignups24h: 20,
-        avgTimeOnSite: '2m 45s',
-        hourlyActivity: [],
-        topCountries: [{ name: 'United States', code: 'US', count: 50, percent: 50 }],
-        topPages: [{ name: '/library', count: 40, percent: 40 }],
-        devices: [{ name: 'Desktop', count: 60, percent: 60 }],
-        referrers: [{ name: 'Google', count: 30, percent: 30 }],
-      },
     });
 
     render(
@@ -140,15 +127,15 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
       </BrowserRouter>
     );
 
-    // Public visitor sees overview metrics
+    // Only the public, safe lifetime/member totals are shown; period/visitor breakdowns stay unavailable.
     await waitFor(() => {
-      expect(screen.getByText('500')).toBeInTheDocument();
-      expect(screen.getByText('300')).toBeInTheDocument();
+      expect(screen.getByText(/500 visits/i)).toBeInTheDocument();
+      expect(screen.getByText('20 Total')).toBeInTheDocument();
     });
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
 
-    // Recent Visitors tab button MUST NOT be rendered for non-admins
+    // Recent Visitors tab and raw visitor details MUST NOT be rendered for non-admins.
     expect(screen.queryByRole('button', { name: /recent visitors/i })).not.toBeInTheDocument();
-    // Raw table / IP addresses must not be rendered
     expect(screen.queryByText(/IP Address/i)).not.toBeInTheDocument();
   });
 
@@ -275,7 +262,13 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
       })
     );
 
-    // Refresh attempt fails
+    // Authenticate as an admin so the refresh reaches the secured Edge Function fallback.
+    mockCurrentUser = { id: 'admin-uuid', email: 'admin@sahadhyayi.com' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'admin-jwt-token' } }, error: null });
+    mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
     mockFunctionsInvoke.mockRejectedValue(new Error('Edge function timeout'));
 
     const { result } = renderHook(() => useCommunityPulse(true));
@@ -428,25 +421,24 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     });
 
     expect(result.current.stats).not.toBeNull();
-    expect(result.current.stats?.pageViews).toBe(18);
+    // The total lifetime count cannot stand in for period page views; the fallback
+    // must not query the raw visitor table for a browser-side count.
+    expect(result.current.stats?.pageViews).toBeNull();
     expect(result.current.stats?.totalMembers).toBe(120);
     expect(result.current.stats?.newReaders).toBe(18);
     expect(result.current.stats?.hourlyActivity).toEqual([]);
+    expect(mockFrom).not.toHaveBeenCalledWith('website_visits');
     expect(result.current.error).toBeNull();
   });
 
-  // 9. Public Pulse Schema (eligibleBooks, registeredReaders) Resolution
-  it('resolves live community-stats public schema into complete analytics without zero or empty states', async () => {
-    // Exact schema returned by production Edge Function
-    mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        activeRooms: 0,
-        lastUpdated: '2026-10-17T13:04:50.447121+00:00',
-        activityTrend: [],
-        eligibleBooks: 830,
-        communityActivity: 0,
-        registeredReaders: 4,
-      },
+  // 9. An anonymous visitor cannot call the admin-only analytics Edge Function.
+  it('keeps detailed analytics unavailable to anonymous visitors while preserving safe totals', async () => {
+    mockCurrentUser = null;
+    mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
+      if (name === 'get_total_users_count') return Promise.resolve({ data: 4, error: null });
+      if (name === 'get_website_visit_count') return Promise.resolve({ data: 250, error: null });
+      return Promise.resolve({ data: null, error: null });
     });
 
     const { result } = renderHook(() => useCommunityPulse(true));
@@ -457,6 +449,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
 
     expect(result.current.stats).not.toBeNull();
     expect(result.current.stats!.totalMembers).toBe(4);
+    expect(result.current.stats!.lifetimeVisits).toBe(250);
     expect(result.current.stats!.pageViews).toBeNull();
     expect(result.current.stats!.uniqueVisitors).toBeNull();
     expect(result.current.stats!.hourlyActivity).toEqual([]);
@@ -464,25 +457,36 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     expect(result.current.stats!.topPages).toEqual([]);
     expect(result.current.stats!.devices).toEqual([]);
     expect(result.current.stats!.referrers).toEqual([]);
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(mockFrom).not.toHaveBeenCalledWith('website_visits');
     expect(result.current.error).toBeNull();
   });
 
   // 10. Dialog Metric View Switching (Page views vs Unique visitors)
   it('allows switching metric view between page views and unique visitors in chart', async () => {
-    mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        totalVisits: 1000,
-        last24hVisits: 1000,
-        uniqueVisitors24h: 500,
-        newSignups24h: 30,
-        hourlyActivity: [
-          { hourIndex: 12, label: '12 PM', count: 100, isPeak: true },
-        ],
-        topCountries: [{ name: 'India', code: 'IN', count: 500, percent: 50 }],
-        topPages: [{ name: '/library', count: 400, percent: 40 }],
-        devices: [{ name: 'Mobile', count: 700, percent: 70 }],
-        referrers: [{ name: 'Direct', count: 600, percent: 60 }],
-      },
+    mockCurrentUser = { id: 'admin-uuid', email: 'admin@sahadhyayi.com' };
+    mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
+      if (name === 'get_dual_table_website_analytics') {
+        return Promise.resolve({
+          data: {
+            timeframe: '24h',
+            period: { pageViews: 1000, uniqueVisitors: 500, newRegistrations: 30, registeredReaders: 120 },
+            lifetime: { totalVisits: 1000, sourceTable: 'public.website_visits' },
+            rolling: { pageViews24h: 1000, pageViews7d: 5000, pageViews30d: 15000, uniqueVisitors24h: 500 },
+            timeseries: [{ hourIndex: 12, label: '12 PM', pageViews: 100, uniqueVisitors: 50, isPeak: true }],
+            breakdowns: {
+              countries: [{ name: 'India', code: 'IN', count: 500, percent: 50 }],
+              pages: [{ name: '/library', count: 400, percent: 40 }],
+              devices: [{ name: 'Mobile', count: 700, percent: 70 }],
+              referrers: [{ name: 'Direct', count: 600, percent: 60 }],
+            },
+            lastUpdated: new Date().toISOString(),
+          },
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
     });
 
     render(
@@ -495,7 +499,6 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
       expect(screen.getByText('1,000')).toBeInTheDocument();
     });
 
-    // Metric dropdown should allow switching to Unique visitors
     const select = screen.getByLabelText(/select metric/i);
     fireEvent.change(select, { target: { value: 'unique' } });
     expect(screen.getByDisplayValue('Unique visitors')).toBeInTheDocument();
