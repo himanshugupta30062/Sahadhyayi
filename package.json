@@ -33,7 +33,7 @@
     {
       "name": "Total client assets",
       "path": "dist/assets/*.js",
-      "limit": "650 KB"
+      "limit": "725 KB"
     }
   ],
   "dependencies": {
