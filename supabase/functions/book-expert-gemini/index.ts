@@ -675,7 +675,7 @@ serve(async (req: Request) => {
       libraryBooks = await retrieveLibraryBooks(supabaseClient, text);
       if (
         libraryBooks.length === 0 &&
-        /\b(meet a book|introduce me to|talking book|hear from a book)\b/i.test(text)
+        /\bmeet (?:another )?book\b|\bintroduce me to\b|\btalking book\b|\bhear from a book\b/i.test(text)
       ) {
         libraryBooks = await retrieveFeaturedLibraryBooks(supabaseClient);
       }
