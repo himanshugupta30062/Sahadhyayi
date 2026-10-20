@@ -147,9 +147,14 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       lastUpdated: new Date().toISOString(),
     };
 
-    mockFunctionsInvoke.mockResolvedValue({
-      data: responseWithNulls,
-      error: null,
+    // This payload now comes from the authenticated, admin-only analytics RPC.
+    mockCurrentUser = { id: 'admin-1', email: 'admin@sahadhyayi.com' };
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: true, error: null });
+      if (fn === 'get_dual_table_website_analytics') {
+        return Promise.resolve({ data: responseWithNulls, error: null });
+      }
+      return Promise.resolve({ data: null, error: null });
     });
 
     render(<CommunityPulseDialog open={true} onClose={() => {}} />);
@@ -166,52 +171,63 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     expect(screen.queryByText(/\+8\.1%/)).not.toBeInTheDocument();
   });
 
-  // 3. Timeframe switching updates Edge Function invoke parameter
+  // 3. Authenticated fallback uses the selected timeframe for the admin Edge Function.
   it('requests 7d and 30d timeframes dynamically when selecting timeframe options', async () => {
-    mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        timeframe: '24h',
-        metrics: {
-          periodPageViews: { value: 10 },
-          uniqueVisitors: { value: 5 },
-          registeredReaders: { value: 100 },
-          newReaders: { value: 1 },
+    mockCurrentUser = { id: 'admin-1', email: 'admin@sahadhyayi.com' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'admin-jwt-token' } }, error: null });
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: true, error: null });
+      // Force the verified administrator fallback to the Edge Function.
+      if (fn === 'get_dual_table_website_analytics') return Promise.resolve({ data: null, error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+    mockFunctionsInvoke.mockImplementation((_fn: string, options?: any) => {
+      const timeframe = options?.body?.timeframe || '24h';
+      return Promise.resolve({
+        data: {
+          timeframe,
+          metrics: {
+            periodPageViews: { value: timeframe === '30d' ? 300 : timeframe === '7d' ? 70 : 10 },
+            uniqueVisitors: { value: 5 },
+            registeredReaders: { value: 100 },
+            newReaders: { value: 1 },
+          },
+          hourlyTraffic: [],
+          breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+          engagement: {},
+          topMembers: [],
+          lastUpdated: new Date().toISOString(),
         },
-        hourlyActivity: [],
-        breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
-        engagement: {},
-        topMembers: [],
-        lastUpdated: new Date().toISOString(),
-      },
-      error: null,
+        error: null,
+      });
     });
 
     render(<CommunityPulseDialog open={true} onClose={() => {}} />);
 
     await waitFor(() => {
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', {
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', expect.objectContaining({
+        headers: { Authorization: 'Bearer admin-jwt-token' },
         body: { timeframe: '24h' },
-      });
+      }));
     });
 
     const timeframeSelect = screen.getByRole('combobox', { name: 'Select timeframe' });
-
-    // Switch to 7 Days
     fireEvent.change(timeframeSelect, { target: { value: '7d' } });
 
     await waitFor(() => {
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', {
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', expect.objectContaining({
+        headers: { Authorization: 'Bearer admin-jwt-token' },
         body: { timeframe: '7d' },
-      });
+      }));
     });
 
-    // Switch to 30 Days
     fireEvent.change(timeframeSelect, { target: { value: '30d' } });
 
     await waitFor(() => {
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', {
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', expect.objectContaining({
+        headers: { Authorization: 'Bearer admin-jwt-token' },
         body: { timeframe: '30d' },
-      });
+      }));
     });
   });
 
@@ -359,7 +375,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
   });
 
   // Fallback must never show a lifetime visit count as period page views.
-  it('uses the exact selected-period count and never substitutes lifetime visits or guessed zeros', async () => {
+  it('does not query the raw visitor table when selected-period metrics are unavailable', async () => {
     mockFunctionsInvoke.mockResolvedValue({
       data: {
         registeredReaders: 4,
@@ -393,7 +409,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
 
     await waitFor(() => {
       const pageViewsLabel = screen.getAllByText('Page views').find(el => el.closest('.rounded-xl')) || screen.getAllByText('Page views')[0];
-      expect(pageViewsLabel.closest('.rounded-xl')).toHaveTextContent('7');
+      expect(pageViewsLabel.closest('.rounded-xl')).toHaveTextContent('—');
       expect(pageViewsLabel.closest('.rounded-xl')).not.toHaveTextContent('9,920');
 
       // Unique visitor identity is not available through the count-only fallback.
@@ -403,6 +419,8 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       expect(screen.getByText('Some analytics details are unavailable')).toBeInTheDocument();
     });
 
+    expect(mockFrom).not.toHaveBeenCalledWith('website_visits');
+
     fireEvent.change(screen.getByLabelText('Select metric'), { target: { value: 'unique' } });
     await waitFor(() => {
       expect(screen.getByText('Hourly unique visitor data is unavailable')).toBeInTheDocument();
@@ -411,22 +429,24 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
 
   // 8. Distinguishes between measured 0 and unavailable null ('—')
   it('displays "—" when unique visitors is null (telemetry unavailable) but displays "0" when measured zero', async () => {
-    mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        timeframe: '24h',
-        metrics: {
-          periodPageViews: { value: 150 },
-          uniqueVisitors: { value: null }, // Telemetry unavailable
-          registeredReaders: { value: 4 },
-          newReaders: { value: 0 }, // Measured zero
-        },
-        hourlyActivity: [],
-        breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
-        engagement: {},
-        topMembers: [],
-        lastUpdated: new Date().toISOString(),
-      },
-      error: null,
+    mockCurrentUser = { id: 'admin-1', email: 'admin@sahadhyayi.com' };
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: true, error: null });
+      if (fn === 'get_dual_table_website_analytics') {
+        return Promise.resolve({
+          data: {
+            timeframe: '24h',
+            period: { pageViews: 150, uniqueVisitors: null, registeredReaders: 4, newRegistrations: 0 },
+            lifetime: { totalVisits: 9920, sourceTable: 'public.website_visits' },
+            rolling: { pageViews24h: 150, pageViews7d: null, pageViews30d: null, uniqueVisitors24h: null },
+            timeseries: [],
+            breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+            lastUpdated: new Date().toISOString(),
+          },
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
     });
 
     render(<CommunityPulseDialog open={true} onClose={() => {}} />);
