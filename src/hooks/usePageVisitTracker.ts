@@ -92,15 +92,12 @@ export const usePageVisitTracker = () => {
 
     recordVisit();
 
-    // Measure engaged time only while this page is visible and the reader has interacted
-    // recently. Heartbeats are bounded to 15 seconds and never count hidden-tab time.
-    let lastActivityAt = Date.now();
+    // Measure visible time continuously while this page is in the foreground.
+    // Requiring a fresh click/scroll every 30 seconds undercounted reading sessions
+    // when people read without interacting. Hidden-tab time is still excluded.
     let lastHeartbeatAt = Date.now();
-    const markActivity = () => { lastActivityAt = Date.now(); };
-    const activityEvents: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
-    activityEvents.forEach(eventName => window.addEventListener(eventName, markActivity, { passive: true }));
     const sendEngagement = async (seconds: number) => {
-      if (seconds <= 0 || document.visibilityState !== 'visible' || Date.now() - lastActivityAt > 30_000) return;
+      if (seconds <= 0 || document.visibilityState !== 'visible') return;
       try {
         const { visitorId, sessionId } = getAnalyticsIds();
         const { data: authData } = await supabase.auth.getSession();
@@ -142,7 +139,6 @@ export const usePageVisitTracker = () => {
     
     return () => {
       window.clearInterval(heartbeat);
-      activityEvents.forEach(eventName => window.removeEventListener(eventName, markActivity));
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('pagehide', handlePageHide);
     };
