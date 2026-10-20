@@ -35,10 +35,23 @@ drop policy if exists "Readers can delete their own book reviews" on public.book
 create policy "Readers can delete their own book reviews"
   on public.book_reviews for delete to authenticated using (auth.uid() = user_id);
 
+create or replace function public.set_book_reviews_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $
+begin
+  new.updated_at := now();
+  return new;
+end;
+$;
+
+revoke execute on function public.set_book_reviews_updated_at() from public, anon, authenticated;
+
 drop trigger if exists trg_book_reviews_updated_at on public.book_reviews;
 create trigger trg_book_reviews_updated_at
   before update on public.book_reviews
-  for each row execute function public.set_updated_at();
+  for each row execute function public.set_book_reviews_updated_at();
 
 revoke all on public.book_reviews from anon;
 grant select, insert, update, delete on public.book_reviews to authenticated;
