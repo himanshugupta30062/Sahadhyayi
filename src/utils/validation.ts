@@ -209,37 +209,35 @@ export const isValidUrl = (url: string): boolean => {
 // Rate limiting helper
 export const isRateLimited = (key: string, maxAttempts: number, windowMs: number): boolean => {
   if (typeof window === 'undefined') return false;
-  
-  const now = Date.now();
-  const storageKey = `rate_limit_${key}`;
-  const stored = localStorage.getItem(storageKey);
-  
-  if (!stored) {
-    localStorage.setItem(storageKey, JSON.stringify({ count: 1, firstAttempt: now }));
-    return false;
-  }
-  
+
+  // Browser storage can be disabled by privacy settings. Local throttling is
+  // a convenience only; it must never prevent account creation or trap the UI.
   try {
-    const data = JSON.parse(stored);
-    
-    // Reset if window has passed
-    if (now - data.firstAttempt > windowMs) {
-      localStorage.setItem(storageKey, JSON.stringify({ count: 1, firstAttempt: now }));
+    const now = Date.now();
+    const storageKey = `rate_limit_${key}`;
+    const stored = window.localStorage.getItem(storageKey);
+
+    if (!stored) {
+      window.localStorage.setItem(storageKey, JSON.stringify({ count: 1, firstAttempt: now }));
       return false;
     }
-    
-    // Check if rate limited
-    if (data.count >= maxAttempts) {
-      return true;
+
+    const data = JSON.parse(stored) as { count?: number; firstAttempt?: number };
+    if (!Number.isFinite(data.firstAttempt) || !Number.isFinite(data.count)) {
+      window.localStorage.setItem(storageKey, JSON.stringify({ count: 1, firstAttempt: now }));
+      return false;
     }
-    
-    // Increment counter
-    data.count++;
-    localStorage.setItem(storageKey, JSON.stringify(data));
+
+    if (now - Number(data.firstAttempt) > windowMs) {
+      window.localStorage.setItem(storageKey, JSON.stringify({ count: 1, firstAttempt: now }));
+      return false;
+    }
+
+    if (Number(data.count) >= maxAttempts) return true;
+    window.localStorage.setItem(storageKey, JSON.stringify({ count: Number(data.count) + 1, firstAttempt: Number(data.firstAttempt) }));
     return false;
   } catch {
-    // If parsing fails, reset
-    localStorage.setItem(storageKey, JSON.stringify({ count: 1, firstAttempt: now }));
+    // Backend Auth rate limits remain authoritative when localStorage is blocked.
     return false;
   }
 };

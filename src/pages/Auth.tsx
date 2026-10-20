@@ -5,11 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuth } from '@/contexts/authHelpers';
+import { useAuth, normalizeAuthEmail, normalizeAuthName } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { Mail, Lock, User, Eye, EyeOff, BookOpen, LogIn, UserPlus, CheckCircle2 } from 'lucide-react';
 import { PasswordStrength } from '@/components/ui/password-strength';
-import { validateEmail, validatePassword, sanitizeInput, isRateLimited } from '@/utils/validation';
+import { validateEmail, validatePassword, isRateLimited } from '@/utils/validation';
 import { getSafeRedirectUrl } from '@/utils/security';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
@@ -123,7 +123,7 @@ const Auth = () => {
     }
 
     try {
-      await signIn(sanitizeInput(signinData.email.trim().toLowerCase(), 254), signinData.password);
+      await signIn(normalizeAuthEmail(signinData.email), signinData.password);
       window.dispatchEvent(new CustomEvent('communityStatsUpdate', { detail: { action: 'signin' } }));
       try {
         localStorage.setItem('sahadhyayi_stats_sync', Date.now().toString());
@@ -191,14 +191,16 @@ const Auth = () => {
 
     try {
       const { error: signUpError } = await signUp(
-        sanitizeInput(signupData.email.trim().toLowerCase(), 254),
+        normalizeAuthEmail(signupData.email),
         signupData.password,
-        sanitizeInput(signupData.name.trim(), 100)
+        normalizeAuthName(signupData.name)
       );
 
       if (signUpError) {
         const errorMsg = (signUpError.message || '').toLowerCase();
-        if (errorMsg.includes('already') || errorMsg.includes('registered')) {
+        if (errorMsg.includes('database error saving new user') || errorMsg.includes('unexpected_failure')) {
+          setError('We could not finish creating your account because of a temporary setup issue. Please try again. If it continues, contact support.');
+        } else if (errorMsg.includes('already') || errorMsg.includes('registered')) {
           setError('An account with this email already exists. Please sign in instead.');
         } else if (errorMsg.includes('rate limit')) {
           setError('Too many sign-up attempts. Please wait a few moments before trying again.');
@@ -484,7 +486,7 @@ const Auth = () => {
                               aria-required="true"
                               disabled={loading}
                               onChange={(e) => {
-                                setSignupData((p) => ({ ...p, name: sanitizeInput(e.target.value, 100) }));
+                                setSignupData((p) => ({ ...p, name: normalizeAuthName(e.target.value) }));
                                 setError('');
                               }}
                               className={inputClass}
