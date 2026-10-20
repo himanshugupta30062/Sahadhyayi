@@ -2,17 +2,31 @@ import { useAuth as useBaseAuth } from './AuthContext';
 import type { AuthError, Provider } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client-universal';
 
+export const normalizeAuthEmail = (email: string): string =>
+  email.trim().toLowerCase();
+
+export const normalizeAuthName = (name: string): string =>
+  name
+    .replace(/[\\u0000-\\u001F\\u007F]/g, ' ')
+    .replace(/\\s+/g, ' ')
+    .trim()
+    .slice(0, 100);
+
 export const useAuth = () => {
   const base = useBaseAuth();
 
   const signUp = async (email: string, password: string, fullName?: string): Promise<{ error: AuthError | null }> => {
-    const redirectUrl = `${window.location.origin}/`;
+    // Do not HTML-encode identity fields. React escapes rendered text, and
+    // HTML entities would change valid email local-parts (for example '&' or '/').
+    const normalizedEmail = normalizeAuthEmail(email);
+    const normalizedName = fullName ? normalizeAuthName(fullName) : '';
+
     const { error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
-        data: fullName ? { full_name: fullName } : undefined,
+        emailRedirectTo: `${window.location.origin}/`,
+        data: normalizedName ? { full_name: normalizedName } : undefined,
       },
     });
     return { error };
