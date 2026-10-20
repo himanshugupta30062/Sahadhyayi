@@ -50,9 +50,8 @@ ALTER TABLE public.detailed_reading_progress
 -- Keep the legacy book_id for backwards compatibility, and map summaries to canonical IDs.
 ALTER TABLE public.book_audio_summaries
   ADD COLUMN IF NOT EXISTS library_book_id uuid REFERENCES public.books_library(id) ON DELETE CASCADE;
-CREATE UNIQUE INDEX IF NOT EXISTS book_audio_summaries_library_book_id_key
-  ON public.book_audio_summaries(library_book_id)
-  WHERE library_book_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS book_audio_summaries_library_book_id_unique
+  ON public.book_audio_summaries(library_book_id);
 
 UPDATE public.book_audio_summaries
 SET library_book_id = '35194597-5087-45df-8680-30db00f1b706'::uuid
