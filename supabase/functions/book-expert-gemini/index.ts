@@ -265,6 +265,34 @@ async function retrieveLibraryBooks(supabaseClient: any, text: string): Promise<
     .map((item) => item.book);
 }
 
+async function retrieveFeaturedLibraryBooks(supabaseClient: any): Promise<BookRecord[]> {
+  const selectFields = "id,title,author,genre,description,cover_image_url,publication_year,language,pdf_url";
+  try {
+    // A small UUID-ordered sample gives the "meet a book" experience real catalog
+    // records even when the visitor has not chosen a genre or search term yet.
+    const { data, error } = await supabaseClient
+      .from("books_library")
+      .select(selectFields)
+      .not("title", "is", null)
+      .order("id", { ascending: true })
+      .limit(40);
+    if (error || !Array.isArray(data)) {
+      console.error("Book Expert featured-book lookup is unavailable.");
+      return [];
+    }
+
+    const candidates = data.filter((row: any) => row && row.id && typeof row.title === "string" && row.title.trim());
+    for (let index = candidates.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [candidates[index], candidates[swapIndex]] = [candidates[swapIndex], candidates[index]];
+    }
+    return candidates.slice(0, LIMITS.maxRetrievedBooks) as BookRecord[];
+  } catch {
+    console.error("Book Expert featured-book lookup failed.");
+    return [];
+  }
+}
+
 async function generateQueryEmbedding(text: string, apiKey: string): Promise<number[]> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -407,6 +435,7 @@ function getSystemInstruction(): string {
     "Never invent a book, author, publication year, library listing, cover, PDF availability, or URL. If the supplied library does not establish a fact, clearly say so or describe it as general knowledge.",
     "A returned readingUrl comes from a legacy catalog field and may open a preview or reading page. Say a direct PDF is available only when isDirectPdf is true; otherwise describe it as a reading link.",
     "When recommending supplied books, explain briefly why each fits the reader's stated interest. Prefer concise, scannable answers and ask one focused follow-up only when it would materially improve the recommendation.",
+    "If the reader asks to meet or hear from a book, you may use playful first-person personification as a creative device, but clearly identify the real title and author only from verified catalog records supplied in the current request. Never claim a book is in Sahadhyayi unless a matching catalog record was retrieved. If no matching record was retrieved, be transparent and invite the reader to search by genre or topic.",
     "When no relevant library records are supplied, answer general literary questions from your knowledge while distinguishing uncertainty from verified Sahadhyayi catalog data.",
     "Do not claim to have read the user's private bookshelf or account information unless it is explicitly supplied in the conversation.",
     "Respect the requested language. Be spoiler-conscious: warn before revealing major plot details when the reader asks about a book's ending or twists.",
@@ -644,6 +673,12 @@ serve(async (req: Request) => {
     let libraryBooks: BookRecord[] = [];
     try {
       libraryBooks = await retrieveLibraryBooks(supabaseClient, text);
+      if (
+        libraryBooks.length === 0 &&
+        /\bmeet (?:another )?book\b|\bintroduce me to\b|\btalking book\b|\bhear from a book\b/i.test(text)
+      ) {
+        libraryBooks = await retrieveFeaturedLibraryBooks(supabaseClient);
+      }
     } catch {
       // Keep general literary help available if catalog search is temporarily unavailable.
       console.error("Book Expert library retrieval failed.");
