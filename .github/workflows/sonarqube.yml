@@ -60,6 +60,11 @@ jobs:
         run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @vitest/coverage-v8@1.6.1
 
       - name: Run tests and generate LCOV coverage
+        id: coverage_tests
+        # Preserve the test failure outcome so Sonar can still receive the generated
+        # coverage report. A final step below keeps the Analysis job failed if any
+        # tests fail; this is not a green waiver.
+        continue-on-error: true
         # Use an intentionally unreachable local Supabase endpoint for unit tests;
         # never use production credentials for coverage runs.
         env:
@@ -68,9 +73,12 @@ jobs:
         run: npm test -- --coverage --coverage.provider=v8 --coverage.reporter=lcov --coverage.reporter=text
 
       - name: Verify LCOV report exists
+        id: verify_lcov
+        if: always()
         run: test -s coverage/lcov.info
 
       - name: Analyze with SonarQube Cloud
+        if: always() && steps.verify_lcov.outcome == 'success'
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -83,3 +91,9 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.tests=src/__tests__
             -Dsonar.verbose=true
+
+      - name: Keep test failures visible
+        if: always() && steps.coverage_tests.outcome == 'failure'
+        run: |
+          echo "::error::The Vitest suite failed. Review the test output before merging; Sonar analysis was allowed to run only to publish coverage."
+          exit 1
