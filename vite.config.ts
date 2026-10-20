@@ -73,10 +73,10 @@ export default defineConfig(({ mode }) => ({
           router: ['react-router-dom'],
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-toast'],
           query: ['@tanstack/react-query'],
-          supabase: ['@supabase/supabase-js'],
-          // Consolidate the many tiny icon modules into one shared chunk.
-          // This improves Brotli compression across the complete client bundle.
-          icons: ['lucide-react']
+          supabase: ['@supabase/supabase-js']
+          // Keep lucide-react out of a forced package-wide manual chunk.
+          // Explicitly chunking the package entry can pull unused icon modules
+          // into the aggregate client bundle and weaken tree-shaking.
         }
       }
     },
