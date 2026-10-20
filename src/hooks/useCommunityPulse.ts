@@ -623,17 +623,17 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               statsPayload = {
                 ...statsPayload,
                 avgTimeOnSite: averageSeconds === null
-                  ? 'Not tracked yet'
+                  ? '—'
                   : averageSeconds < 60
                     ? `${Math.round(averageSeconds)} sec`
                     : `${Math.floor(averageSeconds / 60)} min ${Math.round(averageSeconds % 60)} sec`,
                 avgTimeChange: undefined,
               };
             } else {
-              statsPayload = { ...statsPayload, avgTimeOnSite: 'Not tracked yet' };
+              statsPayload = { ...statsPayload, avgTimeOnSite: '—' };
             }
           } catch {
-            statsPayload = { ...statsPayload, avgTimeOnSite: 'Not tracked yet' };
+            statsPayload = { ...statsPayload, avgTimeOnSite: '—' };
           }
           setStats(statsPayload);
           setError(null);

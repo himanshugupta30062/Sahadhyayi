@@ -14,7 +14,7 @@ describe('persistent book reviews', () => {
   });
   it('restricts review writes to the owning authenticated reader', () => {
     expect(migration).toMatch(/auth\.uid\(\) = user_id/i);
-    expect(migration).toMatch(/revoke all on public\.book_reviews from anon/i);
+    expect(migration).toMatch(/revoke all on public\.book_reviews from (?:public,\s*)?anon/i);
     expect(hook).toMatch(/eq\('user_id', user\.id\)/);
   });
   it('supports spoiler-aware reviews and durable upsert/delete flows', () => {

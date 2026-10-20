@@ -273,7 +273,11 @@ describe('Authenticated App Shell & Dashboard (Phase 4)', () => {
 
   describe('Notification and Message Controls Accessibility', () => {
     it('announces unread count for notifications via aria-label', () => {
-      render(<NotificationDropdown />);
+      render(
+        <MemoryRouter>
+          <NotificationDropdown />
+        </MemoryRouter>
+      );
 
       const button = screen.getByRole('button', {
         name: '3 unread notifications',
@@ -283,7 +287,11 @@ describe('Authenticated App Shell & Dashboard (Phase 4)', () => {
 
     it('falls back to default label when there are no unread notifications', () => {
       mockUnreadNotifications = 0;
-      render(<NotificationDropdown />);
+      render(
+        <MemoryRouter>
+          <NotificationDropdown />
+        </MemoryRouter>
+      );
 
       const button = screen.getByRole('button', {
         name: 'Notifications',
@@ -292,7 +300,11 @@ describe('Authenticated App Shell & Dashboard (Phase 4)', () => {
     });
 
     it('announces unread count for messages via aria-label', () => {
-      render(<MessageDropdown />);
+      render(
+        <MemoryRouter>
+          <MessageDropdown />
+        </MemoryRouter>
+      );
 
       const button = screen.getByRole('button', {
         name: '2 unread messages',
