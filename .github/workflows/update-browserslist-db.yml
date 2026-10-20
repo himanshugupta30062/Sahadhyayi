@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - chore/update-browserslist-database
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -27,7 +28,10 @@ jobs:
       - name: Install current lockfile dependencies
         run: npm ci
       - name: Refresh caniuse-lite with the official updater
-        run: npx --yes update-browserslist-db@latest
+        run: |
+          # Sahadhyayi uses npm and package-lock.json. Ensure stray lockfiles do not trigger alternative package managers.
+          rm -f bun.lock bun.lockb pnpm-lock.yaml yarn.lock deno.lock
+          npx --yes update-browserslist-db@latest
       - name: Commit the lockfile refresh
         shell: bash
         run: |
