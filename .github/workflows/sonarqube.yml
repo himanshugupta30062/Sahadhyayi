@@ -13,9 +13,7 @@ permissions:
 
 jobs:
   Analysis:
-    # Follow GitHub's supported runner image rather than pinning to a retiring image.
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -27,7 +25,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
-          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'sahadhyayi' }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'himanshugupta30062_Sahadhyayi' }}
         run: |
           if [ -z "$SONAR_TOKEN" ]; then
             echo "::error::Missing GitHub Actions secret SONAR_TOKEN."
@@ -41,16 +39,20 @@ jobs:
             echo "::error::Missing repository Actions variable SONAR_PROJECT_KEY."
             exit 1
           fi
+          if [ "$SONAR_HOST_URL" != "https://sonarcloud.io" ]; then
+            echo "::error::SONAR_HOST_URL must be https://sonarcloud.io for SonarQube Cloud."
+            exit 1
+          fi
 
       - name: Analyze with SonarQube Cloud
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
         with:
           args: >
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'sahadhyayi' }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'himanshugupta30062_Sahadhyayi' }}
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.sources=src
             -Dsonar.tests=src/__tests__
