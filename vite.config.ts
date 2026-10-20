@@ -86,7 +86,11 @@ export default defineConfig(({ mode }) => ({
       }
     },
     terserOptions: {
+      // All Vite output chunks are ES modules. Let Terser apply module-level
+      // dead-code elimination and top-level mangling without unsafe transforms.
+      module: true,
       compress: {
+        passes: 2,
         drop_console: true,
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info', 'console.debug']
