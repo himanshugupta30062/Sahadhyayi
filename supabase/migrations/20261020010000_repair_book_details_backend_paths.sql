@@ -79,6 +79,11 @@ CREATE POLICY "Public can read audio summaries" ON storage.objects
   FOR SELECT TO anon, authenticated USING (bucket_id = 'audio-summaries');
 DROP POLICY IF EXISTS "Authenticated users can upload audio summaries" ON storage.objects;
 CREATE POLICY "Authenticated users can upload audio summaries" ON storage.objects
-  FOR INSERT TO authenticated WITH CHECK (bucket_id = 'audio-summaries');
+  FOR INSERT TO authenticated WITH CHECK (bucket_id = 'audio-summaries' AND public.is_admin());
+
+CREATE POLICY "Admins can create audio summaries" ON public.book_audio_summaries
+  FOR INSERT TO authenticated WITH CHECK (is_admin());
+CREATE POLICY "Admins can update audio summaries" ON public.book_audio_summaries
+  FOR UPDATE TO authenticated USING (is_admin()) WITH CHECK (is_admin());
 
 NOTIFY pgrst, 'reload schema';
