@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, UserPlus, MessageCircle, Users, Loader2, Check, X } from 'lucide-react';
 import { useUserSearch, useAllUsers } from '@/hooks/useUserSearch';
 import { useFriends, useSendFriendRequest, useFriendRequests, useRespondToFriendRequest, useCancelFriendRequest } from '@/hooks/useFriends';
-import { useToggleUserFollow, useUserFollows } from '@/hooks/useUserFollows';
+import { useToggleUserFollow, useUserFollows, useFollowedReaders } from '@/hooks/useUserFollows';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/authHelpers';
 import { ChatWindow } from '@/components/social/ChatWindow';
@@ -29,6 +29,7 @@ export const EnhancedFriendsManager = () => {
   const respondToFriendRequest = useRespondToFriendRequest();
   const cancelFriendRequest = useCancelFriendRequest();
   const { data: followingIds = [] } = useUserFollows();
+  const { data: followedReaders = [], isLoading: isLoadingFollowed, error: followedReadersError } = useFollowedReaders();
   const toggleUserFollow = useToggleUserFollow();
 
   const handleSendFriendRequest = async (userId: string, userName: string) => {
@@ -53,7 +54,7 @@ export const EnhancedFriendsManager = () => {
       await toggleUserFollow.mutateAsync({ targetUserId, isFollowing });
       toast({
         title: isFollowing ? 'Unfollowed reader' : 'Following reader',
-        description: isFollowing ? `You no longer follow ${targetUserName}.` : `You will see more from ${targetUserName} as the Following feed is introduced.`,
+        description: isFollowing ? `You no longer follow ${targetUserName}.` : `${targetUserName} is now in your Following list.`,
       });
     } catch (error) {
       console.error('Failed to update reader follow:', error);
@@ -129,7 +130,7 @@ export const EnhancedFriendsManager = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="discover" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-muted/60 rounded-xl p-1">
+            <TabsList className="grid w-full grid-cols-4 mb-6 bg-muted/60 rounded-xl p-1">
               <TabsTrigger value="discover" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <Search className="w-4 h-4" />
                 <span className="hidden sm:inline">Discover</span>
@@ -137,6 +138,10 @@ export const EnhancedFriendsManager = () => {
               <TabsTrigger value="friends" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">Friends</span> ({friends.length})
+              </TabsTrigger>
+              <TabsTrigger value="following" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
+                <Check className="w-4 h-4" />
+                <span className="hidden sm:inline">Following</span> ({followingIds.length})
               </TabsTrigger>
               <TabsTrigger value="requests" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <UserPlus className="w-4 h-4" />
@@ -234,6 +239,55 @@ export const EnhancedFriendsManager = () => {
                   </>
                 )}
               </div>
+            </TabsContent>
+
+            <TabsContent value="following" className="space-y-4">
+              {isLoadingFollowed ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
+                  <span className="ml-2 text-muted-foreground">Loading followed readers...</span>
+                </div>
+              ) : followedReadersError ? (
+                <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                  Could not load your Following list. Please try again by reopening this tab.
+                </div>
+              ) : followedReaders.length > 0 ? (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {followedReaders.map((reader) => (
+                    <UserCard
+                      key={reader.id}
+                      user={reader}
+                      onSendRequest={handleSendFriendRequest}
+                      getInitials={getInitials}
+                      isFriend={friends.some(f => f.friend_profile?.id === reader.id)}
+                      hasPendingRequest={pendingUserIds.has(reader.id)}
+                      isFollowing={followingIds.includes(reader.id)}
+                      isFollowPending={toggleUserFollow.isPending}
+                      onToggleFollow={handleToggleFollow}
+                      onMessage={(id) => setChatId(id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+                    <Users className="w-8 h-8 text-brand-primary" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">You’re not following any readers yet</p>
+                  <p className="text-xs">Discover readers and follow people whose book interests you share.</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-4 border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg"
+                    onClick={() => {
+                      const discoverTab = document.querySelector('[data-value="discover"]');
+                      if (discoverTab instanceof HTMLElement) discoverTab.click();
+                    }}
+                  >
+                    Discover readers
+                  </Button>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="friends" className="space-y-4">
