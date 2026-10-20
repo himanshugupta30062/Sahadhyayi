@@ -77,11 +77,10 @@ Do not optimize vanity metrics or seed fake engagement.
 5. Book-centric content and group/reading-room integration.
 6. Safety, accessibility, performance and product analytics.
 
-## Status in this PR
-- Implemented: feed query failures propagate to React Query's error state rather than being converted to an empty feed; plain-query fallback errors are surfaced.
-- Implemented: stable `created_at DESC, id DESC` ordering and 25-post cursor pages with a “Load older posts” control, loading feedback, and a retryable error state.
-- Implemented: regression tests cover the visible feed error/retry state and the older-post control.
-- Implemented: the reader suggestion action now says “Add friend” because it sends a mutual friend request; it no longer incorrectly implies a one-way follow.
-- Added: this staged plan and acceptance criteria.
-- Not yet implemented: a true one-way follow graph, feed-mode semantics based on follows, audience schema/RLS changes, private/friends-only visibility, broader discovery redesign, messaging consolidation, and production moderation workflows. These require focused schema/policy review and tests before safe rollout.
-- Validation: source changes have been committed to the feature branch. Build, lint, and Vitest results still need to be verified; do not treat this PR as production-ready until checks pass.
+## Status in the follow-graph phase
+- Existing feed reliability work is in PR #664: surfaced feed errors, stable 25-post cursor pagination, retry states and regression coverage.
+- Implemented in this phase: a dedicated `public.user_follows` migration with a composite primary key, no-self-follow constraint, index for follower lookup, RLS enabled, participant-only relationship reads, and authenticated self-only follow/unfollow writes.
+- Implemented in this phase: `useUserFollows` and `useToggleUserFollow` hooks plus distinct Follow/Following controls on reader discovery cards. Mutual friendship requests remain separate from one-way follows.
+- Migration is a deploy prerequisite for the new UI; apply the migration through the normal Supabase migration process before deploying the frontend changes.
+- Not yet implemented: a Following feed tab, public follower/following counts, audience schema/RLS changes, private/friends-only visibility, expanded profile discovery, messaging consolidation, and production moderation workflows. These require separate authorization design and tests.
+- Validation: build, lint and Vitest results must be checked in CI; do not treat this phase as production-ready until checks pass.
