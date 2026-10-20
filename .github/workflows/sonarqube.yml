@@ -60,6 +60,11 @@ jobs:
         run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @vitest/coverage-v8@1.6.1
 
       - name: Run tests and generate LCOV coverage
+        # Use an intentionally unreachable local Supabase endpoint for unit tests;
+        # never use production credentials for coverage runs.
+        env:
+          VITE_SUPABASE_URL: http://127.0.0.1:54321
+          VITE_SUPABASE_ANON_KEY: test-public-anon-key
         run: npm test -- --coverage --coverage.provider=v8 --coverage.reporter=lcov --coverage.reporter=text
 
       - name: Verify LCOV report exists
