@@ -110,6 +110,7 @@ export function TurnstileCaptcha({ onTokenChange }: TurnstileCaptchaProps) {
           },
           'expired-callback': () => {
             if (cancelled) return;
+            setStatus('loading');
             onTokenChangeRef.current(null);
           },
           'error-callback': () => {
