@@ -54,7 +54,7 @@ export function useSaveBookReview(bookId: string | undefined) {
       const reviewText = input.reviewText.trim();
       if (!reviewText || reviewText.length > 5000) throw new Error('Review must be between 1 and 5,000 characters.');
       const client = supabase as any;
-      const { data, error } = await client.from('book_reviews').upsert({
+      const { data, error } = await client.from('book_reviews' as any).upsert({
         book_id: bookId,
         user_id: user.id,
         review_text: reviewText,
