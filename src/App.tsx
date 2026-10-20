@@ -63,6 +63,18 @@ const ArticleWrite = lazy(() => import('./pages/ArticleWrite'));
 const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
 const MyArticles = lazy(() => import('./pages/MyArticles'));
 
+const AuthorConnect = lazy(() => import('./pages/AuthorConnect'));
+const AuthorProfilePage = lazy(() => import('./pages/AuthorProfile'));
+const ReaderMap = lazy(() => import('./pages/ReaderMap'));
+const Investors = lazy(() => import('./pages/Investors'));
+const QuotesPage = lazy(() => import('./pages/Quotes'));
+const CommunityStories = lazy(() => import('./pages/CommunityStories'));
+const BookLibrary = lazy(() => import('./pages/BookLibrary'));
+const DmcaPolicy = lazy(() => import('./pages/DmcaPolicy'));
+const OpenSourceLicenses = lazy(() => import('./pages/OpenSourceLicenses'));
+const SignIn = lazy(() => import('./pages/SignIn'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+
 // Footer pages (lowest priority)
 const HelpCenter = lazy(() => import('./pages/HelpCenter'));
 const Feedback = lazy(() => import('./pages/Feedback'));
@@ -179,8 +191,8 @@ const App = memo(() => {
                         {/* Critical routes - no lazy loading */}
                         <Route path="/" element={<Index />} />
                         <Route path="/auth" element={<Auth />} />
-                        <Route path="/signup" element={<Auth />} />
-                        <Route path="/signin" element={<Auth />} />
+                        <Route path="/signup" element={<Suspense fallback={<LoadingFallback />}><SignUp /></Suspense>} />
+                        <Route path="/signin" element={<Suspense fallback={<LoadingFallback />}><SignIn /></Suspense>} />
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/confirm-email" element={<ConfirmEmail />} />
                         
@@ -375,9 +387,11 @@ const App = memo(() => {
                         <Route
                           path="/articles/write"
                           element={
-                            <Suspense fallback={<LoadingFallback />}>
-                              <ArticleWrite />
-                            </Suspense>
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <ArticleWrite />
+                              </Suspense>
+                            </ProtectedRoute>
                           }
                         />
                         <Route
@@ -521,6 +535,17 @@ const App = memo(() => {
                             </Suspense>
                           }
                         />
+
+                        <Route path="/author-connect" element={<Suspense fallback={<LoadingFallback />}><AuthorConnect /></Suspense>} />
+                        <Route path="/author-profile/:authorName" element={<Suspense fallback={<LoadingFallback />}><AuthorProfilePage /></Suspense>} />
+                        <Route path="/reader-map/:bookId?" element={<Suspense fallback={<LoadingFallback />}><ReaderMap /></Suspense>} />
+                        <Route path="/investors" element={<Suspense fallback={<LoadingFallback />}><Investors /></Suspense>} />
+                        <Route path="/quotes" element={<Suspense fallback={<LoadingFallback />}><QuotesPage /></Suspense>} />
+                        <Route path="/community-stories" element={<Suspense fallback={<LoadingFallback />}><CommunityStories /></Suspense>} />
+                        <Route path="/book-library" element={<Suspense fallback={<LoadingFallback />}><BookLibrary /></Suspense>} />
+                        <Route path="/dmca" element={<Suspense fallback={<LoadingFallback />}><DmcaPolicy /></Suspense>} />
+                        <Route path="/dmca-policy" element={<Navigate to="/dmca" replace />} />
+                        <Route path="/open-source-licenses" element={<Suspense fallback={<LoadingFallback />}><OpenSourceLicenses /></Suspense>} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
