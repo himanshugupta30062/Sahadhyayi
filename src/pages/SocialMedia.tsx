@@ -49,6 +49,16 @@ const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRo
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
 
 const VALID_SOCIAL_TABS = ['feed', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
+const SOCIAL_TAB_LABELS: Record<string, string> = {
+  feed: 'Community Feed',
+  rooms: 'Reading Rooms',
+  threads: 'Book Discussions',
+  margins: 'Shared Marginalia',
+  dna: 'Reading DNA',
+  friends: 'Friends',
+  map: 'Reader Map',
+  groups: 'Reading Groups',
+};
 
 // Reusable lazy-load fallback
 const TabLoader = () => (
@@ -290,7 +300,7 @@ const SocialMedia: React.FC = () => {
     );
   };
 
-    const handleSendRequest = async (userId: string, name: string) => {
+  const handleSendRequest = async (userId: string, name: string) => {
     try {
       await sendFriendRequest.mutateAsync({ addresseeId: userId });
       toast.success(`Friend request sent to ${name}!`);
@@ -345,15 +355,7 @@ const SocialMedia: React.FC = () => {
                     </button>
                     <span aria-hidden="true" className="text-[#A5ADA6]">/</span>
                     <span className="font-medium text-[#636B65] dark:text-[#A5ADA6]">
-                      {{
-                        rooms: 'Reading Rooms',
-                        threads: 'Book Discussions',
-                        margins: 'Shared Marginalia',
-                        dna: 'Reading DNA',
-                        friends: 'Friends',
-                        map: 'Reader Map',
-                        groups: 'Reading Groups',
-                      }[activeTab] || 'Community'}
+                      {SOCIAL_TAB_LABELS[activeTab] || 'Community'}
                     </span>
                   </div>
                 )}
