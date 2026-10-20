@@ -7,6 +7,7 @@ import { errorHandler } from '@/utils/errorHandler';
 import usePageVisitTracker from '@/hooks/usePageVisitTracker';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { isSupabaseConfigured } from "@/integrations/supabase/client-universal";
 import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRFToken } from '@/utils/security.ts';
 
 // Context imports
@@ -162,6 +163,31 @@ const App = memo(() => {
     
     return () => clearInterval(intervalId);
   }, []);
+
+  if (!isSupabaseConfigured) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-6 py-12 text-foreground">
+        <section role="alert" className="w-full max-w-xl rounded-2xl border border-border bg-card p-8 shadow-lg">
+          <h1 className="text-2xl font-semibold">Sahadhyayi is temporarily unavailable</h1>
+          <p className="mt-3 text-muted-foreground">
+            The production site is missing its public Supabase configuration. The application has loaded safely,
+            but account, library, and community data cannot be connected yet.
+          </p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Hosting configuration required: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. Configure these in the
+            deployment environment and redeploy the site.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-6 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground"
+          >
+            Retry connection
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <ErrorBoundary>
