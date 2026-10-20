@@ -12,6 +12,17 @@ const challengeHook = readFileSync(
   new URL('../../src/hooks/useReadingChallenges.ts', import.meta.url),
   'utf8',
 );
+const distinctProgressFix = readFileSync(
+  new URL(
+    '../../supabase/migrations/20261020200000_count_distinct_completed_books.sql',
+    import.meta.url,
+  ),
+  'utf8',
+);
+const bookshelfHook = readFileSync(
+  new URL('../../src/hooks/useUserBookshelf.ts', import.meta.url),
+  'utf8',
+);
 
 describe('persistent reading challenges and achievements', () => {
   it('creates challenge participation tables with per-user uniqueness', () => {
