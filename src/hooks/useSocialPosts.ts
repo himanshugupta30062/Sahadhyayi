@@ -285,11 +285,49 @@ export const useSocialPosts = () => {
           books_library: post.books_library || bookMap.get(post.book_id) || null,
         }));
 
+        // Keep repost cards as rich as the first page instead of rendering them
+        // as blank posts when the original post is on another page.
+        const repostIds = Array.from(new Set(olderPosts.map((post: any) => post.repost_of_id).filter(Boolean)));
+        if (repostIds.length > 0) {
+          const { data: originals } = await supabase.from('posts').select('*').in('id', repostIds);
+          if (originals?.length) {
+            const originalUserIds = Array.from(new Set(originals.map((post: any) => post.user_id).filter(Boolean)));
+            const originalBookIds = Array.from(new Set(originals.map((post: any) => post.book_id).filter(Boolean)));
+            const [originalProfiles, originalBooks] = await Promise.all([
+              originalUserIds.length
+                ? (supabase as any).from('public_profiles').select('id, full_name, username, profile_photo_url').in('id', originalUserIds)
+                : Promise.resolve({ data: [] }),
+              originalBookIds.length
+                ? supabase.from('books_library').select('id, title, author, cover_image_url').in('id', originalBookIds)
+                : Promise.resolve({ data: [] }),
+            ]);
+            const originalProfileMap = new Map((originalProfiles.data || []).map((profile: any) => [profile.id, profile]));
+            const originalBookMap = new Map((originalBooks.data || []).map((book: any) => [book.id, book]));
+            const originalMap = new Map(originals.map((post: any) => [post.id, {
+              ...post,
+              profiles: originalProfileMap.get(post.user_id) || null,
+              books_library: originalBookMap.get(post.book_id) || null,
+            }]));
+            olderPosts = olderPosts.map((post: any) => ({
+              ...post,
+              reposted_post: post.repost_of_id ? originalMap.get(post.repost_of_id) || null : null,
+            }));
+          }
+        }
+
         if (user?.id) {
           const ids = olderPosts.map((post: any) => post.id);
-          const { data: likes } = await supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', ids);
-          const likedIds = new Set((likes || []).map((like: any) => like.post_id));
-          olderPosts = olderPosts.map((post: any) => ({ ...post, user_liked: likedIds.has(post.id) }));
+          const [likesResult, repostsResult] = await Promise.all([
+            supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', ids),
+            supabase.from('posts').select('repost_of_id').eq('user_id', user.id).not('repost_of_id', 'is', null).in('repost_of_id', ids),
+          ]);
+          const likedIds = new Set((likesResult.data || []).map((like: any) => like.post_id));
+          const repostedIds = new Set((repostsResult.data || []).map((repost: any) => repost.repost_of_id));
+          olderPosts = olderPosts.map((post: any) => ({
+            ...post,
+            user_liked: likedIds.has(post.id),
+            user_reposted: repostedIds.has(post.id),
+          }));
         }
 
         queryClient.setQueryData<SocialPost[]>(['social-posts', user?.id], (current = []) => {
