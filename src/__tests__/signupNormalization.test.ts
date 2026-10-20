@@ -58,6 +58,21 @@ describe('signup input normalization', () => {
     });
   });
 
+  it('rejects signup without a challenge token before calling Supabase', async () => {
+    const { result } = renderHook(() => useAuth());
+
+    let response: { error: unknown } | undefined;
+    await act(async () => {
+      response = await result.current.signUp('reader@example.com', 'ValidPass1', 'Reader', '');
+    });
+
+    expect(response?.error).toMatchObject({
+      name: 'CaptchaRequiredError',
+      status: 400,
+    });
+    expect(mockSignUp).not.toHaveBeenCalled();
+  });
+
   it('does not block registration when browser storage throws', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('Storage disabled by browser privacy settings');
