@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  MessageCircle,
   MapPin,
   UsersIcon,
   Users,
@@ -22,7 +21,6 @@ import {
   Plus,
   ArrowLeft,
   ChevronRight,
-  Compass,
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
