@@ -80,6 +80,7 @@ export const useUserBooks = () => {
             cover_url
           )
         `)
+        .eq('user_id', user!.id)
         .order('added_at', { ascending: false });
 
       if (error) throw error;
