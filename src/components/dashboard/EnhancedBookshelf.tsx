@@ -1,14 +1,22 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Clock, CheckCircle, Plus } from 'lucide-react';
+import { BookOpen, Clock, CheckCircle, Plus, Share2, Check } from 'lucide-react';
 import { useUserBookshelf } from '@/hooks/useUserBookshelf';
+import { useCreatePost } from '@/hooks/useSocialPosts';
 import { Link } from 'react-router-dom';
+
+const statusCopy: Record<string, string> = {
+  reading: 'started reading',
+  completed: 'finished reading',
+  want_to_read: 'added to their want-to-read list',
+};
 
 const EnhancedBookshelf = () => {
   const { data: bookshelf = [], isLoading } = useUserBookshelf();
+  const createPost = useCreatePost();
+  const [sharedItems, setSharedItems] = useState<Record<string, string>>({});
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -24,6 +32,28 @@ const EnhancedBookshelf = () => {
       case 'reading': return <Clock className="w-3 h-3" />;
       case 'completed': return <CheckCircle className="w-3 h-3" />;
       default: return <BookOpen className="w-3 h-3" />;
+    }
+  };
+
+  const shareReadingUpdate = async (item: (typeof bookshelf)[number]) => {
+    const title = item.books_library?.title || 'a book';
+    const author = item.books_library?.author;
+    const content = item.status === 'completed'
+      ? `I finished reading “${title}”${author ? ` by ${author}` : ''}. 📚`
+      : item.status === 'reading'
+        ? `I started reading “${title}”${author ? ` by ${author}` : ''}. 📖`
+        : `I added “${title}”${author ? ` by ${author}` : ''} to my want-to-read list. 📚`;
+    try {
+      await createPost.mutateAsync({
+        content,
+        book_id: item.book_id,
+        feeling_emoji: item.status === 'completed' ? '🎉' : '📚',
+        feeling_label: item.status === 'completed' ? 'Finished a book' : 'Reading update',
+        audience: 'friends',
+      });
+      setSharedItems((current) => ({ ...current, [item.id]: item.status }));
+    } catch {
+      // useCreatePost already reports the failure through the app toast.
     }
   };
 
@@ -51,9 +81,7 @@ const EnhancedBookshelf = () => {
           My Bookshelf ({bookshelf.length})
         </CardTitle>
         <Link to="/bookshelf">
-          <Button size="sm" variant="outline">
-            View All
-          </Button>
+          <Button size="sm" variant="outline">View All</Button>
         </Link>
       </CardHeader>
       <CardContent>
@@ -63,51 +91,55 @@ const EnhancedBookshelf = () => {
             <p className="text-gray-500 mb-4">Your bookshelf is empty</p>
             <Link to="/library">
               <Button className="bg-amber-600 hover:bg-amber-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Books
+                <Plus className="w-4 h-4 mr-2" /> Add Books
               </Button>
             </Link>
           </div>
         ) : (
           <div className="space-y-3">
-            {bookshelf.slice(0, 5).map((item) => (
-              <Link
-                key={item.id}
-                to={`/book/${item.book_id}`}
-                className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group"
-              >
-                {item.books_library?.cover_image_url ? (
-                  <img
-                    src={item.books_library.cover_image_url}
-                    alt={item.books_library?.title}
-                    className="w-10 h-14 object-cover rounded shadow-sm group-hover:scale-105 transition-transform"
-                  />
-                ) : (
-                  <div className="w-10 h-14 bg-amber-100 rounded flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-amber-600" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 truncate group-hover:text-amber-800 transition-colors">
-                    {item.books_library?.title || 'Unknown Title'}
-                  </h4>
-                  <p className="text-sm text-gray-500 truncate">
-                    {item.books_library?.author || 'Unknown Author'}
-                  </p>
-                  <Badge className={`${getStatusColor(item.status)} mt-1`}>
-                    {getStatusIcon(item.status)}
-                    <span className="ml-1 capitalize">{item.status?.replace('_', ' ')}</span>
-                  </Badge>
+            {bookshelf.slice(0, 5).map((item) => {
+              const title = item.books_library?.title || 'Unknown Title';
+              const isShared = sharedItems[item.id] === item.status;
+              return (
+                <div key={item.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <Link to={`/book/${item.book_id}`} className="flex flex-1 min-w-0 items-center gap-3 group">
+                    {item.books_library?.cover_image_url ? (
+                      <img src={item.books_library.cover_image_url} alt={title} className="w-10 h-14 object-cover rounded shadow-sm group-hover:scale-105 transition-transform" />
+                    ) : (
+                      <div className="w-10 h-14 bg-amber-100 rounded flex items-center justify-center shrink-0">
+                        <BookOpen className="w-5 h-5 text-amber-600" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900 truncate group-hover:text-amber-800 transition-colors">{title}</h4>
+                      <p className="text-sm text-gray-500 truncate">{item.books_library?.author || 'Unknown Author'}</p>
+                      <Badge className={`${getStatusColor(item.status)} mt-1`}>
+                        {getStatusIcon(item.status)}
+                        <span className="ml-1 capitalize">{item.status?.replace('_', ' ')}</span>
+                      </Badge>
+                    </div>
+                  </Link>
+                  <Button
+                    size="sm"
+                    variant={isShared ? 'outline' : 'secondary'}
+                    disabled={createPost.isPending || isShared}
+                    onClick={() => void shareReadingUpdate(item)}
+                    aria-label={isShared ? `Reading update shared for ${title}` : `Share reading update for ${title}`}
+                    title={`Share with friends: ${statusCopy[item.status] || 'reading update'}`}
+                    className="shrink-0"
+                  >
+                    {isShared ? <Check className="w-4 h-4 mr-1" /> : <Share2 className="w-4 h-4 mr-1" />}
+                    {isShared ? 'Shared' : 'Share'}
+                  </Button>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
             {bookshelf.length > 5 && (
               <Link to="/bookshelf">
-                <Button variant="ghost" className="w-full">
-                  View {bookshelf.length - 5} more books
-                </Button>
+                <Button variant="ghost" className="w-full">View {bookshelf.length - 5} more books</Button>
               </Link>
             )}
+            <p className="text-xs text-gray-500">Reading updates are only posted when you choose Share, and are shared with friends by default.</p>
           </div>
         )}
       </CardContent>
