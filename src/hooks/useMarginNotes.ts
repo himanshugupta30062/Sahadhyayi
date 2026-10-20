@@ -48,7 +48,7 @@ export const useMarginNotes = (options?: { bookId?: string; filter?: "all" | "fr
       let q = supabase
         .from("margin_notes")
         .select(
-          "id, user_id, book_id, page, quote, note, visibility, reactions_count, replies_count, created_at, books_library:book_id(title, author, cover_image_url), profiles:user_id(full_name, profile_photo_url, username)"
+          "id, user_id, book_id, page, quote, note, visibility, reactions_count, replies_count, created_at"
         )
         .order("created_at", { ascending: false })
         .limit(50);
@@ -65,7 +65,17 @@ export const useMarginNotes = (options?: { bookId?: string; filter?: "all" | "fr
       const { data, error } = await q;
       if (error) throw error;
 
-      const notes = (data ?? []) as unknown as MarginNote[];
+      const rawNotes = (data ?? []) as unknown as MarginNote[];
+      const bookIds = [...new Set(rawNotes.map((n) => n.book_id).filter(Boolean))];
+      const userIds = [...new Set(rawNotes.map((n) => n.user_id).filter(Boolean))];
+      const [booksResult, profilesResult] = await Promise.all([
+        bookIds.length ? supabase.from("books_library").select("id, title, author, cover_image_url").in("id", bookIds) : Promise.resolve({ data: [], error: null } as any),
+        userIds.length ? (supabase as any).from("public_profiles").select("*").in("id", userIds) : Promise.resolve({ data: [], error: null } as any),
+      ]);
+      if (booksResult.error) throw booksResult.error;
+      const booksById = new Map((booksResult.data ?? []).map((b: any) => [b.id, b]));
+      const profilesById = new Map((profilesResult.data ?? []).map((p: any) => [p.id, p]));
+      const notes = rawNotes.map((n) => ({ ...n, books_library: booksById.get(n.book_id) ?? null, profiles: profilesById.get(n.user_id) ?? null }));
 
       // Fetch current user's reactions for these notes if authenticated
       if (user && notes.length > 0) {
@@ -103,13 +113,17 @@ export const useMarginNoteReplies = (noteId?: string) => {
       if (!noteId) return [];
       const { data, error } = await supabase
         .from("margin_note_replies")
-        .select("id, margin_note_id, user_id, body, created_at, profiles:user_id(full_name, profile_photo_url, username)")
+         .select("id, margin_note_id, user_id, body, created_at")
         .eq("margin_note_id", noteId)
         .order("created_at", { ascending: true })
         .limit(100);
 
       if (error) throw error;
-      return (data ?? []) as unknown as MarginNoteReply[];
+      const replies = (data ?? []) as unknown as MarginNoteReply[];
+      const userIds = [...new Set(replies.map((r) => r.user_id))];
+      const { data: profiles } = userIds.length ? await (supabase as any).from("public_profiles").select("*").in("id", userIds) : { data: [] };
+      const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+      return replies.map((reply) => ({ ...reply, profiles: byId.get(reply.user_id) ?? null }));
     },
     staleTime: 20_000,
   });
