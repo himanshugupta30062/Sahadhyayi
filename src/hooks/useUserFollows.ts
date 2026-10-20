@@ -57,3 +57,44 @@ export const useToggleUserFollow = () => {
     },
   });
 };
+
+
+/**
+ * Fetch public profile cards for the current reader's outgoing follows.
+ * Reuses the public-profile search RPC instead of querying private profile records.
+ */
+export const useFollowedReaders = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['followed-readers', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data: follows, error: followsError } = await supabase
+        .from('user_follows')
+        .select('following_id')
+        .eq('follower_id', user.id);
+
+      if (followsError) throw followsError;
+
+      const followingIds = (follows || []).map((row: { following_id: string }) => row.following_id);
+      if (followingIds.length === 0) return [];
+
+      const { data, error } = await supabase
+        .rpc('get_public_profiles_for_search', { search_term: '' })
+        .in('id', followingIds);
+
+      if (error) throw error;
+      return (data || []) as Array<{
+        id: string;
+        full_name: string;
+        username?: string;
+        profile_photo_url?: string;
+        bio?: string;
+      }>;
+    },
+    enabled: !!user?.id,
+    staleTime: 30 * 1000,
+  });
+};
