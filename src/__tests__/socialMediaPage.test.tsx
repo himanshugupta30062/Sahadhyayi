@@ -147,7 +147,7 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       mockUseAuth.mockReturnValue({ user: mockUser, loading: false });
     });
 
-    it('renders the 3-column desktop layout with navigation rail, feed header, and discovery sidebar', () => {
+    it('renders a content-first community layout without a duplicate social navigation menu', () => {
       mockUseReadingRooms.mockReturnValue({
         data: [
           {
@@ -185,18 +185,16 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
         </MemoryRouter>
       );
 
-      // Top brand & user profile
-      expect(screen.getByText('Sahadhyayi')).toBeInTheDocument();
-      expect(screen.getByText('Aditi Sharma')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/Search books, authors, discussions…/i)).toBeInTheDocument();
-
-      // Left navigation rail
-      expect(screen.getByRole('button', { name: /Create Post/i })).toBeInTheDocument();
-      expect(screen.getAllByRole('button', { name: /Feed/i })[0]).toBeInTheDocument();
-      expect(screen.getAllByText('Reading Rooms')[0]).toBeInTheDocument();
-
-      // Center feed stream
-      expect(screen.getByText('Community Feed')).toBeInTheDocument();
+      // The global site header owns site navigation; this page stays content-first.
+      expect(screen.getByRole('heading', { name: /Your Reading Community/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Start a conversation/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Read together/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Book discussions/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Shared marginalia/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Discover readers/i })).toBeInTheDocument();
+      expect(screen.getByText(/More to explore/i)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Toggle search/i })).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText(/Search books, authors, discussions…/i)).not.toBeInTheDocument();
       expect(screen.getByTestId('enhanced-social-feed')).toBeInTheDocument();
 
       // Right discovery rail: live rooms, popular groups, suggested readers
@@ -218,12 +216,11 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
         </MemoryRouter>
       );
 
-      // Click on Discussions tab in navigation rail
-      const discussionsButton = screen.getAllByRole('button', { name: /Discussions/i })[0];
-      fireEvent.click(discussionsButton);
+      // Feature cards replace the persistent nested navigation menu.
+      fireEvent.click(screen.getByRole('button', { name: /Book discussions/i }));
 
-      // Discussions view should be active
       expect(screen.getByText('Chapter-Locked Discussions')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Community feed/i })).toBeInTheDocument();
     });
 
     it('renders reading progress card with valid /book/:id link', () => {
@@ -249,19 +246,16 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       expect(continueReadingLink).toHaveAttribute('href', '/book/book-xyz');
     });
 
-    it('toggles mobile search input when mobile search button is clicked', () => {
+    it('opens a feature from a deep link and provides a clear return to the community feed', () => {
       render(
-        <MemoryRouter initialEntries={['/social']}>
+        <MemoryRouter initialEntries={['/social?tab=dna']}>
           <SocialMedia />
         </MemoryRouter>
       );
 
-      const toggleButton = screen.getByRole('button', { name: /Toggle search/i });
-      fireEvent.click(toggleButton);
-
-      // Both desktop and mobile search inputs rendered
-      const inputs = screen.getAllByPlaceholderText(/Search books, authors, discussions…/i);
-      expect(inputs.length).toBe(2);
+      expect(screen.getByRole('button', { name: /Community feed/i })).toBeInTheDocument();
+      expect(screen.getAllByText(/Reading DNA/i).length).toBeGreaterThan(0);
+      expect(screen.queryByRole('button', { name: /Toggle search/i })).not.toBeInTheDocument();
     });
   });
 });

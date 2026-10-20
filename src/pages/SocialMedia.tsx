@@ -1,14 +1,11 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
-import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
 import {
-  MessageCircle,
   MapPin,
   UsersIcon,
   Users,
@@ -21,16 +18,11 @@ import {
   Loader2,
   ArrowRight,
   TrendingUp,
-  Search,
   Plus,
-  Calendar,
-  BookUser,
+  ArrowLeft,
   ChevronRight,
-  Compass,
-  Sun,
-  Moon,
 } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { SocialSurface } from '@/components/social/SocialSurface';
@@ -40,7 +32,6 @@ import { FriendsLocationMap } from '@/components/social/FriendsLocationMap';
 import { ReadingGroups } from '@/components/social/ReadingGroups';
 import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
 import { BookPulseBar } from '@/components/social/BookPulseBar';
-import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
 import { useMarginNotes } from '@/hooks/useMarginNotes';
 import { useSpoilerThreads } from '@/hooks/useSpoilerThreads';
@@ -58,6 +49,16 @@ const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRo
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
 
 const VALID_SOCIAL_TABS = ['feed', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
+const SOCIAL_TAB_LABELS: Record<string, string> = {
+  feed: 'Community Feed',
+  rooms: 'Reading Rooms',
+  threads: 'Book Discussions',
+  margins: 'Shared Marginalia',
+  dna: 'Reading DNA',
+  friends: 'Friends',
+  map: 'Reader Map',
+  groups: 'Reading Groups',
+};
 
 // Reusable lazy-load fallback
 const TabLoader = () => (
@@ -112,7 +113,6 @@ const iconColorMap = {
 
 // ─── Guest (unauthenticated) landing ─────────────────────────────────────────
 const GuestLanding: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
 
   return (
     <>
@@ -124,60 +124,6 @@ const GuestLanding: React.FC = () => {
       />
 
       <div className="min-h-screen bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
-        {/* ── Guest Navigation Bar ── */}
-        <header className="border-b border-[#E8E2D9] dark:border-[#29332D] bg-[#FAF7F2]/90 dark:bg-[#0B0D0C]/90 backdrop-blur-md sticky top-0 z-40 transition-colors">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-lg bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43] flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D] group-hover:border-[#1C442D] dark:group-hover:border-[#D5B16D] transition-colors">
-                <BookOpen className="w-4 h-4" />
-              </div>
-              <span className="font-serif font-bold text-lg text-[#1C201D] dark:text-[#F3F0E7] tracking-tight group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">
-                Sahadhyayi
-              </span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-[#636B65] dark:text-[#A5ADA6]">
-              <Link to="/" className="hover:text-[#1C201D] dark:hover:text-[#F3F0E7] transition-colors">Home</Link>
-              <Link to="/library" className="hover:text-[#1C201D] dark:hover:text-[#F3F0E7] transition-colors">Library</Link>
-              <Link to="/groups" className="hover:text-[#1C201D] dark:hover:text-[#F3F0E7] transition-colors">Groups</Link>
-              <Link to="/authors" className="hover:text-[#1C201D] dark:hover:text-[#F3F0E7] transition-colors">Authors</Link>
-              <Link to="/articles" className="hover:text-[#1C201D] dark:hover:text-[#F3F0E7] transition-colors">Articles</Link>
-              <Link to="/discovery" className="hover:text-[#1C201D] dark:hover:text-[#F3F0E7] transition-colors">AI Assistant</Link>
-            </nav>
-
-            <div className="flex items-center gap-2.5">
-              {/* Theme Toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                className="h-9 w-9 p-2 rounded-xl border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1C3024] transition-colors"
-              >
-                {theme === 'dark' ? <Sun className="h-4 w-4 text-[#D5B16D]" /> : <Moon className="h-4 w-4 text-[#1C442D]" />}
-              </Button>
-
-              <SignInLink redirectPath="/social">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1B241E] hover:text-[#1C442D] dark:hover:text-[#D5B16D] text-xs h-9 px-4"
-                >
-                  Sign in
-                </Button>
-              </SignInLink>
-              <Link to="/signup">
-                <Button
-                  size="sm"
-                  className="bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold text-xs h-9 px-4 shadow-sm"
-                >
-                  Create Account
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </header>
-
         {/* ── Hero Section ── */}
         <section className="relative overflow-hidden border-b border-[#E8E2D9] dark:border-[#29332D] bg-gradient-to-b from-[#F4EFEA] via-[#FAF7F2] to-[#FAF7F2] dark:from-[#111614] dark:via-[#0B0D0C] dark:to-[#0B0D0C] py-20 px-4 sm:px-6 lg:px-8">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -322,8 +268,6 @@ const GuestLanding: React.FC = () => {
 // ─── Authenticated View ───────────────────────────────────────────────────────
 const SocialMedia: React.FC = () => {
   const { user, loading } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const activeTab = VALID_SOCIAL_TABS.includes(tabParam as (typeof VALID_SOCIAL_TABS)[number])
@@ -331,8 +275,6 @@ const SocialMedia: React.FC = () => {
     : 'feed';
 
   const [mapView, setMapView] = useState<'readers' | 'friends'>('readers');
-  const [topSearch, setTopSearch] = useState('');
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   // Fetch community data
   const { data: rooms = [] } = useReadingRooms();
@@ -358,13 +300,6 @@ const SocialMedia: React.FC = () => {
     );
   };
 
-  const handleTopSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (topSearch.trim()) {
-      navigate(`/library?search=${encodeURIComponent(topSearch.trim())}`);
-    }
-  };
-
   const handleSendRequest = async (userId: string, name: string) => {
     try {
       await sendFriendRequest.mutateAsync({ addresseeId: userId });
@@ -386,41 +321,6 @@ const SocialMedia: React.FC = () => {
   // Always show the guest experience when signed out
   if (!user) return <GuestLanding />;
 
-  const navItems = [
-    { value: 'feed', label: 'Feed', icon: MessageCircle },
-    {
-      value: 'rooms',
-      label: 'Reading Rooms',
-      icon: Radio,
-      badge: rooms.length > 0 ? rooms.length : undefined,
-      isLive: rooms.length > 0,
-    },
-    {
-      value: 'threads',
-      label: 'Discussions',
-      icon: Lock,
-      badge: spoilerThreads.length > 0 ? spoilerThreads.length : undefined,
-    },
-    {
-      value: 'margins',
-      label: 'Marginalia',
-      icon: Quote,
-      badge: marginNotes.length > 0 ? marginNotes.length : undefined,
-    },
-    { value: 'dna', label: 'Reading DNA', icon: Dna },
-    { value: 'friends', label: 'Friends', icon: Users },
-    { value: 'map', label: 'Readers Near Me', icon: MapPin },
-    {
-      value: 'groups',
-      label: 'Groups',
-      icon: UsersIcon,
-      badge: groups.length > 0 ? groups.length : undefined,
-    },
-  ];
-
-  // Active user name and avatar
-  const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Reader';
-  const userAvatar = user.user_metadata?.avatar_url || user.user_metadata?.profile_photo_url;
   const currentProgress = readingProgress[0];
 
   return (
@@ -433,245 +333,125 @@ const SocialMedia: React.FC = () => {
       />
 
       <div className="social-experience min-h-screen bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
-        {/* ── Compact Top Bar matching reference design ── */}
-        <header className="sticky top-0 z-30 border-b border-[#E8E2D9] dark:border-[#29332D] bg-[#FAF7F2]/95 dark:bg-[#0B0D0C]/95 backdrop-blur-xl transition-colors">
-          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-2.5 sm:px-6 lg:px-8">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43] text-[#1C442D] dark:text-[#D5B16D] group-hover:border-[#1C442D] dark:group-hover:border-[#D5B16D] transition-colors">
-                <BookOpen className="h-4 w-4" />
-              </div>
-              <span className="font-serif font-bold text-base text-[#1C201D] dark:text-[#F3F0E7] tracking-tight group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">
-                Sahadhyayi
-              </span>
-            </Link>
-
-            {/* Centered Global Search */}
-            <form
-              onSubmit={handleTopSearchSubmit}
-              className="relative hidden sm:flex items-center flex-1 max-w-md mx-4"
-            >
-              <Search className="absolute left-3 w-4 h-4 text-[#636B65] dark:text-[#A5ADA6] pointer-events-none" />
-              <Input
-                type="text"
-                placeholder="Search books, authors, discussions…"
-                value={topSearch}
-                onChange={(e) => setTopSearch(e.target.value)}
-                className="w-full pl-9 pr-3 h-9 bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-xs text-[#1C201D] dark:text-[#F3F0E7] placeholder:text-[#636B65]/70 dark:placeholder:text-[#A5ADA6]/70 rounded-xl focus-visible:ring-1 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] shadow-[0_1px_3px_rgba(28,32,29,0.04)]"
-              />
-            </form>
-
-            {/* Right Tools: Theme Toggle, Notification Dropdown & Profile Pill */}
-            <div className="flex items-center gap-2.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowMobileSearch(prev => !prev)}
-                aria-label="Toggle search"
-                className="sm:hidden p-1.5 h-8 w-8 text-[#636B65] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] rounded-lg"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-
-              {/* Theme Toggle Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                className="h-8 w-8 p-1.5 rounded-lg border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] transition-colors"
-              >
-                {theme === 'dark' ? <Sun className="h-4 w-4 text-[#D5B16D]" /> : <Moon className="h-4 w-4 text-[#1C442D]" />}
-              </Button>
-
-              <NotificationDropdown />
-              <Link
-                to="/profile"
-                className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full bg-white dark:bg-[#111614] border border-[#E8E2D9] dark:border-[#29332D] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-colors shadow-xs"
-              >
-                <Avatar className="w-6 h-6 border border-[#E8E2D9] dark:border-[#29332D]">
-                  <AvatarImage src={userAvatar} alt={userName} />
-                  <AvatarFallback className="bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D] text-[10px] font-bold">
-                    {userName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-xs font-medium text-[#1C201D] dark:text-[#F3F0E7] hidden sm:inline max-w-[100px] truncate">
-                  {userName}
-                </span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Mobile Search Input Drawer */}
-          {showMobileSearch && (
-            <div className="px-4 pb-3 pt-1 sm:hidden border-t border-[#E8E2D9] dark:border-[#29332D]/70 bg-[#FAF7F2] dark:bg-[#0B0D0C]">
-              <form onSubmit={handleTopSearchSubmit} className="relative flex items-center">
-                <Search className="absolute left-3 w-4 h-4 text-[#636B65] dark:text-[#A5ADA6] pointer-events-none" />
-                <Input
-                  type="text"
-                  placeholder="Search books, authors, discussions…"
-                  value={topSearch}
-                  onChange={(e) => setTopSearch(e.target.value)}
-                  autoFocus
-                  className="w-full pl-9 pr-3 h-9 bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-xs text-[#1C201D] dark:text-[#F3F0E7] placeholder:text-[#636B65]/70 dark:placeholder:text-[#A5ADA6]/70 rounded-xl focus-visible:ring-1 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
-                />
-              </form>
-            </div>
-          )}
-        </header>
-
         {/* ── Main Viewport Content ── */}
-        <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            {/* Tablet & Mobile Horizontal Tab Navigation */}
-            <div className="xl:hidden overflow-x-auto scrollbar-none pb-2 mb-6 -mx-1 px-1">
-              <TabsList className="flex h-auto w-max min-w-full items-center justify-start gap-1.5 rounded-xl border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] p-1.5 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
-                {navItems.map(tab => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    className="
-                      relative flex shrink-0 items-center gap-2 rounded-lg
-                      border border-transparent px-3 py-1.5 text-xs
-                      text-[#636B65] dark:text-[#A5ADA6] transition-colors
-                      hover:bg-[#FAF7F2] hover:text-[#1C201D]
-                      dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]
-                      focus-visible:outline-none focus-visible:ring-2
-                      focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]
-                      data-[state=active]:border-[#C8DBCB] dark:data-[state=active]:border-[#315C43]
-                      data-[state=active]:bg-[#EBF2EC] dark:data-[state=active]:bg-[#1C3024]
-                      data-[state=active]:text-[#1C442D] dark:data-[state=active]:text-[#F3F0E7]
-                      data-[state=active]:shadow-xs
-                    "
-                  >
-                    <tab.icon className="h-3.5 w-3.5 shrink-0" />
-                    <span>{tab.label}</span>
-                    {'isLive' in tab && tab.isLive && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    )}
-                    {'badge' in tab && tab.badge !== undefined && (
-                      <Badge
-                        variant="secondary"
-                        className="text-[9px] px-1 h-3.5 bg-[#FAF7F2] dark:bg-[#29332D] text-[#1C442D] dark:text-[#D5B16D] border-none font-bold leading-none"
-                      >
-                        {tab.badge}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-
-            {/* 3-Column Desktop Composition matching design mockup */}
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[240px_minmax(0,1fr)_320px]">
-              {/* ── Left Column: Literary Navigation Rail (Desktop) ── */}
-              <aside className="hidden xl:block">
-                <div className="sticky top-20 space-y-4">
-                  {/* + Create Post Primary Action Button */}
-                  <Button
-                    onClick={() => {
-                      handleTabChange('feed');
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                      setTimeout(() => {
-                        const el = document.getElementById('feed-composer-textarea');
-                        if (el) el.focus();
-                      }, 100);
-                    }}
-                    className="w-full h-10 bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold text-xs rounded-xl shadow-xs gap-2 transition-all justify-center"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Create Post
-                  </Button>
-
-                  {/* Vertical Navigation Rail */}
-                  <SocialSurface className="p-2.5">
-                    <nav className="flex flex-col gap-0.5">
-                      {navItems.map(tab => {
-                        const isActive = activeTab === tab.value;
-                        const Icon = tab.icon;
-                        return (
-                          <button
-                            key={tab.value}
-                            type="button"
-                            onClick={() => handleTabChange(tab.value)}
-                            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all ${
-                              isActive
-                                ? 'bg-[#EBF2EC] border border-[#C8DBCB] text-[#1C442D] dark:bg-[#1C3024] dark:border-[#315C43] dark:text-[#F3F0E7] shadow-xs'
-                                : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <Icon
-                                className={`h-4 w-4 shrink-0 ${
-                                  isActive ? 'text-[#1C442D] dark:text-[#D5B16D]' : 'text-[#636B65] dark:text-[#A5ADA6]'
-                                }`}
-                              />
-                              <span className="truncate">{tab.label}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              {'isLive' in tab && tab.isLive && (
-                                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                              )}
-                              {'badge' in tab && tab.badge !== undefined && (
-                                <span className="rounded-full bg-[#FAF7F2] dark:bg-[#111614] border border-[#E8E2D9] dark:border-[#29332D] px-1.5 py-0.5 text-[10px] font-semibold text-[#1C442D] dark:text-[#D5B16D]">
-                                  {tab.badge}
-                                </span>
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </nav>
-
-                    {/* EXPLORE Section */}
-                    <div className="mt-4 pt-3 border-t border-[#E8E2D9] dark:border-[#29332D]">
-                      <p className="px-3 pb-1.5 text-[10px] font-semibold tracking-wider text-[#636B65]/80 dark:text-[#A5ADA6]/70 uppercase">
-                        Explore
-                      </p>
-                      <div className="flex flex-col gap-0.5">
-                        <Link
-                          to="/authors"
-                          className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] transition-colors"
-                        >
-                          <BookUser className="h-4 w-4 text-[#636B65] dark:text-[#A5ADA6]" />
-                          <span>Authors</span>
-                        </Link>
-                        <Link
-                          to="/events"
-                          className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] transition-colors"
-                        >
-                          <Calendar className="h-4 w-4 text-[#636B65] dark:text-[#A5ADA6]" />
-                          <span>Events</span>
-                        </Link>
-                      </div>
-                    </div>
-                  </SocialSurface>
-
-                  {/* Atmospheric Community Card */}
-                  <SocialSurface className="p-3.5 bg-gradient-to-br from-[#F4EFEA] to-[#EBF2EC] dark:from-[#111614] dark:to-[#18231C]">
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D] mb-1">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Reading Sanctuary</span>
-                    </div>
-                    <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">
-                      Every note, discussion, and sprint is anchored directly to books.
-                    </p>
-                  </SocialSurface>
-                </div>
-              </aside>
-
-              {/* ── Center Column: Community Stream & Feature Content ── */}
+            {/* Content-first community layout: feed plus contextual discovery */}
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+              {/* ── Community Stream & Feature Content ── */}
               <section className="min-w-0 space-y-6">
+                {activeTab !== 'feed' && (
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <button
+                      type="button"
+                      onClick={() => handleTabChange('feed')}
+                      className="inline-flex items-center gap-2 rounded-lg py-1.5 font-medium text-[#1C442D] transition-colors hover:text-[#143221] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#D5B16D] dark:hover:text-[#E4C78F] dark:focus-visible:ring-[#D5B16D]"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Community feed
+                    </button>
+                    <span aria-hidden="true" className="text-[#A5ADA6]">/</span>
+                    <span className="font-medium text-[#636B65] dark:text-[#A5ADA6]">
+                      {SOCIAL_TAB_LABELS[activeTab] || 'Community'}
+                    </span>
+                  </div>
+                )}
                 {/* ── Feed Tab ── */}
                 <TabsContent value="feed" className="mt-0 space-y-6">
-                  {/* Clean Editorial Feed Header */}
-                  <div className="pb-1">
-                    <h1 className="text-2xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight">
-                      Community Feed
-                    </h1>
-                    <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mt-1 leading-relaxed">
-                      Share what you're reading, exchange ideas, and connect with fellow readers.
-                    </p>
+                  {/* Editorial community heading and primary action */}
+                  <div className="flex flex-col gap-4 border-b border-[#E8E2D9] dark:border-[#29332D] pb-5 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#1C442D] dark:text-[#D5B16D]">
+                        Your reading life, together
+                      </p>
+                      <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[#1C201D] dark:text-[#F3F0E7]">
+                        Your Reading Community
+                      </h1>
+                      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
+                        Discover what readers are thinking, share a passage that stayed with you, and find your next bookish conversation.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        handleTabChange('feed');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        window.setTimeout(() => {
+                          const el = document.getElementById('feed-composer-textarea');
+                          if (el) el.focus();
+                        }, 100);
+                      }}
+                      className="h-10 shrink-0 gap-2 rounded-xl bg-[#1C442D] px-4 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Start a conversation
+                    </Button>
+                  </div>
+
+                  {/* Feature shortcuts, not a second navigation bar */}
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4" aria-label="Community shortcuts">
+                    {[
+                      {
+                        value: 'rooms',
+                        title: 'Read together',
+                        description: 'Join a live reading room and make reading a shared ritual.',
+                        icon: Radio,
+                      },
+                      {
+                        value: 'threads',
+                        title: 'Book discussions',
+                        description: 'Talk through chapters with spoiler-aware conversations.',
+                        icon: Lock,
+                      },
+                      {
+                        value: 'margins',
+                        title: 'Shared marginalia',
+                        description: 'Discover notes and passages readers have saved.',
+                        icon: Quote,
+                      },
+                      {
+                        value: 'friends',
+                        title: 'Discover readers',
+                        description: 'Meet readers who might become your next book friends.',
+                        icon: Users,
+                      },
+                    ].map(({ value, title, description, icon: Icon }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => handleTabChange(value)}
+                        className="group flex min-h-[112px] w-full items-start gap-3 rounded-2xl border border-[#E8E2D9] bg-white p-4 text-left shadow-[0_2px_8px_rgba(28,32,29,0.03)] transition-all hover:-translate-y-0.5 hover:border-[#C8DBCB] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:hover:border-[#315C43] dark:focus-visible:ring-[#D5B16D]"
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#C8DBCB] bg-[#EBF2EC] text-[#1C442D] transition-colors group-hover:bg-[#DDEADF] dark:border-[#315C43] dark:bg-[#1C3024] dark:text-[#D5B16D] dark:group-hover:bg-[#243D2C]">
+                          <Icon className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold tracking-tight text-[#1C201D] dark:text-[#F3F0E7]">
+                            {title}
+                          </span>
+                          <span className="mt-1.5 block text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
+                            {description}
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 border-b border-[#E8E2D9] pb-5 text-xs dark:border-[#29332D]">
+                    <span className="mr-1 font-medium text-[#636B65] dark:text-[#A5ADA6]">More to explore</span>
+                    {[
+                      { value: 'dna', label: 'Reading DNA' },
+                      { value: 'map', label: 'Reader map' },
+                      { value: 'groups', label: 'Reading groups' },
+                    ].map((item) => (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => handleTabChange(item.value)}
+                        className="rounded-full border border-[#E8E2D9] bg-white px-3 py-1.5 font-medium text-[#1C442D] transition-colors hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
                   </div>
 
                   <ErrorBoundary
