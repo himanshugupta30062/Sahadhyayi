@@ -8,11 +8,11 @@ jobs:
   license-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Install dependencies
-        run: npm install
+      - name: Install license checker
+        run: npm install --global license-checker@^25
       - name: Check licenses
-        run: npx -y license-checker --production --failOn "GPL;AGPL"
+        run: license-checker --production --failOn "GPL;AGPL"

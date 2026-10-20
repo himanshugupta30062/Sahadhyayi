@@ -21,7 +21,7 @@ export function recommendBestEditions(group: DuplicateGroup): DuplicateRecommend
   // 1. Evaluate quality score and identity for each book in the group
   const qualityScores: Record<string, QualityScoreResult> = {};
   const ratedBooks = books.map((book) => {
-    const id = book.id || `temp-${Math.random()}`;
+    const id = book.id || `temp-${crypto.randomUUID()}`;
     const identity = normalizeBookIdentity(book);
     const quality = evaluateBookQuality(book);
     qualityScores[id] = quality;

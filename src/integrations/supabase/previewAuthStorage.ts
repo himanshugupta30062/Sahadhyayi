@@ -44,7 +44,7 @@ export function brokeredPreviewStorage() {
         resolve(r);
       };
       const onMessage = (e: MessageEvent) => {
-        if (editorOrigins.indexOf(e.origin) < 0) return;
+        if (e.source !== window.parent || editorOrigins.indexOf(e.origin) < 0) return;
         const d = e.data;
         if (d && d.type === RESULT && d.requestId === requestId) finish(d);
       };

@@ -167,7 +167,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
                     e.preventDefault();
                     if (!((!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting || createPost.isPending)) {
-                      handlePost();
+                      void handlePost();
                     }
                   }
                 }}

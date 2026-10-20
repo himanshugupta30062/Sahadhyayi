@@ -74,9 +74,9 @@ self.addEventListener('fetch', event => {
         return fetch(request).then(networkResponse => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const responseToCache = networkResponse.clone();
-            caches.open(STATIC_CACHE).then(cache => {
-              cache.put(request, responseToCache);
-            });
+            void caches.open(STATIC_CACHE)
+              .then(cache => cache.put(request, responseToCache))
+              .catch(error => console.warn('Failed to cache static asset:', error));
           }
           return networkResponse;
         }).catch(() => {
@@ -99,14 +99,27 @@ self.addEventListener('fetch', event => {
 
 // Support explicit offline book caching via postMessage from the app
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'CACHE_BOOK_URL' && event.data.url) {
-    const bookUrl = event.data.url;
-    caches.open(BOOKS_CACHE).then(cache => {
-      fetch(bookUrl).then(response => {
-        if (response.ok) {
-          cache.put(bookUrl, response);
-        }
-      });
-    });
+  if (event.source && 'url' in event.source && event.data?.type === 'CACHE_BOOK_URL' && typeof event.data.url === 'string') {
+    let bookUrl;
+    try {
+      bookUrl = new URL(event.data.url, self.location.origin);
+    } catch {
+      return;
+    }
+    // Only accept same-origin book assets; never let a message trigger arbitrary fetches.
+    if (bookUrl.origin !== self.location.origin ||
+        !(bookUrl.pathname.includes('/storage/v1/object/public/books/') || bookUrl.pathname.endsWith('.epub'))) {
+      return;
+    }
+    event.waitUntil(
+      caches.open(BOOKS_CACHE)
+        .then(async cache => {
+          const response = await fetch(bookUrl.href);
+          if (response.ok && response.type === 'basic') {
+            await cache.put(bookUrl.href, response);
+          }
+        })
+        .catch(error => console.warn('Failed to cache requested book:', error))
+    );
   }
 });

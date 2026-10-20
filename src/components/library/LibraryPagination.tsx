@@ -54,8 +54,8 @@ export const LibraryPagination: React.FC<LibraryPaginationProps> = ({
   }, [currentPage, pageSize, scrollTargetRef]);
 
   const handlePageSizeChange = (value: string) => {
-    const size = parseInt(value, 10);
-    if (!isNaN(size) && size > 0) {
+    const size = Number.Number.parseInt(value, 10);
+    if (!Number.isNaN(size) && size > 0) {
       onPageSizeChange(size);
       onPageChange(1);
     }
@@ -63,7 +63,7 @@ export const LibraryPagination: React.FC<LibraryPaginationProps> = ({
 
   const handleGo = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const pageNum = parseInt(goInput, 10);
+    const pageNum = Number.Number.parseInt(goInput, 10);
     if (!pageNum || pageNum < 1 || pageNum > totalPages) {
       setError(`1–${totalPages}`);
       return;

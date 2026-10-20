@@ -72,6 +72,14 @@ const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
             return (
               <div
                 key={dna.user_id}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setSelectedFriend({ dna, name: friendName });
+                  }
+                }}
                 onClick={() => setSelectedFriend({ dna, name: friendName })}
                 className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 hover:bg-muted/30 transition-all cursor-pointer group"
               >

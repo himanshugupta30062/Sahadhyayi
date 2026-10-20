@@ -69,14 +69,19 @@ const ReadingCirclePanel: React.FC<ReadingCirclePanelProps> = ({ book }) => {
   };
 
   const openWhatsApp = (phone: string, bookTitle: string) => {
+    const safePhone = phone.replace(/\D/g, '');
+    if (!/^\d{8,15}$/.test(safePhone)) return;
     const message = `Hey! I saw you're reading "${bookTitle}". Would love to chat about it! 📚`;
-    const url = `https://wa.me/${phone.replace('+', '')}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    const url = new URL(`https://wa.me/${safePhone}`);
+    url.searchParams.set('text', message);
+    window.open(url.href, '_blank', 'noopener,noreferrer');
   };
 
   const openInstagram = (username: string) => {
-    const url = `https://instagram.com/${username.replace('@', '')}`;
-    window.open(url, '_blank');
+    const safeUsername = username.replace(/^@/, '').trim();
+    if (!/^[a-zA-Z0-9._]{1,30}$/.test(safeUsername)) return;
+    const url = new URL(`/\${safeUsername}`, 'https://www.instagram.com');
+    window.open(url.href, '_blank', 'noopener,noreferrer');
   };
 
   const openShelfTalk = (readerName: string) => {
