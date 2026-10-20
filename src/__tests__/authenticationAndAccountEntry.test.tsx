@@ -31,6 +31,15 @@ vi.mock('@/contexts/authHelpers', () => ({
   }),
 }));
 
+vi.mock('@/components/auth/TurnstileCaptcha', () => ({
+  TurnstileCaptcha: ({ onTokenChange }: { onTokenChange: (token: string | null) => void }) => {
+    React.useEffect(() => {
+      onTokenChange('test-turnstile-token');
+    }, [onTokenChange]);
+    return null;
+  },
+}));
+
 const mockResetPasswordForEmail = vi.fn();
 const mockUpdateUser = vi.fn();
 const mockGetSession = vi.fn();
