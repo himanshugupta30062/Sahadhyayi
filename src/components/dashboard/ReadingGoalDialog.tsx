@@ -61,7 +61,7 @@ const ReadingGoalDialog: React.FC<ReadingGoalDialogProps> = ({ onGoalUpdate }) =
               min="1"
               max="365"
               value={goal}
-              onChange={(e) => setGoal(Number.Number.parseInt(e.target.value, 10) || 1)}
+              onChange={(e) => setGoal(Number.parseInt(e.target.value, 10) || 1)}
               placeholder="Enter your goal"
               className="border-border"
             />
