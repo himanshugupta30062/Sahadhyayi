@@ -44,14 +44,15 @@ describe('signup input normalization', () => {
     const { result } = renderHook(() => useAuth());
 
     await act(async () => {
-      await result.current.signUp(' Reader+books&clubs@example.com ', 'ValidPass1', "A&B <Reader>");
+      await result.current.signUp(' Reader+books&clubs@example.com ', 'ValidPass1', "A&B <Reader>", 'valid-turnstile-token');
     });
 
     expect(mockSignUp).toHaveBeenCalledWith({
       email: 'reader+books&clubs@example.com',
       password: 'ValidPass1',
       options: {
-        emailRedirectTo: expect.stringContaining(window.location.origin),
+        emailRedirectTo: `${window.location.origin}/confirm-email`,
+        captchaToken: 'valid-turnstile-token',
         data: { full_name: 'A&B <Reader>' },
       },
     });
