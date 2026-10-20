@@ -482,7 +482,6 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       totalVisitsRpcRes,
       totalProfiles,
       newProfiles,
-      periodPageviews,
       progressUpdates,
       groupJoins,
       postsCount,
@@ -492,12 +491,17 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       safeRpc('get_website_visit_count'),
       safeCount('profiles'),
       safeCount('profiles', 'created_at', timeframeStart),
-      safeCount('website_visits', 'visited_at', timeframeStart, 'event_type', 'pageview'),
       safeCount('reading_room_events', 'created_at', timeframeStart, 'kind', 'chapter_complete'),
       safeCount('group_members', 'joined_at', timeframeStart),
       safeCount('posts', 'created_at', timeframeStart),
       safeCount('comments', 'created_at', timeframeStart),
     ]);
+
+    // Visitor telemetry contains IP/location/session metadata. Do not fall back to
+    // direct browser queries against that raw table if the admin-safe aggregate RPC
+    // is unavailable; keep period views explicitly unavailable instead of fabricating
+    // a metric or relying on raw visitor-table access.
+    const periodPageviews: number | null = null;
 
     const rpcUsers = typeof (usersRpcRes as any)?.data === 'number' ? (usersRpcRes as any).data : null;
     const totalVisits = typeof (totalVisitsRpcRes as any)?.data === 'number' ? (totalVisitsRpcRes as any).data : null;
