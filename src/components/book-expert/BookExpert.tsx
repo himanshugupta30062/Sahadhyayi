@@ -11,6 +11,8 @@ import {
   Sparkles,
   ThumbsDown,
   ThumbsUp,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import { useBookExpert } from "@/contexts/book-expert.utils";
@@ -160,6 +162,8 @@ const BookExpert = () => {
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [showWelcomeBubble, setShowWelcomeBubble] = useState(true);
   const [welcomeLineIndex, setWelcomeLineIndex] = useState(0);
+  const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
+  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -182,6 +186,14 @@ const BookExpert = () => {
       "Introduce me to up to three different real books from the Sahadhyayi library for a curious new reader. Give each book its own short, playful first-person introduction, clearly stating its exact title and author only from verified library records supplied to you. Make each voice feel distinct and invite me to explore the book. Use only the supplied catalog candidates; never invent a library listing. If no matching record is available, say so and ask what genre I would like to explore."
     );
   };
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -209,6 +221,31 @@ const BookExpert = () => {
       event.preventDefault();
       handleSend();
     }
+  };
+
+  const toggleSpeech = (text: string, index: number) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (speakingMessageIndex === index) {
+      window.speechSynthesis.cancel();
+      speechRef.current = null;
+      setSpeakingMessageIndex(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.96;
+    utterance.onend = () => {
+      speechRef.current = null;
+      setSpeakingMessageIndex(null);
+    };
+    utterance.onerror = () => {
+      speechRef.current = null;
+      setSpeakingMessageIndex(null);
+    };
+    speechRef.current = utterance;
+    setSpeakingMessageIndex(index);
+    window.speechSynthesis.speak(utterance);
   };
 
   const handleFeedback = async (requestId: string, rating: -1 | 1) => {
@@ -356,7 +393,21 @@ const BookExpert = () => {
                   )}
                   <p className="whitespace-pre-wrap break-words">{message.text}</p>
                   {!isUser && (
-                    <div className="mt-2 flex justify-end border-t border-border/60 pt-1.5">
+                    <div className="mt-2 flex justify-end gap-1.5 border-t border-border/60 pt-1.5">
+                      {"speechSynthesis" in (typeof window === "undefined" ? {} : window) && (
+                        <button
+                          type="button"
+                          onClick={() => toggleSpeech(message.text, index)}
+                          aria-label={speakingMessageIndex === index ? "Stop reading answer aloud" : "Read answer aloud"}
+                          title={speakingMessageIndex === index ? "Stop reading" : "Read aloud"}
+                          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {speakingMessageIndex === index
+                            ? <VolumeX className="h-3.5 w-3.5" aria-hidden="true" />
+                            : <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />}
+                          {speakingMessageIndex === index ? "Stop" : "Listen"}
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => void copyAnswer(message.text, index)}
