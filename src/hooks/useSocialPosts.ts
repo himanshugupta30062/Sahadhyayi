@@ -65,8 +65,8 @@ export const useSocialPosts = () => {
             .order('created_at', { ascending: false })
             .limit(50);
           if (fbError) {
-            console.warn('Plain posts fallback also failed:', fbError);
-            return [];
+            console.error('Plain posts fallback also failed:', fbError);
+            throw fbError;
           }
           data = fallbackPosts || [];
         } else {
@@ -207,8 +207,10 @@ export const useSocialPosts = () => {
 
         return data;
       } catch (err) {
+        // Keep the query in an error state so the UI can distinguish a backend
+        // failure from a genuinely empty feed and offer a retry action.
         console.error('Unexpected error fetching social posts:', err);
-        return [];
+        throw err;
       }
     },
     enabled: true,
