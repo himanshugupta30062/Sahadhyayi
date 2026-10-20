@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   Analysis:
-    # Use the latest Ubuntu image rather than pinning to a retiring image.
+    # Follow GitHub's supported runner image rather than pinning to a retiring image.
     runs-on: ubuntu-latest
 
     steps:
@@ -34,7 +34,7 @@ jobs:
             exit 1
           fi
           if [ -z "$SONAR_ORGANIZATION" ]; then
-            echo "::error::Missing repository Actions variable SONAR_ORGANIZATION. Set it to the organization key shown in SonarCloud."
+            echo "::error::Missing repository Actions variable SONAR_ORGANIZATION. Set it to the exact organization key shown in SonarQube Cloud."
             exit 1
           fi
           if [ -z "$SONAR_PROJECT_KEY" ]; then
@@ -42,8 +42,8 @@ jobs:
             exit 1
           fi
 
-      - name: Analyze with SonarCloud
-        uses: SonarSource/sonarqube-scan-action@v6
+      - name: Analyze with SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -54,3 +54,4 @@ jobs:
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.sources=src
             -Dsonar.tests=src/__tests__
+            -Dsonar.verbose=true
