@@ -230,6 +230,9 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
       setCheckingAdmin(true);
       setIsAdmin(false);
+      setStats(null);
+      setVisitors([]);
+      setAdminLeaderboard([]);
       try {
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !sessionData.session?.access_token) {
@@ -666,11 +669,6 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           }
           setStats(statsPayload);
           setError(null);
-          try {
-            localStorage.setItem(getCacheKey(timeframe), JSON.stringify(statsPayload));
-          } catch {
-            // ignore storage quota error
-          }
         }
       } catch (err: any) {
         if (isMountedRef.current && currentSeq === requestSeqRef.current) {
@@ -786,19 +784,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
   const handleSetTimeframe = useCallback((newTf: AnalyticsTimeframe) => {
     setTimeframe(newTf);
-    try {
-      const cached = localStorage.getItem(getCacheKey(newTf));
-      if (cached) {
-        const parsed = JSON.parse(cached) as PulseStats;
-        if (parsed && ((typeof parsed.pageViews === 'number' && parsed.pageViews > 0) || (typeof parsed.totalMembers === 'number' && parsed.totalMembers > 0))) {
-          setStats({ ...parsed, isStale: true });
-          return;
-        }
-      }
-    } catch {
-      // ignore
-    }
-    // Clean transition state without fabricated baseline
+    // Avoid restoring administrator analytics from unscoped browser storage.
     setStats(prev => (prev ? { ...prev, isStale: true } : null));
   }, []);
 

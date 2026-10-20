@@ -116,7 +116,7 @@ export const HomeCommunityPreview: React.FC = () => {
                             {group.name}
                           </h4>
                           <span className="shrink-0 text-[10px] font-medium text-[#636B65] dark:text-[#A5ADA6] bg-white dark:bg-[#111614] px-2 py-0.5 rounded-full border border-[#DDE4D9] dark:border-[#29332D]">
-                            {typeof memberCount === 'number' ? `${memberCount} ${memberCount === 1 ? 'member' : 'members'}` : 'Private group'}
+                            {typeof memberCount === 'number' ? `${memberCount} ${memberCount === 1 ? 'member' : 'members'}` : (group.is_encrypted ? 'Private group' : 'Member count unavailable')}
                           </span>
                         </div>
                         {group.description && (

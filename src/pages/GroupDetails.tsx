@@ -170,7 +170,7 @@ const GroupDetails = () => {
                     <Users className="w-3.5 h-3.5" />
                     {typeof memberCount === 'number'
                       ? `${memberCount} ${memberCount === 1 ? 'member' : 'members'}`
-                      : 'Private group'}
+                      : (group.is_encrypted ? 'Private group' : 'Member count unavailable')}
                   </p>
                 </div>
 

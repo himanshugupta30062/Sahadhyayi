@@ -711,7 +711,7 @@ const SocialMedia: React.FC = () => {
                                     {group.name}
                                   </p>
                                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
-                                    {typeof memberCount === 'number' ? `${memberCount} ${memberCount === 1 ? 'member' : 'members'}` : 'Private group'}
+                                    {typeof memberCount === 'number' ? `${memberCount} ${memberCount === 1 ? 'member' : 'members'}` : (group.is_encrypted ? 'Private group' : 'Member count unavailable')}
                                   </p>
                                 </div>
                               </div>
