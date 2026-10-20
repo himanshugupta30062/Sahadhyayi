@@ -25,6 +25,7 @@ import StructuredFooter from "./components/footer/StructuredFooter";
 import DeferredSection from "./components/DeferredSection";
 import ScrollToTop from "./components/ScrollToTop";
 import BookFlipLoader from "./components/ui/BookFlipLoader";
+import WebsiteTour from "./components/onboarding/WebsiteTour";
 
 // Immediate load pages (critical path)
 import Index from "./pages/Index";
@@ -525,6 +526,7 @@ const App = memo(() => {
                     </main>
                     
                     <StructuredFooter />
+                    <WebsiteTour />
                   </div>
                   
                   {/* Book Expert - load only after idle time so it does not compete with the initial route */}
