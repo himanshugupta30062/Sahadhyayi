@@ -23,6 +23,7 @@ import StarRating from '@/components/StarRating';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import { logBookEvent } from '@/lib/supabase/events';
 import { BookEditionTransparency } from '@/components/books/BookEditionTransparency';
+import BookReviews from '@/components/books/BookReviews';
 
 
 const VALID_BOOK_TABS = ['connect', 'create', 'feedback', 'read'] as const;
@@ -365,6 +366,10 @@ const BookDetails = () => {
           </div>
 
           <Separator className="my-8" />
+
+          <div className="mb-8">
+            <BookReviews bookId={book.id} />
+          </div>
 
           {/* Guest CTA */}
           {!user && (
