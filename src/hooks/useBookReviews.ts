@@ -32,9 +32,12 @@ export function useBookReviews(bookId: string | undefined) {
 
       // Enrich only from the public-profile view; never query private profile fields.
       const ids = [...new Set(rows.map((row) => row.user_id))];
-      const { data: profiles } = await (client.from('public_profiles') as any)
+      const { data: profiles, error: profilesError } = await (client.from('public_profiles') as any)
         .select('id, full_name, username, profile_photo_url')
         .in('id', ids);
+      if (profilesError) {
+        console.warn('Could not load public reviewer profiles:', profilesError.message);
+      }
       const byId = new Map((profiles || []).map((profile: any) => [profile.id, profile]));
       return rows.map((row) => ({ ...row, reviewer: byId.get(row.user_id) || null }));
     },
