@@ -34,16 +34,15 @@ const Navigation = () => {
   React.useEffect(() => {
     const handleScroll = () => {
       const isScrolled = window.scrollY > 20;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
-      }
+      setScrolled((previous) => (previous === isScrolled ? previous : isScrolled));
     };
 
-    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [scrolled]);
+  }, []);
 
   React.useEffect(() => {
     if (isMobile) {
