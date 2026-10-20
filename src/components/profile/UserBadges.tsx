@@ -8,10 +8,11 @@ const UserBadges: React.FC = () => {
   if (badges.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 justify-center mt-2">
-      {badges.map((b) => (
-        <Badge key={b.id} variant="secondary">
-          {b.badges?.name}
+    <div className="flex flex-wrap gap-2 justify-center mt-2" aria-label="Reading achievements">
+      {badges.map((badge) => (
+        <Badge key={badge.id} variant="secondary" title={badge.badges?.name}>
+          {badge.badges?.icon_url ? `${badge.badges.icon_url} ` : null}
+          {badge.badges?.name ?? 'Reading achievement'}
         </Badge>
       ))}
     </div>
