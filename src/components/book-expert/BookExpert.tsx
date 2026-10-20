@@ -479,6 +479,29 @@ const BookExpert = () => {
                       </details>
                     )}
 
+                    {!isUser && index === visibleMessages.length - 1 && !loading && (
+                      <div className="space-y-2 px-1">
+                        <p className="text-[10px] font-medium text-muted-foreground">Keep exploring</p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { label: "Go deeper", prompt: "Go deeper into your previous answer with useful detail, and cite relevant Sahadhyayi sources when available." },
+                            { label: "Explain simply", prompt: "Explain the key idea from your previous answer in simpler language and include a brief example." },
+                            { label: "Reflect on it", prompt: "Give me one thoughtful reflection question based on your previous answer, then briefly explain why it matters to a reader." },
+                          ].map((suggestion) => (
+                            <button
+                              key={suggestion.label}
+                              type="button"
+                              onClick={() => handleSend(suggestion.prompt)}
+                              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <Sparkles className="h-3 w-3 text-primary" aria-hidden="true" />
+                              {suggestion.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {!isUser && message.requestId && (
                       <div className="flex items-center gap-2 px-1 text-muted-foreground">
                         <span className="text-[11px]">Was this useful?</span>
