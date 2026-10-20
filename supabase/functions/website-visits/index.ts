@@ -119,6 +119,18 @@ Deno.serve(async(req:Request)=>{
       referrer,screen_resolution:screenResolution,language,timezone,metadata:{location_source:geo.geoSource}
     },{onConflict:'event_id',ignoreDuplicates:true});
     if(legacyError){console.error('Rolling analytics recorded but legacy mirror failed',{code:legacyError.code,message:legacyError.message});return new Response(JSON.stringify({success:true,partial:true,recordedIn:'website_visit_events'}),{status:200,headers:corsHeaders});}
-    return new Response(JSON.stringify({success:true,eventId:validEventId,recordedIn:['website_visit_events','website_visits'],geoAvailable:Boolean(geo.ip||geo.countryCode||geo.city||geo.region),geoSource:geo.geoSource}),{status:200,headers:corsHeaders});
+    // Persist product interactions separately from pageviews so action analytics has a real event source.
+    if(normalizedEventType==='activity'){
+      const {error:actionError}=await supabase.from('website_action_events').upsert({
+        event_id:validEventId,visited_at:new Date().toISOString(),event_type:'activity',event_name:eventName,
+        visitor_id:visitorUuid,session_id:sessionUuid,user_id:authUserId,page_url:page,referrer,
+        country_code:geo.countryCode,city:geo.city,region:geo.region,browser:ua.browser,browser_version:ua.browserVersion||null,
+        os:ua.os,device_type:ua.deviceType,device_model:ua.deviceModel||null,screen_resolution:screenResolution,
+        language,timezone,utm_source:clean(body.utm_source,100),utm_medium:clean(body.utm_medium,100),
+        utm_campaign:clean(body.utm_campaign,100),metadata:{location_source:geo.geoSource}
+      },{onConflict:'event_id',ignoreDuplicates:true});
+      if(actionError){console.error('Visit recorded but action event write failed',{code:actionError.code,message:actionError.message});return new Response(JSON.stringify({error:'Failed to record activity event',stage:'action_write'}),{status:500,headers:corsHeaders});}
+    }
+    return new Response(JSON.stringify({success:true,eventId:validEventId,recordedIn:normalizedEventType==='activity'?['website_visit_events','website_visits','website_action_events']:['website_visit_events','website_visits'],geoAvailable:Boolean(geo.ip||geo.countryCode||geo.city||geo.region),geoSource:geo.geoSource}),{status:200,headers:corsHeaders});
   } catch(error){console.error('website-visits ingestion error',error);return new Response(JSON.stringify({error:'Internal server error'}),{status:500,headers:corsHeaders});}
 });
