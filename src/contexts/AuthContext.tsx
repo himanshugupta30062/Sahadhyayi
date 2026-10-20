@@ -28,12 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
-      setSession(sess);
-      setUser(sess?.user ?? null);
-      setLoading(false);
-    });
+    // INITIAL_SESSION from the listener initializes the existing session.
+    // A separate getSession() response could race and overwrite a newer auth event.
 
     return () => subscription.unsubscribe();
   }, []);
