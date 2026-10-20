@@ -73,7 +73,10 @@ export default defineConfig(({ mode }) => ({
           router: ['react-router-dom'],
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-toast'],
           query: ['@tanstack/react-query'],
-          supabase: ['@supabase/supabase-js']
+          supabase: ['@supabase/supabase-js'],
+          // Consolidate the many tiny icon modules into one shared chunk.
+          // This improves Brotli compression across the complete client bundle.
+          icons: ['lucide-react']
         }
       }
     },
