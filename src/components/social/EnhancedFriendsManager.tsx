@@ -275,17 +275,6 @@ export const EnhancedFriendsManager = () => {
                   </div>
                   <p className="text-sm font-medium text-foreground">You’re not following any readers yet</p>
                   <p className="text-xs">Discover readers and follow people whose book interests you share.</p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-4 border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg"
-                    onClick={() => {
-                      const discoverTab = document.querySelector('[data-value="discover"]');
-                      if (discoverTab instanceof HTMLElement) discoverTab.click();
-                    }}
-                  >
-                    Discover readers
-                  </Button>
                 </div>
               )}
             </TabsContent>
