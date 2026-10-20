@@ -89,7 +89,7 @@ const EmbeddedOriginalPost: React.FC<{ post?: SocialPost | null }> = ({ post }) 
 
 export const EnhancedSocialFeed = () => {
   const { user } = useAuth();
-  const { posts, isLoading, error, refetch } = useSocialPosts();
+  const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts();
   const toggleLike = useTogglePostLike();
   const toggleRepost = useToggleRepost();
   const deletePost = useDeletePost();
@@ -459,6 +459,25 @@ export const EnhancedSocialFeed = () => {
           </React.Fragment>
         );
       }))}
+          {(hasMore || loadMoreError) && (
+            <div className="flex flex-col items-center gap-2 py-3" aria-live="polite">
+              {loadMoreError && (
+                <p className="text-xs text-destructive text-center" role="alert">
+                  Could not load older posts: {loadMoreError.message}
+                </p>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void loadMore()}
+                disabled={isLoadingMore}
+                className="border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C442D] dark:text-[#D5B16D] hover:bg-[#EBF2EC] dark:hover:bg-[#1C3024]"
+              >
+                {isLoadingMore ? 'Loading older posts…' : loadMoreError ? 'Retry loading older posts' : 'Load older posts'}
+              </Button>
+            </div>
+          )}
         </>
       )}
 
