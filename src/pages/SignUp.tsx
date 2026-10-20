@@ -13,6 +13,7 @@ import { validateEmail, validatePassword, isRateLimited } from '@/utils/validati
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { motion } from 'framer-motion';
+import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -26,6 +27,8 @@ const SignUp = () => {
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const navigate = useNavigate();
   const { user, signUp } = useAuth();
   const { toast } = useToast();
@@ -83,11 +86,18 @@ const SignUp = () => {
       setLoading(false);
       return;
     }
+    if (!captchaToken) {
+      setError('Please complete the anti-bot verification before creating your account.');
+      setLoading(false);
+      return;
+    }
     try {
       const signupName = normalizeAuthName(formData.name);
       const signupEmail = normalizeAuthEmail(formData.email);
-      const { error } = await signUp(signupEmail, formData.password, signupName);
+      const { error } = await signUp(signupEmail, formData.password, signupName, captchaToken);
       if (error) {
+        setCaptchaToken(null);
+        setCaptchaResetKey((key) => key + 1);
         let errorMessage = error.message;
         const normalizedError = error.message.toLowerCase();
         if (normalizedError.includes('database error saving new user') || normalizedError.includes('unexpected_failure')) {
@@ -116,6 +126,8 @@ const SignUp = () => {
       }
       window.dispatchEvent(new CustomEvent('communityStatsUpdate', { detail: { action: 'signup' } }));
       try { localStorage.setItem('sahadhyayi_stats_sync', Date.now().toString()); } catch { /* ignore storage error in private mode */ }
+      setCaptchaToken(null);
+      setCaptchaResetKey((key) => key + 1);
       setSuccess('A verification email has been sent to your email.');
       setFormData({ name: '', email: '', password: '', confirmPassword: '' });
       setTimeout(() => navigate('/signin'), 2000);
@@ -278,6 +290,8 @@ const SignUp = () => {
                     </button>
                   </div>
                 </div>
+                
+                <TurnstileCaptcha key={captchaResetKey} onTokenChange={setCaptchaToken} />
                 
                 <Button 
                   type="submit" 
