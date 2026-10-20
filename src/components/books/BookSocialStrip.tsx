@@ -20,11 +20,10 @@ export const BookSocialStrip: React.FC<BookSocialStripProps> = ({
   onTabSelect,
 }) => {
   const navigate = useNavigate();
-  const { data: allRooms = [] } = useReadingRooms();
+  const { data: rooms = [] } = useReadingRooms(bookId);
   const { data: bookNotes = [] } = useMarginNotes({ bookId });
   const { data: allThreads = [] } = useSpoilerThreads();
 
-  const rooms = allRooms.filter((r) => r.book_id === bookId);
   const threads = allThreads.filter((t) => t.book_id === bookId);
 
   return (
