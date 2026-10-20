@@ -80,7 +80,7 @@ const ReadingCirclePanel: React.FC<ReadingCirclePanelProps> = ({ book }) => {
   const openInstagram = (username: string) => {
     const safeUsername = username.replace(/^@/, '').trim();
     if (!/^[a-zA-Z0-9._]{1,30}$/.test(safeUsername)) return;
-    const url = new URL(`/\${safeUsername}`, 'https://www.instagram.com');
+    const url = new URL(`/${safeUsername}`, 'https://www.instagram.com');
     window.open(url.href, '_blank', 'noopener,noreferrer');
   };
 
