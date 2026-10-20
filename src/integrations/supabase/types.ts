@@ -2513,6 +2513,72 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_badges: {
+        Row: {
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          requirement_books: number
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          requirement_books: number
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          requirement_books?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      reading_challenges: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          description: string
+          goal: number
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+        }
+        Insert: {
+          challenge_type?: string
+          created_at?: string
+          description?: string
+          goal: number
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          description?: string
+          goal?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       reading_progress: {
         Row: {
           book_id: string | null
@@ -3032,6 +3098,73 @@ export type Database = {
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_challenges: {
+        Row: {
+          challenge_id: string
+          completed: boolean
+          id: string
+          joined_at: string
+          progress: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean
+          id?: string
+          joined_at?: string
+          progress?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean
+          id?: string
+          joined_at?: string
+          progress?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenges_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "reading_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_reading_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reading_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "reading_badges"
             referencedColumns: ["id"]
           },
         ]
