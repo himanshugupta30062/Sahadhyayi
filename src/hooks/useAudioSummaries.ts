@@ -19,7 +19,7 @@ export const useAudioSummary = (bookId: string) => {
     enabled: !!bookId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('book_audio_summaries')
+        .from('book_audio_summaries' as any)
         .select('*')
         .eq('library_book_id', bookId)
         .maybeSingle();
@@ -72,7 +72,7 @@ export const useCreateAudioSummary = () => {
       
       // Save to database
       const { data, error } = await supabase
-        .from('book_audio_summaries')
+        .from('book_audio_summaries' as any)
          .upsert({
           book_id: null,
           library_book_id: params.bookId,
