@@ -188,6 +188,14 @@ const BookExpert = () => {
   };
 
   useEffect(() => {
+    if (!isOpen && typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      speechRef.current = null;
+      setSpeakingMessageIndex(null);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     return () => {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
