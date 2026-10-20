@@ -72,7 +72,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     queryKey,
     queryFn: async (): Promise<ReaderComment[]> => {
       const { data, error } = await supabase
-        .from('content_feedback')
+        .from('content_feedback' as any)
          .select('id, user_id, book_id, feedback_type, comment, created_at')
         .eq('book_id', bookId)
         .eq('feedback_type', FEEDBACK_TYPE)
@@ -123,7 +123,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     mutationFn: async () => {
       if (!user) throw new Error('Not authenticated');
       const payload: CommentPayload = { bookId, kind: commentType, text: newComment.trim() };
-      const { error } = await supabase.from('content_feedback') .insert({
+      const { error } = await supabase.from('content_feedback' as any) .insert({
         user_id: user.id,
         book_id: bookId,
         feedback_type: FEEDBACK_TYPE,
@@ -167,7 +167,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('content_feedback').delete().eq('id', id);
+      const { error } = await supabase.from('content_feedback' as any).delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -181,7 +181,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     mutationFn: async ({ id, current }: { id: string; current: ReaderComment }) => {
       const payload: CommentPayload = { bookId, kind: current.kind, text: editText.trim() };
       const { error } = await supabase
-        .from('content_feedback')
+        .from('content_feedback' as any)
          .update({ book_id: bookId, comment: JSON.stringify(payload) })
         .eq('id', id);
       if (error) throw error;
