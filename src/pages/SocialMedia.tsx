@@ -321,9 +321,6 @@ const SocialMedia: React.FC = () => {
   // Always show the guest experience when signed out
   if (!user) return <GuestLanding />;
 
-  // Active user name and avatar
-  const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Reader';
-  const userAvatar = user.user_metadata?.avatar_url || user.user_metadata?.profile_photo_url;
   const currentProgress = readingProgress[0];
 
   return (
