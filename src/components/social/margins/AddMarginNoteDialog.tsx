@@ -150,7 +150,7 @@ export const AddMarginNoteDialog: React.FC<AddMarginNoteDialogProps> = ({
                 type="number"
                 min={1}
                 value={page}
-                onChange={(e) => setPage(parseInt(e.target.value || "1", 10))}
+                onChange={(e) => setPage(Number.parseInt(e.target.value || "1", 10))}
                 className="mt-1"
               />
             </div>
