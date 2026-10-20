@@ -187,13 +187,13 @@ const BookExpert = () => {
     );
   };
 
-  useEffect(() => {
-    if (!isOpen && typeof window !== "undefined" && "speechSynthesis" in window) {
+  const stopSpeech = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
-      speechRef.current = null;
-      setSpeakingMessageIndex(null);
     }
-  }, [isOpen]);
+    speechRef.current = null;
+    setSpeakingMessageIndex(null);
+  };
 
   useEffect(() => {
     return () => {
@@ -206,7 +206,10 @@ const BookExpert = () => {
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") closeChat();
+      if (event.key === "Escape") {
+        stopSpeech();
+        closeChat();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -365,7 +368,7 @@ const BookExpert = () => {
           </button>
           <button
             type="button"
-            onClick={() => { closeChat(); setShowWelcomeBubble(true); }}
+            onClick={() => { stopSpeech(); closeChat(); setShowWelcomeBubble(true); }}
             aria-label="Close Book Expert"
             className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
