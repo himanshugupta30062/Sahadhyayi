@@ -60,4 +60,57 @@
     hideInitialLoader();
   }
   window.addEventListener('load', hideInitialLoader, { once: true });
+
+  // Make a failed startup visible instead of leaving a blank page if the app
+  // module fails before React mounts (for example, a missing/stale JS chunk).
+  var startupErrorMessage = '';
+  window.addEventListener('error', function (event) {
+    if (event instanceof ErrorEvent) {
+      startupErrorMessage = String(event.message || event.error && event.error.message || '').slice(0, 180);
+    }
+  }, true);
+  window.addEventListener('unhandledrejection', function (event) {
+    var reason = event.reason;
+    startupErrorMessage = String(reason && reason.message || reason || '').slice(0, 180);
+  }, true);
+
+  function showStartupFailureIfUnrendered() {
+    var root = document.getElementById('root');
+    if (!root || root.childElementCount > 0) return;
+
+    var panel = document.createElement('main');
+    panel.setAttribute('role', 'alert');
+    panel.style.cssText = 'box-sizing:border-box;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#f8fafc;color:#0f172a;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;';
+    var card = document.createElement('section');
+    card.style.cssText = 'width:100%;max-width:560px;border:1px solid #cbd5e1;border-radius:16px;background:#fff;padding:28px;box-shadow:0 12px 40px rgba(15,23,42,.08);';
+    var heading = document.createElement('h1');
+    heading.textContent = 'Sahadhyayi could not start';
+    heading.style.cssText = 'margin:0 0 12px;font-size:24px;line-height:1.25;';
+    var message = document.createElement('p');
+    message.textContent = 'The website shell loaded, but the application did not finish starting. Reload the page. If this repeats, the browser may be unable to load a required JavaScript asset.';
+    message.style.cssText = 'margin:0 0 16px;line-height:1.6;';
+    card.appendChild(heading);
+    card.appendChild(message);
+
+    if (startupErrorMessage) {
+      var details = document.createElement('p');
+      details.textContent = 'Startup diagnostic: ' + startupErrorMessage;
+      details.style.cssText = 'margin:0 0 18px;font-size:12px;line-height:1.5;color:#475569;overflow-wrap:anywhere;';
+      card.appendChild(details);
+    }
+
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Reload website';
+    button.style.cssText = 'border:0;border-radius:8px;background:#0f172a;color:#fff;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;';
+    button.addEventListener('click', function () { window.location.reload(); });
+    card.appendChild(button);
+    panel.appendChild(card);
+    root.replaceChildren(panel);
+  }
+
+  window.addEventListener('load', function () {
+    window.setTimeout(showStartupFailureIfUnrendered, 10000);
+  }, { once: true });
+
 })();
