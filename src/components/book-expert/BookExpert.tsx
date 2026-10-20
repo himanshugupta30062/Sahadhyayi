@@ -81,7 +81,7 @@ function RagCitationCard({ citation }: { citation: BookExpertCitation }) {
   );
 }
 
-function BookResultCard({ book }: { book: BookExpertBook }) {
+function BookResultCard({ book, onTalk }: { book: BookExpertBook; onTalk: (book: BookExpertBook) => void }) {
   const coverUrl = validHttpUrl(book.coverImageUrl);
   const readingUrl = validHttpUrl(book.readingUrl);
 
@@ -112,9 +112,16 @@ function BookResultCard({ book }: { book: BookExpertBook }) {
           <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{book.description}</p>
         )}
         <div className="mt-2 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => onTalk(book)}
+            className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <MessageCircle className="h-3 w-3" aria-hidden="true" /> Talk to this book
+          </button>
           <a
             href={"/book/" + encodeURIComponent(book.id)}
-            className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             View book <ExternalLink className="h-3 w-3" aria-hidden="true" />
           </a>
@@ -211,6 +218,13 @@ const BookExpert = () => {
     stopSpeech();
     void sendMessage(text);
     setInput("");
+  };
+
+  const handleTalkToBook = (book: BookExpertBook) => {
+    const author = book.author ? " by " + book.author : "";
+    handleSend(
+      "Let's talk about the book \"" + book.title + "\"" + author + ". Speak as a warm, distinctive first-person book companion, but do not claim to literally be the author or invent plot details. Start with a short, engaging introduction grounded in the book details available in Sahadhyayi, then ask me what I would like to explore."
+    );
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -448,7 +462,7 @@ const BookExpert = () => {
                           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">On our shelves</p>
                           <span className="h-px flex-1 bg-border" aria-hidden="true" />
                         </div>
-                        {message.books.map((book) => <BookResultCard key={book.id} book={book} />)}
+                        {message.books.map((book) => <BookResultCard key={book.id} book={book} onTalk={handleTalkToBook} />)}
                       </div>
                     )}
 
