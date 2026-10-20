@@ -1,0 +1,43 @@
+name: Refresh Browserslist database
+
+on:
+  push:
+    branches:
+      - chore/update-browserslist-database
+
+permissions:
+  contents: write
+
+concurrency:
+  group: browserslist-db-refresh
+  cancel-in-progress: true
+
+jobs:
+  update-lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: chore/update-browserslist-database
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install current lockfile dependencies
+        run: npm ci
+      - name: Refresh caniuse-lite with the official updater
+        run: npx --yes update-browserslist-db@latest
+      - name: Commit the lockfile refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- package-lock.json; then
+            echo "package-lock.json is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: refresh Browserslist compatibility database"
+          git push origin HEAD:chore/update-browserslist-database
