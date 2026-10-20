@@ -55,17 +55,14 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
     cleanup();
   });
 
-  it('trackAnalyticsEvent falls back to record_pageview RPC when Edge Function fails', async () => {
+  it('does not write metadata-free page views when the Edge Function fails', async () => {
     mockFunctionsInvoke.mockRejectedValue(new Error('Edge function 500 error'));
-    mockRpc.mockResolvedValue({ data: { success: true }, error: null });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     await trackAnalyticsEvent('pageview', undefined, '/library');
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith('website-visits', expect.anything());
-    expect(mockRpc).toHaveBeenCalledWith('record_pageview', expect.objectContaining({
-      p_page_path: '/library',
-      p_event_type: 'pageview',
-    }));
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it('maps the canonical dual-table contract accurately in useCommunityPulse', async () => {
