@@ -56,6 +56,15 @@ export default function WebsiteTour() {
     setOpen(false);
   }, [user]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") finishTour();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, finishTour]);
+
   const startTour = useCallback(() => { setStepIndex(0); setOpen(true); }, []);
   const next = () => stepIndex >= TOUR_STEPS.length - 1 ? finishTour() : setStepIndex((value) => value + 1);
   const previous = () => setStepIndex((value) => Math.max(0, value - 1));
