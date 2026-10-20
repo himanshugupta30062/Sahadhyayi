@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient } from "npm:@supabase/supabase-js@2.112.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,7 +8,7 @@ const corsHeaders = {
 
 const COLORS = ["#f59e0b", "#ef4444", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -24,10 +23,11 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey, {
-      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false, autoRefreshToken: false },
     });
 
     const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      auth: { persistSession: false, autoRefreshToken: false },
       global: { headers: { Authorization: authHeader } },
     });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
@@ -54,7 +54,7 @@ serve(async (req) => {
     }
 
     // Gather shelf + ratings
-    const { data: shelf } = await supabase
+    const { data: shelf } = await userClient
       .from("user_bookshelf")
       .select("status, books_library:book_id(title, author, genre)")
       .eq("user_id", userId)
