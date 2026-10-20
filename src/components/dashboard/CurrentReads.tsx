@@ -214,7 +214,7 @@ const CurrentReads: React.FC<CurrentReadsProps> = ({ userId }) => {
                   navigate(`/book/${book.book_id}`);
                 }
               }}
-              onClick={() => navigate(`/book/${book.book_id}`)
+              onClick={() => navigate(`/book/${book.book_id}`)}
               className="group text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(var(--brand-primary))] focus:ring-offset-2 rounded-lg flex flex-col justify-between"
             >
               <div>
