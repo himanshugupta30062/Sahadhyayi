@@ -109,8 +109,8 @@
     root.replaceChildren(panel);
   }
 
-  window.addEventListener('load', function () {
-    window.setTimeout(showStartupFailureIfUnrendered, 10000);
-  }, { once: true });
+  // Start independently of the load event: a stalled module request can delay
+  // window.load, but users still need a visible recovery path.
+  window.setTimeout(showStartupFailureIfUnrendered, 12000);
 
 })();
