@@ -21,6 +21,7 @@ export interface SocialPost {
   comments_count: number;
   reposts_count?: number;
   repost_of_id?: string | null;
+  audience?: 'public' | 'followers' | 'friends' | 'private';
   profiles?: {
     id: string;
     full_name?: string;
@@ -424,6 +425,7 @@ export const useCreatePost = () => {
       book_id?: string;
       feeling_emoji?: string;
       feeling_label?: string;
+      audience?: 'public' | 'followers' | 'friends' | 'private';
     }) => {
       if (!user?.id) throw new Error('Not authenticated');
 
@@ -472,6 +474,7 @@ export const useCreatePost = () => {
         feeling_emoji: postData.feeling_emoji?.trim() || null,
         feeling_label: postData.feeling_label?.trim() || null,
         image_url: postData.image_url?.trim() || null,
+        audience: postData.audience || 'friends',
       };
 
       // Debug log to help surface issues when inserting posts
