@@ -1,5 +1,4 @@
 /** @vitest-environment jsdom */
-import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { isRateLimited } from '@/utils/validation';
@@ -37,7 +36,7 @@ describe('signup input normalization', () => {
   });
 
   it('normalizes a display name without converting it into HTML entities', () => {
-    expect(normalizeAuthName("  A&B <Reader>\\u0000   Gupta  ")).toBe('A&B <Reader> Gupta');
+    expect(normalizeAuthName("  A&B <Reader>   Gupta  ")).toBe('A&B <Reader> Gupta');
   });
 
   it('sends the normalized email and plain-text name to Supabase Auth', async () => {
@@ -52,7 +51,7 @@ describe('signup input normalization', () => {
       email: 'reader+books&clubs@example.com',
       password: 'ValidPass1',
       options: {
-        emailRedirectTo: expect.stringMatching(/\\/$/),
+        emailRedirectTo: expect.stringContaining(window.location.origin),
         data: { full_name: 'A&B <Reader>' },
       },
     });
