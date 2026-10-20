@@ -26,6 +26,12 @@ const suggestedPrompts = [
   "Compare two books",
 ];
 
+const talkingBookLines = [
+  "Psst… every book has a story. Want one to introduce itself?",
+  "Tell me your mood, and I'll help you find a story to match.",
+  "A new adventure might be waiting on our shelves. Shall we look?",
+];
+
 function validHttpUrl(value: string | null | undefined): string | null {
   if (!value) return null;
   try {
@@ -151,12 +157,30 @@ const BookExpert = () => {
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState<Record<string, -1 | 1>>({});
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
+  const [showWelcomeBubble, setShowWelcomeBubble] = useState(true);
+  const [welcomeLineIndex, setWelcomeLineIndex] = useState(0);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView?.({ behavior: "smooth", block: "end" });
   }, [messages, loading, isOpen]);
+
+  useEffect(() => {
+    if (isOpen || !showWelcomeBubble) return;
+    const interval = window.setInterval(() => {
+      setWelcomeLineIndex((current) => (current + 1) % talkingBookLines.length);
+    }, 9000);
+    return () => window.clearInterval(interval);
+  }, [isOpen, showWelcomeBubble]);
+
+  const meetABook = () => {
+    setShowWelcomeBubble(false);
+    toggleChat();
+    void sendMessage(
+      "Introduce me to one real book from the Sahadhyayi library that could appeal to a curious new reader. Speak playfully in first person as the book itself, but identify its exact title and author only from verified library records supplied to you. Invite me to explore it. Never invent a library listing; if no matching record is available, say so and ask what genre I would like to explore."
+    );
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -204,23 +228,57 @@ const BookExpert = () => {
 
   if (!isOpen) {
     return (
-      <button
-        type="button"
-        onClick={toggleChat}
-        aria-label="Open AI Book Expert"
-        aria-expanded={false}
-        aria-controls="book-expert-panel"
-        className="fixed bottom-5 right-4 z-50 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-border bg-background shadow-xl transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6 sm:h-[76px] sm:w-[76px]"
-      >
-        <img
-          src={bookIcon}
-          alt=""
-          loading="eager"
-          decoding="async"
-          className="h-full w-full object-cover"
-          draggable={false}
-        />
-      </button>
+      <div className="fixed bottom-5 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+        {showWelcomeBubble && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="relative w-[min(270px,calc(100vw-2rem))] rounded-2xl border border-border bg-background p-3.5 text-foreground shadow-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
+          >
+            <button
+              type="button"
+              onClick={() => setShowWelcomeBubble(false)}
+              aria-label="Dismiss talking book message"
+              className="absolute right-2 top-2 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+            <div className="mb-1 flex items-center gap-1.5 pr-5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+              <Sparkles className="h-3 w-3" aria-hidden="true" />
+              A little book magic
+            </div>
+            <p className="text-sm leading-relaxed">{talkingBookLines[welcomeLineIndex]}</p>
+            <button
+              type="button"
+              onClick={meetABook}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Meet a book <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            setShowWelcomeBubble(false);
+            toggleChat();
+          }}
+          aria-label="Open AI Book Expert"
+          aria-expanded={false}
+          aria-controls="book-expert-panel"
+          className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-border bg-background shadow-xl transition-transform hover:scale-105 hover:-rotate-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-[76px] sm:w-[76px]"
+        >
+          <span className="absolute inset-0 rounded-full bg-primary/10 motion-safe:animate-pulse" aria-hidden="true" />
+          <img
+            src={bookIcon}
+            alt=""
+            loading="eager"
+            decoding="async"
+            className="relative h-full w-full object-cover"
+            draggable={false}
+          />
+        </button>
+      </div>
     );
   }
 
@@ -261,7 +319,7 @@ const BookExpert = () => {
           </button>
           <button
             type="button"
-            onClick={closeChat}
+            onClick={() => { closeChat(); setShowWelcomeBubble(true); }}
             aria-label="Close Book Expert"
             className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
