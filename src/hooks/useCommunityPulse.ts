@@ -218,7 +218,6 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
   const pageSize = 10;
 
   const isMountedRef = useRef(true);
-  const inFlightStatsRef = useRef(false);
   const inFlightVisitorsRef = useRef(false);
 
   useEffect(() => {
@@ -431,7 +430,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
   const safeCount = useCallback(async (table: string, filterField?: string, filterGte?: string, eqField?: string, eqVal?: string): Promise<number | null> => {
     try {
       if (typeof supabase?.from !== 'function') return null;
-      let q = supabase.from(table)?.select?.('*', { count: 'exact', head: true });
+      let q = supabase.from(table)?.select?.('id', { count: 'exact', head: true });
       if (!q) return null;
       if (eqField && eqVal && typeof (q as any).eq === 'function') {
         q = (q as any).eq(eqField, eqVal);

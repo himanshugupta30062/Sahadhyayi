@@ -1,7 +1,7 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { useGameStats, getRankForPoints, getNextRank } from '@/hooks/useGameStats';
 import { useQuizGame } from '@/hooks/useQuizGame';
 import { useGameBadges } from '@/hooks/useGameBadges';

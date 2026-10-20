@@ -103,3 +103,5 @@ CREATE TRIGGER notify_post_like AFTER INSERT ON public.post_likes
 DROP TRIGGER IF EXISTS notify_post_comment ON public.post_comments;
 CREATE TRIGGER notify_post_comment AFTER INSERT ON public.post_comments
   FOR EACH ROW EXECUTE FUNCTION public.notify_social_activity();
+
+NOTIFY pgrst, 'reload schema';

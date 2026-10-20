@@ -65,7 +65,7 @@ const formatMetric = (value: number | null | undefined, prefix = '', fallback = 
 const number = (value: number | null | undefined) => formatMetric(value);
 
 const changeLabel = (change?: Change) =>
-  change ? `${change.value > 0 ? '+' : ''}${change.value}%` : null;
+  change && change.value != null ? `${change.value > 0 ? '+' : ''}${change.value}%` : null;
 
 function getFlagEmoji(countryCode?: string | null): string {
   if (!countryCode || countryCode.length !== 2) return '🌐';

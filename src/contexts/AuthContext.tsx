@@ -28,13 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
-      setSession(sess);
-      setUser(sess?.user ?? null);
-      setLoading(false);
-    });
-
+    // Do not race getSession() against this listener; INITIAL_SESSION owns startup.
     return () => subscription.unsubscribe();
   }, []);
 
