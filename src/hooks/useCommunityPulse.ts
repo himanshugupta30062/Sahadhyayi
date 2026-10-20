@@ -397,7 +397,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       lastFetchTime: new Date().toISOString(),
       lifetimeStatus: dualTable.lifetimeVisits !== null ? 'Healthy (Preserved in public.website_visits)' : 'Unavailable',
       rollingStatus: dualTable.isInitialRollout ? 'Initial Rollout Bridge' : 'Rolling 30-Day Active',
-      ingestionStatus: 'Active & Resilient (Edge Function + record_pageview RPC)',
+      ingestionStatus: 'Edge Function only (server-derived location metadata)',
     };
 
     return {
