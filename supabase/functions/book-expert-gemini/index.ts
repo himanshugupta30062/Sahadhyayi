@@ -265,6 +265,34 @@ async function retrieveLibraryBooks(supabaseClient: any, text: string): Promise<
     .map((item) => item.book);
 }
 
+async function retrieveFeaturedLibraryBooks(supabaseClient: any): Promise<BookRecord[]> {
+  const selectFields = "id,title,author,genre,description,cover_image_url,publication_year,language,pdf_url";
+  try {
+    // A small UUID-ordered sample gives the "meet a book" experience real catalog
+    // records even when the visitor has not chosen a genre or search term yet.
+    const { data, error } = await supabaseClient
+      .from("books_library")
+      .select(selectFields)
+      .not("title", "is", null)
+      .order("id", { ascending: true })
+      .limit(40);
+    if (error || !Array.isArray(data)) {
+      console.error("Book Expert featured-book lookup is unavailable.");
+      return [];
+    }
+
+    const candidates = data.filter((row: any) => row && row.id && typeof row.title === "string" && row.title.trim());
+    for (let index = candidates.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [candidates[index], candidates[swapIndex]] = [candidates[swapIndex], candidates[index]];
+    }
+    return candidates.slice(0, LIMITS.maxRetrievedBooks) as BookRecord[];
+  } catch {
+    console.error("Book Expert featured-book lookup failed.");
+    return [];
+  }
+}
+
 async function generateQueryEmbedding(text: string, apiKey: string): Promise<number[]> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -645,6 +673,12 @@ serve(async (req: Request) => {
     let libraryBooks: BookRecord[] = [];
     try {
       libraryBooks = await retrieveLibraryBooks(supabaseClient, text);
+      if (
+        libraryBooks.length === 0 &&
+        /\b(meet a book|introduce me to|talking book|hear from a book)\b/i.test(text)
+      ) {
+        libraryBooks = await retrieveFeaturedLibraryBooks(supabaseClient);
+      }
     } catch {
       // Keep general literary help available if catalog search is temporarily unavailable.
       console.error("Book Expert library retrieval failed.");
