@@ -34,32 +34,52 @@ export interface Friend {
     profile_photo_url?: string;
     username?: string;
     bio?: string;
-    location_lat?: number;
-    location_lng?: number;
+    location_lat?: number | null;
+    location_lng?: number | null;
     location_sharing?: boolean;
-    last_seen?: string;
+    last_seen?: string | null;
   };
 }
 
+type SocialProfile = NonNullable<Friend['friend_profile']>;
+
+const fetchSocialProfiles = async (profileIds: string[]): Promise<SocialProfile[]> => {
+  const uniqueIds = [...new Set(profileIds.filter(Boolean))];
+  if (uniqueIds.length === 0) return [];
+
+  const { data, error } = await supabase.rpc('get_profiles_for_social_context', {
+    profile_ids: uniqueIds,
+  });
+  if (error) throw error;
+  return (data || []) as SocialProfile[];
+};
+
 export const useFriendRequests = () => {
   const { user } = useAuth();
-  
+
   return useQuery({
     queryKey: ['friend-requests', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      
+
       const { data, error } = await supabase
         .from('friend_requests')
-        .select(`
-          *,
-          requester_profile:profiles!requester_id(id, full_name, profile_photo_url, username),
-          addressee_profile:profiles!addressee_id(id, full_name, profile_photo_url, username)
-        `)
+        .select('*')
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
-      
+
       if (error) throw error;
-      return data || [];
+
+      const requests = data || [];
+      const profiles = await fetchSocialProfiles(
+        requests.flatMap((request) => [request.requester_id, request.addressee_id]),
+      );
+      const profilesById = new Map(profiles.map((profile) => [profile.id, profile]));
+
+      return requests.map((request) => ({
+        ...request,
+        requester_profile: profilesById.get(request.requester_id),
+        addressee_profile: profilesById.get(request.addressee_id),
+      })) as FriendRequest[];
     },
     enabled: !!user?.id,
   });
@@ -67,28 +87,35 @@ export const useFriendRequests = () => {
 
 export const useFriends = () => {
   const { user } = useAuth();
-  
+
   return useQuery({
     queryKey: ['friends', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      
+
       const { data, error } = await supabase
         .from('friends')
-        .select(`
-          *,
-          user1_profile:profiles!user1_id(id, full_name, profile_photo_url, username, bio, location_lat, location_lng, location_sharing, last_seen),
-          user2_profile:profiles!user2_id(id, full_name, profile_photo_url, username, bio, location_lat, location_lng, location_sharing, last_seen)
-        `)
+        .select('id, user1_id, user2_id, created_at')
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
-      
+
       if (error) throw error;
-      
-      // Transform data to include friend_profile
-      return (data || []).map(friendship => ({
-        ...friendship,
-        friend_profile: friendship.user1_id === user.id ? friendship.user2_profile : friendship.user1_profile
-      }));
+
+      const friendships = data || [];
+      const friendIds = friendships.map((friendship) =>
+        friendship.user1_id === user.id ? friendship.user2_id : friendship.user1_id,
+      );
+      const profiles = await fetchSocialProfiles(friendIds);
+      const profilesById = new Map(profiles.map((profile) => [profile.id, profile]));
+
+      return friendships.map((friendship) => {
+        const friendId = friendship.user1_id === user.id
+          ? friendship.user2_id
+          : friendship.user1_id;
+        return {
+          ...friendship,
+          friend_profile: profilesById.get(friendId),
+        };
+      }) as Friend[];
     },
     enabled: !!user?.id,
   });
@@ -97,33 +124,29 @@ export const useFriends = () => {
 export const useSendFriendRequest = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ addresseeId }: { addresseeId: string }) => {
-      if (!user?.id) throw new Error("User not authenticated");
+      if (!user?.id) throw new Error('User not authenticated');
       const { data, error } = await supabase
         .from('friend_requests')
-        .insert([{
-          requester_id: user.id,
-          addressee_id: addresseeId,
-          status: 'pending'
-        }])
+        .insert([{ requester_id: user.id, addressee_id: addresseeId, status: 'pending' }])
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['all-users'] }); // Refresh discover section
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
     },
   });
 };
 
 export const useRespondToFriendRequest = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ requestId, status }: { requestId: string; status: 'accepted' | 'rejected' }) => {
       const { data, error } = await supabase
@@ -132,36 +155,39 @@ export const useRespondToFriendRequest = () => {
         .eq('id', requestId)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
       queryClient.invalidateQueries({ queryKey: ['friends'] });
-      queryClient.invalidateQueries({ queryKey: ['all-users'] }); // Refresh discover section
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
     },
   });
 };
 
 export const useCancelFriendRequest = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ requestId }: { requestId: string }) => {
+      if (!user?.id) throw new Error('User not authenticated');
       const { data, error } = await supabase
         .from('friend_requests')
         .delete()
         .eq('id', requestId)
+        .eq('requester_id', user.id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['all-users'] }); // Refresh discover section
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
     },
   });
 };
