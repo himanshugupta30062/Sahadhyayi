@@ -32,7 +32,7 @@ export function useBookReviews(bookId: string | undefined) {
 
       // Enrich only from the public-profile view; never query private profile fields.
       const ids = [...new Set(rows.map((row) => row.user_id))];
-      const { data: profiles, error: profilesError } = await (client.from('public_profiles') as any)
+      const { data: profiles, error: profilesError } = await (client.from('profiles_public') as any)
         .select('id, full_name, username, profile_photo_url')
         .in('id', ids);
       if (profilesError) {
