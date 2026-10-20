@@ -428,7 +428,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
       setActiveIndex(-1);
     };
 
-    runSearch();
+    void runSearch();
 
     return () => {
       isMounted = false;
