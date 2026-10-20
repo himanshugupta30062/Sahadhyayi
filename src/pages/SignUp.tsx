@@ -6,10 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuth } from '@/contexts/authHelpers';
+import { useAuth, normalizeAuthEmail, normalizeAuthName } from '@/contexts/authHelpers';
 import { UserPlus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { PasswordStrength } from '@/components/ui/password-strength';
-import { validateEmail, validatePassword, sanitizeInput, validateUsername, isRateLimited } from '@/utils/validation';
+import { validateEmail, validatePassword, isRateLimited } from '@/utils/validation';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { motion } from 'framer-motion';
@@ -84,12 +84,15 @@ const SignUp = () => {
       return;
     }
     try {
-      const sanitizedName = sanitizeInput(formData.name.trim(), 100);
-      const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
-      const { error } = await signUp(sanitizedEmail, formData.password, sanitizedName);
+      const signupName = normalizeAuthName(formData.name);
+      const signupEmail = normalizeAuthEmail(formData.email);
+      const { error } = await signUp(signupEmail, formData.password, signupName);
       if (error) {
         let errorMessage = error.message;
-        if (error.message.includes('User already registered') || error.message.includes('already exists')) {
+        const normalizedError = error.message.toLowerCase();
+        if (normalizedError.includes('database error saving new user') || normalizedError.includes('unexpected_failure')) {
+          errorMessage = 'We could not finish creating your account because of a temporary setup issue. Please try again. If it continues, contact support.';
+        } else if (error.message.includes('User already registered') || error.message.includes('already exists')) {
           errorMessage = 'An account with this email already exists. Please sign in.';
         } else if (error.message.includes('Invalid email')) {
           errorMessage = 'Please enter a valid email address.';
@@ -126,8 +129,8 @@ const SignUp = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const sanitizedValue = name === 'name' ? sanitizeInput(value, 100) : value;
-    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+    const normalizedValue = name === 'name' ? normalizeAuthName(value) : value;
+    setFormData(prev => ({ ...prev, [name]: normalizedValue }));
     if (error) setError('');
   };
 
