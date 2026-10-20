@@ -80,30 +80,13 @@ export const usePageVisitTracker = () => {
           },
         });
 
-        // If Edge function reported error, fallback directly to secure RPC
         if (invokeErr) {
-          await supabase.rpc('record_pageview', {
-            p_page_path: currentPage,
-            p_session_id: sessionId,
-            p_visitor_id: visitorId,
-            p_referrer: referrer || null,
-            p_event_type: 'pageview',
-          });
+          // Do not create rows without server-derived IP/geolocation as a fallback.
+          console.warn('Page-view analytics ingestion failed; skipping metadata-free RPC fallback.', invokeErr);
         }
-      } catch {
-        // Fallback directly to secure database RPC if function invoke throws
-        try {
-          const { visitorId, sessionId } = getAnalyticsIds();
-          await supabase.rpc('record_pageview', {
-            p_page_path: currentPage,
-            p_session_id: sessionId,
-            p_visitor_id: visitorId,
-            p_referrer: document.referrer || null,
-            p_event_type: 'pageview',
-          });
-        } catch {
-          // Analytics is completely non-blocking
-        }
+      } catch (error) {
+        // Tracking remains non-blocking, but all page-view writes must go through the Edge Function.
+        console.warn('Page-view analytics could not reach the ingestion function.', error);
       }
     };
 
