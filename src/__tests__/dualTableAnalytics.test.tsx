@@ -60,35 +60,34 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
   });
 
   // 1. Original Table and Lifetime Records Preserved
-  it('preserves all-time historical visits from original website_visits without destructive reset', async () => {
-    mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        lifetime: {
-          totalVisits: 28450,
-          sourceTable: 'public.website_visits',
-          label: 'All-Time Visits',
-        },
-        rolling: {
-          sourceTable: 'public.website_visit_events',
-          collectionStartedAt: '2026-10-19T00:00:00Z',
-          isInitialRollout: false,
-          pageViews24h: 340,
-          pageViews7d: 2150,
-          pageViews30d: 9400,
-          uniqueVisitors24h: 180,
-          uniqueVisitors7d: 1200,
-          uniqueVisitors30d: 4900,
-        },
-        totalVisits: 28450,
-        last24hVisits: 340,
-        pageViews: 340,
-        uniqueVisitors: 180,
-        uniqueVisitors24h: 180,
-        totalMembers: 1042,
-        newReaders: 15,
-        newSignups24h: 15,
-        hourlyActivity: [],
-      },
+  it('preserves all-time historical visits and displays rolling metrics from the canonical RPC', async () => {
+    mockCurrentUser = { id: 'admin-uuid', email: 'admin@sahadhyayi.com' };
+    mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
+      if (name === 'get_dual_table_website_analytics') {
+        return Promise.resolve({
+          data: {
+            period: { pageViews: 340, uniqueVisitors: 180, newRegistrations: 15, registeredReaders: 1042 },
+            lifetime: { totalVisits: 28450, sourceTable: 'public.website_visits', label: 'All-Time Visits' },
+            rolling: {
+              sourceTable: 'public.website_visit_events',
+              collectionStartedAt: '2026-10-19T00:00:00Z',
+              isInitialRollout: false,
+              pageViews24h: 340,
+              pageViews7d: 2150,
+              pageViews30d: 9400,
+              uniqueVisitors24h: 180,
+              uniqueVisitors7d: 1200,
+              uniqueVisitors30d: 4900,
+            },
+            timeseries: [],
+            breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+            lastUpdated: new Date().toISOString(),
+          },
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
     });
 
     render(
@@ -97,13 +96,11 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
       </BrowserRouter>
     );
 
-    // Verifies lifetime count is rendered with distinct designation
     await waitFor(() => {
       expect(screen.getByText(/28,450 visits/i)).toBeInTheDocument();
       expect(screen.getByText(/Lifetime/i)).toBeInTheDocument();
     });
 
-    // Verifies rolling 24h, 7d, 30d stats are shown
     expect(screen.getByText(/340 views/i)).toBeInTheDocument();
     expect(screen.getByText(/2,150 views/i)).toBeInTheDocument();
     expect(screen.getByText(/9,400 views/i)).toBeInTheDocument();
@@ -172,22 +169,36 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
   });
 
   // 4. Timeframe Boundaries (24h, 7d, 30d)
-  it('calculates recent-period metrics using distinct timestamp boundaries', async () => {
-    mockFunctionsInvoke.mockImplementation((fn: string, options?: any) => {
-      if (fn === 'community-stats') {
-        const tf = options?.body?.timeframe || '24h';
+  it('calculates recent-period metrics using distinct timeframe-specific RPC results', async () => {
+    mockCurrentUser = { id: 'admin-uuid', email: 'admin@sahadhyayi.com' };
+    mockRpc.mockImplementation((name: string, args?: any) => {
+      if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
+      if (name === 'get_dual_table_website_analytics') {
+        const tf = args?.p_timeframe || '24h';
         const views = tf === '30d' ? 8200 : tf === '7d' ? 1950 : 280;
         return Promise.resolve({
           data: {
             timeframe: tf,
-            totalVisits: 50000,
-            last24hVisits: views,
-            pageViews: views,
-            uniqueVisitors: Math.round(views * 0.55),
-            totalMembers: 1200,
-            newReaders: tf === '30d' ? 45 : tf === '7d' ? 12 : 2,
-            hourlyActivity: [],
+            period: {
+              pageViews: views,
+              uniqueVisitors: Math.round(views * 0.55),
+              newRegistrations: tf === '30d' ? 45 : tf === '7d' ? 12 : 2,
+              registeredReaders: 1200,
+            },
+            lifetime: { totalVisits: 50000, sourceTable: 'public.website_visits' },
+            rolling: {
+              pageViews24h: 280,
+              pageViews7d: 1950,
+              pageViews30d: 8200,
+              uniqueVisitors24h: 154,
+              uniqueVisitors7d: 1072,
+              uniqueVisitors30d: 4510,
+            },
+            timeseries: [],
+            breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+            lastUpdated: new Date().toISOString(),
           },
+          error: null,
         });
       }
       return Promise.resolve({ data: null, error: null });
@@ -199,24 +210,13 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    // 24h
     expect(result.current.stats?.pageViews).toBe(280);
 
-    // 7d
-    act(() => {
-      result.current.setTimeframe('7d');
-    });
-    await waitFor(() => {
-      expect(result.current.stats?.pageViews).toBe(1950);
-    });
+    act(() => result.current.setTimeframe('7d'));
+    await waitFor(() => expect(result.current.stats?.pageViews).toBe(1950));
 
-    // 30d
-    act(() => {
-      result.current.setTimeframe('30d');
-    });
-    await waitFor(() => {
-      expect(result.current.stats?.pageViews).toBe(8200);
-    });
+    act(() => result.current.setTimeframe('30d'));
+    await waitFor(() => expect(result.current.stats?.pageViews).toBe(8200));
   });
 
   // 5. Dual-Table Architecture Notice & Rollout Start Date
