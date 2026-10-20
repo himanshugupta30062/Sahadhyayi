@@ -230,7 +230,7 @@ const BookExpert = () => {
       role="dialog"
       aria-modal="false"
       aria-labelledby="book-expert-title"
-      className="fixed inset-x-2 bottom-2 z-50 flex h-[min(720px,calc(100dvh-1rem))] max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-border bg-background text-foreground shadow-2xl sm:inset-x-auto sm:bottom-24 sm:right-6 sm:h-[min(720px,calc(100dvh-7rem))] sm:w-[420px] md:w-[460px]"
+      className="fixed inset-x-2 bottom-2 z-50 flex h-[min(720px,calc(100dvh-1rem))] min-h-0 max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-border bg-background text-foreground shadow-2xl sm:inset-x-auto sm:bottom-24 sm:h-[min(720px,calc(100dvh-7rem))] sm:w-[420px] sm:right-6 md:w-[460px]"
     >
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -271,7 +271,7 @@ const BookExpert = () => {
       </header>
 
       <div
-        className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4"
+        className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto overscroll-contain px-3 py-4 sm:px-4"
         aria-live="polite"
         aria-relevant="additions text"
       >
