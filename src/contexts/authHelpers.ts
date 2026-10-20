@@ -8,24 +8,41 @@ export const normalizeAuthEmail = (email: string): string =>
 export const normalizeAuthName = (name: string): string =>
   name
     .replace(/[\x00-\x1F\x7F]/g, ' ')
-    .replace(/\\s+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 100);
 
 export const useAuth = () => {
   const base = useBaseAuth();
 
-  const signUp = async (email: string, password: string, fullName?: string): Promise<{ error: AuthError | null }> => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string | undefined,
+    captchaToken: string
+  ): Promise<{ error: AuthError | null }> => {
     // Do not HTML-encode identity fields. React escapes rendered text, and
     // HTML entities would change valid email local-parts (for example '&' or '/').
     const normalizedEmail = normalizeAuthEmail(email);
     const normalizedName = fullName ? normalizeAuthName(fullName) : '';
 
+    if (!captchaToken.trim()) {
+      return {
+        error: {
+          name: 'CaptchaRequiredError',
+          message: 'Please complete the anti-bot verification before signing up.',
+          status: 400,
+        } as AuthError,
+      };
+    }
+
     const { error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        // Supabase should return users to the route that handles PKCE and OTP links.
+        emailRedirectTo: `${window.location.origin}/confirm-email`,
+        captchaToken,
         data: normalizedName ? { full_name: normalizedName } : undefined,
       },
     });
