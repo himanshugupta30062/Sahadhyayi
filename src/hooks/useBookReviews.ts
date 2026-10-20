@@ -75,7 +75,7 @@ export function useDeleteBookReview(bookId: string | undefined) {
   return useMutation({
     mutationFn: async (reviewId: string) => {
       if (!bookId || !user?.id) throw new Error('Please sign in to manage your review.');
-      const { error } = await (supabase).from('book_reviews' as any)
+      const { error } = await (supabase as any).from('book_reviews')
         .delete().eq('id', reviewId).eq('user_id', user.id);
       if (error) throw error;
     },
