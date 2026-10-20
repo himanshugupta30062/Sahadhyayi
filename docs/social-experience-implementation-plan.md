@@ -78,6 +78,10 @@ Do not optimize vanity metrics or seed fake engagement.
 6. Safety, accessibility, performance and product analytics.
 
 ## Status in this PR
-- Implemented: feed query failures now propagate to React Query's error state rather than being converted to an empty feed; plain-query fallback errors are also surfaced.
-- Added: this staged implementation plan and acceptance criteria.
-- Not yet implemented in this PR: audience schema/RLS changes, cursor pagination, broader UI redesign, follow graph, messaging consolidation. These need focused code/schema review and tests before safe rollout.
+- Implemented: feed query failures propagate to React Query's error state rather than being converted to an empty feed; plain-query fallback errors are surfaced.
+- Implemented: stable `created_at DESC, id DESC` ordering and 25-post cursor pages with a “Load older posts” control, loading feedback, and a retryable error state.
+- Implemented: regression tests cover the visible feed error/retry state and the older-post control.
+- Implemented: the reader suggestion action now says “Add friend” because it sends a mutual friend request; it no longer incorrectly implies a one-way follow.
+- Added: this staged plan and acceptance criteria.
+- Not yet implemented: a true one-way follow graph, feed-mode semantics based on follows, audience schema/RLS changes, private/friends-only visibility, broader discovery redesign, messaging consolidation, and production moderation workflows. These require focused schema/policy review and tests before safe rollout.
+- Validation: source changes have been committed to the feature branch. Build, lint, and Vitest results still need to be verified; do not treat this PR as production-ready until checks pass.
