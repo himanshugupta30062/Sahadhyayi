@@ -204,7 +204,9 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
   const handleCopyText = (text: string, label: string, key: string) => {
     try {
-      navigator.clipboard.writeText(text);
+      void navigator.clipboard.writeText(text).catch(() => {
+        toast({ title: 'Copy failed', description: 'Could not access clipboard.', variant: 'destructive' });
+      });
       setCopiedKey(key);
       setTimeout(() => setCopiedKey(null), 2000);
       toast({
@@ -384,9 +386,9 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 if (propOnRefresh) {
                   propOnRefresh();
                 } else if (activeTab === 'visitors') {
-                  refetchVisitors();
+                  void refetchVisitors();
                 } else {
-                  refetchStats();
+                  void refetchStats();
                 }
               }}
               disabled={loading || visitorsLoading}
@@ -1369,7 +1371,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                 <div className="p-3 sm:p-4 rounded-xl border border-red-900/50 bg-red-950/20 text-red-300 text-xs flex items-center justify-between">
                   <span>{visitorsError}</span>
                   <button
-                    onClick={refetchVisitors}
+                    onClick={() => { void refetchVisitors(); }}
                     className="px-3 py-1 rounded bg-red-900/60 hover:bg-red-800 text-white font-medium"
                   >
                     Retry

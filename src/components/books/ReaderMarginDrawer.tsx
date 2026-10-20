@@ -93,6 +93,14 @@ export const ReaderMarginDrawer: React.FC<ReaderMarginDrawerProps> = ({
           {/* Active Co-Reading Room Banner if present */}
           {activeBookRoom && (
             <div
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  navigate('/social?tab=rooms');
+                }
+              }}
               onClick={() => navigate('/social?tab=rooms')}
               className="mt-3 flex items-center justify-between p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/15 transition-all"
             >

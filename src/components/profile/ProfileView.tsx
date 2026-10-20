@@ -85,7 +85,7 @@ export const ProfileView: React.FC = () => {
   const handleConfirmDelete = async () => {
     await deleteProfile.mutateAsync();
     toast({ title: "Account marked for deletion", description: "Your account has been deleted.", variant: "destructive" });
-    setTimeout(signOut, 2000);
+    setTimeout(() => { void signOut(); }, 2000);
   };
 
   const handleCancelDelete = () => setEditMode("view");
@@ -93,7 +93,9 @@ export const ProfileView: React.FC = () => {
   const handleCopyProfileLink = () => {
     const profileUrl = `${window.location.origin}/profile`;
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(profileUrl);
+      void navigator.clipboard.writeText(profileUrl).catch(() => {
+        toast({ title: 'Copy failed', description: 'Could not access clipboard.', variant: 'destructive' });
+      });
       toast({
         title: "Profile Link Copied",
         description: "Your profile URL is copied to your clipboard.",

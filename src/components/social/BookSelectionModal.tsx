@@ -88,6 +88,14 @@ export const BookSelectionModal = ({ isOpen, onClose, onSelect }: BookSelectionM
                 return (
                   <div
                     key={book.id}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        handleBookSelect(book);
+                      }
+                    }}
                     className={`flex items-start space-x-3 p-3 rounded-xl cursor-pointer transition-all ${
                       isSelected
                         ? 'bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43] shadow-xs'
