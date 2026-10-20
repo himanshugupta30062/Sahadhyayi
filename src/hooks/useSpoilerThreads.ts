@@ -34,7 +34,7 @@ export const useSpoilerThreads = (bookId?: string) => {
       let q = supabase
         .from("spoiler_threads_safe" as any)
         .select(
-          "id, book_id, user_id, title, body, min_chapter, is_unlocked, created_at, updated_at, books_library:book_id(title, author, cover_image_url), profiles:user_id(full_name, profile_photo_url)"
+          "id, book_id, user_id, title, body, min_chapter, is_unlocked, created_at, updated_at"
         )
         .order("created_at", { ascending: false })
         .limit(60);
@@ -42,7 +42,17 @@ export const useSpoilerThreads = (bookId?: string) => {
       if (bookId) q = q.eq("book_id", bookId);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as unknown as SafeSpoilerThread[];
+      const threads = (data ?? []) as unknown as SafeSpoilerThread[];
+      const bookIds = [...new Set(threads.map((t) => t.book_id))];
+      const userIds = [...new Set(threads.map((t) => t.user_id))];
+      const [booksResult, profilesResult] = await Promise.all([
+        bookIds.length ? supabase.from("books_library").select("id, title, author, cover_image_url").in("id", bookIds) : Promise.resolve({ data: [], error: null } as any),
+        userIds.length ? (supabase as any).from("public_profiles").select("*").in("id", userIds) : Promise.resolve({ data: [], error: null } as any),
+      ]);
+      if (booksResult.error) throw booksResult.error;
+      const booksById = new Map((booksResult.data ?? []).map((b: any) => [b.id, b]));
+      const profilesById = new Map((profilesResult.data ?? []).map((p: any) => [p.id, p]));
+      return threads.map((thread) => ({ ...thread, books_library: booksById.get(thread.book_id) ?? null, profiles: profilesById.get(thread.user_id) ?? null }));
     },
     staleTime: 45_000,
   });
@@ -56,13 +66,17 @@ export const useSpoilerThreadComments = (threadId?: string, isUnlocked?: boolean
       if (!threadId) return [];
       const { data, error } = await supabase
         .from("spoiler_thread_comments")
-        .select("id, thread_id, user_id, body, min_chapter, created_at, profiles:user_id(full_name, profile_photo_url)")
+         .select("id, thread_id, user_id, body, min_chapter, created_at")
         .eq("thread_id", threadId)
         .order("created_at", { ascending: true })
         .limit(100);
 
       if (error) throw error;
-      return (data ?? []) as unknown as SpoilerComment[];
+      const comments = (data ?? []) as unknown as SpoilerComment[];
+      const userIds = [...new Set(comments.map((comment) => comment.user_id))];
+      const { data: profiles } = userIds.length ? await (supabase as any).from("public_profiles").select("*").in("id", userIds) : { data: [] };
+      const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+      return comments.map((comment) => ({ ...comment, profiles: byId.get(comment.user_id) ?? null }));
     },
     staleTime: 30_000,
   });
@@ -127,6 +141,7 @@ export const useUnlockChapter = () => {
             completion_percentage: 100,
             total_pages: 1,
             pages_read: 1,
+            time_spent_minutes: 0,
             completed_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           },
