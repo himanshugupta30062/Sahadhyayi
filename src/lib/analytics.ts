@@ -102,30 +102,12 @@ export const trackAnalyticsEvent = async (
     });
 
     if (invokeErr) {
-      await supabase.rpc('record_pageview', {
-        p_page_path: page,
-        p_session_id: sessionId,
-        p_visitor_id: visitorId,
-        p_referrer: referrer,
-        p_event_name: eventName || null,
-        p_event_type: eventType,
-      });
+      // Do not use the database RPC fallback: it cannot populate server-derived IP/geolocation.
+      console.warn('Website analytics ingestion failed; no metadata-free fallback was written.', invokeErr);
     }
-  } catch {
-    // Analytics never blocks product actions or navigation.
-    try {
-      const { visitorId, sessionId } = getAnalyticsIds();
-      const page = (pagePath || window.location.pathname).split(/[?#]/, 1)[0].slice(0, 200) || '/';
-      await supabase.rpc('record_pageview', {
-        p_page_path: page,
-        p_session_id: sessionId,
-        p_visitor_id: visitorId,
-        p_event_name: eventName || null,
-        p_event_type: eventType,
-      });
-    } catch {
-      // Ignored
-    }
+  } catch (error) {
+    // Analytics never blocks product actions or navigation. Keep page-view metadata server-derived.
+    console.warn('Website analytics could not reach the ingestion function.', error);
   }
 };
 
