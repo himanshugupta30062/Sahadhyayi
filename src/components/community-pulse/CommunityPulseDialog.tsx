@@ -204,7 +204,9 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
   const handleCopyText = (text: string, label: string, key: string) => {
     try {
-      navigator.clipboard.writeText(text);
+      void navigator.clipboard.writeText(text).catch(() => {
+        toast({ title: 'Copy failed', description: 'Could not access clipboard.', variant: 'destructive' });
+      });
       setCopiedKey(key);
       setTimeout(() => setCopiedKey(null), 2000);
       toast({
