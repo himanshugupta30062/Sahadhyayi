@@ -50,8 +50,8 @@ jobs:
         id: check-config
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL }}
-          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'himanshugupta30062_Sahadhyayi' }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'sahadhyayi' }}
         run: |
           MISSING=""
           if [ -z "$SONAR_TOKEN" ]; then
@@ -82,6 +82,6 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'himanshugupta30062_Sahadhyayi' }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'sahadhyayi' }}
             -Dsonar.sources=src
             -Dsonar.tests=src/__tests__
