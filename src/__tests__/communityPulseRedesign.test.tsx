@@ -506,25 +506,37 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
 
   // 11. Timeframe Switching Produces Distinct, Timeframe-Aware Metrics (No duplicate or static data)
   it('updates metrics dynamically when switching timeframe between 24h, 7d, and 30d without duplicate data', async () => {
-    mockFunctionsInvoke.mockImplementation((fn: string, options?: any) => {
-      if (fn === 'community-stats') {
-        const tf = options?.body?.timeframe || '24h';
+    mockCurrentUser = { id: 'admin-uuid', email: 'admin@sahadhyayi.com' };
+    mockRpc.mockImplementation((name: string, args?: any) => {
+      if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
+      if (name === 'get_dual_table_website_analytics') {
+        const tf = args?.p_timeframe || '24h';
         const views = tf === '30d' ? 4500 : tf === '7d' ? 1200 : 250;
         const newReaders = tf === '30d' ? 65 : tf === '7d' ? 18 : 3;
         return Promise.resolve({
           data: {
             timeframe: tf,
-            totalVisits: 10000,
-            last24hVisits: views,
-            uniqueVisitors24h: Math.round(views * 0.6),
-            totalMembers: 450,
-            newSignups24h: newReaders,
-            comparisons: {
-              pageViewsChangePercent: 12,
+            period: {
+              pageViews: views,
+              uniqueVisitors: Math.round(views * 0.6),
+              registeredReaders: 450,
+              newRegistrations: newReaders,
             },
-            hourlyActivity: [{ hourIndex: 0, label: '12 AM', pageViews: 10 }],
+            lifetime: { totalVisits: 10000, sourceTable: 'public.website_visits' },
+            rolling: {
+              pageViews24h: 250,
+              pageViews7d: 1200,
+              pageViews30d: 4500,
+              uniqueVisitors24h: 150,
+              uniqueVisitors7d: 720,
+              uniqueVisitors30d: 2700,
+            },
+            comparison: { pageViewsChangePercent: 12 },
+            timeseries: [{ hourIndex: 0, label: '12 AM', pageViews: 10 }],
+            breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
             lastUpdated: new Date().toISOString(),
           },
+          error: null,
         });
       }
       return Promise.resolve({ data: null, error: null });
@@ -536,39 +548,23 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    // 24h metrics
     const stats24h = result.current.stats!;
     expect(stats24h.pageViews).toBe(250);
     expect(stats24h.newReaders).toBe(3);
     expect(stats24h.totalMembers).toBe(450);
 
-    // Switch to 7d
-    act(() => {
-      result.current.setTimeframe('7d');
-    });
-
-    await waitFor(() => {
-      expect(result.current.stats?.pageViews).toBe(1200);
-    });
-
+    act(() => result.current.setTimeframe('7d'));
+    await waitFor(() => expect(result.current.stats?.pageViews).toBe(1200));
     const stats7d = result.current.stats!;
     expect(stats7d.newReaders).toBe(18);
     expect(stats7d.totalMembers).toBe(450);
 
-    // Switch to 30d
-    act(() => {
-      result.current.setTimeframe('30d');
-    });
-
-    await waitFor(() => {
-      expect(result.current.stats?.pageViews).toBe(4500);
-    });
-
+    act(() => result.current.setTimeframe('30d'));
+    await waitFor(() => expect(result.current.stats?.pageViews).toBe(4500));
     const stats30d = result.current.stats!;
     expect(stats30d.newReaders).toBe(65);
     expect(stats30d.totalMembers).toBe(450);
 
-    // Ensure 24h, 7d, 30d are distinct and not identical
     expect(stats24h.pageViews).not.toBe(stats7d.pageViews);
     expect(stats7d.pageViews).not.toBe(stats30d.pageViews);
     expect(stats24h.newReaders).not.toBe(stats7d.newReaders);
