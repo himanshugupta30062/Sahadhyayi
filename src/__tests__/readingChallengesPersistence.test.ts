@@ -51,6 +51,12 @@ describe('persistent reading challenges and achievements', () => {
     expect(migration).toMatch(/Backfill badges using existing, explicitly completed bookshelf entries/i);
   });
 
+  it('counts distinct completed books and refreshes achievement caches after shelf changes', () => {
+    expect(distinctProgressFix).toMatch(/count\\(DISTINCT book_id\\)::integer/i);
+    expect(bookshelfHook).toMatch(/queryKey: \\['user-challenges'\\]/);
+    expect(bookshelfHook).toMatch(/queryKey: \\['user-badges'\\]/);
+  });
+
   it('queries persisted challenge and badge records instead of returning mock data', () => {
     expect(challengeHook).toMatch(/from\('reading_challenges'\)/);
     expect(challengeHook).toMatch(/from\('user_challenges'\)/);
