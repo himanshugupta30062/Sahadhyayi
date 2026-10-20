@@ -65,7 +65,17 @@ export const useMarginNotes = (options?: { bookId?: string; filter?: "all" | "fr
       const { data, error } = await q;
       if (error) throw error;
 
-      const notes = (data ?? []) as unknown as MarginNote[];
+      const rawNotes = (data ?? []) as unknown as MarginNote[];
+      const bookIds = [...new Set(rawNotes.map((n) => n.book_id).filter(Boolean))];
+      const userIds = [...new Set(rawNotes.map((n) => n.user_id).filter(Boolean))];
+      const [booksResult, profilesResult] = await Promise.all([
+        bookIds.length ? supabase.from("books_library").select("id, title, author, cover_image_url").in("id", bookIds) : Promise.resolve({ data: [], error: null } as any),
+        userIds.length ? (supabase as any).from("public_profiles").select("*").in("id", userIds) : Promise.resolve({ data: [], error: null } as any),
+      ]);
+      if (booksResult.error) throw booksResult.error;
+      const booksById = new Map((booksResult.data ?? []).map((b: any) => [b.id, b]));
+      const profilesById = new Map((profilesResult.data ?? []).map((p: any) => [p.id, p]));
+      const notes = rawNotes.map((n) => ({ ...n, books_library: booksById.get(n.book_id) ?? null, profiles: profilesById.get(n.user_id) ?? null }));
 
       // Fetch current user's reactions for these notes if authenticated
       if (user && notes.length > 0) {
