@@ -7,7 +7,7 @@ export const normalizeAuthEmail = (email: string): string =>
 
 export const normalizeAuthName = (name: string): string =>
   name
-    .replace(/[\\u0000-\\u001F\\u007F]/g, ' ')
+    .replace(/[\\x00-\\x1F\\x7F]/g, ' ')
     .replace(/\\s+/g, ' ')
     .trim()
     .slice(0, 100);
