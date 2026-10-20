@@ -84,6 +84,7 @@ Create a `.env` file based on `.env.example` and set the following variables:
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_TURNSTILE_SITE_KEY` (required to enable signup; see [Signup security setup](./docs/SignupSecurity.md))
 - `VITE_SENTRY_DSN`
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
