@@ -4,10 +4,10 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useToggleUserFollow, useUserFollows } from '@/hooks/useUserFollows';
+import { useFollowedReaders, useToggleUserFollow, useUserFollows } from '@/hooks/useUserFollows';
 
 const { mockSupabase, mockAuth } = vi.hoisted(() => ({
-  mockSupabase: { from: vi.fn() },
+  mockSupabase: { from: vi.fn(), rpc: vi.fn() },
   mockAuth: vi.fn(),
 }));
 
@@ -41,10 +41,15 @@ describe('reader follow hooks', () => {
       eq: vi.fn(() => builder),
       insert: vi.fn(() => builder),
       delete: vi.fn(() => builder),
+      in: vi.fn(() => builder),
       then: (resolve: (value: typeof queryResult) => unknown, reject?: (reason: unknown) => unknown) =>
         Promise.resolve(queryResult).then(resolve, reject),
     };
     mockSupabase.from.mockReturnValue(builder);
+    mockSupabase.rpc.mockImplementation(() => {
+      queryResult = { data: [{ id: 'reader-b', full_name: 'Reader B', username: 'readerb' }], error: null };
+      return builder;
+    });
   });
 
   afterEach(() => cleanup());
@@ -56,6 +61,17 @@ describe('reader follow hooks', () => {
     expect(mockSupabase.from).toHaveBeenCalledWith('user_follows');
     expect(builder.select).toHaveBeenCalledWith('following_id');
     expect(builder.eq).toHaveBeenCalledWith('follower_id', 'reader-a');
+  });
+
+
+  it('resolves followed readers through the public profile RPC', async () => {
+    const { result } = renderHook(() => useFollowedReaders(), { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(result.current.data).toEqual([
+      { id: 'reader-b', full_name: 'Reader B', username: 'readerb' },
+    ]));
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('get_public_profiles_for_search', { search_term: '' });
+    expect(builder.in).toHaveBeenCalledWith('id', ['reader-b']);
   });
 
   it('inserts a follow for the signed-in reader', async () => {
