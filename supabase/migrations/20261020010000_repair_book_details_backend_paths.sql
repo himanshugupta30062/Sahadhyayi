@@ -81,8 +81,10 @@ DROP POLICY IF EXISTS "Authenticated users can upload audio summaries" ON storag
 CREATE POLICY "Authenticated users can upload audio summaries" ON storage.objects
   FOR INSERT TO authenticated WITH CHECK (bucket_id = 'audio-summaries' AND public.is_admin());
 
+DROP POLICY IF EXISTS "Admins can create audio summaries" ON public.book_audio_summaries;
 CREATE POLICY "Admins can create audio summaries" ON public.book_audio_summaries
   FOR INSERT TO authenticated WITH CHECK (is_admin());
+DROP POLICY IF EXISTS "Admins can update audio summaries" ON public.book_audio_summaries;
 CREATE POLICY "Admins can update audio summaries" ON public.book_audio_summaries
   FOR UPDATE TO authenticated USING (is_admin()) WITH CHECK (is_admin());
 
