@@ -573,10 +573,17 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
           statsPayload = parseStatsPayload(data, timeframe);
         } catch (tier1Err) {
-          // Tier 2: Deployed Edge Function (utilizes service_role to bypass any client RLS restrictions)
+          // Tier 2: Server-side admin analytics fallback. The Edge Function verifies this
+          // access token and re-checks the caller's admin role before returning detailed data.
           let edgeCaughtErr: any = null;
           try {
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            const accessToken = sessionData?.session?.access_token;
+            if (sessionError || !accessToken) {
+              throw new Error('An authenticated administrator session is required for community analytics.');
+            }
             const { data: edgeData, error: edgeErr } = await supabase.functions.invoke('community-stats', {
+              headers: { Authorization: `Bearer ${accessToken}` },
               body: { timeframe },
             });
             if (edgeErr || !edgeData || typeof edgeData !== 'object') {
