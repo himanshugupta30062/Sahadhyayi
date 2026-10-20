@@ -30,11 +30,55 @@ Deno.serve(async (req: Request) => {
     );
   }
 
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const authorization = req.headers.get("Authorization");
+  const token = authorization?.match(/^Bearer\\s+(.+)$/i)?.[1]?.trim();
+
+  if (!anonKey || !token) {
+    return new Response(
+      JSON.stringify({ error: "Authentication required" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "private, no-store" } }
+    );
+  }
+
   const supabase = createClient(url, serviceRoleKey, {
-    auth: { persistSession: false },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const caller = createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
   });
 
   try {
+    const { data: authData, error: authError } = await caller.auth.getUser(token);
+    if (authError || !authData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "private, no-store" } }
+      );
+    }
+
+    const { data: adminRole, error: adminRoleError } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("user_id", authData.user.id)
+      .eq("role", "admin")
+      .limit(1)
+      .maybeSingle();
+
+    if (adminRoleError) {
+      console.error("Community stats authorization lookup failed:", adminRoleError.message);
+      return new Response(
+        JSON.stringify({ error: "Authorization service temporarily unavailable" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "private, no-store" } }
+      );
+    }
+    if (!adminRole) {
+      return new Response(
+        JSON.stringify({ error: "Administrator access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "private, no-store" } }
+      );
+    }
     // 1. Parse and strictly validate timeframe parameter
     let timeframe = "24h";
     if (req.method === "POST") {
@@ -64,7 +108,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // 2. Invoke the authoritative server-side PostgreSQL aggregation RPC
-    const { data: rpcStats, error: rpcError } = await supabase.rpc("get_community_pulse_stats", {
+    const { data: rpcStats, error: rpcError } = await caller.rpc("get_community_pulse_stats", {
       p_timeframe: timeframe,
     });
 
@@ -72,7 +116,7 @@ Deno.serve(async (req: Request) => {
       // City aggregates live in a separate, privacy-conscious RPC so the main
       // visitor aggregate remains focused on traffic, devices, pages and engagement.
       let responseStats = rpcStats as Record<string, unknown>;
-      const { data: cityStats, error: cityStatsError } = await supabase.rpc("get_community_pulse_city_stats", {
+      const { data: cityStats, error: cityStatsError } = await caller.rpc("get_community_pulse_city_stats", {
         p_timeframe: timeframe,
       });
 
@@ -91,7 +135,7 @@ Deno.serve(async (req: Request) => {
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json",
-          "Cache-Control": "public, max-age=30, s-maxage=30",
+          "Cache-Control": "private, no-store",
         },
       });
     }
@@ -289,7 +333,7 @@ Deno.serve(async (req: Request) => {
       headers: {
         ...corsHeaders,
         "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=30, s-maxage=30",
+        "Cache-Control": "private, no-store",
       },
     });
   } catch (error) {
