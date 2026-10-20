@@ -21,7 +21,7 @@ export function useBookReviews(bookId: string | undefined) {
     queryFn: async (): Promise<BookReview[]> => {
       if (!bookId) return [];
       const client = supabase as any;
-      const { data, error } = await client.from('book_reviews')
+      const { data, error } = await client.from('book_reviews' as any)
         .select('id, book_id, user_id, review_text, contains_spoilers, created_at, updated_at')
         .eq('book_id', bookId)
         .order('created_at', { ascending: false })
@@ -75,7 +75,7 @@ export function useDeleteBookReview(bookId: string | undefined) {
   return useMutation({
     mutationFn: async (reviewId: string) => {
       if (!bookId || !user?.id) throw new Error('Please sign in to manage your review.');
-      const { error } = await (supabase as any).from('book_reviews')
+      const { error } = await (supabase).from('book_reviews' as any)
         .delete().eq('id', reviewId).eq('user_id', user.id);
       if (error) throw error;
     },
