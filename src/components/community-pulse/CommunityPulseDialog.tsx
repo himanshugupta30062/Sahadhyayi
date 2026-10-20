@@ -1816,7 +1816,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   <div>
                     <h4 className="text-xs font-semibold text-stone-200">Event Ingestion Pipeline</h4>
                     <p className="text-[11px] text-stone-400 mt-1 leading-relaxed">
-                      Edge Function <code className="text-[#D5B16D]">website-visits</code> with client fallback to <code className="text-[#D5B16D]">record_pageview</code> RPC.
+                      Edge Function <code className="text-[#D5B16D]">website-visits</code> as the canonical page-view writer so IP and location metadata are enriched server-side.
                     </p>
                   </div>
                   <div className="pt-2 border-t border-white/[0.06] text-[10px] text-stone-500">
