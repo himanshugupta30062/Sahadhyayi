@@ -87,7 +87,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
     queryFn: async (): Promise<ParsedFeedback[]> => {
       // Query indexed, book-scoped feedback rather than loading the whole table.
       const { data, error } = await supabase
-        .from('content_feedback')
+        .from('content_feedback' as any)
         .select('id, user_id, book_id, feedback_type, comment, created_at')
         .eq('book_id', bookId)
         .in('feedback_type', ['idea', 'issue', 'improvement'])
@@ -144,7 +144,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
         body: content.trim(),
         priority,
       };
-      const { error } = await supabase.from('content_feedback') .insert({
+      const { error } = await supabase.from('content_feedback' as any) .insert({
         user_id: user.id,
         book_id: bookId,
         feedback_type: feedbackType,
@@ -193,7 +193,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('content_feedback').delete().eq('id', id);
+      const { error } = await supabase.from('content_feedback' as any).delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -212,7 +212,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
         priority: current.priority,
       };
       const { error } = await supabase
-        .from('content_feedback')
+        .from('content_feedback' as any)
          .update({ book_id: bookId, comment: JSON.stringify(payload) })
         .eq('id', id);
       if (error) throw error;
