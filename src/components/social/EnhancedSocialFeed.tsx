@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users } from 'lucide-react';
 import {
   useSocialPosts,
   useTogglePostLike,
@@ -89,7 +89,8 @@ const EmbeddedOriginalPost: React.FC<{ post?: SocialPost | null }> = ({ post }) 
 
 export const EnhancedSocialFeed = () => {
   const { user } = useAuth();
-  const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts();
+  const [streamMode, setStreamMode] = useState<'community' | 'following'>('community');
+  const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
   const toggleLike = useTogglePostLike();
   const toggleRepost = useToggleRepost();
   const deletePost = useDeletePost();
@@ -137,6 +138,30 @@ export const EnhancedSocialFeed = () => {
     <div className="space-y-6">
       {/* Live Book Pulse Bar */}
       <BookPulseBar />
+
+      {/* Real server-filtered feed scopes */}
+      <div className="flex items-center gap-2" role="group" aria-label="Choose feed">
+        <Button
+          size="sm"
+          variant={streamMode === 'community' ? 'default' : 'outline'}
+          aria-pressed={streamMode === 'community'}
+          onClick={() => setStreamMode('community')}
+          className={streamMode === 'community' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
+        >
+          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+          Community
+        </Button>
+        <Button
+          size="sm"
+          variant={streamMode === 'following' ? 'default' : 'outline'}
+          aria-pressed={streamMode === 'following'}
+          onClick={() => setStreamMode('following')}
+          className={streamMode === 'following' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
+        >
+          <Users className="w-3.5 h-3.5 mr-1.5" />
+          Following
+        </Button>
+      </div>
 
       {/* Feed Stream Filter Pills */}
       <div className="flex items-center gap-1.5 bg-white dark:bg-[#111614] p-1.5 rounded-xl border border-[#E8E2D9] dark:border-[#29332D] shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs w-fit flex-wrap transition-colors">
@@ -231,8 +256,22 @@ export const EnhancedSocialFeed = () => {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
                   <MessageCircle className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">No posts yet</h3>
-                <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">Be the first to share something with the community.</p>
+                <h3 className="text-lg font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">
+                  {streamMode === 'following' ? 'Your Following feed is quiet' : 'No posts yet'}
+                </h3>
+                <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
+                  {streamMode === 'following'
+                    ? 'Follow readers to see their eligible book discussions and reading updates here.'
+                    : 'Be the first to share something with the community.'}
+                </p>
+                {streamMode === 'following' && (
+                  <Link
+                    to="/social?tab=friends"
+                    className="inline-flex mt-4 text-sm font-medium text-[#1C442D] dark:text-[#D5B16D] hover:underline"
+                  >
+                    Discover readers to follow
+                  </Link>
+                )}
               </CardContent>
             </Card>
           ) : (
