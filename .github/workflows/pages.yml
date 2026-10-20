@@ -31,17 +31,17 @@ jobs:
         run: |
           set -euo pipefail
           test -s ./dist/index.html
-          if grep -Eq 'src=["\x27]/src/main\\.tsx|href=["\x27]/src/index\\.css' ./dist/index.html; then
+          if grep -Eq '/src/main\\.tsx|/src/index\\.css' ./dist/index.html; then
             echo "::error::Built index.html still references Vite source files instead of compiled assets."
             exit 1
           fi
-          if ! grep -Eq 'src=["\x27]/assets/[^"\x27]+\\.js' ./dist/index.html; then
+          if ! grep -Eq 'src="/assets/[^"]+\\.js"' ./dist/index.html; then
             echo "::error::Built index.html does not reference a compiled JavaScript asset."
             exit 1
           fi
           while IFS= read -r asset; do
-            test -s "./dist$asset" || { echo "::error::Missing compiled asset: $asset"; exit 1; }
-          done < <(grep -oE '((src|href)=)["\x27]/assets/[^"\x27]+' ./dist/index.html | sed -E 's/^(src|href)=["\x27]//' | sort -u)
+            test -s "./dist/${asset#/}" || { echo "::error::Missing compiled asset: $asset"; exit 1; }
+          done < <(grep -oE '(src|href)="/assets/[^"]+' ./dist/index.html | cut -d '"' -f 2 | sort -u)
           echo "Production HTML references existing compiled assets."
       - name: Use app entry point for GitHub Pages SPA fallback
         run: cp ./dist/index.html ./dist/404.html
