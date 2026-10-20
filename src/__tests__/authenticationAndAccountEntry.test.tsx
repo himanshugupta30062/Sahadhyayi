@@ -21,7 +21,7 @@ let mockLoading = false;
 
 vi.mock('@/contexts/authHelpers', () => ({
   normalizeAuthEmail: (email: string) => email.trim().toLowerCase(),
-  normalizeAuthName: (name: string) => name.replace(/[\\x00-\\x1F\\x7F]/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 100),
+  normalizeAuthName: (name: string) => name.trim().replace(/\s+/g, ' ').slice(0, 100),
   useAuth: () => ({
     user: mockUser,
     loading: mockLoading,
@@ -237,7 +237,7 @@ describe('Phase 3: Authentication and Account Entry', () => {
       });
 
       expect(await screen.findByText(/Check your email/i)).toBeInTheDocument();
-      expect(screen.getByText(/aarav@example\.com/)).toBeInTheDocument();
+      expect(screen.getByText(/aarav\+books&clubs@example\.com/)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Back to Sign In/i })).toBeInTheDocument();
     });
 
