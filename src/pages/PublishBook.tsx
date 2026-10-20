@@ -17,7 +17,7 @@ import {
   formatFileSize,
   estimateReadingTime,
 } from '@/hooks/usePublishBook';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/authHelpers';
 import { BookOpen, Upload, Eye, ArrowLeft, ArrowRight, Loader2, X, Tag } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { nanoid } from 'nanoid';
