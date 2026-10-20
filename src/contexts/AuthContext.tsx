@@ -28,9 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // INITIAL_SESSION from the listener initializes the existing session.
-    // A separate getSession() response could race and overwrite a newer auth event.
-
+    // Do not race getSession() against this listener; INITIAL_SESSION owns startup.
     return () => subscription.unsubscribe();
   }, []);
 
