@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2   Users,\n} from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users } from 'lucide-react';
 import {
   useSocialPosts,
   useTogglePostLike,
