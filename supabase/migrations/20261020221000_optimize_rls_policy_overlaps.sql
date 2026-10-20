@@ -357,3 +357,32 @@ ALTER POLICY "Readers can view posts allowed by audience" ON public.posts
       )
     )
   );
+
+
+-- Latest follow/audience migrations: retain semantics while avoiding per-row auth evaluations.
+CREATE INDEX IF NOT EXISTS idx_user_challenges_challenge_id
+  ON public.user_challenges(challenge_id);
+CREATE INDEX IF NOT EXISTS idx_user_reading_badges_badge_id
+  ON public.user_reading_badges(badge_id);
+
+ALTER POLICY "Users can read their own follow relationships" ON public.user_follows
+  USING (
+    (SELECT auth.uid()) = follower_id
+    OR (SELECT auth.uid()) = following_id
+  );
+ALTER POLICY "Users can follow as themselves" ON public.user_follows
+  WITH CHECK (
+    (SELECT auth.uid()) = follower_id
+    AND follower_id <> following_id
+  );
+ALTER POLICY "Users can unfollow as themselves" ON public.user_follows
+  USING ((SELECT auth.uid()) = follower_id);
+
+-- Keep public book-feedback reads for anon; combine authenticated owner/admin access with it.
+ALTER POLICY "Read published book feedback" ON public.content_feedback TO anon;
+ALTER POLICY "Users can view their own feedback" ON public.content_feedback
+  USING (
+    (book_id IS NOT NULL AND feedback_type IN ('idea', 'issue', 'improvement', 'reader_comment'))
+    OR user_id = (SELECT auth.uid())
+    OR public.is_admin()
+  );
