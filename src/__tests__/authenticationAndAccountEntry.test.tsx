@@ -20,6 +20,8 @@ let mockUser: any = null;
 let mockLoading = false;
 
 vi.mock('@/contexts/authHelpers', () => ({
+  normalizeAuthEmail: (email: string) => email.trim().toLowerCase(),
+  normalizeAuthName: (name: string) => name.replace(/[\\x00-\\x1F\\x7F]/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 100),
   useAuth: () => ({
     user: mockUser,
     loading: mockLoading,
@@ -204,7 +206,7 @@ describe('Phase 3: Authentication and Account Entry', () => {
       );
 
       fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: 'Aarav Sharma' } });
-      fireEvent.change(screen.getByLabelText(/Email address/i), { target: { value: 'aarav@example.com' } });
+      fireEvent.change(screen.getByLabelText(/Email address/i), { target: { value: 'aarav+books&clubs@example.com' } });
       fireEvent.change(screen.getByLabelText(/^Password/i, { selector: 'input' }), { target: { value: 'ValidPass1' } });
       fireEvent.change(screen.getByLabelText(/Confirm Password/i, { selector: 'input' }), { target: { value: 'DifferentPass2' } });
 
@@ -231,7 +233,7 @@ describe('Phase 3: Authentication and Account Entry', () => {
       fireEvent.click(screen.getByRole('button', { name: /^Create Account$/i }));
 
       await waitFor(() => {
-        expect(mockSignUp).toHaveBeenCalledWith('aarav@example.com', 'ValidPass1', 'Aarav Sharma');
+        expect(mockSignUp).toHaveBeenCalledWith('aarav+books&clubs@example.com', 'ValidPass1', 'Aarav Sharma');
       });
 
       expect(await screen.findByText(/Check your email/i)).toBeInTheDocument();
@@ -261,7 +263,7 @@ describe('Phase 3: Authentication and Account Entry', () => {
         expect(mockSignUp).toHaveBeenCalledWith('priya@example.com', 'ValidPass1', 'Priya Patel');
       });
 
-      expect(await screen.findByText(/Database error saving new user/i)).toBeInTheDocument();
+      expect(await screen.findByRole('alert')).toHaveTextContent(/temporary setup issue/i);
     });
   });
 
