@@ -226,7 +226,7 @@ describe('Phase 3: Authentication and Account Entry', () => {
       );
 
       fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: 'Aarav Sharma' } });
-      fireEvent.change(screen.getByLabelText(/Email address/i), { target: { value: 'aarav@example.com' } });
+      fireEvent.change(screen.getByLabelText(/Email address/i), { target: { value: 'aarav+books&clubs@example.com' } });
       fireEvent.change(screen.getByLabelText(/^Password/i, { selector: 'input' }), { target: { value: 'ValidPass1' } });
       fireEvent.change(screen.getByLabelText(/Confirm Password/i, { selector: 'input' }), { target: { value: 'ValidPass1' } });
 
