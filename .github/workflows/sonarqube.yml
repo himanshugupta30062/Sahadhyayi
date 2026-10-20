@@ -44,6 +44,27 @@ jobs:
             exit 1
           fi
 
+      - name: Set up Node.js for coverage
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The coverage provider is a separate Vitest package. Keep its version aligned
+      # with the Vitest 1.6.1 version resolved in package-lock.json without changing
+      # the lockfile from this workflow.
+      - name: Install matching Vitest coverage provider
+        run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @vitest/coverage-v8@1.6.1
+
+      - name: Run tests and generate LCOV coverage
+        run: npm test -- --coverage --coverage.provider=v8 --coverage.reporter=lcov --coverage.reporter=text
+
+      - name: Verify LCOV report exists
+        run: test -s coverage/lcov.info
+
       - name: Analyze with SonarQube Cloud
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
         env:
