@@ -22,9 +22,8 @@ export const BookSocialStrip: React.FC<BookSocialStripProps> = ({
   const navigate = useNavigate();
   const { data: rooms = [] } = useReadingRooms(bookId);
   const { data: bookNotes = [] } = useMarginNotes({ bookId });
-  const { data: allThreads = [] } = useSpoilerThreads();
+  const { data: threads = [] } = useSpoilerThreads(bookId);
 
-  const threads = allThreads.filter((t) => t.book_id === bookId);
 
   return (
     <Card className="bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-blue-500/10 border-border/80 rounded-2xl shadow-xs overflow-hidden mb-6">
