@@ -242,7 +242,7 @@ describe('Phase 3: Authentication and Account Entry', () => {
       fireEvent.click(screen.getByRole('button', { name: /^Create Account$/i }));
 
       await waitFor(() => {
-        expect(mockSignUp).toHaveBeenCalledWith('aarav+books&clubs@example.com', 'ValidPass1', 'Aarav Sharma');
+        expect(mockSignUp).toHaveBeenCalledWith('aarav+books&clubs@example.com', 'ValidPass1', 'Aarav Sharma', 'test-turnstile-token');
       });
 
       expect(await screen.findByText(/Check your email/i)).toBeInTheDocument();
@@ -269,7 +269,7 @@ describe('Phase 3: Authentication and Account Entry', () => {
       fireEvent.click(screen.getByRole('button', { name: /^Create Account$/i }));
 
       await waitFor(() => {
-        expect(mockSignUp).toHaveBeenCalledWith('priya@example.com', 'ValidPass1', 'Priya Patel');
+        expect(mockSignUp).toHaveBeenCalledWith('priya@example.com', 'ValidPass1', 'Priya Patel', 'test-turnstile-token');
       });
 
       expect(await screen.findByRole('alert')).toHaveTextContent(/temporary setup issue/i);
