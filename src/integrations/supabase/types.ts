@@ -539,6 +539,7 @@ export type Database = {
         Row: {
           audio_url: string
           book_id: string | null
+          library_book_id: string | null
           created_at: string
           duration_seconds: number
           id: string
@@ -548,6 +549,7 @@ export type Database = {
         Insert: {
           audio_url: string
           book_id?: string | null
+          library_book_id?: string | null
           created_at?: string
           duration_seconds?: number
           id?: string
@@ -557,6 +559,7 @@ export type Database = {
         Update: {
           audio_url?: string
           book_id?: string | null
+          library_book_id?: string | null
           created_at?: string
           duration_seconds?: number
           id?: string
@@ -1150,6 +1153,7 @@ export type Database = {
       }
       content_feedback: {
         Row: {
+          book_id: string | null
           comment: string | null
           content_id: string | null
           created_at: string
@@ -1158,6 +1162,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          book_id?: string | null
           comment?: string | null
           content_id?: string | null
           created_at?: string
@@ -1166,6 +1171,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          book_id?: string | null
           comment?: string | null
           content_id?: string | null
           created_at?: string
@@ -3787,6 +3793,10 @@ export type Database = {
       are_friends: {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
+      }
+      get_book_feedback_vote_summary: {
+        Args: { p_content_ids: string[] }
+        Returns: { content_id: string; vote_type: string; vote_count: number; viewer_voted: boolean }[]
       }
       can_view_spoiler_thread_comment: {
         Args: {
