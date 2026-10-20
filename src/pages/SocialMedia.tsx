@@ -994,7 +994,7 @@ const SocialMedia: React.FC = () => {
                               onClick={() => handleSendRequest(reader.id, reader.full_name)}
                               className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#16211A] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C442D] dark:text-[#D5B16D] shrink-0"
                             >
-                              Follow
+                              Add friend
                             </Button>
                           </div>
                         ))}
