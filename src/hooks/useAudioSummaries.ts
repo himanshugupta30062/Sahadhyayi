@@ -77,7 +77,7 @@ export const useCreateAudioSummary = () => {
           book_id: null,
           library_book_id: params.bookId,
           audio_url: publicUrl,
-          duration_seconds: 0,
+          duration_seconds: Math.max(1, Math.ceil(summary.length / 12)),
           transcript: summary,
         }, { onConflict: 'library_book_id' })
         .select()
