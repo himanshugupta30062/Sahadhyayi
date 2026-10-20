@@ -39,7 +39,9 @@ export interface SocialPost {
   user_reposted?: boolean;
 }
 
-export const useSocialPosts = () => {
+export type SocialFeedMode = 'community' | 'following';
+
+export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -49,26 +51,41 @@ export const useSocialPosts = () => {
 
   // Fetch posts with user info and book details
   const { data: posts = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['social-posts', user?.id],
+    queryKey: ['social-posts', user?.id, feedMode],
     queryFn: async () => {
       try {
         let data: any[] = [];
-        const { data: fetchedPosts, error: postsError } = await supabase
+        let followedUserIds: string[] = [];
+        if (feedMode === 'following') {
+          if (!user?.id) return [];
+          const { data: followRows, error: followsError } = await supabase
+            .from('user_follows')
+            .select('following_id')
+            .eq('follower_id', user.id);
+          if (followsError) throw followsError;
+          followedUserIds = (followRows || []).map((row) => row.following_id);
+          if (followedUserIds.length === 0) return [];
+        }
+
+        let postsQuery = supabase
           .from('posts')
           .select(`
             *,
             profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
             books_library(id, title, author, cover_image_url)
-          `)
+          `);
+        if (feedMode === 'following') postsQuery = postsQuery.in('user_id', followedUserIds);
+
+        const { data: fetchedPosts, error: postsError } = await postsQuery
           .order('created_at', { ascending: false })
           .order('id', { ascending: false })
           .limit(SOCIAL_POST_PAGE_SIZE);
 
         if (postsError) {
           console.warn('Posts fetch with relations failed, attempting plain fallback:', postsError);
-          const { data: fallbackPosts, error: fbError } = await supabase
-            .from('posts')
-            .select('*')
+          let fallbackQuery = supabase.from('posts').select('*');
+          if (feedMode === 'following') fallbackQuery = fallbackQuery.in('user_id', followedUserIds);
+          const { data: fallbackPosts, error: fbError } = await fallbackQuery
             .order('created_at', { ascending: false })
             .order('id', { ascending: false })
             .limit(SOCIAL_POST_PAGE_SIZE);
@@ -231,7 +248,7 @@ export const useSocialPosts = () => {
     } else if (posts.length >= SOCIAL_POST_PAGE_SIZE) {
       setHasMore(true);
     }
-  }, [posts.length, isLoading, error]);
+  }, [posts.length, isLoading, error, feedMode]);
 
   const loadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore || posts.length === 0) return;
@@ -242,13 +259,30 @@ export const useSocialPosts = () => {
     setLoadMoreError(null);
     try {
       const cursorFilter = `created_at.lt.${cursor.created_at},and(created_at.eq.${cursor.created_at},id.lt.${cursor.id})`;
-      const { data: page, error: pageError } = await supabase
+      let followedUserIds: string[] = [];
+      if (feedMode === 'following') {
+        if (!user?.id) return;
+        const { data: followRows, error: followsError } = await supabase
+          .from('user_follows')
+          .select('following_id')
+          .eq('follower_id', user.id);
+        if (followsError) throw followsError;
+        followedUserIds = (followRows || []).map((row) => row.following_id);
+        if (followedUserIds.length === 0) {
+          setHasMore(false);
+          return;
+        }
+      }
+
+      let pageQuery = supabase
         .from('posts')
         .select(`
           *,
           profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
           books_library(id, title, author, cover_image_url)
-        `)
+        `);
+      if (feedMode === 'following') pageQuery = pageQuery.in('user_id', followedUserIds);
+      const { data: page, error: pageError } = await pageQuery
         .or(cursorFilter)
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
@@ -256,9 +290,9 @@ export const useSocialPosts = () => {
 
       let olderPosts = page || [];
       if (pageError) {
-        const fallback = await supabase
-          .from('posts')
-          .select('*')
+        let fallbackQuery = supabase.from('posts').select('*');
+        if (feedMode === 'following') fallbackQuery = fallbackQuery.in('user_id', followedUserIds);
+        const fallback = await fallbackQuery
           .or(cursorFilter)
           .order('created_at', { ascending: false })
           .order('id', { ascending: false })
@@ -331,7 +365,7 @@ export const useSocialPosts = () => {
           }));
         }
 
-        queryClient.setQueryData<SocialPost[]>(['social-posts', user?.id], (current = []) => {
+        queryClient.setQueryData<SocialPost[]>(['social-posts', user?.id, feedMode], (current = []) => {
           const existingIds = new Set(current.map((post) => post.id));
           return [...current, ...olderPosts.filter((post: any) => !existingIds.has(post.id))];
         });
@@ -343,7 +377,7 @@ export const useSocialPosts = () => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [hasMore, isLoadingMore, posts, queryClient, user?.id]);
+  }, [hasMore, isLoadingMore, posts, queryClient, user?.id, feedMode]);
 
   // Real-time subscription for new posts
   useEffect(() => {
