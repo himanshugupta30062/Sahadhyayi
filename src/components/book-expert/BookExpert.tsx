@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import {
   BookOpen,
@@ -22,20 +22,6 @@ import type { BookExpertBook, BookExpertCitation } from "@/contexts/book-expert.
 import { cn } from "@/lib/utils";
 
 const bookIcon = new URL("./Sahadhyayi_Book_optimized.webp", import.meta.url).href;
-
-const suggestedPrompts = [
-  "Meet a book",
-  "Find my next read",
-  "Recommend a beginner-friendly philosophy book",
-  "Help me explore a new author",
-  "Compare two books",
-];
-
-const talkingBookLines = [
-  "Psst… every book has a story. Want one to introduce itself?",
-  "Tell me your mood, and I'll help you find a story to match.",
-  "A new adventure might be waiting on our shelves. Shall we look?",
-];
 
 function validHttpUrl(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -169,11 +155,11 @@ const BookExpert = () => {
   const welcomeOnly = messages.length === 1 && messages[0]?.sender === "bot";
   const visibleMessages = welcomeOnly ? [] : messages;
 
-  const stopSpeech = () => {
+  const stopSpeech = useCallback(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
     speechRef.current = null;
     setSpeakingMessageIndex(null);
-  };
+  }, []);
 
   const toggleSpeech = (text: string, index: number) => {
     if (!("speechSynthesis" in window)) return;
@@ -204,7 +190,7 @@ const BookExpert = () => {
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
     else stopSpeech();
-  }, [isOpen]);
+  }, [isOpen, stopSpeech]);
 
   useEffect(() => () => {
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
@@ -254,10 +240,6 @@ const BookExpert = () => {
     }
   };
 
-  const startWith = (prompt: string) => {
-    if (!isOpen) toggleChat();
-    handleSend(prompt);
-  };
 
   if (!isOpen) {
     return (
