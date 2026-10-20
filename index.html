@@ -2,28 +2,11 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
   <head>
-    <script>
-      (function() {
-        try {
-          var saved = localStorage.getItem('sahadhyayi-theme');
-          if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
-        } catch (e) {}
-      })();
-    </script>
+    <script src="/site-bootstrap.js"></script>
     <!-- Removed domain redirect to allow loading from both sahadhyayi.com and its www subdomain -->
     <!-- Google tag (gtag.js) -->
+    <script src="/google-analytics-init.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-82BF21X121"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-82BF21X121');
-    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sahadhyayi - Digital Reading Community & Book Library</title>
@@ -193,41 +176,7 @@
 
   <body>
     <div id="loader"></div>
-    <script>
-      // Support GitHub Pages-style SPA redirects (?p=/path)
-      const params = new URLSearchParams(window.location.search);
-      const p = params.get('p');
-      if (p) {
-        try {
-          const target = decodeURIComponent(p);
-          history.replaceState(null, '', target);
-        } catch {}
-      }
-
-      // Legacy sessionStorage-based redirect support
-      const redirectPath = sessionStorage.redirectPath;
-      if (redirectPath) {
-        sessionStorage.removeItem('redirectPath');
-        history.replaceState(null, '', redirectPath);
-      }
-
-      // Hide the loader as soon as the DOM is ready
-      const hideLoader = () => {
-        const loader = document.getElementById('loader');
-        if (loader) {
-          loader.style.display = 'none';
-        }
-      };
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', hideLoader);
-      } else {
-        hideLoader();
-      }
-
-      // Fallback in case DOMContentLoaded doesn't fire
-      window.addEventListener('load', hideLoader);
-    </script>
+    <!-- Redirect handling and loader dismissal live in site-bootstrap.js to comply with production CSP. -->
     <!-- Google Search Console verification -->
     <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" /> -->
     <header

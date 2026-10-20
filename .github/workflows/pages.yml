@@ -4,6 +4,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -12,7 +14,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.event_name }}-${{ github.event.pull_request.number || 'production' }}"
   cancel-in-progress: true
 
 jobs:
@@ -26,6 +28,23 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Verify production HTML points to compiled assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s ./dist/index.html
+          if grep -Eq '/src/main\.tsx|/src/index\.css' ./dist/index.html; then
+            echo "::error::Built index.html still references Vite source files instead of compiled assets."
+            exit 1
+          fi
+          if ! grep -Eq 'src="/assets/[^"]+\.js"' ./dist/index.html; then
+            echo "::error::Built index.html does not reference a compiled JavaScript asset."
+            exit 1
+          fi
+          while IFS= read -r asset; do
+            test -s "./dist/${asset#/}" || { echo "::error::Missing compiled asset: $asset"; exit 1; }
+          done < <(grep -oE '(src|href)="/assets/[^"]+' ./dist/index.html | cut -d '"' -f 2 | sort -u)
+          echo "Production HTML references existing compiled assets."
       - name: Use app entry point for GitHub Pages SPA fallback
         run: cp ./dist/index.html ./dist/404.html
       - uses: actions/upload-pages-artifact@v4
@@ -33,6 +52,7 @@ jobs:
           path: ./dist
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
