@@ -38,7 +38,7 @@ export interface ChapterPulse {
   at: number;
 }
 
-export const useReadingRooms = () => {
+export const useReadingRooms = (bookId?: string) => {
   const qc = useQueryClient();
 
   useEffect(() => {
@@ -59,13 +59,15 @@ export const useReadingRooms = () => {
   }, [qc]);
 
   return useQuery({
-    queryKey: ["reading-rooms"],
+    queryKey: ["reading-rooms", bookId ?? "all"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reading_rooms")
         .select("id, book_id, name, created_by, created_at, books_library:book_id(title, author, cover_image_url, pages)")
         .order("created_at", { ascending: false })
-        .limit(40);
+        .limit(bookId ? 40 : 100);
+      if (bookId) query = query.eq("book_id", bookId);
+      const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as unknown as ReadingRoom[];
     },
