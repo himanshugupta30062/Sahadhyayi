@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 const bookIcon = new URL("./Sahadhyayi_Book_optimized.webp", import.meta.url).href;
 
 const suggestedPrompts = [
+  "Meet a book",
   "Find my next read",
   "Recommend a beginner-friendly philosophy book",
   "Help me explore a new author",
