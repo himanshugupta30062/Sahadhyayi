@@ -60,7 +60,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const [showToc, setShowToc] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(pageParam ? Number.parseInt(pageParam, 10) || 1 : 1);
+  const [currentPage, setCurrentPage] = useState(pageParam ? Number.Number.parseInt(pageParam, 10) || 1 : 1);
   const [totalPages, setTotalPages] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
