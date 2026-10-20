@@ -10,6 +10,8 @@ The signup UI intentionally fails closed when Cloudflare Turnstile is not config
 
 Set `VITE_TURNSTILE_SITE_KEY` in every active frontend hosting target (Cloudflare Pages and/or Netlify, including the production deployment). Rebuild/redeploy after changing build-time variables.
 
+The Netlify Content Security Policy now permits Turnstile's script and challenge iframe via `script-src` and `frame-src`. If another layer (for example, a Cloudflare response-header transform) sets an additional CSP, it must also allow `https://challenges.cloudflare.com` in those directives.
+
 ## 2. Enable server-side CAPTCHA validation in Supabase
 
 In the production Supabase project:
@@ -38,6 +40,7 @@ In Supabase's Auth password security settings, enable leaked-password protection
 ## 5. Production verification checklist
 
 - [ ] The production build has `VITE_TURNSTILE_SITE_KEY` set.
+- [ ] The active production site's CSP allows `https://challenges.cloudflare.com` in `script-src` and `frame-src`.
 - [ ] Supabase Auth has Turnstile enabled with the corresponding secret.
 - [ ] Signup fails when no challenge token is present or when a token is invalid/expired.
 - [ ] Signup creates an unconfirmed email user and sends a confirmation message.
