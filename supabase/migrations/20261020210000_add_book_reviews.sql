@@ -53,5 +53,5 @@ create trigger trg_book_reviews_updated_at
   before update on public.book_reviews
   for each row execute function public.set_book_reviews_updated_at();
 
-revoke all on public.book_reviews from anon;
+revoke all on public.book_reviews from public, anon;
 grant select, insert, update, delete on public.book_reviews to authenticated;
