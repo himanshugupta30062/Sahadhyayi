@@ -62,7 +62,7 @@ describe('send-contact-email Edge Function Logic', () => {
     const mockResend403 = {
       statusCode: 403,
       name: 'validation_error',
-      message: 'You can only send testing emails to your own email address (himanshugupta30062@gmail.com). To send emails to other recipients, please verify a domain at resend.com/domains, and change the `from` address to an email using this domain.',
+      message: 'You can only send testing emails to your own email address (developer@example.com). To send emails to other recipients, please verify a domain at resend.com/domains, and change the `from` address to an email using this domain.',
     };
 
     const status = 403;
