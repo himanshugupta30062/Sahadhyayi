@@ -36,6 +36,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedBook, setSelectedBook] = useState<SelectedBook | null>(null);
   const [selectedFeeling, setSelectedFeeling] = useState<SelectedFeeling | null>(null);
+  const [audience, setAudience] = useState<'public' | 'followers' | 'friends' | 'private'>('friends');
   const [showBookModal, setShowBookModal] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
@@ -113,6 +114,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
         feeling_emoji: selectedFeeling?.emoji,
         feeling_label: selectedFeeling?.label,
         image_url: uploadedImageUrl,
+        audience,
       });
 
       // Legacy callback for compatibility
@@ -128,6 +130,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
       
       // Clear the composer
       setPostText('');
+      setAudience('friends');
       clearAttachments();
       
     } catch (error) {
@@ -256,6 +259,26 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               )}
             </div>
           )}
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-3">
+            <label htmlFor="post-audience" className="text-xs font-medium text-[#636B65] dark:text-[#A5ADA6]">
+              Who can see this post?
+            </label>
+            <select
+              id="post-audience"
+              value={audience}
+              onChange={(event) => setAudience(event.target.value as 'public' | 'followers' | 'friends' | 'private')}
+              className="w-full sm:w-auto rounded-lg border border-[#E8E2D9] dark:border-[#29332D] bg-[#FAF7F2] dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1C442D] dark:focus:ring-[#D5B16D]"
+            >
+              <option value="public">Public · any signed-in reader</option>
+              <option value="followers">Followers · readers who follow you</option>
+              <option value="friends">Friends · mutual friends only</option>
+              <option value="private">Only me · private</option>
+            </select>
+            <span className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
+              New posts default to Friends.
+            </span>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#E8E2D9] dark:border-[#29332D]">
