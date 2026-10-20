@@ -7,6 +7,7 @@ export const normalizeAuthEmail = (email: string): string =>
 
 export const normalizeAuthName = (name: string): string =>
   name
+    // eslint-disable-next-line no-control-regex
     .replace(/[\x00-\x1F\x7F]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
