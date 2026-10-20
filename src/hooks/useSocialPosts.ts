@@ -405,10 +405,8 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
             .single();
 
           if (newPost) {
-            queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
-              if (old.some((p) => p.id === newPost.id)) return old;
-              return [{ ...newPost, user_liked: false }, ...old];
-            });
+            // Re-query each feed mode so Following only receives posts from followed authors.
+            queryClient.invalidateQueries({ queryKey: ['social-posts'] });
 
             // Show notification for posts from others
             if (newPost.user_id !== user.id) {
@@ -556,8 +554,8 @@ export const useCreatePost = () => {
     },
     onSuccess: (newPost) => {
       if (newPost) {
-        queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
-          if (old.some((p) => p.id === newPost.id)) return old;
+        queryClient.setQueryData<SocialPost[]>(['social-posts', user?.id, 'community'], (old = []) => {
+          if (old.some((post) => post.id === newPost.id)) return old;
           return [{ ...newPost, user_liked: false, user_reposted: false }, ...old];
         });
       }
