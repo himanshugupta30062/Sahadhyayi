@@ -68,15 +68,20 @@ export default defineConfig(({ mode }) => ({
     target: 'esnext',
     rollupOptions: {
       output: {
+        // These packages are all used by the application shell. Keeping them in
+        // one shared chunk lets Brotli compress their repeated runtime helpers
+        // together while leaving route-specific features split into lazy chunks.
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-toast'],
-          query: ['@tanstack/react-query'],
-          supabase: ['@supabase/supabase-js']
-          // Keep lucide-react out of a forced package-wide manual chunk.
-          // Explicitly chunking the package entry can pull unused icon modules
-          // into the aggregate client bundle and weaken tree-shaking.
+          core: [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-toast',
+            '@tanstack/react-query',
+            '@supabase/supabase-js',
+            'lucide-react'
+          ]
         }
       }
     },
