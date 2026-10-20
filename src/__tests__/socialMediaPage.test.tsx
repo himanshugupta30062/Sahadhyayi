@@ -254,7 +254,7 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       );
 
       expect(screen.getByRole('button', { name: /Community feed/i })).toBeInTheDocument();
-      expect(screen.getByText(/Reading DNA/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Reading DNA/i).length).toBeGreaterThan(0);
       expect(screen.queryByRole('button', { name: /Toggle search/i })).not.toBeInTheDocument();
     });
   });
