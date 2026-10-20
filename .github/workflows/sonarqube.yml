@@ -1,81 +1,49 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# This workflow helps you trigger a SonarQube analysis of your code and populates
-# GitHub Code Scanning alerts with the vulnerabilities found.
-# (this feature is available starting from SonarQube 9.7, Developer Edition and above)
-
-# 1. Make sure you add a valid GitHub configuration to your SonarQube (Administration > DevOps platforms > GitHub)
-
-# 2. Import your project on SonarQube
-#     * Add your repository as a new project by clicking "Create project" from your homepage.
-#
-# 3. Select GitHub Actions as your CI and follow the tutorial
-#     * a. Generate a new token and add it to your GitHub repository's secrets using the name SONAR_TOKEN
-#          (On SonarQube, click on your avatar on top-right > My account > Security or ask your administrator)
-#
-#     * b. Copy/paste your SonarQube host URL to your GitHub repository's secrets using the name SONAR_HOST_URL
-#
-#     * c. Copy/paste the project Key into the args parameter below
-#          (You'll find this information in SonarQube by following the tutorial or by clicking on Project Information at the top-right of your project's homepage)
-
-# Feel free to take a look at our documentation (https://docs.sonarqube.org/latest/analysis/github-integration/)
-# or reach out to our community forum if you need some help (https://community.sonarsource.com/c/sq/10)
-
-name: SonarQube analysis
+name: SonarCloud analysis
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
-  pull-requests: read # allows SonarQube to decorate PRs with analysis results
+  contents: read
+  pull-requests: read
 
 jobs:
   Analysis:
+    # Follow GitHub's supported runner image rather than pinning to a retiring image.
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - name: Verify SonarQube Configuration
-        id: check-config
+      - name: Verify SonarCloud configuration
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
           SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'sahadhyayi' }}
         run: |
-          MISSING=""
           if [ -z "$SONAR_TOKEN" ]; then
-            MISSING="$MISSING\n  - SONAR_TOKEN: Repository secret containing your SonarQube/SonarCloud user or project token"
+            echo "::error::Missing GitHub Actions secret SONAR_TOKEN."
+            exit 1
           fi
-          if [ -z "$SONAR_HOST_URL" ]; then
-            MISSING="$MISSING\n  - SONAR_HOST_URL: Repository secret or variable with your SonarQube instance URL (e.g., https://sonarcloud.io or https://sonarqube.example.com)"
+          if [ -z "$SONAR_ORGANIZATION" ]; then
+            echo "::error::Missing repository Actions variable SONAR_ORGANIZATION. Set it to the exact organization key shown in SonarQube Cloud."
+            exit 1
           fi
           if [ -z "$SONAR_PROJECT_KEY" ]; then
-            MISSING="$MISSING\n  - SONAR_PROJECT_KEY: Repository variable with your SonarQube project key"
-          fi
-
-          if [ -n "$MISSING" ]; then
-            echo "::error title=Missing SonarQube Configuration::SonarQube analysis cannot run because the following credentials or variables are not configured in GitHub repository settings:$MISSING"
-            echo "To configure:"
-            echo "  1. Go to Repository Settings > Secrets and variables > Actions"
-            echo "  2. Add SONAR_TOKEN under Secrets"
-            echo "  3. Add SONAR_HOST_URL under Secrets (or Variables)"
-            echo "  4. Optionally add SONAR_PROJECT_KEY under Variables"
+            echo "::error::Missing repository Actions variable SONAR_PROJECT_KEY."
             exit 1
           fi
 
-      - name: Analyze with SonarQube
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
+      - name: Analyze with SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -83,5 +51,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'sahadhyayi' }}
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.sources=src
             -Dsonar.tests=src/__tests__
+            -Dsonar.verbose=true
