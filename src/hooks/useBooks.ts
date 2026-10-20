@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { useAuth } from '@/contexts/authHelpers';
 import { toast } from '@/hooks/use-toast';
 
 export interface Book {
@@ -62,8 +63,10 @@ export const useCreateBook = () => {
 };
 
 export const useUserBooks = () => {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['user-books'],
+    queryKey: ['user-books', user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_books')
