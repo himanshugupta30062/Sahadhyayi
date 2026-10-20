@@ -34,6 +34,7 @@ interface FeedbackPayload {
 interface FeedbackRow {
   id: string;
   user_id: string;
+  book_id: string | null;
   feedback_type: string;
   comment: string | null;
   created_at: string;
@@ -84,18 +85,17 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
   const { data: feedbackList = [], isLoading } = useQuery({
     queryKey: ['book_feedback', bookId],
     queryFn: async (): Promise<ParsedFeedback[]> => {
-      // Fetch all feedback (table doesn't track book_id, we filter via JSON payload)
+      // Book-specific indexed query; keep the payload parser for older records.
       const { data, error } = await supabase
         .from('content_feedback')
-        .select('id, user_id, feedback_type, comment, created_at')
+        .select('id, user_id, book_id, feedback_type, comment, created_at')
+        .eq('book_id', bookId)
+        .in('feedback_type', ['idea', 'issue', 'improvement'])
         .order('created_at', { ascending: false })
-        .limit(500);
+        .limit(100);
       if (error) throw error;
 
-      const matching = (data as FeedbackRow[]).filter((row) => {
-        const parsed = parseComment(row.comment);
-        return parsed.bookId === bookId;
-      });
+      const matching = (data as FeedbackRow[]).filter((row) => row.book_id === bookId || parseComment(row.comment).bookId === bookId);
 
       if (matching.length === 0) return [];
 
@@ -106,18 +106,19 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
         (supabase as any).from('public_profiles').select('id, full_name, username').in('id', userIds)
           .then((r: any) => (r.data && r.data.length > 0 ? r : supabase.from('profiles').select('id, full_name, username').in('id', userIds)))
           .catch(() => supabase.from('profiles').select('id, full_name, username').in('id', userIds)),
-        supabase.from('content_votes').select('content_id, user_id, vote_type').in('content_id', ids),
+        (supabase as any).rpc('get_book_feedback_vote_summary', { p_content_ids: ids }),
       ]);
 
       const profiles = profilesRes.data || [];
+      if (votesRes.error) throw votesRes.error;
       const votes = votesRes.data || [];
 
       return matching.map((row) => {
         const parsed = parseComment(row.comment);
         const profile = profiles.find((p) => p.id === row.user_id);
-        const rowVotes = votes.filter((v) => v.content_id === row.id);
-        const upvotes = rowVotes.filter((v) => v.vote_type === 'upvote').length;
-        const isUpvoted = !!user && rowVotes.some((v) => v.user_id === user.id && v.vote_type === 'upvote');
+        const rowVotes = votes.filter((v: any) => v.content_id === row.id && v.vote_type === 'upvote');
+        const upvotes = Number(rowVotes[0]?.vote_count ?? 0);
+        const isUpvoted = !!user && !!rowVotes[0]?.viewer_voted;
         return {
           id: row.id,
           user_id: row.user_id,
@@ -143,8 +144,9 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
         body: content.trim(),
         priority,
       };
-      const { error } = await supabase.from('content_feedback').insert({
+      const { error } = await supabase.from('content_feedback') .insert({
         user_id: user.id,
+        book_id: bookId,
         feedback_type: feedbackType,
         comment: JSON.stringify(payload),
       });
@@ -211,7 +213,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
       };
       const { error } = await supabase
         .from('content_feedback')
-        .update({ comment: JSON.stringify(payload) })
+         .update({ book_id: bookId, comment: JSON.stringify(payload) })
         .eq('id', id);
       if (error) throw error;
     },
