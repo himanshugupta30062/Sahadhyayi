@@ -16,6 +16,7 @@ export type AudioSummary = {
 export const useAudioSummary = (bookId: string) => {
   return useQuery({
     queryKey: ['audio_summary', bookId],
+    enabled: !!bookId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('book_audio_summaries')
