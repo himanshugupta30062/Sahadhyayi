@@ -196,6 +196,7 @@ DROP POLICY IF EXISTS "Public can view follower counts" ON public.author_followe
 
 -- Separate admin-only writes from public read policies to avoid needless overlaps.
 DROP POLICY IF EXISTS "Only admins can manage questions" ON public.book_quiz_questions;
+DROP POLICY IF EXISTS "Anyone can view questions" ON public.book_quiz_questions;
 DROP POLICY IF EXISTS "Only admins can insert questions" ON public.book_quiz_questions;
 DROP POLICY IF EXISTS "Only admins can update questions" ON public.book_quiz_questions;
 DROP POLICY IF EXISTS "Only admins can delete questions" ON public.book_quiz_questions;
@@ -210,6 +211,7 @@ CREATE POLICY "Only admins can delete questions" ON public.book_quiz_questions
   FOR DELETE TO authenticated USING (has_role((SELECT auth.uid()), 'admin'::text));
 
 DROP POLICY IF EXISTS "Only admins can manage badges" ON public.game_badges;
+DROP POLICY IF EXISTS "Anyone can view badges" ON public.game_badges;
 DROP POLICY IF EXISTS "Only admins can insert badges" ON public.game_badges;
 DROP POLICY IF EXISTS "Only admins can update badges" ON public.game_badges;
 DROP POLICY IF EXISTS "Only admins can delete badges" ON public.game_badges;
@@ -224,6 +226,7 @@ CREATE POLICY "Only admins can delete badges" ON public.game_badges
   FOR DELETE TO authenticated USING (has_role((SELECT auth.uid()), 'admin'::text));
 
 DROP POLICY IF EXISTS "Only admins can manage books table" ON public.books;
+DROP POLICY IF EXISTS "Anyone can view books table" ON public.books;
 DROP POLICY IF EXISTS "Only admins can insert books table" ON public.books;
 DROP POLICY IF EXISTS "Only admins can update books table" ON public.books;
 DROP POLICY IF EXISTS "Only admins can delete books table" ON public.books;
