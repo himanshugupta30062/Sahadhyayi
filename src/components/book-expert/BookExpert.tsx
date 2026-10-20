@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import {
   BookOpen,
@@ -187,7 +187,7 @@ const BookExpert = () => {
     );
   };
 
-  const stopSpeech = () => {
+  const stopSpeech = useCallback(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
@@ -213,7 +213,7 @@ const BookExpert = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, closeChat]);
+  }, [isOpen, closeChat, stopSpeech]);
 
   const handleSend = (prompt?: string) => {
     const text = (prompt ?? input).trim();
