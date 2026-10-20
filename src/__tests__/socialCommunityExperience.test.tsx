@@ -150,6 +150,7 @@ describe('Phase 6: Social Media & Reading Community Experience', () => {
           feeling_emoji: undefined,
           feeling_label: undefined,
           image_url: undefined,
+          audience: 'friends',
         });
       });
     });
