@@ -7,6 +7,7 @@ const friendsMap = readFileSync(new URL('../../src/components/social/FriendsLoca
 const consentModal = readFileSync(new URL('../../src/components/social/LocationConsentModal.tsx', import.meta.url), 'utf8');
 const permissionModal = readFileSync(new URL('../../src/components/social/LocationPermissionModal.tsx', import.meta.url), 'utf8');
 const userSearch = readFileSync(new URL('../../src/hooks/useUserSearch.ts', import.meta.url), 'utf8');
+const friendsManager = readFileSync(new URL('../../src/components/social/EnhancedFriendsManager.tsx', import.meta.url), 'utf8');
 
 describe('Social discovery and location privacy regressions', () => {
   it('keeps authenticated data hooks inside the authenticated social page', () => {
@@ -61,8 +62,19 @@ describe('Social discovery and location privacy regressions', () => {
   it('scopes reader discovery cache by user and does not hide backend failures as empty results', () => {
     expect(userSearch).toMatch(/queryKey: \['user-search', user\?\.id, normalizedSearchTerm\]/);
     expect(userSearch).toMatch(/queryKey: \['all-users', user\?\.id\]/);
+    expect(userSearch).toMatch(/isDebouncing: searchTerm\.trim\(\) !== normalizedSearchTerm/);
     expect(userSearch).toMatch(/if \(friendsResponse\.error\) throw friendsResponse\.error/);
     expect(userSearch).toMatch(/if \(requestsResponse\.error\) throw requestsResponse\.error/);
     expect(userSearch).toMatch(/if \(error\) throw error/);
+  });
+
+  it('renders real friend profiles and never interprets a failed fetch as an empty connection list', () => {
+    expect(friendsManager).toMatch(/const friendProfile = friendship\.friend_profile;/);
+    expect(friendsManager).not.toMatch(/friendship\.user1_profile|friendship\.user2_profile/);
+    expect(friendsManager).toMatch(/Reader suggestions could not be loaded\./);
+    expect(friendsManager).toMatch(/Friend requests could not be loaded\./);
+    expect(friendsManager).toMatch(/Your friends could not be loaded\./);
+    expect(friendsManager).toMatch(/relationshipStateUnavailable/);
+    expect(friendsManager).toMatch(/isRequestPending/);
   });
 });
