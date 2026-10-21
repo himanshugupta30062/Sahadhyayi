@@ -46,6 +46,24 @@ export async function applyDuplicateResolution(
     throw new Error('Unauthorized: only administrators can execute catalog duplicate cleanup.');
   }
 
+  // When a preview has an explicit primary and keep-list, we can return its
+  // non-mutating projection without issuing network reads for the same IDs.
+  if (isDryRun && options.customPrimaryId && options.customKeepIds) {
+    const primaryId = options.customPrimaryId;
+    const duplicateIds = options.customKeepIds.filter((id) => id !== primaryId);
+    return {
+      success: true,
+      action,
+      groupId,
+      primaryId,
+      archivedBookIds: duplicateIds,
+      migratedUserReferences: { bookshelf: 0, readingProgress: 0, rooms: 0, marginNotes: 0 },
+      mergedFields: [],
+      dryRun: true,
+      message: `Preview: ${duplicateIds.length} duplicate books would be archived, merged into primary ${primaryId}.`,
+    };
+  }
+
   // 2. Fetch current books belonging to the group or candidate group
   // If action is restore_archived_record:
   if (action === 'restore_archived_record') {
