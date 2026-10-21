@@ -258,15 +258,25 @@ describe('Automated Duplicate Book Detection & Admin Cleanup Acceptance Tests', 
 
   // Scenario 10: Preview cleanup -> dry run does not mutate database or references
   it('Scenario 10: dry-run preview returns impact projection without mutating database', async () => {
-    const preview = await applyDuplicateResolution('grp-sample', 'merge_and_archive_duplicates', {
-      dryRun: true,
-      customPrimaryId: 'prim-1',
-      customKeepIds: ['prim-1'],
-    });
+    const mockGetUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({
+      data: { user: null },
+      error: null,
+    } as any);
 
-    expect(preview.dryRun).toBe(true);
-    expect(preview.success).toBe(true);
-    expect(preview.message).toContain('Preview');
+    let preview;
+    try {
+      preview = await applyDuplicateResolution('grp-sample', 'merge_and_archive_duplicates', {
+        dryRun: true,
+        customPrimaryId: 'prim-1',
+        customKeepIds: ['prim-1'],
+      });
+    } finally {
+      mockGetUser.mockRestore();
+    }
+
+    expect(preview!.dryRun).toBe(true);
+    expect(preview!.success).toBe(true);
+    expect(preview!.message).toContain('Preview');
   });
 
   // Scenario 11: Execute approved cleanup -> marks superseded and preserves user references
