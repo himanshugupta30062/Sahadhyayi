@@ -98,9 +98,7 @@ describe('useGroupManagement Sonar regression coverage', () => {
     const { wrapper } = makeHarness();
     const { result } = renderHook(() => useGroups(), { wrapper });
 
-    await act(async () => {
-      await result.current.refetch();
-    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockSupabase.from).toHaveBeenCalledWith('group_chats');
     expect(mockSupabase.rpc).toHaveBeenCalledWith('get_public_group_member_counts');
@@ -115,9 +113,7 @@ describe('useGroupManagement Sonar regression coverage', () => {
     const { wrapper } = makeHarness();
     const { result } = renderHook(() => useGroups(), { wrapper });
 
-    await act(async () => {
-      await result.current.refetch();
-    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(result.current.data?.[0]).toMatchObject({ id: 'group-1' });
     expect(result.current.data?.[0]).not.toHaveProperty('member_count');
