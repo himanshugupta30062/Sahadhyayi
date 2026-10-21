@@ -165,6 +165,35 @@ jobs:
           fi
           rm -f "$issues_file"
 
+          # Print per-file uncovered lines so the PR can address the 80% new-code
+          # coverage gate using targeted tests rather than broad source exclusions.
+          coverage_file="$(mktemp)"
+          coverage_args=(
+            --data-urlencode "component=$SONAR_PROJECT_KEY"
+            --data-urlencode "metricKeys=new_coverage,new_lines_to_cover,new_uncovered_lines"
+            --data-urlencode "qualifiers=FIL"
+            --data-urlencode "ps=500"
+          )
+          if [ -n "${PULL_REQUEST_NUMBER:-}" ]; then
+            coverage_args+=(--data-urlencode "pullRequest=$PULL_REQUEST_NUMBER")
+          else
+            coverage_args+=(--data-urlencode "branch=$GITHUB_REF_NAME")
+          fi
+
+          if curl --silent --show-error --fail --get \
+            -H "Authorization: Bearer $SONAR_TOKEN" \
+            "https://sonarcloud.io/api/measures/component_tree" "${coverage_args[@]}" > "$coverage_file"; then
+            echo "Per-file new-code coverage (path, coverage, lines to cover, uncovered lines):"
+            jq -r '.components[]? |
+              [.path // .name,
+               ([.measures[]? | select(.metric=="new_coverage") | .value][0] // "n/a"),
+               ([.measures[]? | select(.metric=="new_lines_to_cover") | .value][0] // "0"),
+               ([.measures[]? | select(.metric=="new_uncovered_lines") | .value][0] // "0")] | @tsv' "$coverage_file"
+          else
+            echo "::warning::Could not retrieve per-file SonarCloud coverage metrics."
+          fi
+          rm -f "$coverage_file"
+
       - name: Keep test failures visible
         if: always() && steps.coverage_tests.outcome == 'failure'
         run: |
