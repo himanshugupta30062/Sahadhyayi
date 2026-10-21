@@ -21,15 +21,15 @@ export const EnhancedFriendsManager = () => {
   const { toast } = useToast();
 
   // Use the improved search hook with debouncing
-  const { data: searchResults = [], isLoading: isSearching, error: searchError } = useUserSearch(searchTerm);
-  const { data: allUsers = [], isLoading: isLoadingUsers } = useAllUsers();
-  const { data: friends = [] } = useFriends();
-  const { data: friendRequests = [], isLoading: isLoadingRequests } = useFriendRequests();
+  const { data: searchResults = [], isLoading: isSearching, error: searchError, refetch: refetchSearch } = useUserSearch(searchTerm);
+  const { data: allUsers = [], isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useAllUsers();
+  const { data: friends = [], isLoading: isLoadingFriends, error: friendsError, refetch: refetchFriends } = useFriends();
+  const { data: friendRequests = [], isLoading: isLoadingRequests, error: friendRequestsError, refetch: refetchFriendRequests } = useFriendRequests();
   const sendFriendRequest = useSendFriendRequest();
   const respondToFriendRequest = useRespondToFriendRequest();
   const cancelFriendRequest = useCancelFriendRequest();
-  const { data: followingIds = [] } = useUserFollows();
-  const { data: followedReaders = [], isLoading: isLoadingFollowed, error: followedReadersError } = useFollowedReaders();
+  const { data: followingIds = [], error: followingError, refetch: refetchFollowing } = useUserFollows();
+  const { data: followedReaders = [], isLoading: isLoadingFollowed, error: followedReadersError, refetch: refetchFollowedReaders } = useFollowedReaders();
   const toggleUserFollow = useToggleUserFollow();
 
   const handleSendFriendRequest = async (userId: string, userName: string) => {
@@ -117,6 +117,8 @@ export const EnhancedFriendsManager = () => {
 
   const visibleSearchResults = searchResults.filter(result => result.id !== user?.id);
   const visibleAllUsers = allUsers.filter(result => result.id !== user?.id);
+  const relationshipStateUnavailable = Boolean(friendsError || friendRequestsError);
+  const followStateUnavailable = Boolean(followingError);
 
   return (
     <>
@@ -150,6 +152,16 @@ export const EnhancedFriendsManager = () => {
             </TabsList>
 
             <TabsContent value="discover" className="space-y-4">
+              {(relationshipStateUnavailable || followStateUnavailable) && (
+                <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                  <p>Connection status could not be verified, so relationship actions are temporarily disabled to avoid duplicate requests.</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {friendsError && <Button type="button" size="sm" variant="outline" onClick={() => void refetchFriends()}>Retry friends</Button>}
+                    {friendRequestsError && <Button type="button" size="sm" variant="outline" onClick={() => void refetchFriendRequests()}>Retry requests</Button>}
+                    {followingError && <Button type="button" size="sm" variant="outline" onClick={() => void refetchFollowing()}>Retry following</Button>}
+                  </div>
+                </div>
+              )}
               {/* Search Bar */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -162,70 +174,95 @@ export const EnhancedFriendsManager = () => {
               </div>
 
               {/* Search Status */}
-              {searchTerm && (
-                <div className="text-sm text-muted-foreground bg-brand-primary/5 px-4 py-2 rounded-lg border border-brand-primary/20">
-                  {isSearching ? (
+              {searchTerm.trim() && (
+                <div className="text-sm text-muted-foreground bg-brand-primary/5 px-4 py-2 rounded-lg border border-brand-primary/20" aria-live="polite">
+                  {searchTerm.trim().length < 2 ? (
+                    <span>Enter at least 2 characters to search readers.</span>
+                  ) : isSearching ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin text-brand-primary" />
-                      <span>Searching for "{searchTerm}"...</span>
+                      <span>Searching for “{searchTerm.trim()}”…</span>
                     </div>
                   ) : searchError ? (
-                    <span className="text-destructive">Search failed. Please try again.</span>
+                    <span className="text-destructive">Reader search failed.</span>
                   ) : (
-                    <span>Found <strong className="text-foreground">{visibleSearchResults.length}</strong> result{visibleSearchResults.length !== 1 ? 's' : ''} for "{searchTerm}"</span>
+                    <span>Found <strong className="text-foreground">{visibleSearchResults.length}</strong> result{visibleSearchResults.length !== 1 ? 's' : ''} for “{searchTerm.trim()}”</span>
                   )}
                 </div>
               )}
 
               {/* Search Results or All Users */}
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {searchTerm ? (
-                  // Show search results
-                  visibleSearchResults.length > 0 ? (
-                    visibleSearchResults.map((user) => (
+                {searchTerm.trim() ? (
+                  searchTerm.trim().length < 2 ? (
+                    <div className="text-center py-8 text-sm text-muted-foreground">
+                      Type at least 2 characters to search the reader directory.
+                    </div>
+                  ) : isSearching ? (
+                    <div className="flex items-center justify-center py-8" role="status">
+                      <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
+                      <span className="ml-2 text-muted-foreground">Searching readers…</span>
+                    </div>
+                  ) : searchError ? (
+                    <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                      <p>Search failed. Your previous results are not being shown as current results.</p>
+                      <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => void refetchSearch()}>Retry search</Button>
+                    </div>
+                  ) : visibleSearchResults.length > 0 ? (
+                    visibleSearchResults.map((result) => (
                       <UserCard
-                        key={user.id}
-                        user={user}
+                        key={result.id}
+                        user={result}
                         onSendRequest={handleSendFriendRequest}
                         getInitials={getInitials}
-                        isFriend={friends.some(f => f.friend_profile?.id === user.id)}
-                        hasPendingRequest={pendingUserIds.has(user.id)}
-                        isFollowing={followingIds.includes(user.id)}
+                        isFriend={friends.some(f => f.friend_profile?.id === result.id)}
+                        hasPendingRequest={pendingUserIds.has(result.id)}
+                        isFollowing={followingIds.includes(result.id)}
                         isFollowPending={toggleUserFollow.isPending}
                         onToggleFollow={handleToggleFollow}
                         onMessage={(id) => setChatId(id)}
+                        isRequestPending={sendFriendRequest.isPending}
+                        relationshipStateUnavailable={relationshipStateUnavailable}
+                        followStateUnavailable={followStateUnavailable}
                       />
                     ))
-                  ) : !isSearching ? (
+                  ) : (
                     <div className="text-center py-12 text-muted-foreground">
                       <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-muted flex items-center justify-center">
                         <Search className="w-8 h-8 text-muted-foreground" />
                       </div>
-                      <p className="text-sm font-medium text-foreground">No users found matching "{searchTerm}"</p>
-                      <p className="text-xs">Try searching with different keywords</p>
+                      <p className="text-sm font-medium text-foreground">No readers found for “{searchTerm.trim()}”</p>
+                      <p className="text-xs">Try another name or username.</p>
                     </div>
-                  ) : null
+                  )
                 ) : (
-                  // Show all users when no search term
                   <>
                     {isLoadingUsers ? (
-                      <div className="flex items-center justify-center py-8">
+                      <div className="flex items-center justify-center py-8" role="status">
                         <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
-                        <span className="ml-2 text-muted-foreground">Loading users...</span>
+                        <span className="ml-2 text-muted-foreground">Loading readers…</span>
+                      </div>
+                    ) : usersError ? (
+                      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                        <p>Reader suggestions could not be loaded.</p>
+                        <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => void refetchUsers()}>Retry suggestions</Button>
                       </div>
                     ) : visibleAllUsers.length > 0 ? (
-                      visibleAllUsers.map((user) => (
+                      visibleAllUsers.map((result) => (
                         <UserCard
-                          key={user.id}
-                          user={user}
+                          key={result.id}
+                          user={result}
                           onSendRequest={handleSendFriendRequest}
                           getInitials={getInitials}
-                          isFriend={friends.some(f => f.friend_profile?.id === user.id)}
-                          hasPendingRequest={pendingUserIds.has(user.id)}
-                          isFollowing={followingIds.includes(user.id)}
+                          isFriend={friends.some(f => f.friend_profile?.id === result.id)}
+                          hasPendingRequest={pendingUserIds.has(result.id)}
+                          isFollowing={followingIds.includes(result.id)}
                           isFollowPending={toggleUserFollow.isPending}
                           onToggleFollow={handleToggleFollow}
                           onMessage={(id) => setChatId(id)}
+                          isRequestPending={sendFriendRequest.isPending}
+                          relationshipStateUnavailable={relationshipStateUnavailable}
+                          followStateUnavailable={followStateUnavailable}
                         />
                       ))
                     ) : (
@@ -233,7 +270,8 @@ export const EnhancedFriendsManager = () => {
                         <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
                           <Users className="w-8 h-8 text-brand-primary" />
                         </div>
-                        <p className="text-sm font-medium text-foreground">No users found</p>
+                        <p className="text-sm font-medium text-foreground">No new readers to suggest</p>
+                        <p className="text-xs">Try searching for a reader by name or username.</p>
                       </div>
                     )}
                   </>
@@ -281,12 +319,20 @@ export const EnhancedFriendsManager = () => {
 
             <TabsContent value="friends" className="space-y-4">
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {friends.length > 0 ? (
+                {isLoadingFriends ? (
+                  <div className="flex items-center justify-center py-8" role="status">
+                    <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
+                    <span className="ml-2 text-muted-foreground">Loading friends…</span>
+                  </div>
+                ) : friendsError ? (
+                  <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                    <p>Your friends could not be loaded.</p>
+                    <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => void refetchFriends()}>Retry</Button>
+                  </div>
+                ) : friends.length > 0 ? (
                   friends.map((friendship) => {
-                    // Get the friend's profile (the one that's not the current user)
-                    const friendProfile = friendship.user1_id === user?.id 
-                      ? friendship.user2_profile 
-                      : friendship.user1_profile;
+                    // useFriends returns the other reader in friend_profile.
+                    const friendProfile = friendship.friend_profile;
                     
                     return (
                       <div key={friendship.id} className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
@@ -345,6 +391,11 @@ export const EnhancedFriendsManager = () => {
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
                   <span className="ml-2 text-muted-foreground">Loading requests...</span>
+                </div>
+              ) : friendRequestsError ? (
+                <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                  <p>Friend requests could not be loaded.</p>
+                  <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => void refetchFriendRequests()}>Retry</Button>
                 </div>
               ) : (
                 <>
@@ -482,10 +533,13 @@ interface UserCardProps {
   onMessage?: (userId: string) => void;
   isFollowing?: boolean;
   isFollowPending?: boolean;
+  isRequestPending?: boolean;
+  relationshipStateUnavailable?: boolean;
+  followStateUnavailable?: boolean;
   onToggleFollow?: (userId: string, userName: string, isFollowing: boolean) => void;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, hasPendingRequest = false, onMessage, isFollowing = false, isFollowPending = false, onToggleFollow }) => (
+const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, hasPendingRequest = false, onMessage, isFollowing = false, isFollowPending = false, isRequestPending = false, relationshipStateUnavailable = false, followStateUnavailable = false, onToggleFollow }) => (
   <div className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
     <div className="flex items-center gap-3 min-w-0">
       <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
@@ -524,7 +578,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
         size="sm"
         variant={isFollowing ? 'secondary' : 'outline'}
         aria-label={isFollowing ? `Unfollow ${user.full_name || 'reader'}` : `Follow ${user.full_name || 'reader'}`}
-        disabled={isFollowPending}
+        disabled={isFollowPending || followStateUnavailable}
         onClick={() => onToggleFollow?.(user.id, user.full_name || 'Reader', isFollowing)}
         className={isFollowing
           ? 'rounded-lg bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/15'
@@ -533,16 +587,19 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
         {isFollowing ? <Check className="w-4 h-4 mr-1" /> : <Users className="w-4 h-4 mr-1" />}
         {isFollowing ? 'Following' : 'Follow'}
       </Button>
-      {!isFriend && !hasPendingRequest ? (
+      {relationshipStateUnavailable ? (
+        <Button size="sm" variant="ghost" disabled aria-label="Connection status unavailable">Status unavailable</Button>
+      ) : !isFriend && !hasPendingRequest ? (
         <Button
           size="sm"
           variant="outline"
           aria-label={`Send friend request to ${user.full_name || 'user'}`}
           onClick={() => onSendRequest(user.id, user.full_name || 'User')}
+          disabled={isRequestPending}
           className="border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg"
         >
-          <UserPlus className="w-4 h-4 mr-1" />
-          Add
+          {isRequestPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <UserPlus className="w-4 h-4 mr-1" />}
+          {isRequestPending ? 'Sending…' : 'Add'}
         </Button>
       ) : isFriend ? (
         <Button
