@@ -361,19 +361,19 @@ const BookExpert = () => {
       >
         {welcomeOnly ? (
           <div className="flex min-h-full flex-col">
-            <div className="relative overflow-hidden rounded-[1.4rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-primary/[0.06] to-emerald-500/[0.07] p-5 sm:p-6">
+            <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-primary/[0.06] to-emerald-500/[0.07] p-3.5 sm:rounded-[1.4rem] sm:p-5">
               <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full border border-amber-500/20" aria-hidden="true" />
               <div className="absolute -right-3 top-0 h-24 w-24 rounded-full border border-amber-500/15" aria-hidden="true" />
-              <div className="relative flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-500/20 bg-background/80 shadow-sm">
-                  <BookMarked className="h-6 w-6 text-primary" aria-hidden="true" />
+              <div className="relative flex items-start gap-2.5 sm:gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-500/20 bg-background/80 shadow-sm sm:h-12 sm:w-12 sm:rounded-2xl">
+                  <BookMarked className="h-5 w-5 text-primary sm:h-6 sm:w-6" aria-hidden="true" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Welcome, reader</p>
-                  <h3 className="mt-2 max-w-xs text-2xl font-semibold leading-tight tracking-tight sm:text-[1.75rem]">
+                  <h3 className="mt-1.5 max-w-xs text-xl font-semibold leading-tight tracking-tight sm:mt-2 sm:text-[1.75rem]">
                     Every great conversation starts with a page.
                   </h3>
-                  <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2 max-w-sm text-xs leading-relaxed text-muted-foreground sm:mt-3 sm:text-sm">
                     Meet a book, find your next read, or follow a question wherever it leads. Let's see what the shelves have for you.
                   </p>
                 </div>
@@ -381,22 +381,22 @@ const BookExpert = () => {
               <button
                 type="button"
                 onClick={() => handleSend("Introduce me to a real book from the Sahadhyayi library. Speak in a playful first-person voice, use only verified catalog details, and invite me to explore it.")}
-                className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:mt-5 sm:px-4 sm:py-2.5 sm:text-sm"
               >
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
                 Let a book introduce itself
               </button>
             </div>
 
-            <div className="mt-6">
-              <div className="mb-3 flex items-end justify-between gap-3">
+            <div className="mt-4 sm:mt-5">
+              <div className="mb-2 flex items-end justify-between gap-3 sm:mb-3">
                 <div>
                   <h4 className="text-sm font-semibold">Where shall we begin?</h4>
-                  <p className="mt-1 text-xs text-muted-foreground">Choose a starting point, or ask in your own words.</p>
+                  <p className="mt-1 hidden text-xs text-muted-foreground sm:block">Choose a starting point, or ask in your own words.</p>
                 </div>
-                <BookOpen className="mb-1 h-5 w-5 text-muted-foreground/70" aria-hidden="true" />
+                <BookOpen className="mb-1 hidden h-5 w-5 text-muted-foreground/70 sm:block" aria-hidden="true" />
               </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-2">
                 {[
                   { title: "Find my next read", detail: "Books for your mood or interests", prompt: "Help me find my next read. Ask me one or two questions about my mood and interests, then recommend real titles where possible.", icon: Sparkles },
                   { title: "Meet a book", detail: "Let a real book speak first", prompt: "Introduce me to a real book from the Sahadhyayi library in a distinct, playful first-person voice using only verified catalog details.", icon: BookOpen },
@@ -409,16 +409,16 @@ const BookExpert = () => {
                       key={item.title}
                       type="button"
                       onClick={() => handleSend(item.prompt)}
-                      className="group flex min-w-0 items-center gap-3 rounded-2xl border border-border/80 bg-background/80 p-3.5 text-left transition duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="group flex min-w-0 items-start gap-2 rounded-xl border border-border/80 bg-background/80 p-2.5 text-left transition duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:items-center sm:gap-2.5 sm:rounded-2xl sm:p-3"
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
-                        <PromptIcon className="h-4 w-4" aria-hidden="true" />
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground sm:h-9 sm:w-9 sm:rounded-xl">
+                        <PromptIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold">{item.title}</span>
-                        <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{item.detail}</span>
+                        <span className="block text-xs font-semibold leading-snug sm:text-sm">{item.title}</span>
+                        <span className="mt-0.5 hidden text-xs leading-snug text-muted-foreground sm:block">{item.detail}</span>
                       </span>
-                      <span className="text-lg text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true">›</span>
+                      <span className="hidden text-lg text-muted-foreground transition-transform group-hover:translate-x-0.5 sm:block" aria-hidden="true">›</span>
                     </button>
                   );
                 })}
