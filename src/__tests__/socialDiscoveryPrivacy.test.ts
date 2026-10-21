@@ -77,4 +77,18 @@ describe('Social discovery and location privacy regressions', () => {
     expect(friendsManager).toMatch(/relationshipStateUnavailable/);
     expect(friendsManager).toMatch(/isRequestPending/);
   });
+
+  it('keeps friend/request controls usable at phone widths', () => {
+    expect(friendsManager).toMatch(/flex flex-col gap-3 p-3 bg-card border border-border rounded-xl[\s\S]{0,140}sm:flex-row/);
+    expect(friendsManager).toMatch(/flex w-full flex-wrap gap-2 sm:w-auto/);
+    expect(friendsManager).toMatch(/flex w-full gap-2 sm:w-auto/);
+    expect(friendsManager).toMatch(/grid h-auto w-full grid-cols-4 gap-1/);
+  });
+
+  it('rolls back location sharing if explicit GPS activation fails after consent', () => {
+    expect(readersMap).toMatch(/record_location_consent\(\) also sets location_sharing=true/);
+    expect(readersMap).toMatch(/update\(\{ location_sharing: false, location_lat: null, location_lng: null \}\)/);
+    expect(friendsMap).toMatch(/record_location_consent\(\) also sets location_sharing=true/);
+    expect(friendsMap).toMatch(/update\(\{ location_sharing: false, location_lat: null, location_lng: null \}\)/);
+  });
 });
