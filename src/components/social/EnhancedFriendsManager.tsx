@@ -304,6 +304,9 @@ export const EnhancedFriendsManager = () => {
                       isFollowPending={toggleUserFollow.isPending}
                       onToggleFollow={handleToggleFollow}
                       onMessage={(id) => setChatId(id)}
+                      isRequestPending={sendFriendRequest.isPending}
+                      relationshipStateUnavailable={relationshipStateUnavailable}
+                      followStateUnavailable={followStateUnavailable}
                     />
                   ))}
                 </div>
