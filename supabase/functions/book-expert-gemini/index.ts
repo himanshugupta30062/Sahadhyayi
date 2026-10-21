@@ -283,7 +283,7 @@ async function retrieveFeaturedLibraryBooks(supabaseClient: any): Promise<BookRe
 
     const candidates = data.filter((row: any) => row && row.id && typeof row.title === "string" && row.title.trim());
     for (let index = candidates.length - 1; index > 0; index -= 1) {
-      const swapIndex = Math.floor(Math.random() * (index + 1));
+      const swapIndex = getSecureRandomInt(index + 1);
       [candidates[index], candidates[swapIndex]] = [candidates[swapIndex], candidates[index]];
     }
     return candidates.slice(0, LIMITS.maxRetrievedBooks) as BookRecord[];
@@ -443,10 +443,22 @@ function getSystemInstruction(): string {
   ].join(" ");
 }
 
-function getRetryJitterMs(): number {
+function getSecureRandomInt(maxExclusive: number): number {
+  if (!Number.isSafeInteger(maxExclusive) || maxExclusive < 1 || maxExclusive > 0x1_0000_0000) {
+    throw new Error("maxExclusive must be a positive integer within the uint32 range.");
+  }
+
+  const rejectionLimit = Math.floor(0x1_0000_0000 / maxExclusive) * maxExclusive;
   const random = new Uint32Array(1);
-  crypto.getRandomValues(random);
-  return random[0] % 150;
+  do {
+    crypto.getRandomValues(random);
+  } while (random[0] >= rejectionLimit);
+
+  return random[0] % maxExclusive;
+}
+
+function getRetryJitterMs(): number {
+  return getSecureRandomInt(150);
 }
 
 async function callGemini(

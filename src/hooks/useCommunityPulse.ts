@@ -1,3 +1,4 @@
+import { reportBackgroundAsyncError } from '@/lib/queryErrorHandling';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
@@ -275,7 +276,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       }
     };
 
-    verifyAdmin();
+    void verifyAdmin().catch(reportBackgroundAsyncError);
     return () => {
       active = false;
     };

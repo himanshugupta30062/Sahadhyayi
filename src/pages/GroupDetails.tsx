@@ -73,14 +73,21 @@ const GroupDetails = () => {
   const isMember = group ? joinedGroups.some(g => g.id === group.id || (g as any).group_id === group.id) : false;
   const memberCount = group?.member_count ?? (user ? members.length : undefined);
 
-  const copyInviteLink = () => {
+  const copyInviteLink = async () => {
     if (!group) return;
     const url = `${window.location.origin}/groups?join=${group.id}`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url);
+    if (!navigator.clipboard?.writeText) {
+      toast.error('Clipboard access is unavailable in this browser.');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
       setIsCopied(true);
       toast.success('Group invite link copied to clipboard!');
-      setTimeout(() => setIsCopied(false), 2500);
+      window.setTimeout(() => setIsCopied(false), 2500);
+    } catch {
+      toast.error('Could not copy the invite link. Please copy the URL manually.');
     }
   };
 
