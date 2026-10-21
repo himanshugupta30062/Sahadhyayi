@@ -147,45 +147,9 @@ export default defineConfig(({ mode }) => ({
   build: {
     assetsDir: 'assets',
     sourcemap: false,
-    minify: 'terser',
+    minify: 'esbuild',
     target: 'esnext',
-    rollupOptions: {
-      output: {
-        // Preserve shared framework compression while grouping modules into
-        // feature chunks. onlyExplicitManualChunks prevents a shared hook used
-        // on another route from dragging its whole feature into that route.
-        manualChunks(id) {
-          const normalizedId = id.replace(/\\\\/g, "/");
-
-          if (CORE_CHUNK_MATCHERS.some((match) => normalizedId.includes(match))) {
-            return "core";
-          }
-
-          for (const [chunkName, sourceFiles] of Object.entries(FEATURE_CHUNK_PATHS)) {
-            if (sourceFiles.some((sourceFile) => normalizedId.endsWith("/" + sourceFile))) {
-              return chunkName;
-            }
-          }
-
-          return undefined;
-        },
-        onlyExplicitManualChunks: true
-      }
-    },
-    terserOptions: {
-      // All Vite output chunks are ES modules. Let Terser apply module-level
-      // dead-code elimination and top-level mangling without unsafe transforms.
-      module: true,
-      compress: {
-        passes: 2,
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug']
-      },
-      mangle: {
-        safari10: true,
-      },
-    },
+    // Use Rollup's default chunking while resolving the production startup TDZ.
     chunkSizeWarningLimit: 1000,
   },
   assetsInclude: ['**/*.webp', '**/*.avif'],
