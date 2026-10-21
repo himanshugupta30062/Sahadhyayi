@@ -264,7 +264,6 @@ const GuestLanding: React.FC = () => {
 
 // ─── Authenticated View ───────────────────────────────────────────────────────
 const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof useAuth>['user']> }> = ({ user }) => {
-  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const activeTab = VALID_SOCIAL_TABS.includes(tabParam as (typeof VALID_SOCIAL_TABS)[number])
