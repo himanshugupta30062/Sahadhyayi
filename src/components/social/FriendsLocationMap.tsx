@@ -495,6 +495,16 @@ export const FriendsLocationMap: React.FC = () => {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isSharingLocation && !userLocation && !sharingStatusError && (
+            <div className="rounded-xl border border-amber-400/40 bg-amber-50 p-4 dark:border-amber-700/40 dark:bg-amber-950/20" role="alert">
+              <p className="text-sm font-medium text-amber-900 dark:text-amber-200">Your saved location is missing</p>
+              <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">Sharing is enabled, but no coordinates are saved. Refresh your location to complete setup.</p>
+              <Button type="button" size="sm" className="mt-3" disabled={isSavingSharing} onClick={() => void enableLocationSharing()}>
+                {isSavingSharing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                Refresh saved location
+              </Button>
+            </div>
+          )}
           <div
             ref={mapRef}
             aria-label="Map showing friends who have mutually enabled location sharing"
