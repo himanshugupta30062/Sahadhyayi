@@ -40,6 +40,6 @@ describe('Following social feed', () => {
 
   it('does not insert a newly created post into the Following cache unconditionally', () => {
     expect(hook).toMatch(/setQueryData<SocialPost\[]>\(\['social-posts', user\?\.id, 'community'\]/);
-    expect(hook).toMatch(/invalidateQueries\(\{ queryKey: \['social-posts'\] \}\)/);
+    expect(hook).toContain("invalidateQueriesSafely(queryClient, ['social-posts'])");
   });
 });

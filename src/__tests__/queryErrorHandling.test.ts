@@ -1,4 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query';
+import { waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { invalidateQueriesSafely } from '@/lib/queryErrorHandling';
 
@@ -20,8 +21,12 @@ describe('invalidateQueriesSafely', () => {
 
     invalidateQueriesSafely(client, ['comments']);
 
-    await Promise.resolve();
-    expect(errorSpy).toHaveBeenCalledWith('Background query operation failed:', failure);
-    errorSpy.mockRestore();
+    try {
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith('Background query operation failed:', failure);
+      });
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 });
