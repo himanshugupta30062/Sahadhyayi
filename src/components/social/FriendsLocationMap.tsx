@@ -212,7 +212,7 @@ export const FriendsLocationMap: React.FC = () => {
   }, [mapLoadAttempt]);
 
   useEffect(() => {
-    if (!isLoaded || !mapRef.current || !window.google?.maps) return;
+    if (!isLoaded || isLoadingMap || !mapRef.current || !window.google?.maps) return;
 
     const instance = new window.google.maps.Map(mapRef.current, {
       center: userLocation || { lat: 20, lng: 0 },
@@ -235,7 +235,7 @@ export const FriendsLocationMap: React.FC = () => {
       markersRef.current = [];
       mapInstanceRef.current = null;
     };
-  }, [isLoaded]);
+  }, [isLoaded, isLoadingMap]);
 
   // Rebuild markers when friend coordinates or the signed-in user's own opt-in state changes.
   useEffect(() => {
