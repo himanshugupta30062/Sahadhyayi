@@ -198,7 +198,7 @@ export const EnhancedFriendsManager = () => {
                     <div className="text-center py-8 text-sm text-muted-foreground">
                       Type at least 2 characters to search the reader directory.
                     </div>
-                  ) : isSearching ? (
+                  ) : (isSearching || isDebouncing) ? (
                     <div className="flex items-center justify-center py-8" role="status">
                       <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
                       <span className="ml-2 text-muted-foreground">Searching readers…</span>
