@@ -157,6 +157,8 @@ const BookExpert = () => {
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const welcomeOnly = messages.length === 1 && messages[0]?.sender === "bot";
@@ -195,8 +197,22 @@ const BookExpert = () => {
   }, [messages, loading, isOpen]);
 
   useEffect(() => {
-    if (isOpen) inputRef.current?.focus();
-    else stopSpeech();
+    if (isOpen) {
+      wasOpenRef.current = true;
+      // Don't summon the mobile keyboard just because the Reading Room opened.
+      // Readers can tap the composer when they are ready to type.
+      if (typeof window !== "undefined" && window.matchMedia("(min-width: 640px)").matches) {
+        inputRef.current?.focus();
+      }
+      return;
+    }
+
+    stopSpeech();
+    // Restore focus to the trigger after closing for keyboard and assistive-tech users.
+    if (wasOpenRef.current) {
+      launcherRef.current?.focus();
+      wasOpenRef.current = false;
+    }
   }, [isOpen, stopSpeech]);
 
   useEffect(() => () => {
@@ -258,6 +274,7 @@ const BookExpert = () => {
   if (!isOpen) {
     return (
       <button
+        ref={launcherRef}
         type="button"
         onClick={toggleChat}
         aria-label="Open the Sahadhyayi Reading Room"
@@ -279,12 +296,20 @@ const BookExpert = () => {
   }
 
   return (
+    <>
+    <button
+      type="button"
+      aria-label="Close Reading Room"
+      title="Close Reading Room"
+      onClick={() => { stopSpeech(); closeChat(); }}
+      className="fixed inset-0 z-40 cursor-default bg-black/25 backdrop-blur-[1px] focus-visible:outline-none sm:bg-transparent sm:backdrop-blur-0"
+    />
     <section
       id="book-expert-panel"
       role="dialog"
       aria-modal="false"
       aria-labelledby="book-expert-title"
-      className="fixed inset-x-3 bottom-3 z-50 flex h-[min(78dvh,680px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-background text-foreground shadow-2xl shadow-black/20 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(680px,calc(100dvh-2.5rem))] sm:w-[min(390px,calc(100vw-2.5rem))] sm:rounded-2xl"
+      className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] z-50 flex h-[min(68dvh,580px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-background text-foreground shadow-2xl shadow-black/20 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(600px,calc(100dvh-2.5rem))] sm:w-[min(380px,calc(100vw-2.5rem))] sm:rounded-2xl"
     >
       <header className="relative shrink-0 overflow-hidden border-b border-border/70 bg-card">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 via-primary to-emerald-500" aria-hidden="true" />
@@ -296,12 +321,12 @@ const BookExpert = () => {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h2 id="book-expert-title" className="truncate text-sm font-semibold tracking-tight">The Reading Room</h2>
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-300">
+                <span className="hidden shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-300 sm:inline-flex">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
                   Here for readers
                 </span>
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">A little curiosity can open a whole world.</p>
+              <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">A little curiosity can open a whole world.</p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -311,7 +336,7 @@ const BookExpert = () => {
               disabled={loading || messages.length <= 1}
               aria-label="Start a new conversation"
               title="New conversation"
-              className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="hidden rounded-xl p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 sm:inline-flex"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -580,6 +605,7 @@ const BookExpert = () => {
         <p className="mt-2 text-center text-[10px] text-muted-foreground">Thoughtful answers, grounded in the library when sources are available.</p>
       </form>
     </section>
+    </>
   );
 };
 
