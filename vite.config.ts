@@ -149,8 +149,25 @@ export default defineConfig(({ mode }) => ({
     sourcemap: false,
     minify: 'terser',
     target: 'esnext',
-    // Keep Rollup's default chunking (the safe startup configuration), but use
-    // module-aware Terser compression to reduce the shipped JavaScript size.
+    // Keep routing/features in Rollup's default chunks. Only consolidate stable
+    // framework dependencies, matching the former conservative chunk layout.
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          core: [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-toast',
+            '@tanstack/react-query',
+            '@supabase/supabase-js',
+            'lucide-react',
+          ],
+        },
+      },
+    },
+    // Module-aware Terser compression improves size without restoring feature chunks.
     terserOptions: {
       module: true,
       compress: {
