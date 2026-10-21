@@ -1,3 +1,4 @@
+import { callGeminiWithRetry, secureShuffle } from "../../../src/lib/geminiRetry.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
@@ -282,11 +283,7 @@ async function retrieveFeaturedLibraryBooks(supabaseClient: any): Promise<BookRe
     }
 
     const candidates = data.filter((row: any) => row && row.id && typeof row.title === "string" && row.title.trim());
-    for (let index = candidates.length - 1; index > 0; index -= 1) {
-      const swapIndex = getSecureRandomInt(index + 1);
-      [candidates[index], candidates[swapIndex]] = [candidates[swapIndex], candidates[index]];
-    }
-    return candidates.slice(0, LIMITS.maxRetrievedBooks) as BookRecord[];
+    return secureShuffle(candidates).slice(0, LIMITS.maxRetrievedBooks) as BookRecord[];
   } catch {
     console.error("Book Expert featured-book lookup failed.");
     return [];
@@ -443,107 +440,20 @@ function getSystemInstruction(): string {
   ].join(" ");
 }
 
-function getSecureRandomInt(maxExclusive: number): number {
-  if (!Number.isSafeInteger(maxExclusive) || maxExclusive < 1 || maxExclusive > 0x1_0000_0000) {
-    throw new Error("maxExclusive must be a positive integer within the uint32 range.");
-  }
-
-  const rejectionLimit = Math.floor(0x1_0000_0000 / maxExclusive) * maxExclusive;
-  const random = new Uint32Array(1);
-  do {
-    crypto.getRandomValues(random);
-  } while (random[0] >= rejectionLimit);
-
-  return random[0] % maxExclusive;
-}
-
-function getRetryJitterMs(): number {
-  return getSecureRandomInt(150);
-}
-
 async function callGemini(
   model: string,
   apiKey: string,
   history: HistoryItem[],
   latestPrompt: string,
 ): Promise<{ ok: boolean; status: number; body: any; raw: string }> {
-  // Retry once for transient provider/network failures; cap total wait time.
-  const maxAttempts = 2;
-  const retryableStatuses = new Set([429, 500, 502, 503, 504]);
-  const requestBody = JSON.stringify({
-    systemInstruction: { parts: [{ text: getSystemInstruction() }] },
-    contents: [
-      ...history.map((item) => ({
-        role: item.role,
-        parts: [{ text: item.text }],
-      })),
-      { role: "user", parts: [{ text: latestPrompt }] },
-    ],
-    generationConfig: {
-      thinkingConfig: { thinkingLevel: "medium" },
-      maxOutputTokens: 1000,
-    },
+  return callGeminiWithRetry({
+    model,
+    apiKey,
+    history,
+    latestPrompt,
+    systemInstruction: getSystemInstruction(),
+    timeoutMs: LIMITS.requestTimeoutMs,
   });
-
-  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), LIMITS.requestTimeoutMs);
-    let retryDelayMs = 0;
-
-    try {
-      const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": apiKey,
-          },
-          body: requestBody,
-          signal: controller.signal,
-        },
-      );
-      const raw = await response.text();
-
-      if (retryableStatuses.has(response.status) && attempt < maxAttempts - 1) {
-        const retryAfterSeconds = Number.parseFloat(response.headers.get("retry-after") ?? "");
-        const exponentialDelay = Math.min(2000, 250 * 2 ** attempt);
-        retryDelayMs = Number.isFinite(retryAfterSeconds)
-          ? Math.min(3000, Math.max(0, retryAfterSeconds * 1000))
-          : exponentialDelay;
-        retryDelayMs += getRetryJitterMs();
-        console.warn("Gemini returned a retryable status; retrying once.", {
-          status: response.status,
-          attempt: attempt + 1,
-        });
-      } else {
-        let body: any = null;
-        try {
-          body = JSON.parse(raw);
-        } catch {
-          body = null;
-        }
-        return { ok: response.ok, status: response.status, body, raw: raw.slice(0, 1800) };
-      }
-    } catch (error) {
-      if (attempt >= maxAttempts - 1) {
-        throw error;
-      }
-      retryDelayMs = Math.min(2000, 250 * 2 ** attempt) + getRetryJitterMs();
-      console.warn("Gemini request failed; retrying once.", {
-        name: error instanceof Error ? error.name : "UnknownError",
-        attempt: attempt + 1,
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    if (retryDelayMs > 0) {
-      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
-    }
-  }
-
-  throw new Error("Gemini request failed after retry.");
 }
 
 function estimateStandardCostUsd(
