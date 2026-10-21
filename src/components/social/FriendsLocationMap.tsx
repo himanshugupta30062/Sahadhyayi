@@ -147,6 +147,45 @@ export const FriendsLocationMap: React.FC = () => {
     };
   }, [user?.id]);
 
+  // Refresh friends' markers when a profile's sharing state changes. Only mirror
+  // the signed-in user's own profile into local sharing state; friend coordinates
+  // continue to come from the mutual-consent-scoped get_profiles_for_social_context RPC.
+  useEffect(() => {
+    const channel = supabase
+      .channel(uniqueChannelName('friend-location-updates'))
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, async (payload) => {
+        void refetch();
+
+        const changedProfile = payload.new as {
+          id?: string;
+          location_sharing?: boolean | null;
+          location_lat?: number | null;
+          location_lng?: number | null;
+        };
+        if (!user?.id || changedProfile.id !== user.id) return;
+
+        try {
+          const { data: consented, error } = await supabase.rpc('has_location_consent', { user_uuid: user.id });
+          const sharingAllowed = !error && consented === true && changedProfile.location_sharing === true;
+          setIsSharingLocation(sharingAllowed);
+          setUserLocation(
+            sharingAllowed && changedProfile.location_lat != null && changedProfile.location_lng != null
+              ? { lat: Number(changedProfile.location_lat), lng: Number(changedProfile.location_lng) }
+              : null,
+          );
+        } catch (error) {
+          console.error('Unable to refresh own location-sharing status:', error);
+          setIsSharingLocation(false);
+          setUserLocation(null);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [refetch, user?.id]);
+
   // Load the map independently from geolocation permissions.
   useEffect(() => {
     let cancelled = false;
