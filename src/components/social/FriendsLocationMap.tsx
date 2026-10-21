@@ -159,15 +159,22 @@ export const FriendsLocationMap: React.FC = () => {
     const channel = supabase
       .channel(uniqueChannelName('friend-location-updates'))
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, async (payload) => {
-        void refetch();
-
         const changedProfile = payload.new as {
           id?: string;
           location_sharing?: boolean | null;
           location_lat?: number | null;
           location_lng?: number | null;
         };
-        if (!user?.id || changedProfile.id !== user.id) return;
+        if (!changedProfile.id || !user?.id) return;
+
+        const isOwnProfile = changedProfile.id === user.id;
+        const isCurrentFriend = friends.some((friend) => friend.friend_profile?.id === changedProfile.id);
+        // The profiles table is high traffic. Do not refetch the whole friends list
+        // for unrelated profile edits outside this user's accepted connections.
+        if (!isOwnProfile && !isCurrentFriend) return;
+        void refetch();
+
+        if (!isOwnProfile) return;
 
         try {
           const { data: consented, error } = await supabase.rpc('has_location_consent', { user_uuid: user.id });
@@ -189,7 +196,7 @@ export const FriendsLocationMap: React.FC = () => {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [refetch, user?.id]);
+  }, [friends, refetch, user?.id]);
 
   // Load the map independently from geolocation permissions.
   useEffect(() => {
