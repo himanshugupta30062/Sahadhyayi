@@ -88,7 +88,9 @@ export default defineConfig(({ mode }) => ({
     terserOptions: {
       module: true,
       compress: {
-        passes: 2,
+        // Extra safe pass targets the remaining shared helpers without enabling
+        // unsafe transforms or changing route-level chunk boundaries.
+        passes: 3,
         drop_console: true,
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info', 'console.debug'],
