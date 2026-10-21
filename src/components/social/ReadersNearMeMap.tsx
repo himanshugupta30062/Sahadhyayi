@@ -146,7 +146,7 @@ export const ReadersNearMeMap: React.FC = () => {
   }, [mapLoadAttempt]);
 
   useEffect(() => {
-    if (!isLoaded || !mapRef.current || !window.google?.maps) return;
+    if (!isLoaded || isLoadingMap || !mapRef.current || !window.google?.maps) return;
 
     const instance = new window.google.maps.Map(mapRef.current, {
       center: userLocation || { lat: 20, lng: 0 },
@@ -170,7 +170,7 @@ export const ReadersNearMeMap: React.FC = () => {
         userMarkerRef.current = null;
       }
     };
-  }, [isLoaded]);
+  }, [isLoaded, isLoadingMap]);
 
   // The nearby-reader RPC deliberately returns distance, not another person's exact
   // coordinates. Show these readers in the list; never pin them at fake 0,0 locations.
