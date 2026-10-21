@@ -20,7 +20,8 @@ const mockGroup = {
   description: 'Discussing the Upanishads, Gita, and classical literary poetry.',
   created_by: 'test-user-123',
   created_at: '2026-01-01',
-  group_members: [{ count: 12 }],
+  member_count: 12,
+  is_encrypted: false,
 };
 
 vi.mock('@/hooks/useGroupManagement', () => ({
