@@ -33,6 +33,8 @@ describe('Social discovery and location privacy regressions', () => {
     expect(readersMap).toMatch(/Your saved location is missing/);
     expect(friendsMap).toMatch(/isSharingLocation && !userLocation/);
     expect(friendsMap).toMatch(/Refresh saved location/);
+    expect(friendsMap).toMatch(/isCurrentFriend = friends\.some/);
+    expect(friendsMap).toMatch(/if \(!isOwnProfile && !isCurrentFriend\) return/);
     expect(readersMap).not.toMatch(/location_lat:\s*0/);
     expect(readersMap).not.toMatch(/location_lng:\s*0/);
     expect(readersMap).not.toMatch(/window\.handleConnectReader/);
