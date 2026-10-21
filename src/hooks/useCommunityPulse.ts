@@ -562,11 +562,24 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       try {
         let statsPayload: PulseStats | null = null;
 
-        if (!isAdmin) {
-          const { data, error } = await supabase.functions.invoke('public-community-stats', { body: { timeframe } });
-          if (error || !data || typeof data !== 'object') throw new Error(error?.message || 'Public stats unavailable');
-          statsPayload = parseStatsPayload(data, timeframe);
-        } else {
+        // Public-facing dashboard uses the sanitized aggregate RPC directly.
+        // Do not depend on a separate public-community-stats Edge Function being deployed.
+        // The RPC returns aggregate metrics only; raw visitor rows remain protected.
+        const { data: publicStats, error: publicRpcError } = await supabase.rpc(
+          'get_dual_table_website_analytics',
+          { p_timeframe: timeframe },
+        );
+        if (publicRpcError) {
+          throw new Error(publicRpcError.message || 'Public website analytics RPC unavailable');
+        }
+        if (!publicStats || typeof publicStats !== 'object') {
+          throw new Error('Public website analytics RPC returned an invalid payload');
+        }
+        statsPayload = parseStatsPayload(publicStats, timeframe);
+
+        /* Detailed visitor records continue to be loaded only through the admin-only
+           get_admin_recent_visits RPC; this aggregate request does not expose raw rows. */
+        if (false) {
         // Tier 1: Authoritative dual-table database RPC
         try {
           const { data, error: rpcError } = await supabase.rpc('get_dual_table_website_analytics', {
