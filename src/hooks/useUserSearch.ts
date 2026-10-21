@@ -28,7 +28,7 @@ export const useUserSearch = (searchTerm: string) => {
   
   const normalizedSearchTerm = debouncedSearchTerm.trim();
 
-  return useQuery({
+  const query = useQuery({
     // The current user affects the RPC filters, so their identity must be part of the cache key.
     queryKey: ['user-search', user?.id, normalizedSearchTerm],
     queryFn: async () => {
@@ -52,6 +52,13 @@ export const useUserSearch = (searchTerm: string) => {
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // The query key changes only after the debounce timer. Expose that transition so
+  // the UI does not briefly show results for the previous search under the new term.
+  return {
+    ...query,
+    isDebouncing: searchTerm.trim() !== normalizedSearchTerm,
+  };
 };
 
 export const useAllUsers = () => {
