@@ -93,6 +93,8 @@ export const FriendsLocationMap: React.FC = () => {
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
   const [isSharingLocation, setIsSharingLocation] = useState(false);
   const [isCheckingSharing, setIsCheckingSharing] = useState(true);
+  const [sharingStatusError, setSharingStatusError] = useState<string | null>(null);
+  const [sharingStatusAttempt, setSharingStatusAttempt] = useState(0);
   const [isSavingSharing, setIsSavingSharing] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -103,6 +105,7 @@ export const FriendsLocationMap: React.FC = () => {
   useEffect(() => {
     if (!user?.id) {
       setIsCheckingSharing(false);
+      setSharingStatusError(null);
       setIsSharingLocation(false);
       setUserLocation(null);
       return;
@@ -111,6 +114,7 @@ export const FriendsLocationMap: React.FC = () => {
     let active = true;
     const loadSharingState = async () => {
       setIsCheckingSharing(true);
+      setSharingStatusError(null);
       try {
         const [profileResult, consentResult] = await Promise.all([
           supabase
@@ -133,6 +137,7 @@ export const FriendsLocationMap: React.FC = () => {
       } catch (error) {
         if (active) {
           console.error('Unable to read location-sharing status:', error);
+          setSharingStatusError('Could not verify your saved location-sharing status. Retry before changing it.');
           setIsSharingLocation(false);
           setUserLocation(null);
         }
@@ -145,7 +150,7 @@ export const FriendsLocationMap: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [user?.id]);
+  }, [user?.id, sharingStatusAttempt]);
 
   // Refresh friends' markers when a profile's sharing state changes. Only mirror
   // the signed-in user's own profile into local sharing state; friend coordinates
@@ -496,7 +501,7 @@ export const FriendsLocationMap: React.FC = () => {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 text-sm text-[#636B65] dark:text-[#A5ADA6]">
               <Users className="h-4 w-4" />
-              <span>{friendsWithLocation.length} {friendsWithLocation.length === 1 ? 'friend is' : 'friends are'} sharing location</span>
+              <span>{isLoadingFriends ? 'Checking friend sharing status…' : friendsError ? 'Friend sharing status unavailable' : `${friendsWithLocation.length} ${friendsWithLocation.length === 1 ? 'friend is' : 'friends are'} sharing location`}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" size="sm" onClick={() => void centerOnMe()} className="gap-2" disabled={isCheckingSharing || !user}>
@@ -506,11 +511,15 @@ export const FriendsLocationMap: React.FC = () => {
                 type="button"
                 size="sm"
                 disabled={!user || isCheckingSharing || isSavingSharing}
-                onClick={() => isSharingLocation ? void disableLocationSharing() : requestLocationConsent()}
+                onClick={() => {
+                  if (sharingStatusError) setSharingStatusAttempt((attempt) => attempt + 1);
+                  else if (isSharingLocation) void disableLocationSharing();
+                  else requestLocationConsent();
+                }}
                 className="gap-2 bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]"
               >
-                {isSavingSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : isSharingLocation ? <MapPinOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
-                {isSavingSharing ? 'Saving…' : isSharingLocation ? 'Stop sharing' : 'Share my location'}
+                {isSavingSharing || isCheckingSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : sharingStatusError ? <RefreshCw className="h-4 w-4" /> : isSharingLocation ? <MapPinOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                {isSavingSharing ? 'Saving…' : isCheckingSharing ? 'Checking…' : sharingStatusError ? 'Retry status' : isSharingLocation ? 'Stop sharing' : 'Share my location'}
               </Button>
             </div>
           </div>
