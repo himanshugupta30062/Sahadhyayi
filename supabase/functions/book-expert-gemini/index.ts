@@ -443,6 +443,12 @@ function getSystemInstruction(): string {
   ].join(" ");
 }
 
+function getRetryJitterMs(): number {
+  const random = new Uint32Array(1);
+  crypto.getRandomValues(random);
+  return random[0] % 150;
+}
+
 async function callGemini(
   model: string,
   apiKey: string,
@@ -493,7 +499,7 @@ async function callGemini(
         retryDelayMs = Number.isFinite(retryAfterSeconds)
           ? Math.min(3000, Math.max(0, retryAfterSeconds * 1000))
           : exponentialDelay;
-        retryDelayMs += Math.floor(Math.random() * 150);
+        retryDelayMs += getRetryJitterMs();
         console.warn("Gemini returned a retryable status; retrying once.", {
           status: response.status,
           attempt: attempt + 1,
@@ -511,7 +517,7 @@ async function callGemini(
       if (attempt >= maxAttempts - 1) {
         throw error;
       }
-      retryDelayMs = Math.min(2000, 250 * 2 ** attempt) + Math.floor(Math.random() * 150);
+      retryDelayMs = Math.min(2000, 250 * 2 ** attempt) + getRetryJitterMs();
       console.warn("Gemini request failed; retrying once.", {
         name: error instanceof Error ? error.name : "UnknownError",
         attempt: attempt + 1,

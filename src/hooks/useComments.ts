@@ -110,7 +110,7 @@ export const useAddComment = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] });
+      void queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] }).catch((error) => console.error('Failed to invalidate query cache', error));
       toast({ title: 'Comment added successfully!' });
     },
     onError: () => {
@@ -139,7 +139,7 @@ export const useUpdateComment = () => {
       return { data, postId };
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['comments', result.postId] });
+      void queryClient.invalidateQueries({ queryKey: ['comments', result.postId] }).catch((error) => console.error('Failed to invalidate query cache', error));
       toast({ title: 'Comment updated successfully!' });
     },
     onError: () => {
@@ -162,7 +162,7 @@ export const useDeleteComment = () => {
       return { postId };
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['comments', result.postId] });
+      void queryClient.invalidateQueries({ queryKey: ['comments', result.postId] }).catch((error) => console.error('Failed to invalidate query cache', error));
       toast({ title: 'Comment deleted successfully!' });
     },
     onError: () => {

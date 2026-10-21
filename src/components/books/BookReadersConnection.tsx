@@ -134,7 +134,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     onSuccess: () => {
       setNewComment('');
       toast({ title: commentType === 'comment' ? 'Comment posted' : 'Quote posted' });
-      queryClient.invalidateQueries({ queryKey });
+      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => {
       toast({ title: 'Could not post', description: err.message, variant: 'destructive' });
@@ -172,7 +172,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     },
     onSuccess: () => {
       toast({ title: 'Deleted' });
-      queryClient.invalidateQueries({ queryKey });
+      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
   });
@@ -189,7 +189,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     onSuccess: () => {
       setEditingId(null);
       toast({ title: 'Updated' });
-      queryClient.invalidateQueries({ queryKey });
+      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
   });

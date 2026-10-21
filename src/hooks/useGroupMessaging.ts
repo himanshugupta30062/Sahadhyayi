@@ -71,7 +71,7 @@ export const useGroupMessages = (groupId: string) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel).catch((error) => console.error('Failed to remove realtime channel', error));
     };
   }, [groupId, user?.id, queryClient, toast]);
 

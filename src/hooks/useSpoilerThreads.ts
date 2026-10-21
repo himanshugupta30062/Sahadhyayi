@@ -120,7 +120,7 @@ export const useCreateSpoilerThreadComment = () => {
       return data;
     },
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["spoiler-thread-comments", vars.thread_id] });
+      void qc.invalidateQueries({ queryKey: ["spoiler-thread-comments", vars.thread_id] }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
   });
 };
@@ -153,7 +153,7 @@ export const useUnlockChapter = () => {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["spoiler-threads"] });
+      void qc.invalidateQueries({ queryKey: ["spoiler-threads"] }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
   });
 };

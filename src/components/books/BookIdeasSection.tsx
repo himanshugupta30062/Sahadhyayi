@@ -156,7 +156,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
       setTitle('');
       setContent('');
       toast({ title: 'Feedback submitted', description: 'Thanks for sharing!' });
-      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+      void queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => {
       toast({ title: 'Could not submit feedback', description: err.message, variant: 'destructive' });
@@ -184,7 +184,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+      void queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => {
       toast({ title: 'Vote failed', description: err.message, variant: 'destructive' });
@@ -198,7 +198,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
     },
     onSuccess: () => {
       toast({ title: 'Deleted' });
-      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+      void queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
   });
@@ -220,7 +220,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
     onSuccess: () => {
       setEditingId(null);
       toast({ title: 'Updated' });
-      queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] });
+      void queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
   });

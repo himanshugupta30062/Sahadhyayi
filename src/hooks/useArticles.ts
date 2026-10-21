@@ -188,7 +188,7 @@ export function useCreateArticle() {
       return data as Article;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['articles'] });
+      void queryClient.invalidateQueries({ queryKey: ['articles'] }).catch((error) => console.error('Failed to invalidate query cache', error));
       toast({ title: 'Article saved!' });
     },
     onError: (err: any) => {
@@ -221,7 +221,7 @@ export function useUpdateArticle() {
       return data as Article;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['articles'] });
+      void queryClient.invalidateQueries({ queryKey: ['articles'] }).catch((error) => console.error('Failed to invalidate query cache', error));
       toast({ title: 'Article updated!' });
     },
     onError: (err: any) => {
@@ -243,7 +243,7 @@ export function useDeleteArticle() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['articles'] });
+      void queryClient.invalidateQueries({ queryKey: ['articles'] }).catch((error) => console.error('Failed to invalidate query cache', error));
       toast({ title: 'Article deleted' });
     },
   });

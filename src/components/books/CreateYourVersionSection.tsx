@@ -147,7 +147,7 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
         title: isPublic ? 'Version published' : 'Saved privately',
         description: isPublic ? 'Your version is now visible to readers.' : 'Only you can see this.',
       });
-      queryClient.invalidateQueries({ queryKey });
+      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => {
       toast({ title: 'Could not save version', description: err.message, variant: 'destructive' });
@@ -185,7 +185,7 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
     },
     onSuccess: () => {
       toast({ title: 'Version deleted' });
-      queryClient.invalidateQueries({ queryKey });
+      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
   });
@@ -201,7 +201,7 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
     onSuccess: () => {
       setEditingId(null);
       toast({ title: 'Version updated' });
-      queryClient.invalidateQueries({ queryKey });
+      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
     },
     onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
   });

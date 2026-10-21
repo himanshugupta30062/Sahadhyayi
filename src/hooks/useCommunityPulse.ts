@@ -444,7 +444,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     try {
       if (typeof supabase?.from !== 'function') return null;
       let q = supabase.from(table)?.select?.('id', { count: 'exact', head: true });
-      if (!q) return null;
+      if (q === null || q === undefined) return null;
       if (eqField && eqVal && typeof (q as any).eq === 'function') {
         q = (q as any).eq(eqField, eqVal);
       }
