@@ -135,7 +135,7 @@ describe('GroupDetails Page Tests', () => {
       </QueryClientProvider>
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /copy group invite link/i }));
+    fireEvent.click(screen.getAllByRole('button', { name: /copy group invite link/i })[0]);
 
     await waitFor(() => {
       expect(writeText).toHaveBeenCalledWith(
