@@ -165,34 +165,52 @@ jobs:
           fi
           rm -f "$issues_file"
 
-          # Print per-file uncovered lines so the PR can address the 80% new-code
-          # coverage gate using targeted tests rather than broad source exclusions.
-          coverage_file="$(mktemp)"
-          coverage_args=(
-            --data-urlencode "component=$SONAR_PROJECT_KEY"
-            --data-urlencode "metricKeys=new_coverage,new_lines_to_cover,new_uncovered_lines"
-            --data-urlencode "qualifiers=FIL"
-            --data-urlencode "ps=500"
+          # Query Sonar metrics using each full file component key. The component-tree
+          # endpoint omits new-code metrics for files on some SonarCloud projects.
+          coverage_files=(
+            "src/components/books/BookIdeasSection.tsx"
+            "src/components/books/BookReadersConnection.tsx"
+            "src/components/books/CreateYourVersionSection.tsx"
+            "src/components/EnhancedGlobalSearch.tsx"
+            "src/components/home/HomeCommunityPreview.tsx"
+            "src/hooks/useArticles.ts"
+            "src/hooks/useComments.ts"
+            "src/hooks/useCommunityPulse.ts"
+            "src/hooks/useGroupManagement.ts"
+            "src/hooks/useGroupMessaging.ts"
+            "src/hooks/useMarginNotes.ts"
+            "src/hooks/useRelatedArticles.ts"
+            "src/hooks/useSocialPosts.ts"
+            "src/hooks/useSpoilerThreads.ts"
+            "src/integrations/supabase/types.ts"
+            "src/pages/GroupDetails.tsx"
+            "src/pages/SocialMedia.tsx"
+            "src/utils/catalog/duplicateResolution.ts"
+            "supabase/functions/book-expert-gemini/index.ts"
           )
-          if [ -n "${PULL_REQUEST_NUMBER:-}" ]; then
-            coverage_args+=(--data-urlencode "pullRequest=$PULL_REQUEST_NUMBER")
-          else
-            coverage_args+=(--data-urlencode "branch=$GITHUB_REF_NAME")
-          fi
-
-          if curl --silent --show-error --fail --get \
-            -H "Authorization: Bearer $SONAR_TOKEN" \
-            "https://sonarcloud.io/api/measures/component_tree" "${coverage_args[@]}" > "$coverage_file"; then
-            echo "Per-file new-code coverage (path, coverage, lines to cover, uncovered lines):"
-            jq -r '.components[]? |
-              [.path // .name,
-               ([.measures[]? | select(.metric=="new_coverage") | .value][0] // "n/a"),
-               ([.measures[]? | select(.metric=="new_lines_to_cover") | .value][0] // "0"),
-               ([.measures[]? | select(.metric=="new_uncovered_lines") | .value][0] // "0")] | @tsv' "$coverage_file"
-          else
-            echo "::warning::Could not retrieve per-file SonarCloud coverage metrics."
-          fi
-          rm -f "$coverage_file"
+          echo "Per-file new-code coverage (path, coverage, lines to cover, uncovered lines):"
+          for file in "${coverage_files[@]}"; do
+            args=(
+              --data-urlencode "component=$SONAR_PROJECT_KEY:$file"
+              --data-urlencode "metricKeys=new_coverage,new_lines_to_cover,new_uncovered_lines"
+            )
+            if [ -n "${PULL_REQUEST_NUMBER:-}" ]; then
+              args+=(--data-urlencode "pullRequest=$PULL_REQUEST_NUMBER")
+            else
+              args+=(--data-urlencode "branch=$GITHUB_REF_NAME")
+            fi
+            response="$(curl --silent --show-error --fail --get \
+              -H "Authorization: Bearer $SONAR_TOKEN" \
+              "https://sonarcloud.io/api/measures/component" "${args[@]}")" || {
+                echo -e "$file\tquery-failed"
+                continue
+              }
+            jq -r --arg file "$file" '
+              [$file,
+               ([.component.measures[]? | select(.metric=="new_coverage") | .value][0] // "n/a"),
+               ([.component.measures[]? | select(.metric=="new_lines_to_cover") | .value][0] // "0"),
+               ([.component.measures[]? | select(.metric=="new_uncovered_lines") | .value][0] // "0")] | @tsv' <<< "$response"
+          done
 
       - name: Keep test failures visible
         if: always() && steps.coverage_tests.outcome == 'failure'
