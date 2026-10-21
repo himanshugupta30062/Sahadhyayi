@@ -87,6 +87,22 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       mockUseAuth.mockReturnValue({ user: null, loading: false });
     });
 
+    it('does not start authenticated social data queries for signed-out visitors', () => {
+      render(
+        <MemoryRouter initialEntries={['/social?tab=friends']}>
+          <SocialMedia />
+        </MemoryRouter>
+      );
+
+      expect(mockUseReadingRooms).not.toHaveBeenCalled();
+      expect(mockUseMarginNotes).not.toHaveBeenCalled();
+      expect(mockUseSpoilerThreads).not.toHaveBeenCalled();
+      expect(mockUseGroups).not.toHaveBeenCalled();
+      expect(mockUseAllUsers).not.toHaveBeenCalled();
+      expect(mockUseReadingProgress).not.toHaveBeenCalled();
+      expect(mockSendFriendRequest).not.toHaveBeenCalled();
+    });
+
     it('renders the guest hero copy matching the visual reference design without fabricated stats', () => {
       render(
         <MemoryRouter initialEntries={['/social']}>
