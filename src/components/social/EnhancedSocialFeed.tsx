@@ -318,17 +318,17 @@ export const EnhancedSocialFeed = () => {
                 )}
 
                 {/* Post Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
+                <div className="flex min-w-0 items-start justify-between gap-3 mb-4 sm:items-center">
+                  <div className="flex min-w-0 flex-1 items-center space-x-3">
                     <Avatar className="w-10 h-10 border border-[#E8E2D9] dark:border-[#29332D]">
                       <AvatarImage src={postProfile?.profile_photo_url} />
                       <AvatarFallback className="bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D] font-semibold text-xs">
                         {postProfile?.full_name?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 items-center gap-2 flex-wrap">
+                        <h4 className="max-w-full truncate font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
                           {isOwn ? 'You' : (postProfile?.full_name || 'Anonymous')}
                         </h4>
                         {!isOwn && post.user_id && (
