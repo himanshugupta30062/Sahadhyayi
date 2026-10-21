@@ -92,6 +92,79 @@ jobs:
             -Dsonar.tests=src/__tests__
             -Dsonar.verbose=true
 
+      - name: Report new-code SonarCloud issues
+        if: always() && steps.verify_lcov.outcome == 'success'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'himanshugupta30062_Sahadhyayi' }}
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          report_task=".scannerwork/report-task.txt"
+          if [ ! -s "$report_task" ]; then
+            echo "::warning::Sonar scanner task metadata is unavailable; issue details were not queried."
+            exit 0
+          fi
+
+          task_url="$(sed -n 's/^ceTaskUrl=//p' "$report_task" | head -n 1)"
+          if [ -z "$task_url" ]; then
+            echo "::warning::Sonar scanner task URL is missing; issue details were not queried."
+            exit 0
+          fi
+
+          task_status="PENDING"
+          for attempt in $(seq 1 30); do
+            task_json="$(curl --silent --show-error --fail \
+              -H "Authorization: Bearer $SONAR_TOKEN" "$task_url")" || {
+                echo "::warning::Could not read SonarCloud task status."
+                exit 0
+              }
+            task_status="$(printf '%s' "$task_json" | jq -r '.task.status // "UNKNOWN"')"
+            case "$task_status" in
+              SUCCESS) break ;;
+              FAILED|CANCELED|UNKNOWN) break ;;
+              *) sleep 2 ;;
+            esac
+          done
+
+          if [ "$task_status" != "SUCCESS" ]; then
+            echo "::warning::SonarCloud task status is $task_status; issue list was not queried."
+            exit 0
+          fi
+
+          query_args=(
+            --data-urlencode "componentKeys=$SONAR_PROJECT_KEY"
+            --data-urlencode "issueStatuses=OPEN,CONFIRMED"
+            --data-urlencode "ps=500"
+          )
+          if [ -n "${PULL_REQUEST_NUMBER:-}" ]; then
+            query_args+=(--data-urlencode "pullRequest=$PULL_REQUEST_NUMBER")
+            query_args+=(--data-urlencode "sinceLeakPeriod=true")
+          else
+            query_args+=(--data-urlencode "branch=$GITHUB_REF_NAME")
+          fi
+
+          issues_file="$(mktemp)"
+          if ! curl --silent --show-error --fail --get \
+            -H "Authorization: Bearer $SONAR_TOKEN" \
+            "https://sonarcloud.io/api/issues/search" "${query_args[@]}" > "$issues_file"; then
+            echo "::warning::Could not retrieve SonarCloud issue details."
+            rm -f "$issues_file"
+            exit 0
+          fi
+
+          total="$(jq -r '.total // 0' "$issues_file")"
+          echo "Open/confirmed SonarCloud issues in this analysis: $total"
+          if [ "$total" -eq 0 ]; then
+            echo "No open or confirmed issues were returned for this analysis."
+          else
+            jq -r '.issues[] |
+              [.type // "UNKNOWN", .severity // "UNKNOWN",
+               (.component | sub("^.*:"; "")),
+               (.line // 0 | tostring), .rule, .message] | @tsv' "$issues_file"
+          fi
+          rm -f "$issues_file"
+
       - name: Keep test failures visible
         if: always() && steps.coverage_tests.outcome == 'failure'
         run: |
