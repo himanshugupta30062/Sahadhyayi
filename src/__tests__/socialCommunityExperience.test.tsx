@@ -72,7 +72,7 @@ vi.mock('@/hooks/useMarginNotes', () => ({
 }));
 
 vi.mock('@/hooks/useSpoilerThreads', () => ({
-  useSpoilerThreads: () => mockUseSpoilerThreads(),
+  useSpoilerThreads: (...args: unknown[]) => mockUseSpoilerThreads(...args),
 }));
 
 vi.mock('@/components/social/BookPulseBar', () => ({
@@ -316,6 +316,19 @@ describe('Phase 6: Social Media & Reading Community Experience', () => {
       expect(screen.getByText('Margin notes could not be loaded.')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: /retry/i }));
       expect(retry).toHaveBeenCalledTimes(1);
+    });
+
+    it('defers chapter-thread queries until the reader opens that feed filter', () => {
+      render(
+        <MemoryRouter>
+          <EnhancedSocialFeed />
+        </MemoryRouter>
+      );
+
+      expect(mockUseSpoilerThreads).toHaveBeenCalledWith(undefined, { enabled: false });
+
+      fireEvent.click(screen.getByRole('button', { name: /chapter threads/i }));
+      expect(mockUseSpoilerThreads).toHaveBeenLastCalledWith(undefined, { enabled: true });
     });
 
     it('shows retryable error when chapter threads fail instead of showing an empty state', () => {
