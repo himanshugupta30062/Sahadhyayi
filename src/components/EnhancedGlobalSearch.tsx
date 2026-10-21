@@ -332,6 +332,12 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
         }
       }
 
+      // Commands are local and deterministic; render them immediately so a slow
+      // books/authors/articles request cannot hide useful navigation actions.
+      if (matchedCommands.length > 0) {
+        setResults(matchedCommands);
+      }
+
       // Build or queries supporting multi-token matching
       let bookOr = `title.ilike.%${cleanTerm}%,author.ilike.%${cleanTerm}%,genre.ilike.%${cleanTerm}%`;
       if (terms.length > 1) {
