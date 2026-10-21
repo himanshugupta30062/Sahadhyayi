@@ -42,18 +42,18 @@ export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = (
             ) : (
               <div className="space-y-3">
                 <p>
-                  To show you nearby readers and connect you with your friends, we need access to your location.
+                  Your device will only be asked for its location after you choose to enable sharing. You can cancel without saving anything.
                 </p>
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-1">What we'll do with your location:</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Show readers near you who are reading the same books</li>
-                    <li>• Display your friends' locations on the map</li>
-                    <li>• Help you discover reading communities nearby</li>
+                    <li>• Find accepted friends who have also shared a specific book, using distance rather than their exact coordinates</li>
+                    <li>• Show exact map markers only for friends whose sharing and consent are mutual</li>
+                    <li>• Let you turn sharing off again from this map</li>
                   </ul>
                 </div>
                 <p className="text-xs text-gray-500">
-                  Your location is only shared with friends and is never stored permanently.
+                  When sharing is enabled, your coordinates are saved to your profile until you turn sharing off. Disabling sharing clears the saved coordinates; friends must also have enabled sharing and consent.
                 </p>
               </div>
             )}
