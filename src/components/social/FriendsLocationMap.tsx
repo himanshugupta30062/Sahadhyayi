@@ -378,6 +378,20 @@ export const FriendsLocationMap: React.FC = () => {
       toast.success('Location sharing enabled. Only friends with mutual consent can see it.');
       await refetch();
     } catch (error) {
+      // record_location_consent() also sets location_sharing=true. If geolocation or
+      // coordinate persistence fails, undo that side effect so the profile cannot
+      // appear as sharing with no validated coordinates.
+      try {
+        const { error: rollbackError } = await supabase
+          .from('profiles')
+          .update({ location_sharing: false, location_lat: null, location_lng: null })
+          .eq('id', user.id);
+        if (rollbackError) console.error('Could not roll back incomplete location sharing:', rollbackError);
+      } catch (rollbackError) {
+        console.error('Could not roll back incomplete location sharing:', rollbackError);
+      }
+      setIsSharingLocation(false);
+      setUserLocation(null);
       const message = error instanceof Error ? error.message : 'Unable to enable location sharing.';
       setLocationError(message);
       setShowLocationModal(true);
