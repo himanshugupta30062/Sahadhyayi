@@ -87,7 +87,7 @@ describe("BookExpert popup controls", () => {
 
     expect(await screen.findByText("Remember this conversation")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /close reading room/i }));
+    fireEvent.click(within(screen.getByRole("dialog", { name: /the reading room/i })).getByRole("button", { name: /close reading room/i }));
     fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
 
     expect(screen.getByText("Remember this conversation")).toBeInTheDocument();
