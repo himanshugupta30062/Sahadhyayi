@@ -141,7 +141,7 @@ describe('GroupDetails Page Tests', () => {
       expect(writeText).toHaveBeenCalledWith(
         `${window.location.origin}/groups?join=group-101`
       );
-      expect(screen.getByRole('button', { name: /copy group invite link/i })).toHaveTextContent('Link Copied');
+      expect(screen.getAllByRole('button', { name: /copy group invite link/i })[0]).toHaveTextContent('Link Copied');
     });
   });
 
@@ -165,13 +165,13 @@ describe('GroupDetails Page Tests', () => {
       </QueryClientProvider>
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /copy group invite link/i }));
+    fireEvent.click(screen.getAllByRole('button', { name: /copy group invite link/i })[0]);
 
     await waitFor(() => {
       expect(writeText).toHaveBeenCalled();
       expect(errorToast).toHaveBeenCalledWith('Could not copy the invite link. Please copy the URL manually.');
     });
-    expect(screen.getByRole('button', { name: /copy group invite link/i })).toHaveTextContent('Invite');
+    expect(screen.getAllByRole('button', { name: /copy group invite link/i })[0]).toHaveTextContent('Invite');
     errorToast.mockRestore();
   });
 
