@@ -155,6 +155,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
   // 3. Administrator Can Inspect Real Visitor Intelligence
   it('allows verified administrators to inspect recent visitors with search, filter, pagination, and detail inspector', async () => {
     mockCurrentUser = { id: 'admin-uuid', email: 'admin@sahadhyayi.com' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     mockRpc.mockImplementation((name: string) => {
       if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
       if (name === 'get_admin_recent_visits') {
@@ -297,6 +298,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
   // 5. Non-Admin RPC Server-Side Rejection Handling
   it('correctly handles non-admin rejection from get_admin_recent_visits without raw table fallback', async () => {
     mockCurrentUser = { id: 'regular-user', email: 'reader@sahadhyayi.com' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     mockFunctionsInvoke.mockResolvedValue({
       data: {
         pageViews: 100,
@@ -333,6 +335,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
   // 6. Resilient Handling of Null / Historical Visits
   it('handles historical records with null metadata gracefully displaying stable identifiers', async () => {
     mockCurrentUser = { id: 'admin-uuid' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     mockRpc.mockImplementation((name: string) => {
       if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
       if (name === 'get_admin_recent_visits') {
@@ -504,7 +507,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
   // 11. Timeframe Switching Produces Distinct, Timeframe-Aware Metrics (No duplicate or static data)
   it('updates metrics dynamically when switching timeframe between 24h, 7d, and 30d without duplicate data', async () => {
     mockFunctionsInvoke.mockImplementation((fn: string, options?: any) => {
-      if (fn === 'community-stats') {
+      if (fn === 'public-community-stats') {
         const tf = options?.body?.timeframe || '24h';
         const views = tf === '30d' ? 4500 : tf === '7d' ? 1200 : 250;
         const newReaders = tf === '30d' ? 65 : tf === '7d' ? 18 : 3;
