@@ -8,6 +8,7 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 const mockFunctionsInvoke = vi.fn();
 const mockRpc = vi.fn();
 const mockFrom = vi.fn();
+const mockGetSession = vi.fn();
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: {
@@ -17,7 +18,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
     rpc: (...args: any[]) => mockRpc(...args),
     from: (...args: any[]) => mockFrom(...args),
     auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      getSession: (...args: any[]) => mockGetSession(...args),
       onAuthStateChange: vi.fn().mockReturnValue({
         data: { subscription: { unsubscribe: vi.fn() } },
       }),
@@ -43,6 +44,7 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     vi.clearAllMocks();
     localStorage.clear();
     mockUser = null;
+    mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
     mockRpc.mockImplementation((name: string) => {
       if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
       return Promise.resolve({ data: null, error: null });
@@ -55,6 +57,8 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
   });
 
   it('renders near-full-screen responsive dialog container with fixed header and sticky controls', async () => {
+    mockUser = { id: 'test-admin' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     const mockPayload = {
       timeframe: '24h',
       period: {
@@ -86,6 +90,7 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     };
 
     mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
       if (name === 'get_dual_table_website_analytics') {
         return Promise.resolve({ data: mockPayload, error: null });
       }
@@ -114,6 +119,8 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
   });
 
   it('supports dual-series chart metric switching between page views, unique visitors, and combined', async () => {
+    mockUser = { id: 'test-admin' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     const mockPayload = {
       timeframe: '24h',
       period: {
