@@ -85,7 +85,7 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
               <div>
                 <h4 className="font-medium">What we collect</h4>
                 <p className="text-sm text-muted-foreground">
-                  Your approximate location when you're reading, to help you connect with nearby readers.
+                  Your device's location coordinates when you enable sharing, so you can see eligible friends on the map and find book-reading matches nearby.
                 </p>
               </div>
             </div>
@@ -95,7 +95,7 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
               <div>
                 <h4 className="font-medium">Who can see it</h4>
                 <p className="text-sm text-muted-foreground">
-                  Only friends who you've connected with AND who also have location sharing enabled.
+                  Only accepted friends when both of you have enabled location sharing and recorded consent. Nearby book matches show distance, not other readers' exact coordinates.
                 </p>
               </div>
             </div>
@@ -105,7 +105,7 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
               <div>
                 <h4 className="font-medium">Your control</h4>
                 <p className="text-sm text-muted-foreground">
-                  You can disable location sharing anytime in your profile settings.
+                  You can turn sharing off at any time from this map. Turning it off clears your saved profile coordinates; access is also protected by server-side consent checks.
                 </p>
               </div>
             </div>
@@ -113,7 +113,7 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
 
           <Alert>
             <AlertDescription className="text-xs">
-              By clicking "Enable Location Sharing", you consent to the collection and processing of your location data as described in our Privacy Policy. This consent includes recording your IP address and browser information for security purposes.
+              By clicking "Enable Location Sharing", you consent to saving your device coordinates to your profile and making them available to eligible friends under the mutual-sharing rules above. The consent record includes your browser user-agent string; this screen does not submit an IP address.
             </AlertDescription>
           </Alert>
 
