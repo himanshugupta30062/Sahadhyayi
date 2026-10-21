@@ -50,6 +50,8 @@ export const ReadersNearMeMap: React.FC = () => {
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
   const [isLocationSharing, setIsLocationSharing] = useState(false);
   const [isLoadingSharingStatus, setIsLoadingSharingStatus] = useState(true);
+  const [sharingStatusError, setSharingStatusError] = useState<string | null>(null);
+  const [sharingStatusAttempt, setSharingStatusAttempt] = useState(0);
   const [isSavingLocation, setIsSavingLocation] = useState(false);
   const [nearbyReaders, setNearbyReaders] = useState<NearbyReader[]>([]);
   const [isLoadingReaders, setIsLoadingReaders] = useState(false);
@@ -65,6 +67,7 @@ export const ReadersNearMeMap: React.FC = () => {
   useEffect(() => {
     if (!user?.id) {
       setIsLoadingSharingStatus(false);
+      setSharingStatusError(null);
       setIsLocationSharing(false);
       setUserLocation(null);
       return;
@@ -73,6 +76,7 @@ export const ReadersNearMeMap: React.FC = () => {
     let active = true;
     const loadOwnLocationState = async () => {
       setIsLoadingSharingStatus(true);
+      setSharingStatusError(null);
       try {
         const [profileResult, consentResult] = await Promise.all([
           supabase
@@ -106,6 +110,7 @@ export const ReadersNearMeMap: React.FC = () => {
         if (active) {
           setIsLocationSharing(false);
           setUserLocation(null);
+          setSharingStatusError('Could not verify your saved location-sharing status. Retry before changing it.');
           console.error('Unable to load saved location-sharing state:', error);
         }
       } finally {
@@ -117,7 +122,7 @@ export const ReadersNearMeMap: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [user?.id]);
+  }, [user?.id, sharingStatusAttempt]);
 
   // Load Google Maps independently of location consent.
   useEffect(() => {
@@ -415,9 +420,11 @@ export const ReadersNearMeMap: React.FC = () => {
               <div className="min-w-0">
                 <p className="text-sm font-semibold">{isLocationSharing ? 'Location sharing is on' : 'Location sharing is off'}</p>
                 <p className="mt-1 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
-                  {isLocationSharing
-                    ? 'Your saved location is available only to friends who have also given consent. Other readers’ exact coordinates are never sent to this map.'
-                    : 'Your location is not requested or saved unless you choose to enable sharing.'}
+                  {sharingStatusError
+                    ? sharingStatusError
+                    : isLocationSharing
+                      ? 'Your saved location is available only to friends who have also given consent. Other readers’ exact coordinates are never sent to this map.'
+                      : 'Your location is not requested or saved unless you choose to enable sharing.'}
                 </p>
               </div>
             </div>
@@ -427,13 +434,14 @@ export const ReadersNearMeMap: React.FC = () => {
               variant={isLocationSharing ? 'outline' : 'default'}
               disabled={isSavingLocation || isLoadingSharingStatus || !user}
               onClick={() => {
-                if (isLocationSharing) void handleStopSharing();
+                if (sharingStatusError) setSharingStatusAttempt((attempt) => attempt + 1);
+                else if (isLocationSharing) void handleStopSharing();
                 else setShowConsentModal(true);
               }}
               className="shrink-0 gap-2 bg-[#1C442D] text-white hover:bg-[#143221] disabled:opacity-60 dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]"
             >
-              {isSavingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : isLocationSharing ? <MapPinOff className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
-              {isSavingLocation ? 'Saving…' : isLocationSharing ? 'Stop sharing' : 'Enable location sharing'}
+              {isSavingLocation || isLoadingSharingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : sharingStatusError ? <RefreshCw className="h-4 w-4" /> : isLocationSharing ? <MapPinOff className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
+              {isSavingLocation ? 'Saving…' : isLoadingSharingStatus ? 'Checking…' : sharingStatusError ? 'Retry status' : isLocationSharing ? 'Stop sharing' : 'Enable location sharing'}
             </Button>
           </div>
 
