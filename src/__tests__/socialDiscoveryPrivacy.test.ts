@@ -29,6 +29,10 @@ describe('Social discovery and location privacy regressions', () => {
   it('uses the selected book and safe distance-only RPC data instead of fake map coordinates', () => {
     expect(readersMap).toMatch(/rpc\('get_nearby_book_readers', \{[\s\S]*book_uuid: selectedBook\.id[\s\S]*radius_km: MAX_DISTANCE_KM/);
     expect(readersMap).toMatch(/distance: Number\(reader\.distance_km\)/);
+    expect(readersMap).toMatch(/!isLocationSharing \|\| !userLocation/);
+    expect(readersMap).toMatch(/Your saved location is missing/);
+    expect(friendsMap).toMatch(/isSharingLocation && !userLocation/);
+    expect(friendsMap).toMatch(/Refresh saved location/);
     expect(readersMap).not.toMatch(/location_lat:\s*0/);
     expect(readersMap).not.toMatch(/location_lng:\s*0/);
     expect(readersMap).not.toMatch(/window\.handleConnectReader/);
