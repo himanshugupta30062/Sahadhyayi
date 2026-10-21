@@ -26,30 +26,29 @@ export const useUserSearch = (searchTerm: string) => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
   
+  const normalizedSearchTerm = debouncedSearchTerm.trim();
+
   return useQuery({
-    queryKey: ['user-search', debouncedSearchTerm],
+    // The current user affects the RPC filters, so their identity must be part of the cache key.
+    queryKey: ['user-search', user?.id, normalizedSearchTerm],
     queryFn: async () => {
-      if (!debouncedSearchTerm || debouncedSearchTerm.length < 2) return [];
+      if (!user?.id || normalizedSearchTerm.length < 2) return [];
       
       
       try {
         const { data, error } = await supabase
-          .rpc('get_public_profiles_for_search', { search_term: debouncedSearchTerm })
+          .rpc('get_public_profiles_for_search', { search_term: normalizedSearchTerm })
           .neq('id', user?.id || '');
         
-        if (error) {
-          console.error('User search API error:', error);
-          // Return empty array on error rather than throwing
-          return [];
-        }
-        
+        if (error) throw error;
         return data as SearchUser[];
       } catch (err) {
         console.error('User search exception:', err);
-        return [];
+        throw err;
       }
     },
-    enabled: debouncedSearchTerm.length >= 2,
+    enabled: !!user?.id && normalizedSearchTerm.length >= 2,
+    retry: 1,
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -59,7 +58,8 @@ export const useAllUsers = () => {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['all-users'],
+    // Suggestions depend on the signed-in user's friend/request exclusions.
+    queryKey: ['all-users', user?.id],
     queryFn: async () => {
       try {
         // Get current user's friends and pending requests to exclude them
@@ -75,7 +75,10 @@ export const useAllUsers = () => {
             .eq('status', 'pending')
         ]);
 
-        // Extract friend and pending request user IDs
+        if (friendsResponse.error) throw friendsResponse.error;
+        if (requestsResponse.error) throw requestsResponse.error;
+
+        // Never show existing friends or pending connections as new suggestions.
         const friendIds = new Set<string>();
         friendsResponse.data?.forEach(friend => {
           if (friend.user1_id !== user?.id) friendIds.add(friend.user1_id);
@@ -96,18 +99,15 @@ export const useAllUsers = () => {
           .not('id', 'in', `(${excludeIds.map(id => `"${id}"`).join(',')})`)
           .limit(50);
         
-        if (error) {
-          console.error('All users API error:', error);
-          return [];
-        }
-        
+        if (error) throw error;
         return data as SearchUser[];
       } catch (err) {
         console.error('All users exception:', err);
-        return [];
+        throw err;
       }
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
   });
 };
