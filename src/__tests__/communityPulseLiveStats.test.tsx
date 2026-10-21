@@ -45,6 +45,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     vi.clearAllMocks();
     localStorage.clear();
     mockCurrentUser = null;
+    mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
 
     // Default mocks
     mockRpc.mockImplementation((fn: string) => {
@@ -189,7 +190,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     render(<CommunityPulseDialog open={true} onClose={() => {}} />);
 
     await waitFor(() => {
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', {
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('public-community-stats', {
         body: { timeframe: '24h' },
       });
     });
@@ -200,7 +201,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     fireEvent.change(timeframeSelect, { target: { value: '7d' } });
 
     await waitFor(() => {
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', {
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('public-community-stats', {
         body: { timeframe: '7d' },
       });
     });
@@ -209,7 +210,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     fireEvent.change(timeframeSelect, { target: { value: '30d' } });
 
     await waitFor(() => {
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', {
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('public-community-stats', {
         body: { timeframe: '30d' },
       });
     });
@@ -248,6 +249,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
   it('calls get_admin_contributor_leaderboard only when user is verified administrator', async () => {
     // Non-admin user
     mockCurrentUser = { id: 'reader-1', email: 'reader@example.com' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     mockRpc.mockImplementation((fn: string) => {
       if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
       return Promise.resolve({ data: null, error: null });
@@ -278,6 +280,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
   // 6. Admin user fetches admin-only contributor leaderboard
   it('invokes get_admin_contributor_leaderboard for verified admin users', async () => {
     mockCurrentUser = { id: 'admin-1', email: 'admin@sahadhyayi.com' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     mockRpc.mockImplementation((fn: string) => {
       if (fn === 'is_admin') return Promise.resolve({ data: true, error: null });
       if (fn === 'get_admin_contributor_leaderboard') {
@@ -466,7 +469,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       referrers: [],
       lastUpdated: '2026-10-18T10:00:00.000Z',
     };
-    localStorage.setItem('sahadhyayi_pulse_stats_24h_v8', JSON.stringify(cachedStats));
+    localStorage.setItem('sahadhyayi_pulse_stats_24h_v9', JSON.stringify(cachedStats));
 
     // Refresh attempt fails
     mockFunctionsInvoke.mockRejectedValue(new Error('Gateway timeout'));
