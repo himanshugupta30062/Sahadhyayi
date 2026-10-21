@@ -180,7 +180,7 @@ export const ReadersNearMeMap: React.FC = () => {
   // The nearby-reader RPC deliberately returns distance, not another person's exact
   // coordinates. Show these readers in the list; never pin them at fake 0,0 locations.
   const fetchNearbyReaders = useCallback(async () => {
-    if (!user?.id || !selectedBook || !isLocationSharing) return;
+    if (!user?.id || !selectedBook || !isLocationSharing || !userLocation) return;
 
     const requestId = ++requestIdRef.current;
     setIsLoadingReaders(true);
@@ -216,7 +216,7 @@ export const ReadersNearMeMap: React.FC = () => {
     } finally {
       if (requestId === requestIdRef.current) setIsLoadingReaders(false);
     }
-  }, [user?.id, selectedBook, isLocationSharing]);
+  }, [user?.id, selectedBook, isLocationSharing, userLocation]);
 
   useEffect(() => {
     if (isLocationSharing && selectedBook) {
@@ -502,6 +502,16 @@ export const ReadersNearMeMap: React.FC = () => {
                 <ShieldCheck className="mx-auto mb-2 h-7 w-7 text-[#636B65] dark:text-[#A5ADA6]" />
                 <p className="text-sm font-medium">Enable location sharing to search nearby</p>
                 <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">You can turn it off at any time.</p>
+              </div>
+            ) : !userLocation ? (
+              <div className="rounded-xl border border-amber-400/40 bg-amber-50 p-4 text-center dark:border-amber-700/40 dark:bg-amber-950/20" role="alert">
+                <MapPin className="mx-auto mb-2 h-6 w-6 text-amber-700 dark:text-amber-400" />
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-200">Your saved location is missing</p>
+                <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">Refresh your location to find nearby readers. No nearby query will run until coordinates are available.</p>
+                <Button type="button" size="sm" className="mt-3" disabled={isSavingLocation} onClick={() => void handleEnableSharing()}>
+                  {isSavingLocation ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                  Refresh saved location
+                </Button>
               </div>
             ) : isLoadingReaders ? (
               <div className="flex justify-center py-8" role="status" aria-live="polite">
