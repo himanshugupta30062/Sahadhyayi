@@ -1,3 +1,4 @@
+import { invalidateQueriesSafely } from '@/lib/queryErrorHandling';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
@@ -110,7 +111,7 @@ export const useAddComment = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['comments', variables.postId]);
       toast({ title: 'Comment added successfully!' });
     },
     onError: () => {
@@ -139,7 +140,7 @@ export const useUpdateComment = () => {
       return { data, postId };
     },
     onSuccess: (result) => {
-      void queryClient.invalidateQueries({ queryKey: ['comments', result.postId] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['comments', result.postId]);
       toast({ title: 'Comment updated successfully!' });
     },
     onError: () => {
@@ -162,7 +163,7 @@ export const useDeleteComment = () => {
       return { postId };
     },
     onSuccess: (result) => {
-      void queryClient.invalidateQueries({ queryKey: ['comments', result.postId] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['comments', result.postId]);
       toast({ title: 'Comment deleted successfully!' });
     },
     onError: () => {

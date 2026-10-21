@@ -1,3 +1,4 @@
+import { reportBackgroundAsyncError } from '@/lib/queryErrorHandling';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
@@ -71,7 +72,7 @@ export const useGroupMessages = (groupId: string) => {
       .subscribe();
 
     return () => {
-      void supabase.removeChannel(channel).catch((error) => console.error('Failed to remove realtime channel', error));
+      void supabase.removeChannel(channel).catch(reportBackgroundAsyncError);
     };
   }, [groupId, user?.id, queryClient, toast]);
 

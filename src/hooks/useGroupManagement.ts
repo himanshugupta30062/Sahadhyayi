@@ -1,3 +1,4 @@
+import { invalidateQueriesSafely, reportBackgroundAsyncError } from '@/lib/queryErrorHandling';
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
@@ -35,9 +36,9 @@ export const useGroups = () => {
 
   useEffect(() => {
     const refreshGroups = () => {
-      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
-      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+      invalidateQueriesSafely(queryClient, ['all-groups']);
+      invalidateQueriesSafely(queryClient, ['user-groups']);
+      invalidateQueriesSafely(queryClient, ['user-joined-groups']);
     };
     const channel = supabase
       .channel(uniqueChannelName(`reading-groups-directory-${user?.id ?? 'guest'}`))
@@ -46,7 +47,7 @@ export const useGroups = () => {
       .subscribe();
 
     return () => {
-      void supabase.removeChannel(channel);
+      void supabase.removeChannel(channel).catch(reportBackgroundAsyncError);
     };
   }, [queryClient, user?.id]);
 
@@ -150,9 +151,9 @@ export const useCreateGroup = () => {
       };
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['user-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['all-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['user-groups']);
+      invalidateQueriesSafely(queryClient, ['all-groups']);
+      invalidateQueriesSafely(queryClient, ['user-joined-groups']);
     },
   });
 };
@@ -180,9 +181,9 @@ export const useJoinGroup = () => {
     },
     onSuccess: () => {
       toast.success('Successfully joined the group!');
-      void queryClient.invalidateQueries({ queryKey: ['user-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['all-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['user-groups']);
+      invalidateQueriesSafely(queryClient, ['all-groups']);
+      invalidateQueriesSafely(queryClient, ['user-joined-groups']);
     },
     onError: (error: Error) => {
       toast.error(`Failed to join group: ${error.message}`);
@@ -208,9 +209,9 @@ export const useLeaveGroup = () => {
     },
     onSuccess: () => {
       toast.success('Successfully left the group');
-      void queryClient.invalidateQueries({ queryKey: ['user-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['all-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['user-groups']);
+      invalidateQueriesSafely(queryClient, ['all-groups']);
+      invalidateQueriesSafely(queryClient, ['user-joined-groups']);
     },
     onError: (error: Error) => {
       toast.error(`Failed to leave group: ${error.message}`);
@@ -237,7 +238,7 @@ export const useAddGroupMember = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: ['group-members', variables.groupId] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['group-members', variables.groupId]);
     },
   });
 };
@@ -259,9 +260,9 @@ export const useUpdateGroup = () => {
     },
     onSuccess: () => {
       toast.success('Group updated');
-      void queryClient.invalidateQueries({ queryKey: ['all-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['user-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['all-groups']);
+      invalidateQueriesSafely(queryClient, ['user-groups']);
+      invalidateQueriesSafely(queryClient, ['user-joined-groups']);
     },
     onError: (error: Error) => toast.error(`Failed to update group: ${error.message}`),
   });
@@ -276,9 +277,9 @@ export const useDeleteGroup = () => {
     },
     onSuccess: () => {
       toast.success('Group deleted');
-      void queryClient.invalidateQueries({ queryKey: ['all-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['user-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['all-groups']);
+      invalidateQueriesSafely(queryClient, ['user-groups']);
+      invalidateQueriesSafely(queryClient, ['user-joined-groups']);
     },
     onError: (error: Error) => toast.error(`Failed to delete group: ${error.message}`),
   });

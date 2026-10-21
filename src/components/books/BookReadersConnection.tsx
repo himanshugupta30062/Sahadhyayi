@@ -1,3 +1,4 @@
+import { invalidateQueriesSafely } from '@/lib/queryErrorHandling';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -134,7 +135,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     onSuccess: () => {
       setNewComment('');
       toast({ title: commentType === 'comment' ? 'Comment posted' : 'Quote posted' });
-      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, queryKey);
     },
     onError: (err: Error) => {
       toast({ title: 'Could not post', description: err.message, variant: 'destructive' });
@@ -161,7 +162,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
         if (error) throw error;
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+    onSuccess: () => invalidateQueriesSafely(queryClient, queryKey),
     onError: (err: Error) => toast({ title: 'Like failed', description: err.message, variant: 'destructive' }),
   });
 
@@ -172,7 +173,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     },
     onSuccess: () => {
       toast({ title: 'Deleted' });
-      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, queryKey);
     },
     onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
   });
@@ -189,7 +190,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
     onSuccess: () => {
       setEditingId(null);
       toast({ title: 'Updated' });
-      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, queryKey);
     },
     onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
   });

@@ -1,3 +1,4 @@
+import { invalidateQueriesSafely } from '@/lib/queryErrorHandling';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -156,7 +157,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
       setTitle('');
       setContent('');
       toast({ title: 'Feedback submitted', description: 'Thanks for sharing!' });
-      void queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['book_feedback', bookId]);
     },
     onError: (err: Error) => {
       toast({ title: 'Could not submit feedback', description: err.message, variant: 'destructive' });
@@ -184,7 +185,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
       }
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['book_feedback', bookId]);
     },
     onError: (err: Error) => {
       toast({ title: 'Vote failed', description: err.message, variant: 'destructive' });
@@ -198,7 +199,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
     },
     onSuccess: () => {
       toast({ title: 'Deleted' });
-      void queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['book_feedback', bookId]);
     },
     onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
   });
@@ -220,7 +221,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
     onSuccess: () => {
       setEditingId(null);
       toast({ title: 'Updated' });
-      void queryClient.invalidateQueries({ queryKey: ['book_feedback', bookId] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['book_feedback', bookId]);
     },
     onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
   });

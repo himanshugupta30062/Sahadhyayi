@@ -1,3 +1,4 @@
+import { invalidateQueriesSafely } from '@/lib/queryErrorHandling';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -147,7 +148,7 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
         title: isPublic ? 'Version published' : 'Saved privately',
         description: isPublic ? 'Your version is now visible to readers.' : 'Only you can see this.',
       });
-      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, queryKey);
     },
     onError: (err: Error) => {
       toast({ title: 'Could not save version', description: err.message, variant: 'destructive' });
@@ -174,7 +175,7 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
         if (error) throw error;
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+    onSuccess: () => invalidateQueriesSafely(queryClient, queryKey),
     onError: (err: Error) => toast({ title: 'Vote failed', description: err.message, variant: 'destructive' }),
   });
 
@@ -185,7 +186,7 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
     },
     onSuccess: () => {
       toast({ title: 'Version deleted' });
-      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, queryKey);
     },
     onError: (err: Error) => toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }),
   });
@@ -201,7 +202,7 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
     onSuccess: () => {
       setEditingId(null);
       toast({ title: 'Version updated' });
-      void queryClient.invalidateQueries({ queryKey }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, queryKey);
     },
     onError: (err: Error) => toast({ title: 'Update failed', description: err.message, variant: 'destructive' }),
   });

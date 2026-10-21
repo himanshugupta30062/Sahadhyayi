@@ -1,3 +1,4 @@
+import { invalidateQueriesSafely } from '@/lib/queryErrorHandling';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/authHelpers";
@@ -96,7 +97,7 @@ export const useCreateSpoilerThread = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["spoiler-threads"] }),
+    onSuccess: () => invalidateQueriesSafely(qc, ["spoiler-threads"]),
   });
 };
 
@@ -120,7 +121,7 @@ export const useCreateSpoilerThreadComment = () => {
       return data;
     },
     onSuccess: (_, vars) => {
-      void qc.invalidateQueries({ queryKey: ["spoiler-thread-comments", vars.thread_id] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(qc, ["spoiler-thread-comments", vars.thread_id]);
     },
   });
 };
@@ -153,7 +154,7 @@ export const useUnlockChapter = () => {
       return data;
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["spoiler-threads"] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(qc, ["spoiler-threads"]);
     },
   });
 };

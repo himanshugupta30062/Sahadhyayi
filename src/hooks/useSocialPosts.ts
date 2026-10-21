@@ -1,3 +1,4 @@
+import { invalidateQueriesSafely, reportBackgroundAsyncError } from '@/lib/queryErrorHandling';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
@@ -406,7 +407,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
 
           if (newPost) {
             // Re-query each feed mode so Following only receives posts from followed authors.
-            void queryClient.invalidateQueries({ queryKey: ['social-posts'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+            invalidateQueriesSafely(queryClient, ['social-posts']);
 
             // Show notification for posts from others
             if (newPost.user_id !== user.id) {
@@ -438,7 +439,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
       .subscribe();
 
     return () => {
-      void supabase.removeChannel(channel).catch((error) => console.error('Failed to remove realtime channel', error));
+      void supabase.removeChannel(channel).catch(reportBackgroundAsyncError);
     };
   }, [user?.id, queryClient, toast]);
 
@@ -559,7 +560,7 @@ export const useCreatePost = () => {
           return [{ ...newPost, user_liked: false, user_reposted: false }, ...old];
         });
       }
-      void queryClient.invalidateQueries({ queryKey: ['social-posts'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['social-posts']);
       toast({
         title: 'Success',
         description: 'Your post has been shared!',
@@ -686,8 +687,8 @@ export const useCreateComment = () => {
       return data;
     },
     onSuccess: (_, { postId }) => {
-      void queryClient.invalidateQueries({ queryKey: ['post-comments', postId] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void queryClient.invalidateQueries({ queryKey: ['social-posts'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['post-comments', postId]);
+      invalidateQueriesSafely(queryClient, ['social-posts']);
       toast({
         title: 'Comment added',
         description: 'Your comment has been posted.',
@@ -732,7 +733,7 @@ export const useToggleRepost = () => {
       return { targetId, isReposted: !isReposted };
     },
     onSuccess: ({ isReposted }) => {
-      void queryClient.invalidateQueries({ queryKey: ['social-posts'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['social-posts']);
       toast({
         title: isReposted ? 'Reposted' : 'Repost removed',
         description: isReposted ? 'Shared with your followers.' : '',
@@ -793,7 +794,7 @@ export const useDeletePost = () => {
       queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
         return old.filter(post => post.id !== deletedId);
       });
-      void queryClient.invalidateQueries({ queryKey: ['social-posts'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['social-posts']);
       toast({ title: 'Post deleted' });
     },
   });

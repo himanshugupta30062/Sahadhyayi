@@ -1,3 +1,4 @@
+import { invalidateQueriesSafely } from '@/lib/queryErrorHandling';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/authHelpers';
@@ -188,7 +189,7 @@ export function useCreateArticle() {
       return data as Article;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['articles'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['articles']);
       toast({ title: 'Article saved!' });
     },
     onError: (err: any) => {
@@ -221,7 +222,7 @@ export function useUpdateArticle() {
       return data as Article;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['articles'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['articles']);
       toast({ title: 'Article updated!' });
     },
     onError: (err: any) => {
@@ -243,7 +244,7 @@ export function useDeleteArticle() {
       if (error) throw error;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['articles'] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(queryClient, ['articles']);
       toast({ title: 'Article deleted' });
     },
   });

@@ -1,3 +1,4 @@
+import { invalidateQueriesSafely } from '@/lib/queryErrorHandling';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/authHelpers";
@@ -144,8 +145,8 @@ export const useCreateMarginNoteReply = () => {
       return data;
     },
     onSuccess: (_, vars) => {
-      void qc.invalidateQueries({ queryKey: ["margin-note-replies", vars.noteId] }).catch((error) => console.error('Failed to invalidate query cache', error));
-      void qc.invalidateQueries({ queryKey: ["margin-notes"] }).catch((error) => console.error('Failed to invalidate query cache', error));
+      invalidateQueriesSafely(qc, ["margin-note-replies", vars.noteId]);
+      invalidateQueriesSafely(qc, ["margin-notes"]);
     },
   });
 };
@@ -170,7 +171,7 @@ export const useCreateMarginNote = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["margin-notes"] }),
+    onSuccess: () => invalidateQueriesSafely(qc, ["margin-notes"]),
   });
 };
 
@@ -183,7 +184,7 @@ export const useDeleteMarginNote = () => {
       const { error } = await supabase.from("margin_notes").delete().eq("id", noteId).eq("user_id", user.id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["margin-notes"] }),
+    onSuccess: () => invalidateQueriesSafely(qc, ["margin-notes"]),
   });
 };
 
@@ -209,6 +210,6 @@ export const useToggleMarginReaction = () => {
           .insert({ margin_note_id: noteId, user_id: user.id, emoji });
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["margin-notes"] }),
+    onSuccess: () => invalidateQueriesSafely(qc, ["margin-notes"]),
   });
 };
