@@ -39,7 +39,6 @@ const MAX_DISTANCE_KM = 50;
 export const ReadersNearMeMap: React.FC = () => {
   const { user } = useAuth();
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
   const userMarkerRef = useRef<any>(null);
   const requestIdRef = useRef(0);
 
@@ -163,7 +162,6 @@ export const ReadersNearMeMap: React.FC = () => {
       }],
     });
 
-    mapInstanceRef.current = instance;
     setMap(instance);
 
     return () => {
@@ -171,7 +169,6 @@ export const ReadersNearMeMap: React.FC = () => {
         userMarkerRef.current.setMap(null);
         userMarkerRef.current = null;
       }
-      mapInstanceRef.current = null;
     };
   }, [isLoaded]);
 
