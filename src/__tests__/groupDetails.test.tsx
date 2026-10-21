@@ -3,7 +3,7 @@
 import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import GroupDetails from '@/pages/GroupDetails';
@@ -117,4 +117,62 @@ describe('GroupDetails Page Tests', () => {
     expect(screen.getByText('Himanshu Gupta')).toBeInTheDocument();
     expect(screen.getByText('@himanshu')).toBeInTheDocument();
   });
+  it('waits for the clipboard before confirming the invite link was copied', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+    const queryClient = createTestQueryClient();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/groups/group-101']}>
+          <Routes>
+            <Route path="/groups/:id" element={<GroupDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /copy group invite link/i }));
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(
+        `${window.location.origin}/groups?join=group-101`
+      );
+      expect(screen.getByRole('button', { name: /copy group invite link/i })).toHaveTextContent('Link Copied');
+    });
+  });
+
+  it('does not claim the invite link copied when clipboard write fails', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('clipboard denied'));
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+    const toast = await import('sonner');
+    const errorToast = vi.spyOn(toast.toast, 'error').mockImplementation(() => 'toast-id' as never);
+    const queryClient = createTestQueryClient();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/groups/group-101']}>
+          <Routes>
+            <Route path="/groups/:id" element={<GroupDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /copy group invite link/i }));
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalled();
+      expect(errorToast).toHaveBeenCalledWith('Could not copy the invite link. Please copy the URL manually.');
+    });
+    expect(screen.getByRole('button', { name: /copy group invite link/i })).toHaveTextContent('Invite');
+    errorToast.mockRestore();
+  });
+
 });
