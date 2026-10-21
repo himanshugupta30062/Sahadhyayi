@@ -142,6 +142,7 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
     mockUser = { id: 'test-admin' };
     mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
       if (name === 'get_dual_table_website_analytics') {
         return Promise.resolve({
           data: {
