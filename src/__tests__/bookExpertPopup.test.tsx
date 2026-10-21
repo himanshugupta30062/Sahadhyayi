@@ -76,4 +76,21 @@ describe("BookExpert popup controls", () => {
 
     expect(screen.queryByRole("dialog", { name: /the reading room/i })).not.toBeInTheDocument();
   });
+
+  it("keeps the existing conversation available after closing and reopening", async () => {
+    render(<BookExpert />);
+
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+    const textbox = screen.getByRole("textbox", { name: /your question for the reading room/i });
+    fireEvent.change(textbox, { target: { value: "Remember this conversation" } });
+    fireEvent.keyDown(textbox, { key: "Enter", shiftKey: false });
+
+    expect(await screen.findByText("Remember this conversation")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /close reading room/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+
+    expect(screen.getByText("Remember this conversation")).toBeInTheDocument();
+  });
+
 });
