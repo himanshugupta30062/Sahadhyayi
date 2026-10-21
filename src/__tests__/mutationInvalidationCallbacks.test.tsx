@@ -178,7 +178,7 @@ describe('mutation success callbacks safely invalidate caches', () => {
     await invokeSuccess(useToggleRepost, [{ isReposted: true }]);
     await invokeSuccess(useDeletePost, ['post-1']);
 
-    expect(invalidateQueries).toHaveBeenCalledTimes(4);
+    expect(invalidateQueries).toHaveBeenCalledTimes(5);
     expect(invalidateQueries.mock.calls).toEqual([
       [{ queryKey: ['social-posts'] }],
       [{ queryKey: ['post-comments', 'post-1'] }],
