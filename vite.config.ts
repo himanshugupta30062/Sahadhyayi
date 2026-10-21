@@ -147,9 +147,22 @@ export default defineConfig(({ mode }) => ({
   build: {
     assetsDir: 'assets',
     sourcemap: false,
-    minify: 'esbuild',
+    minify: 'terser',
     target: 'esnext',
-    // Use Rollup's default chunking while resolving the production startup TDZ.
+    // Keep Rollup's default chunking (the safe startup configuration), but use
+    // module-aware Terser compression to reduce the shipped JavaScript size.
+    terserOptions: {
+      module: true,
+      compress: {
+        passes: 2,
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+      },
+      mangle: {
+        safari10: true,
+      },
+    },
     chunkSizeWarningLimit: 1000,
   },
   assetsInclude: ['**/*.webp', '**/*.avif'],
