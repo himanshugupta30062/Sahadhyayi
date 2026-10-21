@@ -58,7 +58,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
   },
 }));
 
-vi.mock('@/hooks/use-toast', () => ({ toast }));
+vi.mock('@/hooks/use-toast', () => ({ toast, useToast: () => ({ toast }) }));
 vi.mock('sonner', () => ({ toast: sonnerToast }));
 
 import {
