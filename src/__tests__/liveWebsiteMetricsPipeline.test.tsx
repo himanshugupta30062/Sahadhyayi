@@ -9,6 +9,8 @@ import { BrowserRouter } from 'react-router-dom';
 const mockFunctionsInvoke = vi.fn();
 const mockRpc = vi.fn();
 const mockFrom = vi.fn();
+const mockGetSession = vi.fn();
+let mockUser: any = null;
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: {
@@ -18,7 +20,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
     rpc: (...args: any[]) => mockRpc(...args),
     from: (...args: any[]) => mockFrom(...args),
     auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      getSession: (...args: any[]) => mockGetSession(...args),
       onAuthStateChange: vi.fn().mockReturnValue({
         data: { subscription: { unsubscribe: vi.fn() } },
       }),
@@ -28,8 +30,8 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
 
 vi.mock('@/contexts/authHelpers', () => ({
   useAuth: () => ({
-    user: null,
-    session: null,
+    user: mockUser,
+    session: mockUser ? { access_token: 'fake-token' } : null,
     loading: false,
     signIn: vi.fn(),
     signOut: vi.fn(),
@@ -44,6 +46,8 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    mockUser = null;
+    mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
     mockRpc.mockImplementation((name: string) => {
       if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
       return Promise.resolve({ data: null, error: null });
@@ -66,6 +70,8 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
   });
 
   it('maps the canonical dual-table contract accurately in useCommunityPulse', async () => {
+    mockUser = { id: 'test-admin' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     const canonicalPayload = {
       timeframe: '24h',
       period: {
@@ -108,6 +114,7 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
     };
 
     mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: true, error: null });
       if (name === 'get_dual_table_website_analytics') {
         return Promise.resolve({ data: canonicalPayload, error: null });
       }
@@ -132,6 +139,8 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
   });
 
   it('renders single authoritative timeframe selector driving metrics without duplicate cards', async () => {
+    mockUser = { id: 'test-admin' };
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     mockRpc.mockImplementation((name: string) => {
       if (name === 'get_dual_table_website_analytics') {
         return Promise.resolve({
