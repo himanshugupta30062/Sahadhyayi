@@ -42,6 +42,8 @@ describe("BookExpert popup controls", () => {
 
     expect(dialog).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: /close reading room/i })).toBeInTheDocument();
+    // On mobile, opening the panel must not summon the on-screen keyboard.
+    expect(screen.getByRole("textbox", { name: /your question for the reading room/i })).not.toHaveFocus();
 
     fireEvent.click(within(dialog).getByRole("button", { name: /close reading room/i }));
 
