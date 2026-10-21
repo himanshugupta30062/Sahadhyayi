@@ -101,7 +101,7 @@ export type RecentVisitor = {
   userId?: string;
 };
 
-export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v8`;
+export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v9`;
 
 /**
  * Builds 24 empty hourly buckets for Asia/Kolkata timezone with 0 counts.
@@ -185,6 +185,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const statsRef = useRef(stats);
+
+  useEffect(() => {
+    statsRef.current = stats;
+  }, [stats]);
 
   // Visitor intelligence (admin-only)
   const [visitors, setVisitors] = useState<RecentVisitor[]>([]);
@@ -219,6 +224,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     const verifyAdmin = async () => {
       if (!user) {
         if (active) {
+          statsRef.current = null;
           setIsAdmin(false);
           setStats(null);
           setVisitors([]);
@@ -230,6 +236,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
       setCheckingAdmin(true);
       setIsAdmin(false);
+      statsRef.current = null;
       setStats(null);
       setVisitors([]);
       setAdminLeaderboard([]);
@@ -273,11 +280,6 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       active = false;
     };
   }, [user]);
-
-  const statsRef = useRef(stats);
-  useEffect(() => {
-    statsRef.current = stats;
-  }, [stats]);
 
   const requestSeqRef = useRef(0);
 
@@ -566,18 +568,84 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     async (manual: boolean = false) => {
       const currentSeq = ++requestSeqRef.current;
 
-      // This hook powers the protected analytics dialog. Do not send admin-only
-      // RPCs with the public anon key while Auth is restoring or for non-admins.
+      // Wait until the current auth state is known before choosing a data source.
       if (checkingAdmin) {
         setLoading(false);
         return;
       }
+
+      // Guest and member views use the public aggregate endpoint only. Admin RPCs,
+      // raw visitor rows and the detailed contributor leaderboard stay behind the
+      // server-verified administrator check below.
       if (!isAdmin) {
-        setStats(null);
-        setVisitors([]);
-        setAdminLeaderboard([]);
-        setLoading(false);
-        setError('Administrator access is required to view website analytics.');
+        let cachedPublicStats: PulseStats | null = null;
+        try {
+          const cached = localStorage.getItem(getCacheKey(timeframe));
+          if (cached) {
+            const parsed = JSON.parse(cached) as PulseStats;
+            if (parsed && typeof parsed === 'object' && 'pageViews' in parsed) {
+              cachedPublicStats = { ...parsed, isStale: true, topMembers: [] };
+            }
+          }
+        } catch {
+          // A browser storage failure must not block live aggregate analytics.
+        }
+
+        if (cachedPublicStats && !statsRef.current) {
+          statsRef.current = cachedPublicStats;
+          setStats(cachedPublicStats);
+        }
+        if (manual || !statsRef.current) {
+          setLoading(true);
+        }
+
+        try {
+          let publicStats: PulseStats;
+          try {
+            const { data, error: publicStatsError } = await supabase.functions.invoke('public-community-stats', {
+              body: { timeframe },
+            });
+            if (publicStatsError || !data || typeof data !== 'object') {
+              throw new Error(publicStatsError?.message || 'Public stats unavailable');
+            }
+            publicStats = parseStatsPayload(data, timeframe);
+          } catch (publicEndpointError) {
+            // Preserve a known public result on refresh failure. Only use count-only
+            // database fallbacks when no public snapshot exists; never substitute
+            // lifetime totals for the selected-period page-view metric.
+            if (cachedPublicStats || statsRef.current) {
+              throw publicEndpointError;
+            }
+            publicStats = await fetchDatabaseFallbackStats(timeframe);
+          }
+
+          publicStats = { ...publicStats, topMembers: [], isStale: false };
+          if (isMountedRef.current && currentSeq === requestSeqRef.current) {
+            statsRef.current = publicStats;
+            setStats(publicStats);
+            setError(null);
+            try {
+              // This cache stores only data returned by the public aggregate path.
+              localStorage.setItem(getCacheKey(timeframe), JSON.stringify(publicStats));
+            } catch {
+              // Ignore storage quota or privacy-mode errors.
+            }
+          }
+        } catch (err: any) {
+          if (isMountedRef.current && currentSeq === requestSeqRef.current) {
+            const previousPublicStats = cachedPublicStats ?? statsRef.current;
+            if (previousPublicStats) {
+              const staleStats = { ...previousPublicStats, isStale: true, topMembers: [] };
+              statsRef.current = staleStats;
+              setStats(staleStats);
+            }
+            setError(err?.message || 'Network error fetching public community stats');
+          }
+        } finally {
+          if (isMountedRef.current && currentSeq === requestSeqRef.current) {
+            setLoading(false);
+          }
+        }
         return;
       }
 
