@@ -110,7 +110,7 @@ export const EnhancedSocialFeed = () => {
     isLoading: threadsLoading,
     error: threadsError,
     refetch: refetchThreads,
-  } = useSpoilerThreads();
+  } = useSpoilerThreads(undefined, { enabled: feedFilter === 'threads' });
 
   const handleLike = (post: SocialPost) => {
     if (!user) return;
@@ -209,7 +209,7 @@ export const EnhancedSocialFeed = () => {
           onClick={() => setFeedFilter('threads')}
         >
           <Lock className="w-3.5 h-3.5 mr-1.5 text-indigo-600 dark:text-indigo-400" />
-          Chapter Threads ({spoilerThreads.length})
+          Chapter Threads{feedFilter === 'threads' ? ` (${spoilerThreads.length})` : ''}
         </Button>
       </div>
 
