@@ -287,10 +287,6 @@ export const EnhancedFriendsManager = () => {
                 </div>
               ) : followedReadersError ? (
                 <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-                  Could not load your Following list. Please try again later.
-                </div>
-              ) : followedReadersError ? (
-                <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
                   <p>Could not load your Following list.</p>
                   <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => void refetchFollowedReaders()}>Retry</Button>
                 </div>
