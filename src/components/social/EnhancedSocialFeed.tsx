@@ -99,8 +99,18 @@ export const EnhancedSocialFeed = () => {
   const [selectedPost, setSelectedPost] = useState<SocialPost | null>(null);
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   const [feedFilter, setFeedFilter] = useState<'all' | 'posts' | 'margins' | 'threads'>('all');
-  const { data: marginNotes = [], isLoading: marginLoading } = useMarginNotes({ filter: 'all' });
-  const { data: spoilerThreads = [], isLoading: threadsLoading } = useSpoilerThreads();
+  const {
+    data: marginNotes = [],
+    isLoading: marginLoading,
+    error: marginError,
+    refetch: refetchMarginNotes,
+  } = useMarginNotes({ filter: 'all' });
+  const {
+    data: spoilerThreads = [],
+    isLoading: threadsLoading,
+    error: threadsError,
+    refetch: refetchThreads,
+  } = useSpoilerThreads();
 
   const handleLike = (post: SocialPost) => {
     if (!user) return;
@@ -205,7 +215,12 @@ export const EnhancedSocialFeed = () => {
 
       {feedFilter === 'margins' ? (
         marginLoading ? (
-          <div className="flex justify-center py-8"><LoadingSpinner /></div>
+          <div className="flex justify-center py-8" role="status"><LoadingSpinner /></div>
+        ) : marginError ? (
+          <Card role="alert" className="bg-white dark:bg-[#111614] border-destructive/40 text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl p-8 text-center">
+            <p className="text-sm text-destructive font-medium mb-3">Margin notes could not be loaded.</p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void refetchMarginNotes()}>Retry</Button>
+          </Card>
         ) : marginNotes.length === 0 ? (
           <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl p-8 text-center shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
             <Quote className="w-8 h-8 text-amber-600 dark:text-amber-400 mx-auto mb-2" />
@@ -221,7 +236,12 @@ export const EnhancedSocialFeed = () => {
         )
       ) : feedFilter === 'threads' ? (
         threadsLoading ? (
-          <div className="flex justify-center py-8"><LoadingSpinner /></div>
+          <div className="flex justify-center py-8" role="status"><LoadingSpinner /></div>
+        ) : threadsError ? (
+          <Card role="alert" className="bg-white dark:bg-[#111614] border-destructive/40 text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl p-8 text-center">
+            <p className="text-sm text-destructive font-medium mb-3">Chapter threads could not be loaded.</p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void refetchThreads()}>Retry</Button>
+          </Card>
         ) : spoilerThreads.length === 0 ? (
           <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl p-8 text-center shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
             <Lock className="w-8 h-8 text-indigo-600 dark:text-indigo-400 mx-auto mb-2" />
