@@ -109,8 +109,10 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     const container = dialog.querySelector('.sm\\:max-w-\\[1600px\\]');
     expect(container).toBeInTheDocument();
 
-    // Check All-Time Platform Visits hero card
-    expect(screen.getByText(/10,337 visits/i)).toBeInTheDocument();
+    // Wait for the verified admin analytics request to hydrate the hero metric.
+    await waitFor(() => {
+      expect(screen.getByText(/10,337 visits/i)).toBeInTheDocument();
+    });
 
     // Check timeframe selector
     const select = screen.getByRole('combobox', { name: 'Select timeframe' });
