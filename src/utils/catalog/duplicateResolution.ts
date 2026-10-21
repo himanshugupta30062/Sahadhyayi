@@ -39,8 +39,9 @@ export async function applyDuplicateResolution(
 ): Promise<ResolutionResult> {
   const isDryRun = Boolean(options.dryRun);
 
-  // 1. Authorization Gate
-  const isAdmin = await verifyAdminStatus();
+  // 1. Authorization Gate. A dry run is read-only and does not need an auth lookup.
+  // Re-check server-verified administrator access before every mutating action.
+  const isAdmin = isDryRun ? false : await verifyAdminStatus();
   if (!isAdmin && !isDryRun) {
     throw new Error('Unauthorized: only administrators can execute catalog duplicate cleanup.');
   }
