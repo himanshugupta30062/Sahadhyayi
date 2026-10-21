@@ -219,14 +219,24 @@ const BookExpert = () => {
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
 
+  const handleClose = useCallback(() => {
+    // Use one close path for touch, mouse, keyboard, and the visible close control.
+    // Closing must not clear the conversation; reopening returns to the same session.
+    stopSpeech();
+    closeChat();
+  }, [closeChat, stopSpeech]);
+
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") closeChat();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        handleClose();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, closeChat]);
+  }, [isOpen, handleClose]);
 
   const handleSend = (prompt?: string) => {
     const text = (prompt ?? input).trim();
@@ -302,7 +312,7 @@ const BookExpert = () => {
       tabIndex={-1}
       aria-label="Close Reading Room"
       title="Close Reading Room"
-      onClick={() => { stopSpeech(); closeChat(); }}
+      onClick={handleClose}
       className="fixed inset-0 z-40 cursor-default bg-black/25 backdrop-blur-[1px] focus-visible:outline-none sm:cursor-pointer sm:bg-transparent sm:backdrop-blur-0"
     />
     <section
@@ -343,7 +353,7 @@ const BookExpert = () => {
             </button>
             <button
               type="button"
-              onClick={() => { stopSpeech(); closeChat(); }}
+              onClick={handleClose}
               aria-label="Close Reading Room"
               title="Close Reading Room"
               className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-background px-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
