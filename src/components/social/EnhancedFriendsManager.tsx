@@ -21,7 +21,7 @@ export const EnhancedFriendsManager = () => {
   const { toast } = useToast();
 
   // Use the improved search hook with debouncing
-  const { data: searchResults = [], isLoading: isSearching, error: searchError, refetch: refetchSearch } = useUserSearch(searchTerm);
+  const { data: searchResults = [], isLoading: isSearching, isDebouncing, error: searchError, refetch: refetchSearch } = useUserSearch(searchTerm);
   const { data: allUsers = [], isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useAllUsers();
   const { data: friends = [], isLoading: isLoadingFriends, error: friendsError, refetch: refetchFriends } = useFriends();
   const { data: friendRequests = [], isLoading: isLoadingRequests, error: friendRequestsError, refetch: refetchFriendRequests } = useFriendRequests();
@@ -178,7 +178,7 @@ export const EnhancedFriendsManager = () => {
                 <div className="text-sm text-muted-foreground bg-brand-primary/5 px-4 py-2 rounded-lg border border-brand-primary/20" aria-live="polite">
                   {searchTerm.trim().length < 2 ? (
                     <span>Enter at least 2 characters to search readers.</span>
-                  ) : isSearching ? (
+                  ) : (isSearching || isDebouncing) ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin text-brand-primary" />
                       <span>Searching for “{searchTerm.trim()}”…</span>
@@ -288,6 +288,11 @@ export const EnhancedFriendsManager = () => {
               ) : followedReadersError ? (
                 <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
                   Could not load your Following list. Please try again later.
+                </div>
+              ) : followedReadersError ? (
+                <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                  <p>Could not load your Following list.</p>
+                  <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => void refetchFollowedReaders()}>Retry</Button>
                 </div>
               ) : followedReaders.length > 0 ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
