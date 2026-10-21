@@ -9,6 +9,22 @@ const migration = readFileSync(
   'utf8',
 );
 
+const postAudienceMigration = readFileSync(
+  new URL(
+    '../../supabase/migrations/20261020130000_add_post_audiences.sql',
+    import.meta.url,
+  ),
+  'utf8',
+);
+
+const postAudienceCleanup = readFileSync(
+  new URL(
+    '../../supabase/migrations/20261022090000_remove_legacy_permissive_posts_policy.sql',
+    import.meta.url,
+  ),
+  'utf8',
+);
+
 const groupDiscoveryHardening = readFileSync(
   new URL(
     '../../supabase/migrations/20261020180000_fix_group_discovery_and_anon_grants.sql',
@@ -18,16 +34,19 @@ const groupDiscoveryHardening = readFileSync(
 );
 
 describe('social feed and reading group RLS policies', () => {
-  it('makes posts visible to authenticated readers without restoring anonymous visibility', () => {
+  it('replaces the historical broad feed rule with audience-scoped post visibility', () => {
+    // This historical migration introduced authenticated-wide visibility; the later
+    // audience migration and cleanup must leave only the audience-aware SELECT rule.
     expect(migration).toMatch(
       /CREATE POLICY "Authenticated users can view social feed posts"\s+ON public\.posts\s+FOR SELECT\s+TO authenticated\s+USING \(true\)/i,
     );
-    expect(migration).toMatch(/DROP POLICY IF EXISTS "Anyone can view posts"/i);
     expect(migration).toMatch(/GRANT SELECT, INSERT, UPDATE, DELETE ON public\.posts TO authenticated/i);
     expect(migration).toMatch(
       /CREATE POLICY "Authenticated users can view comments on feed posts"[\s\S]*FOR SELECT[\s\S]*TO authenticated[\s\S]*visible_post\.id = post_comments\.post_id/i,
     );
-    expect(migration).not.toMatch(/\bTO\s+(public|anon)\b/i);
+    expect(postAudienceMigration).toMatch(/CREATE POLICY "Readers can view posts allowed by audience"/i);
+    expect(postAudienceCleanup).toMatch(/DROP POLICY IF EXISTS "Authenticated users can view social feed posts" ON public\.posts/i);
+    expect(postAudienceCleanup).not.toMatch(/CREATE POLICY[\s\S]*USING \(true\)/i);
   });
 
   it('documents the original authenticated group-discovery migration', () => {
