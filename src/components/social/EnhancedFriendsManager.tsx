@@ -132,7 +132,7 @@ export const EnhancedFriendsManager = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="discover" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6 bg-muted/60 rounded-xl p-1">
+            <TabsList className="grid h-auto w-full grid-cols-4 gap-1 mb-6 bg-muted/60 rounded-xl p-1">
               <TabsTrigger value="discover" className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-brand-primary data-[state=active]:shadow-sm">
                 <Search className="w-4 h-4" />
                 <span className="hidden sm:inline">Discover</span>
@@ -339,7 +339,7 @@ export const EnhancedFriendsManager = () => {
                     const friendProfile = friendship.friend_profile;
                     
                     return (
-                      <div key={friendship.id} className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
+                      <div key={friendship.id} className="flex flex-col gap-3 p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-3">
                           <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
                             <AvatarImage src={friendProfile?.profile_photo_url || ''} />
@@ -410,7 +410,7 @@ export const EnhancedFriendsManager = () => {
                         Incoming Requests ({incomingRequests.length})
                       </h3>
                       {incomingRequests.map((request) => (
-                        <div key={request.id} className="flex items-center justify-between p-3 bg-card border border-brand-primary/20 rounded-xl">
+                        <div key={request.id} className="flex flex-col gap-3 p-3 bg-card border border-brand-primary/20 rounded-xl sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
                               <AvatarImage src={request.requester_profile?.profile_photo_url || ''} />
@@ -430,12 +430,12 @@ export const EnhancedFriendsManager = () => {
                               </p>
                             </div>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex w-full gap-2 sm:w-auto">
                             <Button
                               size="sm"
                               onClick={() => handleRespondToRequest(request.id, 'accepted', request.requester_profile?.full_name || 'User')}
                               disabled={respondToFriendRequest.isPending}
-                              className="bg-gradient-button text-white hover:opacity-95 rounded-lg"
+                              className="flex-1 bg-gradient-button text-white hover:opacity-95 rounded-lg sm:flex-none"
                             >
                               <Check className="w-4 h-4 mr-1" />
                               Accept
@@ -445,7 +445,7 @@ export const EnhancedFriendsManager = () => {
                               variant="outline"
                               onClick={() => handleRespondToRequest(request.id, 'rejected', request.requester_profile?.full_name || 'User')}
                               disabled={respondToFriendRequest.isPending}
-                              className="border-destructive/40 text-destructive hover:bg-destructive/10 rounded-lg"
+                              className="flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 rounded-lg sm:flex-none"
                             >
                               <X className="w-4 h-4 mr-1" />
                               Decline
@@ -463,7 +463,7 @@ export const EnhancedFriendsManager = () => {
                         Sent Requests ({outgoingRequests.length})
                       </h3>
                       {outgoingRequests.map((request) => (
-                        <div key={request.id} className="flex items-center justify-between p-3 bg-muted/40 border border-border rounded-xl">
+                        <div key={request.id} className="flex flex-col gap-3 p-3 bg-muted/40 border border-border rounded-xl sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-11 h-11">
                               <AvatarImage src={request.addressee_profile?.profile_photo_url || ''} />
@@ -483,7 +483,7 @@ export const EnhancedFriendsManager = () => {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex w-full items-center justify-between gap-2 sm:w-auto">
                             <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
                               Pending
                             </Badge>
@@ -544,7 +544,7 @@ interface UserCardProps {
 }
 
 const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, isFriend = false, hasPendingRequest = false, onMessage, isFollowing = false, isFollowPending = false, isRequestPending = false, relationshipStateUnavailable = false, followStateUnavailable = false, onToggleFollow }) => (
-  <div className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all">
+  <div className="flex flex-col gap-3 p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all sm:flex-row sm:items-center sm:justify-between">
     <div className="flex items-center gap-3 min-w-0">
       <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
         <AvatarImage
@@ -577,16 +577,16 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
         )}
       </div>
     </div>
-    <div className="flex gap-2 flex-shrink-0">
+    <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap sm:flex-shrink-0">
       <Button
         size="sm"
         variant={isFollowing ? 'secondary' : 'outline'}
         aria-label={isFollowing ? `Unfollow ${user.full_name || 'reader'}` : `Follow ${user.full_name || 'reader'}`}
         disabled={isFollowPending || followStateUnavailable}
         onClick={() => onToggleFollow?.(user.id, user.full_name || 'Reader', isFollowing)}
-        className={isFollowing
-          ? 'rounded-lg bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/15'
-          : 'rounded-lg border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10'}
+        className={`flex-1 sm:flex-none rounded-lg ${isFollowing
+          ? 'bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/15'
+          : 'border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10'}`}
       >
         {isFollowing ? <Check className="w-4 h-4 mr-1" /> : <Users className="w-4 h-4 mr-1" />}
         {isFollowing ? 'Following' : 'Follow'}
@@ -600,7 +600,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, onSendRequest, getInitials, i
           aria-label={`Send friend request to ${user.full_name || 'user'}`}
           onClick={() => onSendRequest(user.id, user.full_name || 'User')}
           disabled={isRequestPending}
-          className="border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg"
+          className="flex-1 border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 rounded-lg sm:flex-none"
         >
           {isRequestPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <UserPlus className="w-4 h-4 mr-1" />}
           {isRequestPending ? 'Sending…' : 'Add'}
