@@ -636,7 +636,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
                                     {typeof ((room as any).participants_count ?? (room as any).active_readers_count) === 'number'
                                       ? `${(room as any).participants_count ?? (room as any).active_readers_count} in room`
-                                      : 'Active now'}
+                                      : 'Room available'}
                                   </p>
                                 </div>
                               </div>
@@ -769,7 +769,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                                   {reader.full_name}
                                 </p>
                                 <p className="truncate text-[10px] text-[#636B65] dark:text-[#A5ADA6]">
-                                  Reads · {reader.username ? `@${reader.username}` : 'Literature'}
+                                  Reads · {reader.username ? `@${reader.username}` : 'Sahadhyayi reader'}
                                 </p>
                               </div>
                             </div>
