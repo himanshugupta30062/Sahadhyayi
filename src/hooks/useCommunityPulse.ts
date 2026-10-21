@@ -562,6 +562,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       try {
         let statsPayload: PulseStats | null = null;
 
+        if (!isAdmin) {
+          const { data, error } = await supabase.functions.invoke('public-community-stats', { body: { timeframe } });
+          if (error || !data || typeof data !== 'object') throw new Error(error?.message || 'Public stats unavailable');
+          statsPayload = parseStatsPayload(data, timeframe);
+        } else {
         // Tier 1: Authoritative dual-table database RPC
         try {
           const { data, error: rpcError } = await supabase.rpc('get_dual_table_website_analytics', {
@@ -649,6 +654,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             // ignore storage quota error
           }
         }
+        }
       } catch (err: any) {
         if (isMountedRef.current && currentSeq === requestSeqRef.current) {
           // Preserve last successful result when refresh fails, but label it as stale
@@ -661,7 +667,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         }
       }
     },
-    [timeframe, fetchDatabaseFallbackStats, parseStatsPayload, safeCount]
+    [timeframe, isAdmin, fetchDatabaseFallbackStats, parseStatsPayload, safeCount]
   );
 
   // 3. Fetch Recent Visitors (Strictly Admin-Only)
