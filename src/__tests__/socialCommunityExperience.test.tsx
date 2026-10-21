@@ -297,6 +297,48 @@ describe('Phase 6: Social Media & Reading Community Experience', () => {
       expect(loadMore).toHaveBeenCalledTimes(1);
     });
 
+    it('shows retryable error when margin notes fail instead of showing an empty state', () => {
+      const retry = vi.fn();
+      mockUseMarginNotes.mockReturnValue({
+        data: [],
+        isLoading: false,
+        error: new Error('Permission denied'),
+        refetch: retry,
+      });
+
+      render(
+        <MemoryRouter>
+          <EnhancedSocialFeed />
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /margin notes/i }));
+      expect(screen.getByText('Margin notes could not be loaded.')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+      expect(retry).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows retryable error when chapter threads fail instead of showing an empty state', () => {
+      const retry = vi.fn();
+      mockUseSpoilerThreads.mockReturnValue({
+        data: [],
+        isLoading: false,
+        error: new Error('Request failed'),
+        refetch: retry,
+      });
+
+      render(
+        <MemoryRouter>
+          <EnhancedSocialFeed />
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /chapter threads/i }));
+      expect(screen.getByText('Chapter threads could not be loaded.')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+      expect(retry).toHaveBeenCalledTimes(1);
+    });
+
     it('toggles comment section when clicking comments button', () => {
       render(
         <MemoryRouter>
