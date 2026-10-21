@@ -31,6 +31,8 @@ describe('social post feed visibility policy', () => {
     expect(cleanupMigration).toMatch(
       /DROP POLICY IF EXISTS "Users can view their own posts and friends' posts" ON public\.posts/i
     );
+    expect(cleanupMigration).toMatch(/Expected audience-scoped posts SELECT policy is missing/);
+    expect(cleanupMigration).toMatch(/A legacy permissive posts SELECT policy remains after cleanup/);
     expect(cleanupMigration).not.toMatch(/CREATE POLICY[\s\S]*USING \(true\)/i);
     expect(cleanupMigration).not.toMatch(/\bTO\s+(public|anon)\b/i);
   });
