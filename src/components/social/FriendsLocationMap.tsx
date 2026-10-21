@@ -79,7 +79,7 @@ function createFriendInfoContent(profile: SharedProfile): HTMLElement {
 
 export const FriendsLocationMap: React.FC = () => {
   const { user } = useAuth();
-  const { data: friends = [], refetch } = useFriends();
+  const { data: friends = [], isLoading: isLoadingFriends, error: friendsError, refetch } = useFriends();
 
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -482,6 +482,17 @@ export const FriendsLocationMap: React.FC = () => {
             className="h-[400px] w-full overflow-hidden rounded-xl border border-[#E8E2D9] dark:border-[#29332D]"
           />
 
+          {isLoadingFriends ? (
+            <div className="flex items-center justify-center gap-2 py-3 text-sm text-[#636B65] dark:text-[#A5ADA6]" role="status">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading friend locations…
+            </div>
+          ) : friendsError ? (
+            <div className="rounded-xl border border-red-300/60 bg-red-50 p-4 dark:border-red-900/60 dark:bg-red-950/20" role="alert">
+              <p className="text-sm text-red-700 dark:text-red-300">Friend locations could not be loaded. This may be a connection or permission issue.</p>
+              <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => void refetch()}>Try again</Button>
+            </div>
+          ) : null}
+
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 text-sm text-[#636B65] dark:text-[#A5ADA6]">
               <Users className="h-4 w-4" />
@@ -504,7 +515,7 @@ export const FriendsLocationMap: React.FC = () => {
             </div>
           </div>
 
-          {friendsWithLocation.length === 0 && (
+          {!isLoadingFriends && !friendsError && friendsWithLocation.length === 0 && (
             <div className="rounded-xl border border-dashed border-[#E8E2D9] py-6 text-center dark:border-[#29332D]">
               <MapPin className="mx-auto mb-2 h-6 w-6 text-[#636B65] dark:text-[#A5ADA6]" />
               <p className="text-sm font-medium">No friends are currently sharing their location with you</p>
