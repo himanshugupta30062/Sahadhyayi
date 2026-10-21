@@ -36,7 +36,7 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
   const { toast } = useToast();
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
-  const { data: comments = [], isLoading } = usePostComments(postId);
+  const { data: comments = [], isLoading, error: commentsError, refetch: refetchComments } = usePostComments(postId);
   const createComment = useCreateComment();
   const toggleLike = useToggleCommentLike(postId);
 
@@ -136,8 +136,19 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-4">
+      <div className="flex justify-center py-4" role="status" aria-label="Loading comments">
         <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (commentsError) {
+    return (
+      <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-center" role="alert">
+        <p className="mb-3 text-sm text-destructive">Comments could not be loaded. They are not necessarily empty.</p>
+        <Button type="button" variant="outline" size="sm" onClick={() => void refetchComments()}>
+          Retry comments
+        </Button>
       </div>
     );
   }
