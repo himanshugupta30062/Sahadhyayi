@@ -470,6 +470,43 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     expect(result.current.error).toBeNull();
   });
 
+  it('uses an exact timeframe-filtered page-view count when public stats omit period views', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        eligibleBooks: 830,
+        registeredReaders: 4,
+        totalVisits: 5000,
+        lastUpdated: '2026-10-17T13:04:50.447121+00:00',
+      },
+      error: null,
+    });
+
+    const countQuery: any = {
+      eq: vi.fn(() => countQuery),
+      gte: vi.fn(() => countQuery),
+      then: (resolve: (value: { count: number; error: null }) => unknown) =>
+        Promise.resolve({ count: 18, error: null }).then(resolve),
+    };
+    mockFrom.mockImplementation(() => ({
+      select: vi.fn(() => countQuery),
+    }));
+
+    const { result } = renderHook(() => useCommunityPulse(true));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('public-community-stats', {
+      body: { timeframe: '24h' },
+    });
+    expect(mockFrom).toHaveBeenCalledWith('website_visits');
+    expect(countQuery.eq).toHaveBeenCalledWith('event_type', 'pageview');
+    expect(countQuery.gte).toHaveBeenCalledWith('visited_at', expect.any(String));
+    expect(result.current.stats?.pageViews).toBe(18);
+    expect(result.current.stats?.partialData).toBe(true);
+  });
+
   // 10. Dialog Metric View Switching (Page views vs Unique visitors)
   it('allows switching metric view between page views and unique visitors in chart', async () => {
     mockFunctionsInvoke.mockResolvedValue({
