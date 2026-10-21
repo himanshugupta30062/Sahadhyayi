@@ -157,6 +157,8 @@ const BookExpert = () => {
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const welcomeOnly = messages.length === 1 && messages[0]?.sender === "bot";
@@ -195,22 +197,41 @@ const BookExpert = () => {
   }, [messages, loading, isOpen]);
 
   useEffect(() => {
-    if (isOpen) inputRef.current?.focus();
-    else stopSpeech();
+    if (isOpen) {
+      wasOpenRef.current = true;
+      // Avoid opening the mobile keyboard automatically; focus only on larger screens.
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(min-width: 640px)").matches) {
+        inputRef.current?.focus();
+      }
+      return;
+    }
+    stopSpeech();
+    if (wasOpenRef.current) {
+      launcherRef.current?.focus();
+      wasOpenRef.current = false;
+    }
   }, [isOpen, stopSpeech]);
 
   useEffect(() => () => {
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
 
+  const handleClose = useCallback(() => {
+    stopSpeech();
+    closeChat();
+  }, [closeChat, stopSpeech]);
+
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") closeChat();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        handleClose();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, closeChat]);
+  }, [isOpen, handleClose]);
 
   const handleSend = (prompt?: string) => {
     const text = (prompt ?? input).trim();
@@ -258,6 +279,7 @@ const BookExpert = () => {
   if (!isOpen) {
     return (
       <button
+        ref={launcherRef}
         type="button"
         onClick={toggleChat}
         aria-label="Open the Sahadhyayi Reading Room"
@@ -279,29 +301,38 @@ const BookExpert = () => {
   }
 
   return (
+    <>
+    <button
+      type="button"
+      tabIndex={-1}
+      aria-label="Close Reading Room"
+      title="Close Reading Room"
+      onClick={handleClose}
+      className="fixed inset-0 z-40 cursor-default bg-black/25 backdrop-blur-[1px] focus-visible:outline-none sm:cursor-pointer sm:bg-transparent sm:backdrop-blur-0"
+    />
     <section
       id="book-expert-panel"
       role="dialog"
       aria-modal="false"
       aria-labelledby="book-expert-title"
-      className="fixed inset-x-0 bottom-0 z-50 flex h-[min(820px,100dvh)] min-h-0 flex-col overflow-hidden border border-border/80 bg-background text-foreground shadow-2xl shadow-black/20 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(780px,calc(100dvh-2.5rem))] sm:w-[min(500px,calc(100vw-2.5rem))] sm:rounded-[1.6rem]"
+      className="fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex h-[min(70dvh,600px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-background text-foreground shadow-2xl shadow-black/20 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(650px,calc(100dvh-3rem))] sm:w-[min(400px,calc(100vw-3rem))] sm:rounded-2xl"
     >
       <header className="relative shrink-0 overflow-hidden border-b border-border/70 bg-card">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 via-primary to-emerald-500" aria-hidden="true" />
-        <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-4 sm:px-5">
+        <div className="flex items-center justify-between gap-2 px-3 pb-2.5 pt-3 sm:px-4">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/70 bg-background shadow-sm">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-background shadow-sm">
               <img src={bookIcon} alt="" className="h-full w-full object-cover" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 id="book-expert-title" className="truncate text-base font-semibold tracking-tight">The Reading Room</h2>
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-300">
+                <h2 id="book-expert-title" className="truncate text-sm font-semibold tracking-tight">The Reading Room</h2>
+                <span className="hidden shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-300 sm:inline-flex">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
                   Here for readers
                 </span>
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">A little curiosity can open a whole world.</p>
+              <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">A little curiosity can open a whole world.</p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -311,17 +342,19 @@ const BookExpert = () => {
               disabled={loading || messages.length <= 1}
               aria-label="Start a new conversation"
               title="New conversation"
-              className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="hidden rounded-xl p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 sm:inline-flex"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               type="button"
-              onClick={() => { stopSpeech(); closeChat(); }}
+              onClick={handleClose}
               aria-label="Close Reading Room"
-              className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+              title="Close Reading Room"
+              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-background px-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="h-4 w-4" aria-hidden="true" />
+              <span>Close</span>
             </button>
           </div>
         </div>
@@ -578,6 +611,7 @@ const BookExpert = () => {
         <p className="mt-2 text-center text-[10px] text-muted-foreground">Thoughtful answers, grounded in the library when sources are available.</p>
       </form>
     </section>
+    </>
   );
 };
 
