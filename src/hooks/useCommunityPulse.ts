@@ -570,7 +570,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
       // Wait until the current auth state is known before choosing a data source.
       if (checkingAdmin) {
-        setLoading(false);
+        setLoading(true);
         return;
       }
 
