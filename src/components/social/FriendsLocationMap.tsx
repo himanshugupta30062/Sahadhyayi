@@ -284,7 +284,9 @@ export const FriendsLocationMap: React.FC = () => {
   const centerOnMe = useCallback(async () => {
     try {
       const position = await getCurrentLocation();
-      setUserLocation(position);
+      // This is a one-off local centering action, not a sharing toggle or saved location.
+      // Don't update the persistent-sharing state, which would otherwise rebuild markers
+      // and immediately snap the map back to the friends' bounds.
       if (mapInstanceRef.current) {
         mapInstanceRef.current.setCenter(position);
         mapInstanceRef.current.setZoom(12);
