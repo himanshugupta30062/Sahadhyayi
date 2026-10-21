@@ -575,7 +575,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           throw new Error('Public website analytics RPC returned an invalid payload');
         }
 
-        let statsPayload = parseStatsPayload(publicStats, timeframe);
+        statsPayload = parseStatsPayload(publicStats, timeframe);
         try {
           const { data: engagement, error: engagementError } = await supabase.rpc('get_website_engagement_stats', {
             p_timeframe: timeframe,
