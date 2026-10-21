@@ -609,6 +609,27 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
               throw new Error(publicStatsError?.message || 'Public stats unavailable');
             }
             publicStats = parseStatsPayload(data, timeframe);
+
+            // Some deployed generations returned lifetime counts but omitted period views.
+            // Recover only from an exact count filtered to the selected timeframe.
+            if (publicStats.pageViews === null &&
+                (publicStats.totalMembers !== null || publicStats.lifetimeVisits !== null)) {
+              const periodStart = timeframe === '30d'
+                ? new Date(Date.now() - 30 * 86400000).toISOString()
+                : timeframe === '7d'
+                  ? new Date(Date.now() - 7 * 86400000).toISOString()
+                  : new Date(Date.now() - 86400000).toISOString();
+              const measuredPeriodViews = await safeCount(
+                'website_visits',
+                'visited_at',
+                periodStart,
+                'event_type',
+                'pageview'
+              );
+              if (measuredPeriodViews !== null) {
+                publicStats = { ...publicStats, pageViews: measuredPeriodViews, partialData: true };
+              }
+            }
           } catch (publicEndpointError) {
             // Preserve a known public result on refresh failure. Only use count-only
             // database fallbacks when no public snapshot exists; never substitute
