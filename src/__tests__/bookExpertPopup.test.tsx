@@ -1,9 +1,11 @@
 /** @vitest-environment jsdom */
 
 import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+
+afterEach(() => cleanup());
 
 vi.mock("@/contexts/book-expert.utils", async () => {
   const ReactModule = await import("react");
