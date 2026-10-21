@@ -305,6 +305,20 @@ export const ReadersNearMeMap: React.FC = () => {
       setShowLocationModal(false);
       toast.success('Location sharing enabled. Only friends who also consent can see it.');
     } catch (error) {
+      // record_location_consent() also sets location_sharing=true. If the browser
+      // denies GPS or saving coordinates fails, roll that flag back so a failed
+      // consent flow cannot leave the UI claiming sharing is on.
+      try {
+        const { error: rollbackError } = await supabase
+          .from('profiles')
+          .update({ location_sharing: false, location_lat: null, location_lng: null })
+          .eq('id', user.id);
+        if (rollbackError) console.error('Could not roll back incomplete location sharing:', rollbackError);
+      } catch (rollbackError) {
+        console.error('Could not roll back incomplete location sharing:', rollbackError);
+      }
+      setIsLocationSharing(false);
+      setUserLocation(null);
       const message = error instanceof Error ? error.message : 'Unable to enable location sharing.';
       setLocationError(message);
       setShowLocationModal(true);
