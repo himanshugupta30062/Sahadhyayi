@@ -201,7 +201,7 @@ const BookExpert = () => {
       wasOpenRef.current = true;
       // Don't summon the mobile keyboard just because the Reading Room opened.
       // Readers can tap the composer when they are ready to type.
-      if (typeof window !== "undefined" && window.matchMedia("(min-width: 640px)").matches) {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(min-width: 640px)").matches) {
         inputRef.current?.focus();
       }
       return;
@@ -299,10 +299,11 @@ const BookExpert = () => {
     <>
     <button
       type="button"
+      tabIndex={-1}
       aria-label="Close Reading Room"
       title="Close Reading Room"
       onClick={() => { stopSpeech(); closeChat(); }}
-      className="fixed inset-0 z-40 cursor-default bg-black/25 backdrop-blur-[1px] focus-visible:outline-none sm:bg-transparent sm:backdrop-blur-0"
+      className="fixed inset-0 z-40 cursor-default bg-black/25 backdrop-blur-[1px] focus-visible:outline-none sm:cursor-pointer sm:bg-transparent sm:backdrop-blur-0"
     />
     <section
       id="book-expert-panel"
