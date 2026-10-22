@@ -25,7 +25,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, username, profile_photo_url, bio, stories_read_count, stories_written_count, last_seen, writing_frequency')
+        .select('id, full_name, username, profile_photo_url, bio, stories_read_count, stories_written_count, writing_frequency')
         .eq('id', userId)
         .single();
       
