@@ -17,7 +17,8 @@ describe('social experience redesign foundations', () => {
     expect(page).toMatch(/aria-label="Reading spaces"/);
     expect(page).toMatch(/value: 'threads'/);
     expect(page).toMatch(/value: 'margins'/);
-    expect(page).toMatch(/value: 'groups'/);
+    expect(page).toMatch(/aria-label="Social navigation"/);
+    expect(page).toMatch(/aria-pressed={activeTab === 'groups'}/);
   });
 
   it('validates uploaded image MIME type and size and exposes an alt-text field', () => {
