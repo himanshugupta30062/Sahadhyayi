@@ -248,8 +248,9 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
         </MemoryRouter>
       );
 
-      // Feature cards replace the persistent nested navigation menu.
-      fireEvent.click(screen.getByRole('button', { name: /Book discussions/i }));
+      // Open the compact Reading spaces menu and enter chapter discussions.
+      fireEvent.click(screen.getByText(/Explore reading spaces/i));
+      fireEvent.click(screen.getByRole('button', { name: /Chapter discussions/i }));
 
       expect(screen.getByText('Chapter-Locked Discussions')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Community feed/i })).toBeInTheDocument();
