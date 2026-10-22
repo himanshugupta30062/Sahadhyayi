@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,7 +36,10 @@ import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { useAuth } from '@/contexts/authHelpers';
 import { Quote, Lock, Sparkles } from 'lucide-react';
 
-const EmbeddedOriginalPost: React.FC<{ post?: SocialPost | null }> = ({ post }) => {
+const EmbeddedOriginalPost: React.FC<{
+  post?: SocialPost | null;
+  onImageClick?: (src: string, alt: string) => void;
+}> = ({ post, onImageClick }) => {
   if (!post) return null;
 
   const profile = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
@@ -62,14 +66,23 @@ const EmbeddedOriginalPost: React.FC<{ post?: SocialPost | null }> = ({ post }) 
       <p className="text-sm text-[#1C201D] dark:text-[#F3F0E7] whitespace-pre-wrap">{post.content}</p>
       {post.image_url && (
         <div className="mt-2 rounded-lg overflow-hidden border border-[#E8E2D9] dark:border-[#29332D]">
-          <img
-            src={post.image_url}
-            alt={post.image_alt?.trim() || "Shared reading photo"}
-            onError={(e) => {
-              (e.currentTarget as HTMLElement).style.display = 'none';
-            }}
-            className="w-full max-h-72 object-cover"
-          />
+          <button
+            type="button"
+            onClick={() => onImageClick?.(post.image_url as string, post.image_alt?.trim() || 'Shared reading photo')}
+            aria-label={`View image: ${post.image_alt?.trim() || 'Shared reading photo'}`}
+            className="block w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
+          >
+            <img
+              src={post.image_url}
+              alt={post.image_alt?.trim() || "Shared reading photo"}
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                (e.currentTarget as HTMLElement).style.display = 'none';
+              }}
+              className="block max-h-72 w-full bg-[#F4EFEA] object-contain dark:bg-[#0B0D0C]"
+            />
+          </button>
         </div>
       )}
       {book && (
@@ -95,6 +108,7 @@ export const EnhancedSocialFeed = () => {
   const queryClient = useQueryClient();
   const requestedPostId = searchParams.get('post');
   const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
+  const [imageViewer, setImageViewer] = useState<{ src: string; alt: string } | null>(null);
   const [streamMode, setStreamMode] = useState<'community' | 'following'>('community');
   const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
   const toggleLike = useTogglePostLike();
@@ -123,7 +137,7 @@ export const EnhancedSocialFeed = () => {
   // audience-aware RLS boundary as the feed, so an inaccessible post is never
   // rendered merely because someone knows its identifier.
   useEffect(() => {
-    if (!requestedPostId || !user?.id || streamMode !== 'community') return;
+    if (!requestedPostId || !user?.id || streamMode !== 'community' || isLoading) return;
 
     let cancelled = false;
     let scrollTimer: number | undefined;
@@ -175,7 +189,7 @@ export const EnhancedSocialFeed = () => {
       if (scrollTimer !== undefined) window.clearTimeout(scrollTimer);
       if (clearTimer !== undefined) window.clearTimeout(clearTimer);
     };
-  }, [requestedPostId, user?.id, streamMode, queryClient]);
+  }, [requestedPostId, user?.id, streamMode, queryClient, isLoading]);
 
   const handleLike = (post: SocialPost) => {
     if (!user) return;
@@ -498,7 +512,10 @@ export const EnhancedSocialFeed = () => {
 
                   {/* Embedded original post (when this is a repost) */}
                   {isRepost && post.reposted_post && (
-                    <EmbeddedOriginalPost post={post.reposted_post} />
+                    <EmbeddedOriginalPost
+                      post={post.reposted_post}
+                      onImageClick={(src, alt) => setImageViewer({ src, alt })}
+                    />
                   )}
 
                   {/* Book Card (only on non-reposts) */}
@@ -552,15 +569,27 @@ export const EnhancedSocialFeed = () => {
 
                   {/* Image (only on non-reposts) */}
                   {!isRepost && post.image_url && (
-                    <div className="mt-3 rounded-xl overflow-hidden border border-[#E8E2D9] dark:border-[#29332D]">
-                      <img
-                        src={post.image_url}
-                        alt={post.image_alt?.trim() || "Post attachment"}
-                        onError={(e) => {
-                          (e.currentTarget as HTMLElement).style.display = 'none';
-                        }}
-                        className="block w-full max-h-[520px] object-contain bg-[#F4EFEA] dark:bg-[#0B0D0C]"
-                      />
+                    <div className="mt-3 overflow-hidden rounded-xl border border-[#E8E2D9] dark:border-[#29332D]">
+                      <button
+                        type="button"
+                        onClick={() => setImageViewer({
+                          src: post.image_url as string,
+                          alt: post.image_alt?.trim() || 'Post attachment',
+                        })}
+                        aria-label={`View image: ${post.image_alt?.trim() || 'Post attachment'}`}
+                        className="block w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
+                      >
+                        <img
+                          src={post.image_url}
+                          alt={post.image_alt?.trim() || "Post attachment"}
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                          }}
+                          className="block max-h-[520px] w-full bg-[#F4EFEA] object-contain dark:bg-[#0B0D0C]"
+                        />
+                      </button>
                     </div>
                   )}
                 </div>
@@ -649,6 +678,23 @@ export const EnhancedSocialFeed = () => {
             </div>
           )}
         </>
+      )}
+
+      {imageViewer && (
+        <Dialog open={Boolean(imageViewer)} onOpenChange={(open) => { if (!open) setImageViewer(null); }}>
+          <DialogContent className="w-[calc(100vw-1.5rem)] max-w-5xl border-[#E8E2D9] bg-[#FAF7F2] p-3 dark:border-[#29332D] dark:bg-[#111614] sm:p-5">
+            <DialogHeader>
+              <DialogTitle className="text-sm text-[#1C201D] dark:text-[#F3F0E7]">
+                {imageViewer.alt || 'Post image'}
+              </DialogTitle>
+            </DialogHeader>
+            <img
+              src={imageViewer.src}
+              alt={imageViewer.alt}
+              className="max-h-[78vh] w-full rounded-lg object-contain"
+            />
+          </DialogContent>
+        </Dialog>
       )}
 
       {selectedPost && (
