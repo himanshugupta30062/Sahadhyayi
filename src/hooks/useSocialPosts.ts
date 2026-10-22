@@ -11,6 +11,11 @@ export interface SocialPost {
   id: string;
   user_id: string;
   content: string;
+  post_kind?: 'post' | 'quote';
+  quote_text?: string | null;
+  quote_author?: string | null;
+  quote_source?: string | null;
+  quote_context?: string | null;
   image_url?: string;
   book_id?: string;
   feeling_emoji?: string;
@@ -453,6 +458,11 @@ export const useCreatePost = () => {
   return useMutation({
     mutationFn: async (postData: {
       content: string;
+      post_kind?: 'post' | 'quote';
+      quote_text?: string;
+      quote_author?: string;
+      quote_source?: string;
+      quote_context?: string;
       image_url?: string;
       book_id?: string;
       feeling_emoji?: string;
@@ -499,9 +509,19 @@ export const useCreatePost = () => {
           ? postData.book_id.trim()
           : null;
 
+      const normalizedQuote = postData.post_kind === 'quote' ? postData.quote_text?.trim() || '' : '';
+      if (postData.post_kind === 'quote' && (!normalizedQuote || normalizedQuote.length > 500)) {
+        throw new Error('A quote card needs a quotation between 1 and 500 characters.');
+      }
+
       const payload = {
         content: postData.content.trim(),
         user_id: user.id,
+        post_kind: postData.post_kind || 'post',
+        quote_text: normalizedQuote || null,
+        quote_author: postData.post_kind === 'quote' ? postData.quote_author?.trim() || null : null,
+        quote_source: postData.post_kind === 'quote' ? postData.quote_source?.trim() || null : null,
+        quote_context: postData.post_kind === 'quote' ? postData.quote_context?.trim() || null : null,
         book_id: validBookId,
         feeling_emoji: postData.feeling_emoji?.trim() || null,
         feeling_label: postData.feeling_label?.trim() || null,
