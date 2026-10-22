@@ -33,8 +33,10 @@ SELECT
   writing_frequency,
   stories_read_count,
   stories_written_count,
+  NULL::timestamptz AS last_seen,
+  created_at,
   tags_used,
-  created_at
+  updated_at
 FROM public.profiles;
 
 REVOKE ALL ON TABLE public.public_profiles FROM PUBLIC;
