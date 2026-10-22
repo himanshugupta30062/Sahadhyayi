@@ -204,11 +204,10 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       // The global site header owns site navigation; this page stays content-first.
       expect(screen.getByRole('heading', { name: /Your Reading Community/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Start a conversation/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Read together/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Book discussions/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Shared marginalia/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Discover readers/i })).toBeInTheDocument();
-      expect(screen.getByText(/More to explore/i)).toBeInTheDocument();
+      expect(screen.getByText(/Explore reading spaces/i)).toBeInTheDocument();
+      // Reading destinations stay available without a permanent shortcut-card grid.
+      expect(screen.queryByRole('button', { name: /Read together/i })).not.toBeInTheDocument();
+      expect(screen.queryByText(/More to explore/i)).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Toggle search/i })).not.toBeInTheDocument();
       expect(screen.queryByPlaceholderText(/Search books, authors, discussions…/i)).not.toBeInTheDocument();
       expect(screen.getByTestId('enhanced-social-feed')).toBeInTheDocument();
