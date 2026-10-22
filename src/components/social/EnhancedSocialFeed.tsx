@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { resolveSocialPostImages } from '@/lib/socialPostMedia';
@@ -111,6 +111,8 @@ export const EnhancedSocialFeed = () => {
   const [imageViewer, setImageViewer] = useState<{ src: string; alt: string } | null>(null);
   const [streamMode, setStreamMode] = useState<'community' | 'following'>('community');
   const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
+  const postsRef = useRef(posts);
+  postsRef.current = posts;
   const toggleLike = useTogglePostLike();
   const toggleRepost = useToggleRepost();
   const deletePost = useDeletePost();
@@ -154,7 +156,7 @@ export const EnhancedSocialFeed = () => {
     let clearTimer: number | undefined;
 
     const revealPost = async () => {
-      const alreadyLoaded = posts.some((post) => post.id === requestedPostId);
+      const alreadyLoaded = postsRef.current.some((post) => post.id === requestedPostId);
       if (!alreadyLoaded) {
         const { data, error: postError } = await supabase
           .from('posts')
@@ -197,7 +199,7 @@ export const EnhancedSocialFeed = () => {
       if (scrollTimer !== undefined) window.clearTimeout(scrollTimer);
       if (clearTimer !== undefined) window.clearTimeout(clearTimer);
     };
-  }, [requestedPostId, user?.id, streamMode, isLoading, posts]);
+  }, [requestedPostId, user?.id, streamMode, isLoading]);
 
   const handleLike = (post: SocialPost) => {
     if (!user) return;
