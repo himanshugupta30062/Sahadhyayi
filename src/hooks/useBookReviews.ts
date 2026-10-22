@@ -38,9 +38,9 @@ export function useBookReviews(bookId: string | undefined) {
         console.warn('Could not load public reviewer profiles:', profilesError.message);
       }
       const byId = new Map(
-        (profiles ?? [])
-          .filter((profile) => profile.id !== null)
-          .map((profile) => [{ ...profile, id: profile.id as string }].map((entry) => [entry.id, entry] as const))
+        (profiles ?? []).flatMap((profile) =>
+          profile.id ? [[profile.id, { ...profile, id: profile.id }] as const] : []
+        )
       );
       return rows.map((row) => ({ ...row, reviewer: byId.get(row.user_id) || null }));
     },
