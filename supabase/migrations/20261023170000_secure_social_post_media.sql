@@ -54,7 +54,5 @@ USING (
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
 
-COMMENT ON TABLE storage.buckets IS
-  'Social-post media is stored in the private social-post-media bucket; older image_url values in the public books bucket require a separate legacy-media migration.';
 
 NOTIFY pgrst, 'reload schema';
