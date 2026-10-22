@@ -43,11 +43,8 @@ export const useUserProfile = () => {
       if (!user) return null;
       
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle();
+        // Private fields are intentionally unavailable through direct table SELECT.
+        const { data, error } = await (supabase as any).rpc('get_my_profile');
           
         if (error) {
           console.error('Error fetching user profile:', error);
@@ -56,8 +53,13 @@ export const useUserProfile = () => {
         
         if (!data) return null;
 
+        const profileData = (data && typeof data === 'object' && !Array.isArray(data))
+          ? data
+          : null;
+        if (!profileData || profileData.id !== user.id) return null;
+
         const normalized: UserProfile = {
-          ...data,
+          ...profileData,
           name: (data as any).name || data.full_name || '',
           full_name: data.full_name || (data as any).name || '',
           profile_picture_url: (data as any).profile_picture_url || data.profile_photo_url || null,
@@ -120,7 +122,7 @@ export const useUpsertUserProfile = () => {
             id: user.id,
             updated_at: new Date().toISOString()
           }, { onConflict: 'id' })
-          .select()
+          .select('id, full_name, username, profile_photo_url, bio, location, writing_frequency, stories_written_count, stories_read_count, tags_used, created_at, updated_at')
           .single();
           
         // Fallback to core profiles schema if database hasn't applied extended columns
@@ -144,7 +146,7 @@ export const useUpsertUserProfile = () => {
           res = await supabase
             .from('profiles')
             .upsert(coreFiltered, { onConflict: 'id' })
-            .select()
+            .select('id, full_name, username, profile_photo_url, bio, location, writing_frequency, stories_written_count, stories_read_count, tags_used, created_at, updated_at')
             .single();
         }
 
@@ -153,7 +155,12 @@ export const useUpsertUserProfile = () => {
           throw res.error;
         }
         
-        const saved = res.data;
+        // Re-read the owner's private fields through the owner-only RPC.
+        const { data: ownProfile, error: ownProfileError } = await (supabase as any).rpc('get_my_profile');
+        if (ownProfileError) throw ownProfileError;
+        const saved = ownProfile && typeof ownProfile === 'object' && !Array.isArray(ownProfile)
+          ? ownProfile
+          : res.data;
         return {
           ...saved,
           name: (saved as any).name || saved.full_name || '',
