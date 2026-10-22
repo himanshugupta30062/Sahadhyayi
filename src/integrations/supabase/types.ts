@@ -2230,6 +2230,11 @@ export type Database = {
           id: string
           image_url: string | null
           likes_count: number
+          post_kind: string
+          quote_author: string | null
+          quote_context: string | null
+          quote_source: string | null
+          quote_text: string | null
           repost_of_id: string | null
           reposts_count: number
           updated_at: string
@@ -2246,6 +2251,11 @@ export type Database = {
           id?: string
           image_url?: string | null
           likes_count?: number
+          post_kind?: string
+          quote_author?: string | null
+          quote_context?: string | null
+          quote_source?: string | null
+          quote_text?: string | null
           repost_of_id?: string | null
           reposts_count?: number
           updated_at?: string
@@ -2262,6 +2272,11 @@ export type Database = {
           id?: string
           image_url?: string | null
           likes_count?: number
+          post_kind?: string
+          quote_author?: string | null
+          quote_context?: string | null
+          quote_source?: string | null
+          quote_text?: string | null
           repost_of_id?: string | null
           reposts_count?: number
           updated_at?: string
