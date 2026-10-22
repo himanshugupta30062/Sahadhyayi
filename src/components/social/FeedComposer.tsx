@@ -11,6 +11,7 @@ import { BookSelectionModal } from './BookSelectionModal';
 import { EmojiPicker } from './EmojiPicker';
 import { useCreatePost } from '@/hooks/useSocialPosts';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 interface SelectedBook {
   id: string;
@@ -39,6 +40,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   const [quoteContext, setQuoteContext] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageAlt, setImageAlt] = useState('');
   const [selectedBook, setSelectedBook] = useState<SelectedBook | null>(null);
   const [selectedFeeling, setSelectedFeeling] = useState<SelectedFeeling | null>(null);
   const [audience, setAudience] = useState<'public' | 'followers' | 'friends' | 'private'>('friends');
@@ -48,16 +50,32 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({ title: 'Image too large', description: 'Please select an image under 5MB', variant: 'destructive' });
-        return;
-      }
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Accept common raster formats; don't trust the filename extension or a generic
+    // image/* browser filter as upload validation.
+    const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
+    if (!allowedImageTypes.has(file.type)) {
+      toast({ title: 'Unsupported image format', description: 'Choose a JPEG, PNG, WebP, or AVIF image.', variant: 'destructive' });
+      event.target.value = '';
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image too large', description: 'Please select an image under 5MB', variant: 'destructive' });
+      event.target.value = '';
+      return;
+    }
+
+    setSelectedImage(file);
+    setImageAlt('');
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.onerror = () => {
+      setSelectedImage(null);
+      setImagePreview(null);
+      toast({ title: 'Could not preview image', description: 'Choose another image or try again.', variant: 'destructive' });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleBookSelect = (book: SelectedBook) => {
@@ -73,6 +91,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   const clearAttachments = () => {
     setSelectedImage(null);
     setImagePreview(null);
+    setImageAlt('');
     setSelectedBook(null);
     setSelectedFeeling(null);
     if (fileInputRef.current) {
@@ -96,25 +115,35 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
     }
 
     setIsPosting(true);
+    let uploadedImagePath: string | null = null;
     try {
       let uploadedImageUrl: string | undefined;
 
-      // Upload image to Supabase Storage if present
+      // New social photos use the dedicated private bucket, not the shared public
+      // books bucket. The database stores an object marker; feed reads resolve it
+      // to a short-lived URL only after storage RLS confirms audience access.
       if (selectedImage) {
-          const { supabase } = await import('@/integrations/supabase/client');
-          const ext = selectedImage.name.split('.').pop() || 'jpg';
-          const path = `user-uploads/${user.id}/${Date.now()}.${ext}`;
-          const { error: uploadError } = await supabase.storage
-            .from('books')
-            .upload(path, selectedImage, { cacheControl: '3600', upsert: false });
-          if (uploadError) {
-            throw new Error('Your photo could not be uploaded. Your draft is still here; please try again.');
-          }
-          const { data: pub } = supabase.storage.from('books').getPublicUrl(path);
-          uploadedImageUrl = pub?.publicUrl;
-          if (!uploadedImageUrl) {
-            throw new Error('Your photo could not be confirmed. Your draft is still here; please try again.');
-          }
+        const extensionByType: Record<string, string> = {
+          'image/jpeg': 'jpg',
+          'image/png': 'png',
+          'image/webp': 'webp',
+          'image/avif': 'avif',
+        };
+        const extension = extensionByType[selectedImage.type];
+        if (!extension) throw new Error('Unsupported image format. Choose JPEG, PNG, WebP, or AVIF.');
+        const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage
+          .from('social-post-media')
+          .upload(path, selectedImage, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: selectedImage.type,
+          });
+        if (uploadError) {
+          throw new Error('Your photo could not be uploaded. Your draft is still here; please try again.');
+        }
+        uploadedImagePath = path;
+        uploadedImageUrl = `storage://social-post-media/${path}`;
       }
 
       await createPost.mutateAsync({
@@ -128,8 +157,11 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
         feeling_emoji: selectedFeeling?.emoji,
         feeling_label: selectedFeeling?.label,
         image_url: uploadedImageUrl,
+        image_alt: selectedImage ? imageAlt.trim().slice(0, 250) || null : null,
         audience,
       });
+      // The post now references the private object, so leave it in Storage.
+      uploadedImagePath = null;
 
       // Legacy callback for compatibility
       const postData = {
@@ -153,6 +185,14 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
       clearAttachments();
       
     } catch (error) {
+      if (uploadedImagePath) {
+        try {
+          const { error: cleanupError } = await supabase.storage.from('social-post-media').remove([uploadedImagePath]);
+          if (cleanupError) console.error('Could not clean up an abandoned social image:', cleanupError);
+        } catch (cleanupError) {
+          console.error('Could not clean up an abandoned social image:', cleanupError);
+        }
+      }
       console.error('Error creating post:', error);
       toast({
         title: 'Unable to create post',
@@ -229,8 +269,9 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
           {(imagePreview || selectedBook || selectedFeeling) && (
             <div className="mb-4 p-3 bg-[#FAF7F2] dark:bg-[#0B0D0C]/80 rounded-xl border border-[#E8E2D9] dark:border-[#29332D]">
               {imagePreview && (
+                <>
                 <div className="relative mb-3">
-                  <img src={imagePreview} alt="Preview" className="w-full max-h-60 object-cover rounded-lg border border-[#E8E2D9] dark:border-[#29332D]" />
+                  <img src={imagePreview} alt={imageAlt.trim() || 'Selected image preview'} className="max-h-80 w-full rounded-lg border border-[#E8E2D9] bg-[#F4EFEA] object-contain dark:border-[#29332D] dark:bg-[#0B0D0C]" />
                   <Button
                     size="sm"
                     variant="ghost"
@@ -239,12 +280,25 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                     onClick={() => {
                       setSelectedImage(null);
                       setImagePreview(null);
+                      setImageAlt('');
                       if (fileInputRef.current) fileInputRef.current.value = '';
                     }}
                   >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
+                <label htmlFor="post-image-alt" className="mb-1 block text-xs font-medium text-[#636B65] dark:text-[#A5ADA6]">
+                  Describe this image (optional)
+                </label>
+                <input
+                  id="post-image-alt"
+                  value={imageAlt}
+                  onChange={(event) => setImageAlt(event.target.value.slice(0, 250))}
+                  maxLength={250}
+                  placeholder="E.g. A highlighted passage in a paperback"
+                  className="mb-3 w-full rounded-lg border border-[#E8E2D9] bg-white px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]"
+                />
+                </>
               )}
 
               {selectedBook && (
@@ -335,7 +389,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/avif"
                 onChange={handleImageSelect}
                 className="hidden"
                 aria-label="Upload post image"

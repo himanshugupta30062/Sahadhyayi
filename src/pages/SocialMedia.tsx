@@ -20,6 +20,7 @@ import {
   Plus,
   ArrowLeft,
   ChevronRight,
+  UserRound,
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
@@ -110,6 +111,9 @@ const iconColorMap = {
 
 // ─── Guest (unauthenticated) landing ─────────────────────────────────────────
 const GuestLanding: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const queryString = searchParams.toString();
+  const signInRedirect = `/social${queryString ? `?${queryString}` : ''}`;
 
   return (
     <>
@@ -152,7 +156,7 @@ const GuestLanding: React.FC = () => {
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
-              <SignInLink redirectPath="/social">
+              <SignInLink redirectPath={signInRedirect}>
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1B241E] px-7 h-11 text-sm font-medium"
@@ -318,6 +322,82 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
         {/* ── Main Viewport Content ── */}
         <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <nav aria-label="Social navigation" className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E8E2D9] bg-white p-2 shadow-[0_2px_8px_rgba(28,32,29,0.03)] dark:border-[#29332D] dark:bg-[#111614]">
+              <button
+                type="button"
+                aria-pressed={activeTab === 'feed'}
+                onClick={() => handleTabChange('feed')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'feed' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
+                Home
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeTab === 'friends'}
+                onClick={() => handleTabChange('friends')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'friends' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <Users className="h-4 w-4" aria-hidden="true" />
+                Discover
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeTab === 'groups'}
+                onClick={() => handleTabChange('groups')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'groups' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <UsersIcon className="h-4 w-4" aria-hidden="true" />
+                Groups
+              </button>
+              <details className="group relative">
+                <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAF7F2] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]">
+                  <BookOpen className="h-4 w-4" aria-hidden="true" />
+                  Reading spaces
+                  <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" aria-hidden="true" />
+                </summary>
+                <div className="mt-2 flex flex-wrap gap-2 rounded-xl border border-[#E8E2D9] bg-[#FAF7F2] p-2 dark:border-[#29332D] dark:bg-[#0B0D0C] sm:absolute sm:left-0 sm:z-30 sm:min-w-64 sm:shadow-lg">
+                  {[
+                    { value: 'rooms', label: 'Live reading rooms' },
+                    { value: 'threads', label: 'Chapter discussions' },
+                    { value: 'margins', label: 'Shared margin notes' },
+                    { value: 'dna', label: 'Reading DNA' },
+                    { value: 'map', label: 'Reader map' },
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => handleTabChange(item.value)}
+                      className="min-h-9 rounded-lg border border-[#E8E2D9] bg-white px-3 py-2 text-left text-xs font-medium text-[#1C442D] hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </details>
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    handleTabChange('feed');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    window.setTimeout(() => document.getElementById('feed-composer-textarea')?.focus(), 100);
+                  }}
+                  className="min-h-10 gap-2 rounded-xl bg-[#1C442D] px-3 text-sm font-semibold text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]"
+                >
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Create
+                </Button>
+                <Link
+                  to="/profile"
+                  aria-label="Your profile"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAF7F2] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]"
+                >
+                  <UserRound className="h-4 w-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Profile</span>
+                </Link>
+              </div>
+            </nav>
             {/* Content-first community layout: feed plus contextual discovery */}
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
               {/* ── Community Stream & Feature Content ── */}
@@ -369,72 +449,34 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     </Button>
                   </div>
 
-                  {/* Feature shortcuts, not a second navigation bar */}
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4" aria-label="Community shortcuts">
-                    {[
-                      {
-                        value: 'rooms',
-                        title: 'Read together',
-                        description: 'Join a live reading room and make reading a shared ritual.',
-                        icon: Radio,
-                      },
-                      {
-                        value: 'threads',
-                        title: 'Book discussions',
-                        description: 'Talk through chapters with spoiler-aware conversations.',
-                        icon: Lock,
-                      },
-                      {
-                        value: 'margins',
-                        title: 'Shared marginalia',
-                        description: 'Discover notes and passages readers have saved.',
-                        icon: Quote,
-                      },
-                      {
-                        value: 'friends',
-                        title: 'Discover readers',
-                        description: 'Meet readers who might become your next book friends.',
-                        icon: Users,
-                      },
-                    ].map(({ value, title, description, icon: Icon }) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => handleTabChange(value)}
-                        className="group flex min-h-[112px] w-full items-start gap-3 rounded-2xl border border-[#E8E2D9] bg-white p-4 text-left shadow-[0_2px_8px_rgba(28,32,29,0.03)] transition-all hover:-translate-y-0.5 hover:border-[#C8DBCB] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:hover:border-[#315C43] dark:focus-visible:ring-[#D5B16D]"
-                      >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#C8DBCB] bg-[#EBF2EC] text-[#1C442D] transition-colors group-hover:bg-[#DDEADF] dark:border-[#315C43] dark:bg-[#1C3024] dark:text-[#D5B16D] dark:group-hover:bg-[#243D2C]">
-                          <Icon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block text-sm font-semibold tracking-tight text-[#1C201D] dark:text-[#F3F0E7]">
-                            {title}
-                          </span>
-                          <span className="mt-1.5 block text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
-                            {description}
-                          </span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 border-b border-[#E8E2D9] pb-5 text-xs dark:border-[#29332D]">
-                    <span className="mr-1 font-medium text-[#636B65] dark:text-[#A5ADA6]">More to explore</span>
-                    {[
-                      { value: 'dna', label: 'Reading DNA' },
-                      { value: 'map', label: 'Reader map' },
-                      { value: 'groups', label: 'Reading groups' },
-                    ].map((item) => (
-                      <button
-                        key={item.value}
-                        type="button"
-                        onClick={() => handleTabChange(item.value)}
-                        className="rounded-full border border-[#E8E2D9] bg-white px-3 py-1.5 font-medium text-[#1C442D] transition-colors hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
+                  <details className="group rounded-xl border border-[#E8E2D9] bg-white dark:border-[#29332D] dark:bg-[#111614]">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[#1C442D] outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#D5B16D] dark:focus-visible:ring-[#D5B16D]">
+                      <span>Explore reading spaces</span>
+                      <span className="flex items-center gap-2 text-xs font-normal text-[#636B65] dark:text-[#A5ADA6]">
+                        Rooms, discussions, notes and reader discovery
+                        <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" aria-hidden="true" />
+                      </span>
+                    </summary>
+                    <nav aria-label="Reading spaces" className="flex flex-wrap gap-2 border-t border-[#E8E2D9] px-3 py-3 dark:border-[#29332D]">
+                      {[
+                        { value: 'rooms', label: 'Reading rooms' },
+                        { value: 'threads', label: 'Chapter discussions' },
+                        { value: 'margins', label: 'Margin notes' },
+                        { value: 'friends', label: 'Discover readers' },
+                        { value: 'dna', label: 'Reading DNA' },
+                        { value: 'map', label: 'Reader map' },
+                      ].map((item) => (
+                        <button
+                          key={item.value}
+                          type="button"
+                          onClick={() => handleTabChange(item.value)}
+                          className="rounded-full border border-[#E8E2D9] bg-[#FAF7F2] px-3 py-2 text-xs font-medium text-[#1C442D] transition-colors hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </nav>
+                  </details>
 
                   <ErrorBoundary
                     fallback={

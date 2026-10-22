@@ -146,10 +146,16 @@ describe('Phase 6: Social Media & Reading Community Experience', () => {
       await waitFor(() => {
         expect(mockCreatePost).toHaveBeenCalledWith({
           content: 'Finished reading Devdas today! Truly poignant.',
+          post_kind: 'post',
+          quote_text: undefined,
+          quote_author: undefined,
+          quote_source: undefined,
+          quote_context: undefined,
           book_id: undefined,
           feeling_emoji: undefined,
           feeling_label: undefined,
           image_url: undefined,
+          image_alt: null,
           audience: 'friends',
         });
       });
