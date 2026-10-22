@@ -1,21 +1,24 @@
--- Tighten sensitive profile access and keep raw analytics admin-only.
--- The public_profiles view and consent-aware location RPCs are the supported cross-user paths.
+-- Security hardening based on verified production profiles schema.
+-- Do not rely on table-wide SELECT: precise coordinates, sharing state, and presence are private.
 
-REVOKE INSERT, UPDATE, DELETE ON TABLE public.profiles FROM anon;
-REVOKE INSERT, UPDATE, DELETE ON TABLE public.profiles FROM PUBLIC;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
+  ON TABLE public.profiles FROM anon, PUBLIC;
+REVOKE ALL PRIVILEGES ON TABLE public.profiles FROM authenticated, PUBLIC;
 
--- Precise location, sharing-state, and activity timestamps must not be fetched directly
--- from profiles. Own-profile reads go through get_my_profile(); cross-user location
--- goes through the consent-checked location/social RPCs.
-REVOKE SELECT (location_lat, location_lng, location_sharing, last_seen)
-  ON TABLE public.profiles FROM authenticated, anon, PUBLIC;
+-- Clients can read safe profile fields only. Sensitive fields are returned by the owner-only
+-- get_my_profile() RPC or consent-aware social/location RPCs.
+GRANT SELECT (id, full_name, username, profile_photo_url, bio, writing_frequency,
+              stories_read_count, stories_written_count, tags_used, created_at, updated_at)
+  ON TABLE public.profiles TO authenticated;
+GRANT INSERT (id, full_name, username, profile_photo_url, bio, writing_frequency, tags_used, updated_at)
+  ON TABLE public.profiles TO authenticated;
+GRANT UPDATE (full_name, username, profile_photo_url, bio, writing_frequency, tags_used, updated_at)
+  ON TABLE public.profiles TO authenticated;
+GRANT DELETE ON TABLE public.profiles TO authenticated;
 
--- Raw detailed visitor/session analytics is internal/admin functionality.
+-- Detailed analytics must not be public; engagement data is trusted-server/admin only.
 REVOKE ALL ON FUNCTION public.get_dual_table_website_analytics(text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_dual_table_website_analytics(text) TO authenticated, service_role;
-
--- Engagement data is admin-only. Execution is limited to trusted server-side calls;
--- the function itself also checks is_admin() for defense in depth.
 REVOKE ALL ON FUNCTION public.get_website_engagement_stats(text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_website_engagement_stats(text) TO service_role;
 
