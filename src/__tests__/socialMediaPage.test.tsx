@@ -163,7 +163,7 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       mockUseAuth.mockReturnValue({ user: mockUser, loading: false });
     });
 
-    it('renders a content-first community layout without a duplicate social navigation menu', () => {
+    it('renders compact primary social navigation and a content-first community layout', () => {
       mockUseReadingRooms.mockReturnValue({
         data: [
           {
@@ -203,6 +203,12 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
 
       // The global site header owns site navigation; this page stays content-first.
       expect(screen.getByRole('heading', { name: /Your Reading Community/i })).toBeInTheDocument();
+      expect(screen.getByRole('navigation', { name: /Social navigation/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Home$/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Discover$/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Groups$/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Create$/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Your profile/i })).toHaveAttribute('href', '/profile');
       expect(screen.getByRole('button', { name: /Start a conversation/i })).toBeInTheDocument();
       expect(screen.getByText(/Explore reading spaces/i)).toBeInTheDocument();
       // Reading destinations stay available without a permanent shortcut-card grid.
