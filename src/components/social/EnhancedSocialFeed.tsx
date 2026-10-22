@@ -135,7 +135,7 @@ export const EnhancedSocialFeed = () => {
     refetch: refetchThreads,
   } = useSpoilerThreads(undefined, { enabled: feedFilter === 'threads' });
 
-  const postsForDisplay = deepLinkedPost && deepLinkedPost.id === requestedPostId
+  const postsForDisplay = streamMode === 'community' && deepLinkedPost && deepLinkedPost.id === requestedPostId
     && !posts.some((post) => post.id === deepLinkedPost.id)
     ? [deepLinkedPost, ...posts]
     : posts;
