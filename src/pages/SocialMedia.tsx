@@ -463,7 +463,6 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                         { value: 'threads', label: 'Chapter discussions' },
                         { value: 'margins', label: 'Margin notes' },
                         { value: 'friends', label: 'Discover readers' },
-                        { value: 'groups', label: 'Reading groups' },
                         { value: 'dna', label: 'Reading DNA' },
                         { value: 'map', label: 'Reader map' },
                       ].map((item) => (
