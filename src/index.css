@@ -498,3 +498,43 @@ mark.search-highlight {
 .text-hierarchy-muted {
   @apply text-text-muted text-sm;
 }
+
+
+/* Reading Room: restrained, bookish entrance motion with reduced-motion support. */
+@keyframes reading-room-panel-enter {
+  from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes reading-room-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes reading-room-book-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.08); }
+  50% { box-shadow: 0 0 0 7px hsl(var(--primary) / 0.07), 0 10px 26px hsl(var(--primary) / 0.12); }
+}
+@keyframes reading-room-launcher-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.18); }
+  50% { box-shadow: 0 0 0 6px hsl(var(--primary) / 0.03); }
+}
+.reader-room-panel-enter {
+  animation: reading-room-panel-enter 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: bottom right;
+}
+.reader-room-backdrop-enter {
+  animation: reading-room-backdrop-enter 180ms ease-out both;
+}
+.reader-room-book-glow {
+  animation: reading-room-book-glow 3.4s ease-in-out 500ms 2;
+}
+.reader-room-launcher-icon {
+  animation: reading-room-launcher-pulse 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reader-room-panel-enter,
+  .reader-room-backdrop-enter,
+  .reader-room-book-glow,
+  .reader-room-launcher-icon {
+    animation: none !important;
+  }
+}
