@@ -10,10 +10,25 @@ afterEach(() => cleanup());
 vi.mock("@/contexts/book-expert.utils", async () => {
   const ReactModule = await import("react");
   const welcome = "Welcome to Book Expert. Find your next read, explore an author, or ask about a book.";
+  type MockMessage = {
+    sender: string;
+    text: string;
+    citations?: Array<{
+      id: string;
+      title: string;
+      author: string | null;
+      sourceType: string;
+      bookId: string | null;
+      url: string | null;
+      excerpt: string;
+      similarity: number;
+      sourceLicense: string | null;
+    }>;
+  };
   return {
     useBookExpert: () => {
       const [isOpen, setIsOpen] = ReactModule.useState(false);
-      const [messages, setMessages] = ReactModule.useState([{ sender: "bot", text: welcome }]);
+      const [messages, setMessages] = ReactModule.useState<MockMessage[]>([{ sender: "bot", text: welcome }]);
       return {
         isOpen,
         toggleChat: () => setIsOpen((current: boolean) => !current),
@@ -22,10 +37,24 @@ vi.mock("@/contexts/book-expert.utils", async () => {
         messages,
         loading: false,
         sendMessage: async (text: string) => {
-          setMessages((current: Array<{ sender: string; text: string }>) => [
+          setMessages((current: MockMessage[]) => [
             ...current,
             { sender: "user", text },
-            { sender: "bot", text: "**A clear answer**\n\n- A useful point [S1]" },
+            {
+              sender: "bot",
+              text: "**A clear answer**\n\n- A useful point [S1]",
+              citations: [{
+                id: "S1",
+                title: "Test source",
+                author: null,
+                sourceType: "approved_text",
+                bookId: null,
+                url: null,
+                excerpt: "Verified excerpt",
+                similarity: 0.9,
+                sourceLicense: null,
+              }],
+            },
           ]);
         },
         sendFeedback: async () => undefined,
@@ -82,7 +111,10 @@ describe("BookExpert responsive reader controls", () => {
     });
 
     expect(await screen.findByText("A clear answer", { selector: "strong" })).toBeInTheDocument();
-    expect(screen.getByText("[S1]")).toHaveClass("bg-primary/10");
+    const citation = screen.getByRole("link", { name: /jump to source \[s1\]/i });
+    expect(citation).toHaveAttribute("href", "#book-expert-sources-1");
+    fireEvent.click(citation);
+    expect(document.getElementById("book-expert-sources-1")).toHaveAttribute("open");
   });
 
   it("makes the page background inert until the reader closes", () => {
