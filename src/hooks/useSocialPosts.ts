@@ -17,6 +17,7 @@ export interface SocialPost {
   quote_source?: string | null;
   quote_context?: string | null;
   image_url?: string;
+  image_alt?: string | null;
   book_id?: string;
   feeling_emoji?: string;
   feeling_label?: string;
@@ -464,6 +465,7 @@ export const useCreatePost = () => {
       quote_source?: string;
       quote_context?: string;
       image_url?: string;
+      image_alt?: string | null;
       book_id?: string;
       feeling_emoji?: string;
       feeling_label?: string;
@@ -526,6 +528,7 @@ export const useCreatePost = () => {
         feeling_emoji: postData.feeling_emoji?.trim() || null,
         feeling_label: postData.feeling_label?.trim() || null,
         image_url: postData.image_url?.trim() || null,
+        image_alt: postData.image_alt?.trim().slice(0, 250) || null,
         audience: postData.audience || 'friends',
       };
 
