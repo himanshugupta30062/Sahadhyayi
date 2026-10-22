@@ -111,6 +111,9 @@ const iconColorMap = {
 
 // ─── Guest (unauthenticated) landing ─────────────────────────────────────────
 const GuestLanding: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const queryString = searchParams.toString();
+  const signInRedirect = `/social${queryString ? `?${queryString}` : ''}`;
 
   return (
     <>
@@ -153,7 +156,7 @@ const GuestLanding: React.FC = () => {
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
-              <SignInLink redirectPath="/social">
+              <SignInLink redirectPath={signInRedirect}>
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1B241E] px-7 h-11 text-sm font-medium"
