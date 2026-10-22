@@ -120,8 +120,8 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
       if (rpcUsers === null || rpcVisits === null) {
         const [usersRpc, visitsRpc] = await Promise.all([
-          typeof supabase?.rpc === 'function' ? supabase.rpc('get_total_users_count').catch(() => ({ data: null })) : { data: null },
-          typeof supabase?.rpc === 'function' ? supabase.rpc('get_website_visit_count').catch(() => ({ data: null })) : { data: null },
+          typeof supabase?.rpc === 'function' ? Promise.resolve(supabase.rpc('get_total_users_count')).catch(() => ({ data: null })) : { data: null },
+          typeof supabase?.rpc === 'function' ? Promise.resolve(supabase.rpc('get_website_visit_count')).catch(() => ({ data: null })) : { data: null },
         ]);
 
         if (rpcUsers === null && usersRpc && typeof usersRpc.data === 'number') {
