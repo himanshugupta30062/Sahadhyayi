@@ -338,8 +338,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       !hasReferrers
     );
 
+    // Resolve the selected timeframe from the rolling aggregate before considering
+    // legacy fields. Lifetime totals must never be presented as period page views.
     const selectedPageViews = getNumber(
       raw.period?.pageViews,
+      tf === '30d' ? raw.rolling?.pageViews30d : tf === '7d' ? raw.rolling?.pageViews7d : raw.rolling?.pageViews24h,
       raw.pageViews,
       raw.last24hVisits,
       raw.periodVisits,
@@ -347,6 +350,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     );
     const selectedUnique = getNumber(
       raw.period?.uniqueVisitors,
+      tf === '30d' ? raw.rolling?.uniqueVisitors30d : tf === '7d' ? raw.rolling?.uniqueVisitors7d : raw.rolling?.uniqueVisitors24h,
       raw.uniqueVisitors,
       raw.uniqueVisitors24h,
       raw.metrics?.uniqueVisitors?.value
@@ -562,41 +566,68 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
       try {
         let statsPayload: PulseStats | null = null;
+        let primaryError: Error | null = null;
 
-        // Public-facing dashboard uses the sanitized aggregate RPC directly.
-        // This avoids depending on an Edge Function that is not deployed.
-        const { data: publicStats, error: publicRpcError } = await supabase.rpc(
-          'get_dual_table_website_analytics',
-          { p_timeframe: timeframe },
-        );
-        if (publicRpcError) {
-          throw new Error(publicRpcError.message || 'Public website analytics RPC unavailable');
-        }
-        if (!publicStats || typeof publicStats !== 'object') {
-          throw new Error('Public website analytics RPC returned an invalid payload');
-        }
-
-        statsPayload = parseStatsPayload(publicStats, timeframe);
+        // Prefer the public-safe aggregate RPC. If it is not installed in a deployed
+        // database yet, try the existing Edge Function before falling back to safe
+        // database aggregates. This keeps deployments resilient during migrations.
         try {
-          const { data: engagement, error: engagementError } = await supabase.rpc('get_website_engagement_stats', {
-            p_timeframe: timeframe,
-          });
-          if (!engagementError && engagement && typeof engagement === 'object') {
-            const averageSeconds = typeof engagement.average_seconds_per_session === 'number'
-              ? engagement.average_seconds_per_session
-              : null;
-            statsPayload = {
-              ...statsPayload,
-              avgTimeOnSite: averageSeconds === null
-                ? '—'
-                : averageSeconds < 60
-                  ? `${Math.round(averageSeconds)} sec`
-                  : `${Math.floor(averageSeconds / 60)} min ${Math.round(averageSeconds % 60)} sec`,
-              avgTimeChange: undefined,
-            };
+          const { data: publicStats, error: publicRpcError } = await supabase.rpc(
+            'get_dual_table_website_analytics',
+            { p_timeframe: timeframe },
+          );
+          if (publicRpcError) throw new Error(publicRpcError.message || 'Public website analytics RPC unavailable');
+          if (!publicStats || typeof publicStats !== 'object') {
+            throw new Error('Public website analytics RPC returned an invalid payload');
           }
-        } catch {
-          statsPayload = { ...statsPayload, avgTimeOnSite: '—' };
+          statsPayload = parseStatsPayload(publicStats, timeframe);
+        } catch (rpcError) {
+          primaryError = rpcError instanceof Error ? rpcError : new Error('Public website analytics RPC unavailable');
+          try {
+            const { data: edgeStats, error: edgeError } = await supabase.functions.invoke('community-stats', {
+              body: { timeframe },
+            });
+            if (edgeError) throw new Error(edgeError.message || 'Community stats Edge Function unavailable');
+            if (!edgeStats || typeof edgeStats !== 'object') {
+              throw new Error('Community stats Edge Function returned an invalid payload');
+            }
+            statsPayload = parseStatsPayload(edgeStats, timeframe);
+            primaryError = null;
+          } catch (edgeError) {
+            // Keep the first actionable error unless the Edge Function provided a
+            // more specific failure, then try public-safe RPC/table-count fallback.
+            primaryError = edgeError instanceof Error ? edgeError : primaryError;
+            try {
+              statsPayload = await fetchDatabaseFallbackStats(timeframe);
+              primaryError = null;
+            } catch {
+              // If all sources are unavailable, preserve cache and expose the cause.
+            }
+          }
+        }
+
+        if (statsPayload) {
+          try {
+            const { data: engagement, error: engagementError } = await supabase.rpc('get_website_engagement_stats', {
+              p_timeframe: timeframe,
+            });
+            if (!engagementError && engagement && typeof engagement === 'object') {
+              const averageSeconds = typeof engagement.average_seconds_per_session === 'number'
+                ? engagement.average_seconds_per_session
+                : null;
+              statsPayload = {
+                ...statsPayload,
+                avgTimeOnSite: averageSeconds === null
+                  ? '—'
+                  : averageSeconds < 60
+                    ? `${Math.round(averageSeconds)} sec`
+                    : `${Math.floor(averageSeconds / 60)} min ${Math.round(averageSeconds % 60)} sec`,
+                avgTimeChange: undefined,
+              };
+            }
+          } catch {
+            statsPayload = { ...statsPayload, avgTimeOnSite: '—' };
+          }
         }
 
         if (isMountedRef.current && currentSeq === requestSeqRef.current && statsPayload) {
@@ -607,6 +638,9 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           } catch {
             // ignore storage quota error
           }
+        } else if (isMountedRef.current && currentSeq === requestSeqRef.current) {
+          setStats(prev => (prev ? { ...prev, isStale: true } : null));
+          setError(primaryError?.message || 'Network error fetching community stats');
         }
       } catch (err: any) {
         if (isMountedRef.current && currentSeq === requestSeqRef.current) {
