@@ -103,6 +103,17 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       expect(mockSendFriendRequest).not.toHaveBeenCalled();
     });
 
+    it('preserves a shared-post deep link when a guest chooses to sign in', () => {
+      render(
+        <MemoryRouter initialEntries={['/social?post=post-123']}>
+          <SocialMedia />
+        </MemoryRouter>
+      );
+
+      const signInLink = screen.getAllByRole('link', { name: /sign in/i })[0];
+      expect(signInLink).toHaveAttribute('href', expect.stringContaining('redirect=%2Fsocial%3Fpost%3Dpost-123'));
+    });
+
     it('renders the guest hero copy matching the visual reference design without fabricated stats', () => {
       render(
         <MemoryRouter initialEntries={['/social']}>
