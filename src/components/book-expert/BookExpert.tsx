@@ -33,7 +33,7 @@ function validHttpUrl(value: string | null | undefined): string | null {
   }
 }
 
-function renderInlineMarkdown(line: string): ReactNode[] {
+function renderInlineMarkdown(line: string, citationIds: Set<string>, sourceSectionId: string): ReactNode[] {
   const tokens = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[S\d+\])/g).filter(Boolean);
   return tokens.map((token, index) => {
     if (/^\*\*[^*]+\*\*$/.test(token)) {
@@ -46,14 +46,29 @@ function renderInlineMarkdown(line: string): ReactNode[] {
       return <code key={index} className="rounded bg-muted px-1 py-0.5 text-[0.9em]">{token.slice(1, -1)}</code>;
     }
     if (/^\[S\d+\]$/.test(token)) {
-      return <span key={index} className="mx-0.5 inline-flex rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-[0.8em] font-semibold text-primary">{token}</span>;
+      if (!citationIds.has(token.slice(1, -1))) return <Fragment key={index}>{token}</Fragment>;
+      return (
+        <a
+          key={index}
+          href={"#" + sourceSectionId}
+          onClick={() => {
+            const sourceSection = document.getElementById(sourceSectionId) as HTMLDetailsElement | null;
+            if (sourceSection) sourceSection.open = true;
+          }}
+          className="mx-0.5 inline-flex rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-[0.8em] font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={"Jump to source " + token}
+        >
+          {token}
+        </a>
+      );
     }
     return <Fragment key={index}>{token}</Fragment>;
   });
 }
 
-function AnswerText({ text }: { text: string }) {
+function AnswerText({ text, citations, sourceSectionId }: { text: string; citations?: BookExpertCitation[]; sourceSectionId: string }) {
   const blocks = text.trim().split(/\n{2,}/).filter(Boolean);
+  const citationIds = new Set((citations ?? []).map((citation) => citation.id));
   return (
     <div className="space-y-3 break-words">
       {blocks.map((block, blockIndex) => {
@@ -63,25 +78,25 @@ function AnswerText({ text }: { text: string }) {
         const numberedLines = lines.every((line) => /^\s*\d+[.)]\s+/.test(line));
 
         if (heading && lines.length === 1) {
-          return <h4 key={blockIndex} className="text-sm font-semibold tracking-tight text-foreground">{renderInlineMarkdown(heading[1])}</h4>;
+          return <h4 key={blockIndex} className="text-sm font-semibold tracking-tight text-foreground">{renderInlineMarkdown(heading[1], citationIds, sourceSectionId)}</h4>;
         }
         if (bulletLines) {
           return (
             <ul key={blockIndex} className="list-disc space-y-1.5 pl-5 marker:text-primary">
-              {lines.map((line, lineIndex) => <li key={lineIndex} className="pl-0.5">{renderInlineMarkdown(line.replace(/^\s*[-*]\s+/, ""))}</li>)}
+              {lines.map((line, lineIndex) => <li key={lineIndex} className="pl-0.5">{renderInlineMarkdown(line.replace(/^\s*[-*]\s+/, ""), citationIds, sourceSectionId)}</li>)}
             </ul>
           );
         }
         if (numberedLines) {
           return (
             <ol key={blockIndex} className="list-decimal space-y-1.5 pl-5 marker:font-medium marker:text-primary">
-              {lines.map((line, lineIndex) => <li key={lineIndex} className="pl-0.5">{renderInlineMarkdown(line.replace(/^\s*\d+[.)]\s+/, ""))}</li>)}
+              {lines.map((line, lineIndex) => <li key={lineIndex} className="pl-0.5">{renderInlineMarkdown(line.replace(/^\s*\d+[.)]\s+/, ""), citationIds, sourceSectionId)}</li>)}
             </ol>
           );
         }
         return (
           <p key={blockIndex} className="whitespace-pre-wrap leading-relaxed">
-            {lines.map((line, lineIndex) => <Fragment key={lineIndex}>{lineIndex > 0 && <br />}{renderInlineMarkdown(line)}</Fragment>)}
+            {lines.map((line, lineIndex) => <Fragment key={lineIndex}>{lineIndex > 0 && <br />}{renderInlineMarkdown(line, citationIds, sourceSectionId)}</Fragment>)}
           </p>
         );
       })}
@@ -580,7 +595,7 @@ const BookExpert = () => {
                       {isUser ? (
                         <p className="whitespace-pre-wrap break-words">{message.text}</p>
                       ) : (
-                        <AnswerText text={message.text} />
+                        <AnswerText text={message.text} citations={message.citations} sourceSectionId={"book-expert-sources-" + index} />
                       )}
                       {message.error && (
                         <button
@@ -636,7 +651,7 @@ const BookExpert = () => {
                     )}
 
                     {!isUser && message.citations && message.citations.length > 0 && (
-                      <details className="group rounded-xl border border-border/70 bg-card/70 px-3 py-2.5">
+                      <details id={"book-expert-sources-" + index} className="group rounded-xl border border-border/70 bg-card/70 px-3 py-2.5">
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-medium">
                           <span className="inline-flex items-center gap-2"><BookMarked className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> Sources & reading notes ({message.citations.length})</span>
                           <span className="text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
