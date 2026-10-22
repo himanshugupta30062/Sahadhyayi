@@ -25,12 +25,12 @@ import { Link, useSearchParams } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { SocialSurface } from '@/components/social/SocialSurface';
-const EnhancedSocialFeed = lazy(() => import('@/components/social/EnhancedSocialFeed').then((module) => ({ default: module.EnhancedSocialFeed })));
-const EnhancedReadingMap = lazy(() => import('@/components/social/EnhancedReadingMap').then((module) => ({ default: module.EnhancedReadingMap })));
-const FriendsLocationMap = lazy(() => import('@/components/social/FriendsLocationMap').then((module) => ({ default: module.FriendsLocationMap })));
-const ReadingGroups = lazy(() => import('@/components/social/ReadingGroups').then((module) => ({ default: module.ReadingGroups })));
-const EnhancedFriendsManager = lazy(() => import('@/components/social/EnhancedFriendsManager').then((module) => ({ default: module.EnhancedFriendsManager })));
-const BookPulseBar = lazy(() => import('@/components/social/BookPulseBar').then((module) => ({ default: module.BookPulseBar })));
+import { EnhancedSocialFeed } from '@/components/social/EnhancedSocialFeed';
+import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
+import { FriendsLocationMap } from '@/components/social/FriendsLocationMap';
+import { ReadingGroups } from '@/components/social/ReadingGroups';
+import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
+import { BookPulseBar } from '@/components/social/BookPulseBar';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
 import { useGroups } from '@/hooks/useGroupManagement';
 import { useAllUsers } from '@/hooks/useUserSearch';
@@ -64,8 +64,6 @@ const TabLoader = () => (
     <span className="text-xs tracking-wide">Loading community data…</span>
   </div>
 );
-
-const SocialFeatureLoader = () => <TabLoader />;
 
 // Feature pillar cards for guest landing (matching design mockups)
 const PILLARS = [
@@ -167,9 +165,7 @@ const GuestLanding: React.FC = () => {
             {/* Live Activity Pulse bar */}
             <div className="max-w-3xl mx-auto">
               <ErrorBoundary fallback={null}>
-                <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-[#EBF2EC]/60 dark:bg-[#1C3024]/40" aria-label="Loading community pulse" />}>
-                  <BookPulseBar />
-                </Suspense>
+                <BookPulseBar />
               </ErrorBoundary>
             </div>
           </div>
@@ -440,7 +436,6 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     ))}
                   </div>
 
-                  <Suspense fallback={<SocialFeatureLoader />}>
                   <ErrorBoundary
                     fallback={
                       <SocialSurface className="p-8 text-center">
@@ -461,7 +456,6 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   >
                     <EnhancedSocialFeed />
                   </ErrorBoundary>
-                  </Suspense>
                 </TabsContent>
 
                 {/* ── Reading Rooms Tab ── */}
@@ -530,9 +524,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
 
                 {/* ── Friends Tab ── */}
                 <TabsContent value="friends" className="mt-0">
-                  <Suspense fallback={<TabLoader />}>
-                    <EnhancedFriendsManager />
-                  </Suspense>
+                  <EnhancedFriendsManager />
                 </TabsContent>
 
                 {/* ── Map Tab ── */}
@@ -567,17 +559,13 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   </div>
 
                   <Card className="border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] overflow-hidden text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
-                    <Suspense fallback={<TabLoader />}>
-                      {mapView === 'readers' ? <EnhancedReadingMap /> : <FriendsLocationMap />}
-                    </Suspense>
+                    {mapView === 'readers' ? <EnhancedReadingMap /> : <FriendsLocationMap />}
                   </Card>
                 </TabsContent>
 
                 {/* ── Groups Tab ── */}
                 <TabsContent value="groups" className="mt-0">
-                  <Suspense fallback={<TabLoader />}>
-                    <ReadingGroups />
-                  </Suspense>
+                  <ReadingGroups />
                 </TabsContent>
               </section>
 
