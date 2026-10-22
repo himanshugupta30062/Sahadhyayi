@@ -3816,6 +3816,36 @@ export type Database = {
         Relationships: []
       }
     }
+      book_reviews: {
+        Row: {
+          book_id: string
+          contains_spoilers: boolean
+          created_at: string
+          id: string
+          review_text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          contains_spoilers?: boolean
+          created_at?: string
+          id?: string
+          review_text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          contains_spoilers?: boolean
+          created_at?: string
+          id?: string
+          review_text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     Views: {
       profiles_public: {
         Row: {
