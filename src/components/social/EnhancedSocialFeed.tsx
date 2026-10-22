@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check } from 'lucide-react';
 import {
   useSocialPosts,
   useTogglePostLike,
@@ -98,6 +98,7 @@ export const EnhancedSocialFeed = () => {
   const [repostPost, setRepostPost] = useState<SocialPost | null>(null);
   const [selectedPost, setSelectedPost] = useState<SocialPost | null>(null);
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
+  const [copiedQuoteId, setCopiedQuoteId] = useState<string | null>(null);
   const [feedFilter, setFeedFilter] = useState<'all' | 'posts' | 'margins' | 'threads'>('all');
   const { data: marginNotes = [], isLoading: marginLoading } = useMarginNotes({ filter: 'all' });
   const { data: spoilerThreads = [], isLoading: threadsLoading } = useSpoilerThreads();
@@ -120,6 +121,20 @@ export const EnhancedSocialFeed = () => {
   const handleShare = (post: SocialPost) => {
     setSelectedPost(post);
     setShareModalOpen(true);
+  };
+
+  const handleCopyQuote = async (post: SocialPost) => {
+    const quote = post.quote_text?.trim();
+    if (!quote) return;
+    const attribution = [post.quote_author?.trim(), post.quote_source?.trim()].filter(Boolean).join(' — ');
+    const shareText = [`“${quote}”`, attribution, post.quote_context?.trim(), `${window.location.origin}/social?post=${encodeURIComponent(post.id)}`].filter(Boolean).join('\n\n');
+    try {
+      await navigator.clipboard.writeText(shareText);
+      setCopiedQuoteId(post.id);
+      window.setTimeout(() => setCopiedQuoteId((current) => current === post.id ? null : current), 1800);
+    } catch (error) {
+      console.error('Could not copy quote card text:', error);
+    }
   };
 
   const toggleComments = (postId: string) => {
@@ -361,6 +376,32 @@ export const EnhancedSocialFeed = () => {
 
                 {/* Post Content */}
                 <div className="mb-4">
+                  {!isRepost && post.post_kind === 'quote' && post.quote_text && (
+                    <section aria-label="Shareable literary quote" className="relative my-2 overflow-hidden rounded-2xl border border-[#C8DBCB] bg-gradient-to-br from-[#F7F2E9] via-[#FFFCF7] to-[#EAF1E8] p-5 shadow-[0_3px_12px_rgba(28,68,45,0.06)] dark:border-[#315C43] dark:from-[#16211A] dark:via-[#111614] dark:to-[#1C3024] sm:p-7">
+                      <div className="pointer-events-none absolute -right-4 -top-7 select-none font-serif text-[150px] leading-none text-[#1C442D]/[0.07] dark:text-[#D5B16D]/[0.08]" aria-hidden="true">”</div>
+                      <div className="relative">
+                        <div className="mb-4 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1C442D] dark:text-[#D5B16D]">
+                          <Quote className="h-4 w-4" /> Sahadhyayi · A passage worth keeping
+                        </div>
+                        <blockquote className="whitespace-pre-wrap break-words font-serif text-xl leading-relaxed text-[#1C201D] dark:text-[#F3F0E7] sm:text-2xl">
+                          “{post.quote_text}”
+                        </blockquote>
+                        {(post.quote_author || post.quote_source) && (
+                          <div className="mt-5 border-t border-[#C8DBCB]/80 pt-4 dark:border-[#315C43]">
+                            {post.quote_author && <p className="font-semibold text-sm text-[#1C442D] dark:text-[#D5B16D]">— {post.quote_author}</p>}
+                            {post.quote_source && <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">{post.quote_source}</p>}
+                          </div>
+                        )}
+                        <div className="mt-4 flex items-center justify-between gap-3">
+                          <span className="text-[10px] tracking-wide text-[#636B65] dark:text-[#A5ADA6]">READ · REFLECT · SHARE</span>
+                          <Button type="button" size="sm" variant="outline" onClick={() => void handleCopyQuote(post)} className="h-8 shrink-0 gap-1.5 rounded-lg border-[#C8DBCB] bg-white/80 text-xs text-[#1C442D] hover:bg-white dark:border-[#315C43] dark:bg-[#0B0D0C]/70 dark:text-[#D5B16D]" aria-label="Copy quote and attribution">
+                            {copiedQuoteId === post.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                            {copiedQuoteId === post.id ? 'Copied' : 'Copy quote'}
+                          </Button>
+                        </div>
+                      </div>
+                    </section>
+                  )}
                   {post.content && (
                     <p className="text-[#1C201D] dark:text-[#F3F0E7] leading-relaxed mb-3 whitespace-pre-wrap">{post.content}</p>
                   )}
@@ -428,7 +469,7 @@ export const EnhancedSocialFeed = () => {
                         onError={(e) => {
                           (e.currentTarget as HTMLElement).style.display = 'none';
                         }}
-                        className="w-full max-h-96 object-cover"
+                        className="block w-full max-h-[520px] object-contain bg-[#F4EFEA] dark:bg-[#0B0D0C]"
                       />
                     </div>
                   )}
