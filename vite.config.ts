@@ -5,89 +5,6 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import compression from "vite-plugin-compression";
 
-const CORE_CHUNK_MATCHERS = [
-  "/node_modules/react/",
-  "/node_modules/react-dom/",
-  "/node_modules/react-router-dom/",
-  "/node_modules/@radix-ui/react-dialog/",
-  "/node_modules/@radix-ui/react-toast/",
-  "/node_modules/@tanstack/react-query/",
-  "/node_modules/@supabase/",
-  "/node_modules/lucide-react/"
-];
-
-const FEATURE_CHUNK_PATHS: Record<string, string[]> = {
-  socialFeature: [
-    "src/pages/SocialMedia.tsx",
-    "src/components/social/BookPulseBar.tsx",
-    "src/components/social/EnhancedFriendsManager.tsx",
-    "src/components/social/EnhancedReadingMap.tsx",
-    "src/components/social/EnhancedSocialFeed.tsx",
-    "src/components/social/FriendsLocationMap.tsx",
-    "src/components/social/ReadingGroups.tsx",
-    "src/components/social/SocialSurface.tsx",
-    "src/components/social/margins/MarginNotesFeed.tsx",
-    "src/components/social/threads/SpoilerThreadsFeed.tsx",
-    "src/components/social/rooms/ReadingRoomsPanel.tsx",
-    "src/components/social/dna/ReadingDnaPanel.tsx"
-  ],
-  booksFeature: [
-    "src/pages/BookDetails.tsx",
-    "src/pages/BookLibrary.tsx",
-    "src/pages/Bookshelf.tsx",
-    "src/pages/library/index.tsx",
-    "src/components/library/BooksCollection.tsx",
-    "src/components/books/BookDescription.tsx",
-    "src/components/books/BookDetailsHeader.tsx",
-    "src/components/books/AuthorBio.tsx",
-    "src/components/books/BookReadersConnection.tsx",
-    "src/components/books/CreateYourVersionSection.tsx",
-    "src/components/books/BookIdeasSection.tsx",
-    "src/components/books/BookReader.tsx",
-    "src/components/books/BookSocialStrip.tsx",
-    "src/components/books/BookEditionTransparency.tsx",
-    "src/components/books/BookReviews.tsx",
-    "src/hooks/useLibraryBooks.ts",
-    "src/hooks/useUserBookshelf.ts",
-    "src/hooks/useBookById.ts",
-    "src/hooks/useBookRatings.ts"
-  ],
-  authorsFeature: [
-    "src/pages/Authors.tsx",
-    "src/pages/AuthorDetails.tsx",
-    "src/pages/AuthorProfile.tsx",
-    "src/pages/AuthorConnect.tsx",
-    "src/pages/authors/[slug].tsx",
-    "src/components/authors/ScheduleSessionDialog.tsx",
-    "src/components/authors/AuthorGrid.tsx",
-    "src/components/authors/AuthorPostCard.tsx",
-    "src/components/authors/AuthorProfile.tsx",
-    "src/components/authors/AuthorSearch.tsx"
-  ],
-  publishingFeature: [
-    "src/pages/Articles.tsx",
-    "src/pages/ArticleDetail.tsx",
-    "src/pages/ArticleWrite.tsx",
-    "src/pages/MyArticles.tsx",
-    "src/pages/MyPublications.tsx",
-    "src/pages/PublishBook.tsx",
-    "src/pages/Blog.tsx",
-    "src/pages/BlogPost.tsx"
-  ],
-  groupsFeature: [
-    "src/pages/ReadingGroups.tsx",
-    "src/pages/GroupDetails.tsx",
-    "src/components/groups/ReadingGroupsDirectory.tsx"
-  ],
-  adminFeature: [
-    "src/pages/AdminLibraryArchive.tsx",
-    "src/pages/AdminLibraryQuality.tsx",
-    "src/pages/AdminBookExpertRag.tsx",
-    "src/pages/AdminAuthorEnrichment.tsx",
-    "src/pages/AdminFeedback.tsx"
-  ]
-};
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   base: "/",
@@ -147,9 +64,41 @@ export default defineConfig(({ mode }) => ({
   build: {
     assetsDir: 'assets',
     sourcemap: false,
-    minify: 'esbuild',
+    minify: 'terser',
     target: 'esnext',
-    // Use Rollup's default chunking while resolving the production startup TDZ.
+    // Keep routing/features in Rollup's default chunks. Only consolidate stable
+    // framework dependencies, matching the former conservative chunk layout.
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          core: [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-toast',
+            '@tanstack/react-query',
+            '@supabase/supabase-js',
+            'lucide-react',
+          ],
+        },
+      },
+    },
+    // Module-aware Terser compression improves size without restoring feature chunks.
+    terserOptions: {
+      module: true,
+      compress: {
+        // Extra safe pass targets the remaining shared helpers without enabling
+        // unsafe transforms or changing route-level chunk boundaries.
+        passes: 3,
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+      },
+      mangle: {
+        safari10: true,
+      },
+    },
     chunkSizeWarningLimit: 1000,
   },
   assetsInclude: ['**/*.webp', '**/*.avif'],
