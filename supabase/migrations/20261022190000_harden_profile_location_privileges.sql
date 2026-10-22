@@ -16,7 +16,7 @@ GRANT SELECT (
   tags_used,
   created_at,
   updated_at
-) ON TABLE public.profiles TO authenticated;
+) ON TABLE public.profiles TO authenticated, anon;
 
 -- Anonymous profile discovery is served by the deliberately limited view, not the base table.
 REVOKE SELECT ON TABLE public.profiles FROM PUBLIC;
