@@ -300,7 +300,10 @@ const BookExpert = () => {
         dialog.querySelectorAll<HTMLElement>(
           'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
         )
-      ).filter((element) => element.offsetParent !== null);
+      ).filter((element) => {
+        const isDesktop = typeof window.matchMedia === "function" && window.matchMedia("(min-width: 640px)").matches;
+        return isDesktop || !element.classList.contains("hidden");
+      });
       if (focusable.length === 0) {
         event.preventDefault();
         dialog.focus();
@@ -426,7 +429,7 @@ const BookExpert = () => {
                   Here for readers
                 </span>
               </div>
-              <p id="book-expert-description" className="mt-0.5 hidden text-xs text-muted-foreground sm:block">A little curiosity can open a whole world.</p>
+              <p id="book-expert-description" className="sr-only text-xs text-muted-foreground sm:not-sr-only sm:mt-0.5 sm:block">A little curiosity can open a whole world.</p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
