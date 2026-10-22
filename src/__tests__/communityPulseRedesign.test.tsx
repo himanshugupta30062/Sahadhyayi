@@ -147,7 +147,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     });
 
     // Recent Visitors tab button MUST NOT be rendered for non-admins
-    expect(screen.queryByRole('button', { name: /recent visitors/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /recent visitors/i })).not.toBeInTheDocument();
     // Raw table / IP addresses must not be rendered
     expect(screen.queryByText(/IP Address/i)).not.toBeInTheDocument();
   });
@@ -228,7 +228,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     );
 
     // Admin should see the Recent Visitors tab
-    const visitorsTabBtn = await screen.findByRole('button', { name: /recent visitors/i });
+    const visitorsTabBtn = await screen.findByRole('tab', { name: /recent visitors/i });
     expect(visitorsTabBtn).toBeInTheDocument();
 
     // Switch to Recent Visitors tab
