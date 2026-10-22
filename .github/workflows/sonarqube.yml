@@ -70,12 +70,15 @@ jobs:
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:54321
           VITE_SUPABASE_ANON_KEY: test-public-anon-key
-        run: npx vitest run --coverage --coverage.provider=v8 --coverage.reporter=lcov --coverage.reportsDirectory=coverage
+        run: npx vitest run --coverage.enabled=true --coverage.provider=v8 --coverage.reporter=lcovonly --coverage.reportsDirectory=./coverage
 
       - name: Verify LCOV report exists
         id: verify_lcov
         if: always()
-        run: test -s coverage/lcov.info
+        run: |
+          echo "Coverage output directory contents:"
+          if [ -d coverage ]; then find coverage -maxdepth 2 -type f -printf '%p (%s bytes)\\n'; else echo 'coverage directory missing'; fi
+          test -s coverage/lcov.info
 
       - name: Analyze with SonarQube Cloud
         if: always() && steps.verify_lcov.outcome == 'success'
