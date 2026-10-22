@@ -1,6 +1,9 @@
 -- Security hardening: do not expose private profile fields through direct PostgREST reads.
 -- Social profile discovery continues through public_profiles and the consent-aware RPCs.
 
+-- Remove the legacy permissive policy if an older environment still has it.
+DROP POLICY IF EXISTS "Authenticated users can view profiles" ON public.profiles;
+
 REVOKE SELECT ON TABLE public.profiles FROM anon, authenticated;
 
 GRANT SELECT (
