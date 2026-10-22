@@ -286,6 +286,23 @@ const BookExpert = () => {
     const previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    // Make sibling page content inert while the dialog is open, preserving
+    // the backdrop so pointer users can still dismiss the reader.
+    const inertedElements: HTMLElement[] = [];
+    let current: HTMLElement | null = document.getElementById("book-expert-panel");
+    while (current && current.parentElement && current.parentElement !== document.body) {
+      const parent = current.parentElement;
+      Array.from(parent.children).forEach((child) => {
+        const sibling = child as HTMLElement;
+        if (sibling === current || sibling.classList.contains("reader-room-backdrop-enter")) return;
+        if (!sibling.inert) {
+          sibling.inert = true;
+          inertedElements.push(sibling);
+        }
+      });
+      current = parent;
+    }
+
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -324,6 +341,7 @@ const BookExpert = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      inertedElements.forEach((element) => { element.inert = false; });
       document.body.style.overflow = previousBodyOverflow;
     };
   }, [isOpen, handleClose]);
