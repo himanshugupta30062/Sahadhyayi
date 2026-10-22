@@ -269,6 +269,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
           {(imagePreview || selectedBook || selectedFeeling) && (
             <div className="mb-4 p-3 bg-[#FAF7F2] dark:bg-[#0B0D0C]/80 rounded-xl border border-[#E8E2D9] dark:border-[#29332D]">
               {imagePreview && (
+                <>
                 <div className="relative mb-3">
                   <img src={imagePreview} alt={imageAlt.trim() || 'Selected image preview'} className="max-h-80 w-full rounded-lg border border-[#E8E2D9] bg-[#F4EFEA] object-contain dark:border-[#29332D] dark:bg-[#0B0D0C]" />
                   <Button
@@ -297,6 +298,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                   placeholder="E.g. A highlighted passage in a paperback"
                   className="mb-3 w-full rounded-lg border border-[#E8E2D9] bg-white px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]"
                 />
+                </>
               )}
 
               {selectedBook && (
