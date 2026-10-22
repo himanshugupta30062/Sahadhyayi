@@ -34,7 +34,7 @@ export async function resolveSocialPostImages<T extends { image_url?: string | n
     signedUrls = new Map(
       (data || [])
         .filter((entry) => Boolean(entry.path && entry.signedUrl && !entry.error))
-        .map((entry) => [entry.path as string, entry.signedUrl]),
+        .map((entry) => [entry.path as string, entry.signedUrl] as [string, string]),
     );
   } catch (error) {
     // Do not fail the post feed if media signing is unavailable. Private markers
