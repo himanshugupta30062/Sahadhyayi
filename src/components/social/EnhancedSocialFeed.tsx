@@ -99,8 +99,18 @@ export const EnhancedSocialFeed = () => {
   const [selectedPost, setSelectedPost] = useState<SocialPost | null>(null);
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   const [feedFilter, setFeedFilter] = useState<'all' | 'posts' | 'margins' | 'threads'>('all');
-  const { data: marginNotes = [], isLoading: marginLoading } = useMarginNotes({ filter: 'all' });
-  const { data: spoilerThreads = [], isLoading: threadsLoading } = useSpoilerThreads();
+  const {
+    data: marginNotes = [],
+    isLoading: marginLoading,
+    error: marginError,
+    refetch: refetchMarginNotes,
+  } = useMarginNotes({ filter: 'all' });
+  const {
+    data: spoilerThreads = [],
+    isLoading: threadsLoading,
+    error: threadsError,
+    refetch: refetchThreads,
+  } = useSpoilerThreads(undefined, { enabled: feedFilter === 'threads' });
 
   const handleLike = (post: SocialPost) => {
     if (!user) return;
@@ -199,13 +209,18 @@ export const EnhancedSocialFeed = () => {
           onClick={() => setFeedFilter('threads')}
         >
           <Lock className="w-3.5 h-3.5 mr-1.5 text-indigo-600 dark:text-indigo-400" />
-          Chapter Threads ({spoilerThreads.length})
+          Chapter Threads{feedFilter === 'threads' ? ` (${spoilerThreads.length})` : ''}
         </Button>
       </div>
 
       {feedFilter === 'margins' ? (
         marginLoading ? (
-          <div className="flex justify-center py-8"><LoadingSpinner /></div>
+          <div className="flex justify-center py-8" role="status"><LoadingSpinner /></div>
+        ) : marginError ? (
+          <Card role="alert" className="bg-white dark:bg-[#111614] border-destructive/40 text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl p-8 text-center">
+            <p className="text-sm text-destructive font-medium mb-3">Margin notes could not be loaded.</p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void refetchMarginNotes()}>Retry</Button>
+          </Card>
         ) : marginNotes.length === 0 ? (
           <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl p-8 text-center shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
             <Quote className="w-8 h-8 text-amber-600 dark:text-amber-400 mx-auto mb-2" />
@@ -221,7 +236,12 @@ export const EnhancedSocialFeed = () => {
         )
       ) : feedFilter === 'threads' ? (
         threadsLoading ? (
-          <div className="flex justify-center py-8"><LoadingSpinner /></div>
+          <div className="flex justify-center py-8" role="status"><LoadingSpinner /></div>
+        ) : threadsError ? (
+          <Card role="alert" className="bg-white dark:bg-[#111614] border-destructive/40 text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl p-8 text-center">
+            <p className="text-sm text-destructive font-medium mb-3">Chapter threads could not be loaded.</p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void refetchThreads()}>Retry</Button>
+          </Card>
         ) : spoilerThreads.length === 0 ? (
           <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl p-8 text-center shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
             <Lock className="w-8 h-8 text-indigo-600 dark:text-indigo-400 mx-auto mb-2" />
@@ -298,17 +318,17 @@ export const EnhancedSocialFeed = () => {
                 )}
 
                 {/* Post Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
+                <div className="flex min-w-0 items-start justify-between gap-3 mb-4 sm:items-center">
+                  <div className="flex min-w-0 flex-1 items-center space-x-3">
                     <Avatar className="w-10 h-10 border border-[#E8E2D9] dark:border-[#29332D]">
                       <AvatarImage src={postProfile?.profile_photo_url} />
                       <AvatarFallback className="bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D] font-semibold text-xs">
                         {postProfile?.full_name?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 items-center gap-2 flex-wrap">
+                        <h4 className="max-w-full truncate font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
                           {isOwn ? 'You' : (postProfile?.full_name || 'Anonymous')}
                         </h4>
                         {!isOwn && post.user_id && (

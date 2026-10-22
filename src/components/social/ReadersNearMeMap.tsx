@@ -1,18 +1,17 @@
-
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Users, BookOpen, MessageCircle } from 'lucide-react';
+import { MapPin, MapPinOff, Users, BookOpen, MessageCircle, ShieldCheck, Loader2, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
+import { LocationConsentModal } from './LocationConsentModal';
 import { LocationPermissionModal } from './LocationPermissionModal';
 import { BookFilterDropdown } from './BookFilterDropdown';
-import { getCurrentLocation, calculateDistance, type LocationCoords } from '@/lib/locationService';
-import { useFriends } from '@/hooks/useFriends';
-import { useUpdateUserLocation } from '@/hooks/useUserLocation';
+import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
 import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
+import { ChatWindow } from './ChatWindow';
 
 declare global {
   interface Window {
@@ -23,12 +22,9 @@ declare global {
 interface NearbyReader {
   id: string;
   full_name: string;
-  profile_photo_url?: string;
-  location_lat: number;
-  location_lng: number;
   distance: number;
-  current_book_title?: string;
-  avatar_img_url?: string;
+  reading_since?: string | null;
+  is_friend: boolean;
 }
 
 interface BookOption {
@@ -38,356 +34,359 @@ interface BookOption {
   cover_image_url?: string;
 }
 
+const MAX_DISTANCE_KM = 50;
+
 export const ReadersNearMeMap: React.FC = () => {
   const { user } = useAuth();
-  const { data: friends = [] } = useFriends();
-  const updateLocationMutation = useUpdateUserLocation();
-  
   const mapRef = useRef<HTMLDivElement>(null);
+  const userMarkerRef = useRef<any>(null);
+  const requestIdRef = useRef(0);
+
   const [map, setMap] = useState<any>(null);
-  const [markers, setMarkers] = useState<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMap, setIsLoadingMap] = useState(true);
+  const [mapLoadError, setMapLoadError] = useState<string | null>(null);
+  const [mapLoadAttempt, setMapLoadAttempt] = useState(0);
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
+  const [isLocationSharing, setIsLocationSharing] = useState(false);
+  const [isLoadingSharingStatus, setIsLoadingSharingStatus] = useState(true);
+  const [sharingStatusError, setSharingStatusError] = useState<string | null>(null);
+  const [sharingStatusAttempt, setSharingStatusAttempt] = useState(0);
+  const [isSavingLocation, setIsSavingLocation] = useState(false);
   const [nearbyReaders, setNearbyReaders] = useState<NearbyReader[]>([]);
+  const [isLoadingReaders, setIsLoadingReaders] = useState(false);
+  const [readersError, setReadersError] = useState<string | null>(null);
+  const [selectedBook, setSelectedBook] = useState<BookOption | null>(null);
+  const [showConsentModal, setShowConsentModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [selectedBook, setSelectedBook] = useState<BookOption | null>(null);
-  const MAX_DISTANCE_KM = 50;
+  const [chatFriendId, setChatFriendId] = useState<string | null>(null);
 
-  // Auto-load map and request location on component mount
+  // Read only the current user's saved state on mount. Never request GPS or save a
+  // location merely because someone opened the Reader Map.
   useEffect(() => {
-    const autoRequestLocation = async () => {
+    if (!user?.id) {
+      setIsLoadingSharingStatus(false);
+      setSharingStatusError(null);
+      setIsLocationSharing(false);
+      setUserLocation(null);
+      return;
+    }
+
+    let active = true;
+    const loadOwnLocationState = async () => {
+      setIsLoadingSharingStatus(true);
+      setSharingStatusError(null);
       try {
-        const location = await getCurrentLocation();
-        setUserLocation(location);
-        
-        // Save location to database
-        await updateLocationMutation.mutateAsync(location);
-        
-        toast.success('Location detected for map');
-      } catch (error: any) {
-        console.log('Location permission not available, loading map without location');
-        // Still load the map even without location
+        const [profileResult, consentResult] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('location_sharing, location_lat, location_lng')
+            .eq('id', user.id)
+            .maybeSingle(),
+          supabase.rpc('has_location_consent', { user_uuid: user.id }),
+        ]);
+
+        if (profileResult.error) throw profileResult.error;
+        if (!active) return;
+
+        const consented = !consentResult.error && consentResult.data === true;
+        const sharingEnabled = profileResult.data?.location_sharing === true && consented;
+        setIsLocationSharing(sharingEnabled);
+
+        if (
+          sharingEnabled &&
+          profileResult.data?.location_lat != null &&
+          profileResult.data?.location_lng != null
+        ) {
+          setUserLocation({
+            lat: Number(profileResult.data.location_lat),
+            lng: Number(profileResult.data.location_lng),
+          });
+        } else {
+          setUserLocation(null);
+        }
+      } catch (error) {
+        if (active) {
+          setIsLocationSharing(false);
+          setUserLocation(null);
+          setSharingStatusError('Could not verify your saved location-sharing status. Retry before changing it.');
+          console.error('Unable to load saved location-sharing state:', error);
+        }
+      } finally {
+        if (active) setIsLoadingSharingStatus(false);
       }
     };
 
-    autoRequestLocation();
-  }, []);
+    void loadOwnLocationState();
+    return () => {
+      active = false;
+    };
+  }, [user?.id, sharingStatusAttempt]);
 
-  const handleRequestLocation = async () => {
-    try {
-      setLocationError(null);
-      const location = await getCurrentLocation();
-      setUserLocation(location);
-      
-      // Save location to database
-      await updateLocationMutation.mutateAsync(location);
-      
-      setShowLocationModal(false);
-      toast.success('Location access granted!');
-    } catch (error: any) {
-      setLocationError(error.message);
-    }
-  };
-
-  // Load Google Maps
+  // Load Google Maps independently of location consent.
   useEffect(() => {
+    let cancelled = false;
     const loadMap = async () => {
+      setIsLoadingMap(true);
+      setMapLoadError(null);
       try {
-        setIsLoading(true);
         await loadGoogleMaps(GOOGLE_MAPS_API_KEY);
-        setIsLoaded(true);
-        setIsLoading(false);
+        if (!cancelled) setIsLoaded(true);
       } catch (error) {
         console.error('Error loading Google Maps:', error);
-        setIsLoaded(false);
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoaded(false);
+          setMapLoadError('The map service could not be loaded. Check your connection and try again.');
+        }
+      } finally {
+        if (!cancelled) setIsLoadingMap(false);
       }
     };
 
-    loadMap();
-  }, []);
-
-  // Initialize map when loaded (with or without user location)
-  useEffect(() => {
-    if (isLoaded && mapRef.current && window.google) {
-      initializeMap();
-    }
-  }, [isLoaded]);
-
-  // Fetch nearby readers when location and selected book are available
-  useEffect(() => {
-    if (userLocation && selectedBook) {
-      fetchNearbyReaders();
-    } else {
-      setNearbyReaders([]);
-    }
-  }, [userLocation, selectedBook]);
-
-  const initializeMap = () => {
-    if (!mapRef.current || !window.google) return;
-
-    const defaultCenter = { lat: 20, lng: 0 }; // World center as fallback
-    const mapOptions = {
-      center: userLocation || defaultCenter,
-      zoom: userLocation ? 12 : 2,
-      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
-      styles: [
-        {
-          featureType: 'poi',
-          elementType: 'labels',
-          stylers: [{ visibility: 'off' }]
-        }
-      ]
+    void loadMap();
+    return () => {
+      cancelled = true;
     };
+  }, [mapLoadAttempt]);
 
-    const newMap = new window.google.maps.Map(mapRef.current, mapOptions);
-    setMap(newMap);
+  useEffect(() => {
+    if (!isLoaded || isLoadingMap || !mapRef.current || !window.google?.maps) return;
 
-    // Try to get user location after map is initialized if not already available
-    if (!userLocation && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const location = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setUserLocation(location);
-          newMap.setCenter(location);
-          newMap.setZoom(12);
-          
-          // Save location to database
-          try {
-            await updateLocationMutation.mutateAsync(location);
-          } catch (error) {
-            console.log('Failed to save location to database');
-          }
-        },
-        () => {
-          console.log('Geolocation failed, using default map view');
-        }
-      );
-    }
-  };
+    const instance = new window.google.maps.Map(mapRef.current, {
+      center: userLocation || { lat: 20, lng: 0 },
+      zoom: userLocation ? 11 : 2,
+      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+      streetViewControl: false,
+      mapTypeControl: false,
+      fullscreenControl: true,
+      styles: [{
+        featureType: 'poi',
+        elementType: 'labels',
+        stylers: [{ visibility: 'off' }],
+      }],
+    });
 
-  const fetchNearbyReaders = async () => {
-    if (!userLocation || !selectedBook || !user) return;
+    setMap(instance);
+
+    return () => {
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setMap(null);
+        userMarkerRef.current = null;
+      }
+    };
+  }, [isLoaded, isLoadingMap]);
+
+  // The nearby-reader RPC deliberately returns distance, not another person's exact
+  // coordinates. Show these readers in the list; never pin them at fake 0,0 locations.
+  const fetchNearbyReaders = useCallback(async () => {
+    if (!user?.id || !selectedBook || !isLocationSharing || !userLocation) return;
+
+    const requestId = ++requestIdRef.current;
+    setIsLoadingReaders(true);
+    setReadersError(null);
 
     try {
-      // Use the new secure function that only returns friends' locations
-      const { data: readersData, error } = await supabase
-        .rpc('get_nearby_readers', { radius_km: 10 });
+      const { data, error } = await supabase.rpc('get_nearby_book_readers', {
+        book_uuid: selectedBook.id,
+        radius_km: MAX_DISTANCE_KM,
+      });
 
-      if (error) {
-        console.error('Error fetching nearby readers:', error);
-        toast.error("Unable to find nearby readers. Make sure you have location sharing enabled and friends who also share their location.");
-        return;
-      }
+      if (error) throw error;
+      if (requestId !== requestIdRef.current) return;
 
-      if (!readersData || readersData.length === 0) {
-        setNearbyReaders([]);
-        toast.info("No friends are currently reading nearby. Invite friends to join and enable location sharing!");
-        return;
-      }
-
-      // Use the secure data from the new function
-      setNearbyReaders(readersData.map((reader: any) => ({
+      setNearbyReaders(((data || []) as unknown as Array<{
+        reader_id: string;
+        reader_name: string;
+        distance_km: number;
+        reading_since?: string | null;
+        is_friend: boolean;
+      }>).map((reader) => ({
         id: reader.reader_id,
-        full_name: reader.reader_name,
-        profile_photo_url: null, // Don't expose profile photos in location context
-        location_lat: 0, // Don't expose exact coordinates to frontend 
-        location_lng: 0, // Don't expose exact coordinates to frontend
-        distance: reader.distance_km,
-        current_book_title: reader.book_title,
-        avatar_img_url: null, // Don't expose avatars in location context
-      })));
+        full_name: reader.reader_name || 'Reader',
+        distance: Number(reader.distance_km),
+        reading_since: reader.reading_since ?? null,
+        is_friend: Boolean(reader.is_friend),
+      })).filter((reader) => Number.isFinite(reader.distance) && reader.distance >= 0));
     } catch (error) {
-      console.error('Error fetching nearby readers:', error);
+      if (requestId !== requestIdRef.current) return;
+      console.error('Unable to fetch nearby book readers:', error);
+      setNearbyReaders([]);
+      setReadersError('Nearby matches could not be loaded. Please try again.');
+    } finally {
+      if (requestId === requestIdRef.current) setIsLoadingReaders(false);
     }
-  };
+  }, [user?.id, selectedBook, isLocationSharing, userLocation]);
 
-  // Create custom marker icon from avatar
-  const createAvatarMarker = (avatarUrl: string, isUser: boolean = false) => {
-    if (!window.google) return null;
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 40;
-    canvas.height = 40;
-
-    if (ctx) {
-      // Draw circle background
-      ctx.beginPath();
-      ctx.arc(20, 20, 18, 0, 2 * Math.PI);
-      ctx.fillStyle = isUser ? '#3b82f6' : '#f97316';
-      ctx.fill();
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-
-      // Load and draw avatar image
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(20, 20, 15, 0, 2 * Math.PI);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(img, 5, 5, 30, 30);
-        ctx.restore();
-      };
-      img.src = avatarUrl;
-    }
-
-    return canvas.toDataURL();
-  };
-
-  // Update markers when readers or map change
   useEffect(() => {
-    if (!map || !window.google || !userLocation) return;
+    if (isLocationSharing && selectedBook) {
+      void fetchNearbyReaders();
+    } else {
+      requestIdRef.current += 1;
+      setNearbyReaders([]);
+      setReadersError(null);
+      setIsLoadingReaders(false);
+    }
+  }, [isLocationSharing, selectedBook, fetchNearbyReaders]);
 
-    // Clear existing markers
-    markers.forEach(marker => marker.setMap(null));
-    const newMarkers: any[] = [];
+  // Render a marker only for the signed-in user's own explicitly shared location.
+  useEffect(() => {
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setMap(null);
+      userMarkerRef.current = null;
+    }
+    if (!map || !window.google?.maps || !userLocation || !isLocationSharing) return;
 
-    // Add user's own marker
-    const userMarker = new window.google.maps.Marker({
+    map.setCenter(userLocation);
+    map.setZoom(11);
+    const marker = new window.google.maps.Marker({
       position: userLocation,
-      map: map,
-      title: 'Your Location',
+      map,
+      title: 'Your saved location',
       icon: {
         path: window.google.maps.SymbolPath.CIRCLE,
-        scale: 15,
-        fillColor: '#3b82f6',
+        scale: 10,
+        fillColor: '#1C442D',
         fillOpacity: 1,
         strokeColor: '#ffffff',
         strokeWeight: 3,
-      }
+      },
     });
 
-    const userInfoWindow = new window.google.maps.InfoWindow({
-      content: `
-        <div style="padding: 10px; max-width: 200px;">
-          <div style="font-weight: bold; color: #3b82f6; margin-bottom: 5px;">
-            📍 Your Location
-          </div>
-          <p style="margin: 0; font-size: 14px;">
-            ${selectedBook ? `Looking for readers of: ${selectedBook.title}` : 'Select a book to find nearby readers'}
-          </p>
-        </div>
-      `
-    });
-
-    userMarker.addListener('click', () => {
-      userInfoWindow.open(map, userMarker);
-    });
-
-    newMarkers.push(userMarker);
-
-    // Add nearby readers markers
-    nearbyReaders.forEach((reader) => {
-      const marker = new window.google.maps.Marker({
-        position: { lat: reader.location_lat, lng: reader.location_lng },
-        map: map,
-        title: reader.full_name,
-        icon: reader.avatar_img_url ? {
-          url: reader.avatar_img_url,
-          scaledSize: new window.google.maps.Size(40, 40),
-          anchor: new window.google.maps.Point(20, 20),
-        } : {
-          path: window.google.maps.SymbolPath.CIRCLE,
-          scale: 12,
-          fillColor: '#f97316',
-          fillOpacity: 1,
-          strokeColor: '#ffffff',
-          strokeWeight: 3,
-        }
-      });
-
-      const isFriend = friends.some(f => f.friend_profile?.id === reader.id);
-
-      const infoWindow = new window.google.maps.InfoWindow({
-        content: `
-          <div style="padding: 12px; max-width: 250px;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-              <div style="width: 40px; height: 40px; background: ${isFriend ? '#10b981' : '#f97316'}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                ${reader.avatar_img_url ? `<img src="${reader.avatar_img_url}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />` : reader.full_name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">
-                  ${reader.full_name} ${isFriend ? '👥' : ''}
-                </h3>
-                <p style="margin: 0; font-size: 12px; color: #6b7280;">
-                  ${reader.distance.toFixed(1)} km away
-                </p>
-              </div>
-            </div>
-            <p style="margin: 0 0 10px 0; font-size: 14px;">
-              📖 Reading: <strong>${reader.current_book_title}</strong>
-            </p>
-            <button 
-              onclick="window.handleConnectReader('${reader.id}')"
-              style="
-                background: #f97316; 
-                color: white; 
-                border: none; 
-                padding: 8px 16px; 
-                border-radius: 6px; 
-                cursor: pointer; 
-                font-size: 14px;
-                width: 100%;
-              "
-            >
-              ${isFriend ? '💬 Chat' : '🤝 Connect'}
-            </button>
-          </div>
-        `
-      });
-
-      marker.addListener('click', () => {
-        infoWindow.open(map, marker);
-      });
-
-      newMarkers.push(marker);
-    });
-
-    setMarkers(newMarkers);
-
-    // Adjust map bounds to show all markers
-    if (newMarkers.length > 1) {
-      const bounds = new window.google.maps.LatLngBounds();
-      newMarkers.forEach(marker => bounds.extend(marker.getPosition()));
-      map.fitBounds(bounds);
-    }
-  }, [map, nearbyReaders, userLocation, friends, selectedBook]);
-
-  // Global handler for connect button in info windows
-  useEffect(() => {
-    (window as any).handleConnectReader = (readerId: string) => {
-      toast.success('Connect feature coming soon!');
-    };
+    const content = document.createElement('div');
+    content.textContent = 'Your saved location';
+    content.style.padding = '8px';
+    const infoWindow = new window.google.maps.InfoWindow({ content });
+    marker.addListener('click', () => infoWindow.open({ map, anchor: marker }));
+    userMarkerRef.current = marker;
 
     return () => {
-      delete (window as any).handleConnectReader;
+      marker.setMap(null);
+      infoWindow.close();
+      if (userMarkerRef.current === marker) userMarkerRef.current = null;
     };
-  }, []);
+  }, [map, userLocation, isLocationSharing]);
 
-  if (isLoading) {
+  const handleEnableSharing = async () => {
+    if (!user?.id) {
+      toast.error('Sign in to share your location.');
+      return;
+    }
+
+    setIsSavingLocation(true);
+    setLocationError(null);
+    try {
+      const position = await getCurrentLocation();
+      const patch = {
+        location_lat: position.lat,
+        location_lng: position.lng,
+        location_sharing: true,
+        last_seen: new Date().toISOString(),
+      };
+
+      const { data: profile, error: profileLookupError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (profileLookupError) throw profileLookupError;
+
+      const profileWrite = profile
+        ? await supabase.from('profiles').update(patch).eq('id', user.id)
+        : await supabase.from('profiles').insert({
+            ...patch,
+            id: user.id,
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Reader',
+          });
+      if (profileWrite.error) throw profileWrite.error;
+
+      setUserLocation(position);
+      setIsLocationSharing(true);
+      setShowLocationModal(false);
+      toast.success('Location sharing enabled. Only friends who also consent can see it.');
+    } catch (error) {
+      // record_location_consent() also sets location_sharing=true. If the browser
+      // denies GPS or saving coordinates fails, roll that flag back so a failed
+      // consent flow cannot leave the UI claiming sharing is on.
+      try {
+        const { error: rollbackError } = await supabase
+          .from('profiles')
+          .update({ location_sharing: false, location_lat: null, location_lng: null })
+          .eq('id', user.id);
+        if (rollbackError) console.error('Could not roll back incomplete location sharing:', rollbackError);
+      } catch (rollbackError) {
+        console.error('Could not roll back incomplete location sharing:', rollbackError);
+      }
+      setIsLocationSharing(false);
+      setUserLocation(null);
+      const message = error instanceof Error ? error.message : 'Unable to enable location sharing.';
+      setLocationError(message);
+      setShowLocationModal(true);
+    } finally {
+      setIsSavingLocation(false);
+    }
+  };
+
+  const handleStopSharing = async () => {
+    if (!user?.id || isSavingLocation) return;
+    setIsSavingLocation(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          location_sharing: false,
+          location_lat: null,
+          location_lng: null,
+          last_seen: null,
+        })
+        .eq('id', user.id);
+      if (error) throw error;
+
+      // Older map surfaces also read this table. Deactivate its row so it cannot
+      // appear as an active location after consent is withdrawn.
+      const { error: locationRowError } = await supabase
+        .from('user_locations')
+        .update({ is_active: false })
+        .eq('user_id', user.id);
+      if (locationRowError) {
+        console.warn('Could not deactivate legacy user location row:', locationRowError);
+      }
+
+      setIsLocationSharing(false);
+      setUserLocation(null);
+      setNearbyReaders([]);
+      setShowConsentModal(false);
+      toast.success('Location sharing disabled.');
+    } catch (error) {
+      console.error('Unable to disable location sharing:', error);
+      toast.error('Could not disable location sharing. Please try again.');
+    } finally {
+      setIsSavingLocation(false);
+    }
+  };
+
+  const openChat = (reader: NearbyReader) => {
+    if (!reader.is_friend) {
+      toast.error('Chat is available for friends only.');
+      return;
+    }
+    setChatFriendId(reader.id);
+  };
+
+  if (isLoadingMap) {
     return (
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
+      <Card className="border border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] rounded-2xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
-            📚 Readers Near Me
+          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+            <MapPin className="w-5 h-5 text-[#1C442D] dark:text-[#D5B16D]" />
+            Readers Near Me
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="relative bg-gradient-to-br from-blue-50 to-orange-50 rounded-xl h-[500px] border overflow-hidden flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="w-12 h-12 mx-auto mb-4 text-blue-500 animate-pulse" />
-              <p className="text-gray-600 font-medium">Loading interactive map...</p>
-              <p className="text-sm text-gray-500 mt-2">Connecting to Google Maps</p>
+          <div className="h-[360px] rounded-xl border border-[#E8E2D9] dark:border-[#29332D] flex items-center justify-center">
+            <div className="text-center text-[#636B65] dark:text-[#A5ADA6]">
+              <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin text-[#1C442D] dark:text-[#D5B16D]" />
+              <p className="text-sm">Loading the map…</p>
             </div>
           </div>
         </CardContent>
@@ -397,43 +396,71 @@ export const ReadersNearMeMap: React.FC = () => {
 
   if (!isLoaded) {
     return (
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
+      <Card className="border border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] rounded-2xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
-            📚 Readers Near Me
+          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+            <MapPin className="w-5 h-5 text-[#1C442D] dark:text-[#D5B16D]" />
+            Readers Near Me
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="relative bg-gradient-to-br from-blue-50 to-orange-50 rounded-xl h-[500px] border overflow-hidden flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-600 font-medium">Loading Map</p>
-              <p className="text-sm text-gray-500 mt-2">Initializing interactive map...</p>
-            </div>
-          </div>
+        <CardContent className="space-y-4">
+          <p role="alert" className="text-sm text-[#636B65] dark:text-[#A5ADA6]">{mapLoadError || 'The map is unavailable.'}</p>
+          <Button onClick={() => setMapLoadAttempt((attempt) => attempt + 1)} variant="outline" className="gap-2">
+            <RefreshCw className="w-4 h-4" /> Try again
+          </Button>
         </CardContent>
       </Card>
     );
   }
 
-
   return (
     <>
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
-            📚 Readers Near Me
+      <Card className="border border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] rounded-2xl shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+            <MapPin className="w-5 h-5 text-[#1C442D] dark:text-[#D5B16D]" />
+            Readers Near Me
           </CardTitle>
-          <p className="text-sm text-gray-600 mt-2">
-            Select a book from your library to find nearby readers
+          <p className="text-sm text-[#636B65] dark:text-[#A5ADA6] mt-2">
+            Find friends who are reading the same book within {MAX_DISTANCE_KM} km.
           </p>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Book Selection Dropdown */}
+        <CardContent className="space-y-5">
+          <div className="flex flex-col gap-3 rounded-xl border border-[#E8E2D9] bg-[#FAF7F2] p-4 dark:border-[#29332D] dark:bg-[#0B0D0C] sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="mt-0.5 rounded-lg bg-[#EBF2EC] p-2 text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]">
+                <ShieldCheck className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">{isLocationSharing ? 'Location sharing is on' : 'Location sharing is off'}</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
+                  {sharingStatusError
+                    ? sharingStatusError
+                    : isLocationSharing
+                      ? 'Your saved location is available only to friends who have also given consent. Other readers’ exact coordinates are never sent to this map.'
+                      : 'Your location is not requested or saved unless you choose to enable sharing.'}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant={isLocationSharing ? 'outline' : 'default'}
+              disabled={isSavingLocation || isLoadingSharingStatus || !user}
+              onClick={() => {
+                if (sharingStatusError) setSharingStatusAttempt((attempt) => attempt + 1);
+                else if (isLocationSharing) void handleStopSharing();
+                else setShowConsentModal(true);
+              }}
+              className="shrink-0 gap-2 bg-[#1C442D] text-white hover:bg-[#143221] disabled:opacity-60 dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]"
+            >
+              {isSavingLocation || isLoadingSharingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : sharingStatusError ? <RefreshCw className="h-4 w-4" /> : isLocationSharing ? <MapPinOff className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
+              {isSavingLocation ? 'Saving…' : isLoadingSharingStatus ? 'Checking…' : sharingStatusError ? 'Retry status' : isLocationSharing ? 'Stop sharing' : 'Enable location sharing'}
+            </Button>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select a Book
-            </label>
+            <label htmlFor="nearby-reader-book" className="mb-2 block text-sm font-medium">Select a book</label>
             <BookFilterDropdown
               selectedBookId={selectedBook?.id || null}
               onBookSelect={setSelectedBook}
@@ -442,100 +469,109 @@ export const ReadersNearMeMap: React.FC = () => {
 
           <div
             ref={mapRef}
-            className="w-full h-[500px] rounded-xl border border-gray-200 overflow-hidden shadow-lg"
+            aria-label="Map showing your saved location only"
+            className="h-[360px] w-full overflow-hidden rounded-xl border border-[#E8E2D9] dark:border-[#29332D]"
           />
-          
-          {/* Nearby Readers List */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Users className="w-4 h-4 text-orange-600" />
-              Nearby Readers ({nearbyReaders.length})
-              {selectedBook && (
-                <span className="text-sm font-normal text-gray-600">
-                  reading "{selectedBook.title}"
-                </span>
+
+          <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
+            For privacy, the map does not plot other readers’ exact positions. Confirmed nearby matches appear below with distance only; no placeholder or guessed map pins are used.
+          </p>
+
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="flex items-center gap-2 font-semibold">
+                <Users className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
+                Nearby readers {selectedBook ? `reading ${selectedBook.title}` : ''}
+              </h3>
+              {selectedBook && isLocationSharing && (
+                <Button type="button" size="sm" variant="outline" disabled={isLoadingReaders} onClick={() => void fetchNearbyReaders()} className="gap-2">
+                  {isLoadingReaders ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                  Refresh
+                </Button>
               )}
-            </h3>
+            </div>
+
             {!selectedBook ? (
-              <div className="text-center py-8 text-gray-500">
-                <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">
-                  Please select a book from the dropdown above to find nearby readers
-                </p>
+              <div className="rounded-xl border border-dashed border-[#E8E2D9] px-4 py-8 text-center dark:border-[#29332D]">
+                <BookOpen className="mx-auto mb-2 h-7 w-7 text-[#636B65] dark:text-[#A5ADA6]" />
+                <p className="text-sm font-medium">Choose a book to discover reading friends</p>
+                <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">Only friends who shared that book’s reading location and mutually enabled location sharing can appear.</p>
+              </div>
+            ) : !isLocationSharing ? (
+              <div className="rounded-xl border border-dashed border-[#E8E2D9] px-4 py-8 text-center dark:border-[#29332D]">
+                <ShieldCheck className="mx-auto mb-2 h-7 w-7 text-[#636B65] dark:text-[#A5ADA6]" />
+                <p className="text-sm font-medium">Enable location sharing to search nearby</p>
+                <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">You can turn it off at any time.</p>
+              </div>
+            ) : !userLocation ? (
+              <div className="rounded-xl border border-amber-400/40 bg-amber-50 p-4 text-center dark:border-amber-700/40 dark:bg-amber-950/20" role="alert">
+                <MapPin className="mx-auto mb-2 h-6 w-6 text-amber-700 dark:text-amber-400" />
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-200">Your saved location is missing</p>
+                <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">Refresh your location to find nearby readers. No nearby query will run until coordinates are available.</p>
+                <Button type="button" size="sm" className="mt-3" disabled={isSavingLocation} onClick={() => void handleEnableSharing()}>
+                  {isSavingLocation ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                  Refresh saved location
+                </Button>
+              </div>
+            ) : isLoadingReaders ? (
+              <div className="flex justify-center py-8" role="status" aria-live="polite">
+                <Loader2 className="h-5 w-5 animate-spin text-[#1C442D] dark:text-[#D5B16D]" />
+                <span className="ml-2 text-sm text-[#636B65] dark:text-[#A5ADA6]">Finding nearby readers…</span>
+              </div>
+            ) : readersError ? (
+              <div className="rounded-xl border border-red-300/60 bg-red-50 p-4 dark:border-red-900/60 dark:bg-red-950/20" role="alert">
+                <p className="text-sm text-red-700 dark:text-red-300">{readersError}</p>
+                <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => void fetchNearbyReaders()}>Try again</Button>
               </div>
             ) : nearbyReaders.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">
-                  No readers found for "{selectedBook.title}" yet
-                </p>
-                <p className="text-xs mt-1">
-                  Readers within {MAX_DISTANCE_KM} km will appear here
-                </p>
+              <div className="rounded-xl border border-dashed border-[#E8E2D9] px-4 py-8 text-center dark:border-[#29332D]">
+                <BookOpen className="mx-auto mb-2 h-7 w-7 text-[#636B65] dark:text-[#A5ADA6]" />
+                <p className="text-sm font-medium">No nearby friends have shared this book yet</p>
+                <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">Try another book, or invite a friend to share their reading location.</p>
               </div>
             ) : (
-              <div className="grid gap-3 max-h-64 overflow-y-auto">
-                {nearbyReaders.map((reader) => {
-                  const isFriend = friends.some(f => f.friend_profile?.id === reader.id);
-                  return (
-                    <div
-                      key={reader.id}
-                      className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg cursor-pointer transition-all duration-200 border border-gray-100 hover:border-orange-200 hover:shadow-sm"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm overflow-hidden ${isFriend ? 'border-2 border-green-400' : 'border-2 border-orange-400'}`}>
-                          {reader.avatar_img_url ? (
-                            <img 
-                              src={reader.avatar_img_url} 
-                              alt={reader.full_name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className={`text-sm font-bold text-white bg-gradient-to-br ${isFriend ? 'from-green-400 to-green-600' : 'from-orange-400 to-orange-600'} w-full h-full flex items-center justify-center`}>
-                              {reader.full_name.charAt(0).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
-                            {reader.full_name}
-                            {isFriend && <span className="text-green-600">👥</span>}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            📖 {reader.current_book_title}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            📍 {reader.distance.toFixed(1)} km away
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          className={`${isFriend ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'} text-white`}
-                        >
-                          {isFriend ? (
-                            <>
-                              <MessageCircle className="w-3 h-3 mr-1" />
-                              Chat
-                            </>
-                          ) : (
-                            <>
-                              <Users className="w-3 h-3 mr-1" />
-                              Connect
-                            </>
-                          )}
-                        </Button>
-                      </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {nearbyReaders.map((reader) => (
+                  <div key={reader.id} className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-[#E8E2D9] p-3 dark:border-[#29332D]">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{reader.full_name}</p>
+                      <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">
+                        {reader.distance.toFixed(1)} km away · {selectedBook.title}
+                      </p>
                     </div>
-                  );
-                })}
+                    <Button type="button" size="sm" variant="outline" className="shrink-0 gap-1.5" onClick={() => openChat(reader)} disabled={!reader.is_friend}>
+                      <MessageCircle className="h-3.5 w-3.5" /> Chat
+                    </Button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </CardContent>
       </Card>
 
+      <LocationConsentModal
+        isOpen={showConsentModal}
+        onClose={() => setShowConsentModal(false)}
+        onConsentGiven={() => {
+          setShowConsentModal(false);
+          void handleEnableSharing();
+        }}
+      />
+      <LocationPermissionModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onRequestLocation={() => void handleEnableSharing()}
+        hasError={Boolean(locationError)}
+        errorMessage={locationError || undefined}
+      />
+      {chatFriendId && (
+        <ChatWindow
+          friendId={chatFriendId}
+          isOpen={Boolean(chatFriendId)}
+          onClose={() => setChatFriendId(null)}
+        />
+      )}
     </>
   );
 };

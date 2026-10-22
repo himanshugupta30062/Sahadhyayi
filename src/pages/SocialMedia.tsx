@@ -3,7 +3,6 @@ import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   MapPin,
@@ -33,8 +32,6 @@ import { ReadingGroups } from '@/components/social/ReadingGroups';
 import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
 import { BookPulseBar } from '@/components/social/BookPulseBar';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
-import { useMarginNotes } from '@/hooks/useMarginNotes';
-import { useSpoilerThreads } from '@/hooks/useSpoilerThreads';
 import { useGroups } from '@/hooks/useGroupManagement';
 import { useAllUsers } from '@/hooks/useUserSearch';
 import { useSendFriendRequest } from '@/hooks/useFriends';
@@ -266,8 +263,7 @@ const GuestLanding: React.FC = () => {
 };
 
 // ─── Authenticated View ───────────────────────────────────────────────────────
-const SocialMedia: React.FC = () => {
-  const { user, loading } = useAuth();
+const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof useAuth>['user']> }> = ({ user }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const activeTab = VALID_SOCIAL_TABS.includes(tabParam as (typeof VALID_SOCIAL_TABS)[number])
@@ -277,11 +273,9 @@ const SocialMedia: React.FC = () => {
   const [mapView, setMapView] = useState<'readers' | 'friends'>('readers');
 
   // Fetch community data
-  const { data: rooms = [] } = useReadingRooms();
-  const { data: marginNotes = [] } = useMarginNotes({ filter: 'all' });
-  const { data: spoilerThreads = [] } = useSpoilerThreads();
-  const { data: groups = [] } = useGroups();
-  const { data: allUsers = [] } = useAllUsers();
+  const { data: rooms = [], isLoading: isLoadingRooms, error: roomsError, refetch: refetchRooms } = useReadingRooms();
+  const { data: groups = [], isLoading: isLoadingGroups, error: groupsError, refetch: refetchGroups } = useGroups();
+  const { data: allUsers = [], isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useAllUsers();
   const { data: readingProgress = [] } = useReadingProgress();
   const sendFriendRequest = useSendFriendRequest();
 
@@ -308,18 +302,6 @@ const SocialMedia: React.FC = () => {
       toast.error('Unable to send friend request. Please try again.');
     }
   };
-
-  // Full-screen loader while authentication state is resolving
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#FAF7F2] dark:bg-[#0B0D0C] flex items-center justify-center text-[#1C201D] dark:text-[#F3F0E7]">
-        <Loader2 className="w-7 h-7 animate-spin text-[#1C442D] dark:text-[#D5B16D]" />
-      </div>
-    );
-  }
-
-  // Always show the guest experience when signed out
-  if (!user) return <GuestLanding />;
 
   const currentProgress = readingProgress[0];
 
@@ -594,12 +576,7 @@ const SocialMedia: React.FC = () => {
                   <SocialSurface className="p-4">
                     <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E2D9] dark:border-[#29332D]">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Live Reading Rooms</span>
-                        {rooms.length > 0 && (
-                          <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 text-[9px] px-1.5 py-0 h-4 font-bold">
-                            Live
-                          </Badge>
-                        )}
+                        <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Reading Rooms</span>
                       </div>
                       <button
                         type="button"
@@ -610,16 +587,25 @@ const SocialMedia: React.FC = () => {
                       </button>
                     </div>
 
-                    {rooms.length === 0 ? (
+                    {isLoadingRooms ? (
+                      <div className="flex items-center justify-center gap-2 py-5 text-xs text-[#636B65] dark:text-[#A5ADA6]" role="status">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Loading rooms…
+                      </div>
+                    ) : roomsError ? (
                       <div className="py-4 text-center">
-                        <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">No live reading rooms right now.</p>
+                        <p className="text-xs text-red-700 dark:text-red-300">Reading rooms could not be loaded.</p>
+                        <button type="button" onClick={() => void refetchRooms()} className="mt-2 text-xs font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">Retry</button>
+                      </div>
+                    ) : rooms.length === 0 ? (
+                      <div className="py-4 text-center">
+                        <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">No reading rooms to show right now.</p>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleTabChange('rooms')}
                           className="mt-3 text-xs h-7 border-[#E8E2D9] dark:border-[#29332D] bg-[#F4EFEA] dark:bg-[#16211A] text-[#1C201D] dark:text-[#F3F0E7] hover:border-[#1C442D]/40 dark:hover:border-[#315C43]"
                         >
-                          Start a Room
+                          Explore rooms
                         </Button>
                       </div>
                     ) : (
@@ -650,7 +636,7 @@ const SocialMedia: React.FC = () => {
                                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
                                     {typeof ((room as any).participants_count ?? (room as any).active_readers_count) === 'number'
                                       ? `${(room as any).participants_count ?? (room as any).active_readers_count} in room`
-                                      : 'Active now'}
+                                      : 'Room available'}
                                   </p>
                                 </div>
                               </div>
@@ -659,7 +645,7 @@ const SocialMedia: React.FC = () => {
                                 onClick={() => handleTabChange('rooms')}
                                 className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C201D] dark:text-[#F3F0E7] shrink-0"
                               >
-                                Join
+                                Explore
                               </Button>
                             </div>
                           );
@@ -681,14 +667,23 @@ const SocialMedia: React.FC = () => {
                       </button>
                     </div>
 
-                    {groups.length === 0 ? (
+                    {isLoadingGroups ? (
+                      <div className="flex items-center justify-center gap-2 py-5 text-xs text-[#636B65] dark:text-[#A5ADA6]" role="status">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Loading groups…
+                      </div>
+                    ) : groupsError ? (
+                      <div className="py-4 text-center">
+                        <p className="text-xs text-red-700 dark:text-red-300">Reading groups could not be loaded.</p>
+                        <button type="button" onClick={() => void refetchGroups()} className="mt-2 text-xs font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">Retry</button>
+                      </div>
+                    ) : groups.length === 0 ? (
                       <div className="py-4 text-center">
                         <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">No reading groups found.</p>
                       </div>
                     ) : (
                       <div className="space-y-2.5">
                         {groups.slice(0, 3).map((group) => {
-                          const memberCount = group.group_members?.[0]?.count ?? group.member_count ?? 1;
+                          const memberCount = group.group_members?.[0]?.count ?? group.member_count ?? null;
                           return (
                             <div
                               key={group.id}
@@ -711,7 +706,7 @@ const SocialMedia: React.FC = () => {
                                     {group.name}
                                   </p>
                                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
-                                    {memberCount} {memberCount === 1 ? 'member' : 'members'}
+                                    {memberCount === null ? 'Member count unavailable' : `${memberCount} ${memberCount === 1 ? 'member' : 'members'}`}
                                   </p>
                                 </div>
                               </div>
@@ -720,7 +715,7 @@ const SocialMedia: React.FC = () => {
                                 onClick={() => handleTabChange('groups')}
                                 className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#16211A] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C201D] dark:text-[#F3F0E7] shrink-0"
                               >
-                                Join
+                                Open
                               </Button>
                             </div>
                           );
@@ -742,7 +737,16 @@ const SocialMedia: React.FC = () => {
                       </button>
                     </div>
 
-                    {allUsers.length === 0 ? (
+                    {isLoadingUsers ? (
+                      <div className="flex items-center justify-center gap-2 py-5 text-xs text-[#636B65] dark:text-[#A5ADA6]" role="status">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Finding readers…
+                      </div>
+                    ) : usersError ? (
+                      <div className="py-4 text-center">
+                        <p className="text-xs text-red-700 dark:text-red-300">Reader suggestions could not be loaded.</p>
+                        <button type="button" onClick={() => void refetchUsers()} className="mt-2 text-xs font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">Retry</button>
+                      </div>
+                    ) : allUsers.length === 0 ? (
                       <div className="py-4 text-center">
                         <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">Connect with friends on Sahadhyayi.</p>
                       </div>
@@ -765,13 +769,14 @@ const SocialMedia: React.FC = () => {
                                   {reader.full_name}
                                 </p>
                                 <p className="truncate text-[10px] text-[#636B65] dark:text-[#A5ADA6]">
-                                  Reads · {reader.username ? `@${reader.username}` : 'Literature'}
+                                  Reads · {reader.username ? `@${reader.username}` : 'Sahadhyayi reader'}
                                 </p>
                               </div>
                             </div>
                             <Button
                               size="sm"
                               onClick={() => handleSendRequest(reader.id, reader.full_name)}
+                              disabled={sendFriendRequest.isPending}
                               className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#16211A] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C442D] dark:text-[#D5B16D] shrink-0"
                             >
                               Add friend
@@ -861,6 +866,24 @@ const SocialMedia: React.FC = () => {
       </div>
     </>
   );
+};
+
+// Keep guest landing completely separate from authenticated social queries.
+// This avoids kicking off friends, groups, reading-room, and profile discovery
+// requests for signed-out visitors and preserves the requested deep link at login.
+const SocialMedia: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] dark:bg-[#0B0D0C] flex items-center justify-center text-[#1C201D] dark:text-[#F3F0E7]" role="status" aria-label="Loading social community">
+        <Loader2 className="w-7 h-7 animate-spin text-[#1C442D] dark:text-[#D5B16D]" />
+      </div>
+    );
+  }
+
+  if (!user) return <GuestLanding />;
+  return <AuthenticatedSocialMedia user={user} />;
 };
 
 export default SocialMedia;

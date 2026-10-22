@@ -36,7 +36,7 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
   const { toast } = useToast();
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
-  const { data: comments = [], isLoading } = usePostComments(postId);
+  const { data: comments = [], isLoading, error: commentsError, refetch: refetchComments } = usePostComments(postId);
   const createComment = useCreateComment();
   const toggleLike = useToggleCommentLike(postId);
 
@@ -73,8 +73,8 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
   const renderComment = (c: CommentRow, depth = 0) => {
     const replies = tree.get(c.id) || [];
     return (
-      <div key={c.id} className={depth > 0 ? 'ml-8 mt-3' : ''}>
-        <div className="flex space-x-3">
+      <div key={c.id} className={depth > 0 ? 'ml-3 sm:ml-8 mt-3' : ''}>
+        <div className="flex min-w-0 space-x-3">
           <Avatar className="w-8 h-8 flex-shrink-0 border border-[#E8E2D9] dark:border-[#29332D]">
             <AvatarImage src={c.profiles?.profile_photo_url} />
             <AvatarFallback className="bg-[#EFEAE2] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D] text-xs font-semibold">
@@ -83,7 +83,7 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="bg-[#F4EFEA] dark:bg-[#16211A] border border-[#E8E2D9] dark:border-[#29332D]/70 rounded-2xl px-3.5 py-2.5">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <h5 className="font-medium text-sm text-foreground truncate">
                     {c.user_id === user?.id ? 'You' : (c.profiles?.full_name || 'Anonymous')}
@@ -136,8 +136,19 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-4">
+      <div className="flex justify-center py-4" role="status" aria-label="Loading comments">
         <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (commentsError) {
+    return (
+      <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-center" role="alert">
+        <p className="mb-3 text-sm text-destructive">Comments could not be loaded. They are not necessarily empty.</p>
+        <Button type="button" variant="outline" size="sm" onClick={() => void refetchComments()}>
+          Retry comments
+        </Button>
       </div>
     );
   }
@@ -170,14 +181,14 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
             </button>
           </div>
         )}
-        <div className="flex space-x-3">
+        <div className="flex min-w-0 space-x-3">
           <Avatar className="w-8 h-8 border border-[#E8E2D9] dark:border-[#29332D]">
             <AvatarImage src={user?.user_metadata?.avatar_url} />
             <AvatarFallback className="bg-[#EFEAE2] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D] text-xs font-semibold">
               {user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 flex space-x-2">
+          <div className="flex min-w-0 flex-1 space-x-2">
             <Input
               placeholder={replyingTo ? `Reply to ${replyingTo.name}...` : 'Write a comment...'}
               aria-label={replyingTo ? `Reply to ${replyingTo.name}` : 'Write a comment'}
@@ -189,7 +200,7 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
                   handleSend();
                 }
               }}
-              className="flex-1 bg-[#FAF7F2] dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-xs text-[#1C201D] dark:text-[#F3F0E7] placeholder:text-stone-400 dark:placeholder:text-[#A5ADA6]/70 rounded-xl focus-visible:ring-1 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
+              className="min-w-0 flex-1 bg-[#FAF7F2] dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-xs text-[#1C201D] dark:text-[#F3F0E7] placeholder:text-stone-400 dark:placeholder:text-[#A5ADA6]/70 rounded-xl focus-visible:ring-1 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
               disabled={createComment.isPending || !user}
             />
             <Button
