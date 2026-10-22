@@ -505,6 +505,10 @@ mark.search-highlight {
   from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.985); }
   to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
+@keyframes reading-room-content-enter {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
 @keyframes reading-room-backdrop-enter {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -524,6 +528,16 @@ mark.search-highlight {
 .reader-room-backdrop-enter {
   animation: reading-room-backdrop-enter 180ms ease-out both;
 }
+.reader-room-welcome-enter {
+  animation: reading-room-content-enter 360ms cubic-bezier(0.2, 0.8, 0.2, 1) 70ms both;
+}
+.reader-room-suggestions > button {
+  animation: reading-room-content-enter 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.reader-room-suggestions > button:nth-child(1) { animation-delay: 120ms; }
+.reader-room-suggestions > button:nth-child(2) { animation-delay: 170ms; }
+.reader-room-suggestions > button:nth-child(3) { animation-delay: 220ms; }
+.reader-room-suggestions > button:nth-child(4) { animation-delay: 270ms; }
 .reader-room-book-glow {
   animation: reading-room-book-glow 3.4s ease-in-out 500ms 2;
 }
@@ -533,6 +547,8 @@ mark.search-highlight {
 @media (prefers-reduced-motion: reduce) {
   .reader-room-panel-enter,
   .reader-room-backdrop-enter,
+  .reader-room-welcome-enter,
+  .reader-room-suggestions > button,
   .reader-room-book-glow,
   .reader-room-launcher-icon {
     animation: none !important;
