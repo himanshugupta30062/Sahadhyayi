@@ -22,7 +22,6 @@ GRANT SELECT (
 REVOKE SELECT ON TABLE public.profiles FROM PUBLIC;
 
 CREATE OR REPLACE VIEW public.public_profiles
-WITH (security_invoker = true)
 AS
 SELECT
   id,
