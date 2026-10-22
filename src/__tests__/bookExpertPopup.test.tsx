@@ -66,6 +66,20 @@ describe("BookExpert responsive reader controls", () => {
     expect(screen.queryByRole("dialog", { name: /the reading room/i })).not.toBeInTheDocument();
   });
 
+  it("makes the page background inert until the reader closes", () => {
+    render(
+      <>
+        <main data-testid="page-background">Page content</main>
+        <BookExpert />
+      </>
+    );
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+    expect(screen.getByTestId("page-background")).toHaveAttribute("inert");
+
+    fireEvent.click(within(screen.getByRole("dialog", { name: /the reading room/i })).getByRole("button", { name: /close reading room/i }));
+    expect(screen.getByTestId("page-background")).not.toHaveAttribute("inert");
+  });
+
   it("keeps keyboard focus inside the reader while it is open", () => {
     render(<BookExpert />);
     fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
