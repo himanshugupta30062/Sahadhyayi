@@ -567,6 +567,10 @@ export const EnhancedSocialFeed = () => {
           onClose={() => setShareModalOpen(false)}
           postContent={selectedPost.content}
           postId={selectedPost.id}
+          quoteText={selectedPost.quote_text}
+          quoteAuthor={selectedPost.quote_author}
+          quoteSource={selectedPost.quote_source}
+          quoteContext={selectedPost.quote_context}
         />
       )}
 
