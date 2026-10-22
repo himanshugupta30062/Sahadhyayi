@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -62,7 +64,7 @@ const EmbeddedOriginalPost: React.FC<{ post?: SocialPost | null }> = ({ post }) 
         <div className="mt-2 rounded-lg overflow-hidden border border-[#E8E2D9] dark:border-[#29332D]">
           <img
             src={post.image_url}
-            alt=""
+            alt={post.image_alt?.trim() || "Shared reading photo"}
             onError={(e) => {
               (e.currentTarget as HTMLElement).style.display = 'none';
             }}
@@ -89,6 +91,10 @@ const EmbeddedOriginalPost: React.FC<{ post?: SocialPost | null }> = ({ post }) 
 
 export const EnhancedSocialFeed = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const queryClient = useQueryClient();
+  const requestedPostId = searchParams.get('post');
+  const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
   const [streamMode, setStreamMode] = useState<'community' | 'following'>('community');
   const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
   const toggleLike = useTogglePostLike();
@@ -112,6 +118,64 @@ export const EnhancedSocialFeed = () => {
     error: threadsError,
     refetch: refetchThreads,
   } = useSpoilerThreads(undefined, { enabled: feedFilter === 'threads' });
+
+  // Shared URLs use /social?post=<id>. Resolve the single post through the same
+  // audience-aware RLS boundary as the feed, so an inaccessible post is never
+  // rendered merely because someone knows its identifier.
+  useEffect(() => {
+    if (!requestedPostId || !user?.id || streamMode !== 'community') return;
+
+    let cancelled = false;
+    let scrollTimer: number | undefined;
+    let clearTimer: number | undefined;
+    const queryKey = ['social-posts', user.id, streamMode] as const;
+
+    const revealPost = async () => {
+      const cachedPosts = queryClient.getQueryData<SocialPost[]>(queryKey) || [];
+      if (!cachedPosts.some((post) => post.id === requestedPostId)) {
+        const { data, error: postError } = await supabase
+          .from('posts')
+          .select(`
+            *,
+            profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
+            books_library(id, title, author, cover_image_url)
+          `)
+          .eq('id', requestedPostId)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (postError) {
+          console.warn('Unable to resolve shared social post:', postError);
+          return;
+        }
+        if (!data) return;
+
+        queryClient.setQueryData<SocialPost[]>(queryKey, (current = []) => (
+          current.some((post) => post.id === requestedPostId)
+            ? current
+            : [data as unknown as SocialPost, ...current]
+        ));
+      }
+
+      scrollTimer = window.setTimeout(() => {
+        if (cancelled) return;
+        const target = document.getElementById(`social-post-${requestedPostId}`);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedPostId(requestedPostId);
+        clearTimer = window.setTimeout(() => {
+          setHighlightedPostId((current) => current === requestedPostId ? null : current);
+        }, 2600);
+      }, 350);
+    };
+
+    void revealPost();
+    return () => {
+      cancelled = true;
+      if (scrollTimer !== undefined) window.clearTimeout(scrollTimer);
+      if (clearTimer !== undefined) window.clearTimeout(clearTimer);
+    };
+  }, [requestedPostId, user?.id, streamMode, queryClient]);
 
   const handleLike = (post: SocialPost) => {
     if (!user) return;
@@ -197,7 +261,7 @@ export const EnhancedSocialFeed = () => {
           onClick={() => setFeedFilter('all')}
         >
           <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-500 dark:text-[#D5B16D]" />
-          All Community
+          All posts
         </Button>
         <Button
           size="sm"
@@ -206,7 +270,7 @@ export const EnhancedSocialFeed = () => {
           onClick={() => setFeedFilter('posts')}
         >
           <MessageCircle className="w-3.5 h-3.5 mr-1.5 text-emerald-600 dark:text-emerald-400" />
-          Discussions
+          Posts
         </Button>
         <Button
           size="sm"
@@ -319,7 +383,8 @@ export const EnhancedSocialFeed = () => {
           return (
             <React.Fragment key={post.id || idx}>
               <Card
-                className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl hover:border-[#1C442D]/40 dark:hover:border-[#315C43] shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs transition-all duration-200 overflow-hidden"
+                id={`social-post-${post.id}`}
+                className={`bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl hover:border-[#1C442D]/40 dark:hover:border-[#315C43] shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs transition-all duration-200 overflow-hidden ${highlightedPostId === post.id ? 'ring-2 ring-[#D5B16D] ring-offset-2 ring-offset-[#FAF7F2] dark:ring-offset-[#0B0D0C]' : ''}`}
               >
               <CardContent className="p-5">
                 {/* Repost banner */}
@@ -490,7 +555,7 @@ export const EnhancedSocialFeed = () => {
                     <div className="mt-3 rounded-xl overflow-hidden border border-[#E8E2D9] dark:border-[#29332D]">
                       <img
                         src={post.image_url}
-                        alt="Post attachment"
+                        alt={post.image_alt?.trim() || "Post attachment"}
                         onError={(e) => {
                           (e.currentTarget as HTMLElement).style.display = 'none';
                         }}
