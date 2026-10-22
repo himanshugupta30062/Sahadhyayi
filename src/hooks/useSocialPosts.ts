@@ -534,9 +534,6 @@ export const useCreatePost = () => {
         audience: postData.audience || 'friends',
       };
 
-      // Debug log to help surface issues when inserting posts
-      console.debug('Creating social post', { payload, userId: user?.id });
-
       let createdPost: any = null;
 
       // Try insert with relations for immediate rich display
