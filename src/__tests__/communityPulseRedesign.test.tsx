@@ -428,7 +428,9 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     });
 
     expect(result.current.stats).not.toBeNull();
-    expect(result.current.stats?.pageViews).toBe(18);
+    // Profile creation counts are not page views; keep period traffic unavailable
+    // until a real page-view aggregate is available rather than substituting profile counts.
+    expect(result.current.stats?.pageViews).toBeNull();
     expect(result.current.stats?.totalMembers).toBe(120);
     expect(result.current.stats?.newReaders).toBe(18);
     expect(result.current.stats?.hourlyActivity).toEqual([]);
