@@ -93,7 +93,7 @@ export type RecentVisitor = {
   device: string;
   browser: string;
   os: string;
-  ipAddress?: string;
+  ipAddress?: string | null;
   language?: string;
   sessionId?: string;
   screenResolution?: string;
@@ -492,7 +492,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       safeRpc('get_website_visit_count'),
       safeCount('profiles'),
       safeCount('profiles', 'created_at', timeframeStart),
-      safeCount('website_visits', 'visited_at', timeframeStart, 'event_type', 'pageview'),
+      // Raw visit rows are service-role-only. Use aggregate RPCs for pageview totals.
+      Promise.resolve(null),
       safeCount('reading_room_events', 'created_at', timeframeStart, 'kind', 'chapter_complete'),
       safeCount('group_members', 'joined_at', timeframeStart),
       safeCount('posts', 'created_at', timeframeStart),
