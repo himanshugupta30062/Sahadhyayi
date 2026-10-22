@@ -70,7 +70,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:54321
           VITE_SUPABASE_ANON_KEY: test-public-anon-key
-        run: npm test -- --coverage --coverage.provider=v8 --coverage.reporter=lcov --coverage.reporter=text
+        run: npx vitest run --coverage --coverage.provider=v8 --coverage.reporter=lcov --coverage.reportsDirectory=coverage
 
       - name: Verify LCOV report exists
         id: verify_lcov

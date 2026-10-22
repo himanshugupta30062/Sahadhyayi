@@ -1,10 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { getAnalyticsIds } from '@/lib/analytics';
-
-const cleanCampaignValue = (value: string | null) =>
-  value ? value.replace(/[^a-zA-Z0-9 _.-]/g, '').trim().slice(0, 100) || null : null;
+import { cleanCampaignValue, getAnalyticsIds } from '@/lib/analytics';
 
 // Global in-memory cache preventing duplicate ingestion across React Strict Mode & remounts
 const recentPageHits = new Map<string, number>();
@@ -109,7 +106,7 @@ export const usePageVisitTracker = () => {
             event_type: 'engagement',
             event_name: 'engaged_time',
             engaged_seconds: Math.min(15, seconds),
-            page: window.location.pathname,
+            page: currentPage,
             visitor_id: visitorId,
             session_id: sessionId,
             event_id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : undefined,
