@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Image, BookOpen, Smile, Send, X } from 'lucide-react';
+import { Image, BookOpen, Smile, Send, X, Quote } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { BookSelectionModal } from './BookSelectionModal';
 import { EmojiPicker } from './EmojiPicker';
@@ -32,6 +32,11 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [postText, setPostText] = useState('');
+  const [postKind, setPostKind] = useState<'post' | 'quote'>('post');
+  const [quoteText, setQuoteText] = useState('');
+  const [quoteAuthor, setQuoteAuthor] = useState('');
+  const [quoteSource, setQuoteSource] = useState('');
+  const [quoteContext, setQuoteContext] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedBook, setSelectedBook] = useState<SelectedBook | null>(null);
@@ -76,7 +81,11 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   };
 
   const handlePost = async () => {
-    if (!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) {
+    const hasPostContent = postKind === 'quote'
+      ? Boolean(quoteText.trim())
+      : Boolean(postText.trim() || selectedImage || selectedBook || selectedFeeling);
+
+    if (!hasPostContent) {
       toast({ title: 'Empty post', description: 'Please add some content to your post', variant: 'destructive' });
       return;
     }
@@ -110,6 +119,11 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
 
       await createPost.mutateAsync({
         content: postText.trim(),
+        post_kind: postKind,
+        quote_text: postKind === 'quote' ? quoteText.trim() : undefined,
+        quote_author: postKind === 'quote' ? quoteAuthor.trim() : undefined,
+        quote_source: postKind === 'quote' ? quoteSource.trim() : undefined,
+        quote_context: postKind === 'quote' ? quoteContext.trim() : undefined,
         book_id: selectedBook?.id,
         feeling_emoji: selectedFeeling?.emoji,
         feeling_label: selectedFeeling?.label,
@@ -130,6 +144,11 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
       
       // Clear the composer
       setPostText('');
+      setPostKind('post');
+      setQuoteText('');
+      setQuoteAuthor('');
+      setQuoteSource('');
+      setQuoteContext('');
       setAudience('friends');
       clearAttachments();
       
@@ -149,6 +168,33 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
     <>
       <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] rounded-2xl mb-6 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-sm transition-colors">
         <CardContent className="p-4">
+          <div className="mb-4 flex items-center gap-1 rounded-xl bg-[#F4EFEA] p-1 dark:bg-[#0B0D0C] w-fit" role="group" aria-label="Choose what to share">
+            <Button type="button" size="sm" variant={postKind === 'post' ? 'default' : 'ghost'} aria-pressed={postKind === 'post'} onClick={() => setPostKind('post')} className={postKind === 'post' ? 'bg-[#1C442D] text-white hover:bg-[#153221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'text-[#636B65] dark:text-[#A5ADA6]'}>
+              <Image className="mr-1.5 h-3.5 w-3.5" /> Post
+            </Button>
+            <Button type="button" size="sm" variant={postKind === 'quote' ? 'default' : 'ghost'} aria-pressed={postKind === 'quote'} onClick={() => setPostKind('quote')} className={postKind === 'quote' ? 'bg-[#1C442D] text-white hover:bg-[#153221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'text-[#636B65] dark:text-[#A5ADA6]'}>
+              <Quote className="mr-1.5 h-3.5 w-3.5" /> Quote card
+            </Button>
+          </div>
+
+          {postKind === 'quote' ? (
+            <div className="mb-4 space-y-3">
+              <div className="rounded-2xl border border-[#C8DBCB] bg-gradient-to-br from-[#F7F2E9] via-[#FFFCF7] to-[#EAF1E8] p-5 dark:border-[#315C43] dark:from-[#16211A] dark:via-[#111614] dark:to-[#1C3024]">
+                <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1C442D] dark:text-[#D5B16D]">
+                  <Quote className="h-4 w-4" /> A passage worth keeping
+                </div>
+                <Textarea value={quoteText} onChange={(event) => setQuoteText(event.target.value.slice(0, 500))} maxLength={500} aria-label="Quote text" placeholder="Add a short quote that stayed with you…" className="min-h-[110px] resize-y border-0 bg-transparent p-0 font-serif text-lg leading-relaxed text-[#1C201D] shadow-none placeholder:text-[#636B65]/60 focus-visible:ring-0 dark:text-[#F3F0E7]" />
+                <div className="mt-2 flex justify-end text-[10px] text-[#636B65] dark:text-[#A5ADA6]">{quoteText.length}/500</div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <input value={quoteAuthor} onChange={(event) => setQuoteAuthor(event.target.value.slice(0, 120))} maxLength={120} aria-label="Quote author" placeholder="Author / speaker (optional)" className="min-w-0 rounded-lg border border-[#D9DFD5] bg-white/70 px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#315C43] dark:bg-[#0B0D0C]/70 dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]" />
+                  <input value={quoteSource} onChange={(event) => setQuoteSource(event.target.value.slice(0, 160))} maxLength={160} aria-label="Quote source" placeholder="Book / source / page (optional)" className="min-w-0 rounded-lg border border-[#D9DFD5] bg-white/70 px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#315C43] dark:bg-[#0B0D0C]/70 dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]" />
+                </div>
+              </div>
+              <Textarea value={quoteContext} onChange={(event) => setQuoteContext(event.target.value.slice(0, 1000))} maxLength={1000} aria-label="Why this quote matters" placeholder="Why does it matter to you? What person, memory, or situation does it remind you of? (optional)" className="min-h-[72px] resize-y rounded-xl border-[#E8E2D9] bg-[#FAF7F2] text-sm dark:border-[#29332D] dark:bg-[#0B0D0C]/70" />
+              <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">Add attribution when known. Your reflection gives the quote personal meaning; you can link it to a book below.</p>
+            </div>
+          ) : null}
+
           <div className="flex items-start space-x-3 mb-4">
             <Avatar className="w-10 h-10 border border-[#E8E2D9] dark:border-[#29332D]">
               <AvatarImage src={user?.user_metadata?.avatar_url} />
@@ -159,8 +205,8 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
             <div className="flex-1">
               <Textarea
                 id="feed-composer-textarea"
-                placeholder="What are you reading or thinking about?"
-                aria-label="What are you reading or thinking about?"
+                placeholder={postKind === 'quote' ? 'Add your reflection (optional)…' : 'What are you reading or thinking about?'}
+                aria-label={postKind === 'quote' ? 'Reflection on the quote' : 'What are you reading or thinking about?'}
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
                 onKeyDown={(e) => {
@@ -324,11 +370,11 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
             </div>
             <Button
               onClick={handlePost}
-              disabled={(!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting || createPost.isPending}
+              disabled={(postKind === 'quote' ? !quoteText.trim() : (!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling)) || isPosting || createPost.isPending}
               className="bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold text-xs h-8 px-4 rounded-xl shadow-xs transition-all disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5 mr-1.5" />
-              {isPosting || createPost.isPending ? 'Posting…' : 'Post'}
+              {isPosting || createPost.isPending ? 'Sharing…' : postKind === 'quote' ? 'Share quote' : 'Post'}
             </Button>
           </div>
         </CardContent>
