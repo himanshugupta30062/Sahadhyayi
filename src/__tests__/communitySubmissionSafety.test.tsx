@@ -16,6 +16,13 @@ vi.mock('@/hooks/useMarginNotes', () => ({ useCreateMarginNote: () => ({ mutateA
 vi.mock('@/hooks/useUserBookshelf', () => ({ useUserBookshelf: () => ({ data: [] }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock('@/integrations/supabase/client', () => ({ supabase: { storage: { from: () => ({ upload: mocks.upload }) } } }));
+vi.mock('@/integrations/supabase/client-universal', () => ({
+  supabase: {
+    storage: {
+      from: () => ({ upload: mocks.upload, remove: vi.fn(), createSignedUrls: vi.fn() }),
+    },
+  },
+}));
 vi.mock('@/components/social/BookSelectionModal', () => ({ BookSelectionModal: () => null }));
 vi.mock('@/components/social/EmojiPicker', () => ({ EmojiPicker: () => null }));
 afterEach(() => { cleanup(); vi.clearAllMocks(); mocks.user = null; });
