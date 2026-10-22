@@ -212,7 +212,10 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                 onKeyDown={(e) => {
                   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
                     e.preventDefault();
-                    if (!((!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting || createPost.isPending)) {
+                    const hasContent = postKind === 'quote'
+                      ? Boolean(quoteText.trim())
+                      : Boolean(postText.trim() || selectedImage || selectedBook || selectedFeeling);
+                    if (hasContent && !isPosting && !createPost.isPending) {
                       void handlePost();
                     }
                   }
