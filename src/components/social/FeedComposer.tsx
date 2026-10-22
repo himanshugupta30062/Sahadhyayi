@@ -39,6 +39,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   const [quoteContext, setQuoteContext] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageAlt, setImageAlt] = useState('');
   const [selectedBook, setSelectedBook] = useState<SelectedBook | null>(null);
   const [selectedFeeling, setSelectedFeeling] = useState<SelectedFeeling | null>(null);
   const [audience, setAudience] = useState<'public' | 'followers' | 'friends' | 'private'>('friends');
@@ -48,16 +49,32 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({ title: 'Image too large', description: 'Please select an image under 5MB', variant: 'destructive' });
-        return;
-      }
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Accept common raster formats; don't trust the filename extension or a generic
+    // image/* browser filter as upload validation.
+    const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
+    if (!allowedImageTypes.has(file.type)) {
+      toast({ title: 'Unsupported image format', description: 'Choose a JPEG, PNG, WebP, or AVIF image.', variant: 'destructive' });
+      event.target.value = '';
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image too large', description: 'Please select an image under 5MB', variant: 'destructive' });
+      event.target.value = '';
+      return;
+    }
+
+    setSelectedImage(file);
+    setImageAlt('');
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.onerror = () => {
+      setSelectedImage(null);
+      setImagePreview(null);
+      toast({ title: 'Could not preview image', description: 'Choose another image or try again.', variant: 'destructive' });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleBookSelect = (book: SelectedBook) => {
@@ -73,6 +90,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   const clearAttachments = () => {
     setSelectedImage(null);
     setImagePreview(null);
+    setImageAlt('');
     setSelectedBook(null);
     setSelectedFeeling(null);
     if (fileInputRef.current) {
@@ -128,6 +146,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
         feeling_emoji: selectedFeeling?.emoji,
         feeling_label: selectedFeeling?.label,
         image_url: uploadedImageUrl,
+        image_alt: selectedImage ? imageAlt.trim().slice(0, 250) || null : null,
         audience,
       });
 
@@ -230,7 +249,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
             <div className="mb-4 p-3 bg-[#FAF7F2] dark:bg-[#0B0D0C]/80 rounded-xl border border-[#E8E2D9] dark:border-[#29332D]">
               {imagePreview && (
                 <div className="relative mb-3">
-                  <img src={imagePreview} alt="Preview" className="w-full max-h-60 object-cover rounded-lg border border-[#E8E2D9] dark:border-[#29332D]" />
+                  <img src={imagePreview} alt={imageAlt.trim() || 'Selected image preview'} className="max-h-80 w-full rounded-lg border border-[#E8E2D9] bg-[#F4EFEA] object-contain dark:border-[#29332D] dark:bg-[#0B0D0C]" />
                   <Button
                     size="sm"
                     variant="ghost"
@@ -239,12 +258,24 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                     onClick={() => {
                       setSelectedImage(null);
                       setImagePreview(null);
+                      setImageAlt('');
                       if (fileInputRef.current) fileInputRef.current.value = '';
                     }}
                   >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
+                <label htmlFor="post-image-alt" className="mb-1 block text-xs font-medium text-[#636B65] dark:text-[#A5ADA6]">
+                  Describe this image (optional)
+                </label>
+                <input
+                  id="post-image-alt"
+                  value={imageAlt}
+                  onChange={(event) => setImageAlt(event.target.value.slice(0, 250))}
+                  maxLength={250}
+                  placeholder="E.g. A highlighted passage in a paperback"
+                  className="mb-3 w-full rounded-lg border border-[#E8E2D9] bg-white px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]"
+                />
               )}
 
               {selectedBook && (
@@ -335,7 +366,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/avif"
                 onChange={handleImageSelect}
                 className="hidden"
                 aria-label="Upload post image"
