@@ -485,7 +485,7 @@ const BookExpert = () => {
       >
         {welcomeOnly ? (
           <div className="flex min-h-full flex-col">
-            <div className="relative overflow-hidden rounded-[1.4rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-primary/[0.06] to-emerald-500/[0.07] p-5 sm:p-6">
+            <div className="reader-room-welcome-enter relative overflow-hidden rounded-[1.4rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-primary/[0.06] to-emerald-500/[0.07] p-5 sm:p-6">
               <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full border border-amber-500/20" aria-hidden="true" />
               <div className="absolute -right-3 top-0 h-24 w-24 rounded-full border border-amber-500/15" aria-hidden="true" />
               <div className="relative flex items-start gap-3">
@@ -520,7 +520,7 @@ const BookExpert = () => {
                 </div>
                 <BookOpen className="mb-1 h-5 w-5 text-muted-foreground/70" aria-hidden="true" />
               </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="reader-room-suggestions grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {[
                   { title: "Find my next read", detail: "Books for your mood or interests", prompt: "Help me find my next read. Ask me one or two questions about my mood and interests, then recommend real titles where possible.", icon: Sparkles },
                   { title: "Meet a book", detail: "Let a real book speak first", prompt: "Introduce me to a real book from the Sahadhyayi library in a distinct, playful first-person voice using only verified catalog details.", icon: BookOpen },
