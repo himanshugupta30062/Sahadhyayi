@@ -87,3 +87,16 @@ Do not optimize vanity metrics or seed fake engagement.
 - Still not implemented: a Following feed tab, public follower/following counts, expanded profile discovery, messaging consolidation, and production moderation workflows. A feed-tab implementation should be built only after the audience migration is applied and authorization tests pass.
 - Before the audience migration is applied, production RLS currently allows authenticated readers to select only their own posts and posts by mutual friends. The new migration introduces explicit audience rules without granting anonymous post reads. Do not deploy the composer before the migration; otherwise inserts may fail because the audience column does not yet exist.
 - Validation: build, lint and Vitest results must be checked in CI; do not treat this phase as production-ready until checks pass.
+
+## Product and UX evolution (2026-10)
+
+A detailed design/backlog lives in [`docs/social-media-product-and-ux-blueprint.md`](./social-media-product-and-ux-blueprint.md). This extends the existing plan rather than replacing its reliability-first delivery order.
+
+Priority:
+1. Finish feed, friends/search, and audience/RLS correctness before adding new social surfaces.
+2. Simplify the UI to Home / Discover / Create / Inbox / Profile, with For You / Following / Latest as the feed modes. Keep Reading Rooms, Marginalia, Spoiler Threads and Reading DNA as contextual book-first tools.
+3. Build **Quote, Meet Life** as Sahadhyayi's signature feature: a quote tied to a real book/source, an optional reflection about a person or situation, an attribution-aware designed card, and a canonical share link. Person tagging must be opt-in; private context must never leak to link previews.
+4. Improve photo posting with correct image ratios, carousel support, full-screen viewing, alt text, upload progress/retry, compression, and private storage that matches post audience.
+5. Add private Reading Cabinet collections, interpretation threads on a shared quote, book gifting, reading moments and later reading recaps after moderation/privacy foundations are complete.
+
+Acceptance requires passing CI and authorization tests, realistic mobile validation, and a clear successful-empty/error distinction. Do not seed fake engagement or weaken row-level security for a better-looking feed.
