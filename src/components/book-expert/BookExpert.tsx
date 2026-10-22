@@ -298,6 +298,7 @@ const BookExpert = () => {
         if (sibling === activeElement || sibling.classList.contains("reader-room-backdrop-enter")) return;
         if (!sibling.inert) {
           sibling.inert = true;
+          sibling.setAttribute("inert", "");
           inertedElements.push(sibling);
         }
       });
@@ -342,7 +343,7 @@ const BookExpert = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      inertedElements.forEach((element) => { element.inert = false; });
+      inertedElements.forEach((element) => { element.inert = false; element.removeAttribute("inert"); });
       document.body.style.overflow = previousBodyOverflow;
     };
   }, [isOpen, handleClose]);
