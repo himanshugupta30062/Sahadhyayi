@@ -2229,6 +2229,7 @@ export type Database = {
           feeling_label: string | null
           id: string
           image_url: string | null
+          image_alt: string | null
           likes_count: number
           post_kind: string
           quote_author: string | null
@@ -2250,6 +2251,7 @@ export type Database = {
           feeling_label?: string | null
           id?: string
           image_url?: string | null
+          image_alt?: string | null
           likes_count?: number
           post_kind?: string
           quote_author?: string | null
@@ -2271,6 +2273,7 @@ export type Database = {
           feeling_label?: string | null
           id?: string
           image_url?: string | null
+          image_alt?: string | null
           likes_count?: number
           post_kind?: string
           quote_author?: string | null
