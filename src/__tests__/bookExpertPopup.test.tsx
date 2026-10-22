@@ -22,7 +22,11 @@ vi.mock("@/contexts/book-expert.utils", async () => {
         messages,
         loading: false,
         sendMessage: async (text: string) => {
-          setMessages((current: Array<{ sender: string; text: string }>) => [...current, { sender: "user", text }]);
+          setMessages((current: Array<{ sender: string; text: string }>) => [
+            ...current,
+            { sender: "user", text },
+            { sender: "bot", text: "**A clear answer**\n\n- A useful point [S1]" },
+          ]);
         },
         sendFeedback: async () => undefined,
       };
@@ -64,6 +68,21 @@ describe("BookExpert responsive reader controls", () => {
     fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
     fireEvent.keyDown(window, { key: "Escape" });
     expect(screen.queryByRole("dialog", { name: /the reading room/i })).not.toBeInTheDocument();
+  });
+
+  it("formats AI Markdown and highlights source references", async () => {
+    render(<BookExpert />);
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+    fireEvent.change(screen.getByRole("textbox", { name: /your question for the reading room/i }), {
+      target: { value: "Explain the idea" },
+    });
+    fireEvent.keyDown(screen.getByRole("textbox", { name: /your question for the reading room/i }), {
+      key: "Enter",
+      shiftKey: false,
+    });
+
+    expect(await screen.findByText("A clear answer", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.getByText("[S1]")).toHaveClass("bg-primary/10");
   });
 
   it("makes the page background inert until the reader closes", () => {
