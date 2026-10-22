@@ -113,7 +113,7 @@ describe("BookExpert responsive reader controls", () => {
     expect(await screen.findByText("A clear answer", { selector: "strong" })).toBeInTheDocument();
     const citation = screen.getByRole("link", { name: /jump to source \[s1\]/i });
     const sourceHref = citation.getAttribute("href");
-    expect(sourceHref).toMatch(/^#book-expert-sources-\\d+$/);
+    expect(sourceHref).toMatch(/^#book-expert-sources-\d+$/);
     fireEvent.click(citation);
     expect(document.getElementById(sourceHref!.slice(1))).toHaveAttribute("open");
   });
