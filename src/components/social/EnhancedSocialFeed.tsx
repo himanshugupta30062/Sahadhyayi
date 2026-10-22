@@ -142,13 +142,12 @@ export const EnhancedSocialFeed = () => {
   // audience-aware RLS boundary; do not depend on a QueryClient being present
   // in the feed component itself or render a row the current user cannot read.
   useEffect(() => {
-    if (!requestedPostId) {
-      setDeepLinkedPost(null);
-      setHighlightedPostId(null);
-      return;
-    }
-    if (deepLinkedPost && deepLinkedPost.id !== requestedPostId) setDeepLinkedPost(null);
-    if (!user?.id || streamMode !== 'community' || isLoading) return;
+    setDeepLinkedPost(null);
+    setHighlightedPostId(null);
+  }, [requestedPostId]);
+
+  useEffect(() => {
+    if (!requestedPostId || !user?.id || streamMode !== 'community' || isLoading) return;
 
     let cancelled = false;
     let scrollTimer: number | undefined;
@@ -198,7 +197,7 @@ export const EnhancedSocialFeed = () => {
       if (scrollTimer !== undefined) window.clearTimeout(scrollTimer);
       if (clearTimer !== undefined) window.clearTimeout(clearTimer);
     };
-  }, [requestedPostId, user?.id, streamMode, isLoading, posts, deepLinkedPost]);
+  }, [requestedPostId, user?.id, streamMode, isLoading, posts]);
 
   const handleLike = (post: SocialPost) => {
     if (!user) return;
