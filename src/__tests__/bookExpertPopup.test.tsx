@@ -66,6 +66,18 @@ describe("BookExpert responsive reader controls", () => {
     expect(screen.queryByRole("dialog", { name: /the reading room/i })).not.toBeInTheDocument();
   });
 
+  it("keeps keyboard focus inside the reader while it is open", () => {
+    render(<BookExpert />);
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+    const dialog = screen.getByRole("dialog", { name: /the reading room/i });
+    const closeButton = within(dialog).getByRole("button", { name: /close reading room/i });
+    const sendButton = within(dialog).getByRole("button", { name: /send message/i });
+
+    sendButton.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(closeButton).toHaveFocus();
+  });
+
   it("preserves the conversation when the reader is closed and reopened", async () => {
     render(<BookExpert />);
     fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
