@@ -10,10 +10,25 @@ afterEach(() => cleanup());
 vi.mock("@/contexts/book-expert.utils", async () => {
   const ReactModule = await import("react");
   const welcome = "Welcome to Book Expert. Find your next read, explore an author, or ask about a book.";
+  type MockMessage = {
+    sender: string;
+    text: string;
+    citations?: Array<{
+      id: string;
+      title: string;
+      author: string | null;
+      sourceType: string;
+      bookId: string | null;
+      url: string | null;
+      excerpt: string;
+      similarity: number;
+      sourceLicense: string | null;
+    }>;
+  };
   return {
     useBookExpert: () => {
       const [isOpen, setIsOpen] = ReactModule.useState(false);
-      const [messages, setMessages] = ReactModule.useState([{ sender: "bot", text: welcome }]);
+      const [messages, setMessages] = ReactModule.useState<MockMessage[]>([{ sender: "bot", text: welcome }]);
       return {
         isOpen,
         toggleChat: () => setIsOpen((current: boolean) => !current),
@@ -22,7 +37,25 @@ vi.mock("@/contexts/book-expert.utils", async () => {
         messages,
         loading: false,
         sendMessage: async (text: string) => {
-          setMessages((current: Array<{ sender: string; text: string }>) => [...current, { sender: "user", text }]);
+          setMessages((current: MockMessage[]) => [
+            ...current,
+            { sender: "user", text },
+            {
+              sender: "bot",
+              text: "**A clear answer**\n\n- A useful point [S1]",
+              citations: [{
+                id: "S1",
+                title: "Test source",
+                author: null,
+                sourceType: "approved_text",
+                bookId: null,
+                url: null,
+                excerpt: "Verified excerpt",
+                similarity: 0.9,
+                sourceLicense: null,
+              }],
+            },
+          ]);
         },
         sendFeedback: async () => undefined,
       };
@@ -38,6 +71,8 @@ describe("BookExpert responsive reader controls", () => {
     fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
     const dialog = screen.getByRole("dialog", { name: /the reading room/i });
 
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog.className).toContain("reader-room-panel-enter");
     expect(within(dialog).getByRole("button", { name: /close reading room/i })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: /your question for the reading room/i })).not.toHaveFocus();
 
@@ -62,6 +97,50 @@ describe("BookExpert responsive reader controls", () => {
     fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
     fireEvent.keyDown(window, { key: "Escape" });
     expect(screen.queryByRole("dialog", { name: /the reading room/i })).not.toBeInTheDocument();
+  });
+
+  it("formats AI Markdown and highlights source references", async () => {
+    render(<BookExpert />);
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+    fireEvent.change(screen.getByRole("textbox", { name: /your question for the reading room/i }), {
+      target: { value: "Explain the idea" },
+    });
+    fireEvent.keyDown(screen.getByRole("textbox", { name: /your question for the reading room/i }), {
+      key: "Enter",
+      shiftKey: false,
+    });
+
+    expect(await screen.findByText("A clear answer", { selector: "strong" })).toBeInTheDocument();
+    const citation = screen.getByRole("link", { name: /jump to source \[s1\]/i });
+    expect(citation).toHaveAttribute("href", "#book-expert-sources-1");
+    fireEvent.click(citation);
+    expect(document.getElementById("book-expert-sources-1")).toHaveAttribute("open");
+  });
+
+  it("makes the page background inert until the reader closes", () => {
+    render(
+      <>
+        <main data-testid="page-background">Page content</main>
+        <BookExpert />
+      </>
+    );
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+    expect(screen.getByTestId("page-background")).toHaveAttribute("inert");
+
+    fireEvent.click(within(screen.getByRole("dialog", { name: /the reading room/i })).getByRole("button", { name: /close reading room/i }));
+    expect(screen.getByTestId("page-background")).not.toHaveAttribute("inert");
+  });
+
+  it("keeps keyboard focus inside the reader while it is open", () => {
+    render(<BookExpert />);
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+    const dialog = screen.getByRole("dialog", { name: /the reading room/i });
+    const closeButton = within(dialog).getByRole("button", { name: /close reading room/i });
+    const sendButton = within(dialog).getByRole("button", { name: /send message/i });
+
+    sendButton.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(closeButton).toHaveFocus();
   });
 
   it("preserves the conversation when the reader is closed and reopened", async () => {

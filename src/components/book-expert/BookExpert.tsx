@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { FormEvent, KeyboardEvent } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent, ReactNode } from "react";
 import {
   BookOpen,
   BookMarked,
@@ -31,6 +31,77 @@ function validHttpUrl(value: string | null | undefined): string | null {
   } catch {
     return null;
   }
+}
+
+function renderInlineMarkdown(line: string, citationIds: Set<string>, sourceSectionId: string): ReactNode[] {
+  const tokens = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[S\d+\])/g).filter(Boolean);
+  return tokens.map((token, index) => {
+    if (/^\*\*[^*]+\*\*$/.test(token)) {
+      return <strong key={index} className="font-semibold text-foreground">{token.slice(2, -2)}</strong>;
+    }
+    if (/^\*[^*]+\*$/.test(token)) {
+      return <em key={index}>{token.slice(1, -1)}</em>;
+    }
+    if (/^`[^`]+`$/.test(token)) {
+      return <code key={index} className="rounded bg-muted px-1 py-0.5 text-[0.9em]">{token.slice(1, -1)}</code>;
+    }
+    if (/^\[S\d+\]$/.test(token)) {
+      if (!citationIds.has(token.slice(1, -1))) return <Fragment key={index}>{token}</Fragment>;
+      return (
+        <a
+          key={index}
+          href={"#" + sourceSectionId}
+          onClick={() => {
+            const sourceSection = document.getElementById(sourceSectionId) as HTMLDetailsElement | null;
+            if (sourceSection) sourceSection.open = true;
+          }}
+          className="mx-0.5 inline-flex rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-[0.8em] font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={"Jump to source " + token}
+        >
+          {token}
+        </a>
+      );
+    }
+    return <Fragment key={index}>{token}</Fragment>;
+  });
+}
+
+function AnswerText({ text, citations, sourceSectionId }: { text: string; citations?: BookExpertCitation[]; sourceSectionId: string }) {
+  const blocks = text.trim().split(/\n{2,}/).filter(Boolean);
+  const citationIds = new Set((citations ?? []).map((citation) => citation.id));
+  return (
+    <div className="space-y-3 break-words">
+      {blocks.map((block, blockIndex) => {
+        const lines = block.split("\n");
+        const heading = lines[0].match(/^#{1,3}\s+(.+)$/);
+        const bulletLines = lines.every((line) => /^\s*[-*]\s+/.test(line));
+        const numberedLines = lines.every((line) => /^\s*\d+[.)]\s+/.test(line));
+
+        if (heading && lines.length === 1) {
+          return <h4 key={blockIndex} className="text-sm font-semibold tracking-tight text-foreground">{renderInlineMarkdown(heading[1], citationIds, sourceSectionId)}</h4>;
+        }
+        if (bulletLines) {
+          return (
+            <ul key={blockIndex} className="list-disc space-y-1.5 pl-5 marker:text-primary">
+              {lines.map((line, lineIndex) => <li key={lineIndex} className="pl-0.5">{renderInlineMarkdown(line.replace(/^\s*[-*]\s+/, ""), citationIds, sourceSectionId)}</li>)}
+            </ul>
+          );
+        }
+        if (numberedLines) {
+          return (
+            <ol key={blockIndex} className="list-decimal space-y-1.5 pl-5 marker:font-medium marker:text-primary">
+              {lines.map((line, lineIndex) => <li key={lineIndex} className="pl-0.5">{renderInlineMarkdown(line.replace(/^\s*\d+[.)]\s+/, ""), citationIds, sourceSectionId)}</li>)}
+            </ol>
+          );
+        }
+        return (
+          <p key={blockIndex} className="whitespace-pre-wrap leading-relaxed">
+            {lines.map((line, lineIndex) => <Fragment key={lineIndex}>{lineIndex > 0 && <br />}{renderInlineMarkdown(line, citationIds, sourceSectionId)}</Fragment>)}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 function RagCitationCard({ citation }: { citation: BookExpertCitation }) {
@@ -158,6 +229,7 @@ const BookExpert = () => {
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -202,6 +274,8 @@ const BookExpert = () => {
       // Avoid opening the mobile keyboard automatically; focus only on larger screens.
       if (typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(min-width: 640px)").matches) {
         inputRef.current?.focus();
+      } else {
+        closeButtonRef.current?.focus();
       }
       return;
     }
@@ -223,14 +297,70 @@ const BookExpert = () => {
 
   useEffect(() => {
     if (!isOpen) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    // Make sibling page content inert while the dialog is open, preserving
+    // the backdrop so pointer users can still dismiss the reader.
+    const inertedElements: HTMLElement[] = [];
+    let current: HTMLElement | null = document.getElementById("book-expert-panel");
+    while (current && current.parentElement && current.parentElement !== document.body) {
+      const activeElement = current;
+      const parent = activeElement.parentElement;
+      Array.from(parent.children).forEach((child) => {
+        const sibling = child as HTMLElement;
+        if (sibling === activeElement || sibling.classList.contains("reader-room-backdrop-enter")) return;
+        if (!sibling.inert) {
+          sibling.inert = true;
+          sibling.setAttribute("inert", "");
+          inertedElements.push(sibling);
+        }
+      });
+      current = parent;
+    }
+
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         handleClose();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const dialog = document.getElementById("book-expert-panel");
+      if (!dialog) return;
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((element) => {
+        const isDesktop = typeof window.matchMedia === "function" && window.matchMedia("(min-width: 640px)").matches;
+        return isDesktop || !element.classList.contains("hidden");
+      });
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      inertedElements.forEach((element) => { element.inert = false; element.removeAttribute("inert"); });
+      document.body.style.overflow = previousBodyOverflow;
+    };
   }, [isOpen, handleClose]);
 
   const handleSend = (prompt?: string) => {
@@ -287,7 +417,7 @@ const BookExpert = () => {
         aria-controls="book-expert-panel"
         className="fixed bottom-5 right-4 z-50 flex items-center gap-3 rounded-full border border-border/80 bg-background/95 p-2 pr-4 text-foreground shadow-xl shadow-black/10 backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6"
       >
-        <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-primary/10">
+        <span className="reader-room-launcher-icon relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-primary/10">
           <img src={bookIcon} alt="" loading="eager" decoding="async" className="h-full w-full object-cover" draggable={false} />
           <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500" aria-hidden="true" />
         </span>
@@ -308,14 +438,16 @@ const BookExpert = () => {
       aria-label="Close Reading Room"
       title="Close Reading Room"
       onClick={handleClose}
-      className="fixed inset-0 z-40 cursor-default bg-black/25 backdrop-blur-[1px] focus-visible:outline-none sm:cursor-pointer sm:bg-transparent sm:backdrop-blur-0"
+      className="reader-room-backdrop-enter fixed inset-0 z-40 cursor-default bg-black/30 backdrop-blur-[2px] focus-visible:outline-none sm:cursor-pointer sm:bg-black/10 sm:backdrop-blur-sm"
     />
     <section
       id="book-expert-panel"
       role="dialog"
-      aria-modal="false"
+      aria-modal="true"
+      aria-describedby="book-expert-description"
       aria-labelledby="book-expert-title"
-      className="fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex h-[min(70dvh,600px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-background text-foreground shadow-2xl shadow-black/20 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(650px,calc(100dvh-3rem))] sm:w-[min(400px,calc(100vw-3rem))] sm:rounded-2xl"
+      tabIndex={-1}
+      className="reader-room-panel-enter fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex h-[min(70dvh,600px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-background text-foreground shadow-2xl shadow-black/25 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(680px,calc(100dvh-3rem))] sm:w-[min(420px,calc(100vw-3rem))] sm:rounded-2xl"
     >
       <header className="relative shrink-0 overflow-hidden border-b border-border/70 bg-card">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 via-primary to-emerald-500" aria-hidden="true" />
@@ -332,7 +464,7 @@ const BookExpert = () => {
                   Here for readers
                 </span>
               </div>
-              <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">A little curiosity can open a whole world.</p>
+              <p id="book-expert-description" className="sr-only text-xs text-muted-foreground sm:not-sr-only sm:mt-0.5 sm:block">A little curiosity can open a whole world.</p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -348,6 +480,7 @@ const BookExpert = () => {
             </button>
             <button
               type="button"
+              ref={closeButtonRef}
               onClick={handleClose}
               aria-label="Close Reading Room"
               title="Close Reading Room"
@@ -367,11 +500,11 @@ const BookExpert = () => {
       >
         {welcomeOnly ? (
           <div className="flex min-h-full flex-col">
-            <div className="relative overflow-hidden rounded-[1.4rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-primary/[0.06] to-emerald-500/[0.07] p-5 sm:p-6">
+            <div className="reader-room-welcome-enter relative overflow-hidden rounded-[1.4rem] border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-primary/[0.06] to-emerald-500/[0.07] p-5 sm:p-6">
               <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full border border-amber-500/20" aria-hidden="true" />
               <div className="absolute -right-3 top-0 h-24 w-24 rounded-full border border-amber-500/15" aria-hidden="true" />
               <div className="relative flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-500/20 bg-background/80 shadow-sm">
+                <div className="reader-room-book-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-500/20 bg-background/80 shadow-sm">
                   <BookMarked className="h-6 w-6 text-primary" aria-hidden="true" />
                 </div>
                 <div className="min-w-0">
@@ -402,7 +535,7 @@ const BookExpert = () => {
                 </div>
                 <BookOpen className="mb-1 h-5 w-5 text-muted-foreground/70" aria-hidden="true" />
               </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="reader-room-suggestions grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {[
                   { title: "Find my next read", detail: "Books for your mood or interests", prompt: "Help me find my next read. Ask me one or two questions about my mood and interests, then recommend real titles where possible.", icon: Sparkles },
                   { title: "Meet a book", detail: "Let a real book speak first", prompt: "Introduce me to a real book from the Sahadhyayi library in a distinct, playful first-person voice using only verified catalog details.", icon: BookOpen },
@@ -459,7 +592,25 @@ const BookExpert = () => {
                           From the reading room
                         </div>
                       )}
-                      <p className="whitespace-pre-wrap break-words">{message.text}</p>
+                      {isUser ? (
+                        <p className="whitespace-pre-wrap break-words">{message.text}</p>
+                      ) : (
+                        <AnswerText text={message.text} citations={message.citations} sourceSectionId={"book-expert-sources-" + index} />
+                      )}
+                      {message.error && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const previousMessage = visibleMessages[index - 1];
+                            if (previousMessage?.sender === "user") handleSend(previousMessage.text);
+                          }}
+                          disabled={loading || visibleMessages[index - 1]?.sender !== "user"}
+                          className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                          Try again
+                        </button>
+                      )}
                       {!isUser && (
                         <div className="mt-3 flex flex-wrap items-center justify-end gap-1 border-t border-border/70 pt-2">
                           {"speechSynthesis" in window && (
@@ -500,7 +651,7 @@ const BookExpert = () => {
                     )}
 
                     {!isUser && message.citations && message.citations.length > 0 && (
-                      <details className="group rounded-xl border border-border/70 bg-card/70 px-3 py-2.5">
+                      <details id={"book-expert-sources-" + index} className="group rounded-xl border border-border/70 bg-card/70 px-3 py-2.5">
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-medium">
                           <span className="inline-flex items-center gap-2"><BookMarked className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> Sources & reading notes ({message.citations.length})</span>
                           <span className="text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
@@ -590,7 +741,7 @@ const BookExpert = () => {
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={handleInputKeyDown}
             placeholder="Ask about a book, an author, or an idea…"
-            rows={2}
+            rows={Math.min(4, Math.max(2, input.split("\n").length))}
             maxLength={2000}
             disabled={loading}
             className="max-h-28 min-h-12 w-full resize-none bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground/80 disabled:opacity-60"
