@@ -406,6 +406,11 @@ export const EnhancedSocialFeed = () => {
                         <blockquote className="whitespace-pre-wrap break-words font-serif text-xl leading-relaxed text-[#1C201D] dark:text-[#F3F0E7] sm:text-2xl">
                           “{post.quote_text}”
                         </blockquote>
+                        {post.quote_context && (
+                          <p className="mt-4 border-l-2 border-[#D5B16D] pl-3 text-sm italic leading-relaxed text-[#636B65] dark:text-[#C4CCC4]">
+                            {post.quote_context}
+                          </p>
+                        )}
                         {(post.quote_author || post.quote_source) && (
                           <div className="mt-5 border-t border-[#C8DBCB]/80 pt-4 dark:border-[#315C43]">
                             {post.quote_author && <p className="font-semibold text-sm text-[#1C442D] dark:text-[#D5B16D]">— {post.quote_author}</p>}
