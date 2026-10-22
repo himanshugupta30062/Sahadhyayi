@@ -38,6 +38,8 @@ describe("BookExpert responsive reader controls", () => {
     fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
     const dialog = screen.getByRole("dialog", { name: /the reading room/i });
 
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog.className).toContain("reader-room-panel-enter");
     expect(within(dialog).getByRole("button", { name: /close reading room/i })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: /your question for the reading room/i })).not.toHaveFocus();
 
