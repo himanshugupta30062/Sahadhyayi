@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { resolveSocialPostImages } from '@/lib/socialPostMedia';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -106,8 +105,8 @@ const EmbeddedOriginalPost: React.FC<{
 export const EnhancedSocialFeed = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const queryClient = useQueryClient();
   const requestedPostId = searchParams.get('post');
+  const [deepLinkedPost, setDeepLinkedPost] = useState<SocialPost | null>(null);
   const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
   const [imageViewer, setImageViewer] = useState<{ src: string; alt: string } | null>(null);
   const [streamMode, setStreamMode] = useState<'community' | 'following'>('community');
@@ -134,20 +133,30 @@ export const EnhancedSocialFeed = () => {
     refetch: refetchThreads,
   } = useSpoilerThreads(undefined, { enabled: feedFilter === 'threads' });
 
-  // Shared URLs use /social?post=<id>. Resolve the single post through the same
-  // audience-aware RLS boundary as the feed, so an inaccessible post is never
-  // rendered merely because someone knows its identifier.
+  const postsForDisplay = deepLinkedPost && deepLinkedPost.id === requestedPostId
+    && !posts.some((post) => post.id === deepLinkedPost.id)
+    ? [deepLinkedPost, ...posts]
+    : posts;
+
+  // Shared URLs use /social?post=<id>. Resolve the requested post through the
+  // audience-aware RLS boundary; do not depend on a QueryClient being present
+  // in the feed component itself or render a row the current user cannot read.
   useEffect(() => {
-    if (!requestedPostId || !user?.id || streamMode !== 'community' || isLoading) return;
+    if (!requestedPostId) {
+      setDeepLinkedPost(null);
+      setHighlightedPostId(null);
+      return;
+    }
+    if (deepLinkedPost && deepLinkedPost.id !== requestedPostId) setDeepLinkedPost(null);
+    if (!user?.id || streamMode !== 'community' || isLoading) return;
 
     let cancelled = false;
     let scrollTimer: number | undefined;
     let clearTimer: number | undefined;
-    const queryKey = ['social-posts', user.id, streamMode] as const;
 
     const revealPost = async () => {
-      const cachedPosts = queryClient.getQueryData<SocialPost[]>(queryKey) || [];
-      if (!cachedPosts.some((post) => post.id === requestedPostId)) {
+      const alreadyLoaded = posts.some((post) => post.id === requestedPostId);
+      if (!alreadyLoaded) {
         const { data, error: postError } = await supabase
           .from('posts')
           .select(`
@@ -166,12 +175,9 @@ export const EnhancedSocialFeed = () => {
         if (!data) return;
         const [resolvedPost] = await resolveSocialPostImages([data as unknown as SocialPost]);
         if (cancelled) return;
-
-        queryClient.setQueryData<SocialPost[]>(queryKey, (current = []) => (
-          current.some((post) => post.id === requestedPostId)
-            ? current
-            : [resolvedPost, ...current]
-        ));
+        setDeepLinkedPost(resolvedPost);
+      } else {
+        setDeepLinkedPost(null);
       }
 
       scrollTimer = window.setTimeout(() => {
@@ -192,7 +198,7 @@ export const EnhancedSocialFeed = () => {
       if (scrollTimer !== undefined) window.clearTimeout(scrollTimer);
       if (clearTimer !== undefined) window.clearTimeout(clearTimer);
     };
-  }, [requestedPostId, user?.id, streamMode, queryClient, isLoading]);
+  }, [requestedPostId, user?.id, streamMode, isLoading, posts, deepLinkedPost]);
 
   const handleLike = (post: SocialPost) => {
     if (!user) return;
@@ -366,7 +372,7 @@ export const EnhancedSocialFeed = () => {
                 </Button>
               </CardContent>
             </Card>
-          ) : posts.length === 0 ? (
+          ) : postsForDisplay.length === 0 ? (
             <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
               <CardContent className="p-10 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
@@ -391,7 +397,7 @@ export const EnhancedSocialFeed = () => {
               </CardContent>
             </Card>
           ) : (
-        posts.map((post, idx) => {
+        postsForDisplay.map((post, idx) => {
           const isRepost = !!post.repost_of_id && !!post.reposted_post;
           const isOwn = post.user_id === user?.id;
           const postProfile = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
