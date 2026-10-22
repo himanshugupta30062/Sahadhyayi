@@ -170,7 +170,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
         <CardContent className="p-4">
           <div className="mb-4 flex items-center gap-1 rounded-xl bg-[#F4EFEA] p-1 dark:bg-[#0B0D0C] w-fit" role="group" aria-label="Choose what to share">
             <Button type="button" size="sm" variant={postKind === 'post' ? 'default' : 'ghost'} aria-pressed={postKind === 'post'} onClick={() => setPostKind('post')} className={postKind === 'post' ? 'bg-[#1C442D] text-white hover:bg-[#153221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'text-[#636B65] dark:text-[#A5ADA6]'}>
-              <Image className="mr-1.5 h-3.5 w-3.5" /> Post
+              <Image className="mr-1.5 h-3.5 w-3.5" /> Text post
             </Button>
             <Button type="button" size="sm" variant={postKind === 'quote' ? 'default' : 'ghost'} aria-pressed={postKind === 'quote'} onClick={() => setPostKind('quote')} className={postKind === 'quote' ? 'bg-[#1C442D] text-white hover:bg-[#153221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'text-[#636B65] dark:text-[#A5ADA6]'}>
               <Quote className="mr-1.5 h-3.5 w-3.5" /> Quote card
