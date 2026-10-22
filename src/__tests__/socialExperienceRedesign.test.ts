@@ -47,6 +47,8 @@ describe('social experience redesign foundations', () => {
 
   it('resolves shared post links through the authenticated query path and anchors the matching card', () => {
     expect(feed).toMatch(/searchParams\.get\('post'\)/);
+    expect(feed).not.toMatch(/useQueryClient/);
+    expect(feed).toMatch(/streamMode === 'community' && deepLinkedPost/);
     expect(feed).toMatch(/from\('posts'\)[\s\S]*\.eq\('id', requestedPostId\)/);
     expect(feed).toMatch(/social-post-/);
     expect(feed).toMatch(/scrollIntoView\(\{ behavior: 'smooth', block: 'center' \}\)/);
