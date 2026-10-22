@@ -291,10 +291,11 @@ const BookExpert = () => {
     const inertedElements: HTMLElement[] = [];
     let current: HTMLElement | null = document.getElementById("book-expert-panel");
     while (current && current.parentElement && current.parentElement !== document.body) {
-      const parent = current.parentElement;
+      const activeElement = current;
+      const parent = activeElement.parentElement;
       Array.from(parent.children).forEach((child) => {
         const sibling = child as HTMLElement;
-        if (sibling === current || sibling.classList.contains("reader-room-backdrop-enter")) return;
+        if (sibling === activeElement || sibling.classList.contains("reader-room-backdrop-enter")) return;
         if (!sibling.inert) {
           sibling.inert = true;
           inertedElements.push(sibling);
