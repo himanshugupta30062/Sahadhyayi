@@ -11,6 +11,7 @@ import { BookSelectionModal } from './BookSelectionModal';
 import { EmojiPicker } from './EmojiPicker';
 import { useCreatePost } from '@/hooks/useSocialPosts';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 interface SelectedBook {
   id: string;
@@ -114,25 +115,35 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
     }
 
     setIsPosting(true);
+    let uploadedImagePath: string | null = null;
     try {
       let uploadedImageUrl: string | undefined;
 
-      // Upload image to Supabase Storage if present
+      // New social photos use the dedicated private bucket, not the shared public
+      // books bucket. The database stores an object marker; feed reads resolve it
+      // to a short-lived URL only after storage RLS confirms audience access.
       if (selectedImage) {
-          const { supabase } = await import('@/integrations/supabase/client');
-          const ext = selectedImage.name.split('.').pop() || 'jpg';
-          const path = `user-uploads/${user.id}/${Date.now()}.${ext}`;
-          const { error: uploadError } = await supabase.storage
-            .from('books')
-            .upload(path, selectedImage, { cacheControl: '3600', upsert: false });
-          if (uploadError) {
-            throw new Error('Your photo could not be uploaded. Your draft is still here; please try again.');
-          }
-          const { data: pub } = supabase.storage.from('books').getPublicUrl(path);
-          uploadedImageUrl = pub?.publicUrl;
-          if (!uploadedImageUrl) {
-            throw new Error('Your photo could not be confirmed. Your draft is still here; please try again.');
-          }
+        const extensionByType: Record<string, string> = {
+          'image/jpeg': 'jpg',
+          'image/png': 'png',
+          'image/webp': 'webp',
+          'image/avif': 'avif',
+        };
+        const extension = extensionByType[selectedImage.type];
+        if (!extension) throw new Error('Unsupported image format. Choose JPEG, PNG, WebP, or AVIF.');
+        const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage
+          .from('social-post-media')
+          .upload(path, selectedImage, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: selectedImage.type,
+          });
+        if (uploadError) {
+          throw new Error('Your photo could not be uploaded. Your draft is still here; please try again.');
+        }
+        uploadedImagePath = path;
+        uploadedImageUrl = `storage://social-post-media/${path}`;
       }
 
       await createPost.mutateAsync({
@@ -149,6 +160,8 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
         image_alt: selectedImage ? imageAlt.trim().slice(0, 250) || null : null,
         audience,
       });
+      // The post now references the private object, so leave it in Storage.
+      uploadedImagePath = null;
 
       // Legacy callback for compatibility
       const postData = {
@@ -172,6 +185,14 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
       clearAttachments();
       
     } catch (error) {
+      if (uploadedImagePath) {
+        try {
+          const { error: cleanupError } = await supabase.storage.from('social-post-media').remove([uploadedImagePath]);
+          if (cleanupError) console.error('Could not clean up an abandoned social image:', cleanupError);
+        } catch (cleanupError) {
+          console.error('Could not clean up an abandoned social image:', cleanupError);
+        }
+      }
       console.error('Error creating post:', error);
       toast({
         title: 'Unable to create post',
