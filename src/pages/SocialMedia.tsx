@@ -20,6 +20,7 @@ import {
   Plus,
   ArrowLeft,
   ChevronRight,
+  UserRound,
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
@@ -318,6 +319,82 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
         {/* ── Main Viewport Content ── */}
         <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <nav aria-label="Social navigation" className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E8E2D9] bg-white p-2 shadow-[0_2px_8px_rgba(28,32,29,0.03)] dark:border-[#29332D] dark:bg-[#111614]">
+              <button
+                type="button"
+                aria-pressed={activeTab === 'feed'}
+                onClick={() => handleTabChange('feed')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'feed' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
+                Home
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeTab === 'friends'}
+                onClick={() => handleTabChange('friends')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'friends' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <Users className="h-4 w-4" aria-hidden="true" />
+                Discover
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeTab === 'groups'}
+                onClick={() => handleTabChange('groups')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'groups' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <UsersIcon className="h-4 w-4" aria-hidden="true" />
+                Groups
+              </button>
+              <details className="group relative">
+                <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAF7F2] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]">
+                  <BookOpen className="h-4 w-4" aria-hidden="true" />
+                  Reading spaces
+                  <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" aria-hidden="true" />
+                </summary>
+                <div className="mt-2 flex flex-wrap gap-2 rounded-xl border border-[#E8E2D9] bg-[#FAF7F2] p-2 dark:border-[#29332D] dark:bg-[#0B0D0C] sm:absolute sm:left-0 sm:z-30 sm:min-w-64 sm:shadow-lg">
+                  {[
+                    { value: 'rooms', label: 'Live reading rooms' },
+                    { value: 'threads', label: 'Chapter discussions' },
+                    { value: 'margins', label: 'Shared margin notes' },
+                    { value: 'dna', label: 'Reading DNA' },
+                    { value: 'map', label: 'Reader map' },
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => handleTabChange(item.value)}
+                      className="min-h-9 rounded-lg border border-[#E8E2D9] bg-white px-3 py-2 text-left text-xs font-medium text-[#1C442D] hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </details>
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    handleTabChange('feed');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    window.setTimeout(() => document.getElementById('feed-composer-textarea')?.focus(), 100);
+                  }}
+                  className="min-h-10 gap-2 rounded-xl bg-[#1C442D] px-3 text-sm font-semibold text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]"
+                >
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Create
+                </Button>
+                <Link
+                  to="/profile"
+                  aria-label="Your profile"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAF7F2] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]"
+                >
+                  <UserRound className="h-4 w-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Profile</span>
+                </Link>
+              </div>
+            </nav>
             {/* Content-first community layout: feed plus contextual discovery */}
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
               {/* ── Community Stream & Feature Content ── */}
