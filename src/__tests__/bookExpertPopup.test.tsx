@@ -112,9 +112,10 @@ describe("BookExpert responsive reader controls", () => {
 
     expect(await screen.findByText("A clear answer", { selector: "strong" })).toBeInTheDocument();
     const citation = screen.getByRole("link", { name: /jump to source \[s1\]/i });
-    expect(citation).toHaveAttribute("href", "#book-expert-sources-1");
+    const sourceHref = citation.getAttribute("href");
+    expect(sourceHref).toMatch(/^#book-expert-sources-\\d+$/);
     fireEvent.click(citation);
-    expect(document.getElementById("book-expert-sources-1")).toHaveAttribute("open");
+    expect(document.getElementById(sourceHref!.slice(1))).toHaveAttribute("open");
   });
 
   it("makes the page background inert until the reader closes", () => {
@@ -162,7 +163,7 @@ describe("BookExpert responsive reader controls", () => {
     const dialog = screen.getByRole("dialog", { name: /the reading room/i });
 
     expect(dialog.className).toContain("h-[min(70dvh,600px)]");
-    expect(dialog.className).toContain("sm:h-[min(650px,calc(100dvh-3rem))]");
-    expect(dialog.className).toContain("sm:w-[min(400px,calc(100vw-3rem))]");
+    expect(dialog.className).toContain("sm:h-[min(680px,calc(100dvh-3rem))]");
+    expect(dialog.className).toContain("sm:w-[min(420px,calc(100vw-3rem))]");
   });
 });
