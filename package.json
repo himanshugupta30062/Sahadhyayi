@@ -11,7 +11,7 @@
     "dev:vite": "vite",
     "prebuild": "node scripts/prepare-performance-assets.mjs",
     "build": "node scripts/optimize-book-expert-artwork.mjs && vite build && npm run build:server:utils",
-    "build:server:utils": "tsdown src/utils/*.ts --format esm --out-dir server-utils --clean",
+    "build:server:utils": "node scripts/build-server-utils.mjs",
     "size:initial": "node scripts/check-initial-js-size.mjs",
     "prebuild:dev": "node scripts/prepare-performance-assets.mjs && node scripts/optimize-book-expert-artwork.mjs",
     "build:dev": "vite build --mode development",
@@ -143,8 +143,7 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1",
-    "vitest": "^1.5.0",
-    "tsdown": "^0.23.0"
+    "vitest": "^1.5.0"
   },
   "overrides": {
     "form-data": "2.5.6"
