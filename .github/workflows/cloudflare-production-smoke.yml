@@ -18,7 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
-      - name: Report delegation, DNS answers, and HTTP responses
+      - name: Report DNS, HTTP responses, and production bundle config
+        env:
+          EXPECTED_SUPABASE_URL: https://rknxtatvlzunatpyqxro.supabase.co
         shell: bash
         run: |
           set +e
@@ -30,13 +32,29 @@ jobs:
           echo "=== www CNAME / A ==="
           dig +short CNAME www.sahadhyayi.com
           dig +short A www.sahadhyayi.com
-          for url in \
-            https://sahadhyayi.com/ \
-            https://www.sahadhyayi.com/ \
-            https://sahadhyayi.gyan-596.workers.dev/; do
-            echo "=== $url ==="
+          for url in https://sahadhyayi.com/ https://www.sahadhyayi.com/ https://sahadhyayi.gyan-596.workers.dev/; do
+            echo "=== HTTP headers: $url ==="
             curl -sSIL --max-time 12 "$url" | head -n 25
           done
+          inspect_bundle() {
+            local base_url="$1"
+            local html_status asset asset_url bundle_status
+            html_status="$(curl -sSL --max-time 10 -o /tmp/sahadhyayi-page.html -w '%{http_code}' "${base_url%/}/" || true)"
+            echo "=== Bundle inspection: $base_url (HTML HTTP $html_status) ==="
+            [[ -s /tmp/sahadhyayi-page.html ]] || { echo "No HTML body"; return; }
+            grep -oE 'src="[^"]+\\.js[^"]*"' /tmp/sahadhyayi-page.html | cut -d '"' -f 2 | head -n 8 | while IFS= read -r asset; do
+              [[ -n "$asset" ]] || continue
+              if [[ "$asset" == http* ]]; then asset_url="$asset"; else asset_url="${base_url%/}$asset"; fi
+              bundle_status="$(curl -sSL --max-time 10 -o /tmp/sahadhyayi-bundle.js -w '%{http_code}' "$asset_url" || true)"
+              if grep -Fq "$EXPECTED_SUPABASE_URL" /tmp/sahadhyayi-bundle.js 2>/dev/null; then
+                echo "Asset $asset_url: HTTP $bundle_status; production Supabase URL present"
+              else
+                echo "Asset $asset_url: HTTP $bundle_status; production Supabase URL absent"
+              fi
+            done
+          }
+          inspect_bundle https://sahadhyayi.gyan-596.workers.dev
+          inspect_bundle https://www.sahadhyayi.com
 
   verify-production-domain:
     name: Verify Worker and production custom domains
