@@ -51,6 +51,11 @@ if (process.env.NODE_ENV === 'production' && !SESSION_SECRET) {
   throw new Error('SESSION_SECRET must be configured in production');
 }
 const app = express();
+
+// Lightweight deployment probe for backend hosting platforms.
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok', service: 'sahadhyayi-api' });
+});
 app.use(cookieParser(SESSION_SECRET));
 app.use(express.json());
 app.use(
