@@ -63,6 +63,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     assetsDir: 'assets',
+    manifest: true,
     sourcemap: false,
     minify: 'terser',
     target: 'esnext',
