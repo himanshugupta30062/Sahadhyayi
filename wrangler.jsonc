@@ -9,5 +9,15 @@
   "observability": {
     "enabled": true
   },
-  "previews": {}
+  "previews": {},
+  "routes": [
+    {
+      "pattern": "sahadhyayi.com/*",
+      "zone_name": "sahadhyayi.com"
+    },
+    {
+      "pattern": "www.sahadhyayi.com/*",
+      "zone_name": "sahadhyayi.com"
+    }
+  ]
 }
