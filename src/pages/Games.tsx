@@ -55,6 +55,8 @@ export default function Games() {
     gameStatus,
     hiddenOptions,
     showHint,
+    mode,
+    lives,
     startGame,
     answerQuestion,
     useLifeline,
@@ -86,7 +88,7 @@ export default function Games() {
   }, [user, bookQuotes]);
 
   const handleBookSelect = async (bookId: string) => {
-    const started = await startGame(bookId, selectedDifficulty);
+    const started = await startGame(bookId, selectedDifficulty, selectedMode);
     if (started) {
       setView('playing');
     }
@@ -95,7 +97,7 @@ export default function Games() {
   const handleAnswer = async (answerIndex: number) => {
     const result = await answerQuestion(answerIndex);
     
-    if (gameStatus === 'finished' || !result?.isCorrect) {
+    if (result?.finished) {
       setLastGameResult({ score: score + (result?.pointsEarned || 0), correct: correctAnswers + (result?.isCorrect ? 1 : 0), total: totalQuestions });
       const isPerfect = correctAnswers + (result?.isCorrect ? 1 : 0) === totalQuestions;
       await addPoints(score + (result?.pointsEarned || 0), isPerfect);
@@ -690,6 +692,8 @@ export default function Games() {
                     setView('home');
                   }}
                   streak={correctAnswers}
+                  mode={mode}
+                  lives={lives}
                 />
               </motion.div>
             )}
