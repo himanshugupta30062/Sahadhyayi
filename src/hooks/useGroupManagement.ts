@@ -29,11 +29,13 @@ export interface GroupChat {
   user_role?: 'admin' | 'member';
 }
 
-export const useGroups = () => {
+export const useGroups = (options: { enabled?: boolean } = {}) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const enabled = options.enabled ?? true;
 
   useEffect(() => {
+    if (!enabled) return;
     const refreshGroups = () => {
       void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
       void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
@@ -48,7 +50,7 @@ export const useGroups = () => {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [queryClient, user?.id]);
+  }, [queryClient, user?.id, enabled]);
 
   return useQuery({
     queryKey: ['all-groups', user?.id],
@@ -65,6 +67,7 @@ export const useGroups = () => {
       
       return data || [];
     },
+    enabled,
   });
 };
 

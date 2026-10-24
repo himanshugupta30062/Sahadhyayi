@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ChevronDown, User, LogOut, Search, MessageCircle, LogIn, Sun, Moon, BookOpen, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
-import { MessageDropdown } from "@/components/messages/MessageDropdown";
-import { EnhancedGlobalSearch } from "@/components/EnhancedGlobalSearch";
 import { EnhancedLazyImage } from "@/components/ui/EnhancedLazyImage";
+
+const EnhancedGlobalSearch = lazy(() =>
+  import("@/components/EnhancedGlobalSearch").then(({ EnhancedGlobalSearch }) => ({ default: EnhancedGlobalSearch }))
+);
+const MessageDropdown = lazy(() =>
+  import("@/components/messages/MessageDropdown").then(({ MessageDropdown }) => ({ default: MessageDropdown }))
+);
+const NotificationDropdown = lazy(() =>
+  import("@/components/notifications/NotificationDropdown").then(({ NotificationDropdown }) => ({ default: NotificationDropdown }))
+);
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -215,8 +222,12 @@ const Navigation = () => {
                         <Moon className="w-4 h-4 text-slate-700" />
                       )}
                     </Button>
-                    <MessageDropdown />
-                    <NotificationDropdown />
+                    <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                      <MessageDropdown />
+                    </Suspense>
+                    <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                      <NotificationDropdown />
+                    </Suspense>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -338,8 +349,12 @@ const Navigation = () => {
               </Button>
               {user && (
                 <>
-                  <MessageDropdown />
-                  <NotificationDropdown />
+                  <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                    <MessageDropdown />
+                  </Suspense>
+                  <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                    <NotificationDropdown />
+                  </Suspense>
                 </>
               )}
               <Button
@@ -462,8 +477,12 @@ const Navigation = () => {
         )}
       </div>
 
-      {/* Global Search Dialog */}
-      <EnhancedGlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      {/* Load search code only when a reader opens the global search dialog. */}
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <EnhancedGlobalSearch isOpen onClose={() => setSearchOpen(false)} />
+        </Suspense>
+      )}
     </header>
   );
 };

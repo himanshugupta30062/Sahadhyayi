@@ -13,7 +13,7 @@ export interface ReadingProgressItem {
   user_id?: string;
 }
 
-export const useReadingProgress = () => {
+export const useReadingProgress = (options: { enabled?: boolean } = {}) => {
   const { user } = useAuth();
 
   return useQuery({
@@ -34,7 +34,7 @@ export const useReadingProgress = () => {
       }
       return data as ReadingProgressItem[];
     },
-    enabled: !!user,
+    enabled: !!user && (options.enabled ?? true),
   });
 };
 

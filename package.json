@@ -9,6 +9,7 @@
     "dev:vite": "vite",
     "build": "vite build && npm run build:server:utils",
     "build:server:utils": "tsup src/utils/*.ts --format esm --out-dir server-utils --clean",
+    "size:initial": "node scripts/check-initial-js-size.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "test": "vitest run",
@@ -28,12 +29,12 @@
     {
       "name": "Main application bundle",
       "path": "dist/assets/index-*.js",
-      "limit": "275 KB"
+      "limit": "175 KB"
     },
     {
       "name": "Total client assets",
       "path": "dist/assets/*.js",
-      "limit": "725 KB"
+      "limit": "700 KB"
     }
   ],
   "dependencies": {
