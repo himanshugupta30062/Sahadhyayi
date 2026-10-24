@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -13,7 +13,11 @@ import {
   Twitter,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
-import { CommunityPulseDialog } from '@/components/community-pulse/CommunityPulseDialog';
+const CommunityPulseDialog = lazy(() =>
+  import('@/components/community-pulse/CommunityPulseDialog').then(({ CommunityPulseDialog }) => ({
+    default: CommunityPulseDialog,
+  }))
+);
 
 const footerSections = [
   {
@@ -236,10 +240,11 @@ const StructuredFooter = () => {
         </div>
       </div>
 
-      <CommunityPulseDialog
-        open={isPulseOpen}
-        onClose={() => setIsPulseOpen(false)}
-      />
+      {isPulseOpen && (
+        <Suspense fallback={null}>
+          <CommunityPulseDialog open onClose={() => setIsPulseOpen(false)} />
+        </Suspense>
+      )}
     </footer>
   );
 };
