@@ -14,8 +14,8 @@ describe('Social discovery and location privacy regressions', () => {
     expect(socialPage).toMatch(/if \(!user\) return <GuestLanding \/>;/);
     expect(socialPage).toMatch(/return <AuthenticatedSocialMedia user=\{user\} \/>;/);
     expect(socialPage).toMatch(/const AuthenticatedSocialMedia: React\.FC/);
-    expect(socialPage).toMatch(/useReadingRooms\(\)/);
-    expect(socialPage).toMatch(/useAllUsers\(\)/);
+    expect(socialPage).toMatch(/useReadingRooms\(undefined, \{ enabled: isDesktopSidebarVisible \}\)/);
+    expect(socialPage).toMatch(/useAllUsers\(\{ enabled: isDesktopSidebarVisible \}\)/);
   });
 
   it('never requests or persists GPS automatically when the readers map mounts', () => {
