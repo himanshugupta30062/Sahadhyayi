@@ -14,6 +14,12 @@ const assets = [
     quality: 76,
   },
   {
+    input: 'src/components/book-expert/Sahadhyayi_Book_optimized.webp',
+    output: 'book-expert-icon.webp',
+    width: 256,
+    height: 256,
+    quality: 76,
+  },
     input: 'public/lovable-uploads/sahadhyayi-logo-digital-reading.png',
     output: 'sahadhyayi-brand-logo.webp',
     width: 512,
