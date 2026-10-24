@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useLibraryBooks } from '@/hooks/useLibraryBooks';
 import useDebouncedValue from '@/lib/useDebouncedValue';
 import { Link } from 'react-router-dom';
-import libraryBg from '@/assets/library-hero-bg.jpg';
+const libraryBg = '/optimized-assets/library-hero-bg.webp';
 
 interface LibraryHeroProps {
   searchQuery: string;
