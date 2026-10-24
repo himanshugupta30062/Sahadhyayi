@@ -47,7 +47,7 @@ const Discovery = () => {
     return list.slice(0, 24);
   }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy]);
 
-  const genres = useMemo(() => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort(), [books]);
+  const genres = useMemo(() => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => a.localeCompare(b)), [books]);
   const languages = useMemo(() => [...new Set(books.map((book) => book.language).filter(Boolean))].sort(), [books]);
 
   return (
