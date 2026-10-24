@@ -51,7 +51,6 @@ if (process.env.NODE_ENV === 'production' && !SESSION_SECRET) {
   throw new Error('SESSION_SECRET must be configured in production');
 }
 const app = express();
-app.use(Sentry.Handlers.requestHandler());
 app.use(cookieParser(SESSION_SECRET));
 app.use(express.json());
 app.use(
@@ -524,7 +523,8 @@ app.post('/goodreads/export', requireSession, loadGoodreadsTokens, async (req, r
   }
 });
 
-app.use(Sentry.Handlers.errorHandler());
+// Sentry v8+ removed Sentry.Handlers; use the supported Express integration.
+Sentry.setupExpressErrorHandler(app);
 
 app.use((err, req, res, _next) => {
   const status = err.status || 500;
