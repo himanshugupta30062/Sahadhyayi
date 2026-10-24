@@ -20,6 +20,7 @@ const assets = [
     height: 256,
     quality: 76,
   },
+  {
     input: 'public/lovable-uploads/sahadhyayi-logo-digital-reading.png',
     output: 'sahadhyayi-brand-logo.webp',
     width: 512,
