@@ -73,11 +73,15 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
       title[index] === '-' &&
       index > 0 &&
       index + 1 < title.length &&
-      title[index - 1] === ' ' &&
-      title[index + 1] === ' '
+      /\s/.test(title[index - 1]) &&
+      /\s/.test(title[index + 1])
     ) {
-      separatorIndex = index - 1;
-      separatorLength = 3;
+      let left = index - 1;
+      let right = index + 1;
+      while (left > 0 && /\s/.test(title[left - 1])) left--;
+      while (right + 1 < title.length && /\s/.test(title[right + 1])) right++;
+      separatorIndex = left;
+      separatorLength = right - left + 1;
       break;
     }
   }
