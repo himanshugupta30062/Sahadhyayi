@@ -60,7 +60,7 @@ const gameModes: GameModeOption[] = [
     icon: <Swords className="h-8 w-8" />,
     color: 'from-purple-500 to-violet-600',
     features: ['3 Challenges', 'Daily reset', 'Bonus XP'],
-    badge: 'New',
+    badge: 'Preview',
   },
 ];
 
@@ -109,7 +109,7 @@ export default function GameModeSelector({ selectedMode, onSelectMode }: GameMod
                     {mode.badge && (
                       <Badge variant="secondary" className={cn(
                         'text-xs',
-                        mode.badge === 'New' && 'bg-purple-500/20 text-purple-400',
+                        mode.badge === 'Preview' && 'bg-purple-500/20 text-purple-600 dark:text-purple-300',
                         mode.badge === 'Popular' && 'bg-yellow-500/20 text-yellow-400',
                         mode.badge === 'Hard' && 'bg-red-500/20 text-red-400',
                       )}>
@@ -153,6 +153,8 @@ export default function GameModeSelector({ selectedMode, onSelectMode }: GameMod
 
 // Daily Challenges Component
 export function DailyChallenges({ onSelectChallenge }: { onSelectChallenge: (id: string) => void }) {
+  // Challenge progress is currently illustrative. Keep the UI explicit until
+  // progress and reset timing are backed by persisted challenge state.
   const challenges = [
     { id: '1', title: 'Speed Demon', description: 'Answer 5 questions in under 30 seconds', reward: 500, icon: <Timer className="h-5 w-5" />, progress: 60 },
     { id: '2', title: 'Perfect Run', description: 'Get 100% accuracy in a game', reward: 1000, icon: <Crown className="h-5 w-5" />, progress: 0 },
@@ -168,7 +170,7 @@ export function DailyChallenges({ onSelectChallenge }: { onSelectChallenge: (id:
             <h3 className="font-bold">Daily Challenges</h3>
           </div>
           <Badge variant="secondary" className="bg-white/20 text-white border-0">
-            Resets in 12h
+            Preview
           </Badge>
         </div>
       </div>
