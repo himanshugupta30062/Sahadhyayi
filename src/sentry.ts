@@ -1,55 +1,49 @@
 import * as Sentry from '@sentry/react';
 
-// Initialize Sentry with enhanced configuration
+// Initialize error reporting and performance monitoring without session replay.
+// Replay adds a large browser bundle and records page interactions; it remains
+// intentionally disabled to keep downloads smaller and avoid collecting replay data.
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
-  
+
   integrations: [
     Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration({
-      maskAllText: false,
-      blockAllMedia: false,
-    }),
   ],
-  
+
   // Performance monitoring
   tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
-  
-  // Session replay for error debugging
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-  
+
   // Environment configuration
   environment: import.meta.env.MODE,
-  
+
   // Release tracking
   release: import.meta.env.VITE_APP_VERSION || '1.0.0',
-  
+
   // Filter out known non-actionable errors
   beforeSend(event, hint) {
     const error = hint.originalException;
-    
+
     // Ignore certain error types
     if (error instanceof Error) {
       // Ignore ResizeObserver errors (common browser quirk)
       if (error.message.includes('ResizeObserver')) {
         return null;
       }
-      
+
       // Ignore extension-related errors
       if (error.message.includes('extension') || error.message.includes('Extension')) {
         return null;
       }
-      
+
       // Ignore network errors that are expected (user offline, etc.)
       if (error.message.includes('Failed to fetch') && !navigator.onLine) {
         return null;
       }
     }
-    
+
     return event;
   },
-  
+
   // Add extra context to errors
   initialScope: {
     tags: {
