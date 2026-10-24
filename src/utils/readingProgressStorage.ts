@@ -41,7 +41,7 @@ export const loadProgressLocally = (
     const legacyBookmarks = localStorage.getItem(`book-${bookId}-bookmarks`);
 
     if (legacyPage || legacyPos || legacyBookmarks) {
-      const page = legacyPage ? Number.Number.parseInt(legacyPage, 10) : 1;
+      const page = legacyPage ? Number.parseInt(legacyPage, 10) : 1;
       let bookmarks: string[] = [];
       if (legacyBookmarks) {
         try {

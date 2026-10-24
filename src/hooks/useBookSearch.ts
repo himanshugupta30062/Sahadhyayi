@@ -149,7 +149,7 @@ async function searchGoogleBooksDirect(cleanTerm: string): Promise<BookSearchRes
         genre: Array.isArray(vol.categories) ? vol.categories[0] : vol.categories,
         cover_image_url: cover ? cover.replace('http://', 'https://') : undefined,
         isbn: isbnObj?.identifier,
-        publication_year: vol.publishedDate ? Number.Number.parseInt(vol.publishedDate.slice(0, 4), 10) || undefined : undefined,
+        publication_year: vol.publishedDate ? Number.parseInt(vol.publishedDate.slice(0, 4), 10) || undefined : undefined,
         pages: vol.pageCount,
         language: vol.language || 'en',
         preview_url: vol.previewLink,
