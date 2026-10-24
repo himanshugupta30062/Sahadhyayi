@@ -1,9 +1,18 @@
-import * as Sentry from '@sentry/react';
+import {
+  addBreadcrumb,
+  browserTracingIntegration,
+  captureException,
+  captureMessage as sentryCaptureMessage,
+  init,
+  setUser,
+  showReportDialog,
+  withScope,
+  type SeverityLevel,
+} from '@sentry/browser';
 
-// Error reporting and performance monitoring; session replay is disabled.
-Sentry.init({
+init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
-  integrations: [Sentry.browserTracingIntegration()],
+  integrations: [browserTracingIntegration()],
   tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
   environment: import.meta.env.MODE,
   release: import.meta.env.VITE_APP_VERSION || '1.0.0',
@@ -19,25 +28,22 @@ Sentry.init({
   initialScope: { tags: { app: 'sahadhyayi' } },
 });
 
-export const setSentryUser = (userId: string, email?: string, username?: string) => {
-  Sentry.setUser({ id: userId, email, username });
-};
-export const clearSentryUser = () => Sentry.setUser(null);
-export const addSentryBreadcrumb = (category: string, message: string, level: Sentry.SeverityLevel = 'info', data?: Record<string, any>) => {
-  Sentry.addBreadcrumb({ category, message, level, data, timestamp: Date.now() / 1000 });
-};
-export const captureError = (error: Error, context?: Record<string, any>, level: Sentry.SeverityLevel = 'error') => {
-  Sentry.withScope((scope) => {
+export const setSentryUser = (userId: string, email?: string, username?: string) =>
+  setUser({ id: userId, email, username });
+export const clearSentryUser = () => setUser(null);
+export const addSentryBreadcrumb = (category: string, message: string, level: SeverityLevel = 'info', data?: Record<string, any>) =>
+  addBreadcrumb({ category, message, level, data, timestamp: Date.now() / 1000 });
+export const captureError = (error: Error, context?: Record<string, any>, level: SeverityLevel = 'error') =>
+  withScope((scope) => {
     if (context) scope.setExtras(context);
     scope.setLevel(level);
-    Sentry.captureException(error);
+    captureException(error);
   });
-};
-export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info', context?: Record<string, any>) => {
-  Sentry.withScope((scope) => {
+export const captureMessage = (message: string, level: SeverityLevel = 'info', context?: Record<string, any>) =>
+  withScope((scope) => {
     if (context) scope.setExtras(context);
     scope.setLevel(level);
-    Sentry.captureMessage(message);
+    sentryCaptureMessage(message);
   });
-};
-export default Sentry;
+
+export default { captureException, showReportDialog };
