@@ -22,11 +22,9 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import Navigation from "./components/Navigation";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
-import StructuredFooter from "./components/footer/StructuredFooter";
 import DeferredSection from "./components/DeferredSection";
 import ScrollToTop from "./components/ScrollToTop";
 import BookFlipLoader from "./components/ui/BookFlipLoader";
-import WebsiteTour from "./components/onboarding/WebsiteTour";
 
 // Immediate load pages (critical path)
 import Index from "./pages/Index";
@@ -40,6 +38,8 @@ const ConfirmEmail = lazy(() => import('./pages/ConfirmEmail'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
+const StructuredFooter = lazy(() => import("./components/footer/StructuredFooter"));
+const WebsiteTour = lazy(() => import("./components/onboarding/WebsiteTour"));
 
 // Secondary pages (can be loaded later)
 const Profile = lazy(() => import('./pages/Profile'));
@@ -576,8 +576,13 @@ const App = memo(() => {
                       </Routes>
                     </main>
                     
-                    <StructuredFooter />
-                    <WebsiteTour />
+                    {/* Defer below-the-fold and onboarding code until the initial route is interactive. */}
+                    <DeferredSection idle fallback={null} minHeightClassName="min-h-[320px]">
+                      <StructuredFooter />
+                    </DeferredSection>
+                    <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
+                      <WebsiteTour />
+                    </DeferredSection>
                   </div>
                   
                   {/* Book Expert - load only after idle time so it does not compete with the initial route */}
