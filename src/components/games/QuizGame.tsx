@@ -124,13 +124,13 @@ export default function QuizGame({
   const timerPercent = (timeLeft / TIMER_DURATION) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 text-foreground relative overflow-hidden">
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 rounded-full bg-white/10"
+            className="absolute w-2 h-2 rounded-full bg-primary/10"
             initial={{
               x: Math.random() * window.innerWidth,
               y: Math.random() * window.innerHeight,
@@ -156,7 +156,7 @@ export default function QuizGame({
               variant="ghost" 
               size="sm" 
               onClick={onQuit}
-              className="text-white/70 hover:text-white hover:bg-white/10"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/60"
             >
               <X className="h-4 w-4 mr-1" />
               Quit
@@ -164,7 +164,7 @@ export default function QuizGame({
             
             {/* Score with animation */}
             <motion.div 
-              className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
+              className="flex items-center gap-2 bg-muted/60 backdrop-blur-sm rounded-full px-4 py-2"
               animate={showResult && isCorrect ? { scale: [1, 1.1, 1] } : {}}
             >
               <Trophy className="h-5 w-5 text-yellow-400" />
@@ -194,7 +194,7 @@ export default function QuizGame({
           <motion.div 
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm',
-              timeLeft <= 10 ? 'bg-red-500/30' : 'bg-white/10'
+              timeLeft <= 10 ? 'bg-red-500/30' : 'bg-muted/60'
             )}
             animate={timeLeft <= 5 ? { scale: [1, 1.05, 1] } : {}}
             transition={{ duration: 0.5, repeat: timeLeft <= 5 ? Infinity : 0 }}
@@ -208,8 +208,8 @@ export default function QuizGame({
 
         {/* Progress */}
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-sm text-white/60">Question {questionNumber}/{totalQuestions}</span>
-          <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+          <span className="text-sm text-muted-foreground">Question {questionNumber}/{totalQuestions}</span>
+          <div className="flex-1 h-2 bg-muted/60 rounded-full overflow-hidden">
             <motion.div 
               className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full"
               initial={{ width: 0 }}
@@ -228,7 +228,7 @@ export default function QuizGame({
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <div className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md rounded-3xl p-8 border border-white/10 shadow-2xl">
+          <div className="bg-gradient-to-b from-card to-muted/30 backdrop-blur-md rounded-3xl p-8 border border-border/70 shadow-2xl">
             <div className="flex items-center justify-center gap-2 mb-4">
               <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium">
                 {question.difficulty}
@@ -268,7 +268,7 @@ export default function QuizGame({
             const isSelected = selectedAnswer === index;
             const isCorrectAnswer = index === question.correct_answer;
             
-            let optionClass = 'bg-white/10 hover:bg-white/20 border-white/20';
+            let optionClass = 'bg-muted/60 hover:bg-muted border-border';
             if (showResult) {
               if (isCorrectAnswer) {
                 optionClass = 'bg-green-500/30 border-green-400 ring-2 ring-green-400 shadow-lg shadow-green-500/20';
@@ -298,7 +298,7 @@ export default function QuizGame({
                     'w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg transition-all',
                     showResult && isCorrectAnswer ? 'bg-green-500 shadow-lg' : 
                     showResult && isSelected && !isCorrect ? 'bg-red-500 shadow-lg' :
-                    'bg-white/20'
+                    'bg-muted'
                   )}>
                     {showResult && isCorrectAnswer ? (
                       <CheckCircle2 className="h-6 w-6" />
@@ -329,7 +329,7 @@ export default function QuizGame({
                   <p className="text-sm text-blue-300 font-medium mb-2">
                     Correct Answer: {optionLabels[question.correct_answer]}
                   </p>
-                  <p className="text-white/80">{question.explanation}</p>
+                  <p className="text-foreground/80">{question.explanation}</p>
                 </div>
               </div>
             </motion.div>
@@ -366,7 +366,7 @@ export default function QuizGame({
       </div>
 
       {/* Timer bar at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 h-1.5 bg-white/10">
+      <div className="fixed bottom-0 left-0 right-0 h-1.5 bg-muted/60">
         <motion.div 
           className={cn(
             'h-full transition-colors duration-300',
@@ -411,13 +411,13 @@ function LifelineButton({
       className={cn(
         'flex flex-col items-center gap-2 p-4 rounded-2xl transition-all',
         used 
-          ? 'bg-white/5 text-white/30 cursor-not-allowed' 
-          : 'bg-white/10 hover:bg-white/20 text-white cursor-pointer'
+          ? 'bg-muted/30 text-muted-foreground/50 cursor-not-allowed' 
+          : 'bg-muted/60 hover:bg-muted text-foreground cursor-pointer'
       )}
     >
       <div className={cn(
         'w-14 h-14 rounded-xl flex items-center justify-center shadow-lg',
-        used ? 'bg-white/10' : `bg-gradient-to-br ${color}`
+        used ? 'bg-muted/60' : `bg-gradient-to-br ${color}`
       )}>
         {icon}
       </div>
