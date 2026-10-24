@@ -131,7 +131,7 @@ describe('Universal Search & Cmd+K Shortcut Architecture', () => {
   });
 
   describe('Navigation Desktop and Mobile Search Triggers', () => {
-    it('renders a clean search trigger without any shortcut or K badge', () => {
+    it('renders a clean search trigger without any shortcut or K badge', async () => {
       render(
         <MemoryRouter initialEntries={['/']}>
           <Navigation />
@@ -150,7 +150,7 @@ describe('Universal Search & Cmd+K Shortcut Architecture', () => {
       fireEvent.click(searchBtn);
 
       // Search dialog should open cleanly without any shortcut badges
-      expect(screen.getByPlaceholderText(/search books, authors, or articles/i)).toBeInTheDocument();
+      expect(await screen.findByPlaceholderText(/search books, authors, or articles/i)).toBeInTheDocument();
     });
   });
 
