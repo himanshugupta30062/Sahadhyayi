@@ -3,7 +3,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import SocialMedia from '@/pages/SocialMedia';
 
@@ -250,7 +250,7 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
 
       // Open the compact Reading spaces menu and enter chapter discussions.
       fireEvent.click(screen.getByText(/Explore reading spaces/i));
-      fireEvent.click(screen.getByRole('button', { name: /Chapter discussions/i }));
+      fireEvent.click(within(screen.getByRole('navigation', { name: /Reading spaces/i })).getByRole('button', { name: /Chapter discussions/i }));
 
       expect(screen.getByText('Chapter-Locked Discussions')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Community feed/i })).toBeInTheDocument();
