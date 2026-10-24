@@ -38,13 +38,17 @@ jobs:
           done
           inspect_bundle() {
             local base_url="$1"
-            local html_status asset asset_url bundle_status
-            html_status="$(curl -sSL --max-time 10 -o /tmp/sahadhyayi-page.html -w '%{http_code}' "${base_url%/}/" || true)"
-            echo "=== Bundle inspection: $base_url (HTML HTTP $html_status) ==="
+            local effective_url html_status asset asset_url bundle_status
+            effective_url="$(curl -sSL --max-time 10 -o /tmp/sahadhyayi-page.html -w '%{url_effective}' "${base_url%/}/" || true)"
+            html_status="$(curl -sSL --max-time 10 -o /dev/null -w '%{http_code}' "${base_url%/}/" || true)"
+            echo "=== Bundle inspection: $base_url (effective: $effective_url, HTTP $html_status) ==="
             [[ -s /tmp/sahadhyayi-page.html ]] || { echo "No HTML body"; return; }
-            grep -oE 'src="[^"]+\.js[^"]*"' /tmp/sahadhyayi-page.html | cut -d '"' -f 2 | head -n 8 | while IFS= read -r asset; do
+            local origin
+            origin="$(echo "$effective_url" | grep -oE "^https?://[^/]+")"
+            [[ -n "$origin" ]] || origin="${base_url%/}"
+            grep -oE '(src|href)="[^"]+\.js[^"]*"' /tmp/sahadhyayi-page.html | cut -d '"' -f 2 | head -n 16 | while IFS= read -r asset; do
               [[ -n "$asset" ]] || continue
-              if [[ "$asset" == http* ]]; then asset_url="$asset"; else asset_url="${base_url%/}$asset"; fi
+              if [[ "$asset" == http* ]]; then asset_url="$asset"; else asset_url="${origin%/}$asset"; fi
               bundle_status="$(curl -sSL --max-time 10 -o /tmp/sahadhyayi-bundle.js -w '%{http_code}' "$asset_url" || true)"
               if grep -Fq "$EXPECTED_SUPABASE_URL" /tmp/sahadhyayi-bundle.js 2>/dev/null; then
                 echo "Asset $asset_url: HTTP $bundle_status; production Supabase URL present"
@@ -70,18 +74,23 @@ jobs:
 
           verify_bundle() {
             local base_url="$1"
-            local html js_assets asset asset_url bundle
+            local effective_url html js_assets asset asset_url bundle
 
-            html="$(curl -fsSL --max-time 15 "$base_url/" || true)"
-            [[ -n "$html" ]] || return 1
+            effective_url="$(curl -fsSL --max-time 15 -o /tmp/smoke-page.html -w "%{url_effective}" "$base_url/" || true)"
+            [[ -s /tmp/smoke-page.html ]] || return 1
+            html="$(cat /tmp/smoke-page.html)"
 
-            js_assets="$(printf '%s' "$html" | grep -oE 'src="[^"]+\.js[^"]*"' | cut -d '"' -f 2 || true)"
+            local origin
+            origin="$(echo "$effective_url" | grep -oE "^https?://[^/]+")"
+            [[ -n "$origin" ]] || origin="${base_url%/}"
+
+            js_assets="$(printf '%s' "$html" | grep -oE '(src|href)="[^"]+\.js[^"]*"' | cut -d '"' -f 2 || true)"
             while IFS= read -r asset; do
               [[ -n "$asset" ]] || continue
               if [[ "$asset" == http* ]]; then
                 asset_url="$asset"
               else
-                asset_url="${base_url%/}$asset"
+                asset_url="${origin%/}$asset"
               fi
 
               bundle="$(curl -fsSL --max-time 15 "$asset_url" || true)"
