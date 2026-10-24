@@ -176,9 +176,9 @@ export default function Games() {
               className="hidden lg:flex flex-col gap-4"
             >
               {[
-                { icon: "🧠", title: "10,000+", desc: "Quiz Questions", bg: "bg-amber-50 border-amber-100" },
-                { icon: "📚", title: "500+", desc: "Books Available", bg: "bg-orange-50 border-orange-100" },
-                { icon: "🏆", title: "4 Modes", desc: "Classic · Speed · Survival · Challenge", bg: "bg-yellow-50 border-yellow-100" },
+                { icon: "🧠", title: "Book-powered", desc: "Questions generated for the book you choose", bg: "" },
+                { icon: "📚", title: "Choose a book", desc: "Play from books available in Sahadhyayi", bg: "" },
+                { icon: "🏆", title: "Quiz & grow", desc: "Earn points, badges and reader ranks", bg: "" },
               ].map((stat, i) => (
                 <motion.div
                   key={i}
@@ -264,7 +264,7 @@ export default function Games() {
                       </div>
                     </motion.div>
                     <h2 className="text-3xl font-bold text-foreground mb-2">Book Quiz Challenge</h2>
-                    <p className="text-muted-foreground mb-6">Test your knowledge, earn points, and compete with friends!</p>
+                    <p className="text-muted-foreground mb-6">Test what you remember, earn points, and grow as a reader.</p>
                     
                     <div className="grid grid-cols-3 gap-3 mb-6">
                       <div className="text-center p-3 rounded-xl bg-muted/60 border border-border">
@@ -336,10 +336,10 @@ export default function Games() {
               <div className="p-4 rounded-2xl bg-card/80 border border-border backdrop-blur-sm shadow-sm">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Game Modes</p>
                 {[
-                  { emoji: "🎯", name: "Classic", desc: "Answer at your own pace" },
-                  { emoji: "⚡", name: "Speed Run", desc: "Race against the clock" },
-                  { emoji: "❤️", name: "Survival", desc: "3 lives, no mistakes" },
-                  { emoji: "🏅", name: "Challenge", desc: "Compete with friends" },
+                  { emoji: "🎯", name: "Classic", desc: "Standard book quiz" },
+                  { emoji: "⚡", name: "Speed Run", desc: "Mode preview" },
+                  { emoji: "❤️", name: "Survival", desc: "Mode preview" },
+                  { emoji: "🏅", name: "Challenge", desc: "Mode preview" },
                 ].map((mode, i) => (
                   <motion.div
                     key={i}
