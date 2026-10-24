@@ -38,16 +38,15 @@ if (missing.length === 0) {
   }
 
   const workerRoutes = JSON.parse(wrangler).routes ?? [];
-  const hasApexWorkerRoute = workerRoutes.some(
-    (route) => route.pattern === "sahadhyayi.com/*" && route.zone_name === "sahadhyayi.com",
+  const hasApexCustomDomain = workerRoutes.some(
+    (route) => route.pattern === "sahadhyayi.com" && route.custom_domain === true,
   );
-  const hasWwwWorkerRoute = workerRoutes.some(
-    (route) => route.pattern === "www.sahadhyayi.com/*" && route.zone_name === "sahadhyayi.com",
+  const hasWwwCustomDomain = workerRoutes.some(
+    (route) => route.pattern === "www.sahadhyayi.com" && route.custom_domain === true,
   );
-  if (!hasApexWorkerRoute || !hasWwwWorkerRoute) {
+  if (!hasApexCustomDomain || !hasWwwCustomDomain) {
     errors.push(
-      "wrangler.jsonc must route both sahadhyayi.com/* and www.sahadhyayi.com/* " +
-      "through the sahadhyayi.com Cloudflare zone."
+      "wrangler.jsonc must declare sahadhyayi.com and www.sahadhyayi.com as Cloudflare Custom Domains."
     );
   }
 
