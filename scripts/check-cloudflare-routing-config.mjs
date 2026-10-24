@@ -37,6 +37,17 @@ if (missing.length === 0) {
     );
   }
 
+  const hasApexWorkerRoute =
+    /"pattern"\\s*:\\s*"sahadhyayi\\.com\\/\\*"\\s*,\\s*"zone_name"\\s*:\\s*"sahadhyayi\\.com"/.test(wrangler);
+  const hasWwwWorkerRoute =
+    /"pattern"\\s*:\\s*"www\\.sahadhyayi\\.com\\/\\*"\\s*,\\s*"zone_name"\\s*:\\s*"sahadhyayi\\.com"/.test(wrangler);
+  if (!hasApexWorkerRoute || !hasWwwWorkerRoute) {
+    errors.push(
+      "wrangler.jsonc must route both sahadhyayi.com/* and www.sahadhyayi.com/* " +
+      "through the sahadhyayi.com Cloudflare zone."
+    );
+  }
+
   const netlify = readFileSync(path.join(root, "netlify.toml"), "utf8");
   const hasNetlifySpaFallback =
     /\[\[redirects\]\]/.test(netlify) &&
