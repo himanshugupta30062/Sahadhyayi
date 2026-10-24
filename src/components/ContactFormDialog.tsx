@@ -17,10 +17,12 @@ const contactSchema = z.object({
 
 interface ContactFormDialogProps {
   trigger?: React.ReactNode;
+  /** Opens the dialog immediately after a deferred import completes. */
+  initialOpen?: boolean;
 }
 
-const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
-  const [open, setOpen] = useState(false);
+const ContactFormDialog = ({ trigger, initialOpen = false }: ContactFormDialogProps) => {
+  const [open, setOpen] = useState(initialOpen);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', message: '' });
 
