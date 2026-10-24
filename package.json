@@ -5,8 +5,11 @@
   "homepage": "https://www.sahadhyayi.com",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/prepare-performance-assets.mjs",
     "dev": "vite",
+    "predev:vite": "node scripts/prepare-performance-assets.mjs",
     "dev:vite": "vite",
+    "prebuild": "node scripts/prepare-performance-assets.mjs",
     "build": "vite build && npm run build:server:utils",
     "build:server:utils": "tsup src/utils/*.ts --format esm --out-dir server-utils --clean",
     "size:initial": "node scripts/check-initial-js-size.mjs",
