@@ -26,6 +26,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { SocialSurface } from '@/components/social/SocialSurface';
+import { BookPulseBar } from '@/components/social/BookPulseBar';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
 import { useGroups } from '@/hooks/useGroupManagement';
 import { useAllUsers } from '@/hooks/useUserSearch';
@@ -41,7 +42,6 @@ const EnhancedReadingMap = lazy(() => import('@/components/social/EnhancedReadin
 const FriendsLocationMap = lazy(() => import('@/components/social/FriendsLocationMap').then(({ FriendsLocationMap }) => ({ default: FriendsLocationMap })));
 const ReadingGroups = lazy(() => import('@/components/social/ReadingGroups').then(({ ReadingGroups }) => ({ default: ReadingGroups })));
 const EnhancedFriendsManager = lazy(() => import('@/components/social/EnhancedFriendsManager').then(({ EnhancedFriendsManager }) => ({ default: EnhancedFriendsManager })));
-const BookPulseBar = lazy(() => import('@/components/social/BookPulseBar'));
 const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/SpoilerThreadsFeed'));
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
@@ -169,9 +169,7 @@ const GuestLanding: React.FC = () => {
             {/* Live Activity Pulse bar */}
             <div className="max-w-3xl mx-auto">
               <ErrorBoundary fallback={null}>
-                <Suspense fallback={<div className="min-h-16" aria-hidden="true" />}>
-                  <BookPulseBar />
-                </Suspense>
+                <BookPulseBar />
               </ErrorBoundary>
             </div>
           </div>
