@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { brotliCompressSync } from 'node:zlib';
 
@@ -15,8 +15,7 @@ for (const asset of compressedAssetBudgets) {
   let assetPath = path.join(dist, asset.path);
   if (asset.prefix) {
     const directory = path.dirname(assetPath);
-    const fs = await import('node:fs');
-    const match = fs.readdirSync(directory).find((name) =>
+    const match = readdirSync(directory).find((name) =>
       name.startsWith(path.basename(asset.path)) && name.endsWith(asset.suffix)
     );
     if (!match) throw new Error('Required optimized asset is missing: ' + asset.path + '*.webp');
