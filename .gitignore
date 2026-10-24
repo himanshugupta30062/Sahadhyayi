@@ -32,3 +32,4 @@ public/prerender
 
 # Generated optimized Book Expert artwork (created before dev/build)
 src/components/book-expert/Sahadhyayi_Book_optimized.generated.webp
+/public/optimized-assets/

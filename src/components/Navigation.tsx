@@ -157,7 +157,7 @@ const Navigation = () => {
             aria-label="Sahadhyayi Home"
           >
             <EnhancedLazyImage
-              src="/lovable-uploads/logo-small.webp"
+              src="/optimized-assets/site-logo.webp"
               alt=""
               aria-hidden="true"
               className="w-8 h-8 flex-shrink-0"

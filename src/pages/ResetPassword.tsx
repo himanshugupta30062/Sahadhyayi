@@ -174,7 +174,7 @@ const ResetPassword = () => {
           <div className="text-center mb-6">
             <Link to="/" className="inline-flex items-center gap-2 mb-3" aria-label="Sahadhyayi Home">
               <img
-                src="/lovable-uploads/logo-small.webp"
+                src="/optimized-assets/site-logo.webp"
                 alt=""
                 aria-hidden="true"
                 className="w-10 h-10"
