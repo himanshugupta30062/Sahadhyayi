@@ -60,7 +60,7 @@ const computeStreak = (timestamps: string[]): ReadingStreak => {
   weekAgo.setDate(weekAgo.getDate() - 6);
   const daysThisWeek = days.filter((t) => t >= weekAgo.getTime()).length;
 
-  const sortedIso = [...timestamps].sort();
+  const sortedIso = [...timestamps].sort((a, b) => Date.parse(a) - Date.parse(b));
   return {
     current,
     best,
