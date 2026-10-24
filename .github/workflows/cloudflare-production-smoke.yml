@@ -13,6 +13,31 @@ permissions:
   contents: read
 
 jobs:
+  dns-diagnostics:
+    name: Inspect public DNS and live origins
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Report delegation, DNS answers, and HTTP responses
+        shell: bash
+        run: |
+          set +e
+          echo "=== Authoritative nameservers (NS) ==="
+          dig +short NS sahadhyayi.com
+          echo "=== Apex A / AAAA ==="
+          dig +short A sahadhyayi.com
+          dig +short AAAA sahadhyayi.com
+          echo "=== www CNAME / A ==="
+          dig +short CNAME www.sahadhyayi.com
+          dig +short A www.sahadhyayi.com
+          for url in \
+            https://sahadhyayi.com/ \
+            https://www.sahadhyayi.com/ \
+            https://sahadhyayi.gyan-596.workers.dev/; do
+            echo "=== $url ==="
+            curl -sSIL --max-time 12 "$url" | head -n 25
+          done
+
   verify-production-domain:
     name: Verify Worker and production custom domains
     runs-on: ubuntu-latest
