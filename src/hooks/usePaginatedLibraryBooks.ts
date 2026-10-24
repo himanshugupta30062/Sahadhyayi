@@ -77,7 +77,7 @@ async function fetchFilteredBooks(
       query = query.eq('author', selectedAuthor);
     }
     if (selectedYear && selectedYear.trim()) {
-      query = query.eq('publication_year', Number.Number.parseInt(selectedYear));
+      query = query.eq('publication_year', Number.parseInt(selectedYear));
     }
     if (selectedLanguage && selectedLanguage !== 'All') {
       query = query.eq('language', selectedLanguage);
@@ -111,7 +111,7 @@ async function fetchFilteredBooks(
           fallbackQuery = fallbackQuery.eq('author', selectedAuthor);
         }
         if (selectedYear && selectedYear.trim()) {
-          fallbackQuery = fallbackQuery.eq('publication_year', Number.Number.parseInt(selectedYear));
+          fallbackQuery = fallbackQuery.eq('publication_year', Number.parseInt(selectedYear));
         }
         if (selectedLanguage && selectedLanguage !== 'All') {
           fallbackQuery = fallbackQuery.eq('language', selectedLanguage);
