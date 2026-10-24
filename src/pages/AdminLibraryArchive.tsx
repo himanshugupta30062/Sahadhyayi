@@ -249,10 +249,14 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
 
   const handleCopyIp = (ip: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(ip);
-      setCopiedIp(ip);
-      toast({ title: 'IP Copied', description: `${ip} copied to clipboard.` });
-      setTimeout(() => setCopiedIp(null), 2000);
+      void navigator.clipboard.writeText(ip).then(
+        () => {
+          setCopiedIp(ip);
+          toast({ title: 'IP Copied', description: `${ip} copied to clipboard.` });
+          setTimeout(() => setCopiedIp(null), 2000);
+        },
+        () => toast({ title: 'Copy failed', description: 'Please copy the IP address manually.', variant: 'destructive' })
+      );
     }
   };
 
