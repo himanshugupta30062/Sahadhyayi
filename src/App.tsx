@@ -153,6 +153,13 @@ const PageTracker = () => {
 
 const App = memo(() => {
   useEffect(() => {
+    // Initialize monitoring asynchronously after the UI mounts. This keeps
+    // Sentry and its replay integrations out of the main application chunk
+    // without disabling monitoring or error reporting.
+    void import("@/sentry").catch(() => {
+      // Core application behavior must remain available if telemetry fails.
+    });
+
     initializeSecurity();
     initializeSecureSession();
     
