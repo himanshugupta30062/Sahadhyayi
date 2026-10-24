@@ -38,10 +38,18 @@ export interface ChapterPulse {
   at: number;
 }
 
-export const useReadingRooms = (bookId?: string) => {
+type ReadingRoomsOptions = {
+  enabled?: boolean;
+  refetchInterval?: number | false;
+};
+
+export const useReadingRooms = (bookId?: string, options: ReadingRoomsOptions = {}) => {
   const qc = useQueryClient();
+  const enabled = options.enabled ?? true;
+  const refetchInterval = options.refetchInterval ?? 15_000;
 
   useEffect(() => {
+    if (!enabled) return;
     const channel = supabase
       .channel(uniqueChannelName('reading-rooms-realtime'))
       .on(
@@ -56,7 +64,7 @@ export const useReadingRooms = (bookId?: string) => {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [qc]);
+  }, [qc, enabled]);
 
   return useQuery({
     queryKey: ["reading-rooms", bookId ?? "all"],
@@ -71,8 +79,9 @@ export const useReadingRooms = (bookId?: string) => {
       if (error) throw error;
       return (data ?? []) as unknown as ReadingRoom[];
     },
+    enabled,
     staleTime: 10_000,
-    refetchInterval: 15_000,
+    refetchInterval,
   });
 };
 
