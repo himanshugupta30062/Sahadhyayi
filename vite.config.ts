@@ -84,7 +84,8 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    // Module-aware Terser compression improves size without restoring feature chunks.
+    // Warn early when a generated chunk grows large; size-limit separately enforces compressed budgets.
+    // Lazy feature chunks should keep normal routes responsive without hiding oversized output.
     terserOptions: {
       module: true,
       compress: {
@@ -99,7 +100,7 @@ export default defineConfig(({ mode }) => ({
         safari10: true,
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
   },
   assetsInclude: ['**/*.webp', '**/*.avif'],
   esbuild: {
