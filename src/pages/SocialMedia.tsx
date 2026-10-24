@@ -35,7 +35,7 @@ import { useReadingProgress } from '@/hooks/useReadingProgress';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { toast } from 'sonner';
 
-// Lazy-load the 4 book-native feature panels
+// Lazy-load social feature panels so the active tab determines what JavaScript is fetched
 const MarginNotesFeed = lazy(() => import('@/components/social/margins/MarginNotesFeed'));
 const EnhancedSocialFeed = lazy(() => import('@/components/social/EnhancedSocialFeed').then(({ EnhancedSocialFeed }) => ({ default: EnhancedSocialFeed })));
 const EnhancedReadingMap = lazy(() => import('@/components/social/EnhancedReadingMap').then(({ EnhancedReadingMap }) => ({ default: EnhancedReadingMap })));
