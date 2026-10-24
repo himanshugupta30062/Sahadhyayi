@@ -16,7 +16,8 @@ export async function sessionClientLogin() {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch("/api/session", {
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/+$/, "") || "";
+  const res = await fetch(`${backendBaseUrl}/api/session`, {
     method: "POST",
     credentials: "include",
     headers,
