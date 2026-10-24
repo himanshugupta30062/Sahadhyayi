@@ -1,9 +1,8 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   MapPin,
@@ -21,20 +20,14 @@ import {
   Plus,
   ArrowLeft,
   ChevronRight,
+  UserRound,
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { SocialSurface } from '@/components/social/SocialSurface';
-import { EnhancedSocialFeed } from '@/components/social/EnhancedSocialFeed';
-import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
-import { FriendsLocationMap } from '@/components/social/FriendsLocationMap';
-import { ReadingGroups } from '@/components/social/ReadingGroups';
-import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
 import { BookPulseBar } from '@/components/social/BookPulseBar';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
-import { useMarginNotes } from '@/hooks/useMarginNotes';
-import { useSpoilerThreads } from '@/hooks/useSpoilerThreads';
 import { useGroups } from '@/hooks/useGroupManagement';
 import { useAllUsers } from '@/hooks/useUserSearch';
 import { useSendFriendRequest } from '@/hooks/useFriends';
@@ -42,8 +35,13 @@ import { useReadingProgress } from '@/hooks/useReadingProgress';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { toast } from 'sonner';
 
-// Lazy-load the 4 book-native feature panels
+// Lazy-load social feature panels so the active tab determines what JavaScript is fetched
 const MarginNotesFeed = lazy(() => import('@/components/social/margins/MarginNotesFeed'));
+const EnhancedSocialFeed = lazy(() => import('@/components/social/EnhancedSocialFeed').then(({ EnhancedSocialFeed }) => ({ default: EnhancedSocialFeed })));
+const EnhancedReadingMap = lazy(() => import('@/components/social/EnhancedReadingMap').then(({ EnhancedReadingMap }) => ({ default: EnhancedReadingMap })));
+const FriendsLocationMap = lazy(() => import('@/components/social/FriendsLocationMap').then(({ FriendsLocationMap }) => ({ default: FriendsLocationMap })));
+const ReadingGroups = lazy(() => import('@/components/social/ReadingGroups').then(({ ReadingGroups }) => ({ default: ReadingGroups })));
+const EnhancedFriendsManager = lazy(() => import('@/components/social/EnhancedFriendsManager').then(({ EnhancedFriendsManager }) => ({ default: EnhancedFriendsManager })));
 const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/SpoilerThreadsFeed'));
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
@@ -113,6 +111,9 @@ const iconColorMap = {
 
 // ─── Guest (unauthenticated) landing ─────────────────────────────────────────
 const GuestLanding: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const queryString = searchParams.toString();
+  const signInRedirect = `/social${queryString ? `?${queryString}` : ''}`;
 
   return (
     <>
@@ -155,7 +156,7 @@ const GuestLanding: React.FC = () => {
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
-              <SignInLink redirectPath="/social">
+              <SignInLink redirectPath={signInRedirect}>
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1B241E] px-7 h-11 text-sm font-medium"
@@ -266,8 +267,7 @@ const GuestLanding: React.FC = () => {
 };
 
 // ─── Authenticated View ───────────────────────────────────────────────────────
-const SocialMedia: React.FC = () => {
-  const { user, loading } = useAuth();
+const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof useAuth>['user']> }> = ({ user }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const activeTab = VALID_SOCIAL_TABS.includes(tabParam as (typeof VALID_SOCIAL_TABS)[number])
@@ -275,14 +275,32 @@ const SocialMedia: React.FC = () => {
     : 'feed';
 
   const [mapView, setMapView] = useState<'readers' | 'friends'>('readers');
+  const [isDesktopSidebarVisible, setIsDesktopSidebarVisible] = useState(() =>
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(min-width: 1280px)').matches
+  );
 
-  // Fetch community data
-  const { data: rooms = [] } = useReadingRooms();
-  const { data: marginNotes = [] } = useMarginNotes({ filter: 'all' });
-  const { data: spoilerThreads = [] } = useSpoilerThreads();
-  const { data: groups = [] } = useGroups();
-  const { data: allUsers = [] } = useAllUsers();
-  const { data: readingProgress = [] } = useReadingProgress();
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+
+    const sidebarMedia = window.matchMedia('(min-width: 1280px)');
+    const updateSidebarVisibility = () => setIsDesktopSidebarVisible(sidebarMedia.matches);
+    updateSidebarVisibility();
+    sidebarMedia.addEventListener('change', updateSidebarVisibility);
+
+    return () => sidebarMedia.removeEventListener('change', updateSidebarVisibility);
+  }, []);
+
+  // The desktop discovery rail is hidden below xl. Avoid its requests and live
+  // subscriptions on mobile while leaving each feature page's own queries intact.
+  const { data: rooms = [], isLoading: isLoadingRooms, error: roomsError, refetch: refetchRooms } =
+    useReadingRooms(undefined, { enabled: isDesktopSidebarVisible });
+  const { data: groups = [], isLoading: isLoadingGroups, error: groupsError, refetch: refetchGroups } =
+    useGroups({ enabled: isDesktopSidebarVisible });
+  const { data: allUsers = [], isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } =
+    useAllUsers({ enabled: isDesktopSidebarVisible });
+  const { data: readingProgress = [] } = useReadingProgress({ enabled: isDesktopSidebarVisible });
   const sendFriendRequest = useSendFriendRequest();
 
   const handleTabChange = (value: string) => {
@@ -309,18 +327,6 @@ const SocialMedia: React.FC = () => {
     }
   };
 
-  // Full-screen loader while authentication state is resolving
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#FAF7F2] dark:bg-[#0B0D0C] flex items-center justify-center text-[#1C201D] dark:text-[#F3F0E7]">
-        <Loader2 className="w-7 h-7 animate-spin text-[#1C442D] dark:text-[#D5B16D]" />
-      </div>
-    );
-  }
-
-  // Always show the guest experience when signed out
-  if (!user) return <GuestLanding />;
-
   const currentProgress = readingProgress[0];
 
   return (
@@ -336,6 +342,82 @@ const SocialMedia: React.FC = () => {
         {/* ── Main Viewport Content ── */}
         <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <nav aria-label="Social navigation" className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E8E2D9] bg-white p-2 shadow-[0_2px_8px_rgba(28,32,29,0.03)] dark:border-[#29332D] dark:bg-[#111614]">
+              <button
+                type="button"
+                aria-pressed={activeTab === 'feed'}
+                onClick={() => handleTabChange('feed')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'feed' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
+                Home
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeTab === 'friends'}
+                onClick={() => handleTabChange('friends')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'friends' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <Users className="h-4 w-4" aria-hidden="true" />
+                Discover
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeTab === 'groups'}
+                onClick={() => handleTabChange('groups')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'groups' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <UsersIcon className="h-4 w-4" aria-hidden="true" />
+                Groups
+              </button>
+              <details className="group relative">
+                <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAF7F2] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]">
+                  <BookOpen className="h-4 w-4" aria-hidden="true" />
+                  Reading spaces
+                  <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" aria-hidden="true" />
+                </summary>
+                <div className="mt-2 flex flex-wrap gap-2 rounded-xl border border-[#E8E2D9] bg-[#FAF7F2] p-2 dark:border-[#29332D] dark:bg-[#0B0D0C] sm:absolute sm:left-0 sm:z-30 sm:min-w-64 sm:shadow-lg">
+                  {[
+                    { value: 'rooms', label: 'Live reading rooms' },
+                    { value: 'threads', label: 'Chapter discussions' },
+                    { value: 'margins', label: 'Shared margin notes' },
+                    { value: 'dna', label: 'Reading DNA' },
+                    { value: 'map', label: 'Reader map' },
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => handleTabChange(item.value)}
+                      className="min-h-9 rounded-lg border border-[#E8E2D9] bg-white px-3 py-2 text-left text-xs font-medium text-[#1C442D] hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </details>
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    handleTabChange('feed');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    window.setTimeout(() => document.getElementById('feed-composer-textarea')?.focus(), 100);
+                  }}
+                  className="min-h-10 gap-2 rounded-xl bg-[#1C442D] px-3 text-sm font-semibold text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]"
+                >
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Create
+                </Button>
+                <Link
+                  to="/profile"
+                  aria-label="Your profile"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAF7F2] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]"
+                >
+                  <UserRound className="h-4 w-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Profile</span>
+                </Link>
+              </div>
+            </nav>
             {/* Content-first community layout: feed plus contextual discovery */}
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
               {/* ── Community Stream & Feature Content ── */}
@@ -387,72 +469,34 @@ const SocialMedia: React.FC = () => {
                     </Button>
                   </div>
 
-                  {/* Feature shortcuts, not a second navigation bar */}
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4" aria-label="Community shortcuts">
-                    {[
-                      {
-                        value: 'rooms',
-                        title: 'Read together',
-                        description: 'Join a live reading room and make reading a shared ritual.',
-                        icon: Radio,
-                      },
-                      {
-                        value: 'threads',
-                        title: 'Book discussions',
-                        description: 'Talk through chapters with spoiler-aware conversations.',
-                        icon: Lock,
-                      },
-                      {
-                        value: 'margins',
-                        title: 'Shared marginalia',
-                        description: 'Discover notes and passages readers have saved.',
-                        icon: Quote,
-                      },
-                      {
-                        value: 'friends',
-                        title: 'Discover readers',
-                        description: 'Meet readers who might become your next book friends.',
-                        icon: Users,
-                      },
-                    ].map(({ value, title, description, icon: Icon }) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => handleTabChange(value)}
-                        className="group flex min-h-[112px] w-full items-start gap-3 rounded-2xl border border-[#E8E2D9] bg-white p-4 text-left shadow-[0_2px_8px_rgba(28,32,29,0.03)] transition-all hover:-translate-y-0.5 hover:border-[#C8DBCB] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:hover:border-[#315C43] dark:focus-visible:ring-[#D5B16D]"
-                      >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#C8DBCB] bg-[#EBF2EC] text-[#1C442D] transition-colors group-hover:bg-[#DDEADF] dark:border-[#315C43] dark:bg-[#1C3024] dark:text-[#D5B16D] dark:group-hover:bg-[#243D2C]">
-                          <Icon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block text-sm font-semibold tracking-tight text-[#1C201D] dark:text-[#F3F0E7]">
-                            {title}
-                          </span>
-                          <span className="mt-1.5 block text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
-                            {description}
-                          </span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 border-b border-[#E8E2D9] pb-5 text-xs dark:border-[#29332D]">
-                    <span className="mr-1 font-medium text-[#636B65] dark:text-[#A5ADA6]">More to explore</span>
-                    {[
-                      { value: 'dna', label: 'Reading DNA' },
-                      { value: 'map', label: 'Reader map' },
-                      { value: 'groups', label: 'Reading groups' },
-                    ].map((item) => (
-                      <button
-                        key={item.value}
-                        type="button"
-                        onClick={() => handleTabChange(item.value)}
-                        className="rounded-full border border-[#E8E2D9] bg-white px-3 py-1.5 font-medium text-[#1C442D] transition-colors hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
+                  <details className="group rounded-xl border border-[#E8E2D9] bg-white dark:border-[#29332D] dark:bg-[#111614]">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[#1C442D] outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#D5B16D] dark:focus-visible:ring-[#D5B16D]">
+                      <span>Explore reading spaces</span>
+                      <span className="flex items-center gap-2 text-xs font-normal text-[#636B65] dark:text-[#A5ADA6]">
+                        Rooms, discussions, notes and reader discovery
+                        <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" aria-hidden="true" />
+                      </span>
+                    </summary>
+                    <nav aria-label="Reading spaces" className="flex flex-wrap gap-2 border-t border-[#E8E2D9] px-3 py-3 dark:border-[#29332D]">
+                      {[
+                        { value: 'rooms', label: 'Reading rooms' },
+                        { value: 'threads', label: 'Chapter discussions' },
+                        { value: 'margins', label: 'Margin notes' },
+                        { value: 'friends', label: 'Discover readers' },
+                        { value: 'dna', label: 'Reading DNA' },
+                        { value: 'map', label: 'Reader map' },
+                      ].map((item) => (
+                        <button
+                          key={item.value}
+                          type="button"
+                          onClick={() => handleTabChange(item.value)}
+                          className="rounded-full border border-[#E8E2D9] bg-[#FAF7F2] px-3 py-2 text-xs font-medium text-[#1C442D] transition-colors hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </nav>
+                  </details>
 
                   <ErrorBoundary
                     fallback={
@@ -472,7 +516,9 @@ const SocialMedia: React.FC = () => {
                       </SocialSurface>
                     }
                   >
-                    <EnhancedSocialFeed />
+                    <Suspense fallback={<TabLoader />}>
+                      <EnhancedSocialFeed />
+                    </Suspense>
                   </ErrorBoundary>
                 </TabsContent>
 
@@ -542,7 +588,9 @@ const SocialMedia: React.FC = () => {
 
                 {/* ── Friends Tab ── */}
                 <TabsContent value="friends" className="mt-0">
-                  <EnhancedFriendsManager />
+                  <Suspense fallback={<TabLoader />}>
+                    <EnhancedFriendsManager />
+                  </Suspense>
                 </TabsContent>
 
                 {/* ── Map Tab ── */}
@@ -577,13 +625,17 @@ const SocialMedia: React.FC = () => {
                   </div>
 
                   <Card className="border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] overflow-hidden text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
-                    {mapView === 'readers' ? <EnhancedReadingMap /> : <FriendsLocationMap />}
+                    <Suspense fallback={<TabLoader />}>
+                      {mapView === 'readers' ? <EnhancedReadingMap /> : <FriendsLocationMap />}
+                    </Suspense>
                   </Card>
                 </TabsContent>
 
                 {/* ── Groups Tab ── */}
                 <TabsContent value="groups" className="mt-0">
-                  <ReadingGroups />
+                  <Suspense fallback={<TabLoader />}>
+                    <ReadingGroups />
+                  </Suspense>
                 </TabsContent>
               </section>
 
@@ -594,12 +646,7 @@ const SocialMedia: React.FC = () => {
                   <SocialSurface className="p-4">
                     <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E2D9] dark:border-[#29332D]">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Live Reading Rooms</span>
-                        {rooms.length > 0 && (
-                          <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 text-[9px] px-1.5 py-0 h-4 font-bold">
-                            Live
-                          </Badge>
-                        )}
+                        <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Reading Rooms</span>
                       </div>
                       <button
                         type="button"
@@ -610,16 +657,25 @@ const SocialMedia: React.FC = () => {
                       </button>
                     </div>
 
-                    {rooms.length === 0 ? (
+                    {isLoadingRooms ? (
+                      <div className="flex items-center justify-center gap-2 py-5 text-xs text-[#636B65] dark:text-[#A5ADA6]" role="status">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Loading rooms…
+                      </div>
+                    ) : roomsError ? (
                       <div className="py-4 text-center">
-                        <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">No live reading rooms right now.</p>
+                        <p className="text-xs text-red-700 dark:text-red-300">Reading rooms could not be loaded.</p>
+                        <button type="button" onClick={() => void refetchRooms()} className="mt-2 text-xs font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">Retry</button>
+                      </div>
+                    ) : rooms.length === 0 ? (
+                      <div className="py-4 text-center">
+                        <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">No reading rooms to show right now.</p>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleTabChange('rooms')}
                           className="mt-3 text-xs h-7 border-[#E8E2D9] dark:border-[#29332D] bg-[#F4EFEA] dark:bg-[#16211A] text-[#1C201D] dark:text-[#F3F0E7] hover:border-[#1C442D]/40 dark:hover:border-[#315C43]"
                         >
-                          Start a Room
+                          Explore rooms
                         </Button>
                       </div>
                     ) : (
@@ -650,7 +706,7 @@ const SocialMedia: React.FC = () => {
                                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
                                     {typeof ((room as any).participants_count ?? (room as any).active_readers_count) === 'number'
                                       ? `${(room as any).participants_count ?? (room as any).active_readers_count} in room`
-                                      : 'Active now'}
+                                      : 'Room available'}
                                   </p>
                                 </div>
                               </div>
@@ -659,7 +715,7 @@ const SocialMedia: React.FC = () => {
                                 onClick={() => handleTabChange('rooms')}
                                 className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C201D] dark:text-[#F3F0E7] shrink-0"
                               >
-                                Join
+                                Explore
                               </Button>
                             </div>
                           );
@@ -681,14 +737,23 @@ const SocialMedia: React.FC = () => {
                       </button>
                     </div>
 
-                    {groups.length === 0 ? (
+                    {isLoadingGroups ? (
+                      <div className="flex items-center justify-center gap-2 py-5 text-xs text-[#636B65] dark:text-[#A5ADA6]" role="status">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Loading groups…
+                      </div>
+                    ) : groupsError ? (
+                      <div className="py-4 text-center">
+                        <p className="text-xs text-red-700 dark:text-red-300">Reading groups could not be loaded.</p>
+                        <button type="button" onClick={() => void refetchGroups()} className="mt-2 text-xs font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">Retry</button>
+                      </div>
+                    ) : groups.length === 0 ? (
                       <div className="py-4 text-center">
                         <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">No reading groups found.</p>
                       </div>
                     ) : (
                       <div className="space-y-2.5">
                         {groups.slice(0, 3).map((group) => {
-                          const memberCount = group.group_members?.[0]?.count ?? group.member_count ?? 1;
+                          const memberCount = group.group_members?.[0]?.count ?? group.member_count ?? null;
                           return (
                             <div
                               key={group.id}
@@ -711,7 +776,7 @@ const SocialMedia: React.FC = () => {
                                     {group.name}
                                   </p>
                                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
-                                    {memberCount} {memberCount === 1 ? 'member' : 'members'}
+                                    {memberCount === null ? 'Member count unavailable' : `${memberCount} ${memberCount === 1 ? 'member' : 'members'}`}
                                   </p>
                                 </div>
                               </div>
@@ -720,7 +785,7 @@ const SocialMedia: React.FC = () => {
                                 onClick={() => handleTabChange('groups')}
                                 className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#16211A] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C201D] dark:text-[#F3F0E7] shrink-0"
                               >
-                                Join
+                                Open
                               </Button>
                             </div>
                           );
@@ -742,7 +807,16 @@ const SocialMedia: React.FC = () => {
                       </button>
                     </div>
 
-                    {allUsers.length === 0 ? (
+                    {isLoadingUsers ? (
+                      <div className="flex items-center justify-center gap-2 py-5 text-xs text-[#636B65] dark:text-[#A5ADA6]" role="status">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Finding readers…
+                      </div>
+                    ) : usersError ? (
+                      <div className="py-4 text-center">
+                        <p className="text-xs text-red-700 dark:text-red-300">Reader suggestions could not be loaded.</p>
+                        <button type="button" onClick={() => void refetchUsers()} className="mt-2 text-xs font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">Retry</button>
+                      </div>
+                    ) : allUsers.length === 0 ? (
                       <div className="py-4 text-center">
                         <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">Connect with friends on Sahadhyayi.</p>
                       </div>
@@ -765,13 +839,14 @@ const SocialMedia: React.FC = () => {
                                   {reader.full_name}
                                 </p>
                                 <p className="truncate text-[10px] text-[#636B65] dark:text-[#A5ADA6]">
-                                  Reads · {reader.username ? `@${reader.username}` : 'Literature'}
+                                  Reads · {reader.username ? `@${reader.username}` : 'Sahadhyayi reader'}
                                 </p>
                               </div>
                             </div>
                             <Button
                               size="sm"
                               onClick={() => handleSendRequest(reader.id, reader.full_name)}
+                              disabled={sendFriendRequest.isPending}
                               className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#16211A] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C442D] dark:text-[#D5B16D] shrink-0"
                             >
                               Add friend
@@ -861,6 +936,24 @@ const SocialMedia: React.FC = () => {
       </div>
     </>
   );
+};
+
+// Keep guest landing completely separate from authenticated social queries.
+// This avoids kicking off friends, groups, reading-room, and profile discovery
+// requests for signed-out visitors and preserves the requested deep link at login.
+const SocialMedia: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] dark:bg-[#0B0D0C] flex items-center justify-center text-[#1C201D] dark:text-[#F3F0E7]" role="status" aria-label="Loading social community">
+        <Loader2 className="w-7 h-7 animate-spin text-[#1C442D] dark:text-[#D5B16D]" />
+      </div>
+    );
+  }
+
+  if (!user) return <GuestLanding />;
+  return <AuthenticatedSocialMedia user={user} />;
 };
 
 export default SocialMedia;

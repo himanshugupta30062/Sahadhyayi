@@ -93,7 +93,7 @@ export type RecentVisitor = {
   device: string;
   browser: string;
   os: string;
-  ipAddress?: string;
+  ipAddress?: string | null;
   language?: string;
   sessionId?: string;
   screenResolution?: string;
@@ -257,7 +257,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       }
     };
 
-    verifyAdmin();
+    void verifyAdmin();
     return () => {
       active = false;
     };
@@ -338,8 +338,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       !hasReferrers
     );
 
+    // Resolve the selected timeframe from the rolling aggregate before considering
+    // legacy fields. Lifetime totals must never be presented as period page views.
     const selectedPageViews = getNumber(
       raw.period?.pageViews,
+      tf === '30d' ? raw.rolling?.pageViews30d : tf === '7d' ? raw.rolling?.pageViews7d : raw.rolling?.pageViews24h,
       raw.pageViews,
       raw.last24hVisits,
       raw.periodVisits,
@@ -347,6 +350,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     );
     const selectedUnique = getNumber(
       raw.period?.uniqueVisitors,
+      tf === '30d' ? raw.rolling?.uniqueVisitors30d : tf === '7d' ? raw.rolling?.uniqueVisitors7d : raw.rolling?.uniqueVisitors24h,
       raw.uniqueVisitors,
       raw.uniqueVisitors24h,
       raw.metrics?.uniqueVisitors?.value
@@ -492,7 +496,8 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       safeRpc('get_website_visit_count'),
       safeCount('profiles'),
       safeCount('profiles', 'created_at', timeframeStart),
-      safeCount('website_visits', 'visited_at', timeframeStart, 'event_type', 'pageview'),
+      // Raw visit rows are service-role-only. Use aggregate RPCs for pageview totals.
+      Promise.resolve(null),
       safeCount('reading_room_events', 'created_at', timeframeStart, 'kind', 'chapter_complete'),
       safeCount('group_members', 'joined_at', timeframeStart),
       safeCount('posts', 'created_at', timeframeStart),
@@ -561,63 +566,47 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
       try {
         let statsPayload: PulseStats | null = null;
+        let primaryError: Error | null = null;
 
-        // Tier 1: Authoritative dual-table database RPC
+        // Prefer the public-safe aggregate RPC. If it is not installed in a deployed
+        // database yet, try the existing Edge Function before falling back to safe
+        // database aggregates. This keeps deployments resilient during migrations.
         try {
-          const { data, error: rpcError } = await supabase.rpc('get_dual_table_website_analytics', {
-            p_timeframe: timeframe,
-          });
-          if (rpcError) throw new Error(rpcError.message || 'Dual-table RPC unavailable');
-          if (!data || typeof data !== 'object') throw new Error('Dual-table RPC returned invalid payload');
-
-          statsPayload = parseStatsPayload(data, timeframe);
-        } catch (tier1Err) {
-          // Tier 2: Server-side admin analytics fallback. The Edge Function verifies this
-          // access token and re-checks the caller's admin role before returning detailed data.
-          let edgeCaughtErr: any = null;
+          const { data: publicStats, error: publicRpcError } = await supabase.rpc(
+            'get_dual_table_website_analytics',
+            { p_timeframe: timeframe },
+          );
+          if (publicRpcError) throw new Error(publicRpcError.message || 'Public website analytics RPC unavailable');
+          if (!publicStats || typeof publicStats !== 'object') {
+            throw new Error('Public website analytics RPC returned an invalid payload');
+          }
+          statsPayload = parseStatsPayload(publicStats, timeframe);
+        } catch (rpcError) {
+          primaryError = rpcError instanceof Error ? rpcError : new Error('Public website analytics RPC unavailable');
           try {
-            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-            const accessToken = sessionData?.session?.access_token;
-            if (sessionError || !accessToken) {
-              throw new Error('An authenticated administrator session is required for community analytics.');
-            }
-            const { data: edgeData, error: edgeErr } = await supabase.functions.invoke('community-stats', {
-              headers: { Authorization: `Bearer ${accessToken}` },
+            const { data: edgeStats, error: edgeError } = await supabase.functions.invoke('community-stats', {
               body: { timeframe },
             });
-            if (edgeErr || !edgeData || typeof edgeData !== 'object') {
-              throw new Error(edgeErr?.message || 'Edge function unavailable');
+            if (edgeError) throw new Error(edgeError.message || 'Community stats Edge Function unavailable');
+            if (!edgeStats || typeof edgeStats !== 'object') {
+              throw new Error('Community stats Edge Function returned an invalid payload');
             }
-
-            statsPayload = parseStatsPayload(edgeData, timeframe);
-
-            // If edge function returned legacy schema without period page views, retrieve verified count
-            if (statsPayload.pageViews === null && (statsPayload.totalMembers !== null || statsPayload.lifetimeVisits !== null)) {
-              const tfStart = timeframe === '30d' ? new Date(Date.now() - 30 * 86400000).toISOString()
-                : timeframe === '7d' ? new Date(Date.now() - 7 * 86400000).toISOString()
-                : new Date(Date.now() - 86400000).toISOString();
-              const periodViews = await safeCount('website_visits', 'visited_at', tfStart, 'event_type', 'pageview');
-              if (periodViews !== null) {
-                statsPayload = {
-                  ...statsPayload,
-                  pageViews: periodViews,
-                  partialData: true,
-                };
-              }
+            statsPayload = parseStatsPayload(edgeStats, timeframe);
+            primaryError = null;
+          } catch (edgeError) {
+            // Keep the first actionable error unless the Edge Function provided a
+            // more specific failure, then try public-safe RPC/table-count fallback.
+            primaryError = edgeError instanceof Error ? edgeError : primaryError;
+            try {
+              statsPayload = await fetchDatabaseFallbackStats(timeframe);
+              primaryError = null;
+            } catch {
+              // If all sources are unavailable, preserve cache and expose the cause.
             }
-          } catch (tier2Err: any) {
-            edgeCaughtErr = tier2Err;
-            // If cached stats already exist, preserve them as stale on refresh error
-            if (statsRef.current) {
-              throw edgeCaughtErr;
-            }
-            // Tier 3: Public database aggregate / counts fallback only when no cache exists
-            statsPayload = await fetchDatabaseFallbackStats(timeframe);
           }
         }
 
-        if (isMountedRef.current && currentSeq === requestSeqRef.current && statsPayload) {
-          // Average engaged session time is unavailable until real heartbeat samples exist.
+        if (statsPayload) {
           try {
             const { data: engagement, error: engagementError } = await supabase.rpc('get_website_engagement_stats', {
               p_timeframe: timeframe,
@@ -635,12 +624,13 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
                     : `${Math.floor(averageSeconds / 60)} min ${Math.round(averageSeconds % 60)} sec`,
                 avgTimeChange: undefined,
               };
-            } else {
-              statsPayload = { ...statsPayload, avgTimeOnSite: '—' };
             }
           } catch {
             statsPayload = { ...statsPayload, avgTimeOnSite: '—' };
           }
+        }
+
+        if (isMountedRef.current && currentSeq === requestSeqRef.current && statsPayload) {
           setStats(statsPayload);
           setError(null);
           try {
@@ -648,6 +638,9 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           } catch {
             // ignore storage quota error
           }
+        } else if (isMountedRef.current && currentSeq === requestSeqRef.current) {
+          setStats(prev => (prev ? { ...prev, isStale: true } : null));
+          setError(primaryError?.message || 'Network error fetching community stats');
         }
       } catch (err: any) {
         if (isMountedRef.current && currentSeq === requestSeqRef.current) {
@@ -661,7 +654,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         }
       }
     },
-    [timeframe, fetchDatabaseFallbackStats, parseStatsPayload, safeCount]
+    [timeframe, isAdmin, fetchDatabaseFallbackStats, parseStatsPayload, safeCount]
   );
 
   // 3. Fetch Recent Visitors (Strictly Admin-Only)

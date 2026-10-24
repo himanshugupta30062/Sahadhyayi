@@ -142,10 +142,10 @@ export function normalizeIsbn(rawIsbn?: string | null): NormalizedIsbn {
   if (/^\d{9}[\dX]$/.test(clean)) {
     let sum = 0;
     for (let i = 0; i < 9; i++) {
-      sum += parseInt(clean[i], 10) * (10 - i);
+      sum += Number.parseInt(clean[i], 10) * (10 - i);
     }
     const checkChar = clean[9];
-    const checkValue = checkChar === 'X' ? 10 : parseInt(checkChar, 10);
+    const checkValue = checkChar === 'X' ? 10 : Number.parseInt(checkChar, 10);
     sum += checkValue;
 
     if (sum % 11 === 0) {
@@ -157,10 +157,10 @@ export function normalizeIsbn(rawIsbn?: string | null): NormalizedIsbn {
   if (/^\d{13}$/.test(clean)) {
     let sum = 0;
     for (let i = 0; i < 12; i++) {
-      sum += parseInt(clean[i], 10) * (i % 2 === 0 ? 1 : 3);
+      sum += Number.parseInt(clean[i], 10) * (i % 2 === 0 ? 1 : 3);
     }
     const checkDigit = (10 - (sum % 10)) % 10;
-    if (checkDigit === parseInt(clean[12], 10)) {
+    if (checkDigit === Number.parseInt(clean[12], 10)) {
       return { isbn13: clean, isValid: true };
     }
   }

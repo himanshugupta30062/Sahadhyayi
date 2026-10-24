@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: sahadhyayi-api
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:server
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SUPABASE_EDGE_STT_KEY
+        sync: false
+      - key: GOODREADS_KEY
+        sync: false
+      - key: GOODREADS_SECRET
+        sync: false
+      - key: GOODREADS_CALLBACK_URL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false

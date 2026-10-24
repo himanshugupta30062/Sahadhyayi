@@ -167,11 +167,11 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     rerender(<CommunityPulseDialog open={true} onClose={vi.fn()} isAdmin={true} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /data health/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /data health/i })).toBeInTheDocument();
     });
 
     // Click Data Health tab
-    fireEvent.click(screen.getByRole('button', { name: /data health/i }));
+    fireEvent.click(screen.getByRole('tab', { name: /data health/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Analytics Pipeline Diagnostics')).toBeInTheDocument();

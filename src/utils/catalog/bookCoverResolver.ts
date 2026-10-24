@@ -351,11 +351,15 @@ export function useResolvedBookCover(book: BookCoverTarget): {
 
     let isMounted = true;
 
-    resolveGenuineBookCover(book).then((resolved) => {
-      if (isMounted) {
-        setCoverUrl(resolved);
+    void resolveGenuineBookCover(book).then(
+      (resolved) => {
+        if (isMounted) setCoverUrl(resolved);
+      },
+      (error: unknown) => {
+        console.warn("Unable to resolve book cover:", error);
+        if (isMounted) setCoverUrl(null);
       }
-    });
+    );
 
     return () => {
       isMounted = false;

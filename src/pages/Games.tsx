@@ -52,9 +52,10 @@ export default function Games() {
     correctAnswers,
     lifelinesUsed,
     loading: gameLoading,
-    gameStatus,
     hiddenOptions,
     showHint,
+    mode,
+    lives,
     startGame,
     answerQuestion,
     useLifeline,
@@ -86,7 +87,7 @@ export default function Games() {
   }, [user, bookQuotes]);
 
   const handleBookSelect = async (bookId: string) => {
-    const started = await startGame(bookId, selectedDifficulty);
+    const started = await startGame(bookId, selectedDifficulty, selectedMode);
     if (started) {
       setView('playing');
     }
@@ -95,8 +96,8 @@ export default function Games() {
   const handleAnswer = async (answerIndex: number) => {
     const result = await answerQuestion(answerIndex);
     
-    if (gameStatus === 'finished' || !result?.isCorrect) {
-      setLastGameResult({ score: score + (result?.pointsEarned || 0), correct: correctAnswers + (result?.isCorrect ? 1 : 0), total: totalQuestions });
+    if (result?.finished) {
+      setLastGameResult({ score: score + (result?.pointsEarned || 0), correct: correctAnswers + (result?.isCorrect ? 1 : 0), total: mode === 'survival' && !result?.isCorrect ? currentQuestionIndex + 1 : totalQuestions });
       const isPerfect = correctAnswers + (result?.isCorrect ? 1 : 0) === totalQuestions;
       await addPoints(score + (result?.pointsEarned || 0), isPerfect);
       await checkAndAwardBadges({
@@ -135,17 +136,17 @@ export default function Games() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 text-foreground relative overflow-hidden">
         {/* Decorative background elements */}
-        <div className="absolute top-10 left-10 w-72 h-72 bg-amber-200/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-100/40 rounded-full blur-3xl" />
+        <div className="absolute top-10 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-muted/40 rounded-full blur-3xl" />
 
         {/* Floating book icons background */}
         {[BookOpen, Star, Trophy, Zap, Flame, Target].map((Icon, i) => (
           <motion.div
             key={i}
-            className="absolute text-amber-300/20"
+            className="absolute text-primary/15"
             style={{
               top: `${15 + (i * 14) % 70}%`,
               left: `${5 + (i * 18) % 85}%`,
@@ -176,16 +177,16 @@ export default function Games() {
               className="hidden lg:flex flex-col gap-4"
             >
               {[
-                { icon: "🧠", title: "10,000+", desc: "Quiz Questions", bg: "bg-amber-50 border-amber-100" },
-                { icon: "📚", title: "500+", desc: "Books Available", bg: "bg-orange-50 border-orange-100" },
-                { icon: "🏆", title: "4 Modes", desc: "Classic · Speed · Survival · Challenge", bg: "bg-yellow-50 border-yellow-100" },
+                { icon: "🧠", title: "Book-powered", desc: "Questions generated for the book you choose", bg: "" },
+                { icon: "📚", title: "Choose a book", desc: "Play from books available in Sahadhyayi", bg: "" },
+                { icon: "🏆", title: "Quiz & grow", desc: "Earn points, badges and reader ranks", bg: "" },
               ].map((stat, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + i * 0.15 }}
-                  className={`p-4 rounded-2xl border backdrop-blur-sm bg-white/80 ${stat.bg} shadow-sm`}
+                  className={`p-4 rounded-2xl border backdrop-blur-sm bg-card/80 border-border shadow-sm`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">{stat.icon}</span>
@@ -199,7 +200,7 @@ export default function Games() {
 
               {/* Rotating Quote */}
               <motion.div
-                className="p-4 rounded-2xl bg-white/60 border border-amber-100 backdrop-blur-sm"
+                className="p-4 rounded-2xl bg-card/70 border border-border backdrop-blur-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
@@ -252,7 +253,7 @@ export default function Games() {
                 transition={{ duration: 0.6 }}
                 className="w-full max-w-md"
               >
-                <Card className="text-center bg-white/95 backdrop-blur-sm border-border shadow-xl rounded-2xl">
+                <Card className="text-center bg-card/95 backdrop-blur-sm border-border shadow-xl rounded-2xl">
                   <CardContent className="pt-8 pb-6">
                     <motion.div
                       animate={{ rotate: [0, -5, 5, -5, 0] }}
@@ -264,18 +265,18 @@ export default function Games() {
                       </div>
                     </motion.div>
                     <h2 className="text-3xl font-bold text-foreground mb-2">Book Quiz Challenge</h2>
-                    <p className="text-muted-foreground mb-6">Test your knowledge, earn points, and compete with friends!</p>
+                    <p className="text-muted-foreground mb-6">Test what you remember, earn points, and grow as a reader.</p>
                     
                     <div className="grid grid-cols-3 gap-3 mb-6">
-                      <div className="text-center p-3 rounded-xl bg-amber-50 border border-amber-100">
-                        <Trophy className="h-7 w-7 mx-auto text-amber-600 mb-1.5" />
+                      <div className="text-center p-3 rounded-xl bg-muted/60 border border-border">
+                        <Trophy className="h-7 w-7 mx-auto text-primary mb-1.5" />
                         <p className="text-xs text-muted-foreground font-medium">Leaderboards</p>
                       </div>
-                      <div className="text-center p-3 rounded-xl bg-orange-50 border border-orange-100">
+                      <div className="text-center p-3 rounded-xl bg-muted/60 border border-border">
                         <Medal className="h-7 w-7 mx-auto text-orange-600 mb-1.5" />
                         <p className="text-xs text-muted-foreground font-medium">Achievements</p>
                       </div>
-                      <div className="text-center p-3 rounded-xl bg-yellow-50 border border-yellow-100">
+                      <div className="text-center p-3 rounded-xl bg-muted/60 border border-border">
                         <Users className="h-7 w-7 mx-auto text-yellow-700 mb-1.5" />
                         <p className="text-xs text-muted-foreground font-medium">Multiplayer</p>
                       </div>
@@ -283,7 +284,7 @@ export default function Games() {
 
                     <Button 
                       size="lg" 
-                      className="w-full bg-amber-700 hover:bg-amber-800 text-white font-semibold shadow-lg"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg"
                       onClick={() => navigate('/signin?redirect=%2Fgames')}
                     >
                       Sign In to Play
@@ -314,8 +315,8 @@ export default function Games() {
                       transition={{ delay: 0.5 + i * 0.15 }}
                       className="text-center"
                     >
-                      <div className="w-12 h-12 mx-auto rounded-full bg-white/80 border border-amber-200 flex items-center justify-center mb-2 shadow-sm">
-                        <item.icon className="h-5 w-5 text-amber-600" />
+                      <div className="w-12 h-12 mx-auto rounded-full bg-card/80 border border-border flex items-center justify-center mb-2 shadow-sm">
+                        <item.icon className="h-5 w-5 text-primary" />
                       </div>
                       <p className="text-sm font-semibold text-foreground">{item.label}</p>
                       <p className="text-xs text-muted-foreground">{item.desc}</p>
@@ -333,20 +334,20 @@ export default function Games() {
               className="hidden lg:flex flex-col gap-4"
             >
               {/* Game Modes Preview */}
-              <div className="p-4 rounded-2xl bg-white/80 border border-amber-100 backdrop-blur-sm shadow-sm">
+              <div className="p-4 rounded-2xl bg-card/80 border border-border backdrop-blur-sm shadow-sm">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Game Modes</p>
                 {[
-                  { emoji: "🎯", name: "Classic", desc: "Answer at your own pace" },
-                  { emoji: "⚡", name: "Speed Run", desc: "Race against the clock" },
-                  { emoji: "❤️", name: "Survival", desc: "3 lives, no mistakes" },
-                  { emoji: "🏅", name: "Challenge", desc: "Compete with friends" },
+                  { emoji: "🎯", name: "Classic", desc: "Standard book quiz" },
+                  { emoji: "⚡", name: "Speed Run", desc: "Mode preview" },
+                  { emoji: "❤️", name: "Survival", desc: "Mode preview" },
+                  { emoji: "🏅", name: "Challenge", desc: "Mode preview" },
                 ].map((mode, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.6 + i * 0.1 }}
-                    className="flex items-center gap-3 py-2 border-b border-amber-50 last:border-0"
+                    className="flex items-center gap-3 py-2 border-b border-border/60 last:border-0"
                   >
                     <span className="text-xl">{mode.emoji}</span>
                     <div>
@@ -358,7 +359,7 @@ export default function Games() {
               </div>
 
               {/* Ranks Preview */}
-              <div className="p-4 rounded-2xl bg-white/80 border border-amber-100 backdrop-blur-sm shadow-sm">
+              <div className="p-4 rounded-2xl bg-card/80 border border-border backdrop-blur-sm shadow-sm">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Climb the Ranks</p>
                 <div className="flex flex-wrap gap-2">
                   {["📖 Beginner", "📕 Reader", "📗 Scholar", "📘 Expert", "👑 Master"].map((rank, i) => (
@@ -367,7 +368,7 @@ export default function Games() {
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.8 + i * 0.1 }}
-                      className="px-3 py-1.5 text-xs rounded-full bg-amber-50 border border-amber-200 text-foreground font-medium"
+                      className="px-3 py-1.5 text-xs rounded-full bg-muted border border-border text-foreground font-medium"
                     >
                       {rank}
                     </motion.span>
@@ -380,9 +381,9 @@ export default function Games() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="p-4 rounded-2xl bg-gradient-to-br from-amber-100/50 to-orange-100/50 border border-amber-200 backdrop-blur-sm text-center"
+                className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-border backdrop-blur-sm text-center"
               >
-                <Sparkles className="h-6 w-6 mx-auto text-amber-600 mb-2" />
+                <Sparkles className="h-6 w-6 mx-auto text-primary mb-2" />
                 <p className="text-sm font-semibold text-foreground">Join the Community</p>
                 <p className="text-xs text-muted-foreground mt-1">Compete, learn, and have fun with fellow readers!</p>
               </motion.div>
@@ -533,7 +534,7 @@ export default function Games() {
                         value={stats?.games_won || 0}
                         loading={statsLoading}
                         gradient="from-amber-500/20 to-orange-500/20"
-                        iconColor="text-amber-600"
+                        iconColor="text-primary"
                       />
                       <StatCard 
                         icon={<Flame className="h-5 w-5" />} 
@@ -546,10 +547,7 @@ export default function Games() {
                     </div>
 
                     {/* Daily Challenges */}
-                    <DailyChallenges onSelectChallenge={(id) => {
-                      setSelectedMode('challenge');
-                      setView('select-book');
-                    }} />
+                    <DailyChallenges />
 
                     {/* Play Button */}
                     <Card className="overflow-hidden">
@@ -690,6 +688,8 @@ export default function Games() {
                     setView('home');
                   }}
                   streak={correctAnswers}
+                  mode={mode}
+                  lives={lives}
                 />
               </motion.div>
             )}

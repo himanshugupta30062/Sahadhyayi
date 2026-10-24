@@ -1,6 +1,0 @@
-# 301 Canonical domain redirects from legacy/app domains to sahadhyayi.com
-https://sahadhyayi.app/* https://sahadhyayi.com/:splat 301
-https://www.sahadhyayi.app/* https://sahadhyayi.com/:splat 301
-
-# SPA routing fallback for Cloudflare Pages and Netlify
-/* /index.html 200

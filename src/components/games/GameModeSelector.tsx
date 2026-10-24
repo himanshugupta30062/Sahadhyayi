@@ -30,7 +30,7 @@ const gameModes: GameModeOption[] = [
   {
     id: 'classic',
     name: 'Classic Quiz',
-    description: 'Answer 10 questions at your own pace',
+    description: 'Answer 10 questions with a 30-second timer',
     icon: <BookOpen className="h-8 w-8" />,
     color: 'from-blue-500 to-indigo-600',
     features: ['10 Questions', '30s per question', 'All lifelines'],
@@ -47,10 +47,10 @@ const gameModes: GameModeOption[] = [
   {
     id: 'survival',
     name: 'Survival Mode',
-    description: 'One wrong answer ends the game',
+    description: 'Keep going with three lives',
     icon: <Target className="h-8 w-8" />,
     color: 'from-red-500 to-rose-600',
-    features: ['Unlimited', 'No timer', '3 Lives'],
+    features: ['Up to 10 Questions', 'No timer', '3 Lives'],
     badge: 'Hard',
   },
   {
@@ -60,7 +60,7 @@ const gameModes: GameModeOption[] = [
     icon: <Swords className="h-8 w-8" />,
     color: 'from-purple-500 to-violet-600',
     features: ['3 Challenges', 'Daily reset', 'Bonus XP'],
-    badge: 'New',
+    badge: 'Preview',
   },
 ];
 
@@ -81,10 +81,11 @@ export default function GameModeSelector({ selectedMode, onSelectMode }: GameMod
         >
           <Card
             className={cn(
-              'cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden relative group',
+              'transition-all duration-300 overflow-hidden relative group',
+              mode.id === 'challenge' ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:shadow-xl hover:-translate-y-1',
               selectedMode === mode.id && 'ring-2 ring-primary shadow-lg'
             )}
-            onClick={() => onSelectMode(mode.id)}
+            onClick={() => { if (mode.id !== 'challenge') onSelectMode(mode.id); }}
           >
             {/* Gradient overlay */}
             <div className={cn(
@@ -109,7 +110,7 @@ export default function GameModeSelector({ selectedMode, onSelectMode }: GameMod
                     {mode.badge && (
                       <Badge variant="secondary" className={cn(
                         'text-xs',
-                        mode.badge === 'New' && 'bg-purple-500/20 text-purple-400',
+                        mode.badge === 'Preview' && 'bg-purple-500/20 text-purple-600 dark:text-purple-300',
                         mode.badge === 'Popular' && 'bg-yellow-500/20 text-yellow-400',
                         mode.badge === 'Hard' && 'bg-red-500/20 text-red-400',
                       )}>
@@ -152,11 +153,13 @@ export default function GameModeSelector({ selectedMode, onSelectMode }: GameMod
 }
 
 // Daily Challenges Component
-export function DailyChallenges({ onSelectChallenge }: { onSelectChallenge: (id: string) => void }) {
+export function DailyChallenges() {
+  // Challenge progress is currently illustrative. Keep the UI explicit until
+  // progress and reset timing are backed by persisted challenge state.
   const challenges = [
-    { id: '1', title: 'Speed Demon', description: 'Answer 5 questions in under 30 seconds', reward: 500, icon: <Timer className="h-5 w-5" />, progress: 60 },
-    { id: '2', title: 'Perfect Run', description: 'Get 100% accuracy in a game', reward: 1000, icon: <Crown className="h-5 w-5" />, progress: 0 },
-    { id: '3', title: 'Fire Streak', description: 'Win 3 games in a row', reward: 750, icon: <Flame className="h-5 w-5" />, progress: 33 },
+    { id: '1', title: 'Speed Demon', description: 'Answer 5 questions in under 30 seconds', icon: <Timer className="h-5 w-5" /> },
+    { id: '2', title: 'Perfect Run', description: 'Get 100% accuracy in a game', icon: <Crown className="h-5 w-5" /> },
+    { id: '3', title: 'Fire Streak', description: 'Win 3 games in a row', icon: <Flame className="h-5 w-5" /> },
   ];
 
   return (
@@ -168,7 +171,7 @@ export function DailyChallenges({ onSelectChallenge }: { onSelectChallenge: (id:
             <h3 className="font-bold">Daily Challenges</h3>
           </div>
           <Badge variant="secondary" className="bg-white/20 text-white border-0">
-            Resets in 12h
+            Preview
           </Badge>
         </div>
       </div>
@@ -178,8 +181,7 @@ export function DailyChallenges({ onSelectChallenge }: { onSelectChallenge: (id:
             key={challenge.id}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
-            onClick={() => onSelectChallenge(challenge.id)}
+            className="flex items-center gap-3 p-3 rounded-xl bg-muted/50"
           >
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               {challenge.icon}
@@ -187,19 +189,9 @@ export function DailyChallenges({ onSelectChallenge }: { onSelectChallenge: (id:
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm">{challenge.title}</p>
               <p className="text-xs text-muted-foreground truncate">{challenge.description}</p>
-              {/* Progress bar */}
-              <div className="w-full h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${challenge.progress}%` }}
-                  className="h-full bg-primary rounded-full"
-                />
-              </div>
+              <p className="text-xs text-muted-foreground mt-2">Coming soon</p>
             </div>
-            <div className="text-right">
-              <span className="text-sm font-bold text-primary">+{challenge.reward}</span>
-              <p className="text-xs text-muted-foreground">pts</p>
-            </div>
+            <Badge variant="outline">Preview</Badge>
           </motion.div>
         ))}
       </CardContent>

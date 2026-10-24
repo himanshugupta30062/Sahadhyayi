@@ -1,5 +1,7 @@
 import { secureFetch } from "../security/secureFetch";
 
+const backendBaseUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\\/+$/, "") || "";
+
 export interface GoodreadsBook {
   id: string;
   title: string;
@@ -10,7 +12,7 @@ export interface GoodreadsBook {
 
 export const useGoodreadsIntegration = () => {
   const initiateLogin = () => {
-    window.open('/goodreads/connect', '_blank', 'width=600,height=600');
+    window.open(`${backendBaseUrl}/goodreads/connect`, '_blank', 'width=600,height=600');
   };
 
   const importBooks = async () => {

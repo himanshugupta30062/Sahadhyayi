@@ -2,17 +2,17 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
 
-// Public browser-safe defaults preserved from the prior working client.
-// Explicit deployment variables override these values when supplied.
-// This is the anon/publishable key, not a service-role key.
-const SUPABASE_URL =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
-  'https://rknxtatvlzunatpyqxro.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U';
+// Never silently direct a staging, preview, or CI build to production.
+// The local placeholders allow the app shell to render while the configuration
+// warning is shown; they cannot reach the production Supabase project.
+const configuredUrl =
+  typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SUPABASE_URL?.trim() : '';
+const configuredKey =
+  typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SUPABASE_ANON_KEY?.trim() : '';
+const SUPABASE_URL = configuredUrl || 'http://127.0.0.1:54321';
+const SUPABASE_PUBLISHABLE_KEY = configuredKey || 'missing-supabase-public-key';
 
-export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+export const isSupabaseConfigured = Boolean(configuredUrl && configuredKey);
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {

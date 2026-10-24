@@ -72,7 +72,7 @@ vi.mock('@/hooks/useMarginNotes', () => ({
 }));
 
 vi.mock('@/hooks/useSpoilerThreads', () => ({
-  useSpoilerThreads: () => mockUseSpoilerThreads(),
+  useSpoilerThreads: (...args: unknown[]) => mockUseSpoilerThreads(...args),
 }));
 
 vi.mock('@/components/social/BookPulseBar', () => ({
@@ -146,10 +146,16 @@ describe('Phase 6: Social Media & Reading Community Experience', () => {
       await waitFor(() => {
         expect(mockCreatePost).toHaveBeenCalledWith({
           content: 'Finished reading Devdas today! Truly poignant.',
+          post_kind: 'post',
+          quote_text: undefined,
+          quote_author: undefined,
+          quote_source: undefined,
+          quote_context: undefined,
           book_id: undefined,
           feeling_emoji: undefined,
           feeling_label: undefined,
           image_url: undefined,
+          image_alt: null,
           audience: 'friends',
         });
       });
@@ -297,6 +303,61 @@ describe('Phase 6: Social Media & Reading Community Experience', () => {
       expect(loadMore).toHaveBeenCalledTimes(1);
     });
 
+    it('shows retryable error when margin notes fail instead of showing an empty state', () => {
+      const retry = vi.fn();
+      mockUseMarginNotes.mockReturnValue({
+        data: [],
+        isLoading: false,
+        error: new Error('Permission denied'),
+        refetch: retry,
+      });
+
+      render(
+        <MemoryRouter>
+          <EnhancedSocialFeed />
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /margin notes/i }));
+      expect(screen.getByText('Margin notes could not be loaded.')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+      expect(retry).toHaveBeenCalledTimes(1);
+    });
+
+    it('defers chapter-thread queries until the reader opens that feed filter', () => {
+      render(
+        <MemoryRouter>
+          <EnhancedSocialFeed />
+        </MemoryRouter>
+      );
+
+      expect(mockUseSpoilerThreads).toHaveBeenCalledWith(undefined, { enabled: false });
+
+      fireEvent.click(screen.getByRole('button', { name: /chapter threads/i }));
+      expect(mockUseSpoilerThreads).toHaveBeenLastCalledWith(undefined, { enabled: true });
+    });
+
+    it('shows retryable error when chapter threads fail instead of showing an empty state', () => {
+      const retry = vi.fn();
+      mockUseSpoilerThreads.mockReturnValue({
+        data: [],
+        isLoading: false,
+        error: new Error('Request failed'),
+        refetch: retry,
+      });
+
+      render(
+        <MemoryRouter>
+          <EnhancedSocialFeed />
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /chapter threads/i }));
+      expect(screen.getByText('Chapter threads could not be loaded.')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+      expect(retry).toHaveBeenCalledTimes(1);
+    });
+
     it('toggles comment section when clicking comments button', () => {
       render(
         <MemoryRouter>
@@ -349,6 +410,27 @@ describe('Phase 6: Social Media & Reading Community Experience', () => {
         data: mockComments,
         isLoading: false,
       });
+    });
+
+    it('shows a retryable error when comments fail instead of a false empty state', () => {
+      const retry = vi.fn();
+      mockUsePostComments.mockReturnValue({
+        data: [],
+        isLoading: false,
+        error: new Error('Permission denied'),
+        refetch: retry,
+      });
+
+      render(
+        <MemoryRouter>
+          <EnhancedCommentSection postId="post-101" />
+        </MemoryRouter>
+      );
+
+      expect(screen.getByText('Comments could not be loaded. They are not necessarily empty.')).toBeInTheDocument();
+      expect(screen.queryByText(/no comments yet/i)).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /retry comments/i }));
+      expect(retry).toHaveBeenCalledTimes(1);
     });
 
     it('renders hierarchical comments with accessible like and reply actions', () => {

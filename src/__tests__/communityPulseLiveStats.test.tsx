@@ -361,35 +361,25 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     });
   });
 
-  // Fallback must never show a lifetime visit count as period page views.
-  it('uses the exact selected-period count and never substitutes lifetime visits or guessed zeros', async () => {
-    mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        registeredReaders: 4,
-        totalVisits: 9920,
-        lastUpdated: new Date().toISOString(),
-      },
-      error: null,
-    });
-
+  // Selected-period totals must come from an aggregate endpoint, never raw browser table reads.
+  it('uses the selected-period aggregate and never substitutes lifetime visits or raw browser table counts', async () => {
     mockRpc.mockImplementation((fn: string) => {
       if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
-      if (fn === 'get_total_users_count') return Promise.resolve({ data: 4, error: null });
-      if (fn === 'get_website_visit_count') return Promise.resolve({ data: 9920, error: null });
-      return Promise.resolve({ data: null, error: null });
-    });
-
-    mockFrom.mockImplementation((table: string) => {
-      const query: any = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        gte: vi.fn().mockReturnThis(),
-        then: (resolve: (value: any) => unknown) => Promise.resolve({
-          count: table === 'website_visits' ? 7 : table === 'profiles' ? 4 : 0,
+      if (fn === 'get_dual_table_website_analytics') {
+        return Promise.resolve({
+          data: {
+            period: { pageViews: 7, uniqueVisitors: null, registeredReaders: 4 },
+            lifetime: { totalVisits: 9920, sourceTable: 'public.website_visits' },
+            rolling: { pageViews24h: 7, sourceTable: 'public.website_visit_events' },
+            timeseries: [],
+            breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+            partialData: true,
+            lastUpdated: new Date().toISOString(),
+          },
           error: null,
-        }).then(resolve),
-      };
-      return query;
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
     });
 
     render(<CommunityPulseDialog open={true} onClose={() => {}} />);
@@ -399,12 +389,15 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       expect(pageViewsLabel.closest('.rounded-xl')).toHaveTextContent('7');
       expect(pageViewsLabel.closest('.rounded-xl')).not.toHaveTextContent('9,920');
 
-      // Unique visitor identity is not available through the count-only fallback.
+      // Unique visitor identity is not available without the matching telemetry.
       const uniqueLabel = screen.getAllByText('Unique visitors').find(el => el.closest('.rounded-xl')) || screen.getAllByText('Unique visitors')[0];
       expect(uniqueLabel.closest('.rounded-xl')).toHaveTextContent('—');
       expect(screen.getByText('4 Total')).toBeInTheDocument();
       expect(screen.getByText('Some analytics details are unavailable')).toBeInTheDocument();
     });
+
+    expect(mockFrom).not.toHaveBeenCalledWith('website_visits');
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
 
     fireEvent.change(screen.getByLabelText('Select metric'), { target: { value: 'unique' } });
     await waitFor(() => {
@@ -471,8 +464,12 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     };
     localStorage.setItem('sahadhyayi_pulse_stats_24h_v8', JSON.stringify(cachedStats));
 
-    // Refresh attempt fails
+    // All live sources fail, so the last successful snapshot must stay visible and stale.
     mockFunctionsInvoke.mockRejectedValue(new Error('Gateway timeout'));
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
+      return Promise.resolve({ data: null, error: { message: 'Analytics backend unavailable' } });
+    });
 
     render(<CommunityPulseDialog open={true} onClose={() => {}} />);
 

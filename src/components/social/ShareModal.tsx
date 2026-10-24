@@ -10,16 +10,27 @@ interface ShareModalProps {
   onClose: () => void;
   postContent: string;
   postId: string;
+  quoteText?: string | null;
+  quoteAuthor?: string | null;
+  quoteSource?: string | null;
+  quoteContext?: string | null;
 }
 
-export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalProps) => {
+export const ShareModal = ({ isOpen, onClose, postContent, postId, quoteText, quoteAuthor, quoteSource, quoteContext }: ShareModalProps) => {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.sahadhyayi.com';
   const currentUrl = postId ? `${baseUrl}/social?post=${encodeURIComponent(postId)}` : `${baseUrl}/social`;
-  const shareText = `Check out this post on Sahadhyayi: "${postContent.slice(0, 100)}${postContent.length > 100 ? '...' : ''}"`;
+  const quoteAttribution = [quoteAuthor?.trim(), quoteSource?.trim()].filter(Boolean).join(' — ');
+  const shareText = quoteText
+    ? ['“' + quoteText + '”', quoteAttribution, quoteContext?.trim(), 'Shared on Sahadhyayi'].filter(Boolean).join('\n\n')
+    : `Check out this post on Sahadhyayi: "${postContent.slice(0, 100)}${postContent.length > 100 ? '...' : ''}"`;
 
-  const copyToClipboard = (message: string) => {
-    navigator.clipboard.writeText(shareText + ' ' + currentUrl);
-    toast({ title: 'Copied!', description: message });
+  const copyToClipboard = async (message: string) => {
+    try {
+      await navigator.clipboard.writeText(shareText + '\n\n' + currentUrl);
+      toast({ title: 'Copied!', description: message });
+    } catch {
+      toast({ title: 'Could not copy', description: 'Your browser did not allow clipboard access. Please copy the link below.', variant: 'destructive' });
+    }
   };
 
   const shareOptions = [
@@ -103,8 +114,7 @@ export const ShareModal = ({ isOpen, onClose, postContent, postId }: ShareModalP
               variant="outline"
               size="sm"
               onClick={() => {
-                navigator.clipboard.writeText(currentUrl);
-                toast({ title: 'Link copied!', description: 'URL copied to clipboard.' });
+                void navigator.clipboard.writeText(currentUrl).then(() => toast({ title: 'Link copied!', description: 'URL copied to clipboard.' })).catch(() => toast({ title: 'Could not copy link', description: 'Please select and copy the link manually.', variant: 'destructive' }));
               }}
               className="border-[#E8E2D9] dark:border-[#29332D] bg-[#1C442D] dark:bg-[#1C3024] text-white dark:text-[#D5B16D] hover:bg-[#153422] dark:hover:bg-[#253d2f] text-xs h-9 px-3 rounded-xl"
             >

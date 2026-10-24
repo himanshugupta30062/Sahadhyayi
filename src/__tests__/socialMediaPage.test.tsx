@@ -3,7 +3,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import SocialMedia from '@/pages/SocialMedia';
 
@@ -87,6 +87,33 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       mockUseAuth.mockReturnValue({ user: null, loading: false });
     });
 
+    it('does not start authenticated social data queries for signed-out visitors', () => {
+      render(
+        <MemoryRouter initialEntries={['/social?tab=friends']}>
+          <SocialMedia />
+        </MemoryRouter>
+      );
+
+      expect(mockUseReadingRooms).not.toHaveBeenCalled();
+      expect(mockUseMarginNotes).not.toHaveBeenCalled();
+      expect(mockUseSpoilerThreads).not.toHaveBeenCalled();
+      expect(mockUseGroups).not.toHaveBeenCalled();
+      expect(mockUseAllUsers).not.toHaveBeenCalled();
+      expect(mockUseReadingProgress).not.toHaveBeenCalled();
+      expect(mockSendFriendRequest).not.toHaveBeenCalled();
+    });
+
+    it('preserves a shared-post deep link when a guest chooses to sign in', () => {
+      render(
+        <MemoryRouter initialEntries={['/social?post=post-123']}>
+          <SocialMedia />
+        </MemoryRouter>
+      );
+
+      const signInLink = screen.getAllByRole('link', { name: /sign in/i })[0];
+      expect(signInLink).toHaveAttribute('href', expect.stringContaining('redirect=%2Fsocial%3Fpost%3Dpost-123'));
+    });
+
     it('renders the guest hero copy matching the visual reference design without fabricated stats', () => {
       render(
         <MemoryRouter initialEntries={['/social']}>
@@ -147,7 +174,7 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       mockUseAuth.mockReturnValue({ user: mockUser, loading: false });
     });
 
-    it('renders a content-first community layout without a duplicate social navigation menu', () => {
+    it('renders compact primary social navigation and a content-first community layout', async () => {
       mockUseReadingRooms.mockReturnValue({
         data: [
           {
@@ -187,15 +214,20 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
 
       // The global site header owns site navigation; this page stays content-first.
       expect(screen.getByRole('heading', { name: /Your Reading Community/i })).toBeInTheDocument();
+      expect(screen.getByRole('navigation', { name: /Social navigation/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Home$/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Discover$/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Groups$/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^Create$/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Your profile/i })).toHaveAttribute('href', '/profile');
       expect(screen.getByRole('button', { name: /Start a conversation/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Read together/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Book discussions/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Shared marginalia/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Discover readers/i })).toBeInTheDocument();
-      expect(screen.getByText(/More to explore/i)).toBeInTheDocument();
+      expect(screen.getByText(/Explore reading spaces/i)).toBeInTheDocument();
+      // Reading destinations stay available without a permanent shortcut-card grid.
+      expect(screen.queryByRole('button', { name: /Read together/i })).not.toBeInTheDocument();
+      expect(screen.queryByText(/More to explore/i)).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Toggle search/i })).not.toBeInTheDocument();
       expect(screen.queryByPlaceholderText(/Search books, authors, discussions…/i)).not.toBeInTheDocument();
-      expect(screen.getByTestId('enhanced-social-feed')).toBeInTheDocument();
+      expect(await screen.findByTestId('enhanced-social-feed')).toBeInTheDocument();
 
       // Right discovery rail: live rooms, popular groups, suggested readers
       expect(screen.getByText('Modern Literature Circle')).toBeInTheDocument();
@@ -216,8 +248,9 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
         </MemoryRouter>
       );
 
-      // Feature cards replace the persistent nested navigation menu.
-      fireEvent.click(screen.getByRole('button', { name: /Book discussions/i }));
+      // Open the compact Reading spaces menu and enter chapter discussions.
+      fireEvent.click(screen.getByText(/Explore reading spaces/i));
+      fireEvent.click(within(screen.getByRole('navigation', { name: /Reading spaces/i })).getByRole('button', { name: /Chapter discussions/i }));
 
       expect(screen.getByText('Chapter-Locked Discussions')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Community feed/i })).toBeInTheDocument();

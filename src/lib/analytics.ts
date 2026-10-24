@@ -43,7 +43,7 @@ export const getAnalyticsIds = () => {
   return { visitorId, sessionId: session.id };
 };
 
-const cleanCampaignValue = (value: string | null) =>
+export const cleanCampaignValue = (value: string | null) =>
   value ? value.replace(/[^a-zA-Z0-9 _.-]/g, '').trim().slice(0, 100) || null : null;
 
 // In-memory deduplication set to avoid duplicate event insertion within 4 seconds

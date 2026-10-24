@@ -2229,7 +2229,13 @@ export type Database = {
           feeling_label: string | null
           id: string
           image_url: string | null
+          image_alt: string | null
           likes_count: number
+          post_kind: string
+          quote_author: string | null
+          quote_context: string | null
+          quote_source: string | null
+          quote_text: string | null
           repost_of_id: string | null
           reposts_count: number
           updated_at: string
@@ -2245,7 +2251,13 @@ export type Database = {
           feeling_label?: string | null
           id?: string
           image_url?: string | null
+          image_alt?: string | null
           likes_count?: number
+          post_kind?: string
+          quote_author?: string | null
+          quote_context?: string | null
+          quote_source?: string | null
+          quote_text?: string | null
           repost_of_id?: string | null
           reposts_count?: number
           updated_at?: string
@@ -2261,7 +2273,13 @@ export type Database = {
           feeling_label?: string | null
           id?: string
           image_url?: string | null
+          image_alt?: string | null
           likes_count?: number
+          post_kind?: string
+          quote_author?: string | null
+          quote_context?: string | null
+          quote_source?: string | null
+          quote_text?: string | null
           repost_of_id?: string | null
           reposts_count?: number
           updated_at?: string
@@ -3816,6 +3834,36 @@ export type Database = {
         Relationships: []
       }
     }
+      book_reviews: {
+        Row: {
+          book_id: string
+          contains_spoilers: boolean
+          created_at: string
+          id: string
+          review_text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          contains_spoilers?: boolean
+          created_at?: string
+          id?: string
+          review_text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          contains_spoilers?: boolean
+          created_at?: string
+          id?: string
+          review_text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     Views: {
       profiles_public: {
         Row: {

@@ -352,7 +352,7 @@ const About = () => {
 
             <div className="flex justify-center mb-6">
               <img
-                src="/lovable-uploads/sahadhyayi-logo-digital-reading.png"
+                src="/optimized-assets/sahadhyayi-brand-logo.webp"
                 alt="Sahadhyayi Logo - Fellow Reader in Sanskrit"
                 className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-md"
               />

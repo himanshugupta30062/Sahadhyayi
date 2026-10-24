@@ -1,58 +1,7 @@
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-[build.environment]
-  NODE_VERSION = "20"
-
-# 301 Redirects from sahadhyayi.app to sahadhyayi.com
-[[redirects]]
-  from = "https://sahadhyayi.app/*"
-  to = "https://sahadhyayi.com/:splat"
-  status = 301
-  force = true
-
-[[redirects]]
-  from = "https://www.sahadhyayi.app/*"
-  to = "https://sahadhyayi.com/:splat"
-  status = 301
-  force = true
-
-# Block unnecessary probing routes
-[[redirects]]
-  from = "/.well-known/apple-app-site-association"
-  to = "/404"
-  status = 404
-
-[[redirects]]
-  from = "/apple-app-site-association"
-  to = "/404"
-  status = 404
-
-# Ensure the author enrichment SPA route is served by the app shell on direct navigation/reload.
-[[redirects]]
-  from = "/admin/author-enrichment"
-  to = "/index.html"
-  status = 200
-
-# SPA routing - redirect all paths to /index.html
+# Keep Netlify's SPA fallback here instead of public/_redirects.
+# Cloudflare Workers Static Assets uses wrangler.jsonc's single-page-application
+# not-found handling; bundling a catch-all _redirects rule there causes error 100324.
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Security headers
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    # Turnstile and Cloudflare telemetry require challenge and insights hosts in CSP.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://www.googletagmanager.com https://www.google-analytics.com; frame-src 'self' https://challenges.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none'"
-
-# Cache static assets
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"

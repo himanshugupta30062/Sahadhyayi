@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Image, BookOpen, Smile, Send, X } from 'lucide-react';
+import { Image, BookOpen, Smile, Send, X, Quote } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { BookSelectionModal } from './BookSelectionModal';
 import { EmojiPicker } from './EmojiPicker';
 import { useCreatePost } from '@/hooks/useSocialPosts';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 interface SelectedBook {
   id: string;
@@ -32,8 +33,14 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [postText, setPostText] = useState('');
+  const [postKind, setPostKind] = useState<'post' | 'quote'>('post');
+  const [quoteText, setQuoteText] = useState('');
+  const [quoteAuthor, setQuoteAuthor] = useState('');
+  const [quoteSource, setQuoteSource] = useState('');
+  const [quoteContext, setQuoteContext] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageAlt, setImageAlt] = useState('');
   const [selectedBook, setSelectedBook] = useState<SelectedBook | null>(null);
   const [selectedFeeling, setSelectedFeeling] = useState<SelectedFeeling | null>(null);
   const [audience, setAudience] = useState<'public' | 'followers' | 'friends' | 'private'>('friends');
@@ -43,16 +50,32 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({ title: 'Image too large', description: 'Please select an image under 5MB', variant: 'destructive' });
-        return;
-      }
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Accept common raster formats; don't trust the filename extension or a generic
+    // image/* browser filter as upload validation.
+    const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
+    if (!allowedImageTypes.has(file.type)) {
+      toast({ title: 'Unsupported image format', description: 'Choose a JPEG, PNG, WebP, or AVIF image.', variant: 'destructive' });
+      event.target.value = '';
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image too large', description: 'Please select an image under 5MB', variant: 'destructive' });
+      event.target.value = '';
+      return;
+    }
+
+    setSelectedImage(file);
+    setImageAlt('');
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.onerror = () => {
+      setSelectedImage(null);
+      setImagePreview(null);
+      toast({ title: 'Could not preview image', description: 'Choose another image or try again.', variant: 'destructive' });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleBookSelect = (book: SelectedBook) => {
@@ -68,6 +91,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   const clearAttachments = () => {
     setSelectedImage(null);
     setImagePreview(null);
+    setImageAlt('');
     setSelectedBook(null);
     setSelectedFeeling(null);
     if (fileInputRef.current) {
@@ -76,7 +100,11 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   };
 
   const handlePost = async () => {
-    if (!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) {
+    const hasPostContent = postKind === 'quote'
+      ? Boolean(quoteText.trim())
+      : Boolean(postText.trim() || selectedImage || selectedBook || selectedFeeling);
+
+    if (!hasPostContent) {
       toast({ title: 'Empty post', description: 'Please add some content to your post', variant: 'destructive' });
       return;
     }
@@ -87,35 +115,53 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
     }
 
     setIsPosting(true);
+    let uploadedImagePath: string | null = null;
     try {
       let uploadedImageUrl: string | undefined;
 
-      // Upload image to Supabase Storage if present
+      // New social photos use the dedicated private bucket, not the shared public
+      // books bucket. The database stores an object marker; feed reads resolve it
+      // to a short-lived URL only after storage RLS confirms audience access.
       if (selectedImage) {
-          const { supabase } = await import('@/integrations/supabase/client');
-          const ext = selectedImage.name.split('.').pop() || 'jpg';
-          const path = `user-uploads/${user.id}/${Date.now()}.${ext}`;
-          const { error: uploadError } = await supabase.storage
-            .from('books')
-            .upload(path, selectedImage, { cacheControl: '3600', upsert: false });
-          if (uploadError) {
-            throw new Error('Your photo could not be uploaded. Your draft is still here; please try again.');
-          }
-          const { data: pub } = supabase.storage.from('books').getPublicUrl(path);
-          uploadedImageUrl = pub?.publicUrl;
-          if (!uploadedImageUrl) {
-            throw new Error('Your photo could not be confirmed. Your draft is still here; please try again.');
-          }
+        const extensionByType: Record<string, string> = {
+          'image/jpeg': 'jpg',
+          'image/png': 'png',
+          'image/webp': 'webp',
+          'image/avif': 'avif',
+        };
+        const extension = extensionByType[selectedImage.type];
+        if (!extension) throw new Error('Unsupported image format. Choose JPEG, PNG, WebP, or AVIF.');
+        const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage
+          .from('social-post-media')
+          .upload(path, selectedImage, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: selectedImage.type,
+          });
+        if (uploadError) {
+          throw new Error('Your photo could not be uploaded. Your draft is still here; please try again.');
+        }
+        uploadedImagePath = path;
+        uploadedImageUrl = `storage://social-post-media/${path}`;
       }
 
       await createPost.mutateAsync({
         content: postText.trim(),
+        post_kind: postKind,
+        quote_text: postKind === 'quote' ? quoteText.trim() : undefined,
+        quote_author: postKind === 'quote' ? quoteAuthor.trim() : undefined,
+        quote_source: postKind === 'quote' ? quoteSource.trim() : undefined,
+        quote_context: postKind === 'quote' ? quoteContext.trim() : undefined,
         book_id: selectedBook?.id,
         feeling_emoji: selectedFeeling?.emoji,
         feeling_label: selectedFeeling?.label,
         image_url: uploadedImageUrl,
+        image_alt: selectedImage ? imageAlt.trim().slice(0, 250) || null : null,
         audience,
       });
+      // The post now references the private object, so leave it in Storage.
+      uploadedImagePath = null;
 
       // Legacy callback for compatibility
       const postData = {
@@ -130,10 +176,23 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
       
       // Clear the composer
       setPostText('');
+      setPostKind('post');
+      setQuoteText('');
+      setQuoteAuthor('');
+      setQuoteSource('');
+      setQuoteContext('');
       setAudience('friends');
       clearAttachments();
       
     } catch (error) {
+      if (uploadedImagePath) {
+        try {
+          const { error: cleanupError } = await supabase.storage.from('social-post-media').remove([uploadedImagePath]);
+          if (cleanupError) console.error('Could not clean up an abandoned social image:', cleanupError);
+        } catch (cleanupError) {
+          console.error('Could not clean up an abandoned social image:', cleanupError);
+        }
+      }
       console.error('Error creating post:', error);
       toast({
         title: 'Unable to create post',
@@ -149,6 +208,33 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
     <>
       <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] rounded-2xl mb-6 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-sm transition-colors">
         <CardContent className="p-4">
+          <div className="mb-4 flex items-center gap-1 rounded-xl bg-[#F4EFEA] p-1 dark:bg-[#0B0D0C] w-fit" role="group" aria-label="Choose what to share">
+            <Button type="button" size="sm" variant={postKind === 'post' ? 'default' : 'ghost'} aria-pressed={postKind === 'post'} onClick={() => setPostKind('post')} className={postKind === 'post' ? 'bg-[#1C442D] text-white hover:bg-[#153221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'text-[#636B65] dark:text-[#A5ADA6]'}>
+              <Image className="mr-1.5 h-3.5 w-3.5" /> Text post
+            </Button>
+            <Button type="button" size="sm" variant={postKind === 'quote' ? 'default' : 'ghost'} aria-pressed={postKind === 'quote'} onClick={() => setPostKind('quote')} className={postKind === 'quote' ? 'bg-[#1C442D] text-white hover:bg-[#153221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'text-[#636B65] dark:text-[#A5ADA6]'}>
+              <Quote className="mr-1.5 h-3.5 w-3.5" /> Quote card
+            </Button>
+          </div>
+
+          {postKind === 'quote' ? (
+            <div className="mb-4 space-y-3">
+              <div className="rounded-2xl border border-[#C8DBCB] bg-gradient-to-br from-[#F7F2E9] via-[#FFFCF7] to-[#EAF1E8] p-5 dark:border-[#315C43] dark:from-[#16211A] dark:via-[#111614] dark:to-[#1C3024]">
+                <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1C442D] dark:text-[#D5B16D]">
+                  <Quote className="h-4 w-4" /> A passage worth keeping
+                </div>
+                <Textarea value={quoteText} onChange={(event) => setQuoteText(event.target.value.slice(0, 500))} maxLength={500} aria-label="Quote text" placeholder="Add a short quote that stayed with you…" className="min-h-[110px] resize-y border-0 bg-transparent p-0 font-serif text-lg leading-relaxed text-[#1C201D] shadow-none placeholder:text-[#636B65]/60 focus-visible:ring-0 dark:text-[#F3F0E7]" />
+                <div className="mt-2 flex justify-end text-[10px] text-[#636B65] dark:text-[#A5ADA6]">{quoteText.length}/500</div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <input value={quoteAuthor} onChange={(event) => setQuoteAuthor(event.target.value.slice(0, 120))} maxLength={120} aria-label="Quote author" placeholder="Author / speaker (optional)" className="min-w-0 rounded-lg border border-[#D9DFD5] bg-white/70 px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#315C43] dark:bg-[#0B0D0C]/70 dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]" />
+                  <input value={quoteSource} onChange={(event) => setQuoteSource(event.target.value.slice(0, 160))} maxLength={160} aria-label="Quote source" placeholder="Book / source / page (optional)" className="min-w-0 rounded-lg border border-[#D9DFD5] bg-white/70 px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#315C43] dark:bg-[#0B0D0C]/70 dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]" />
+                </div>
+              </div>
+              <Textarea value={quoteContext} onChange={(event) => setQuoteContext(event.target.value.slice(0, 1000))} maxLength={1000} aria-label="Why this quote matters" placeholder="Why does it matter to you? What person, memory, or situation does it remind you of? (optional)" className="min-h-[72px] resize-y rounded-xl border-[#E8E2D9] bg-[#FAF7F2] text-sm dark:border-[#29332D] dark:bg-[#0B0D0C]/70" />
+              <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">Add attribution when known. Your reflection gives the quote personal meaning; you can link it to a book below.</p>
+            </div>
+          ) : null}
+
           <div className="flex items-start space-x-3 mb-4">
             <Avatar className="w-10 h-10 border border-[#E8E2D9] dark:border-[#29332D]">
               <AvatarImage src={user?.user_metadata?.avatar_url} />
@@ -159,14 +245,17 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
             <div className="flex-1">
               <Textarea
                 id="feed-composer-textarea"
-                placeholder="What are you reading or thinking about?"
-                aria-label="What are you reading or thinking about?"
+                placeholder={postKind === 'quote' ? 'Add your reflection (optional)…' : 'What are you reading or thinking about?'}
+                aria-label={postKind === 'quote' ? 'Reflection on the quote' : 'What are you reading or thinking about?'}
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
                 onKeyDown={(e) => {
                   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
                     e.preventDefault();
-                    if (!((!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting || createPost.isPending)) {
+                    const hasContent = postKind === 'quote'
+                      ? Boolean(quoteText.trim())
+                      : Boolean(postText.trim() || selectedImage || selectedBook || selectedFeeling);
+                    if (hasContent && !isPosting && !createPost.isPending) {
                       void handlePost();
                     }
                   }
@@ -180,8 +269,9 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
           {(imagePreview || selectedBook || selectedFeeling) && (
             <div className="mb-4 p-3 bg-[#FAF7F2] dark:bg-[#0B0D0C]/80 rounded-xl border border-[#E8E2D9] dark:border-[#29332D]">
               {imagePreview && (
+                <>
                 <div className="relative mb-3">
-                  <img src={imagePreview} alt="Preview" className="w-full max-h-60 object-cover rounded-lg border border-[#E8E2D9] dark:border-[#29332D]" />
+                  <img src={imagePreview} alt={imageAlt.trim() || 'Selected image preview'} className="max-h-80 w-full rounded-lg border border-[#E8E2D9] bg-[#F4EFEA] object-contain dark:border-[#29332D] dark:bg-[#0B0D0C]" />
                   <Button
                     size="sm"
                     variant="ghost"
@@ -190,12 +280,25 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                     onClick={() => {
                       setSelectedImage(null);
                       setImagePreview(null);
+                      setImageAlt('');
                       if (fileInputRef.current) fileInputRef.current.value = '';
                     }}
                   >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
+                <label htmlFor="post-image-alt" className="mb-1 block text-xs font-medium text-[#636B65] dark:text-[#A5ADA6]">
+                  Describe this image (optional)
+                </label>
+                <input
+                  id="post-image-alt"
+                  value={imageAlt}
+                  onChange={(event) => setImageAlt(event.target.value.slice(0, 250))}
+                  maxLength={250}
+                  placeholder="E.g. A highlighted passage in a paperback"
+                  className="mb-3 w-full rounded-lg border border-[#E8E2D9] bg-white px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]"
+                />
+                </>
               )}
 
               {selectedBook && (
@@ -286,7 +389,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/avif"
                 onChange={handleImageSelect}
                 className="hidden"
                 aria-label="Upload post image"
@@ -324,11 +427,11 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
             </div>
             <Button
               onClick={handlePost}
-              disabled={(!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling) || isPosting || createPost.isPending}
+              disabled={(postKind === 'quote' ? !quoteText.trim() : (!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling)) || isPosting || createPost.isPending}
               className="bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold text-xs h-8 px-4 rounded-xl shadow-xs transition-all disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5 mr-1.5" />
-              {isPosting || createPost.isPending ? 'Posting…' : 'Post'}
+              {isPosting || createPost.isPending ? 'Sharing…' : postKind === 'quote' ? 'Share quote' : 'Post'}
             </Button>
           </div>
         </CardContent>

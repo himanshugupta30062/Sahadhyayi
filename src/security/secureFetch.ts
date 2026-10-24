@@ -8,7 +8,17 @@ import { sessionClientLogin } from "./sessionClient";
  *  - if 401/403, re-login via /api/session once, then retry the original request
  *  - if server rotates CSRF and returns X-New-CSRF-Token, we persist it
  */
+const configuredBackendUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/+$/, '') || '';
+
+function resolveBackendInput(input: RequestInfo | URL): RequestInfo | URL {
+  if (!configuredBackendUrl) return input;
+  const raw = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  if (!raw.startsWith('/api/') && !raw.startsWith('/goodreads/')) return input;
+  return new URL(raw, configuredBackendUrl).toString();
+}
+
 export async function secureFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  input = resolveBackendInput(input);
   let res = await doFetch(input, init);
   res = await maybePersistRotatedCsrfAndReturn(res);
 

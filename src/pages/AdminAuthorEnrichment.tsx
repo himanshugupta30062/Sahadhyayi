@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 type Stats = { total: number; missingImage: number; pending: number; enriched: number; notFound: number; failed: number };
 type BatchResult = { processed: number; enriched: number; notFound: number; failed: number; results?: Array<{name:string;status:string;hasImage:boolean}> };
-const BATCH_SIZE = 5;
+const BATCH_SIZE = 1;
 
 export default function AdminAuthorEnrichment() {
   const { toast } = useToast();
@@ -48,7 +48,7 @@ export default function AdminAuthorEnrichment() {
     setProgress({ processed: 0, enriched: 0, notFound: 0, failed: 0 }); setLogs([]);
     let totals = { processed: 0, enriched: 0, notFound: 0, failed: 0 };
     try {
-      // Run small sequential batches to respect free public API rate limits.
+      // Process up to ten authors per request; the server stops when no eligible records remain.
       for (let i = 0; i < 500; i++) {
         if (stopRef.current) break;
         const { data, error } = await supabase.functions.invoke("enrich-authors", { body: { limit: BATCH_SIZE, refresh } });
@@ -64,7 +64,6 @@ export default function AdminAuthorEnrichment() {
         setProgress(totals);
         setLogs((old) => [...(batch.results || []).map((r) => r.name + " — " + r.status + (r.hasImage ? " — image available" : "")), ...old].slice(0, 60));
         await loadStats();
-        if (!refresh && totals.processed >= stats.missingImage + stats.pending) break;
         if (i < 499) await new Promise((resolve) => window.setTimeout(resolve, 900));
       }
       setLastRun(new Date().toLocaleString());
@@ -88,11 +87,11 @@ export default function AdminAuthorEnrichment() {
         {[{label:"Authors in database",value:stats.total,icon:Users},{label:"Missing portraits",value:stats.missingImage,icon:Image},{label:"Successfully enriched",value:stats.enriched,icon:CheckCircle2},{label:"Needs attention",value:stats.failed+stats.notFound,icon:AlertCircle}].map((item) => <Card key={item.label} className="border-[#E5DED2] bg-white dark:border-[#29332D] dark:bg-[#111614]"><CardContent className="flex items-center gap-4 p-5"><div className="rounded-xl bg-[#F3EBDD] p-3 text-[#1C442D] dark:bg-[#29271F] dark:text-[#D5B16D]"><item.icon className="h-5 w-5"/></div><div><div className="text-sm text-muted-foreground">{item.label}</div><div className="text-3xl font-bold">{loading ? "…" : item.value.toLocaleString()}</div></div></CardContent></Card>)}
       </div>
       <Card className="border-[#E5DED2] bg-white dark:border-[#29332D] dark:bg-[#111614]">
-        <CardHeader><CardTitle>Import controls</CardTitle><CardDescription>Runs sequential batches of 5 authors. Public APIs are free but rate-limited; keep this tab open while processing.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Import controls</CardTitle><CardDescription>Processes one author at a time so each portrait and source can be checked before moving on. Public APIs are free but rate-limited; keep this tab open while processing.</CardDescription></CardHeader>
         <CardContent className="space-y-5">
           <div className="flex flex-wrap gap-3">
             <Button disabled={running || loading || stats.missingImage+stats.pending===0} onClick={() => void run(false)} className="bg-[#1C442D] text-white hover:bg-[#143221]"><Image className="mr-2 h-4 w-4"/>Import missing portraits / metadata</Button>
-            <Button disabled={running || loading} variant="outline" onClick={() => void run(true)}>Retry failed records</Button>
+            <Button disabled={running || loading} variant="outline" onClick={() => void run(true)}>Retry missing portraits</Button>
             {running && <Button variant="destructive" onClick={() => { stopRef.current = true; }}>Stop after current batch</Button>}
           </div>
           {running && <div className="space-y-2"><div className="flex justify-between text-sm"><span>Processing authors</span><span>{progress.processed} processed</span></div><Progress value={Math.min(100, stats.total ? progress.processed / stats.total * 100 : 0)}/><p className="text-xs text-muted-foreground">A batch already in progress will finish before stopping.</p></div>}

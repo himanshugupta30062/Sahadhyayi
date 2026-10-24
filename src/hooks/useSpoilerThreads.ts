@@ -27,9 +27,10 @@ export interface SpoilerComment {
   profiles?: { full_name: string | null; profile_photo_url: string | null } | null;
 }
 
-export const useSpoilerThreads = (bookId?: string) => {
+export const useSpoilerThreads = (bookId?: string, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["spoiler-threads", bookId ?? "all"],
+    enabled: options?.enabled ?? true,
     queryFn: async () => {
       let q = supabase
         .from("spoiler_threads_safe" as any)

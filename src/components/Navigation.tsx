@@ -1,28 +1,31 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown, User, LogOut, Search, MessageCircle, LogIn, Sun, Moon, BookOpen, FileText } from "lucide-react";
+import { Menu, X, User, LogOut, Search, MessageCircle, LogIn, Sun, Moon, BookOpen, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ContactFormDialog from "@/components/ContactFormDialog";
 import { useAuth } from "@/contexts/authHelpers";
 import { useTheme } from "@/contexts/ThemeContext";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
-import { MessageDropdown } from "@/components/messages/MessageDropdown";
-import { EnhancedGlobalSearch } from "@/components/EnhancedGlobalSearch";
 import { EnhancedLazyImage } from "@/components/ui/EnhancedLazyImage";
+
+const ContactFormDialog = lazy(() => import("@/components/ContactFormDialog"));
+const AuthenticatedUserDropdown = lazy(() => import("@/components/AuthenticatedUserDropdown"));
+
+const EnhancedGlobalSearch = lazy(() =>
+  import("@/components/EnhancedGlobalSearch").then(({ EnhancedGlobalSearch }) => ({ default: EnhancedGlobalSearch }))
+);
+const MessageDropdown = lazy(() =>
+  import("@/components/messages/MessageDropdown").then(({ MessageDropdown }) => ({ default: MessageDropdown }))
+);
+const NotificationDropdown = lazy(() =>
+  import("@/components/notifications/NotificationDropdown").then(({ NotificationDropdown }) => ({ default: NotificationDropdown }))
+);
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [contactDialogRequested, setContactDialogRequested] = useState(false);
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
@@ -30,6 +33,10 @@ const Navigation = () => {
   const isMobile = useIsMobile();
   const menuRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
+
+  React.useEffect(() => {
+    if (user) setContactDialogRequested(false);
+  }, [user]);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -96,6 +103,18 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
+  const contactButton = (onClick?: () => void) => (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={onClick}
+      className="border-border text-foreground hover:bg-muted font-medium"
+    >
+      <MessageCircle className="w-4 h-4 mr-1.5" />
+      Contact me
+    </Button>
+  );
+
   const getUserInitials = (nameOrEmail?: string | null) => {
     if (!nameOrEmail || typeof nameOrEmail !== 'string') return 'U';
     const trimmed = nameOrEmail.trim();
@@ -150,7 +169,7 @@ const Navigation = () => {
             aria-label="Sahadhyayi Home"
           >
             <EnhancedLazyImage
-              src="/lovable-uploads/logo-small.webp"
+              src="/optimized-assets/site-logo.webp"
               alt=""
               aria-hidden="true"
               className="w-8 h-8 flex-shrink-0"
@@ -215,63 +234,19 @@ const Navigation = () => {
                         <Moon className="w-4 h-4 text-slate-700" />
                       )}
                     </Button>
-                    <MessageDropdown />
-                    <NotificationDropdown />
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="flex items-center space-x-2 p-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                          aria-label={`User account menu for ${userDisplayName}`}
-                        >
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
-                            <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white font-medium text-xs">
-                              {getUserInitials(user.user_metadata?.full_name || user.email)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
-                        <div className="px-3 py-2 border-b border-border mb-1">
-                          <p className="text-sm font-semibold text-foreground truncate">
-                            {userDisplayName}
-                          </p>
-                          {user.email && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {user.email}
-                            </p>
-                          )}
-                        </div>
-                        <DropdownMenuItem asChild>
-                          <Link to="/profile" className="flex items-center cursor-pointer">
-                            <User className="mr-2 h-4 w-4" />
-                            Profile
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to="/bookshelf" className="flex items-center cursor-pointer">
-                            <BookOpen className="mr-2 h-4 w-4" />
-                            My Bookshelf
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to="/articles/my" className="flex items-center cursor-pointer">
-                            <FileText className="mr-2 h-4 w-4" />
-                            My Articles
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={handleSignOut}
-                          className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                        >
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Sign Out
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                      <MessageDropdown />
+                    </Suspense>
+                    <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                      <NotificationDropdown />
+                    </Suspense>
+                    <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                      <AuthenticatedUserDropdown
+                        user={user}
+                        userDisplayName={userDisplayName}
+                        onSignOut={handleSignOut}
+                      />
+                    </Suspense>
                   </>
                 ) : (
                   <div className="flex items-center space-x-3">
@@ -289,14 +264,13 @@ const Navigation = () => {
                         <Moon className="w-4 h-4 text-slate-700" />
                       )}
                     </Button>
-                    <ContactFormDialog
-                      trigger={
-                        <Button variant="outline" size="sm" className="border-border text-foreground hover:bg-muted font-medium">
-                          <MessageCircle className="w-4 h-4 mr-1.5" />
-                          Contact me
-                        </Button>
-                      }
-                    />
+                    {contactDialogRequested ? (
+                      <Suspense fallback={contactButton(() => setContactDialogRequested(true))}>
+                        <ContactFormDialog initialOpen trigger={contactButton()} />
+                      </Suspense>
+                    ) : (
+                      contactButton(() => setContactDialogRequested(true))
+                    )}
                     <Link to="/auth">
                       <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-medium">
                         <LogIn className="w-4 h-4 mr-1.5" />
@@ -338,8 +312,12 @@ const Navigation = () => {
               </Button>
               {user && (
                 <>
-                  <MessageDropdown />
-                  <NotificationDropdown />
+                  <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                    <MessageDropdown />
+                  </Suspense>
+                  <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                    <NotificationDropdown />
+                  </Suspense>
                 </>
               )}
               <Button
@@ -462,8 +440,12 @@ const Navigation = () => {
         )}
       </div>
 
-      {/* Global Search Dialog */}
-      <EnhancedGlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      {/* Load search code only when a reader opens the global search dialog. */}
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <EnhancedGlobalSearch isOpen onClose={() => setSearchOpen(false)} />
+        </Suspense>
+      )}
     </header>
   );
 };

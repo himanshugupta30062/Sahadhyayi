@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { useCallback, useEffect, useState } from 'react';
 import { uniqueChannelName } from '@/lib/realtime';
+import { getPrivateSocialPostMediaPath, resolveSocialPostImages } from '@/lib/socialPostMedia';
 
 const SOCIAL_POST_PAGE_SIZE = 25;
 
@@ -11,7 +12,13 @@ export interface SocialPost {
   id: string;
   user_id: string;
   content: string;
+  post_kind?: 'post' | 'quote';
+  quote_text?: string | null;
+  quote_author?: string | null;
+  quote_source?: string | null;
+  quote_context?: string | null;
   image_url?: string;
+  image_alt?: string | null;
   book_id?: string;
   feeling_emoji?: string;
   feeling_label?: string;
@@ -152,6 +159,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
           profiles: post.profiles || profilesMap.get(post.user_id) || null,
           books_library: post.books_library || booksMap.get(post.book_id) || null,
         }));
+        data = await resolveSocialPostImages(data);
 
         // If any posts are reposts, fetch original posts in a clean batch
         const repostIds = data
@@ -198,10 +206,12 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
                   },
                 ])
               );
+              const resolvedOriginals = await resolveSocialPostImages(Array.from(originalMap.values()) as any[]);
+              const resolvedOriginalMap = new Map(resolvedOriginals.map((post: any) => [post.id, post]));
 
               data = data.map((post) => ({
                 ...post,
-                reposted_post: post.repost_of_id ? originalMap.get(post.repost_of_id) || null : null,
+                reposted_post: post.repost_of_id ? resolvedOriginalMap.get(post.repost_of_id) || null : null,
               }));
             }
           } catch (repostErr) {
@@ -319,6 +329,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
           profiles: post.profiles || profileMap.get(post.user_id) || null,
           books_library: post.books_library || bookMap.get(post.book_id) || null,
         }));
+        olderPosts = await resolveSocialPostImages(olderPosts);
 
         // Keep repost cards as rich as the first page instead of rendering them
         // as blank posts when the original post is on another page.
@@ -343,9 +354,11 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
               profiles: originalProfileMap.get(post.user_id) || null,
               books_library: originalBookMap.get(post.book_id) || null,
             }]));
+            const resolvedOriginals = await resolveSocialPostImages(Array.from(originalMap.values()) as any[]);
+            const resolvedOriginalMap = new Map(resolvedOriginals.map((post: any) => [post.id, post]));
             olderPosts = olderPosts.map((post: any) => ({
               ...post,
-              reposted_post: post.repost_of_id ? originalMap.get(post.repost_of_id) || null : null,
+              reposted_post: post.repost_of_id ? resolvedOriginalMap.get(post.repost_of_id) || null : null,
             }));
           }
         }
@@ -425,14 +438,9 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
           schema: 'public',
           table: 'posts'
         },
-        (payload) => {
-          queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
-            return old.map(post => 
-              post.id === payload.new.id 
-                ? { ...post, ...payload.new }
-                : post
-            );
-          });
+        () => {
+          // Re-fetch through RLS and refresh signed media URLs on every update.
+          queryClient.invalidateQueries({ queryKey: ['social-posts'] });
         }
       )
       .subscribe();
@@ -453,7 +461,13 @@ export const useCreatePost = () => {
   return useMutation({
     mutationFn: async (postData: {
       content: string;
+      post_kind?: 'post' | 'quote';
+      quote_text?: string;
+      quote_author?: string;
+      quote_source?: string;
+      quote_context?: string;
       image_url?: string;
+      image_alt?: string | null;
       book_id?: string;
       feeling_emoji?: string;
       feeling_label?: string;
@@ -499,18 +513,26 @@ export const useCreatePost = () => {
           ? postData.book_id.trim()
           : null;
 
+      const normalizedQuote = postData.post_kind === 'quote' ? postData.quote_text?.trim() || '' : '';
+      if (postData.post_kind === 'quote' && (!normalizedQuote || normalizedQuote.length > 500)) {
+        throw new Error('A quote card needs a quotation between 1 and 500 characters.');
+      }
+
       const payload = {
         content: postData.content.trim(),
         user_id: user.id,
+        post_kind: postData.post_kind || 'post',
+        quote_text: normalizedQuote || null,
+        quote_author: postData.post_kind === 'quote' ? postData.quote_author?.trim() || null : null,
+        quote_source: postData.post_kind === 'quote' ? postData.quote_source?.trim() || null : null,
+        quote_context: postData.post_kind === 'quote' ? postData.quote_context?.trim() || null : null,
         book_id: validBookId,
         feeling_emoji: postData.feeling_emoji?.trim() || null,
         feeling_label: postData.feeling_label?.trim() || null,
         image_url: postData.image_url?.trim() || null,
+        image_alt: postData.image_alt?.trim().slice(0, 250) || null,
         audience: postData.audience || 'friends',
       };
-
-      // Debug log to help surface issues when inserting posts
-      console.debug('Creating social post', { payload, userId: user?.id });
 
       let createdPost: any = null;
 
@@ -539,18 +561,17 @@ export const useCreatePost = () => {
         createdPost = data;
       }
 
-      return (
-        createdPost || {
-          ...payload,
-          id: crypto.randomUUID(),
-          created_at: new Date().toISOString(),
-          likes_count: 0,
-          comments_count: 0,
-          reposts_count: 0,
-          user_liked: false,
-          user_reposted: false,
-        }
-      );
+      const result = createdPost || {
+        ...payload,
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        likes_count: 0,
+        comments_count: 0,
+        reposts_count: 0,
+        user_liked: false,
+        user_reposted: false,
+      };
+      return (await resolveSocialPostImages([result]))[0];
     },
     onSuccess: (newPost) => {
       if (newPost) {
@@ -785,8 +806,33 @@ export const useDeletePost = () => {
   return useMutation({
     mutationFn: async (postId: string) => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { error } = await supabase.from('posts').delete().eq('id', postId).eq('user_id', user.id);
-      if (error) throw error;
+      const { data: post, error: lookupError } = await supabase
+        .from('posts')
+        .select('image_url')
+        .eq('id', postId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (lookupError) throw lookupError;
+      if (!post) throw new Error('Post not found or you no longer have permission to delete it.');
+
+      const { error: deleteError } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id);
+      if (deleteError) throw deleteError;
+
+      // Remove private media after the post is deleted. The storage SELECT policy
+      // permits the owner to manage their own uploaded object even if it is orphaned.
+      const mediaPath = getPrivateSocialPostMediaPath(post.image_url);
+      if (mediaPath) {
+        try {
+          const { error: storageError } = await supabase.storage.from('social-post-media').remove([mediaPath]);
+          if (storageError) console.warn('Post deleted, but private media cleanup failed:', storageError);
+        } catch (storageError) {
+          console.warn('Post deleted, but private media cleanup failed:', storageError);
+        }
+      }
       return postId;
     },
     onSuccess: (deletedId) => {

@@ -67,6 +67,27 @@ const number = (value: number | null | undefined) => formatMetric(value);
 const changeLabel = (change?: Change) =>
   change && change.value != null ? `${change.value > 0 ? '+' : ''}${change.value}%` : null;
 
+let bodyScrollLockCount = 0;
+let originalBodyOverflow: string | undefined;
+
+const acquireBodyScrollLock = () => {
+  if (typeof document === 'undefined') return () => undefined;
+  if (bodyScrollLockCount === 0) originalBodyOverflow = document.body.style.overflow;
+  bodyScrollLockCount += 1;
+  document.body.style.overflow = 'hidden';
+  let released = false;
+
+  return () => {
+    if (released) return;
+    released = true;
+    bodyScrollLockCount = Math.max(0, bodyScrollLockCount - 1);
+    if (bodyScrollLockCount === 0 && originalBodyOverflow !== undefined) {
+      document.body.style.overflow = originalBodyOverflow;
+      originalBodyOverflow = undefined;
+    }
+  };
+};
+
 function getFlagEmoji(countryCode?: string | null): string {
   if (!countryCode || countryCode.length !== 2) return '🌐';
   const codePoints = countryCode
@@ -187,18 +208,37 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   const [showAbout, setShowAbout] = useState(false);
   const [chartInterval, setChartInterval] = useState<'hourly' | 'daily'>('hourly');
 
-  // Close on Escape & Lock body scroll
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]:not(:disabled)'));
+    const currentIndex = tabs.indexOf(event.target as HTMLButtonElement);
+    if (currentIndex < 0) return;
+
+    let nextIndex: number;
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+    else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    else if (event.key === 'Home') nextIndex = 0;
+    else if (event.key === 'End') nextIndex = tabs.length - 1;
+    else return;
+
+    event.preventDefault();
+    tabs[nextIndex]?.focus();
+    tabs[nextIndex]?.click();
+  };
+
+  // Close on Escape and use a reference-counted lock so stacked dialogs
+  // do not restore body scrolling until the last open dialog closes.
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
+    let releaseBodyScrollLock: (() => void) | undefined;
     if (open) {
       window.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
+      releaseBodyScrollLock = acquireBodyScrollLock();
     }
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+      releaseBodyScrollLock?.();
     };
   }, [open, onClose]);
 
@@ -445,9 +485,14 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
         {/* Sticky Fixed Navigation & Controls Bar */}
         <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 border-b border-white/[0.08] bg-[#0B0D0C] flex-shrink-0 min-w-0 z-10">
           {/* Tabs */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-[#111614] border border-white/[0.06] overflow-x-auto max-w-full no-scrollbar flex-shrink min-w-0">
+          <div role="tablist" aria-label="Community pulse sections" onKeyDown={handleTabKeyDown} className="flex items-center gap-1 p-1 rounded-xl bg-[#111614] border border-white/[0.06] overflow-x-auto max-w-full no-scrollbar flex-shrink min-w-0">
             <button
               onClick={() => setActiveTab('overview')}
+              role="tab"
+              id="pulse-tab-overview"
+              aria-controls="pulse-panel-overview"
+              aria-selected={activeTab === 'overview'}
+              tabIndex={activeTab === 'overview' ? 0 : -1}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'overview'
                   ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
@@ -461,6 +506,11 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
             {isAdmin && (
               <button
                 onClick={() => setActiveTab('visitors')}
+                role="tab"
+                id="pulse-tab-visitors"
+                aria-controls="pulse-panel-visitors"
+                aria-selected={activeTab === 'visitors'}
+                tabIndex={activeTab === 'visitors' ? 0 : -1}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                   activeTab === 'visitors'
                     ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
@@ -477,6 +527,11 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
             <button
               onClick={() => setActiveTab('insights')}
+              role="tab"
+              id="pulse-tab-insights"
+              aria-controls="pulse-panel-insights"
+              aria-selected={activeTab === 'insights'}
+              tabIndex={activeTab === 'insights' ? 0 : -1}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'insights'
                   ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
@@ -490,6 +545,11 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
             {isAdmin && (
               <button
                 onClick={() => setActiveTab('diagnostics')}
+                role="tab"
+                id="pulse-tab-diagnostics"
+                aria-controls="pulse-panel-diagnostics"
+                aria-selected={activeTab === 'diagnostics'}
+                tabIndex={activeTab === 'diagnostics' ? 0 : -1}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                   activeTab === 'diagnostics'
                     ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
@@ -524,7 +584,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 md:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 min-w-0">
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
-            <>
+            <div role="tabpanel" id="pulse-panel-overview" aria-labelledby="pulse-tab-overview" tabIndex={0}>
               {/* Error Alert State */}
               {error && !stats && (
                 <div className="rounded-xl border border-rose-500/30 bg-rose-950/25 p-4 sm:p-5 text-center space-y-2">
@@ -1301,12 +1361,12 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
 
           {/* TAB 2: RECENT VISITORS (ADMIN ONLY) */}
           {activeTab === 'visitors' && isAdmin && (
-            <div className="space-y-4 sm:space-y-6 min-w-0">
+            <div role="tabpanel" id="pulse-panel-visitors" aria-labelledby="pulse-tab-visitors" tabIndex={0} className="space-y-4 sm:space-y-6 min-w-0">
               {/* Search & Filters Bar */}
               <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 min-w-0">
                 <div className="relative flex-1 min-w-0">
@@ -1645,7 +1705,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
           {/* TAB 3: INSIGHTS & READING ENGAGEMENT */}
           {activeTab === 'insights' && (
-            <div className="space-y-4 sm:space-y-6 min-w-0">
+            <div role="tabpanel" id="pulse-panel-insights" aria-labelledby="pulse-tab-insights" tabIndex={0} className="space-y-4 sm:space-y-6 min-w-0">
               {/* Community Reader Base Banner */}
               <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl border border-white/[0.09] bg-[#111614] min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
@@ -1784,7 +1844,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
           {/* TAB 4: DATA HEALTH & DIAGNOSTICS (ADMIN ONLY) */}
           {activeTab === 'diagnostics' && isAdmin && (
-            <div className="space-y-4 sm:space-y-6 min-w-0">
+            <div role="tabpanel" id="pulse-panel-diagnostics" aria-labelledby="pulse-tab-diagnostics" tabIndex={0} className="space-y-4 sm:space-y-6 min-w-0">
               <div className="p-4 rounded-xl border border-emerald-800/30 bg-emerald-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-emerald-900/60 border border-emerald-600/40 flex items-center justify-center text-emerald-300 shrink-0">
