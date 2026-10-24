@@ -5,10 +5,3 @@
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Netlify does not inherit the GitHub Actions variables used by pages.yml.
-# These are public browser-client settings, and are intentionally scoped to
-# production so deploy previews cannot silently connect to the live database.
-[context.production.environment]
-  VITE_SUPABASE_URL = "https://rknxtatvlzunatpyqxro.supabase.co"
-  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrbnh0YXR2bHp1bmF0cHlxeHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzI0MjUsImV4cCI6MjA2NTUwODQyNX0.NXIWEwm8NlvzHnxf55cgdsy1ljX2IbFKQL7OS8xlb-U"
