@@ -35,6 +35,12 @@ const Navigation = () => {
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
+    // Avoid reopening a previously requested contact dialog if the user signs
+    // in and later returns to the public navigation.
+    if (user) setContactDialogRequested(false);
+  }, [user]);
+
+  React.useEffect(() => {
     const handleScroll = () => {
       const isScrolled = window.scrollY > 20;
       setScrolled((previous) => (previous === isScrolled ? previous : isScrolled));
