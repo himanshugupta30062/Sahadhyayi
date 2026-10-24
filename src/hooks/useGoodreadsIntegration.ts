@@ -1,6 +1,6 @@
 import { secureFetch } from "../security/secureFetch";
 
-const backendBaseUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\\/+$/, "") || "";
+const backendBaseUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/+$/, "") || "";
 
 export interface GoodreadsBook {
   id: string;

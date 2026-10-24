@@ -50,7 +50,7 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     vi.clearAllMocks();
     localStorage.clear();
     mockCurrentUser = null;
-    mockGetSession.mockResolvedValue({ data: { session: null } });
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'mock-token' } } });
   });
 
   afterEach(() => {
@@ -531,11 +531,10 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
 
     const { result } = renderHook(() => useCommunityPulse(true));
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
     // 24h metrics
+    await waitFor(() => {
+      expect(result.current.stats?.pageViews).toBe(250);
+    });
     const stats24h = result.current.stats!;
     expect(stats24h.pageViews).toBe(250);
     expect(stats24h.newReaders).toBe(3);
