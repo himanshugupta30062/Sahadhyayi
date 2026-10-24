@@ -128,7 +128,12 @@ export default function QuizGame({
       });
     }
 
-    setTimeout(() => onAnswer(index), 2000);
+    // Keep answer advancement cancellable if the player quits or the component unmounts.
+    if (answerTimeoutRef.current) clearTimeout(answerTimeoutRef.current);
+    answerTimeoutRef.current = setTimeout(() => {
+      answerTimeoutRef.current = null;
+      onAnswer(index);
+    }, 2000);
   }, [showResult, hiddenOptions, question.correct_answer, question.points, onAnswer, mode, timeLeft, streak]);
 
   const optionLabels = ['A', 'B', 'C', 'D'];
