@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -61,20 +61,14 @@ export default function QuizGame({
   const [timeLeft, setTimeLeft] = useState(timerDuration);
   const [showStreakPopup, setShowStreakPopup] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
+  const answerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Timer
+  // Timer ticks only update state; timeout handling stays outside the state updater.
   useEffect(() => {
     if (showResult || !timerEnabled) return;
-    
+
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleTimeUp();
-          return 0;
-        }
-        return prev - 1;
-      });
+      setTimeLeft((prev) => Math.max(0, prev - 1));
     }, 1000);
 
     return () => clearInterval(timer);
@@ -89,11 +83,22 @@ export default function QuizGame({
     setPointsEarned(0);
   }, [questionNumber, timerDuration]);
 
-  const handleTimeUp = () => {
+  const handleTimeUp = useCallback(() => {
+    if (showResult) return;
     setShowResult(true);
     setIsCorrect(false);
-    setTimeout(() => onAnswer(-1), 1500);
-  };
+    answerTimeoutRef.current = setTimeout(() => onAnswer(-1), 1500);
+  }, [onAnswer, showResult]);
+
+  useEffect(() => {
+    if (timerEnabled && timeLeft === 0 && !showResult) {
+      handleTimeUp();
+    }
+  }, [timeLeft, timerEnabled, showResult, handleTimeUp]);
+
+  useEffect(() => () => {
+    if (answerTimeoutRef.current) clearTimeout(answerTimeoutRef.current);
+  }, []);
 
   const handleSelectAnswer = useCallback((index: number) => {
     if (showResult || hiddenOptions.includes(index)) return;
