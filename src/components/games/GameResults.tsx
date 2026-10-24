@@ -115,7 +115,7 @@ export default function GameResults({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 text-foreground flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(30)].map((_, i) => (
@@ -152,7 +152,7 @@ export default function GameResults({
         transition={{ type: 'spring', stiffness: 200 }}
         className="w-full max-w-md relative z-10"
       >
-        <Card className="bg-white/10 backdrop-blur-md border-white/20 overflow-hidden">
+        <Card className="bg-card/95 backdrop-blur-md border-border overflow-hidden shadow-2xl">
           {/* Glow effect at top */}
           <div className={cn(
             'absolute top-0 left-0 right-0 h-32 opacity-30',
@@ -203,7 +203,7 @@ export default function GameResults({
             >
               <div className="text-5xl mb-3">{message.emoji}</div>
               <h2 className="text-3xl font-black mb-2">{message.title}</h2>
-              <p className="text-white/70 mb-8">{message.subtitle}</p>
+              <p className="text-muted-foreground mb-8">{message.subtitle}</p>
             </motion.div>
 
             {/* Stats */}
@@ -213,26 +213,26 @@ export default function GameResults({
               transition={{ delay: 0.7 }}
               className="grid grid-cols-3 gap-3 mb-8"
             >
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+              <div className="bg-muted/50 backdrop-blur-sm rounded-2xl p-4 border border-border">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-yellow-500/20 flex items-center justify-center">
                   <Trophy className="h-5 w-5 text-yellow-400" />
                 </div>
                 <p className="text-2xl font-black">{score.toLocaleString()}</p>
-                <p className="text-xs text-white/60">Points</p>
+                <p className="text-xs text-muted-foreground">Points</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+              <div className="bg-muted/50 backdrop-blur-sm rounded-2xl p-4 border border-border">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-green-500/20 flex items-center justify-center">
                   <Target className="h-5 w-5 text-green-400" />
                 </div>
                 <p className="text-2xl font-black">{correctAnswers}/{totalQuestions}</p>
-                <p className="text-xs text-white/60">Correct</p>
+                <p className="text-xs text-muted-foreground">Correct</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+              <div className="bg-muted/50 backdrop-blur-sm rounded-2xl p-4 border border-border">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-purple-500/20 flex items-center justify-center">
                   <Zap className="h-5 w-5 text-purple-400" />
                 </div>
                 <p className="text-2xl font-black">{percentage}%</p>
-                <p className="text-xs text-white/60">Accuracy</p>
+                <p className="text-xs text-muted-foreground">Accuracy</p>
               </div>
             </motion.div>
 
@@ -270,7 +270,7 @@ export default function GameResults({
                 <Button 
                   variant="outline" 
                   size="lg"
-                  className="border-white/20 text-white hover:bg-white/10 h-12"
+                  className="border-border text-foreground hover:bg-muted h-12"
                   onClick={onGoHome}
                 >
                   <Home className="mr-2 h-4 w-4" />
@@ -279,7 +279,7 @@ export default function GameResults({
                 <Button 
                   variant="outline" 
                   size="lg"
-                  className="border-white/20 text-white hover:bg-white/10 h-12"
+                  className="border-border text-foreground hover:bg-muted h-12"
                   onClick={handleShare}
                 >
                   <Share2 className="mr-2 h-4 w-4" />
