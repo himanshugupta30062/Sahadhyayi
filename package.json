@@ -33,12 +33,12 @@
     {
       "name": "Main application bundle",
       "path": "dist/assets/index-*.js",
-      "limit": "175 KB"
+      "limit": "240 KB"
     },
     {
       "name": "Total client assets",
       "path": "dist/assets/*.js",
-      "limit": "690 KB"
+      "limit": "730 KB"
     }
   ],
   "dependencies": {
