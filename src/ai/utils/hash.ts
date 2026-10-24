@@ -7,5 +7,5 @@ export function createHash(s: string) {
     // Keep the original signed 32-bit overflow behavior without bitwise coercion.
     if (h > 2147483647) h -= 4294967296;
   }
-  return 'h' + (h >>> 0).toString(36);
+  return 'h' + (h < 0 ? h + 4294967296 : h).toString(36);
 }
