@@ -26,12 +26,6 @@ import { Link, useSearchParams } from 'react-router-dom';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { SocialSurface } from '@/components/social/SocialSurface';
-import { EnhancedSocialFeed } from '@/components/social/EnhancedSocialFeed';
-import { EnhancedReadingMap } from '@/components/social/EnhancedReadingMap';
-import { FriendsLocationMap } from '@/components/social/FriendsLocationMap';
-import { ReadingGroups } from '@/components/social/ReadingGroups';
-import { EnhancedFriendsManager } from '@/components/social/EnhancedFriendsManager';
-import { BookPulseBar } from '@/components/social/BookPulseBar';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
 import { useGroups } from '@/hooks/useGroupManagement';
 import { useAllUsers } from '@/hooks/useUserSearch';
@@ -42,6 +36,12 @@ import { toast } from 'sonner';
 
 // Lazy-load the 4 book-native feature panels
 const MarginNotesFeed = lazy(() => import('@/components/social/margins/MarginNotesFeed'));
+const EnhancedSocialFeed = lazy(() => import('@/components/social/EnhancedSocialFeed').then(({ EnhancedSocialFeed }) => ({ default: EnhancedSocialFeed })));
+const EnhancedReadingMap = lazy(() => import('@/components/social/EnhancedReadingMap').then(({ EnhancedReadingMap }) => ({ default: EnhancedReadingMap })));
+const FriendsLocationMap = lazy(() => import('@/components/social/FriendsLocationMap').then(({ FriendsLocationMap }) => ({ default: FriendsLocationMap })));
+const ReadingGroups = lazy(() => import('@/components/social/ReadingGroups').then(({ ReadingGroups }) => ({ default: ReadingGroups })));
+const EnhancedFriendsManager = lazy(() => import('@/components/social/EnhancedFriendsManager').then(({ EnhancedFriendsManager }) => ({ default: EnhancedFriendsManager })));
+const BookPulseBar = lazy(() => import('@/components/social/BookPulseBar'));
 const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/SpoilerThreadsFeed'));
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
@@ -169,7 +169,9 @@ const GuestLanding: React.FC = () => {
             {/* Live Activity Pulse bar */}
             <div className="max-w-3xl mx-auto">
               <ErrorBoundary fallback={null}>
-                <BookPulseBar />
+                <Suspense fallback={<div className="min-h-16" aria-hidden="true" />}>
+                  <BookPulseBar />
+                </Suspense>
               </ErrorBoundary>
             </div>
           </div>
@@ -496,7 +498,9 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                       </SocialSurface>
                     }
                   >
-                    <EnhancedSocialFeed />
+                    <Suspense fallback={<TabLoader />}>
+                      <EnhancedSocialFeed />
+                    </Suspense>
                   </ErrorBoundary>
                 </TabsContent>
 
@@ -566,7 +570,9 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
 
                 {/* ── Friends Tab ── */}
                 <TabsContent value="friends" className="mt-0">
-                  <EnhancedFriendsManager />
+                  <Suspense fallback={<TabLoader />}>
+                    <EnhancedFriendsManager />
+                  </Suspense>
                 </TabsContent>
 
                 {/* ── Map Tab ── */}
@@ -601,13 +607,17 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   </div>
 
                   <Card className="border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] overflow-hidden text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
-                    {mapView === 'readers' ? <EnhancedReadingMap /> : <FriendsLocationMap />}
+                    <Suspense fallback={<TabLoader />}>
+                      {mapView === 'readers' ? <EnhancedReadingMap /> : <FriendsLocationMap />}
+                    </Suspense>
                   </Card>
                 </TabsContent>
 
                 {/* ── Groups Tab ── */}
                 <TabsContent value="groups" className="mt-0">
-                  <ReadingGroups />
+                  <Suspense fallback={<TabLoader />}>
+                    <ReadingGroups />
+                  </Suspense>
                 </TabsContent>
               </section>
 
