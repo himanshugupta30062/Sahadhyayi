@@ -223,14 +223,10 @@ const Navigation = () => {
                       )}
                     </Button>
                     <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
-                      <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
-                    <MessageDropdown />
-                  </Suspense>
+                      <MessageDropdown />
                     </Suspense>
                     <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
-                      <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
-                    <NotificationDropdown />
-                  </Suspense>
+                      <NotificationDropdown />
                     </Suspense>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -353,8 +349,12 @@ const Navigation = () => {
               </Button>
               {user && (
                 <>
-                  <MessageDropdown />
-                  <NotificationDropdown />
+                  <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                    <MessageDropdown />
+                  </Suspense>
+                  <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                    <NotificationDropdown />
+                  </Suspense>
                 </>
               )}
               <Button
