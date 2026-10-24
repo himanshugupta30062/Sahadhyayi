@@ -42,7 +42,7 @@ jobs:
             html_status="$(curl -sSL --max-time 10 -o /tmp/sahadhyayi-page.html -w '%{http_code}' "${base_url%/}/" || true)"
             echo "=== Bundle inspection: $base_url (HTML HTTP $html_status) ==="
             [[ -s /tmp/sahadhyayi-page.html ]] || { echo "No HTML body"; return; }
-            grep -oE 'src="[^"]+\\.js[^"]*"' /tmp/sahadhyayi-page.html | cut -d '"' -f 2 | head -n 8 | while IFS= read -r asset; do
+            grep -oE 'src="[^"]+\.js[^"]*"' /tmp/sahadhyayi-page.html | cut -d '"' -f 2 | head -n 8 | while IFS= read -r asset; do
               [[ -n "$asset" ]] || continue
               if [[ "$asset" == http* ]]; then asset_url="$asset"; else asset_url="${base_url%/}$asset"; fi
               bundle_status="$(curl -sSL --max-time 10 -o /tmp/sahadhyayi-bundle.js -w '%{http_code}' "$asset_url" || true)"
