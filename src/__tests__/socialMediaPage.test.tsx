@@ -174,7 +174,7 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       mockUseAuth.mockReturnValue({ user: mockUser, loading: false });
     });
 
-    it('renders compact primary social navigation and a content-first community layout', () => {
+    it('renders compact primary social navigation and a content-first community layout', async () => {
       mockUseReadingRooms.mockReturnValue({
         data: [
           {
@@ -227,7 +227,7 @@ describe('SocialMedia Page Redesign and Functional Fixes', () => {
       expect(screen.queryByText(/More to explore/i)).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Toggle search/i })).not.toBeInTheDocument();
       expect(screen.queryByPlaceholderText(/Search books, authors, discussions…/i)).not.toBeInTheDocument();
-      expect(screen.getByTestId('enhanced-social-feed')).toBeInTheDocument();
+      expect(await screen.findByTestId('enhanced-social-feed')).toBeInTheDocument();
 
       // Right discovery rail: live rooms, popular groups, suggested readers
       expect(screen.getByText('Modern Literature Circle')).toBeInTheDocument();
