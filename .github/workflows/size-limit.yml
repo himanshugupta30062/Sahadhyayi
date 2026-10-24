@@ -14,6 +14,7 @@ jobs:
       - run: npm ci
       - name: Test changed social navigation and page behavior
         run: npm test -- src/__tests__/socialMediaPage.test.tsx src/__tests__/globalUiAndAccessibility.test.tsx
-      - run: npm run build
+      - name: Build and report largest rendered modules
+        run: BUNDLE_ANALYSIS_REPORT=1 npm run build
       - run: npm run size
       - run: npm run size:initial

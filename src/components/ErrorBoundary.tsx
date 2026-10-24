@@ -1,5 +1,4 @@
 import React from "react";
-import * as Sentry from "@sentry/react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
@@ -29,15 +28,24 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     }
 
     // Capture error in Sentry
-    const eventId = Sentry.captureException(error, {
-      contexts: {
-        react: {
-          componentStack: errorInfo.componentStack,
-        },
-      },
-    });
-
-    this.setState({ errorId: eventId });
+    // Load telemetry on demand; a boundary error must still render its fallback
+    // even when the telemetry chunk cannot be downloaded.
+    void import("@/sentry")
+      .then(({ default: Sentry }) => {
+        const eventId = Sentry.captureException(error, {
+          contexts: {
+            react: {
+              componentStack: errorInfo.componentStack,
+            },
+          },
+        });
+        this.setState({ errorId: eventId });
+      })
+      .catch(() => {
+        if (import.meta.env.DEV) {
+          console.warn("Sentry could not be loaded to report a React error.");
+        }
+      });
 
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
@@ -52,9 +60,16 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   };
 
   handleReportFeedback = () => {
-    if (this.state.errorId) {
-      Sentry.showReportDialog({ eventId: this.state.errorId });
-    }
+    const eventId = this.state.errorId;
+    if (!eventId) return;
+
+    void import("@/sentry")
+      .then(({ default: Sentry }) => Sentry.showReportDialog({ eventId }))
+      .catch(() => {
+        if (import.meta.env.DEV) {
+          console.warn("Sentry could not be loaded to open the feedback dialog.");
+        }
+      });
   };
 
   render() {

@@ -1,5 +1,4 @@
 import { toast } from '@/hooks/use-toast';
-import { captureError, addSentryBreadcrumb } from '@/sentry';
 
 export interface ErrorContext {
   userId?: string;
@@ -83,15 +82,23 @@ class ErrorHandler {
     }
 
     // Add breadcrumb for error context
-    addSentryBreadcrumb(
-      'error',
-      errorReport.message,
-      this.mapSeverityToSentryLevel(errorReport.severity),
-      {
-        type: errorReport.type,
-        ...errorReport.context,
-      }
-    );
+    // Keep the main application entry independent from the Sentry SDK. The
+    // Sentry module initializes asynchronously after the app first mounts.
+    void import('@/sentry')
+      .then(({ addSentryBreadcrumb }) => {
+        addSentryBreadcrumb(
+          'error',
+          errorReport.message,
+          this.mapSeverityToSentryLevel(errorReport.severity),
+          {
+            type: errorReport.type,
+            ...errorReport.context,
+          }
+        );
+      })
+      .catch(() => {
+        // Error reporting must never make the application less resilient.
+      });
 
     // Log in development
     if (import.meta.env.DEV) {
@@ -185,11 +192,18 @@ class ErrorHandler {
         error.stack = errorReport.stack;
       }
       
-      captureError(error, {
-        errorType: errorReport.type,
-        severity: errorReport.severity,
-        ...errorReport.context,
-      }, this.mapSeverityToSentryLevel(errorReport.severity));
+      void import('@/sentry')
+        .then(({ captureError }) => {
+          captureError(error, {
+            errorType: errorReport.type,
+            severity: errorReport.severity,
+            ...errorReport.context,
+          }, this.mapSeverityToSentryLevel(errorReport.severity));
+        })
+        .catch(() => {
+          // Keep the local error queue and user-facing notification operational
+          // when the telemetry chunk is unavailable.
+        });
     }
   }
 

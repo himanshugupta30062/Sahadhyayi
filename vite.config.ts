@@ -4,6 +4,52 @@ import path from "path";
 
 // Keep React and modules that depend on React in Rollup's natural graph.
 // Forced vendor chunking caused production-only initialization failures before React mounted.
+
+// Optional bundle diagnostics. Enable with BUNDLE_ANALYSIS_REPORT=1 for CI/local
+// investigation; keep the report out of normal production deployments.
+function bundleDiagnosticsPlugin() {
+  return {
+    name: "sahadhyayi-bundle-diagnostics",
+    apply: "build" as const,
+    generateBundle(_options: unknown, bundle: Record<string, any>) {
+      if (process.env.BUNDLE_ANALYSIS_REPORT !== "1") return;
+
+      const chunks = Object.values(bundle)
+        .filter((output: any) => output.type === "chunk")
+        .map((chunk: any) => ({
+          fileName: chunk.fileName as string,
+          rawBytes: Buffer.byteLength(chunk.code as string),
+          modules: Object.entries(chunk.modules as Record<string, { renderedLength?: number; originalLength?: number }>)
+            .map(([id, details]) => ({
+              id: id.replace(process.cwd() + "/", ""),
+              renderedBytes: details.renderedLength ?? 0,
+              originalBytes: details.originalLength ?? 0,
+            }))
+            .sort((a, b) => b.renderedBytes - a.renderedBytes)
+            .slice(0, 15),
+        }))
+        .sort((a, b) => b.rawBytes - a.rawBytes);
+
+      console.log("[bundle-analysis] Largest chunks and their top rendered modules:");
+      for (const chunk of chunks.slice(0, 10)) {
+        console.log(
+          `[bundle-analysis] ${chunk.fileName}: ${(chunk.rawBytes / 1000).toFixed(2)} kB raw`
+        );
+        for (const module of chunk.modules.slice(0, 10)) {
+          console.log(
+            `[bundle-analysis]   ${(module.renderedBytes / 1000).toFixed(2)} kB: ${module.id}`
+          );
+        }
+      }
+      this.emitFile({
+        type: "asset",
+        fileName: "bundle-analysis.json",
+        source: JSON.stringify(chunks, null, 2),
+      });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   base: "/",
   server: {
@@ -26,6 +72,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    bundleDiagnosticsPlugin(),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
   optimizeDeps: {
