@@ -17,10 +17,12 @@ const contactSchema = z.object({
 
 interface ContactFormDialogProps {
   trigger?: React.ReactNode;
+  /** Open automatically when dynamically loaded in response to the contact button click. */
+  initialOpen?: boolean;
 }
 
-const ContactFormDialog = ({ trigger }: ContactFormDialogProps) => {
-  const [open, setOpen] = useState(false);
+const ContactFormDialog = ({ trigger, initialOpen = false }: ContactFormDialogProps) => {
+  const [open, setOpen] = useState(initialOpen);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', message: '' });
 
