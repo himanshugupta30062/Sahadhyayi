@@ -17,7 +17,7 @@ export const safeFormatDistanceToNow = (
   if (!date) return fallback;
   try {
     const parsed = new Date(date);
-    if (Number.Number.isNaN(parsed.getTime())) return fallback;
+    if (Number.isNaN(parsed.getTime())) return fallback;
     return formatDistanceToNow(parsed, options);
   } catch {
     return fallback;
