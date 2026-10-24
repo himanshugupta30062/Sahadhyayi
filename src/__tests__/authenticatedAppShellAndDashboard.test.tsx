@@ -219,10 +219,10 @@ describe('Authenticated App Shell & Dashboard (Phase 4)', () => {
   });
 
   describe('User Account Menu', () => {
-    it('provides an accessible trigger label containing the user display name', () => {
+    it('provides an accessible trigger label containing the user display name', async () => {
       renderWithProviders(<Navigation />, ['/dashboard']);
 
-      const menuTrigger = screen.getByRole('button', {
+      const menuTrigger = await screen.findByRole('button', {
         name: 'User account menu for Test Reader',
       });
       expect(menuTrigger).toBeInTheDocument();
@@ -245,7 +245,7 @@ describe('Authenticated App Shell & Dashboard (Phase 4)', () => {
         </QueryClientProvider>
       );
 
-      const menuTrigger = screen.getByRole('button', {
+      const menuTrigger = await screen.findByRole('button', {
         name: 'User account menu for Test Reader',
       });
       fireEvent.pointerDown(menuTrigger, { button: 0 });
