@@ -1,3 +1,0 @@
-# Netlify SPA fallback for client-side routes.
-# Existing static assets remain available at their file paths.
-/*    /index.html   200
