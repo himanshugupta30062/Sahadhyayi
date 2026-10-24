@@ -37,10 +37,13 @@ if (missing.length === 0) {
     );
   }
 
-  const hasApexWorkerRoute =
-    /"pattern"\\s*:\\s*"sahadhyayi\\.com\\/\\*"\\s*,\\s*"zone_name"\\s*:\\s*"sahadhyayi\\.com"/.test(wrangler);
-  const hasWwwWorkerRoute =
-    /"pattern"\\s*:\\s*"www\\.sahadhyayi\\.com\\/\\*"\\s*,\\s*"zone_name"\\s*:\\s*"sahadhyayi\\.com"/.test(wrangler);
+  const workerRoutes = JSON.parse(wrangler).routes ?? [];
+  const hasApexWorkerRoute = workerRoutes.some(
+    (route) => route.pattern === "sahadhyayi.com/*" && route.zone_name === "sahadhyayi.com",
+  );
+  const hasWwwWorkerRoute = workerRoutes.some(
+    (route) => route.pattern === "www.sahadhyayi.com/*" && route.zone_name === "sahadhyayi.com",
+  );
   if (!hasApexWorkerRoute || !hasWwwWorkerRoute) {
     errors.push(
       "wrangler.jsonc must route both sahadhyayi.com/* and www.sahadhyayi.com/* " +
