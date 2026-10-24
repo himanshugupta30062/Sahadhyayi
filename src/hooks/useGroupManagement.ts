@@ -55,17 +55,34 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
   return useQuery({
     queryKey: ['all-groups', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('group_chats')
-        .select(`
-          *,
-          group_members:group_chat_members(count)
-        `)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      return data || [];
+      if (user?.id) {
+        const { data, error } = await supabase
+          .from('group_chats')
+          .select(`
+            *,
+            group_members:group_chat_members(count)
+          `)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+      }
+
+      // Anonymous discovery uses an aggregate-only RPC; never grant anon access
+      // to raw group_chat_members rows just to compute counts.
+      const [{ data: groups, error: groupsError }, { data: counts, error: countsError }] = await Promise.all([
+        supabase.from('group_chats').select('*').order('created_at', { ascending: false }),
+        supabase.rpc('get_public_group_member_counts'),
+      ]);
+      if (groupsError) throw groupsError;
+      if (countsError) throw countsError;
+      const countByGroupId = new Map((counts || []).map((row: { group_id: string; member_count: number }) => [
+        row.group_id,
+        Number(row.member_count) || 0,
+      ]));
+      return (groups || []).map((group) => {
+        const count = countByGroupId.get(group.id) ?? 0;
+        return { ...group, member_count: count, group_members: [{ count }] };
+      });
     },
     enabled,
   });
