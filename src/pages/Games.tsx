@@ -548,10 +548,7 @@ export default function Games() {
                     </div>
 
                     {/* Daily Challenges */}
-                    <DailyChallenges onSelectChallenge={(id) => {
-                      setSelectedMode('challenge');
-                      setView('select-book');
-                    }} />
+                    <DailyChallenges />
 
                     {/* Play Button */}
                     <Card className="overflow-hidden">
