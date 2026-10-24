@@ -112,8 +112,8 @@ export function normalizeBookIdentity(book: any): BookIdentity {
   if (book.publication_year) {
     const yr = typeof book.publication_year === 'number'
       ? book.publication_year
-      : Number.parseInt(String(book.publication_year), 10);
-    if (!Number.isNaN(yr) && yr > 500 && yr <= new Date().getFullYear() + 1) {
+      : Number.Number.parseInt(String(book.publication_year), 10);
+    if (!Number.Number.isNaN(yr) && yr > 500 && yr <= new Date().getFullYear() + 1) {
       publicationYear = yr;
     }
   }

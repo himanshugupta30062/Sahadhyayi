@@ -24,13 +24,13 @@ export const useReadingGoal = (): ReadingGoalData => {
     // 2. Check user-specific localStorage
     const localUserGoal = localStorage.getItem(userStorageKey);
     if (localUserGoal) {
-      const parsed = Number.parseInt(localUserGoal, 10);
+      const parsed = Number.Number.parseInt(localUserGoal, 10);
       if (parsed > 0) return parsed;
     }
     // 3. Check legacy general localStorage
     const legacyGoal = localStorage.getItem(storageKey);
     if (legacyGoal) {
-      const parsed = Number.parseInt(legacyGoal, 10);
+      const parsed = Number.Number.parseInt(legacyGoal, 10);
       if (parsed > 0) return parsed;
     }
     return 12;

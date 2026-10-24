@@ -121,7 +121,7 @@ export const useReadingRoomLive = (
     if (!roomId) return;
     let isCancelled = false;
 
-    (async () => {
+    void (async () => {
       const { data: msgs } = await supabase
         .from("reading_room_messages")
         .select("id, room_id, user_id, body, created_at, profiles:user_id(full_name, profile_photo_url)")
@@ -150,7 +150,11 @@ export const useReadingRoomLive = (
           }))
         );
       }
-    })();
+    })().catch((error: unknown) => {
+      if (!isCancelled) {
+        console.error("Failed to load reading room activity:", error);
+      }
+    });
 
     return () => {
       isCancelled = true;
