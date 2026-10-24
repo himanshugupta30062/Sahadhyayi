@@ -1035,8 +1035,9 @@ export const AdminLibraryQuality: React.FC = () => {
 
             <div className="space-y-4 py-4 text-xs">
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-800">Book ID (UUID)</label>
+                <label htmlFor="unwanted-book-id" className="font-semibold text-slate-800">Book ID (UUID)</label>
                 <Input
+                  id="unwanted-book-id"
                   required
                   placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
                   value={unwantedBookId}
@@ -1046,8 +1047,9 @@ export const AdminLibraryQuality: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-800">Archive Reason</label>
+                <label htmlFor="archive-reason-input" className="font-semibold text-slate-800">Archive Reason</label>
                 <Input
+                  id="archive-reason-input"
                   placeholder="e.g. Poor scan quality / Duplicate entry / Requested removal"
                   value={archiveReasonInput}
                   onChange={(e) => setArchiveReasonInput(e.target.value)}
