@@ -52,7 +52,6 @@ export default function Games() {
     correctAnswers,
     lifelinesUsed,
     loading: gameLoading,
-    gameStatus,
     hiddenOptions,
     showHint,
     mode,
