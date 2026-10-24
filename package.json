@@ -27,8 +27,7 @@
     "generate:licenses": "node scripts/generateLicenseList.js",
     "generate:sbom": "cyclonedx-npm --output-file sbom.json",
     "verify:licenses": "node scripts/verifyLicenses.js",
-    "size": "size-limit",
-    "predev": "node scripts/optimize-book-expert-artwork.mjs"
+    "size": "size-limit"
   },
   "size-limit": [
     {
