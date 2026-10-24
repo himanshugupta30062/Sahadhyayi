@@ -52,9 +52,10 @@ export default function Games() {
     correctAnswers,
     lifelinesUsed,
     loading: gameLoading,
-    gameStatus,
     hiddenOptions,
     showHint,
+    mode,
+    lives,
     startGame,
     answerQuestion,
     useLifeline,
@@ -86,7 +87,7 @@ export default function Games() {
   }, [user, bookQuotes]);
 
   const handleBookSelect = async (bookId: string) => {
-    const started = await startGame(bookId, selectedDifficulty);
+    const started = await startGame(bookId, selectedDifficulty, selectedMode);
     if (started) {
       setView('playing');
     }
@@ -95,8 +96,8 @@ export default function Games() {
   const handleAnswer = async (answerIndex: number) => {
     const result = await answerQuestion(answerIndex);
     
-    if (gameStatus === 'finished' || !result?.isCorrect) {
-      setLastGameResult({ score: score + (result?.pointsEarned || 0), correct: correctAnswers + (result?.isCorrect ? 1 : 0), total: totalQuestions });
+    if (result?.finished) {
+      setLastGameResult({ score: score + (result?.pointsEarned || 0), correct: correctAnswers + (result?.isCorrect ? 1 : 0), total: mode === 'survival' && !result?.isCorrect ? currentQuestionIndex + 1 : totalQuestions });
       const isPerfect = correctAnswers + (result?.isCorrect ? 1 : 0) === totalQuestions;
       await addPoints(score + (result?.pointsEarned || 0), isPerfect);
       await checkAndAwardBadges({
@@ -546,10 +547,7 @@ export default function Games() {
                     </div>
 
                     {/* Daily Challenges */}
-                    <DailyChallenges onSelectChallenge={(id) => {
-                      setSelectedMode('challenge');
-                      setView('select-book');
-                    }} />
+                    <DailyChallenges />
 
                     {/* Play Button */}
                     <Card className="overflow-hidden">
@@ -690,6 +688,8 @@ export default function Games() {
                     setView('home');
                   }}
                   streak={correctAnswers}
+                  mode={mode}
+                  lives={lives}
                 />
               </motion.div>
             )}

@@ -29,6 +29,7 @@ export interface GameSession {
 }
 
 export type Lifeline = '50-50' | 'skip' | 'hint';
+export type QuizMode = 'classic' | 'speed' | 'survival' | 'challenge';
 
 export function useQuizGame() {
   const { user } = useAuth();
@@ -43,8 +44,10 @@ export function useQuizGame() {
   const [hiddenOptions, setHiddenOptions] = useState<number[]>([]);
   const [showHint, setShowHint] = useState(false);
   const [questionStartedAt, setQuestionStartedAt] = useState<number | null>(null);
+  const [mode, setMode] = useState<QuizMode>('classic');
+  const [lives, setLives] = useState(3);
 
-  const startGame = useCallback(async (bookId: string, difficulty: string = 'medium') => {
+  const startGame = useCallback(async (bookId: string, difficulty: string = 'medium', selectedMode: QuizMode = 'classic') => {
     if (!user) {
       toast.error('Please sign in to play');
       return false;
@@ -54,7 +57,7 @@ export function useQuizGame() {
     try {
       // Generate questions
       const response = await supabase.functions.invoke('generate-quiz-questions', {
-        body: { bookId, difficulty, count: 10 },
+        body: { bookId, difficulty, count: selectedMode === 'speed' ? 15 : 10 },
       });
 
       if (response.error) throw response.error;
@@ -83,6 +86,8 @@ export function useQuizGame() {
       if (sessionError) throw sessionError;
 
       setQuestions(generatedQuestions);
+      setMode(selectedMode);
+      setLives(3);
       setSession(sessionData as GameSession);
       setCurrentQuestionIndex(0);
       setScore(0);
@@ -108,7 +113,8 @@ export function useQuizGame() {
 
     const currentQuestion = questions[currentQuestionIndex];
     const isCorrect = answerIndex === currentQuestion.correct_answer;
-    const pointsEarned = isCorrect ? currentQuestion.points : 0;
+    const basePoints = isCorrect ? currentQuestion.points : 0;
+    const pointsEarned = mode === 'speed' && isCorrect ? basePoints * 2 : basePoints;
     const timeTakenSeconds = questionStartedAt
       ? Math.max(1, Math.round((Date.now() - questionStartedAt) / 1000))
       : null;
@@ -128,8 +134,13 @@ export function useQuizGame() {
       setCorrectAnswers(prev => prev + 1);
     }
 
+    // Survival grants three lives; other modes continue after a wrong answer.
+    const nextLives = mode === 'survival' && !isCorrect ? lives - 1 : lives;
+    if (mode === 'survival' && !isCorrect) setLives(nextLives);
+    const finished = currentQuestionIndex >= questions.length - 1 || (mode === 'survival' && nextLives <= 0);
+
     // Move to next question or end game
-    if (currentQuestionIndex >= questions.length - 1 || !isCorrect) {
+    if (finished) {
       // Game over
       await supabase
         .from('game_sessions')
@@ -159,8 +170,8 @@ export function useQuizGame() {
         .eq('id', session.id);
     }
 
-    return { isCorrect, pointsEarned };
-  }, [session, gameStatus, questions, currentQuestionIndex, score, questionStartedAt]);
+    return { isCorrect, pointsEarned, finished };
+  }, [session, gameStatus, questions, currentQuestionIndex, score, questionStartedAt, mode, lives]);
 
   const useLifeline = useCallback((lifeline: Lifeline) => {
     if (lifelinesUsed.includes(lifeline)) {
@@ -209,6 +220,8 @@ export function useQuizGame() {
     setHiddenOptions([]);
     setShowHint(false);
     setQuestionStartedAt(null);
+    setMode('classic');
+    setLives(3);
     setGameStatus('idle');
   }, []);
 
@@ -231,6 +244,8 @@ export function useQuizGame() {
     hiddenOptions,
     showHint,
     isLastQuestion,
+    mode,
+    lives,
     // Actions
     startGame,
     answerQuestion,
