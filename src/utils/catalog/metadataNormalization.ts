@@ -34,33 +34,67 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
   // Normalize Unicode to Canonical Decomposition followed by Canonical Composition
   let title = rawTitle.normalize('NFC').trim();
 
-  // Extract edition brackets at end of title or matching edition keywords (including Hindi संस्करण)
+  // Scan bracketed segments directly instead of using a nested, backtracking-heavy regex.
   let editionTag: string | undefined;
-  const editionMatch =
-    title.match(/[([]\s*([^()[\]]*?(?:illustrated|annotated|revised|expanded|edition|संस्करण|classics?|\d+(?:st|nd|rd|th)?\s+ed\w*)[^()[\]]*?)\s*[)\]]/i) ||
-    title.match(/[([]\s*([^()[\]]+?)\s*[)\]]$/); // trailing brackets
+  const editionKeywords = /illustrated|annotated|revised|expanded|edition|संस्करण|classics?|\d+(?:st|nd|rd|th)?\s+ed\w*/i;
+  const findBracketSegment = (value: string, trailingOnly: boolean) => {
+    for (let index = 0; index < value.length; index++) {
+      const open = value[index];
+      if (open !== '(' && open !== '[') continue;
+      const close = open === '(' ? ')' : ']';
+      const closeIndex = value.indexOf(close, index + 1);
+      if (closeIndex < 0 || closeIndex === index + 1) continue;
+      if (trailingOnly && value.slice(closeIndex + 1).trim()) continue;
+      const content = value.slice(index + 1, closeIndex).trim();
+      if (!trailingOnly && !editionKeywords.test(content)) continue;
+      return { start: index, end: closeIndex, content };
+    }
+    return null;
+  };
 
-  if (editionMatch) {
-    editionTag = editionMatch[1].trim();
-    title = title.replace(editionMatch[0], '').trim();
+  const editionSegment = findBracketSegment(title, false) || findBracketSegment(title, true);
+  if (editionSegment) {
+    editionTag = editionSegment.content;
+    title = (title.slice(0, editionSegment.start) + title.slice(editionSegment.end + 1)).trim();
   }
 
-  // Extract subtitle after colon, long dash or spaced hyphen
+  // Extract the subtitle at the first supported separator.
   let cleanTitle = title;
   let subtitle: string | undefined;
-
-  const subtitleSeparatorMatch = title.match(/^(.*?)(?:\s*[:—]\s*|\s+-\s+)(.*)$/);
-  if (subtitleSeparatorMatch && subtitleSeparatorMatch[1].trim().length >= 2) {
-    cleanTitle = subtitleSeparatorMatch[1].trim();
-    subtitle = subtitleSeparatorMatch[2].trim();
+  let separatorIndex = -1;
+  let separatorLength = 0;
+  for (let index = 0; index < title.length; index++) {
+    if (title[index] === ':' || title[index] === '—') {
+      separatorIndex = index;
+      separatorLength = 1;
+      break;
+    }
+    if (
+      title[index] === '-' &&
+      index > 0 &&
+      index + 1 < title.length &&
+      title[index - 1] === ' ' &&
+      title[index + 1] === ' '
+    ) {
+      separatorIndex = index - 1;
+      separatorLength = 3;
+      break;
+    }
+  }
+  if (separatorIndex >= 0) {
+    const candidateTitle = title.slice(0, separatorIndex).trim();
+    if (candidateTitle.length >= 2) {
+      cleanTitle = candidateTitle;
+      subtitle = title.slice(separatorIndex + separatorLength).trim();
+    }
   }
 
-  // If subtitle has trailing bracket, extract editionTag if needed and clean subtitle
+  // If the subtitle ends in a bracketed segment, extract it directly.
   if (subtitle) {
-    const subEditionMatch = subtitle.match(/[([]\s*([^()[\]]+?)\s*[)\]]$/);
-    if (subEditionMatch) {
-      if (!editionTag) editionTag = subEditionMatch[1].trim();
-      subtitle = subtitle.replace(subEditionMatch[0], '').trim();
+    const subEditionSegment = findBracketSegment(subtitle, true);
+    if (subEditionSegment) {
+      if (!editionTag) editionTag = subEditionSegment.content;
+      subtitle = (subtitle.slice(0, subEditionSegment.start) + subtitle.slice(subEditionSegment.end + 1)).trim();
     }
   }
 
