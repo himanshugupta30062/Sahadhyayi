@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { normalizeBookIdentity } from '@/utils/catalog/bookIdentity';
 import { detectDuplicateGroups } from '@/utils/catalog/duplicateDetection';
 import { evaluateBookQuality, identifyJunkCandidate } from '@/utils/catalog/qualityScoring';
@@ -9,6 +9,10 @@ import { supabase } from '@/integrations/supabase/client-universal';
 describe('Automated Duplicate Book Detection & Admin Cleanup Acceptance Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   // Scenario 1: Import 10 records for the same verified edition -> identify group and recommend one primary
@@ -258,6 +262,17 @@ describe('Automated Duplicate Book Detection & Admin Cleanup Acceptance Tests', 
 
   // Scenario 10: Preview cleanup -> dry run does not mutate database or references
   it('Scenario 10: dry-run preview returns impact projection without mutating database', async () => {
+    // Mock the read-only preview dependencies; this unit test must not contact the real Supabase service.
+    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({
+      data: { user: { id: 'preview-admin' } },
+      error: null,
+    } as any);
+    vi.spyOn(supabase, 'rpc').mockResolvedValue({ data: true, error: null } as any);
+    vi.spyOn(supabase, 'from').mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      in: vi.fn().mockResolvedValue({ data: [], error: null }),
+    } as any));
+
     const preview = await applyDuplicateResolution('grp-sample', 'merge_and_archive_duplicates', {
       dryRun: true,
       customPrimaryId: 'prim-1',
