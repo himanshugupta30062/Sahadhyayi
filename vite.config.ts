@@ -2,9 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-// Keep the production dependency graph intact. The previous manual vendor
-// chunks split React and libraries that import React contexts across separate
-// chunks, causing production-only initialization crashes before React mounts.
+// Keep React and modules that depend on React in Rollup's natural graph.
+// Forced vendor chunking caused production-only initialization failures before React mounted.
 export default defineConfig(({ mode }) => ({
   base: "/",
   server: {
@@ -57,13 +56,10 @@ export default defineConfig(({ mode }) => ({
     sourcemap: false,
     minify: "terser",
     target: "esnext",
-    // Let Rollup preserve its module graph rather than forcing framework
-    // dependencies into vendor chunks. This avoids circular chunk execution
-    // that can access React exports before initialization.
+    // Preserve Rollup's natural module graph rather than manually splitting
+    // React and its context providers into independently initialized chunks.
     rollupOptions: {
-      output: {
-        onlyExplicitManualChunks: false,
-      },
+      output: {},
     },
     terserOptions: {
       module: true,
