@@ -111,7 +111,7 @@ const StickyNavigation = () => {
             {/* Logo */}
             <Link to={user ? '/dashboard' : '/'} className="flex items-center space-x-2">
               <img
-                src="/lovable-uploads/logo-small.webp"
+                src="/optimized-assets/site-logo.webp"
                 alt="Sahadhyayi"
                 className="w-8 h-8"
                 width={32}
