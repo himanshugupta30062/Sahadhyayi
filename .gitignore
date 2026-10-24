@@ -29,3 +29,6 @@ public/prerender
 .env.*.local
 * 2.*
 * 3.*
+
+# Generated optimized Book Expert artwork (created before dev/build)
+src/components/book-expert/Sahadhyayi_Book_optimized.generated.webp
