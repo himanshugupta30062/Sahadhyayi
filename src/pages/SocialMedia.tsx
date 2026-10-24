@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -275,12 +275,32 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
     : 'feed';
 
   const [mapView, setMapView] = useState<'readers' | 'friends'>('readers');
+  const [isDesktopSidebarVisible, setIsDesktopSidebarVisible] = useState(() =>
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(min-width: 1280px)').matches
+  );
 
-  // Fetch community data
-  const { data: rooms = [], isLoading: isLoadingRooms, error: roomsError, refetch: refetchRooms } = useReadingRooms();
-  const { data: groups = [], isLoading: isLoadingGroups, error: groupsError, refetch: refetchGroups } = useGroups();
-  const { data: allUsers = [], isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useAllUsers();
-  const { data: readingProgress = [] } = useReadingProgress();
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+
+    const sidebarMedia = window.matchMedia('(min-width: 1280px)');
+    const updateSidebarVisibility = () => setIsDesktopSidebarVisible(sidebarMedia.matches);
+    updateSidebarVisibility();
+    sidebarMedia.addEventListener('change', updateSidebarVisibility);
+
+    return () => sidebarMedia.removeEventListener('change', updateSidebarVisibility);
+  }, []);
+
+  // The desktop discovery rail is hidden below xl. Avoid its requests and live
+  // subscriptions on mobile while leaving each feature page's own queries intact.
+  const { data: rooms = [], isLoading: isLoadingRooms, error: roomsError, refetch: refetchRooms } =
+    useReadingRooms(undefined, { enabled: isDesktopSidebarVisible });
+  const { data: groups = [], isLoading: isLoadingGroups, error: groupsError, refetch: refetchGroups } =
+    useGroups({ enabled: isDesktopSidebarVisible });
+  const { data: allUsers = [], isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } =
+    useAllUsers({ enabled: isDesktopSidebarVisible });
+  const { data: readingProgress = [] } = useReadingProgress({ enabled: isDesktopSidebarVisible });
   const sendFriendRequest = useSendFriendRequest();
 
   const handleTabChange = (value: string) => {
