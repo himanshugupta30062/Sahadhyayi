@@ -31,6 +31,6 @@ for (const file of files) {
   bytes += brotliCompressSync(readFileSync(path.join(dist, file))).length;
 }
 const kb = bytes / 1000;
-const limit = Number(process.env.INITIAL_JS_BUDGET_KB ?? 320);
+const limit = Number(process.env.INITIAL_JS_BUDGET_KB ?? 280);
 console.log('Initial-route JS (Brotli): ' + kb.toFixed(2) + ' kB / ' + limit + ' kB across ' + files.size + ' static chunks.');
 if (kb > limit) process.exitCode = 1;
