@@ -30,7 +30,7 @@ const gameModes: GameModeOption[] = [
   {
     id: 'classic',
     name: 'Classic Quiz',
-    description: 'Answer 10 questions at your own pace',
+    description: 'Answer questions at your own pace',
     icon: <BookOpen className="h-8 w-8" />,
     color: 'from-blue-500 to-indigo-600',
     features: ['10 Questions', '30s per question', 'All lifelines'],
@@ -47,10 +47,10 @@ const gameModes: GameModeOption[] = [
   {
     id: 'survival',
     name: 'Survival Mode',
-    description: 'One wrong answer ends the game',
+    description: 'Keep going with three lives',
     icon: <Target className="h-8 w-8" />,
     color: 'from-red-500 to-rose-600',
-    features: ['Unlimited', 'No timer', '3 Lives'],
+    features: ['Up to 10 Questions', 'No timer', '3 Lives'],
     badge: 'Hard',
   },
   {
@@ -81,10 +81,11 @@ export default function GameModeSelector({ selectedMode, onSelectMode }: GameMod
         >
           <Card
             className={cn(
-              'cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden relative group',
+              'transition-all duration-300 overflow-hidden relative group',
+              mode.id === 'challenge' ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:shadow-xl hover:-translate-y-1',
               selectedMode === mode.id && 'ring-2 ring-primary shadow-lg'
             )}
-            onClick={() => onSelectMode(mode.id)}
+            onClick={() => { if (mode.id !== 'challenge') onSelectMode(mode.id); }}
           >
             {/* Gradient overlay */}
             <div className={cn(
@@ -152,7 +153,7 @@ export default function GameModeSelector({ selectedMode, onSelectMode }: GameMod
 }
 
 // Daily Challenges Component
-export function DailyChallenges({ onSelectChallenge }: { onSelectChallenge: (id: string) => void }) {
+export function DailyChallenges() {
   // Challenge progress is currently illustrative. Keep the UI explicit until
   // progress and reset timing are backed by persisted challenge state.
   const challenges = [
@@ -180,8 +181,7 @@ export function DailyChallenges({ onSelectChallenge }: { onSelectChallenge: (id:
             key={challenge.id}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
-            onClick={() => onSelectChallenge(challenge.id)}
+            className="flex items-center gap-3 p-3 rounded-xl bg-muted/50"
           >
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               {challenge.icon}
