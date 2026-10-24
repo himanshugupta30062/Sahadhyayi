@@ -51,6 +51,12 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
     sessionStorage.clear();
     mockCurrentUser = null;
     mockGetSession.mockResolvedValue({ data: { session: null } });
+    mockRpc.mockImplementation((fnName: string, params: any) => {
+      if (fnName === 'get_dual_table_website_analytics' || fnName === 'get_website_stats_dual_table') {
+        return mockFunctionsInvoke('community-stats', { body: { timeframe: params?.p_timeframe || '24h' } });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
   });
 
   afterEach(() => {
@@ -195,12 +201,10 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
 
     const { result } = renderHook(() => useCommunityPulse(true));
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
     // 24h
-    expect(result.current.stats?.pageViews).toBe(280);
+    await waitFor(() => {
+      expect(result.current.stats?.pageViews).toBe(280);
+    });
 
     // 7d
     act(() => {

@@ -47,10 +47,13 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     mockCurrentUser = null;
 
     // Default mocks
-    mockRpc.mockImplementation((fn: string) => {
+    mockRpc.mockImplementation((fn: string, params?: any) => {
       if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
       if (fn === 'get_total_users_count') return Promise.resolve({ data: 0, error: null });
       if (fn === 'get_website_visit_count') return Promise.resolve({ data: 0, error: null });
+      if (fn === 'get_dual_table_website_analytics' || fn === 'get_website_stats_dual_table') {
+        return mockFunctionsInvoke('community-stats', { body: { timeframe: params?.p_timeframe || '24h' } });
+      }
       return Promise.resolve({ data: null, error: null });
     });
 
