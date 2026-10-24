@@ -117,7 +117,7 @@ export const NewSpoilerThreadDialog: React.FC<NewSpoilerThreadDialogProps> = ({
               type="number"
               min={1}
               value={minChapter}
-              onChange={(e) => setMinChapter(Number.Number.parseInt(e.target.value || "1", 10))}
+              onChange={(e) => setMinChapter(Number.parseInt(e.target.value || "1", 10))}
               className="mt-1"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
