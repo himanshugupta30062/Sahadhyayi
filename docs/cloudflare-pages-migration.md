@@ -55,3 +55,10 @@ The old Netlify configuration redirects `sahadhyayi.app` and `www.sahadhyayi.app
 ## 6. Supabase
 
 The frontend migration should not require a Supabase database migration. Keep the same Supabase project and confirm its Auth URL configuration allows the production and temporary preview URLs as needed. Avoid making broad redirect allow-list changes; use the narrow URLs required for testing and production.
+
+
+## 7. Deploy the Node API separately
+
+The Cloudflare Worker configuration in `wrangler.jsonc` serves only `dist/`; it does not run `server.js` or Socket.IO. The repository now includes a Render Blueprint (`render.yaml`) for the Express API. Deploy it from Render's Blueprint flow, provide the required Supabase service-role key and any optional integration secrets, and attach a custom domain such as `api.sahadhyayi.com` to the service. Configure `VITE_BACKEND_URL=https://api.sahadhyayi.com` in the frontend's Cloudflare build environment and redeploy the frontend. Keep this API domain on the same registrable domain as the frontend so secure cookie flows can work with the existing SameSite policy.
+
+The `/health` endpoint is a process-health probe only; it does not prove database, auth, or external integrations are healthy. After deployment, verify `/health`, sign-in/session renewal, Goodreads routes if configured, speech-to-text, LibGen proxy, and Socket.IO at `/discussions` before calling the backend migration complete.
