@@ -72,10 +72,14 @@ const GroupDetails = () => {
     if (!group) return;
     const url = `${window.location.origin}/groups?join=${group.id}`;
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(url);
-      setIsCopied(true);
-      toast.success('Group invite link copied to clipboard!');
-      setTimeout(() => setIsCopied(false), 2500);
+      void navigator.clipboard.writeText(url).then(
+        () => {
+          setIsCopied(true);
+          toast.success('Group invite link copied to clipboard!');
+          setTimeout(() => setIsCopied(false), 2500);
+        },
+        () => toast.error('Unable to copy invite link. Please copy it manually.')
+      );
     }
   };
 
