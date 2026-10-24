@@ -14,41 +14,57 @@ permissions:
 
 jobs:
   verify-production-domain:
-    name: Verify production domain serves configured application
+    name: Verify Worker and production custom domains
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Wait for Cloudflare rollout and verify the live bundle
+      - name: Check Worker origin and public domains independently
         env:
           EXPECTED_SUPABASE_URL: https://rknxtatvlzunatpyqxro.supabase.co
         shell: bash
         run: |
           set -euo pipefail
 
-          base_url="https://sahadhyayi.com"
-          for attempt in {1..18}; do
+          verify_bundle() {
+            local base_url="$1"
+            local html js_assets asset asset_url bundle
+
             html="$(curl -fsSL --max-time 15 "$base_url/" || true)"
-            if [[ -n "$html" ]]; then
-              js_assets="$(printf '%s' "$html" | grep -oE 'src="[^"]+\.js[^"]*"' | cut -d '"' -f 2 || true)"
-              while IFS= read -r asset; do
-                [[ -n "$asset" ]] || continue
-                if [[ "$asset" == http* ]]; then
-                  asset_url="$asset"
-                else
-                  asset_url="$base_url$asset"
-                fi
+            [[ -n "$html" ]] || return 1
 
-                bundle="$(curl -fsSL --max-time 15 "$asset_url" || true)"
-                if [[ "$bundle" == *"$EXPECTED_SUPABASE_URL"* ]]; then
-                  echo "Production domain serves a bundle configured for the production Supabase project."
-                  exit 0
-                fi
-              done <<< "$js_assets"
+            js_assets="$(printf '%s' "$html" | grep -oE 'src="[^"]+\.js[^"]*"' | cut -d '"' -f 2 || true)"
+            while IFS= read -r asset; do
+              [[ -n "$asset" ]] || continue
+              if [[ "$asset" == http* ]]; then
+                asset_url="$asset"
+              else
+                asset_url="${base_url%/}$asset"
+              fi
+
+              bundle="$(curl -fsSL --max-time 15 "$asset_url" || true)"
+              if [[ "$bundle" == *"$EXPECTED_SUPABASE_URL"* ]]; then
+                return 0
+              fi
+            done <<< "$js_assets"
+
+            return 1
+          }
+
+          worker_url="https://sahadhyayi.gyan-596.workers.dev"
+          if ! verify_bundle "$worker_url"; then
+            echo "::error::The workers.dev origin does not serve a bundle configured for the production Supabase project. Check Cloudflare build variables and the active Worker version."
+            exit 1
+          fi
+          echo "Worker origin is serving the expected configured application."
+
+          for attempt in {1..6}; do
+            if verify_bundle "https://sahadhyayi.com"; then
+              echo "Apex custom domain is serving the configured application."
+              exit 0
             fi
-
-            echo "Attempt $attempt/18: waiting for the production route and configured bundle."
+            echo "Attempt $attempt/6: apex custom domain has not reached the configured Worker."
             sleep 10
           done
 
-          echo "::error::The production domain did not serve a JavaScript bundle containing the expected Supabase project URL. Check Cloudflare domain routes/proxying and the active Worker deployment."
+          echo "::error::The workers.dev origin is configured correctly, but sahadhyayi.com is not serving the same configured bundle. Check Cloudflare Custom Domain attachment and remove any conflicting DNS CNAME for sahadhyayi.com."
           exit 1
