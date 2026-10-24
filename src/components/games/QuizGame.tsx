@@ -16,7 +16,7 @@ import {
   CheckCircle2,
   XCircle
 } from 'lucide-react';
-import type { QuizQuestion, Lifeline } from '@/hooks/useQuizGame';
+import type { QuizQuestion, Lifeline, QuizMode } from '@/hooks/useQuizGame';
 import StreakBonus, { StreakPopup } from './StreakBonus';
 import confetti from 'canvas-confetti';
 
@@ -32,6 +32,8 @@ interface QuizGameProps {
   onUseLifeline: (lifeline: Lifeline) => boolean;
   onQuit: () => void;
   streak?: number;
+  mode: QuizMode;
+  lives: number;
 }
 
 const TIMER_DURATION = 30; // seconds
@@ -48,17 +50,21 @@ export default function QuizGame({
   onUseLifeline,
   onQuit,
   streak = 0,
+  mode,
+  lives,
 }: QuizGameProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
+  const timerDuration = mode === 'speed' ? 15 : TIMER_DURATION;
+  const timerEnabled = mode !== 'survival';
+  const [timeLeft, setTimeLeft] = useState(timerDuration);
   const [showStreakPopup, setShowStreakPopup] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
 
   // Timer
   useEffect(() => {
-    if (showResult) return;
+    if (showResult || !timerEnabled) return;
     
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -72,16 +78,16 @@ export default function QuizGame({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [questionNumber, showResult]);
+  }, [questionNumber, showResult, timerEnabled, timerDuration]);
 
   // Reset state on new question
   useEffect(() => {
     setSelectedAnswer(null);
     setShowResult(false);
-    setTimeLeft(TIMER_DURATION);
+    setTimeLeft(timerDuration);
     setShowStreakPopup(false);
     setPointsEarned(0);
-  }, [questionNumber]);
+  }, [questionNumber, timerDuration]);
 
   const handleTimeUp = () => {
     setShowResult(true);
@@ -121,7 +127,7 @@ export default function QuizGame({
   }, [showResult, hiddenOptions, question.correct_answer, question.points, onAnswer, timeLeft, streak]);
 
   const optionLabels = ['A', 'B', 'C', 'D'];
-  const timerPercent = (timeLeft / TIMER_DURATION) * 100;
+  const timerPercent = timerEnabled ? (timeLeft / timerDuration) * 100 : 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 text-foreground relative overflow-hidden">
@@ -191,7 +197,7 @@ export default function QuizGame({
           </div>
           
           {/* Timer */}
-          <motion.div 
+          {timerEnabled && <motion.div 
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm',
               timeLeft <= 10 ? 'bg-red-500/30' : 'bg-muted/60'
@@ -203,7 +209,10 @@ export default function QuizGame({
             <span className={cn('font-mono font-bold text-lg', timeLeft <= 10 && 'text-red-400')}>
               {timeLeft}s
             </span>
-          </motion.div>
+          </motion.div>}
+          {mode === 'survival' && <div className="flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-300" aria-label={`${lives} lives remaining`}>
+            <Flame className="h-4 w-4" /> {lives} lives
+          </div>}
         </div>
 
         {/* Progress */}
@@ -366,7 +375,7 @@ export default function QuizGame({
       </div>
 
       {/* Timer bar at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 h-1.5 bg-muted/60">
+      {timerEnabled && <div className="fixed bottom-0 left-0 right-0 h-1.5 bg-muted/60">
         <motion.div 
           className={cn(
             'h-full transition-colors duration-300',
@@ -375,7 +384,7 @@ export default function QuizGame({
           style={{ width: `${timerPercent}%` }}
           transition={{ duration: 0.3 }}
         />
-      </div>
+      </div>}
 
       {/* Streak Popup */}
       <AnimatePresence>
