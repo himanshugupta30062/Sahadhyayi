@@ -19,8 +19,9 @@ const COLOR_PALETTES = [
 function hashString(str: string): number {
   let h = 0;
   for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
-    h |= 0;
+    h = Math.imul(h, 31) + str.charCodeAt(i);
+    // Preserve signed 32-bit hash overflow without a bitwise assignment.
+    if (h > 2147483647) h -= 4294967296;
   }
   return Math.abs(h);
 }
