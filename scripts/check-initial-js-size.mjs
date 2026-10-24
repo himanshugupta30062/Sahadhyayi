@@ -5,10 +5,14 @@ import { brotliCompressSync } from 'node:zlib';
 const dist = path.resolve('dist');
 const manifest = JSON.parse(readFileSync(path.join(dist, '.vite/manifest.json'), 'utf8'));
 const entries = Object.entries(manifest);
+// Vite's HTML entry points to src/main.tsx through static imports. Start
+// from index.html so the check follows the same initial dependency graph as the browser.
 const entry = entries.find(([key, value]) =>
+  value.isEntry && (key === 'index.html' || value.src === 'index.html')
+) ?? entries.find(([key, value]) =>
   value.isEntry && (value.src === 'src/main.tsx' || key === 'src/main.tsx' || key.endsWith('/main.tsx'))
 );
-if (!entry) throw new Error('Missing src/main.tsx entry in Vite manifest.');
+if (!entry) throw new Error('Missing index.html or src/main.tsx entry in Vite manifest.');
 
 const visited = new Set();
 const files = new Set();
