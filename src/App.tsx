@@ -27,10 +27,10 @@ import ScrollToTop from "./components/ScrollToTop";
 import BookFlipLoader from "./components/ui/BookFlipLoader";
 
 // Immediate load pages (critical path)
-import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded pages (optimized chunks)
+const Index = lazy(() => import("./pages/Index"));
 const Library = lazy(() => import('./pages/library'));
 const Auth = lazy(() => import('./pages/Auth'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
@@ -215,7 +215,7 @@ const App = memo(() => {
                       <span id="main" className="sr-only" />
                       <Routes>
                         {/* Critical routes - no lazy loading */}
-                        <Route path="/" element={<Index />} />
+                        <Route path="/" element={<Suspense fallback={<LoadingFallback message="Loading Sahadhyayi..." />}><Index /></Suspense>} />
                         <Route path="/auth" element={<Suspense fallback={<LoadingFallback />}><Auth /></Suspense>} />
                         <Route path="/signup" element={<Suspense fallback={<LoadingFallback />}><SignUp /></Suspense>} />
                         <Route path="/signin" element={<Suspense fallback={<LoadingFallback />}><SignIn /></Suspense>} />
