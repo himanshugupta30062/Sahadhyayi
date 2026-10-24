@@ -62,22 +62,23 @@ export default defineConfig(({ mode }) => ({
     // framework dependencies, matching the former conservative chunk layout.
     rollupOptions: {
       output: {
-        manualChunks: {
-          core: [
-            'react',
-            'react-dom',
-            'react-router-dom',
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-toast',
-            '@tanstack/react-query',
-            '@supabase/supabase-js',
-            'lucide-react',
-          ],
+        // Keep expensive, rarely co-used dependencies out of the initial route.
+        // This only changes chunk boundaries; application modules and features stay intact.
+        manualChunks(id) {
+          if (!id.includes('/node_modules/')) return;
+          if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'vendor-react';
+          if (/\/node_modules\/(react-router|react-router-dom|@remix-run)\//.test(id)) return 'vendor-router';
+          if (/\/node_modules\/@supabase\//.test(id) || /\/node_modules\/@tanstack\//.test(id)) return 'vendor-data';
+          if (/\/node_modules\/lucide-react\//.test(id)) return 'vendor-icons';
+          if (/\/node_modules\/framer-motion\//.test(id)) return 'vendor-motion';
+          if (/\/node_modules\/recharts\//.test(id) || /\/node_modules\/d3-[^/]+\//.test(id)) return 'vendor-charts';
+          if (/\/node_modules\/@react-google-maps\//.test(id) || /\/node_modules\/google-map-react\//.test(id)) return 'vendor-maps';
+          if (/\/node_modules\/@radix-ui\//.test(id)) return 'vendor-radix';
         },
       },
     },
     // Warn early when a generated chunk grows large; size-limit separately enforces compressed budgets.
-    // Lazy feature chunks should keep normal routes responsive without hiding oversized output.
+    // Feature and vendor chunks are split to reduce initial-route JavaScript without removing features.
     terserOptions: {
       module: true,
       compress: {
