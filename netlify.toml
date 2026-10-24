@@ -1,0 +1,7 @@
+# Keep Netlify's SPA fallback here instead of public/_redirects.
+# Cloudflare Workers Static Assets uses wrangler.jsonc's single-page-application
+# not-found handling; bundling a catch-all _redirects rule there causes error 100324.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
