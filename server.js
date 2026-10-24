@@ -238,6 +238,22 @@ function getGoodreadsXml(url, accessToken, accessTokenSecret) {
   });
 }
 
+function postGoodreadsXml(url, accessToken, accessTokenSecret) {
+  return new Promise((resolve, reject) => {
+    goodreadsOAuth.post(
+      url,
+      accessToken,
+      accessTokenSecret,
+      '',
+      'application/x-www-form-urlencoded',
+      (error, data) => {
+        if (error) return reject(error);
+        resolve(data);
+      }
+    );
+  });
+}
+
 async function parseGoodreadsXml(xml) {
   return xml2js.parseStringPromise(xml, {
     explicitArray: false,
@@ -323,7 +339,7 @@ io.on('connection', (socket) => {
 });
 
 app.get('/goodreads/connect', requireSession, async (req, res, next) => {
-  if (!goodreadsClient) {
+  if (!goodreadsOAuth) {
     return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }
   try {
@@ -338,7 +354,7 @@ app.get('/goodreads/connect', requireSession, async (req, res, next) => {
 });
 
 app.get('/goodreads/callback', requireSession, async (req, res, next) => {
-  if (!goodreadsClient) {
+  if (!goodreadsOAuth) {
     return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }
   try {
@@ -567,25 +583,26 @@ app.post('/api/comments', requireSession, async (req, res, next) => {
 });
 
 app.post('/goodreads/export', requireSession, loadGoodreadsTokens, async (req, res, next) => {
-  if (!GOODREADS_KEY || !GOODREADS_SECRET) {
+  if (!goodreadsOAuth) {
     return jsonError(res, 503, 'Goodreads integration not configured', 'GOODREADS_NOT_CONFIGURED');
   }
-  const { books } = req.body;
+  const books = Array.isArray(req.body?.books) ? req.body.books : [];
+  if (books.length > 200) {
+    return res.status(400).json({ error: 'Too many books', code: 'VALIDATION_ERROR' });
+  }
   try {
-    const client = goodreads({
-      key: GOODREADS_KEY,
-      secret: GOODREADS_SECRET,
-      accessToken: req.goodreadsTokens.access_token,
-      accessTokenSecret: req.goodreadsTokens.access_token_secret,
-    });
-    for (const book of books || []) {
-      if (book.goodreadsId) {
-        await client.addBookToShelf(book.goodreadsId, 'read');
-      }
+    const { access_token: accessToken, access_token_secret: accessTokenSecret } = req.goodreadsTokens;
+    for (const book of books) {
+      const id = book?.goodreadsId;
+      if (typeof id !== 'string' && typeof id !== 'number') continue;
+      const url = new URL(GOODREADS_API_BASE_URL + '/shelf/add_to_shelf.xml');
+      url.searchParams.set('id', String(id));
+      url.searchParams.set('name', 'read');
+      await postGoodreadsXml(url.toString(), accessToken, accessTokenSecret);
     }
-    res.json({ success: true });
+    return res.json({ success: true });
   } catch (e) {
-    next(Object.assign(new Error('GOODREADS_EXPORT_ERROR'), { status: 500, details: e }));
+    next(Object.assign(new Error('GOODREADS_EXPORT_ERROR'), { status: 502, details: e }));
   }
 });
 
