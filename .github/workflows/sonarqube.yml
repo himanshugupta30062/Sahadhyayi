@@ -79,6 +79,11 @@ jobs:
           echo "Coverage output directory contents:"
           if [ -d coverage ]; then find coverage -maxdepth 2 -type f -printf '%p (%s bytes)\n'; else echo 'coverage directory missing'; fi
           if [ ! -s coverage/lcov.info ]; then echo '::error::Vitest did not emit coverage/lcov.info; inspect coverage provider output above.'; exit 1; fi
+          SOURCE_COUNT=$(grep -c '^SF:' coverage/lcov.info || true)
+          echo "LCOV source-file records: $SOURCE_COUNT"
+          if [ "$SOURCE_COUNT" -eq 0 ]; then echo '::error::LCOV exists but contains no source-file records; SonarCloud would show 0% coverage.'; exit 1; fi
+          echo "Sample LCOV source paths:"
+          grep '^SF:' coverage/lcov.info | head -n 10
 
       - name: Analyze with SonarQube Cloud
         if: always() && steps.verify_lcov.outcome == 'success'
@@ -93,6 +98,7 @@ jobs:
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.sources=src
             -Dsonar.tests=src/__tests__
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.verbose=true
 
       - name: Keep test failures visible
