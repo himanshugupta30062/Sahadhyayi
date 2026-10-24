@@ -189,11 +189,17 @@ const Bookshelf = () => {
   const handleShareShelf = () => {
     const summary = `📚 My Reading Shelf on Sahadhyayi: ${stats.reading} in progress, ${stats.completed} completed, ${stats.want_to_read} to read! Check it out: ${window.location.origin}/bookshelf`;
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(summary);
-      toast({
-        title: 'Shelf Summary Copied!',
-        description: 'You can now paste and share your reading stats with friends.',
-      });
+      void navigator.clipboard.writeText(summary).then(
+        () => toast({
+          title: 'Shelf Summary Copied!',
+          description: 'You can now paste and share your reading stats with friends.',
+        }),
+        () => toast({
+          title: 'Unable to copy shelf summary',
+          description: 'Please copy your reading summary manually.',
+          variant: 'destructive',
+        })
+      );
     }
   };
 
