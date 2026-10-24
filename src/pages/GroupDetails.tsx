@@ -49,17 +49,30 @@ const GroupDetails = () => {
     queryKey: ['group-direct-detail', id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from('group_chats')
-        .select(`
-          *,
-          group_members:group_chat_members(count)
-        `)
-        .eq('id', id)
-        .maybeSingle();
+      if (user?.id) {
+        const { data, error } = await supabase
+          .from('group_chats')
+          .select(`
+            *,
+            group_members:group_chat_members(count)
+          `)
+          .eq('id', id)
+          .maybeSingle();
+        if (error) throw error;
+        return data as Group | null;
+      }
 
+      // Public group details use the count-only RPC, not raw membership rows.
+      const [{ data, error }, { data: counts, error: countsError }] = await Promise.all([
+        supabase.from('group_chats').select('*').eq('id', id).maybeSingle(),
+        supabase.rpc('get_public_group_member_counts'),
+      ]);
       if (error) throw error;
-      return data as Group | null;
+      if (countsError) throw countsError;
+      if (!data) return null;
+      const countRow = (counts || []).find((row: { group_id: string }) => row.group_id === data.id);
+      const count = Number(countRow?.member_count) || 0;
+      return { ...data, member_count: count, group_members: [{ count }] } as Group;
     },
     enabled: !cachedGroup && !!id,
   });
