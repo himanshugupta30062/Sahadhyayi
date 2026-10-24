@@ -577,7 +577,7 @@ const App = memo(() => {
                     </main>
                     
                     {/* Defer below-the-fold and onboarding code until the initial route is interactive. */}
-                    <DeferredSection idle fallback={null} minHeightClassName="min-h-[320px]">
+                    <DeferredSection rootMargin="1200px" fallback={null} minHeightClassName="min-h-[320px]">
                       <StructuredFooter />
                     </DeferredSection>
                     <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
