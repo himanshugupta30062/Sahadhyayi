@@ -246,8 +246,8 @@ function validateAndSanitizeBook(raw: IncomingBookPayload): ValidatedBook | null
       publication_year = raw.publication_year;
     }
   } else if (typeof raw.publication_year === 'string') {
-    const parsed = Number.Number.parseInt(raw.publication_year, 10);
-    if (!Number.Number.isNaN(parsed) && parsed >= 1000 && parsed <= 2100) {
+    const parsed = Number.parseInt(raw.publication_year, 10);
+    if (!Number.isNaN(parsed) && parsed >= 1000 && parsed <= 2100) {
       publication_year = parsed;
     }
   }
@@ -256,8 +256,8 @@ function validateAndSanitizeBook(raw: IncomingBookPayload): ValidatedBook | null
   if (typeof raw.pages === 'number' && Number.isInteger(raw.pages) && raw.pages > 0 && raw.pages < 50000) {
     pages = raw.pages;
   } else if (typeof raw.pages === 'string') {
-    const parsed = Number.Number.parseInt(raw.pages, 10);
-    if (!Number.Number.isNaN(parsed) && parsed > 0 && parsed < 50000) {
+    const parsed = Number.parseInt(raw.pages, 10);
+    if (!Number.isNaN(parsed) && parsed > 0 && parsed < 50000) {
       pages = parsed;
     }
   }
