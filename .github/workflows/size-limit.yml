@@ -16,5 +16,15 @@ jobs:
         run: npm test -- src/__tests__/socialMediaPage.test.tsx src/__tests__/globalUiAndAccessibility.test.tsx
       - name: Build and report largest rendered modules
         run: BUNDLE_ANALYSIS_REPORT=1 npm run build
-      - run: npm run size
-      - run: npm run size:initial
+      - name: Enforce JavaScript bundle budgets
+        run: npm run size
+      - name: Enforce initial-route JavaScript budget
+        run: npm run size:initial
+      - name: Upload bundle analysis for inspection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-analysis
+          path: dist/bundle-analysis.json
+          if-no-files-found: warn
+          retention-days: 7
