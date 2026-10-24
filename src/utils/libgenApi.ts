@@ -24,8 +24,9 @@ export async function searchLibgen(query: string): Promise<LibgenHtmlResponse> {
     return { success: false, books: [] };
   }
 
-  // On client static hosting without serverless /api route, avoid triggering 404 console noise
-  if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.origin.includes(':3000')) {
+  // A configured backend enables the proxy on static hosting; without one, avoid 404 noise.
+  const backendConfigured = Boolean(import.meta.env.VITE_BACKEND_URL?.trim());
+  if (typeof window !== 'undefined' && !backendConfigured && !window.location.hostname.includes('localhost') && !window.location.origin.includes(':3000')) {
     return {
       success: false,
       books: [],
