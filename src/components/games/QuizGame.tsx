@@ -105,9 +105,9 @@ export default function QuizGame({
 
     if (correct) {
       // Calculate bonus points based on time and streak
-      const timeBonus = Math.floor(timeLeft * 2);
-      const streakMultiplier = Math.floor(streak / 3) + 1;
-      const earned = (question.points + timeBonus) * streakMultiplier;
+      // Match the points persisted by useQuizGame so the preview and final
+      // results never promise a different score from the saved session.
+      const earned = mode === 'speed' ? question.points * 2 : question.points;
       setPointsEarned(earned);
 
       // Show streak popup for milestones
@@ -124,7 +124,7 @@ export default function QuizGame({
     }
 
     setTimeout(() => onAnswer(index), 2000);
-  }, [showResult, hiddenOptions, question.correct_answer, question.points, onAnswer, timeLeft, streak]);
+  }, [showResult, hiddenOptions, question.correct_answer, question.points, onAnswer, mode, timeLeft, streak]);
 
   const optionLabels = ['A', 'B', 'C', 'D'];
   const timerPercent = timerEnabled ? (timeLeft / timerDuration) * 100 : 100;
