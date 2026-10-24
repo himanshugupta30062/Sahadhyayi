@@ -16,9 +16,9 @@ jobs:
   verify-production-domain:
     name: Verify Worker and production custom domains
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
-      - name: Check Worker origin and public domains independently
+      - name: Wait for Cloudflare rollout and verify production hosts
         env:
           EXPECTED_SUPABASE_URL: https://rknxtatvlzunatpyqxro.supabase.co
         shell: bash
@@ -51,20 +51,31 @@ jobs:
           }
 
           worker_url="https://sahadhyayi.gyan-596.workers.dev"
-          if ! verify_bundle "$worker_url"; then
-            echo "::error::The workers.dev origin does not serve a bundle configured for the production Supabase project. Check Cloudflare build variables and the active Worker version."
-            exit 1
-          fi
-          echo "Worker origin is serving the expected configured application."
+          worker_ready=0
 
-          for attempt in {1..6}; do
-            if verify_bundle "https://sahadhyayi.com"; then
-              echo "Apex custom domain is serving the configured application."
-              exit 0
+          for attempt in {1..18}; do
+            if verify_bundle "$worker_url"; then
+              worker_ready=1
+              echo "Worker endpoint is serving the configured production bundle."
             fi
-            echo "Attempt $attempt/6: apex custom domain has not reached the configured Worker."
+
+            if verify_bundle "https://sahadhyayi.com"; then
+              echo "Apex custom domain serves the configured production bundle."
+              if verify_bundle "https://www.sahadhyayi.com"; then
+                echo "www custom domain also serves the configured production bundle."
+                exit 0
+              fi
+              echo "::error::The apex domain is healthy, but www.sahadhyayi.com is not serving the configured application."
+              exit 1
+            fi
+
+            echo "Attempt $attempt/18: Cloudflare production rollout is not yet verifiable."
             sleep 10
           done
 
-          echo "::error::The workers.dev origin is configured correctly, but sahadhyayi.com is not serving the same configured bundle. Check Cloudflare Custom Domain attachment and remove any conflicting DNS CNAME for sahadhyayi.com."
+          if [[ "$worker_ready" -eq 1 ]]; then
+            echo "::error::The Worker origin is configured correctly, but the custom domain still serves a different origin. Check Custom Domain binding and conflicting DNS records."
+          else
+            echo "::error::Neither the Worker URL nor the custom domain serves the configured production bundle. Check the active Cloudflare deployment and build variables."
+          fi
           exit 1
