@@ -98,7 +98,7 @@ export default function Games() {
     const result = await answerQuestion(answerIndex);
     
     if (result?.finished) {
-      setLastGameResult({ score: score + (result?.pointsEarned || 0), correct: correctAnswers + (result?.isCorrect ? 1 : 0), total: totalQuestions });
+      setLastGameResult({ score: score + (result?.pointsEarned || 0), correct: correctAnswers + (result?.isCorrect ? 1 : 0), total: mode === 'survival' && !result?.isCorrect ? currentQuestionIndex + 1 : totalQuestions });
       const isPerfect = correctAnswers + (result?.isCorrect ? 1 : 0) === totalQuestions;
       await addPoints(score + (result?.pointsEarned || 0), isPerfect);
       await checkAndAwardBadges({
