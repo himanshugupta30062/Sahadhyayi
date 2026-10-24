@@ -14,12 +14,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
-import { MessageDropdown } from "@/components/messages/MessageDropdown";
 import { EnhancedLazyImage } from "@/components/ui/EnhancedLazyImage";
 
 const EnhancedGlobalSearch = lazy(() =>
   import("@/components/EnhancedGlobalSearch").then(({ EnhancedGlobalSearch }) => ({ default: EnhancedGlobalSearch }))
+);
+const MessageDropdown = lazy(() =>
+  import("@/components/messages/MessageDropdown").then(({ MessageDropdown }) => ({ default: MessageDropdown }))
+);
+const NotificationDropdown = lazy(() =>
+  import("@/components/notifications/NotificationDropdown").then(({ NotificationDropdown }) => ({ default: NotificationDropdown }))
 );
 
 const Navigation = () => {
@@ -218,8 +222,16 @@ const Navigation = () => {
                         <Moon className="w-4 h-4 text-slate-700" />
                       )}
                     </Button>
+                    <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                      <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
                     <MessageDropdown />
+                  </Suspense>
+                    </Suspense>
+                    <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
+                      <Suspense fallback={<span className="inline-block h-9 w-9 shrink-0" aria-hidden="true" />}>
                     <NotificationDropdown />
+                  </Suspense>
+                    </Suspense>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
