@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "dev:vite": "vite",
-    "build": "vite build && npm run build:server:utils",
+    "build": "node scripts/optimize-book-expert-artwork.mjs && vite build && npm run build:server:utils",
     "build:server:utils": "tsup src/utils/*.ts --format esm --out-dir server-utils --clean",
     "size:initial": "node scripts/check-initial-js-size.mjs",
     "build:dev": "vite build --mode development",
@@ -23,7 +23,8 @@
     "generate:licenses": "node scripts/generateLicenseList.js",
     "generate:sbom": "cyclonedx-npm --output-file sbom.json",
     "verify:licenses": "node scripts/verifyLicenses.js",
-    "size": "size-limit"
+    "size": "size-limit",
+    "predev": "node scripts/optimize-book-expert-artwork.mjs"
   },
   "size-limit": [
     {

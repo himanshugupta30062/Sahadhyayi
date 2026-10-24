@@ -21,7 +21,7 @@ import { useBookExpert } from "@/contexts/book-expert.utils";
 import type { BookExpertBook, BookExpertCitation } from "@/contexts/book-expert.utils";
 import { cn } from "@/lib/utils";
 
-const bookIcon = new URL("./Sahadhyayi_Book_optimized.webp", import.meta.url).href;
+const bookIcon = new URL("./Sahadhyayi_Book_optimized.generated.webp", import.meta.url).href;
 
 function validHttpUrl(value: string | null | undefined): string | null {
   if (!value) return null;
