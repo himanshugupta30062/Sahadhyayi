@@ -30,7 +30,7 @@ const gameModes: GameModeOption[] = [
   {
     id: 'classic',
     name: 'Classic Quiz',
-    description: 'Answer questions at your own pace',
+    description: 'Answer 10 questions with a 30-second timer',
     icon: <BookOpen className="h-8 w-8" />,
     color: 'from-blue-500 to-indigo-600',
     features: ['10 Questions', '30s per question', 'All lifelines'],
@@ -157,9 +157,9 @@ export function DailyChallenges() {
   // Challenge progress is currently illustrative. Keep the UI explicit until
   // progress and reset timing are backed by persisted challenge state.
   const challenges = [
-    { id: '1', title: 'Speed Demon', description: 'Answer 5 questions in under 30 seconds', reward: 500, icon: <Timer className="h-5 w-5" />, progress: 60 },
-    { id: '2', title: 'Perfect Run', description: 'Get 100% accuracy in a game', reward: 1000, icon: <Crown className="h-5 w-5" />, progress: 0 },
-    { id: '3', title: 'Fire Streak', description: 'Win 3 games in a row', reward: 750, icon: <Flame className="h-5 w-5" />, progress: 33 },
+    { id: '1', title: 'Speed Demon', description: 'Answer 5 questions in under 30 seconds', icon: <Timer className="h-5 w-5" /> },
+    { id: '2', title: 'Perfect Run', description: 'Get 100% accuracy in a game', icon: <Crown className="h-5 w-5" /> },
+    { id: '3', title: 'Fire Streak', description: 'Win 3 games in a row', icon: <Flame className="h-5 w-5" /> },
   ];
 
   return (
@@ -189,19 +189,9 @@ export function DailyChallenges() {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm">{challenge.title}</p>
               <p className="text-xs text-muted-foreground truncate">{challenge.description}</p>
-              {/* Progress bar */}
-              <div className="w-full h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${challenge.progress}%` }}
-                  className="h-full bg-primary rounded-full"
-                />
-              </div>
+              <p className="text-xs text-muted-foreground mt-2">Coming soon</p>
             </div>
-            <div className="text-right">
-              <span className="text-sm font-bold text-primary">+{challenge.reward}</span>
-              <p className="text-xs text-muted-foreground">pts</p>
-            </div>
+            <Badge variant="outline">Preview</Badge>
           </motion.div>
         ))}
       </CardContent>
