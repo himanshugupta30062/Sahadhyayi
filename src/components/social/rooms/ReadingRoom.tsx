@@ -107,7 +107,7 @@ export const ReadingRoom: React.FC<ReadingRoomProps> = ({ room, onLeave }) => {
                       min={1}
                       className="w-14 h-7 text-xs px-1.5 py-0"
                       value={page}
-                      onChange={(e) => setPage(Number.parseInt(e.target.value || "1", 10))}
+                      onChange={(e) => setPage(Number.Number.parseInt(e.target.value || "1", 10))}
                     />
                   </div>
                 )}
@@ -198,7 +198,7 @@ export const ReadingRoom: React.FC<ReadingRoomProps> = ({ room, onLeave }) => {
                       type="number"
                       min={1}
                       value={pulseChapter}
-                      onChange={(e) => setPulseChapter(Number.parseInt(e.target.value || "1", 10))}
+                      onChange={(e) => setPulseChapter(Number.Number.parseInt(e.target.value || "1", 10))}
                       className="h-7 w-12 text-xs px-1"
                     />
                     <Button
