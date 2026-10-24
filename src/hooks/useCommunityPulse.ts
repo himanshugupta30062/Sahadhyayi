@@ -257,7 +257,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       }
     };
 
-    verifyAdmin();
+    void verifyAdmin();
     return () => {
       active = false;
     };
