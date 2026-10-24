@@ -12,12 +12,12 @@
   "previews": {},
   "routes": [
     {
-      "pattern": "sahadhyayi.com",
-      "custom_domain": true
+      "pattern": "sahadhyayi.com/*",
+      "zone_name": "sahadhyayi.com"
     },
     {
-      "pattern": "www.sahadhyayi.com",
-      "custom_domain": true
+      "pattern": "www.sahadhyayi.com/*",
+      "zone_name": "sahadhyayi.com"
     }
   ],
   "workers_dev": true
