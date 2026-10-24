@@ -342,6 +342,13 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
         bookOr = `${bookOr},${extraOrs.join(',')}`;
       }
 
+      // Quick commands are entirely local; render them before waiting for remote
+      // catalog searches so theme/navigation actions remain responsive offline.
+      if (isMounted) {
+        setResults(matchedCommands);
+        setIsLoading(false);
+      }
+
       const [booksResult, authorsResult, articlesResult] = await Promise.allSettled([
         // 1. Books query
         supabase
