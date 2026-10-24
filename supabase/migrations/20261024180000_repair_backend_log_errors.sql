@@ -39,7 +39,8 @@ GRANT SELECT (
   stories_written_count, stories_read_count, tags_used, created_at, updated_at
 ) ON public.profiles TO authenticated;
 
-CREATE OR REPLACE VIEW public.public_profiles AS
+DROP VIEW IF EXISTS public.public_profiles;
+CREATE VIEW public.public_profiles AS
 SELECT id, full_name, username, profile_photo_url, bio, writing_frequency,
        stories_read_count, stories_written_count, created_at
 FROM public.profiles;
