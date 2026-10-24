@@ -50,6 +50,16 @@ jobs:
             return 1
           }
 
+          echo "Authoritative nameservers for sahadhyayi.com:"
+          dig +short NS sahadhyayi.com || true
+          echo "Apex A/AAAA answers:"
+          dig +short A sahadhyayi.com || true
+          dig +short AAAA sahadhyayi.com || true
+          echo "www CNAME answer:"
+          dig +short CNAME www.sahadhyayi.com || true
+          echo "HTTP response headers from public apex:"
+          curl -sSIL --max-time 15 https://sahadhyayi.com/ | head -n 30 || true
+
           worker_url="https://sahadhyayi.gyan-596.workers.dev"
           worker_ready=0
 
