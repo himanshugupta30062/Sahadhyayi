@@ -29,7 +29,7 @@ jobs:
           for attempt in {1..18}; do
             html="$(curl -fsSL --max-time 15 "$base_url/" || true)"
             if [[ -n "$html" ]]; then
-              js_assets="$(printf '%s' "$html" | grep -oE 'src="[^"]+\\.js[^"]*"' | cut -d '"' -f 2 || true)"
+              js_assets="$(printf '%s' "$html" | grep -oE 'src="[^"]+\.js[^"]*"' | cut -d '"' -f 2 || true)"
               while IFS= read -r asset; do
                 [[ -n "$asset" ]] || continue
                 if [[ "$asset" == http* ]]; then
