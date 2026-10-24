@@ -88,7 +88,7 @@ const ResetPassword = () => {
       }
     };
 
-    checkCurrentSession();
+    void checkCurrentSession();
 
     return () => {
       isMounted = false;
