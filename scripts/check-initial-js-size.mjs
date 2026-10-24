@@ -3,6 +3,33 @@ import path from 'node:path';
 import { brotliCompressSync } from 'node:zlib';
 
 const dist = path.resolve('dist');
+
+const compressedAssetBudgets = [
+  { path: 'optimized-assets/site-logo.webp', maxKb: 40 },
+  { path: 'optimized-assets/sahadhyayi-brand-logo.webp', maxKb: 100 },
+  { path: 'optimized-assets/library-hero-bg.webp', maxKb: 180 },
+  { path: 'assets/Sahadhyayi_Book_optimized.generated', prefix: true, suffix: '.webp', maxKb: 80 },
+];
+
+for (const asset of compressedAssetBudgets) {
+  let assetPath = path.join(dist, asset.path);
+  if (asset.prefix) {
+    const directory = path.dirname(assetPath);
+    const fs = await import('node:fs');
+    const match = fs.readdirSync(directory).find((name) =>
+      name.startsWith(path.basename(asset.path)) && name.endsWith(asset.suffix)
+    );
+    if (!match) throw new Error('Required optimized asset is missing: ' + asset.path + '*.webp');
+    assetPath = path.join(directory, match);
+  }
+
+  const bytes = readFileSync(assetPath).length;
+  const sizeKb = bytes / 1000;
+  console.log('[asset-budget] ' + path.relative(dist, assetPath) + ': ' + sizeKb.toFixed(2) + ' kB / ' + asset.maxKb + ' kB');
+  if (sizeKb > asset.maxKb) {
+    throw new Error('Optimized asset exceeds its size budget: ' + path.relative(dist, assetPath));
+  }
+}
 const manifest = JSON.parse(readFileSync(path.join(dist, '.vite/manifest.json'), 'utf8'));
 const entries = Object.entries(manifest);
 // Vite's HTML entry points to src/main.tsx through static imports. Start
