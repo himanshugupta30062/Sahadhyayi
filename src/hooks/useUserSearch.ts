@@ -61,7 +61,7 @@ export const useUserSearch = (searchTerm: string) => {
   };
 };
 
-export const useAllUsers = () => {
+export const useAllUsers = (options: { enabled?: boolean } = {}) => {
   const { user } = useAuth();
   
   return useQuery({
@@ -113,7 +113,7 @@ export const useAllUsers = () => {
         throw err;
       }
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && (options.enabled ?? true),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1
   });
