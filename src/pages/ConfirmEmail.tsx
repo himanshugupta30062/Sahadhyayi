@@ -38,6 +38,7 @@ const ConfirmEmail = () => {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [countdown, setCountdown] = useState(3);
+  const [errorRevision, setErrorRevision] = useState(0);
 
   useEffect(() => {
     setEmail(emailFromUrl);
@@ -164,6 +165,7 @@ const ConfirmEmail = () => {
   const handleVerifyOtp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage('');
+    setErrorRevision((revision) => revision + 1);
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedOtp = otp.replace(/\s/g, '');
     if (!normalizedEmail) {
@@ -223,6 +225,7 @@ const ConfirmEmail = () => {
     }
     setBusy(true);
     setErrorMessage('');
+    setErrorRevision((revision) => revision + 1);
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
