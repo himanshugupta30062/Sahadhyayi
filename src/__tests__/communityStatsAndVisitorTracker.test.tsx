@@ -51,21 +51,20 @@ describe('useCommunityStats - live data synchronization', () => {
       })
     );
 
-    // Live backend returns the real count: 42 signups, 350 visits
-    mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        totalSignups: 42,
-        totalVisits: 350,
-        last24hVisits: 15,
-        topCountries: [{ code: 'IN', count: 20 }],
-      },
-      error: null,
-    });
-
+    // The public hook uses the restricted aggregate RPC, not the admin-only Edge Function.
     mockRpc.mockImplementation((rpcName: string) => {
-      if (rpcName === 'get_total_users_count') return Promise.resolve({ data: 42 });
-      if (rpcName === 'get_website_visit_count') return Promise.resolve({ data: 350 });
-      return Promise.resolve({ data: null });
+      if (rpcName === 'get_public_community_counts') {
+        return Promise.resolve({
+          data: {
+            totalSignups: 42,
+            totalVisits: 350,
+            last24hVisits: 15,
+            lastUpdated: '2026-10-26T00:00:00.000Z',
+          },
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
     });
 
     mockFrom.mockReturnValue({
