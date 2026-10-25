@@ -23,6 +23,11 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
   },
 }));
 vi.mock('@/components/SEO', () => ({ default: () => null }));
+vi.mock('@/components/auth/TurnstileCaptcha', () => ({
+  TurnstileCaptcha: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
+    <button type="button" onClick={() => onTokenChange('test-captcha-token')}>Complete human verification</button>
+  ),
+}));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 
 const renderConfirmEmail = (path = '/confirm-email?email=reader%40example.com') =>
@@ -79,11 +84,13 @@ describe('ConfirmEmail verification flow', () => {
 
     renderConfirmEmail();
 
+    fireEvent.click(screen.getByRole('button', { name: /Complete human verification/i }));
     fireEvent.click(screen.getByRole('button', { name: /Resend verification code/i }));
 
     await waitFor(() => expect(mocks.resend).toHaveBeenCalledWith({
       type: 'signup',
       email: 'reader@example.com',
+      options: { captchaToken: 'test-captcha-token' },
     }));
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'New code sent' }));
   });
@@ -93,6 +100,7 @@ describe('ConfirmEmail verification flow', () => {
 
     renderConfirmEmail();
 
+    fireEvent.click(screen.getByRole('button', { name: /Complete human verification/i }));
     fireEvent.click(screen.getByRole('button', { name: /Resend verification code/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/wait a little/i);
