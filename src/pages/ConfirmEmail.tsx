@@ -59,9 +59,30 @@ const ConfirmEmail = () => {
       setStatus('verifying');
       try {
         if (urlError || hash.includes('error_description')) {
+          // Confirmation URLs are single-use and may be opened by mail security
+          // scanners before the recipient clicks them. Check for a confirmed
+          // session before showing a hard failure.
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!cancelled && session?.user?.email_confirmed_at) {
+              setStatus('already-verified');
+              setErrorMessage('');
+              return;
+            }
+          } catch {
+            // Continue to the recovery path if session lookup is unavailable.
+          }
+
           if (!cancelled) {
+            const normalizedError = (urlError || hash).toLowerCase();
             setStatus('error');
-            setErrorMessage(urlError || 'The verification link is invalid or has expired. You can enter the email code below.');
+            setErrorMessage(
+              normalizedError.includes('expired') ||
+              normalizedError.includes('otp_expired') ||
+              normalizedError.includes('invalid')
+                ? 'This link has already been used or expired. Your account may already be verified. Try signing in; if sign-in says your email is not confirmed, request a fresh code and enter it below.'
+                : 'We could not complete verification from this link. Try signing in, or enter the newest verification code below.'
+            );
           }
           return;
         }
@@ -180,10 +201,10 @@ const ConfirmEmail = () => {
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message.toLowerCase() : '';
-      setErrorMessage(message.includes('expired') || message.includes('otp_expired')
-        ? 'That code has expired. Request a new code and try again.'
+      setErrorMessage(message.includes('expired') || message.includes('otp_expired') || message.includes('one-time token not found')
+        ? 'This code has already been used or expired. Use the newest verification email. If you can already sign in, your account may already be verified.'
         : message.includes('invalid') || message.includes('token')
-          ? 'That code is incorrect or expired. Check the latest email and try again.'
+          ? 'That code is incorrect or has already been used. Check the newest email and try again.'
           : 'We could not verify this code. Please try again or request a new one.');
     } finally {
       setBusy(false);
