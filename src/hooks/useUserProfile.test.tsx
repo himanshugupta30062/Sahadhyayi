@@ -1,19 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useUpsertUserProfile, useUserProfile } from './useUserProfile';
+import { useDeleteUserProfile, useUpsertUserProfile, useUserProfile } from './useUserProfile';
 
 const mocks = vi.hoisted(() => ({
   useAuth: vi.fn(),
   toast: vi.fn(),
   getSession: vi.fn(),
   rpc: vi.fn(),
+  invoke: vi.fn(),
+  signOut: vi.fn(),
 }));
 
 vi.mock('@/contexts/authHelpers', () => ({ useAuth: mocks.useAuth }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock('@/integrations/supabase/client-universal', () => ({
-  supabase: { auth: { getSession: mocks.getSession }, rpc: mocks.rpc },
+  supabase: { auth: { getSession: mocks.getSession }, rpc: mocks.rpc, functions: { invoke: mocks.invoke } },
 }));
 
 const makeWrapper = () => {
@@ -44,7 +46,9 @@ const profile = (overrides: Record<string, unknown> = {}) => ({
 
 describe('useUserProfile', () => {
   beforeEach(() => {
-    mocks.useAuth.mockReturnValue({ user: { id: 'user-1' }, loading: false });
+    mocks.useAuth.mockReturnValue({ user: { id: 'user-1' }, loading: false, signOut: mocks.signOut });
+    mocks.invoke.mockReset();
+    mocks.signOut.mockReset().mockResolvedValue(undefined);
     mocks.getSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } }, error: null });
     mocks.rpc.mockReset();
     mocks.toast.mockClear();
@@ -92,6 +96,39 @@ describe('useUserProfile', () => {
       description: 'Failed to load profile data',
       variant: 'destructive',
     }));
+  });
+
+
+  it('clears the local session after account deletion succeeds, even when global logout is rejected', async () => {
+    mocks.invoke.mockResolvedValue({ data: { success: true }, error: null });
+    mocks.signOut.mockImplementation(async () => {
+      // AuthContext handles Supabase's 403 user_not_found by signing out locally.
+      return undefined;
+    });
+
+    const { result } = renderHook(() => useDeleteUserProfile(), { wrapper: makeWrapper() });
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+
+    expect(mocks.invoke).toHaveBeenCalledWith('delete-account', {
+      body: { confirmation: 'DELETE' },
+    });
+    expect(mocks.signOut).toHaveBeenCalledTimes(1);
+    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Account deleted',
+    }));
+  });
+
+  it('does not sign out when account deletion fails', async () => {
+    mocks.invoke.mockResolvedValue({ data: null, error: new Error('Deletion failed') });
+    const { result } = renderHook(() => useDeleteUserProfile(), { wrapper: makeWrapper() });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync()).rejects.toThrow('Deletion failed');
+    });
+
+    expect(mocks.signOut).not.toHaveBeenCalled();
   });
 
   it('normalizes profile updates and updates the query cache on success', async () => {
