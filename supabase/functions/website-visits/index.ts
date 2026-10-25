@@ -85,15 +85,14 @@ Deno.serve(async(req:Request)=>{
     if(!supabaseUrl||!serviceRoleKey){console.error('Analytics ingest missing environment configuration');return new Response(JSON.stringify({error:'Analytics ingestion unavailable'}),{status:503,headers:corsHeaders});}
     const body=await req.json().catch(()=>null) as VisitData|null;
     if(!body||typeof body!=='object'||Array.isArray(body))return new Response(JSON.stringify({error:'Expected a JSON event body'}),{status:400,headers:corsHeaders});
-    // Exclude configured site-owner/testing IPs before writing analytics. Configure
-    // SITE_OWNER_EXCLUDED_IPS as a comma-separated list in the Edge Function secrets.
-    // An unset value intentionally disables exclusions rather than hardcoding an IP.
+    // Keep owner QA traffic private and out of public analytics.
+    // Configure SITE_OWNER_TEST_IPS as a comma-separated list; the known owner IP
+    // remains the fallback so a missing secret cannot accidentally pollute analytics.
     const clientIp=normalizeIp(req.headers.get('cf-connecting-ip')||req.headers.get('x-real-ip'));
-    const excludedIps=(Deno.env.get('SITE_OWNER_EXCLUDED_IPS')||'')
+    const ownerTestIps=(Deno.env.get('SITE_OWNER_TEST_IPS')||'49.36.136.144')
       .split(',')
       .map((value)=>normalizeIp(value.trim()))
       .filter((value): value is string => value!==null);
-    if(clientIp && excludedIps.includes(clientIp))return new Response(JSON.stringify({success:true,ignored:true,reason:'excluded_test_traffic'}),{status:200,headers:corsHeaders});
     const eventType=clean(body.event_type,40)||'pageview';
     if(!['pageview','page_view','activity','event','engagement'].includes(eventType))return new Response(JSON.stringify({error:'Unsupported event_type'}),{status:400,headers:corsHeaders});
     const page=(clean(body.page,300)?.split(/[?#]/,1)[0]||'/').slice(0,300);
@@ -106,6 +105,18 @@ Deno.serve(async(req:Request)=>{
     let authUserId:string|null=null;
     const authorization=req.headers.get('authorization');
     if(authorization?.startsWith('Bearer ')){const token=authorization.slice(7).trim();if(token&&token!==Deno.env.get('SUPABASE_ANON_KEY')){try{const {data}=await supabase.auth.getUser(token);authUserId=data.user?.id??null;}catch{authUserId=null;}}}
+    if(clientIp && ownerTestIps.includes(clientIp)){
+      const validEventId=isUuid(eventId)?eventId:crypto.randomUUID();
+      const geo=await readGeo(req);
+      const {error}=await supabase.from('owner_test_analytics').insert({
+        ip_address:clientIp,event_id:validEventId,event_type:eventType,event_name:eventName,page_path:page,
+        visitor_id:visitorId,session_id:sessionId,user_id:authUserId,user_agent:userAgent.slice(0,500)||'Unknown',
+        referrer,device_type:ua.deviceType,country_code:geo.countryCode,
+        metadata:{engaged_seconds:typeof body.engaged_seconds==='number'?Math.max(0,Math.min(15,Math.floor(body.engaged_seconds))):null,screen_resolution:screenResolution,language,timezone}
+      });
+      if(error){console.error('Failed to record owner test analytics',{code:error.code,message:error.message});return new Response(JSON.stringify({error:'Failed to record test analytics'}),{status:500,headers:corsHeaders});}
+      return new Response(JSON.stringify({success:true,recordedIn:'owner_test_analytics',excludedFromPublicAnalytics:true}),{status:200,headers:corsHeaders});
+    }
     if(eventType==='engagement'){
       const engagedSeconds=typeof body.engaged_seconds==='number'&&Number.isFinite(body.engaged_seconds)?Math.max(0,Math.min(15,Math.floor(body.engaged_seconds))):0;
       if(!sessionUuid||!visitorUuid||engagedSeconds<1)return new Response(JSON.stringify({success:true,ignored:true,reason:'invalid_engagement_sample'}),{status:200,headers:corsHeaders});
