@@ -8,6 +8,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/authHelpers';
 import { LogIn, Mail, Lock, Eye, EyeOff, BookOpen } from 'lucide-react';
 import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation';
+import { getSafeRedirectUrl } from '@/utils/security';
+import { supabase } from '@/integrations/supabase/client-universal';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
@@ -30,14 +32,71 @@ const SignIn = () => {
   const { user, signIn, signInWithOAuth } = useAuth();
   const { toast } = useToast();
 
-  const redirectParam = new URLSearchParams(location.search).get('redirect');
-  const redirectPath = redirectParam || location.state?.from || '/dashboard';
+  const searchParams = new URLSearchParams(location.search);
+  const redirectParam = searchParams.get('redirect');
+  const redirectPath = getSafeRedirectUrl(
+    redirectParam || location.state?.from,
+    '/dashboard'
+  );
+  const handledShelfIntent = React.useRef<string | null>(null);
 
   React.useEffect(() => {
-    if (user) {
-      navigate(redirectPath, { replace: true });
+    if (!user) return;
+
+    const intent = searchParams.get('intent') || location.state?.intent;
+    const bookId = searchParams.get('book_id') || location.state?.bookId;
+
+    if (intent === 'add_shelf' && bookId) {
+      const intentKey = `${user.id}:${bookId}`;
+      // Prevent duplicate inserts if React re-runs effects during development.
+      if (handledShelfIntent.current === intentKey) return;
+      handledShelfIntent.current = intentKey;
+
+      void (async () => {
+        try {
+          const { error: insertError } = await supabase
+            .from('user_bookshelf')
+            .insert({
+              user_id: user.id,
+              book_id: bookId,
+              status: 'want_to_read',
+            });
+
+          if (!insertError) {
+            window.dispatchEvent(new Event('shelfUpdated'));
+            try {
+              localStorage.setItem('sahadhyayi_shelf_sync', Date.now().toString());
+            } catch {
+              // Storage may be disabled; the in-memory event still notifies the app.
+            }
+            toast({
+              title: 'Book Added to Bookshelf!',
+              description: 'We saved this book to your shelf automatically.',
+            });
+          } else {
+            toast({
+              title: 'Could not add book',
+              description: 'You are signed in, but this book could not be added to your shelf.',
+              variant: 'destructive',
+            });
+          }
+        } catch {
+          toast({
+            title: 'Could not add book',
+            description: 'You are signed in, but this book could not be added to your shelf.',
+            variant: 'destructive',
+          });
+        } finally {
+          navigate(redirectPath, { replace: true });
+        }
+      })();
+      return;
     }
-  }, [user, navigate, redirectPath]);
+
+    navigate(redirectPath, { replace: true });
+  // searchParams is derived from the stable location search string.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, navigate, redirectPath, location.search, location.state, toast]);
 
   const validateForm = () => {
     if (!formData.email?.trim() || !formData.password) {
