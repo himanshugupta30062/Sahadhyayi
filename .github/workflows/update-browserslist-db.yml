@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: browserslist-db-refresh
@@ -17,6 +17,8 @@ jobs:
   update-lockfile:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v5
         with:
@@ -34,7 +36,8 @@ jobs:
           # Sahadhyayi uses npm and package-lock.json. Ensure stray lockfiles do not trigger alternative package managers.
           rm -f bun.lock bun.lockb pnpm-lock.yaml yarn.lock deno.lock
           # Pin the on-demand CLI to a version already resolved in package-lock.json.
-          npm exec --yes --package=update-browserslist-db@1.1.1 -- update-browserslist-db
+          npm install --global --ignore-scripts update-browserslist-db@1.1.1
+          update-browserslist-db
       - name: Commit the lockfile refresh
         shell: bash
         run: |
