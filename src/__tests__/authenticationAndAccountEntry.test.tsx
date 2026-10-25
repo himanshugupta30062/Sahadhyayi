@@ -167,7 +167,7 @@ describe('Phase 3: Authentication and Account Entry', () => {
       fireEvent.change(passwordInput, { target: { value: 'wrongPassword1' } });
       fireEvent.click(screen.getByRole('button', { name: /^Sign In$/i }));
 
-      expect(mockSignIn).toHaveBeenCalledWith('reader@example.com', 'wrongPassword1');
+      expect(mockSignIn).toHaveBeenCalledWith('reader@example.com', 'wrongPassword1', 'test-turnstile-token');
       expect(await screen.findByRole('alert')).toHaveTextContent(/Incorrect email or password/i);
 
       // Email field remains preserved for easy retry
