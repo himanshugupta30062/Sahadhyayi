@@ -22,7 +22,7 @@ const EnhancedBookSummarySection = ({ bookId, bookTitle }: EnhancedBookSummarySe
   const [contentIdentifier, setContentIdentifier] = useState('');
 
   const handleGenerateSummary = async () => {
-    const isPageRangeValid = summaryType !== 'page_range' || (startPage && endPage && Number.parseInt(startPage) <= Number.parseInt(endPage));
+    const isPageRangeValid = summaryType !== 'page_range' || (startPage && endPage && Number.Number.parseInt(startPage) <= Number.Number.parseInt(endPage));
     const isChapterValid = summaryType !== 'chapter' || chapterNumber;
     
     if (!isPageRangeValid) {
@@ -42,11 +42,11 @@ const EnhancedBookSummarySection = ({ bookId, bookTitle }: EnhancedBookSummarySe
         bookTitle,
         summaryType,
         ...(summaryType === 'page_range' && { 
-          pageStart: Number.parseInt(startPage), 
-          pageEnd: Number.parseInt(endPage) 
+          pageStart: Number.Number.parseInt(startPage), 
+          pageEnd: Number.Number.parseInt(endPage) 
         }),
         ...(summaryType === 'chapter' && { 
-          chapterNumber: Number.parseInt(chapterNumber) 
+          chapterNumber: Number.Number.parseInt(chapterNumber) 
         })
       };
 
