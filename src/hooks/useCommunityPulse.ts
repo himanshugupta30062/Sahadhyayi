@@ -493,7 +493,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       commentsCount,
     ] = await Promise.all([
       safeRpc('get_total_users_count'),
-      safeRpc('get_website_visit_count'),
+      Promise.resolve({ data: null, error: true }),
       safeCount('profiles'),
       safeCount('profiles', 'created_at', timeframeStart),
       // Raw visit rows are service-role-only. Use aggregate RPCs for pageview totals.
@@ -603,30 +603,6 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             } catch {
               // If all sources are unavailable, preserve cache and expose the cause.
             }
-          }
-        }
-
-        if (statsPayload) {
-          try {
-            const { data: engagement, error: engagementError } = await supabase.rpc('get_website_engagement_stats', {
-              p_timeframe: timeframe,
-            });
-            if (!engagementError && engagement && typeof engagement === 'object') {
-              const averageSeconds = typeof engagement.average_seconds_per_session === 'number'
-                ? engagement.average_seconds_per_session
-                : null;
-              statsPayload = {
-                ...statsPayload,
-                avgTimeOnSite: averageSeconds === null
-                  ? '—'
-                  : averageSeconds < 60
-                    ? `${Math.round(averageSeconds)} sec`
-                    : `${Math.floor(averageSeconds / 60)} min ${Math.round(averageSeconds % 60)} sec`,
-                avgTimeChange: undefined,
-              };
-            }
-          } catch {
-            statsPayload = { ...statsPayload, avgTimeOnSite: '—' };
           }
         }
 

@@ -32,7 +32,7 @@ Deno.serve(async (req: Request) => {
 
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const authorization = req.headers.get("Authorization");
-  const token = authorization?.match(/^Bearer\\s+(.+)$/i)?.[1]?.trim();
+  const token = authorization?.replace(/^Bearer\s+/i, "").trim();
 
   if (!anonKey || !token) {
     return new Response(
@@ -108,7 +108,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // 2. Invoke the authoritative server-side PostgreSQL aggregation RPC
-    const { data: rpcStats, error: rpcError } = await caller.rpc("get_community_pulse_stats", {
+    const { data: rpcStats, error: rpcError } = await supabase.rpc("get_community_pulse_stats", {
       p_timeframe: timeframe,
     });
 
@@ -116,7 +116,7 @@ Deno.serve(async (req: Request) => {
       // City aggregates live in a separate, privacy-conscious RPC so the main
       // visitor aggregate remains focused on traffic, devices, pages and engagement.
       let responseStats = rpcStats as Record<string, unknown>;
-      const { data: cityStats, error: cityStatsError } = await caller.rpc("get_community_pulse_city_stats", {
+      const { data: cityStats, error: cityStatsError } = await supabase.rpc("get_community_pulse_city_stats", {
         p_timeframe: timeframe,
       });
 
@@ -150,16 +150,26 @@ Deno.serve(async (req: Request) => {
     const timeframeStart = new Date(now - hours * 3600 * 1000).toISOString();
     const periodEnd = new Date(now).toISOString();
 
+    const rollingStart24h = new Date(now - 24 * 3600 * 1000).toISOString();
+    const rollingStart7d = new Date(now - 7 * 24 * 3600 * 1000).toISOString();
+    const rollingStart30d = new Date(now - 30 * 24 * 3600 * 1000).toISOString();
+
     const [
       totalSignupsRes,
       newSignupsPeriodRes,
       totalPageviewsRes,
       periodPageviewsRes,
+      pageviews24hRes,
+      pageviews7dRes,
+      pageviews30dRes,
     ] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", timeframeStart),
       supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview"),
       supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview").gte("visited_at", timeframeStart),
+      supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview").gte("visited_at", rollingStart24h),
+      supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview").gte("visited_at", rollingStart7d),
+      supabase.from("website_visits").select("*", { count: "exact", head: true }).eq("event_type", "pageview").gte("visited_at", rollingStart30d),
     ]);
 
     // Restore city panels independently when that aggregate RPC is deployed.
@@ -179,6 +189,9 @@ Deno.serve(async (req: Request) => {
     const newReaders = newSignupsPeriodRes.error ? null : newSignupsPeriodRes.count;
     const totalPageviews = totalPageviewsRes.error ? null : totalPageviewsRes.count;
     const periodPageviews = periodPageviewsRes.error ? null : periodPageviewsRes.count;
+    const pageViews24h = pageviews24hRes.error ? null : pageviews24hRes.count;
+    const pageViews7d = pageviews7dRes.error ? null : pageviews7dRes.count;
+    const pageViews30d = pageviews30dRes.error ? null : pageviews30dRes.count;
 
     // If the aggregate RPC is unavailable, try exact per-hour counts instead
     // of presenting an all-zero chart as if it were measured traffic.
@@ -299,9 +312,9 @@ Deno.serve(async (req: Request) => {
         sourceTable: "public.website_visit_events",
         collectionStartedAt: "2026-10-19T00:00:00Z",
         isInitialRollout: false,
-        pageViews24h: periodPageviews,
-        pageViews7d: periodPageviews,
-        pageViews30d: periodPageviews,
+        pageViews24h,
+        pageViews7d,
+        pageViews30d,
         uniqueVisitors24h: null,
         uniqueVisitors7d: null,
         uniqueVisitors30d: null,
