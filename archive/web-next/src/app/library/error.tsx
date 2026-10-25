@@ -1,6 +1,6 @@
 'use client';
 
-export default function Error({ reset }: { error: Error; reset: () => void }) {
+export default function LibraryErrorBoundary({ reset }: { error: Error; reset: () => void }) {
   return (
     <div className="p-4 text-center">
       <p>Failed to load library.</p>
