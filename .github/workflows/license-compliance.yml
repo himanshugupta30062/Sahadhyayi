@@ -4,6 +4,9 @@ on:
     branches: [ main ]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   license-check:
     runs-on: ubuntu-latest
@@ -13,7 +16,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Install license checker
-        run: npm install --global license-checker@^25
+      - name: Install pinned license checker without lifecycle scripts
+        run: npm install --global --ignore-scripts license-checker@25.0.1
       - name: Check licenses
         run: license-checker --production --failOn "GPL;AGPL"
