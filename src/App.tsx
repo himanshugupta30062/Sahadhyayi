@@ -187,6 +187,21 @@ const PageTracker = () => {
   return null;
 };
 
+/**
+ * Isolate render failures to the current route. A transient crash on the
+ * post-sign-in dashboard must not permanently replace the entire application;
+ * navigating to another route creates a fresh boundary and reports the error
+ * through the shared Sentry-aware ErrorBoundary.
+ */
+const RouteErrorBoundary = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  return (
+    <ErrorBoundary key={`${location.pathname}${location.search}`}>
+      {children}
+    </ErrorBoundary>
+  );
+};
+
 const App = memo(() => {
   useEffect(() => {
     // Initialize monitoring asynchronously after the UI mounts. This keeps
@@ -256,7 +271,8 @@ const App = memo(() => {
                     
                     <main id="main-content" tabIndex={-1} className="flex-1 pt-16 outline-none">
                       <span id="main" className="sr-only" />
-                      <Routes>
+                      <RouteErrorBoundary>
+                        <Routes>
                         {/* Critical routes - no lazy loading */}
                         <Route path="/" element={<HomeRoute />} />
                         <Route path="/auth" element={<AuthRouteRedirect />} />
@@ -617,7 +633,8 @@ const App = memo(() => {
                         <Route path="/dmca-policy" element={<Navigate to="/dmca" replace />} />
                         <Route path="/open-source-licenses" element={<Suspense fallback={<LoadingFallback />}><OpenSourceLicenses /></Suspense>} />
                         <Route path="*" element={<NotFound />} />
-                      </Routes>
+                        </Routes>
+                      </RouteErrorBoundary>
                     </main>
                     
                     {/* Defer below-the-fold and onboarding code until the initial route is interactive. */}
