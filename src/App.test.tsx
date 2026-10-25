@@ -72,6 +72,8 @@ vi.mock('./components/ui/BookFlipLoader', () => ({
 vi.mock('./pages/NotFound', () => ({ default: () => <div>Not found page</div> }));
 vi.mock('./pages/Index', () => ({ default: () => <div>Public marketing homepage</div> }));
 vi.mock('./pages/Dashboard', () => ({ default: () => <div>Reader dashboard</div> }));
+vi.mock('./pages/SignIn', () => ({ default: () => <div>Sign-in page rendered</div> }));
+vi.mock('./pages/SignUp', () => ({ default: () => <div>Sign-up page rendered</div> }));
 vi.mock('./components/book-expert/BookExpert', () => ({ default: () => null }));
 
 describe('App root routing and configuration', () => {
@@ -134,5 +136,27 @@ describe('App root routing and configuration', () => {
       expect(mocks.initializeSecurity).toHaveBeenCalledTimes(1);
       expect(mocks.initializeSecureSession).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('redirects legacy /auth links to sign-in and preserves query parameters', async () => {
+    window.history.replaceState({}, '', '/auth?intent=add_shelf&book_id=book-1&redirect=%2Flibrary');
+
+    render(<App />);
+
+    expect(await screen.findByText('Sign-in page rendered')).toBeTruthy();
+    expect(window.location.pathname).toBe('/signin');
+    expect(window.location.search).toContain('intent=add_shelf');
+    expect(window.location.search).toContain('book_id=book-1');
+    expect(window.location.search).toContain('redirect=%2Flibrary');
+  });
+
+  it('redirects legacy /auth?tab=signup links to sign-up', async () => {
+    window.history.replaceState({}, '', '/auth?tab=signup');
+
+    render(<App />);
+
+    expect(await screen.findByText('Sign-up page rendered')).toBeTruthy();
+    expect(window.location.pathname).toBe('/signup');
+    expect(window.location.search).toContain('tab=signup');
   });
 });
