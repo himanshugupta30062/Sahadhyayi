@@ -33,7 +33,7 @@ const ReadingGoalTracker: React.FC<ReadingGoalTrackerProps> = ({ initialGoal = 1
             type="number"
             value={goal}
             min={1}
-            onChange={(e) => setGoal(parseInt(e.target.value, 10) || 1)}
+            onChange={(e) => setGoal(Number.parseInt(e.target.value, 10) || 1)}
             className="w-16 border rounded px-1 text-center"
           />
         </div>
