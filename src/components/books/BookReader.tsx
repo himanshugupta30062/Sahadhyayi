@@ -112,7 +112,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
           return [...new Set(merged)];
         });
       } catch (error) {
-        console.error('Failed to resolve external reading sources:', error);
+        console.error('Failed to resolve external reading sources:', { name: error instanceof Error ? error.name : 'UnknownError' });
       } finally {
         if (!cancelled) {
           setSourceSearchDone(true);
@@ -210,9 +210,9 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
             pdfjsLib
               .getDocument(bookUrl)
               .promise.then((pdf: any) => setTotalPages(pdf.numPages))
-              .catch((err: any) => console.error('Error loading PDF:', err));
+              .catch((err: any) => console.error('Error loading PDF:', { name: err instanceof Error ? err.name : 'UnknownError' }));
           } catch (err) {
-            console.error('PDF.js not available', err);
+            console.error('PDF.js not available', { name: err instanceof Error ? err.name : 'UnknownError' });
           }
         };
 
@@ -325,7 +325,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       applyFontSize();
 
     } catch (error) {
-      console.error('Error loading EPUB:', error);
+      console.error('Error loading EPUB:', { name: error instanceof Error ? error.name : 'UnknownError' });
       toast({
         title: "Error",
         description: "Failed to load the book. Please try again.",
@@ -400,7 +400,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
         totalPages,
       });
     } catch (error) {
-      console.error('Error saving reading progress:', error);
+      console.error('Error saving reading progress:', { name: error instanceof Error ? error.name : 'UnknownError' });
     }
   }, [bookId, bookTitle, currentLocation, saveProgress, totalPages, user]);
 
@@ -497,7 +497,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
           url: window.location.href,
         });
       } catch (error) {
-        console.error('Error sharing:', error);
+        console.error('Error sharing:', { name: error instanceof Error ? error.name : 'UnknownError' });
       }
     } else {
       // Fallback: copy to clipboard
@@ -543,7 +543,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     try {
       await markChapterRead.mutateAsync(chapterNumber);
     } catch (error) {
-      console.error('Error marking chapter as read:', error);
+      console.error('Error marking chapter as read:', { name: error instanceof Error ? error.name : 'UnknownError' });
       setCompletedChapters(previous);
     }
   };
