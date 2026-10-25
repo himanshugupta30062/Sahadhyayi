@@ -1,0 +1,111 @@
+name: PR coverage report
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-coverage-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    name: Tests and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install matching Vitest coverage provider
+        run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @vitest/coverage-v8@1.6.1
+
+      - name: Run tests and collect coverage
+        id: tests
+        continue-on-error: true
+        env:
+          VITE_SUPABASE_URL: http://127.0.0.1:54321
+          VITE_SUPABASE_ANON_KEY: test-public-anon-key
+        run: >-
+          ./node_modules/.bin/vitest run
+          --coverage.enabled=true
+          --coverage.provider=v8
+          --coverage.reporter=text
+          --coverage.reporter=lcov
+          --coverage.reporter=json-summary
+          --coverage.reportsDirectory=./coverage
+          --coverage.reportOnFailure=true
+
+      - name: Add coverage summary to workflow run
+        if: always()
+        env:
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+
+          const summaryPath = 'coverage/coverage-summary.json';
+          const lines = [
+            '## PR test coverage',
+            '',
+            `Test suite outcome: **${process.env.TEST_OUTCOME || 'unknown'}**`,
+            '',
+          ];
+
+          if (!fs.existsSync(summaryPath)) {
+            lines.push('Coverage summary was not generated. Check the test step logs.');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\\n') + '\\n');
+            process.exit(0);
+          }
+
+          const report = JSON.parse(fs.readFileSync(summaryPath, 'utf8')).total;
+          const pct = (metric) => `${metric.pct}% (${metric.covered}/${metric.total})`;
+          lines.push(
+            '| Metric | Coverage |',
+            '| --- | ---: |',
+            `| Lines | ${pct(report.lines)} |`,
+            `| Statements | ${pct(report.statements)} |`,
+            `| Functions | ${pct(report.functions)} |`,
+            `| Branches | ${pct(report.branches)} |`,
+            '',
+            'The detailed LCOV report is attached as a workflow artifact named `pr-coverage-report`.',
+            'Coverage is reported for the files included by Vitest instrumentation; this report does not itself prove that every repository script is instrumented.'
+          );
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\\n') + '\\n');
+          NODE
+
+      - name: Upload LCOV and coverage summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-coverage-report
+          path: |
+            coverage/lcov.info
+            coverage/coverage-summary.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Fail if tests failed or coverage report is missing
+        if: always()
+        env:
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        run: |
+          if [ "$TEST_OUTCOME" != "success" ]; then
+            echo "::error::Tests failed. See the test logs and coverage summary."
+            exit 1
+          fi
+          if [ ! -s coverage/lcov.info ] || [ ! -s coverage/coverage-summary.json ]; then
+            echo "::error::Coverage reports are missing."
+            exit 1
+          fi
