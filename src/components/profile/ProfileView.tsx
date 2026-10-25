@@ -16,6 +16,7 @@ import {
   Share2, 
   ArrowRight, 
   Dna, 
+  Star,
   Quote, 
   Radio, 
   Sparkles, 
@@ -134,8 +135,8 @@ export const ProfileView: React.FC = () => {
   );
 
   const completedBooks = bookshelf.filter(b => b.status === 'completed');
-  const readingBooks = bookshelf.filter(b => b.status === 'reading');
   const showcaseBooks = completedBooks.length > 0 ? completedBooks.slice(0, 3) : bookshelf.slice(0, 3);
+  const favoriteBooks = bookshelf.filter((book) => book.is_favorite === true).slice(0, 6);
 
   if (isLoading) {
     return (
@@ -147,7 +148,7 @@ export const ProfileView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background py-4 px-1">
-      <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+      <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
         {/* Main Profile Card */}
         <Card className="rounded-2xl shadow-sm p-6 bg-card border border-border">
           <div className="flex flex-col items-center gap-5">
@@ -161,7 +162,7 @@ export const ProfileView: React.FC = () => {
             <ProfileInfo
               name={profile?.name}
               username={profile?.username}
-              email={profile?.email}
+              email={user?.email}
               bio={profile?.bio}
               gender={profile?.gender}
               writingFrequency={writingFrequency}
@@ -202,7 +203,7 @@ export const ProfileView: React.FC = () => {
             </div>
 
             {/* Reader Stats Overview */}
-            <div className="mt-2 grid grid-cols-3 gap-3 w-full text-center border-t border-border pt-4">
+            <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 w-full text-center border-t border-border pt-4">
               <div className="p-2 rounded-xl bg-muted/40">
                 <span className="text-xs text-muted-foreground">Stories Written</span>
                 <div className="font-bold text-lg text-emerald-600 dark:text-emerald-400">
@@ -213,6 +214,12 @@ export const ProfileView: React.FC = () => {
                 <span className="text-xs text-muted-foreground">Shelf Books</span>
                 <div className="font-bold text-lg text-[hsl(var(--brand-primary))]">
                   {bookshelf.length}
+                </div>
+              </div>
+              <div className="p-2 rounded-xl bg-muted/40">
+                <span className="text-xs text-muted-foreground">Favorite Books</span>
+                <div className="font-bold text-lg text-amber-500">
+                  {bookshelf.filter((book) => book.is_favorite === true).length}
                 </div>
               </div>
               <div className="p-2 rounded-xl bg-muted/40">
@@ -251,6 +258,82 @@ export const ProfileView: React.FC = () => {
               </Button>
             </div>
           </div>
+        </Card>
+
+        {/* Favorite Books */}
+        <Card className="rounded-2xl border-border bg-card p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div>
+              <div className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-amber-500" />
+                <h3 className="text-base font-semibold text-foreground">Favorite Books</h3>
+                <span className="rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 text-xs font-semibold">
+                  {bookshelf.filter((book) => book.is_favorite === true).length}
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                The books that stay with you, collected in one place.
+              </p>
+            </div>
+            <Link to="/bookshelf">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto border-border">
+                <Library className="mr-1.5 h-4 w-4" />
+                Manage favorites
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
+            </Link>
+          </div>
+
+          {favoriteBooks.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {favoriteBooks.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/book/${item.book_id}`}
+                  className="group min-w-0 text-center"
+                >
+                  <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-muted shadow-sm transition-all group-hover:-translate-y-1 group-hover:shadow-md">
+                    {item.books_library?.cover_image_url ? (
+                      <img
+                        src={item.books_library.cover_image_url}
+                        alt={item.books_library.title || "Book cover"}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[hsl(var(--brand-primary)/0.12)] to-[hsl(var(--brand-secondary)/0.2)]">
+                        <BookOpen className="h-8 w-8 text-[hsl(var(--brand-primary))]" />
+                      </div>
+                    )}
+                    <div className="absolute right-2 top-2 rounded-full bg-black/65 p-1.5 text-amber-300">
+                      <Star className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
+                    </div>
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-sm font-medium text-foreground transition-colors group-hover:text-[hsl(var(--brand-primary))]">
+                    {item.books_library?.title || "Untitled"}
+                  </p>
+                  <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                    {item.books_library?.author || "Author unknown"}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-border bg-muted/20 px-5 py-8 text-center">
+              <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                <Star className="h-5 w-5" />
+              </div>
+              <h4 className="font-semibold text-foreground">Your favorites start here</h4>
+              <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+                Open your bookshelf and tap the star on any saved book. Your favorites will appear here on your profile.
+              </p>
+              <Link to="/bookshelf" className="mt-4 inline-flex">
+                <Button size="sm" className="bg-[hsl(var(--brand-primary))] text-white hover:bg-[hsl(var(--brand-primary)/0.9)]">
+                  Choose favorite books
+                </Button>
+              </Link>
+            </div>
+          )}
         </Card>
 
         {/* Showcase Shelf */}

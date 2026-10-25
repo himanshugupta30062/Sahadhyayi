@@ -32,7 +32,9 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({
     <div className="flex justify-center items-center gap-2 mt-1 mb-2 text-muted-foreground text-sm">
       <span>{email || "No email"}</span>
     </div>
-    {bio && <p className="text-muted-foreground text-sm max-w-md mb-3 leading-relaxed">{bio}</p>}
+    <p className={`text-sm max-w-md mb-3 leading-relaxed ${bio ? "text-muted-foreground" : "text-muted-foreground/75 italic"}`}>
+      {bio || "Add a short introduction about yourself and the books you love."}
+    </p>
     <ProfileStats writingFrequency={writingFrequency} gender={gender} joined_at={joined_at} />
   </div>
 );

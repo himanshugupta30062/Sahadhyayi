@@ -11,8 +11,8 @@ describe('cn class-name utility', () => {
   });
 
   it('supports arrays and object conditions from clsx', () => {
-    expect(cn(['flex', 'items-center'], { hidden: false, block: true })).toBe(
-      'flex items-center block',
+    expect(cn(['flex', 'items-center'], { hidden: false, 'font-semibold': true })).toBe(
+      'flex items-center font-semibold',
     );
   });
 

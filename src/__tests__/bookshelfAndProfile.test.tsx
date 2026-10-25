@@ -22,6 +22,7 @@ const mockBooks = [
     user_id: 'test-user-123',
     book_id: 'book-1',
     status: 'reading',
+    is_favorite: false,
     added_at: '2026-02-01T10:00:00Z',
     books_library: {
       id: 'book-1',
@@ -36,6 +37,7 @@ const mockBooks = [
     user_id: 'test-user-123',
     book_id: 'book-2',
     status: 'completed',
+    is_favorite: true,
     added_at: '2026-01-15T10:00:00Z',
     books_library: {
       id: 'book-2',
@@ -150,9 +152,14 @@ describe('Bookshelf & Profile Modernization Tests', () => {
     // Resume button displays page
     expect(screen.getByText('Resume · Pg 60')).toBeInTheDocument();
 
-    // Export CSV and Share buttons exist
+    // Export/share and the favorites filter are available.
     expect(screen.getByText('Export CSV')).toBeInTheDocument();
     expect(screen.getByText('Share Shelf')).toBeInTheDocument();
+    const favoritesOnly = screen.getByRole('button', { name: 'Favorites only' });
+    expect(favoritesOnly).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(favoritesOnly);
+    expect(screen.getByText('Gitanjali')).toBeInTheDocument();
+    expect(screen.queryByText('Siddhartha')).not.toBeInTheDocument();
   });
 
   it('renders ProfileView with native navigation and Bookshelf showcase', () => {
@@ -174,8 +181,9 @@ describe('Bookshelf & Profile Modernization Tests', () => {
     expect(screen.getByText('My Articles')).toBeInTheDocument();
     expect(screen.getByText('My Publications')).toBeInTheDocument();
 
-    // Reader Bookshelf Showcase rendered
+    // Reader shelves and the new favorites section render from saved user data.
     expect(screen.getByText('Reader Bookshelf Showcase')).toBeInTheDocument();
+    expect(screen.getAllByText('Favorite Books').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Gitanjali').length).toBeGreaterThanOrEqual(1);
   });
 });
