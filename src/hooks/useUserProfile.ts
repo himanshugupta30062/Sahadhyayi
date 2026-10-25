@@ -235,7 +235,7 @@ export const useDeleteUserProfile = () => {
       queryClient.clear();
       toast({
         title: "Account deleted",
-        description: "Your account and associated data have been permanently deleted.",
+        description: "Your Sahadhyayi account and profile have been permanently deleted.",
       });
     },
     onError: (error) => {
