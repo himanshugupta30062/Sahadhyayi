@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.112.3";
+import { getCommunityStatsBearerToken, isAllowedCommunityStatsTimeframe, normalizeCommunityStatsTimeframe } from "./validation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,7 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ALLOWED_TIMEFRAMES = new Set(["24h", "7d", "30d"]);
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -32,7 +32,7 @@ Deno.serve(async (req: Request) => {
 
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const authorization = req.headers.get("Authorization");
-  const token = authorization?.replace(/^Bearer\s+/i, "").trim();
+  const token = getCommunityStatsBearerToken(authorization);
 
   if (!anonKey || !token) {
     return new Response(
@@ -85,7 +85,7 @@ Deno.serve(async (req: Request) => {
       try {
         const body = await req.json().catch(() => ({}));
         if (body?.timeframe && typeof body.timeframe === "string") {
-          timeframe = body.timeframe.toLowerCase().trim();
+          timeframe = normalizeCommunityStatsTimeframe(body.timeframe);
         }
       } catch {
         timeframe = "24h";
@@ -94,13 +94,13 @@ Deno.serve(async (req: Request) => {
       try {
         const urlObj = new URL(req.url);
         const tf = urlObj.searchParams.get("timeframe");
-        if (tf) timeframe = tf.toLowerCase().trim();
+        if (tf) timeframe = normalizeCommunityStatsTimeframe(tf);
       } catch {
         timeframe = "24h";
       }
     }
 
-    if (!ALLOWED_TIMEFRAMES.has(timeframe)) {
+    if (!isAllowedCommunityStatsTimeframe(timeframe)) {
       return new Response(
         JSON.stringify({ error: "Invalid timeframe. Supported: 24h, 7d, 30d" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
