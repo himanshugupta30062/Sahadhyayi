@@ -123,7 +123,7 @@ export const useUpsertUserProfile = () => {
         if (error) throw error;
 
         const saved = data && typeof data === 'object' && !Array.isArray(data)
-          ? data as Record<string, any>
+          ? data as UserProfile
           : null;
         if (!saved || saved.id !== user.id) {
           throw new Error('Profile update could not be confirmed.');
