@@ -28,7 +28,12 @@ if [ "${#todo_conflicts[@]}" -gt 0 ]; then
 fi
 
 # 4. Verify imports for lib/supabase/books.ts via TypeScript
-if ! npx tsc --noEmit apps/web-next/src/lib/supabase/books.ts >/tmp/library_audit_tsc.log 2>&1; then
+if [ ! -x ./node_modules/.bin/tsc ]; then
+  echo "Local TypeScript compiler is missing; install locked dependencies before running the library audit." >&2
+  exit 1
+fi
+
+if ! ./node_modules/.bin/tsc --noEmit apps/web-next/src/lib/supabase/books.ts >/tmp/library_audit_tsc.log 2>&1; then
   echo "TypeScript import resolution errors in lib/supabase/books.ts:" >&2
   cat /tmp/library_audit_tsc.log >&2
   issues=1
