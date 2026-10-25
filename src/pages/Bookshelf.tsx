@@ -17,6 +17,7 @@ import {
   Clock, 
   CheckCircle, 
   BookMarked,
+  Star,
   MoreVertical,
   Trash2,
   Share2,
@@ -58,6 +59,7 @@ const Bookshelf = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<StatusFilter>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   // Stats
   const stats = useMemo(() => {
@@ -115,6 +117,11 @@ const Bookshelf = () => {
       );
     }
 
+    // Favorites are a cross-status filter: any saved book can be a favorite.
+    if (favoritesOnly) {
+      filtered = filtered.filter((book) => book.is_favorite === true);
+    }
+
     // Sort
     filtered.sort((a, b) => {
       if (sortBy === 'progress') {
@@ -131,10 +138,14 @@ const Bookshelf = () => {
     });
     
     return filtered;
-  }, [booksWithProgress, activeFilter, searchQuery, sortBy]);
+  }, [booksWithProgress, activeFilter, searchQuery, sortBy, favoritesOnly]);
 
   const handleStatusChange = (itemId: string, newStatus: 'reading' | 'completed' | 'want_to_read') => {
     updateBookshelf.mutate({ id: itemId, updates: { status: newStatus } });
+  };
+
+  const handleFavoriteToggle = (itemId: string, isFavorite: boolean) => {
+    updateBookshelf.mutate({ id: itemId, updates: { is_favorite: !isFavorite } });
   };
 
   const handleRemove = (itemId: string) => {
@@ -363,6 +374,19 @@ const Bookshelf = () => {
                 />
               </div>
 
+              <Button
+                type="button"
+                size="sm"
+                variant={favoritesOnly ? "default" : "outline"}
+                aria-pressed={favoritesOnly}
+                aria-label="Favorites only"
+                onClick={() => setFavoritesOnly((current) => !current)}
+                className="h-9 shrink-0 gap-1.5 border-border"
+              >
+                <Star className={`w-3.5 h-3.5 ${favoritesOnly ? "fill-current" : ""}`} />
+                Favorites ({booksWithProgress.filter((book) => book.is_favorite === true).length})
+              </Button>
+
               {/* Sort Selector */}
               <div className="w-full sm:w-44">
                 <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
@@ -431,9 +455,13 @@ const Bookshelf = () => {
             <Card className="bg-muted/30 border-border">
               <CardContent className="py-12 text-center space-y-3">
                 <Search className="w-10 h-10 mx-auto text-muted-foreground/50" />
-                <h3 className="text-base font-semibold text-foreground">No matching books found</h3>
+                <h3 className="text-base font-semibold text-foreground">
+                  {favoritesOnly ? 'No favorite books yet' : 'No matching books found'}
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  Try adjusting your search query or reset the filter tab.
+                  {favoritesOnly
+                    ? 'Tap the star on any book cover to save it here and show it on your profile.'
+                    : 'Try adjusting your search query or reset the filter tab.'}
                 </p>
                 <Button 
                   variant="outline" 
@@ -441,6 +469,7 @@ const Bookshelf = () => {
                   onClick={() => {
                     setSearchQuery('');
                     setActiveFilter('all');
+                    setFavoritesOnly(false);
                   }}
                 >
                   Clear Filters
@@ -486,9 +515,21 @@ const Bookshelf = () => {
                           {getStatusBadge(item.status)}
                         </div>
 
+                        {/* Favorite toggle stays visible even when the cover is not hovered. */}
+                        <button
+                          type="button"
+                          aria-label={item.is_favorite ? `Remove ${book.title} from favorites` : `Add ${book.title} to favorites`}
+                          aria-pressed={item.is_favorite === true}
+                          title={item.is_favorite ? "Remove from favorites" : "Add to favorites"}
+                          onClick={() => handleFavoriteToggle(item.id, item.is_favorite === true)}
+                          className="absolute top-2 right-2 z-30 rounded-full bg-black/75 p-2 text-white shadow transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        >
+                          <Star className={`h-4 w-4 ${item.is_favorite ? "fill-amber-300 text-amber-300" : ""}`} />
+                        </button>
+
                         {/* Progress Badge on Cover */}
                         {isReading && item.progressPercent > 0 && (
-                          <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-xs text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow-xs">
+                          <div className="absolute top-2 right-12 z-10 bg-black/80 backdrop-blur-xs text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow-xs">
                             {item.progressPercent}%
                           </div>
                         )}
