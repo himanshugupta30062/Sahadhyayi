@@ -8,7 +8,7 @@ import { sessionClientLogin } from "./sessionClient";
  *  - if 401/403, re-login via /api/session once, then retry the original request
  *  - if server rotates CSRF and returns X-New-CSRF-Token, we persist it
  */
-const configuredBackendUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/+$/, '') || '';
+const configuredBackendUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/$/, '') || '';
 
 function resolveBackendInput(input: RequestInfo | URL): RequestInfo | URL {
   if (!configuredBackendUrl) return input;
