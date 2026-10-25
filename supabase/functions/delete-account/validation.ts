@@ -2,7 +2,8 @@
 
 /** Extract a non-empty bearer token without accepting other authorization schemes. */
 export function getBearerToken(authorization: string | null): string | null {
-  const token = authorization?.match(/^Bearer\\s+(.+)$/i)?.[1]?.trim();
+  if (!authorization || authorization.length < 7 || authorization.slice(0, 7).toLowerCase() !== "bearer ") return null;
+  const token = authorization.slice(7).trim();
   return token || null;
 }
 

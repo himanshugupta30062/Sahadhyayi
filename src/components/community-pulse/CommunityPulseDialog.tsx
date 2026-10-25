@@ -485,7 +485,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
         {/* Sticky Fixed Navigation & Controls Bar */}
         <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 border-b border-white/[0.08] bg-[#0B0D0C] flex-shrink-0 min-w-0 z-10">
           {/* Tabs */}
-          <div role="tablist" aria-label="Community pulse sections" onKeyDown={handleTabKeyDown} className="flex items-center gap-1 p-1 rounded-xl bg-[#111614] border border-white/[0.06] overflow-x-auto max-w-full no-scrollbar flex-shrink min-w-0">
+          <div role="tablist" tabIndex={0} aria-label="Community pulse sections" onKeyDown={handleTabKeyDown} className="flex items-center gap-1 p-1 rounded-xl bg-[#111614] border border-white/[0.06] overflow-x-auto max-w-full no-scrollbar flex-shrink min-w-0">
             <button
               onClick={() => setActiveTab('overview')}
               role="tab"
