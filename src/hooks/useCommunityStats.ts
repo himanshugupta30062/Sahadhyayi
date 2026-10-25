@@ -76,41 +76,18 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     let edgeLastUpdated: string | null = null;
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('community-stats', {
-        body: { timeframe: '24h' },
-      });
-      if (!fnError && data && typeof data === 'object') {
-        // Modern analytics schema with legacy fallback support
-        edgeSignups = typeof data.metrics?.registeredReaders?.value === 'number'
-          ? data.metrics.registeredReaders.value
-          : typeof data.totalSignups === 'number'
-          ? data.totalSignups
-          : typeof data.totalMembers === 'number'
-          ? data.totalMembers
-          : null;
-
-        edgeVisits = typeof data.metrics?.totalPageViews?.value === 'number'
-          ? data.metrics.totalPageViews.value
-          : typeof data.totalVisits === 'number'
-          ? data.totalVisits
-          : null;
-
-        edge24h = typeof data.metrics?.periodPageViews?.value === 'number'
-          ? data.metrics.periodPageViews.value
-          : typeof data.last24hVisits === 'number'
-          ? data.last24hVisits
-          : null;
-
-        topCountries = Array.isArray(data.breakdowns?.countries)
-          ? data.breakdowns.countries
-          : Array.isArray(data.topCountries)
-          ? data.topCountries
-          : [];
-
-        edgeLastUpdated = typeof data.lastUpdated === 'string' ? data.lastUpdated : null;
+      // Public community UI must not call the administrator-only community-stats
+      // Edge Function. Use a deliberately limited aggregate RPC instead.
+      const { data, error: rpcError } = await supabase.rpc('get_public_community_counts');
+      if (!rpcError && data && typeof data === 'object' && !Array.isArray(data)) {
+        const counts = data as Record<string, unknown>;
+        edgeSignups = typeof counts.totalSignups === 'number' ? counts.totalSignups : null;
+        edgeVisits = typeof counts.totalVisits === 'number' ? counts.totalVisits : null;
+        edge24h = typeof counts.last24hVisits === 'number' ? counts.last24hVisits : null;
+        edgeLastUpdated = typeof counts.lastUpdated === 'string' ? counts.lastUpdated : null;
       }
     } catch {
-      // Fallback to direct DB RPCs below
+      // Keep cached stats when the aggregate RPC is unavailable.
     }
 
     try {
@@ -118,19 +95,8 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
       let rpcUsers: number | null = edgeSignups;
       let rpcVisits: number | null = edgeVisits;
 
-      if (rpcUsers === null || rpcVisits === null) {
-        const [usersRpc, visitsRpc] = await Promise.all([
-          typeof supabase?.rpc === 'function' ? Promise.resolve(supabase.rpc('get_total_users_count')).catch(() => ({ data: null })) : { data: null },
-          typeof supabase?.rpc === 'function' ? Promise.resolve(supabase.rpc('get_website_visit_count')).catch(() => ({ data: null })) : { data: null },
-        ]);
-
-        if (rpcUsers === null && usersRpc && typeof usersRpc.data === 'number') {
-          rpcUsers = usersRpc.data;
-        }
-        if (rpcVisits === null && visitsRpc && typeof visitsRpc.data === 'number') {
-          rpcVisits = visitsRpc.data;
-        }
-      }
+      // Do not fall back to legacy count RPCs: they are intentionally restricted
+      // and caused avoidable 403 responses from ordinary reader sessions.
 
       // Check if we retrieved actual metrics from the network/RPCs
       const liveSignups = edgeSignups !== null ? edgeSignups : rpcUsers;
