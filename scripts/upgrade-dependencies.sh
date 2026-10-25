@@ -13,7 +13,7 @@ SAFE_PACKAGES=(
   "@radix-ui/react-dialog@1.1.14"
   "@radix-ui/react-dropdown-menu@2.1.15"
   "@radix-ui/react-hover-card@1.1.14"
-  "@radix-ui/react-label@2.1.7"
+  "@radix-ui/react-label@1.1.7"
   "@radix-ui/react-menubar@1.1.15"
   "@radix-ui/react-navigation-menu@1.2.13"
   "@radix-ui/react-popover@1.1.14"
@@ -76,8 +76,8 @@ RISKY_PACKAGES=(
   "vite@7.0.6"
 )
 
-echo "Upgrading safe packages..."
-npm install "${SAFE_PACKAGES[@]}"
+echo "Upgrading safe packages without running dependency lifecycle scripts..."
+npm install --ignore-scripts "${SAFE_PACKAGES[@]}"
 
 if npm run lint && npm run build; then
   echo "Safe packages upgraded successfully."
@@ -91,7 +91,7 @@ echo
 printf '%s\n' "The following packages have major updates and may contain breaking changes:" "${RISKY_PACKAGES[@]}"
 read -p "Do you want to upgrade these risky packages? (y/N) " -r
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-  npm install "${RISKY_PACKAGES[@]}"
+  npm install --ignore-scripts "${RISKY_PACKAGES[@]}"
   npm run lint && npm run build
 else
   echo "Skipping risky package upgrades."
