@@ -50,6 +50,13 @@ describe('ConfirmEmail verification flow', () => {
 
   afterEach(() => cleanup());
 
+  it('recommends the newest email code instead of relying on single-use links', () => {
+    renderConfirmEmail();
+
+    expect(screen.getByText(/For the most reliable verification, enter the code from your newest email below/i)).toBeInTheDocument();
+    expect(screen.queryByText(/or open the confirmation link in the email/i)).not.toBeInTheDocument();
+  });
+
   it('validates the email code before calling Supabase', async () => {
     renderConfirmEmail();
 
