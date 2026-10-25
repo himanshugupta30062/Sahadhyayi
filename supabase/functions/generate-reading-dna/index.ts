@@ -148,7 +148,7 @@ Return ONLY valid JSON, no markdown.`;
       signature_color:
         typeof dna.signature_color === "string" && /^#[0-9a-fA-F]{6}$/.test(dna.signature_color)
           ? dna.signature_color
-          : COLORS[Math.floor(Math.random() * COLORS.length)],
+          : randomColor(),
       generated_at: new Date().toISOString(),
     };
 
