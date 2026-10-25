@@ -456,15 +456,6 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
    * Resilient fallback fetching from database RPCs or public counts
    */
   const fetchDatabaseFallbackStats = useCallback(async (tf: AnalyticsTimeframe): Promise<PulseStats> => {
-    try {
-      const { data, error: rpcErr } = await supabase.rpc('get_community_pulse_stats', { p_timeframe: tf });
-      if (!rpcErr && data && typeof data === 'object') {
-        return parseStatsPayload(data, tf);
-      }
-    } catch {
-      // Ignore and proceed to public count RPCs and safe table queries
-    }
-
     const timeframeStart = (() => {
       const now = new Date();
       if (tf === '30d') return new Date(now.getTime() - 30 * 86400000).toISOString();
@@ -568,41 +559,33 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         let statsPayload: PulseStats | null = null;
         let primaryError: Error | null = null;
 
-        // Prefer the public-safe aggregate RPC. If it is not installed in a deployed
-        // database yet, try the existing Edge Function before falling back to safe
-        // database aggregates. This keeps deployments resilient during migrations.
+        // The Edge Function is the single admin-gated analytics entry point.
+        // Pass the current access token explicitly so browser clients never fall
+        // back to anon credentials when the auth header is not attached automatically.
         try {
-          const { data: publicStats, error: publicRpcError } = await supabase.rpc(
-            'get_dual_table_website_analytics',
-            { p_timeframe: timeframe },
-          );
-          if (publicRpcError) throw new Error(publicRpcError.message || 'Public website analytics RPC unavailable');
-          if (!publicStats || typeof publicStats !== 'object') {
-            throw new Error('Public website analytics RPC returned an invalid payload');
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+          const accessToken = sessionData?.session?.access_token;
+          if (sessionError || !accessToken) {
+            throw new Error('A valid administrator session is required to load live analytics');
           }
-          statsPayload = parseStatsPayload(publicStats, timeframe);
-        } catch (rpcError) {
-          primaryError = rpcError instanceof Error ? rpcError : new Error('Public website analytics RPC unavailable');
+
+          const { data: edgeStats, error: edgeError } = await supabase.functions.invoke('community-stats', {
+            body: { timeframe },
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          if (edgeError) throw new Error(edgeError.message || 'Community stats Edge Function unavailable');
+          if (!edgeStats || typeof edgeStats !== 'object') {
+            throw new Error('Community stats Edge Function returned an invalid payload');
+          }
+          statsPayload = parseStatsPayload(edgeStats, timeframe);
+          primaryError = null;
+        } catch (edgeError) {
+          primaryError = edgeError instanceof Error ? edgeError : new Error('Community stats Edge Function unavailable');
           try {
-            const { data: edgeStats, error: edgeError } = await supabase.functions.invoke('community-stats', {
-              body: { timeframe },
-            });
-            if (edgeError) throw new Error(edgeError.message || 'Community stats Edge Function unavailable');
-            if (!edgeStats || typeof edgeStats !== 'object') {
-              throw new Error('Community stats Edge Function returned an invalid payload');
-            }
-            statsPayload = parseStatsPayload(edgeStats, timeframe);
+            statsPayload = await fetchDatabaseFallbackStats(timeframe);
             primaryError = null;
-          } catch (edgeError) {
-            // Keep the first actionable error unless the Edge Function provided a
-            // more specific failure, then try public-safe RPC/table-count fallback.
-            primaryError = edgeError instanceof Error ? edgeError : primaryError;
-            try {
-              statsPayload = await fetchDatabaseFallbackStats(timeframe);
-              primaryError = null;
-            } catch {
-              // If all sources are unavailable, preserve cache and expose the cause.
-            }
+          } catch {
+            // If all sources are unavailable, preserve cache and expose the cause.
           }
         }
 
