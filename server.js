@@ -130,7 +130,13 @@ app.post(
   (req, res) => {
     try {
       const report = req.body['csp-report'] || req.body;
-      console.warn('[CSP-REPORT]', JSON.stringify(report));
+      // CSP reports are unauthenticated user-controlled input. Bound their size
+      // and strip control characters before writing them to application logs.
+      const serializedReport = JSON.stringify(report);
+      const safeReport = serializedReport
+        .replace(/[\\u0000-\\u001f\\u007f]/g, '')
+        .slice(0, 4096);
+      console.warn('[CSP-REPORT]', safeReport);
     } catch {}
     res.status(204).end();
   }
