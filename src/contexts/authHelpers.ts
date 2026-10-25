@@ -21,7 +21,7 @@ export const useAuth = () => {
     password: string,
     fullName: string | undefined,
     captchaToken: string
-  ): Promise<{ error: AuthError | null; requiresEmailVerification: boolean }> => {
+  ): Promise<{ error: AuthError | null; requiresEmailVerification: boolean; emailMayAlreadyExist: boolean }> => {
     // Do not HTML-encode identity fields. React escapes rendered text, and
     // HTML entities would change valid email local-parts (for example '&' or '/').
     const normalizedEmail = normalizeAuthEmail(email);
@@ -35,6 +35,7 @@ export const useAuth = () => {
           status: 400,
         } as AuthError,
         requiresEmailVerification: false,
+        emailMayAlreadyExist: false,
       };
     }
 
@@ -48,9 +49,19 @@ export const useAuth = () => {
         data: normalizedName ? { full_name: normalizedName } : undefined,
       },
     });
+    // With email confirmations enabled, Supabase may intentionally return a
+    // success-shaped response for an already-registered email. An empty
+    // identities array is the documented client-side signal; do not query
+    // auth.users directly from the browser. Keep the UI wording non-definitive
+    // to avoid disclosing whether a particular email is registered.
+    const emailMayAlreadyExist = !error && Boolean(data.user) && Array.isArray(data.user.identities) && data.user.identities.length === 0;
     // Supabase returns a session when confirmation is disabled, and no session
     // while the user still needs to verify their email.
-    return { error, requiresEmailVerification: !error && Boolean(data.user) && !data.session };
+    return {
+      error,
+      requiresEmailVerification: !error && !emailMayAlreadyExist && Boolean(data.user) && !data.session,
+      emailMayAlreadyExist,
+    };
   };
 
   const signInWithOAuth = async (provider: Provider) => {
