@@ -294,7 +294,7 @@ const ConfirmEmail = () => {
                     {status === 'error' ? <XCircle className="w-6 h-6" aria-hidden="true" /> : <Mail className="w-6 h-6" aria-hidden="true" />}
                   </div>
                   <CardTitle className="font-serif text-2xl font-bold">Verify your email</CardTitle>
-                  <CardDescription className="mt-2">Enter the verification code sent to your email address, or open the confirmation link in the email.</CardDescription>
+                  <CardDescription className="mt-2">For the most reliable verification, enter the code from your newest email below. If an email link says it expired, request a fresh code and enter the newest code here.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
                   {infoMessage && <Alert role="status" className="border-amber-200 bg-amber-50 text-amber-950"><AlertDescription>{infoMessage}</AlertDescription></Alert>}
