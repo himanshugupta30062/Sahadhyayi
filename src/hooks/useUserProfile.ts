@@ -198,39 +198,51 @@ export const useDeleteUserProfile = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('No authenticated user');
-      
-      try {
-        const { error } = await supabase
-          .from('profiles')
-          .delete()
-          .eq('id', user.id);
-          
-        if (error) {
-          console.error('Error deleting user profile:', error);
-          throw error;
+
+      // Deleting only public.profiles is unsafe: database recovery triggers can
+      // recreate it while the Auth user still exists. Delete the authenticated
+      // account through a server-side function using the service role instead.
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        body: { confirmation: 'DELETE' },
+      });
+
+      if (error) {
+        const context = (error as { context?: Response }).context;
+        if (context) {
+          try {
+            const payload = await context.clone().json() as { error?: string };
+            throw new Error(payload.error || error.message);
+          } catch (parseError) {
+            if (parseError instanceof Error && parseError.message !== error.message) {
+              throw parseError;
+            }
+          }
         }
-      } catch (error) {
-        console.error('Failed to delete profile:', error);
         throw error;
       }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Account deletion could not be confirmed.');
+      }
+
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user_profile'] });
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.clear();
       toast({
-        title: "Success",
-        description: "Profile deleted successfully",
+        title: "Account deleted",
+        description: "Your account and associated data have been permanently deleted.",
       });
     },
     onError: (error) => {
-      console.error('Profile deletion failed:', error);
+      console.error('Account deletion failed:', error);
       toast({
-        title: "Error",
-        description: "Failed to delete profile. Please try again.",
+        title: "Deletion failed",
+        description: error instanceof Error ? error.message : "Could not delete your account. Please try again.",
         variant: "destructive",
       });
     },
