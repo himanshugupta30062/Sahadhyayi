@@ -83,9 +83,13 @@ export const ProfileView: React.FC = () => {
   const handleDelete = () => setEditMode("delete");
 
   const handleConfirmDelete = async () => {
-    await deleteProfile.mutateAsync();
-    toast({ title: "Account marked for deletion", description: "Your account has been deleted.", variant: "destructive" });
-    setTimeout(() => { void signOut(); }, 2000);
+    try {
+      await deleteProfile.mutateAsync();
+      await signOut();
+      navigate("/", { replace: true });
+    } catch {
+      // The mutation displays the failure toast; keep the dialog open so the user can retry.
+    }
   };
 
   const handleCancelDelete = () => setEditMode("view");
@@ -388,6 +392,7 @@ export const ProfileView: React.FC = () => {
           onOpenChange={(open) => setEditMode(open ? "delete" : "view")}
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
+          isPending={deleteProfile.isPending}
         />
       </div>
     </div>
