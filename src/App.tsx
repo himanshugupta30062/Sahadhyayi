@@ -1,6 +1,6 @@
 import React, { useEffect, lazy, Suspense, memo } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 
 import { toast } from '@/hooks/use-toast';
 import { errorHandler } from '@/utils/errorHandler';
