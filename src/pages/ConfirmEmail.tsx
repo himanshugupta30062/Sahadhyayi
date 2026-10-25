@@ -134,7 +134,7 @@ const ConfirmEmail = () => {
       setErrorMessage('Enter the email address you used to sign up.');
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    if (!isValidEmailAddress(normalizedEmail)) {
       setErrorMessage('Enter a valid email address.');
       return;
     }
@@ -173,7 +173,7 @@ const ConfirmEmail = () => {
 
   const handleResendCode = async () => {
     const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    if (!isValidEmailAddress(normalizedEmail)) {
       setErrorMessage('Enter a valid email address first.');
       return;
     }
