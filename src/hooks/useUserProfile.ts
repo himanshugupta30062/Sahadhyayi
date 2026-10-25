@@ -47,7 +47,7 @@ export const useUserProfile = () => {
         const { data, error } = await (supabase as any).rpc('get_my_profile');
           
         if (error) {
-          console.error('Error fetching user profile:', error);
+          console.error('Failed to fetch user profile', { errorName: error instanceof Error ? error.name : 'UnknownError' });
           throw error;
         }
         
@@ -70,7 +70,7 @@ export const useUserProfile = () => {
 
         return normalized;
       } catch (error) {
-        console.error('Failed to fetch user profile:', error);
+        console.error('User profile query failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
         toast({
           title: "Error",
           description: "Failed to load profile data",
@@ -139,7 +139,7 @@ export const useUpsertUserProfile = () => {
           tags_used: saved.tags_used || saved.life_tags || null,
         } as UserProfile;
       } catch (error) {
-        console.error('Failed to save profile:', error);
+        console.error('Failed to save user profile', { errorName: error instanceof Error ? error.name : 'UnknownError' });
         throw error;
       }
     },
@@ -153,7 +153,7 @@ export const useUpsertUserProfile = () => {
       });
     },
     onError: (error) => {
-      console.error('Profile update failed:', error);
+      console.error('User profile update failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
@@ -208,7 +208,7 @@ export const useDeleteUserProfile = () => {
       });
     },
     onError: (error) => {
-      console.error('Account deletion failed:', error);
+      console.error('Account deletion failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
       toast({
         title: "Deletion failed",
         description: error instanceof Error ? error.message : "Could not delete your account. Please try again.",
@@ -243,7 +243,7 @@ export async function uploadProfilePicture(file: File, userId: string): Promise<
       });
       
     if (uploadError) {
-      console.error('Upload error:', uploadError);
+      console.error('Profile picture upload failed', { errorName: uploadError instanceof Error ? uploadError.name : 'StorageError' });
       throw uploadError;
     }
     
@@ -254,7 +254,7 @@ export async function uploadProfilePicture(file: File, userId: string): Promise<
       
     return publicUrl;
   } catch (error) {
-    console.error('Failed to upload profile picture:', error);
+    console.error('Profile picture upload operation failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
     throw error;
   }
 }
