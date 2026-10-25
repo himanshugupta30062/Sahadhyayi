@@ -46,7 +46,6 @@ export const getAnalyticsIds = () => {
 export const cleanCampaignValue = (value: string | null) =>
   value ? value.replace(/[^a-zA-Z0-9 _.-]/g, '').trim().slice(0, 100) || null : null;
 
-// In-memory deduplication set to avoid duplicate event insertion within 4 seconds
 const recentEvents = new Map<string, number>();
 
 export const trackAnalyticsEvent = async (
@@ -61,11 +60,10 @@ export const trackAnalyticsEvent = async (
   const now = Date.now();
   const lastEmitted = recentEvents.get(dedupKey);
   if (lastEmitted && now - lastEmitted < 4000) {
-    return; // Suppress duplicate events within 4 seconds
+    return;
   }
   recentEvents.set(dedupKey, now);
 
-  // Clean old deduplication entries
   if (recentEvents.size > 100) {
     for (const [k, time] of recentEvents.entries()) {
       if (now - time > 10000) recentEvents.delete(k);
@@ -102,11 +100,9 @@ export const trackAnalyticsEvent = async (
     });
 
     if (invokeErr) {
-      // Do not use the database RPC fallback: it cannot populate server-derived IP/geolocation.
       console.warn('Website analytics ingestion failed; no metadata-free fallback was written.', invokeErr);
     }
   } catch (error) {
-    // Analytics never blocks product actions or navigation. Keep page-view metadata server-derived.
     console.warn('Website analytics could not reach the ingestion function.', error);
   }
 };
