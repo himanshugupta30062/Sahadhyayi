@@ -39,7 +39,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install application dependencies
@@ -48,14 +48,16 @@ jobs:
       - name: Build production assets
         run: npm run build
 
-      - name: Install Playwright smoke-test browser
-        run: |
-          npm install --no-save --no-package-lock playwright
-          npx playwright install --with-deps chromium
+      - name: Install pinned Playwright without lifecycle scripts
+        run: npm install --no-save --no-package-lock --ignore-scripts playwright@1.56.1
+
+      - name: Install Playwright Chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
 
       - name: Start production preview
         shell: bash
         run: |
+          set -euo pipefail
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/sahadhyayi-preview.log 2>&1 &
           echo $! > /tmp/sahadhyayi-preview.pid
           for attempt in {1..30}; do

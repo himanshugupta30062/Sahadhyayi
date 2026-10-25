@@ -8,6 +8,12 @@ const corsHeaders = {
 
 const COLORS = ["#f59e0b", "#ef4444", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 
+function randomColor(): string {
+  const random = new Uint32Array(1);
+  crypto.getRandomValues(random);
+  return COLORS[random[0] % COLORS.length];
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -127,7 +133,7 @@ Return ONLY valid JSON, no markdown.`;
         summary: items.length
           ? `A ${genres[0]?.name?.toLowerCase() ?? "varied"} reader with ${items.length} books on the shelf.`
           : "A fresh reader — add some books to refine your DNA.",
-        signature_color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        signature_color: randomColor(),
       };
     }
 

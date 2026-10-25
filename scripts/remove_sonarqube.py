@@ -19,33 +19,40 @@ def remove_sonar_properties():
 
 
 def update_readme():
-    path = Path("README.md")
-    if not path.exists():
+    # Resolve the target from the repository root, never from README content.
+    repo_root = Path.cwd().resolve()
+    path = (repo_root / "README.md").resolve()
+    if path.parent != repo_root or path.name != "README.md":
+        raise ValueError("README path escaped repository root")
+    if not path.is_file():
         print("README.md not found, skipping")
         return
-    lines = path.read_text().splitlines()
-    start = end = None
-    for i, line in enumerate(lines):
-        if "SonarQube" in line or "sonar-project.properties" in line:
-            if start is None:
-                start = i
-            end = i
-    if start is None:
+
+    lines = path.read_text(encoding="utf-8").splitlines()
+    matching_lines = [
+        i for i, line in enumerate(lines)
+        if "SonarQube" in line or "sonar-project.properties" in line
+    ]
+    if not matching_lines:
         print("No SonarQube section found in README.md")
         return
-    # move start to the previous header or beginning
-    while start > 0 and not lines[start].startswith("##"):
+
+    # Remove only the section bounded by Markdown headings; content is never
+    # interpreted as a filesystem path.
+    start = matching_lines[0]
+    while start > 0 and not lines[start].startswith("#"):
         start -= 1
-    # move end to the next header or end of file
-    end += 1
-    while end < len(lines) and not lines[end].startswith("##"):
+    if not lines[start].startswith("#"):
+        start = 0
+
+    end = matching_lines[-1] + 1
+    while end < len(lines) and not lines[end].startswith("#"):
         end += 1
+
     removed = lines[start:end]
     new_lines = lines[:start] + lines[end:]
-    path.write_text("\n".join(new_lines) + "\n")
-    print("Removed SonarQube section from README.md:")
-    for line in removed:
-        print(line)
+    path.write_text("\\n".join(new_lines).rstrip() + "\\n", encoding="utf-8")
+    print(f"Removed SonarQube documentation section ({len(removed)} lines).")
 
 
 def clean_workflows():

@@ -220,7 +220,9 @@ export const useAutoLogout = () => {
 
 
     // Generate unique session ID for browser session tracking
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const randomBytes = new Uint8Array(16);
+    window.crypto.getRandomValues(randomBytes);
+    const sessionId = `session_${Date.now()}_${Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
     localStorage.setItem(BROWSER_SESSION_KEY, sessionId);
     sessionStorage.setItem(BROWSER_SESSION_KEY, sessionId);
 
