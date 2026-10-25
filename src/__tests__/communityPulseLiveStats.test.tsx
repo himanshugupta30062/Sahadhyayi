@@ -548,4 +548,47 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     });
   });
 
+
+  it('keeps cached metrics visibly stale when the admin aggregate is denied and public fallback fails', async () => {
+    localStorage.setItem('sahadhyayi_pulse_stats_24h_v8', JSON.stringify({
+      pageViews: 2224,
+      uniqueVisitors: null,
+      newReaders: 3,
+      totalMembers: 40,
+      avgTimeOnSite: '—',
+      hourlyActivity: [],
+      countries: [],
+      topPages: [],
+      devices: [],
+      referrers: [],
+      lifetimeVisits: 11990,
+      lastUpdated: '2026-10-25T07:31:00.000Z',
+    }));
+    mockCurrentUser = { id: 'admin-1', email: 'admin@sahadhyayi.com' };
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: true, error: null });
+      return Promise.resolve({ data: null, error: { message: 'permission denied for function get_admin_website_analytics' } });
+    });
+    mockFunctionsInvoke.mockImplementation((fn: string) => {
+      if (fn === 'community-stats') {
+        return Promise.resolve({ data: null, error: { message: 'Invalid authentication token', context: { status: 401 } } });
+      }
+      if (fn === 'public-community-stats') {
+        return Promise.resolve({ data: null, error: { message: 'Public analytics unavailable', context: { status: 503 } } });
+      }
+      return Promise.resolve({ data: null, error: { message: 'Unavailable' } });
+    });
+
+    render(<CommunityPulseDialog open={true} onClose={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Live refresh delayed/i)).toBeInTheDocument();
+      expect(screen.getByText('2,224')).toBeInTheDocument();
+    });
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', expect.objectContaining({
+      headers: { Authorization: 'Bearer fake-token' },
+    }));
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('public-community-stats', expect.anything());
+  });
+
 });
