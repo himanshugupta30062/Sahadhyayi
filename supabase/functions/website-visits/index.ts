@@ -89,7 +89,7 @@ Deno.serve(async(req:Request)=>{
     // Configure SITE_OWNER_TEST_IPS as a comma-separated list; the known owner IP
     // remains the fallback so a missing secret cannot accidentally pollute analytics.
     const clientIp=normalizeIp(req.headers.get('cf-connecting-ip')||req.headers.get('x-real-ip'));
-    const ownerTestIps=(Deno.env.get('SITE_OWNER_TEST_IPS')||'49.36.136.144')
+    const ownerTestIps=(Deno.env.get('SITE_OWNER_TEST_IPS')||'')
       .split(',')
       .map((value)=>normalizeIp(value.trim()))
       .filter((value): value is string => value!==null);
