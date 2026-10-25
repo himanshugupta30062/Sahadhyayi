@@ -536,7 +536,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         }
       }
     },
-    [timeframe, isAdmin, fetchDatabaseFallbackStats, parseStatsPayload, safeCount]
+    [timeframe, isAdmin, fetchDatabaseFallbackStats, parseStatsPayload]
   );
 
   // 3. Fetch Recent Visitors (Strictly Admin-Only)
