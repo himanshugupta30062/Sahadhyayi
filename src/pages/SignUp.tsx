@@ -92,7 +92,7 @@ const SignUp = () => {
     try {
       const signupName = normalizeAuthName(formData.name);
       const signupEmail = normalizeAuthEmail(formData.email);
-      const { error } = await signUp(signupEmail, formData.password, signupName, captchaToken);
+      const { error, requiresEmailVerification } = await signUp(signupEmail, formData.password, signupName, captchaToken);
       if (error) {
         setCaptchaToken(null);
         setCaptchaResetKey((key) => key + 1);
@@ -127,9 +127,18 @@ const SignUp = () => {
       try { localStorage.setItem('sahadhyayi_stats_sync', Date.now().toString()); } catch { /* ignore storage error in private mode */ }
       setCaptchaToken(null);
       setCaptchaResetKey((key) => key + 1);
-      setSuccess('A verification code has been sent. Enter it on the next screen to activate your account.');
       setFormData({ name: '', email: '', password: '', confirmPassword: '' });
-      setTimeout(() => navigate(`/confirm-email?email=${encodeURIComponent(signupEmail)}`), 800);
+
+      if (!requiresEmailVerification) {
+        // When Supabase has already issued a session, email confirmation is
+        // disabled for this project; do not send the user to an OTP screen
+        // for which no email was generated.
+        navigate('/dashboard', { replace: true });
+        return;
+      }
+
+      setSuccess('A verification code has been sent. Enter it on the next screen to activate your account.');
+      navigate(`/confirm-email?email=${encodeURIComponent(signupEmail)}`, { replace: true });
     } catch (error: unknown) {
       console.error('Signup error:', error);
       setError('An unexpected error occurred. Please try again.');
