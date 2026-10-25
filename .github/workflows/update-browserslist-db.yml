@@ -26,12 +26,15 @@ jobs:
           node-version: 22
           cache: npm
       - name: Install current lockfile dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Refresh caniuse-lite with the official updater
+        env:
+          npm_config_ignore_scripts: "true"
         run: |
           # Sahadhyayi uses npm and package-lock.json. Ensure stray lockfiles do not trigger alternative package managers.
           rm -f bun.lock bun.lockb pnpm-lock.yaml yarn.lock deno.lock
-          npx --yes update-browserslist-db@latest
+          # Pin the on-demand CLI to a version already resolved in package-lock.json.
+          npm exec --yes --package=update-browserslist-db@1.1.1 -- update-browserslist-db
       - name: Commit the lockfile refresh
         shell: bash
         run: |
