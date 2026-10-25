@@ -1,6 +1,10 @@
 /** @vitest-environment jsdom */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import "@testing-library/jest-dom/vitest";
+// App-level tests mock this module; explicitly use the real utilities in this suite.
+vi.unmock("@/utils/security");
+vi.unmock("@/utils/security.ts");
 import {
   clearCSRFToken,
   createSecureHeaders,
