@@ -180,7 +180,7 @@ const MyLibrary = () => {
                     {book.title}
                   </Link>
                 </h3>
-                {book.author && (
+                {Boolean(book.author) && (
                   <p className="text-muted-foreground text-sm mt-1 truncate">
                     {book.author}
                   </p>
@@ -190,7 +190,7 @@ const MyLibrary = () => {
               {/* Metadata */}
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-wrap gap-1.5">
-                  {book.genre && (
+                  {Boolean(book.genre) && (
                     <span className="inline-block bg-sahadhyayi-amber-light text-sahadhyayi-warm px-2 py-1 rounded-full text-xs font-medium border border-sahadhyayi-amber/20">
                       {book.genre}
                     </span>
@@ -201,7 +201,7 @@ const MyLibrary = () => {
                     </span>
                   )}
                 </div>
-                {book.publication_year && (
+                {Boolean(book.publication_year) && (
                   <span className="text-xs text-muted-foreground font-medium">{book.publication_year}</span>
                 )}
               </div>
