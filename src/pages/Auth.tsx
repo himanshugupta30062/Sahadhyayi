@@ -310,6 +310,7 @@ const Auth = () => {
               {/* Tab Toggle */}
               <div
                 role="tablist"
+                tabIndex={0}
                 aria-label="Account entry modes"
                 className="flex rounded-xl bg-[#F4EFEA] dark:bg-[#181F1B] p-1 mb-6 border border-[#E8E2D9] dark:border-[#26302A]"
               >
