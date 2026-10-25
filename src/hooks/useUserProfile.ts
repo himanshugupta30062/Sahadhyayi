@@ -34,15 +34,23 @@ export interface UserProfile {
 }
 
 export const useUserProfile = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   
   return useQuery<UserProfile | null>({
     queryKey: ['user_profile', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      
+
       try {
+        // First sign-in can briefly expose the user before the access token is
+        // available to PostgREST. Never call the owner-only RPC without a session.
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!sessionData.session || sessionData.session.user.id !== user.id) {
+          throw new Error('Your sign-in is still being finalized. Please try again in a moment.');
+        }
+
         // Private fields are intentionally unavailable through direct table SELECT.
         const { data, error } = await (supabase as any).rpc('get_my_profile');
           
@@ -79,8 +87,15 @@ export const useUserProfile = () => {
         throw error;
       }
     },
-    enabled: !!user,
-    retry: 2,
+    // Wait until AuthContext has processed INITIAL_SESSION / SIGNED_IN before
+    // enabling profile queries. This avoids the first-login anonymous RPC (401).
+    enabled: !!user && !authLoading,
+    retry: (failureCount, error) => {
+      if (error instanceof Error && error.message.includes('sign-in is still being finalized')) {
+        return failureCount < 3;
+      }
+      return failureCount < 2;
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
