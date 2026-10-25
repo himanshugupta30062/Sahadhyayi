@@ -55,7 +55,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
       if (fn === 'get_total_users_count') return Promise.resolve({ data: 0, error: null });
       if (fn === 'get_website_visit_count') return Promise.resolve({ data: 0, error: null });
-      if (fn === 'get_dual_table_website_analytics' || fn === 'get_website_stats_dual_table') {
+      if (fn === 'get_admin_website_analytics' || fn === 'get_website_stats_dual_table') {
         return mockFunctionsInvoke('community-stats', { body: { timeframe: params?.p_timeframe || '24h' } });
       }
       return Promise.resolve({ data: null, error: null });
@@ -372,7 +372,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
   it('uses the selected-period aggregate and never substitutes lifetime visits or raw browser table counts', async () => {
     mockRpc.mockImplementation((fn: string) => {
       if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
-      if (fn === 'get_dual_table_website_analytics') {
+      if (fn === 'get_admin_website_analytics') {
         return Promise.resolve({
           data: {
             period: { pageViews: 7, uniqueVisitors: null, registeredReaders: 4 },
@@ -489,7 +489,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     mockCurrentUser = { id: 'admin-1', email: 'admin@sahadhyayi.com' };
     mockRpc.mockImplementation((fn: string) => {
       if (fn === 'is_admin') return Promise.resolve({ data: true, error: null });
-      if (fn === 'get_dual_table_website_analytics') {
+      if (fn === 'get_admin_website_analytics') {
         return Promise.resolve({
           data: {
             period: { pageViews: 3, uniqueVisitors: null, registeredReaders: 4 },
