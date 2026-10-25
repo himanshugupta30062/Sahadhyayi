@@ -120,6 +120,23 @@ describe('useUserProfile', () => {
     }));
   });
 
+
+  it('keeps deletion successful and clears user data if post-delete logout throws', async () => {
+    mocks.invoke.mockResolvedValue({ data: { success: true }, error: null });
+    mocks.signOut.mockRejectedValue(new Error('User from sub claim in JWT does not exist'));
+
+    const { result } = renderHook(() => useDeleteUserProfile(), { wrapper: makeWrapper() });
+    await act(async () => {
+      await expect(result.current.mutateAsync()).resolves.toEqual({ success: true });
+    });
+
+    expect(mocks.signOut).toHaveBeenCalledTimes(1);
+    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Account deleted',
+      description: 'Your Sahadhyayi account and profile have been permanently deleted.',
+    }));
+  });
+
   it('does not sign out when account deletion fails', async () => {
     mocks.invoke.mockResolvedValue({ data: null, error: new Error('Deletion failed') });
     const { result } = renderHook(() => useDeleteUserProfile(), { wrapper: makeWrapper() });
