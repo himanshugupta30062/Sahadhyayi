@@ -5,6 +5,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import Auth from '@/pages/Auth';
+import SignIn from '@/pages/SignIn';
 import SignUp from '@/pages/SignUp';
 import ResetPassword from '@/pages/ResetPassword';
 import ConfirmEmail from '@/pages/ConfirmEmail';
@@ -190,6 +191,36 @@ describe('Phase 3: Authentication and Account Entry', () => {
 
       expect(passwordInput).toHaveAttribute('type', 'text');
       expect(screen.getByRole('button', { name: /Hide password/i })).toHaveAttribute('aria-pressed', 'true');
+    });
+  });
+
+  describe('Dedicated Sign In page (/signin)', () => {
+    it('shows a custom validation message when both fields are empty', async () => {
+      render(
+        <MemoryRouter initialEntries={['/signin']}>
+          <SignIn />
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /^Sign In$/i }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(/Please fill in all fields/i);
+      expect(mockSignIn).not.toHaveBeenCalled();
+    });
+
+    it('validates malformed email before CAPTCHA or authentication', async () => {
+      render(
+        <MemoryRouter initialEntries={['/signin']}>
+          <SignIn />
+        </MemoryRouter>
+      );
+
+      fireEvent.change(screen.getByLabelText(/^Email$/i), { target: { value: 'not-an-email' } });
+      fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'example-password' } });
+      fireEvent.click(screen.getByRole('button', { name: /^Sign In$/i }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(/Please enter a valid email address/i);
+      expect(mockSignIn).not.toHaveBeenCalled();
     });
   });
 
