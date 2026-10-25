@@ -52,7 +52,7 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
     mockCurrentUser = null;
     mockGetSession.mockResolvedValue({ data: { session: null } });
     mockRpc.mockImplementation((fnName: string, params: any) => {
-      if (fnName === 'get_dual_table_website_analytics' || fnName === 'get_website_stats_dual_table') {
+      if (fnName === 'get_admin_website_analytics' || fnName === 'get_dual_table_website_analytics' || fnName === 'get_website_stats_dual_table') {
         return mockFunctionsInvoke('community-stats', { body: { timeframe: params?.p_timeframe || '24h' } });
       }
       return Promise.resolve({ data: null, error: null });
