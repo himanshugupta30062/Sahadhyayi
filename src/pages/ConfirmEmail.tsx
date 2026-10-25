@@ -96,11 +96,26 @@ const ConfirmEmail = () => {
           }
         }
       } catch (err: unknown) {
+        if (cancelled) return;
+
+        // A link may be reused or pre-opened by an email security scanner. If this
+        // browser already has a confirmed session, treat the stale link as success.
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!cancelled && session?.user?.email_confirmed_at) {
+            setStatus('already-verified');
+            setErrorMessage('');
+            return;
+          }
+        } catch {
+          // Keep the manual OTP fallback available if session lookup fails.
+        }
+
         if (!cancelled) {
           const message = err instanceof Error ? err.message : 'Verification failed. Please enter the email code below.';
           setStatus('manual');
-          setErrorMessage(message.toLowerCase().includes('expired')
-            ? 'This verification link has expired. Enter the latest code from your email or request a new code.'
+          setErrorMessage(message.toLowerCase().includes('expired') || message.toLowerCase().includes('otp_expired')
+            ? 'This link is expired or has already been used. Enter the newest code from your email, or request a new code.'
             : 'We could not verify that link. Enter the one-time code from your email below.');
         }
       }
@@ -152,10 +167,14 @@ const ConfirmEmail = () => {
         type: 'signup',
       });
       if (error) throw error;
-      if (data.session || data.user) {
+      if (data.session) {
         setStatus('success');
         setErrorMessage('');
         toast({ title: 'Email verified', description: 'Your Sahadhyayi account is ready.' });
+      } else if (data.user?.email_confirmed_at) {
+        // Verification succeeded but no session exists; do not redirect to a
+        // protected dashboard as if the browser were signed in.
+        setErrorMessage('Your email is verified, but this browser is not signed in. Please use “Back to sign in” to continue.');
       } else {
         setErrorMessage('The code was accepted but no session was returned. Please sign in to continue.');
       }
