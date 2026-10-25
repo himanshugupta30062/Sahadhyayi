@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,9 @@ type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'alread
 
 const ConfirmEmail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+  const infoMessage = typeof location.state?.message === 'string' ? location.state.message : '';
   const { toast } = useToast();
   const emailFromUrl = (searchParams.get('email') || '').trim().toLowerCase();
   const hasLinkToken = Boolean(searchParams.get('token_hash') || searchParams.get('code') || window.location.hash);
@@ -124,8 +126,9 @@ const ConfirmEmail = () => {
       setErrorMessage('Enter a valid email address.');
       return;
     }
-    if (!/^\d{6}$/.test(normalizedOtp)) {
-      setErrorMessage('Enter the 6-digit code from your verification email.');
+    // Supabase email templates can be configured for either six- or eight-digit OTPs.
+    if (!/^\d{6,8}$/.test(normalizedOtp)) {
+      setErrorMessage('Enter the verification code from your email (6–8 digits).');
       return;
     }
 
@@ -221,9 +224,10 @@ const ConfirmEmail = () => {
                     {status === 'error' ? <XCircle className="w-6 h-6" aria-hidden="true" /> : <Mail className="w-6 h-6" aria-hidden="true" />}
                   </div>
                   <CardTitle className="font-serif text-2xl font-bold">Verify your email</CardTitle>
-                  <CardDescription className="mt-2">Enter the 6-digit one-time code sent to your email address. You can also open the confirmation link in the email.</CardDescription>
+                  <CardDescription className="mt-2">Enter the verification code sent to your email address, or open the confirmation link in the email.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
+                  {infoMessage && <Alert role="status" className="border-amber-200 bg-amber-50 text-amber-950"><AlertDescription>{infoMessage}</AlertDescription></Alert>}
                   {errorMessage && <Alert variant="destructive" role="alert"><AlertDescription>{errorMessage}</AlertDescription></Alert>}
                   <form onSubmit={handleVerifyOtp} className="space-y-4">
                     <div className="space-y-2">
@@ -231,8 +235,8 @@ const ConfirmEmail = () => {
                       <Input id="verification-email" name="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="verification-otp">6-digit verification code</Label>
-                      <Input id="verification-otp" name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="123456" />
+                      <Label htmlFor="verification-otp">Verification code</Label>
+                      <Input id="verification-otp" name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,8}" maxLength={8} required value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 8))} placeholder="Enter code from email" />
                     </div>
                     <Button type="submit" disabled={busy} className="w-full h-11">{busy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying…</> : 'Verify email'}</Button>
                   </form>
