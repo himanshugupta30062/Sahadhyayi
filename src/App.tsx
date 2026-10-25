@@ -158,6 +158,16 @@ const queryClient = new QueryClient({
   }
 });
 
+/**
+ * Keep legacy /auth links working without mounting the legacy combined auth
+ * screen, which can crash at runtime. Preserve supported query parameters.
+ */
+const AuthRouteRedirect = () => {
+  const [searchParams] = useSearchParams();
+  const target = searchParams.get('tab') === 'signup' ? '/signup' : '/signin';
+  const query = searchParams.toString();
+  return <Navigate to={target + (query ? `?${query}` : '')} replace />;
+};
 const ReaderRedirect = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -249,7 +259,7 @@ const App = memo(() => {
                       <Routes>
                         {/* Critical routes - no lazy loading */}
                         <Route path="/" element={<HomeRoute />} />
-                        <Route path="/auth" element={<Suspense fallback={<LoadingFallback />}><Auth /></Suspense>} />
+                        <Route path="/auth" element={<AuthRouteRedirect />} />
                         <Route path="/signup" element={<Suspense fallback={<LoadingFallback />}><SignUp /></Suspense>} />
                         <Route path="/signin" element={<Suspense fallback={<LoadingFallback />}><SignIn /></Suspense>} />
                         <Route path="/reset-password" element={<Suspense fallback={<LoadingFallback />}><ResetPassword /></Suspense>} />
