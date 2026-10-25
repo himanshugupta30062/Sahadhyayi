@@ -419,7 +419,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
 
           if (newPost) {
             // Re-query each feed mode so Following only receives posts from followed authors.
-            queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+            void queryClient.invalidateQueries({ queryKey: ['social-posts'] });
 
             // Show notification for posts from others
             if (newPost.user_id !== user.id) {
@@ -440,13 +440,15 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
         },
         () => {
           // Re-fetch through RLS and refresh signed media URLs on every update.
-          queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+          void queryClient.invalidateQueries({ queryKey: ['social-posts'] });
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel).catch((error) => {
+        console.warn('Failed to remove social posts realtime channel:', error);
+      });
     };
   }, [user?.id, queryClient, toast]);
 
@@ -580,7 +582,7 @@ export const useCreatePost = () => {
           return [{ ...newPost, user_liked: false, user_reposted: false }, ...old];
         });
       }
-      queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+      void queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({
         title: 'Success',
         description: 'Your post has been shared!',
@@ -707,8 +709,8 @@ export const useCreateComment = () => {
       return data;
     },
     onSuccess: (_, { postId }) => {
-      queryClient.invalidateQueries({ queryKey: ['post-comments', postId] });
-      queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+      void queryClient.invalidateQueries({ queryKey: ['post-comments', postId] });
+      void queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({
         title: 'Comment added',
         description: 'Your comment has been posted.',
@@ -753,7 +755,7 @@ export const useToggleRepost = () => {
       return { targetId, isReposted: !isReposted };
     },
     onSuccess: ({ isReposted }) => {
-      queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+      void queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({
         title: isReposted ? 'Reposted' : 'Repost removed',
         description: isReposted ? 'Shared with your followers.' : '',
@@ -839,7 +841,7 @@ export const useDeletePost = () => {
       queryClient.setQueriesData<SocialPost[]>({ queryKey: ['social-posts'] }, (old = []) => {
         return old.filter(post => post.id !== deletedId);
       });
-      queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+      void queryClient.invalidateQueries({ queryKey: ['social-posts'] });
       toast({ title: 'Post deleted' });
     },
   });
