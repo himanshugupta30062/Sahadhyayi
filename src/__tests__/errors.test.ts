@@ -10,6 +10,12 @@ describe("toAppError", () => {
     });
   });
 
+  it("safely converts null, undefined, and primitive rejection values", () => {
+    expect(toAppError(null)).toMatchObject({ name: "AppError", message: "null", severity: "high" });
+    expect(toAppError(undefined)).toMatchObject({ name: "AppError", message: "undefined", severity: "high" });
+    expect(toAppError(42)).toMatchObject({ name: "AppError", message: "42", severity: "high" });
+  });
+
   it("preserves status and code and merges context", () => {
     const input = Object.assign(new Error("bad request"), {
       status: 400,
