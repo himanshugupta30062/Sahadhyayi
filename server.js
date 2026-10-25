@@ -10,8 +10,6 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import * as Sentry from '@sentry/node';
-import fetch from 'node-fetch';
-import FormData from 'form-data';
 import cors from 'cors';
 import busboy from 'busboy';
 import { validateFileUpload } from './server-utils/security.js';
@@ -424,7 +422,7 @@ app.get('/api/libgen', requireSession, async (req, res, next) => {
       return res.status(400).json({ error: 'Missing q', code: 'VALIDATION_ERROR' });
     }
     const url = `https://libgen.is/search.php?req=${encodeURIComponent(q)}&res=25&column=title`;
-    const resp = await fetch(url, { timeout: 15000 });
+    const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!resp.ok) {
       return res
         .status(502)
@@ -453,7 +451,7 @@ app.get('/api/libgen', requireSession, async (req, res, next) => {
   bb.on('finish', async () => {
     try {
       const form = new FormData();
-      form.append('audio', audioBuffer, { filename, contentType: 'audio/webm' });
+      form.append('audio', new Blob([audioBuffer], { type: 'audio/webm' }), filename);
 
       const supabaseUrl = process.env.SUPABASE_URL;
       const edgeKey = process.env.SUPABASE_EDGE_STT_KEY || process.env.SUPABASE_ANON_KEY;
