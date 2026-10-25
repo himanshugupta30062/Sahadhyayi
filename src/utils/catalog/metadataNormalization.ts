@@ -64,8 +64,15 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
     }
   }
 
+  // Remove a trailing volume/part marker from the work title. Volume identity is
+  // captured separately by normalizeBookIdentity, so it must not pollute the title key.
+  cleanTitle = cleanTitle
+    .replace(/\\s+(?:vol(?:ume|\\.)?|part)\\s*(?:\\d+|[ivxlcdm]+)\\s*$/i, '')
+    .replace(/\\s+(?:खण्ड|खंड|भाग)\\s*[०-९0-9]+\\s*$/u, '')
+    .trim();
+
   // Clean trailing punctuation
-  cleanTitle = cleanTitle.replace(/[,;:\-\s]+$/, '').trim();
+  cleanTitle = cleanTitle.replace(/[,;:\\-\\s]+$/, '').trim();
 
   return {
     cleanTitle: cleanTitle || rawTitle.trim(),
