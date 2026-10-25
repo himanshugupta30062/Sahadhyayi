@@ -611,7 +611,10 @@ app.use((err, req, res, _next) => {
   const status = err.status || 500;
   const code = err.code || (status >= 500 ? 'SERVER_ERROR' : 'REQUEST_ERROR');
   const msg = err.message || 'Unexpected error';
-  console.error('API error:', { path: req.path, status, code, msg, details: err.details });
+  // Keep untrusted error text/details out of logs to prevent log injection and data leakage.
+  const safePath = String(req.path || '').replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 200);
+  const safeCode = String(code).replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 80);
+  console.error('API error:', { path: safePath, status, code: safeCode });
   return jsonError(res, status, msg, code, err.details);
 });
 
