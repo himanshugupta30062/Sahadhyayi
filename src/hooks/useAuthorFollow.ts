@@ -47,7 +47,7 @@ export const useAuthorFollow = (authorId?: string) => {
       toast.success('Successfully followed author!');
     },
     onError: (error) => {
-      console.error('Error following author:', error);
+      console.error('Failed to follow author', { errorName: error instanceof Error ? error.name : 'UnknownError' });
       toast.error('Failed to follow author');
     },
   });
@@ -71,7 +71,7 @@ export const useAuthorFollow = (authorId?: string) => {
       toast.success('Successfully unfollowed author');
     },
     onError: (error) => {
-      console.error('Error unfollowing author:', error);
+      console.error('Failed to unfollow author', { errorName: error instanceof Error ? error.name : 'UnknownError' });
       toast.error('Failed to unfollow author');
     },
   });

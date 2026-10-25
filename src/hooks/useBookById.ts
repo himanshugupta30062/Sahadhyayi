@@ -23,7 +23,7 @@ export const useBookById = (id?: string) => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching book:', error);
+        console.error('Failed to fetch book by ID', { errorName: error instanceof Error ? error.name : 'DatabaseError' });
         throw error;
       }
 
