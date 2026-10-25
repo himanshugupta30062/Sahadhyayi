@@ -86,8 +86,8 @@ Deno.serve(async(req:Request)=>{
     const body=await req.json().catch(()=>null) as VisitData|null;
     if(!body||typeof body!=='object'||Array.isArray(body))return new Response(JSON.stringify({error:'Expected a JSON event body'}),{status:400,headers:corsHeaders});
     // Keep owner QA traffic private and out of public analytics.
-    // Configure SITE_OWNER_TEST_IPS as a comma-separated list; the known owner IP
-    // remains the fallback so a missing secret cannot accidentally pollute analytics.
+    // Configure SITE_OWNER_TEST_IPS as a comma-separated list to keep QA traffic
+    // in the private owner table. No personal IP address is hardcoded in source.
     const clientIp=normalizeIp(req.headers.get('cf-connecting-ip')||req.headers.get('x-real-ip'));
     const ownerTestIps=(Deno.env.get('SITE_OWNER_TEST_IPS')||'')
       .split(',')
