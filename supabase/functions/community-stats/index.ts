@@ -188,10 +188,31 @@ Deno.serve(async (req: Request) => {
     const registeredReaders = totalSignupsRes.error ? null : totalSignupsRes.count;
     const newReaders = newSignupsPeriodRes.error ? null : newSignupsPeriodRes.count;
     const totalPageviews = totalPageviewsRes.error ? null : totalPageviewsRes.count;
-    const periodPageviews = periodPageviewsRes.error ? null : periodPageviewsRes.count;
-    const pageViews24h = pageviews24hRes.error ? null : pageviews24hRes.count;
-    const pageViews7d = pageviews7dRes.error ? null : pageviews7dRes.count;
-    const pageViews30d = pageviews30dRes.error ? null : pageviews30dRes.count;
+    let pageViews24h = pageviews24hRes.error ? null : pageviews24hRes.count;
+    let pageViews7d = pageviews7dRes.error ? null : pageviews7dRes.count;
+    let pageViews30d = pageviews30dRes.error ? null : pageviews30dRes.count;
+    let periodPageviews = periodPageviewsRes.error ? null : periodPageviewsRes.count;
+
+    // Compatibility during rolling-event table outages or before ingestion is populated:
+    // preserve historical recent counts from website_visits rather than falsely showing zero.
+    // Lifetime totals always remain sourced from website_visits.
+    const rollingCountsAreEmpty = [pageViews24h, pageViews7d, pageViews30d].every((count) => count === 0);
+    if (rollingCountsAreEmpty) {
+      const [legacyPeriod, legacy24h, legacy7d, legacy30d] = await Promise.all([
+        supabase.from("website_visits").select("*", { count: "exact", head: true })
+          .in("event_type", ["pageview", "page_view", "view"]).gte("visited_at", timeframeStart).lte("visited_at", periodEnd),
+        supabase.from("website_visits").select("*", { count: "exact", head: true })
+          .in("event_type", ["pageview", "page_view", "view"]).gte("visited_at", rollingStart24h).lte("visited_at", periodEnd),
+        supabase.from("website_visits").select("*", { count: "exact", head: true })
+          .in("event_type", ["pageview", "page_view", "view"]).gte("visited_at", rollingStart7d).lte("visited_at", periodEnd),
+        supabase.from("website_visits").select("*", { count: "exact", head: true })
+          .in("event_type", ["pageview", "page_view", "view"]).gte("visited_at", rollingStart30d).lte("visited_at", periodEnd),
+      ]);
+      if (!legacyPeriod.error && typeof legacyPeriod.count === "number") periodPageviews = legacyPeriod.count;
+      if (!legacy24h.error && typeof legacy24h.count === "number") pageViews24h = legacy24h.count;
+      if (!legacy7d.error && typeof legacy7d.count === "number") pageViews7d = legacy7d.count;
+      if (!legacy30d.error && typeof legacy30d.count === "number") pageViews30d = legacy30d.count;
+    }
 
     // If the aggregate RPC is unavailable, try exact per-hour counts instead
     // of presenting an all-zero chart as if it were measured traffic.
@@ -267,7 +288,7 @@ Deno.serve(async (req: Request) => {
       metrics: {
         registeredReaders: { value: registeredReaders, status: registeredReaders === null ? "unavailable" : "available", definition: "Authoritative count of registered reader accounts" },
         totalPageViews: { value: totalPageviews, status: totalPageviews === null ? "unavailable" : "available", definition: "Total recorded pageviews across platform lifetime" },
-        periodPageViews: { value: periodPageviews, status: periodPageviews === null ? "unavailable" : "available", definition: "Recorded pageviews in the selected timeframe" },
+        periodPageViews: { value: periodPageviews, status: periodPageviews === null ? "unavailable" : "available", definition: rollingCountsAreEmpty ? "Compatibility fallback from website_visits because rolling events are empty" : "Recorded pageviews in the selected timeframe" },
         uniqueVisitors: { value: null, status: "unavailable", definition: "Unique visitor deduplication unavailable during fallback mode" },
         newReaders: { value: newReaders, status: newReaders === null ? "unavailable" : "available", definition: "New accounts registered in the selected timeframe" },
         averageSessionDurationSeconds: { value: null, status: "unavailable", definition: "Active session duration telemetry not currently instrumented" },
