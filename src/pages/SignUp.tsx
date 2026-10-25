@@ -154,7 +154,7 @@ const SignUp = () => {
       // form mounted only while the request is pending, never as a success interstitial.
       navigate(`/confirm-email?email=${encodeURIComponent(signupEmail)}`, {
         replace: true,
-        state: { message: 'We sent a verification email. Enter the code below, or open the confirmation link in that email.' },
+        state: { message: 'We sent a verification email. Enter the code below. Use only the newest code if you requested another email.' },
       });
     } catch (error: unknown) {
       console.error('Signup error:', error);
