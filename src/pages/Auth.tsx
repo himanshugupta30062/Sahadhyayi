@@ -127,8 +127,14 @@ const Auth = () => {
       return;
     }
 
+    if (!captchaToken) {
+      setError('Please complete the anti-bot verification before signing in.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      await signIn(normalizeAuthEmail(signinData.email), signinData.password);
+      await signIn(normalizeAuthEmail(signinData.email), signinData.password, captchaToken);
       window.dispatchEvent(new CustomEvent('communityStatsUpdate', { detail: { action: 'signin' } }));
       try {
         localStorage.setItem('sahadhyayi_stats_sync', Date.now().toString());
@@ -151,6 +157,8 @@ const Auth = () => {
       }
     } finally {
       setLoading(false);
+      setCaptchaToken(null);
+      setCaptchaResetKey((key) => key + 1);
     }
   };
 
@@ -457,6 +465,8 @@ const Auth = () => {
                             </button>
                           </div>
                         </div>
+
+                        <TurnstileCaptcha key={`signin-${captchaResetKey}`} action="signin" onTokenChange={setCaptchaToken} />
 
                         <Button
                           type="submit"
