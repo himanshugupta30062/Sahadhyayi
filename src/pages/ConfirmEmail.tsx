@@ -1,319 +1,254 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { CheckCircle2, XCircle, Mail, Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client-universal';
 import SEO from '@/components/SEO';
 
-type VerificationStatus = 'verifying' | 'success' | 'error' | 'already-verified';
+type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'already-verified';
 
 const ConfirmEmail = () => {
-  const [status, setStatus] = useState<VerificationStatus>('verifying');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [countdown, setCountdown] = useState(3);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const emailFromUrl = (searchParams.get('email') || '').trim().toLowerCase();
+  const hasLinkToken = Boolean(searchParams.get('token_hash') || searchParams.get('code') || window.location.hash);
+  const [status, setStatus] = useState<VerificationStatus>(hasLinkToken ? 'verifying' : 'manual');
+  const [email, setEmail] = useState(emailFromUrl);
+  const [otp, setOtp] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
-    let isCancelled = false;
+    setEmail(emailFromUrl);
+  }, [emailFromUrl]);
 
-    const verifyEmail = async () => {
+  useEffect(() => {
+    let cancelled = false;
+    const verifyEmailLink = async () => {
+      const tokenHash = searchParams.get('token_hash');
+      const type = searchParams.get('type') || 'email';
+      const code = searchParams.get('code');
+      const urlError = searchParams.get('error_description') || searchParams.get('error');
+      const hash = window.location.hash || '';
+
+      if (!tokenHash && !code && !hash && !urlError) {
+        setStatus('manual');
+        return;
+      }
+      setStatus('verifying');
       try {
-        const hash = typeof window !== 'undefined' ? window.location.hash : '';
-        const tokenHash = searchParams.get('token_hash');
-        const type = searchParams.get('type') || 'email';
-        const code = searchParams.get('code');
-        const urlError = searchParams.get('error_description') || searchParams.get('error');
-
-        // Check if error was passed in URL (e.g. from expired Supabase link)
         if (urlError || hash.includes('error_description')) {
-          const rawDesc =
-            searchParams.get('error_description') ||
-            (hash.includes('error_description=')
-              ? decodeURIComponent(hash.split('error_description=')[1].split('&')[0].replace(/\+/g, ' '))
-              : 'The verification link is invalid or has expired.');
-          if (!isCancelled) {
+          if (!cancelled) {
             setStatus('error');
-            setErrorMessage(rawDesc);
+            setErrorMessage(urlError || 'The verification link is invalid or has expired. You can enter the email code below.');
           }
           return;
         }
 
-        // 1. If PKCE code is provided
         if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) {
-            if (!isCancelled) {
-              setStatus('error');
-              setErrorMessage(error.message || 'Verification link expired or invalid.');
-            }
-            return;
-          }
-          if (data.session && !isCancelled) {
+          if (error) throw error;
+          if (data.session && !cancelled) {
             setStatus('success');
             return;
           }
         }
 
-        // 2. If token_hash is provided
         if (tokenHash) {
           const { data, error } = await supabase.auth.verifyOtp({
             token_hash: tokenHash,
-            type: type as any,
+            type: type as 'signup' | 'email' | 'recovery' | 'invite' | 'magiclink' | 'email_change',
           });
-
-          if (error) {
-            if (error.message.toLowerCase().includes('expired')) {
-              setErrorMessage('This confirmation link has expired. Please sign in or request a new one.');
-            } else if (error.message.toLowerCase().includes('already verified')) {
-              if (!isCancelled) setStatus('already-verified');
-              return;
-            } else {
-              setErrorMessage(error.message || 'Failed to verify email. Please try again.');
-            }
-            if (!isCancelled) setStatus('error');
-            return;
-          }
-
-          if (data.session && !isCancelled) {
+          if (error) throw error;
+          if (data.session && !cancelled) {
             setStatus('success');
             return;
           }
         }
 
-        // 3. Fallback: check current session to see if already verified
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session?.user?.email_confirmed_at) {
-          if (!isCancelled) setStatus('already-verified');
-          return;
-        }
-
-        // If neither token nor verified session exists
-        if (!tokenHash && !code) {
-          if (!isCancelled) {
-            setStatus('error');
-            setErrorMessage('Invalid or missing confirmation link. Please check the email you received.');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!cancelled) {
+          if (session?.user?.email_confirmed_at) setStatus('already-verified');
+          else {
+            setStatus('manual');
+            setErrorMessage('The link did not complete verification. Enter the one-time code from your email below.');
           }
         }
-      } catch (err: any) {
-        if (!isCancelled) {
-          setStatus('error');
-          setErrorMessage(err?.message || 'An unexpected error occurred during verification.');
+      } catch (err: unknown) {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : 'Verification failed. Please enter the email code below.';
+          setStatus('manual');
+          setErrorMessage(message.toLowerCase().includes('expired')
+            ? 'This verification link has expired. Enter the latest code from your email or request a new code.'
+            : 'We could not verify that link. Enter the one-time code from your email below.');
         }
       }
     };
 
-    verifyEmail();
-
-    return () => {
-      isCancelled = true;
-    };
+    void verifyEmailLink();
+    return () => { cancelled = true; };
   }, [searchParams]);
 
-  // Countdown and redirect on success
   useEffect(() => {
-    if (status === 'success' || status === 'already-verified') {
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            navigate('/dashboard', { replace: true });
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
+    if (status !== 'success' && status !== 'already-verified') return;
+    const timer = window.setInterval(() => {
+      setCountdown((previous) => {
+        if (previous <= 1) {
+          window.clearInterval(timer);
+          navigate('/dashboard', { replace: true });
+          return 0;
+        }
+        return previous - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
   }, [status, navigate]);
 
-  const handleResendEmail = async () => {
+  const handleVerifyOtp = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage('');
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedOtp = otp.replace(/\s/g, '');
+    if (!normalizedEmail) {
+      setErrorMessage('Enter the email address you used to sign up.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setErrorMessage('Enter a valid email address.');
+      return;
+    }
+    if (!/^\d{6}$/.test(normalizedOtp)) {
+      setErrorMessage('Enter the 6-digit code from your verification email.');
+      return;
+    }
+
+    setBusy(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user?.email) {
-        toast({
-          title: 'Email Required',
-          description: 'Please sign in or register to request a new verification email.',
-          variant: 'destructive',
-        });
-        navigate('/signin');
-        return;
-      }
-
-      const { error } = await supabase.auth.resend({
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: normalizedEmail,
+        token: normalizedOtp,
         type: 'signup',
-        email: user.email,
       });
-
       if (error) throw error;
-
-      toast({
-        title: 'Verification email sent',
-        description: `A new confirmation link was sent to ${user.email}.`,
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Could not send email',
-        description: error.message || 'Failed to resend confirmation email.',
-        variant: 'destructive',
-      });
+      if (data.session || data.user) {
+        setStatus('success');
+        setErrorMessage('');
+        toast({ title: 'Email verified', description: 'Your Sahadhyayi account is ready.' });
+      } else {
+        setErrorMessage('The code was accepted but no session was returned. Please sign in to continue.');
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message.toLowerCase() : '';
+      setErrorMessage(message.includes('expired') || message.includes('otp_expired')
+        ? 'That code has expired. Request a new code and try again.'
+        : message.includes('invalid') || message.includes('token')
+          ? 'That code is incorrect or expired. Check the latest email and try again.'
+          : 'We could not verify this code. Please try again or request a new one.');
+    } finally {
+      setBusy(false);
     }
   };
 
+  const handleResendCode = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setErrorMessage('Enter a valid email address first.');
+      return;
+    }
+    setBusy(true);
+    setErrorMessage('');
+    try {
+      const { error } = await supabase.auth.resend({ type: 'signup', email: normalizedEmail });
+      if (error) throw error;
+      setOtp('');
+      toast({ title: 'New code sent', description: 'Check your inbox and use the newest verification code.' });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message.toLowerCase() : '';
+      setErrorMessage(message.includes('rate') || message.includes('too many')
+        ? 'Please wait a little before requesting another code.'
+        : 'Could not resend the code. Check the email address and try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const verified = status === 'success' || status === 'already-verified';
+
   return (
     <>
-      <SEO
-        title="Confirm Email - Sahadhyayi"
-        description="Confirm your email to activate your Sahadhyayi account."
-        canonical="https://sahadhyayi.com/confirm-email"
-        url="https://sahadhyayi.com/confirm-email"
-      />
-      <div className="min-h-screen flex items-center justify-center p-4 bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
+      <SEO title="Verify Email - Sahadhyayi" description="Verify your email to activate your Sahadhyayi account." canonical="https://sahadhyayi.com/confirm-email" url="https://sahadhyayi.com/confirm-email" />
+      <div className="min-h-screen flex items-center justify-center p-4 bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7]">
         <div className="w-full max-w-md">
-          {/* Logo */}
           <div className="text-center mb-6">
             <Link to="/" className="inline-flex items-center gap-2 mb-3" aria-label="Sahadhyayi Home">
-              <img
-                src="/optimized-assets/site-logo.webp"
-                alt=""
-                aria-hidden="true"
-                className="w-10 h-10"
-                width={40}
-                height={40}
-              />
+              <img src="/optimized-assets/site-logo.webp" alt="" aria-hidden="true" className="w-10 h-10" width={40} height={40} />
             </Link>
           </div>
-
           <Card className="border border-[#E8E2D9] dark:border-[#26302A] shadow-md dark:shadow-none bg-white dark:bg-[#111614] rounded-2xl overflow-hidden">
             {status === 'verifying' && (
               <CardContent className="py-12 text-center space-y-4">
-                <Loader2
-                  className="w-10 h-10 text-[#8F681C] dark:text-[#D5B16D] animate-spin mx-auto"
-                  aria-hidden="true"
-                />
-                <div>
-                  <CardTitle className="font-serif text-2xl font-bold text-foreground">
-                    Verifying Email
-                  </CardTitle>
-                  <CardDescription className="text-sm text-muted-foreground mt-2">
-                    Please wait while we verify your email address...
-                  </CardDescription>
-                </div>
+                <Loader2 className="w-10 h-10 text-[#8F681C] animate-spin mx-auto" aria-hidden="true" />
+                <CardTitle className="font-serif text-2xl">Verifying your email…</CardTitle>
+                <CardDescription>Please wait while we confirm your email address.</CardDescription>
               </CardContent>
             )}
-
-            {status === 'success' && (
+            {verified && (
               <>
                 <CardHeader className="text-center pb-2">
-                  <div className="mx-auto w-12 h-12 bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-500/30 rounded-full flex items-center justify-center mb-4 text-emerald-600 dark:text-emerald-400">
+                  <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4 text-emerald-600">
                     <CheckCircle2 className="w-6 h-6" aria-hidden="true" />
                   </div>
-                  <CardTitle className="font-serif text-2xl font-bold text-foreground">
-                    Email Confirmed!
-                  </CardTitle>
-                  <CardDescription className="text-sm text-muted-foreground mt-2">
-                    Your account has been successfully verified. Welcome to the Sahadhyayi reading community.
-                  </CardDescription>
+                  <CardTitle className="font-serif text-2xl font-bold">{status === 'success' ? 'Email Verified!' : 'Already Verified'}</CardTitle>
+                  <CardDescription className="mt-2">Your email is confirmed. Welcome to the Sahadhyayi reading community.</CardDescription>
                 </CardHeader>
                 <CardContent className="text-center space-y-4 pt-4">
-                  <p className="text-xs text-muted-foreground">
-                    Redirecting to your dashboard in {countdown} seconds...
-                  </p>
-                  <Button
-                    onClick={() => navigate('/dashboard', { replace: true })}
-                    className="w-full h-11 rounded-xl bg-[#8F681C] hover:bg-[#785715] text-white dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] dark:text-stone-950 font-semibold shadow-md shadow-[#8F681C]/20 dark:shadow-[#D5B16D]/20"
-                  >
-                    Go to Dashboard Now
-                  </Button>
+                  <p className="text-xs text-muted-foreground">Redirecting to your dashboard in {countdown} seconds…</p>
+                  <Button onClick={() => navigate('/dashboard', { replace: true })} className="w-full">Go to Dashboard</Button>
                 </CardContent>
               </>
             )}
-
-            {status === 'already-verified' && (
+            {!verified && status !== 'verifying' && (
               <>
                 <CardHeader className="text-center pb-2">
-                  <div className="mx-auto w-12 h-12 bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-500/30 rounded-full flex items-center justify-center mb-4 text-emerald-600 dark:text-emerald-400">
-                    <CheckCircle2 className="w-6 h-6" aria-hidden="true" />
+                  <div className="mx-auto w-12 h-12 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center mb-4 text-[#8F681C]">
+                    {status === 'error' ? <XCircle className="w-6 h-6" aria-hidden="true" /> : <Mail className="w-6 h-6" aria-hidden="true" />}
                   </div>
-                  <CardTitle className="font-serif text-2xl font-bold text-foreground">
-                    Already Verified
-                  </CardTitle>
-                  <CardDescription className="text-sm text-muted-foreground mt-2">
-                    Your email address has already been confirmed. You are ready to explore and read.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center space-y-4 pt-4">
-                  <p className="text-xs text-muted-foreground">
-                    Redirecting to your dashboard in {countdown} seconds...
-                  </p>
-                  <Button
-                    onClick={() => navigate('/dashboard', { replace: true })}
-                    className="w-full h-11 rounded-xl bg-[#8F681C] hover:bg-[#785715] text-white dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] dark:text-stone-950 font-semibold shadow-md shadow-[#8F681C]/20 dark:shadow-[#D5B16D]/20"
-                  >
-                    Go to Dashboard Now
-                  </Button>
-                </CardContent>
-              </>
-            )}
-
-            {status === 'error' && (
-              <>
-                <CardHeader className="text-center pb-2">
-                  <div className="mx-auto w-12 h-12 bg-red-100 dark:bg-red-950/60 border border-red-500/30 rounded-full flex items-center justify-center mb-4 text-red-600 dark:text-red-400">
-                    <XCircle className="w-6 h-6" aria-hidden="true" />
-                  </div>
-                  <CardTitle className="font-serif text-2xl font-bold text-foreground">
-                    Verification Failed
-                  </CardTitle>
-                  <CardDescription className="text-sm text-muted-foreground mt-2">
-                    We could not verify your email with the provided link.
-                  </CardDescription>
+                  <CardTitle className="font-serif text-2xl font-bold">Verify your email</CardTitle>
+                  <CardDescription className="mt-2">Enter the 6-digit one-time code sent to your email address. You can also open the confirmation link in the email.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
-                  <Alert variant="destructive" className="rounded-xl" role="alert">
-                    <AlertDescription>{errorMessage}</AlertDescription>
-                  </Alert>
-
-                  <div className="space-y-2">
-                    <Button
-                      onClick={handleResendEmail}
-                      className="w-full h-11 rounded-xl border border-[#E8E2D9] dark:border-[#26302A] bg-white dark:bg-[#161D19] text-foreground hover:bg-[#FAF7F2] dark:hover:bg-[#1C2420]"
-                      variant="outline"
-                    >
-                      <Mail className="w-4 h-4 mr-2" aria-hidden="true" />
-                      Resend Confirmation Email
-                    </Button>
-                    <Button
-                      onClick={() => navigate('/signin')}
-                      className="w-full h-11 rounded-xl bg-[#8F681C] hover:bg-[#785715] text-white dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] dark:text-stone-950 font-semibold shadow-md shadow-[#8F681C]/20 dark:shadow-[#D5B16D]/20"
-                    >
-                      Go to Sign In
-                    </Button>
-                  </div>
-
+                  {errorMessage && <Alert variant="destructive" role="alert"><AlertDescription>{errorMessage}</AlertDescription></Alert>}
+                  <form onSubmit={handleVerifyOtp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="verification-email">Email address</Label>
+                      <Input id="verification-email" name="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="verification-otp">6-digit verification code</Label>
+                      <Input id="verification-otp" name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="123456" />
+                    </div>
+                    <Button type="submit" disabled={busy} className="w-full h-11">{busy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying…</> : 'Verify email'}</Button>
+                  </form>
+                  <Button type="button" variant="outline" disabled={busy} onClick={handleResendCode} className="w-full">
+                    {busy ? 'Please wait…' : 'Resend verification code'}
+                  </Button>
                   <div className="text-center pt-2">
-                    <Link
-                      to="/"
-                      className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" /> Return to Homepage
-                    </Link>
+                    <Link to="/signin" className="text-sm text-muted-foreground hover:text-foreground">Back to sign in</Link>
                   </div>
                 </CardContent>
               </>
             )}
           </Card>
+          <div className="text-center mt-4">
+            <Link to="/" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"><ArrowLeft className="w-3.5 h-3.5" /> Return to Homepage</Link>
+          </div>
         </div>
       </div>
     </>
