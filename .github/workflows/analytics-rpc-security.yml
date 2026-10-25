@@ -1,0 +1,29 @@
+name: Analytics RPC Security
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/tests/analytics_rpc_security.test.sql"
+      - "scripts/verify-analytics-rpc-security.mjs"
+      - ".github/workflows/analytics-rpc-security.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/tests/analytics_rpc_security.test.sql"
+      - "scripts/verify-analytics-rpc-security.mjs"
+      - ".github/workflows/analytics-rpc-security.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-analytics-rpc-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify analytics RPC privilege boundaries
+        run: node scripts/verify-analytics-rpc-security.mjs
