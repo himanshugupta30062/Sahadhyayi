@@ -115,59 +115,28 @@ export const useUpsertUserProfile = () => {
           cleanUpdates.tags_used = tags;
         }
         
-        let res = await supabase
-          .from('profiles')
-          .upsert({ 
-            ...cleanUpdates, 
-            id: user.id,
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'id' })
-          .select('id, full_name, username, profile_photo_url, bio, location, writing_frequency, stories_written_count, stories_read_count, tags_used, created_at, updated_at')
-          .single();
-          
-        // Fallback to core profiles schema if database hasn't applied extended columns
-        if (res.error && res.error.message?.includes('does not exist')) {
-          const coreColumns: Record<string, unknown> = {
-            id: user.id,
-            full_name: fullName,
-            username: cleanUpdates.username,
-            bio: cleanUpdates.bio,
-            profile_photo_url: photoUrl,
-            writing_frequency: cleanUpdates.writing_frequency,
-            location_sharing: cleanUpdates.location_sharing,
-            location_lat: cleanUpdates.location_lat,
-            location_lng: cleanUpdates.location_lng,
-            tags_used: tags,
-            updated_at: new Date().toISOString()
-          };
-          const coreFiltered = Object.fromEntries(
-            Object.entries(coreColumns).filter(([_, v]) => v !== undefined)
-          );
-          res = await supabase
-            .from('profiles')
-            .upsert(coreFiltered, { onConflict: 'id' })
-            .select('id, full_name, username, profile_photo_url, bio, location, writing_frequency, stories_written_count, stories_read_count, tags_used, created_at, updated_at')
-            .single();
+        // Use an owner-scoped RPC because private profile fields are intentionally
+        // not writable through the public PostgREST table interface.
+        const { data, error } = await (supabase as any).rpc('update_my_profile', {
+          p_profile: cleanUpdates,
+        });
+        if (error) throw error;
+
+        const saved = data && typeof data === 'object' && !Array.isArray(data)
+          ? data as Record<string, any>
+          : null;
+        if (!saved || saved.id !== user.id) {
+          throw new Error('Profile update could not be confirmed.');
         }
 
-        if (res.error) {
-          console.error('Error upserting user profile:', res.error);
-          throw res.error;
-        }
-        
-        // Re-read the owner's private fields through the owner-only RPC.
-        const { data: ownProfile, error: ownProfileError } = await (supabase as any).rpc('get_my_profile');
-        if (ownProfileError) throw ownProfileError;
-        const saved = ownProfile && typeof ownProfile === 'object' && !Array.isArray(ownProfile)
-          ? ownProfile
-          : res.data;
         return {
           ...saved,
-          name: (saved as any).name || saved.full_name || '',
-          full_name: saved.full_name || (saved as any).name || '',
-          profile_picture_url: (saved as any).profile_picture_url || saved.profile_photo_url || null,
-          profile_photo_url: saved.profile_photo_url || (saved as any).profile_picture_url || null,
-          life_tags: (saved as any).life_tags || (Array.isArray(saved.tags_used) ? saved.tags_used : []),
+          name: saved.name || saved.full_name || '',
+          full_name: saved.full_name || saved.name || '',
+          profile_picture_url: saved.profile_picture_url || saved.profile_photo_url || null,
+          profile_photo_url: saved.profile_photo_url || saved.profile_picture_url || null,
+          life_tags: saved.life_tags || (Array.isArray(saved.tags_used) ? saved.tags_used : []),
+          tags_used: saved.tags_used || saved.life_tags || null,
         } as UserProfile;
       } catch (error) {
         console.error('Failed to save profile:', error);
