@@ -73,6 +73,50 @@ describe('signup input normalization', () => {
     expect(mockSignUp).not.toHaveBeenCalled();
   });
 
+  it('flags Supabase duplicate-email responses instead of treating them as a new signup', async () => {
+    mockSignUp.mockResolvedValueOnce({
+      data: {
+        user: { id: 'existing-user', identities: [] },
+        session: null,
+      },
+      error: null,
+    });
+    const { result } = renderHook(() => useAuth());
+
+    let response: Awaited<ReturnType<typeof result.current.signUp>> | undefined;
+    await act(async () => {
+      response = await result.current.signUp('reader@example.com', 'ValidPass1', 'Reader', 'valid-turnstile-token');
+    });
+
+    expect(response).toMatchObject({
+      error: null,
+      requiresEmailVerification: false,
+      emailMayAlreadyExist: true,
+    });
+  });
+
+  it('keeps a new email in the verification flow when Supabase returns an identity', async () => {
+    mockSignUp.mockResolvedValueOnce({
+      data: {
+        user: { id: 'new-user', identities: [{ identity_id: 'identity-1' }] },
+        session: null,
+      },
+      error: null,
+    });
+    const { result } = renderHook(() => useAuth());
+
+    let response: Awaited<ReturnType<typeof result.current.signUp>> | undefined;
+    await act(async () => {
+      response = await result.current.signUp('new-reader@example.com', 'ValidPass1', 'Reader', 'valid-turnstile-token');
+    });
+
+    expect(response).toMatchObject({
+      error: null,
+      requiresEmailVerification: true,
+      emailMayAlreadyExist: false,
+    });
+  });
+
   it('does not block registration when browser storage throws', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('Storage disabled by browser privacy settings');
