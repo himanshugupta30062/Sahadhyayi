@@ -6,11 +6,26 @@ const SESSION_IDLE_MS = 30 * 60 * 1000;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const newId = () => {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = Math.trunc(Math.random() * 16);
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-  });
+  if (typeof crypto === 'undefined') {
+    throw new Error('Secure random number generation is unavailable');
+  }
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+
+  // Keep the UUID fallback cryptographically strong in browsers without randomUUID.
+  if (typeof crypto.getRandomValues !== 'function') {
+    throw new Error('Secure random number generation is unavailable');
+  }
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20),
+  ].join('-');
 };
 
 const readStorage = (storage: Storage, key: string) => {
