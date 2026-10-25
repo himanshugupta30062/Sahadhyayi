@@ -138,17 +138,17 @@ export function TurnstileCaptcha({ onTokenChange, action = 'signup' }: Turnstile
         }
       }
     };
-  }, [siteKey]);
+  }, [siteKey, action]);
 
   return (
     <div className="space-y-2">
       <div ref={containerRef} aria-label="Verify you are human" />
       {status === 'loading' && siteKey && (
-        <p className="text-xs text-muted-foreground" role="status">Loading signup verification…</p>
+        <p className="text-xs text-muted-foreground" role="status">{action === 'signin' ? 'Loading sign-in verification…' : 'Loading signup verification…'}</p>
       )}
       {status === 'missing-key' && (
         <p className="text-xs text-destructive" role="alert">
-          Signup verification is not configured yet. Please try again later.
+          {action === 'signin' ? 'Sign-in verification' : 'Signup verification'} is not configured yet. Please try again later.
         </p>
       )}
       {status === 'error' && (
