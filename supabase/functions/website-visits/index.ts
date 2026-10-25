@@ -123,5 +123,9 @@ Deno.serve(async(req:Request)=>{
     },{onConflict:'event_id',ignoreDuplicates:true});
     if(legacyError){console.error('Rolling analytics recorded but legacy mirror failed',{code:legacyError.code,message:legacyError.message});return new Response(JSON.stringify({success:true,partial:true,recordedIn:'website_visit_events'}),{status:200,headers:corsHeaders});}
     return new Response(JSON.stringify({success:true,eventId:validEventId,recordedIn:['website_visit_events','website_visits'],geoAvailable:Boolean(geo.ip||geo.countryCode||geo.city||geo.region),geoSource:geo.geoSource}),{status:200,headers:corsHeaders});
-  } catch(error){console.error('website-visits ingestion error',error);return new Response(JSON.stringify({error:'Internal server error'}),{status:500,headers:corsHeaders});}
+  } catch(error){
+    // Do not write untrusted exception messages or request-derived data to logs.
+    console.error('website-visits ingestion error',{name:error instanceof Error?error.name:'UnknownError'});
+    return new Response(JSON.stringify({error:'Internal server error'}),{status:500,headers:corsHeaders});
+  }
 });
