@@ -195,6 +195,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     await waitFor(() => {
       expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', {
         body: { timeframe: '24h' },
+          headers: { Authorization: 'Bearer fake-token' },
       });
     });
 
@@ -206,6 +207,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     await waitFor(() => {
       expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', {
         body: { timeframe: '7d' },
+          headers: { Authorization: 'Bearer fake-token' },
       });
     });
 
@@ -215,6 +217,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     await waitFor(() => {
       expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', {
         body: { timeframe: '30d' },
+          headers: { Authorization: 'Bearer fake-token' },
       });
     });
   });
