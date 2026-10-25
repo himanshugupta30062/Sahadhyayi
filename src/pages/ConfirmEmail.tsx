@@ -13,6 +13,15 @@ import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
 
 type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'already-verified';
 
+function isValidEmailAddress(value: string): boolean {
+  if (value.length === 0 || value.length > 254 || value.trim() !== value || /\\s/.test(value)) return false;
+  const at = value.indexOf('@');
+  if (at <= 0 || at !== value.lastIndexOf('@') || at > 64) return false;
+  const domain = value.slice(at + 1);
+  const dot = domain.lastIndexOf('.');
+  return dot > 0 && dot < domain.length - 1 && !domain.includes('..');
+}
+
 const ConfirmEmail = () => {
   const navigate = useNavigate();
   const location = useLocation();
