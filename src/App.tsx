@@ -12,6 +12,7 @@ import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRF
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
+import { useAuth } from "./contexts/authHelpers";
 import QuotesProvider from "./contexts/QuotesContext";
 import BookExpertProvider from "./contexts/BookExpertContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -96,6 +97,30 @@ const LoadingFallback = memo(({ message = "Loading..." }: { message?: string }) 
     <BookFlipLoader size="md" text={message} />
   </div>
 ));
+
+/**
+ * Keep the root URL deterministic: public visitors see the marketing homepage,
+ * while authenticated readers land on their personal dashboard. Wait for Supabase
+ * to restore the session before choosing a destination to avoid a post-login flash
+ * of the public homepage.
+ */
+const HomeRoute = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingFallback message="Loading your Sahadhyayi home..." />;
+  }
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return (
+    <Suspense fallback={<LoadingFallback message="Loading Sahadhyayi..." />}>
+      <Index />
+    </Suspense>
+  );
+};
 
 // Optimized query client configuration
 const queryClient = new QueryClient({
@@ -223,7 +248,7 @@ const App = memo(() => {
                       <span id="main" className="sr-only" />
                       <Routes>
                         {/* Critical routes - no lazy loading */}
-                        <Route path="/" element={<Suspense fallback={<LoadingFallback message="Loading Sahadhyayi..." />}><Index /></Suspense>} />
+                        <Route path="/" element={<HomeRoute />} />
                         <Route path="/auth" element={<Suspense fallback={<LoadingFallback />}><Auth /></Suspense>} />
                         <Route path="/signup" element={<Suspense fallback={<LoadingFallback />}><SignUp /></Suspense>} />
                         <Route path="/signin" element={<Suspense fallback={<LoadingFallback />}><SignIn /></Suspense>} />
