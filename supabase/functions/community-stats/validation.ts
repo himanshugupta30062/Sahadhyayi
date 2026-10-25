@@ -3,7 +3,7 @@
 const ALLOWED_TIMEFRAMES = new Set(["24h", "7d", "30d"]);
 
 export function getCommunityStatsBearerToken(authorization: string | null): string | null {
-  const token = authorization?.match(/^Bearer\\s+(.+)$/i)?.[1]?.trim();
+  const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
   return token || null;
 }
 
