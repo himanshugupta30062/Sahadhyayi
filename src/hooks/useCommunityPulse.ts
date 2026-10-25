@@ -431,120 +431,22 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     };
   }, []);
 
-  const safeCount = useCallback(async (table: string, filterField?: string, filterGte?: string, eqField?: string, eqVal?: string): Promise<number | null> => {
-    try {
-      if (typeof supabase?.from !== 'function') return null;
-      let q = supabase.from(table)?.select?.('id', { count: 'exact', head: true });
-      if (!q) return null;
-      if (eqField && eqVal && typeof (q as any).eq === 'function') {
-        q = (q as any).eq(eqField, eqVal);
-      }
-      if (filterField && filterGte && typeof (q as any).gte === 'function') {
-        q = (q as any).gte(filterField, filterGte);
-      }
-      const res = await q;
-      if (res?.error) {
-        return null;
-      }
-      return typeof res?.count === 'number' ? res.count : null;
-    } catch {
-      return null;
-    }
-  }, []);
-
   /**
-   * Resilient fallback fetching from database RPCs or public counts
+   * Analytics fallback uses the same server-side aggregate RPC as the primary
+   * Edge Function. Never fall back to probing protected tables from the browser:
+   * missing table grants/RLS must not produce repeated 401s or tempt broad grants.
    */
   const fetchDatabaseFallbackStats = useCallback(async (tf: AnalyticsTimeframe): Promise<PulseStats> => {
-    const timeframeStart = (() => {
-      const now = new Date();
-      if (tf === '30d') return new Date(now.getTime() - 30 * 86400000).toISOString();
-      if (tf === '7d') return new Date(now.getTime() - 7 * 86400000).toISOString();
-      return new Date(now.getTime() - 86400000).toISOString();
-    })();
+    const { data, error: rpcError } = await supabase.rpc('get_community_pulse_stats', {
+      p_timeframe: tf,
+    });
 
-    const safeRpc = async (name: string, params?: Record<string, unknown>) => {
-      try {
-        if (typeof supabase?.rpc !== 'function') return { data: null, error: true };
-        return await supabase.rpc(name, params);
-      } catch {
-        return { data: null, error: true };
-      }
-    };
-
-    const [
-      usersRpcRes,
-      totalVisitsRpcRes,
-      totalProfiles,
-      newProfiles,
-      periodPageviews,
-      progressUpdates,
-      groupJoins,
-      postsCount,
-      commentsCount,
-    ] = await Promise.all([
-      safeRpc('get_total_users_count'),
-      Promise.resolve({ data: null, error: true }),
-      safeCount('profiles'),
-      safeCount('profiles', 'created_at', timeframeStart),
-      // Raw visit rows are service-role-only. Use aggregate RPCs for pageview totals.
-      Promise.resolve(null),
-      safeCount('reading_room_events', 'created_at', timeframeStart, 'kind', 'chapter_complete'),
-      safeCount('group_members', 'joined_at', timeframeStart),
-      safeCount('posts', 'created_at', timeframeStart),
-      safeCount('comments', 'created_at', timeframeStart),
-    ]);
-
-    const rpcUsers = typeof (usersRpcRes as any)?.data === 'number' ? (usersRpcRes as any).data : null;
-    const totalVisits = typeof (totalVisitsRpcRes as any)?.data === 'number' ? (totalVisitsRpcRes as any).data : null;
-
-    const availableCounts = [rpcUsers, totalVisits, totalProfiles, newProfiles, periodPageviews, progressUpdates, groupJoins, postsCount, commentsCount];
-    if (availableCounts.every((value) => value === null)) {
+    if (rpcError || !data || typeof data !== 'object') {
       throw new Error('Analytics aggregate is unavailable');
     }
 
-    return {
-      pageViews: periodPageviews,
-      uniqueVisitors: null,
-      newReaders: newProfiles,
-      totalMembers: rpcUsers ?? totalProfiles,
-      avgTimeOnSite: '—',
-      pageViewsChange: undefined,
-      uniqueVisitorsChange: undefined,
-      newReadersChange: undefined,
-      avgTimeChange: undefined,
-      hourlyActivity: [],
-      dailyActivity: [],
-      lifetimeVisits: totalVisits,
-      dualTable: {
-        lifetimeVisits: totalVisits,
-        lifetimeSourceTable: 'public.website_visits',
-        rolling24hViews: tf === '24h' ? periodPageviews : null,
-        rolling7dViews: tf === '7d' ? periodPageviews : null,
-        rolling30dViews: tf === '30d' ? periodPageviews : null,
-        uniqueVisitors24h: null,
-        uniqueVisitors7d: null,
-        uniqueVisitors30d: null,
-        rollingSourceTable: 'public.website_visit_events',
-        collectionStartedAt: '2026-10-19T00:00:00Z',
-        isInitialRollout: true,
-      },
-      countries: [],
-      topPages: [],
-      devices: [],
-      referrers: [],
-      readingEngagement: {
-        bookViews: null,
-        readingProgressUpdates: progressUpdates,
-        groupJoins,
-        discussions: postsCount !== null && commentsCount !== null ? postsCount + commentsCount : null,
-      },
-      topMembers: [],
-      lastUpdated: new Date().toISOString(),
-      isStale: false,
-      partialData: true,
-    };
-  }, [parseStatsPayload, safeCount]);
+    return parseStatsPayload(data, tf);
+  }, [parseStatsPayload]);
 
   // 2. Fetch Aggregate Stats with Seamless Fallback
   const fetchStats = useCallback(
