@@ -40,7 +40,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const authorization = req.headers.get("Authorization");
-  const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
+  const token = getBearerToken(authorization);
   if (!token) {
     return json({ error: "Please sign in again before deleting your account." }, 401, req.headers.get("Origin"));
   }
