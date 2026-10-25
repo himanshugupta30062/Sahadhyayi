@@ -48,7 +48,7 @@ export function useGameBadges() {
         setUserBadges((earned || []) as unknown as UserBadge[]);
       }
     } catch (err) {
-      console.error('Error fetching badges:', err);
+      console.error('Failed to fetch game badges', { errorName: err instanceof Error ? err.name : 'UnknownError' });
     } finally {
       setLoading(false);
     }
@@ -103,10 +103,17 @@ export function useGameBadges() {
     // Award new badges
     for (const badge of newBadges) {
       try {
-        await supabase.from('user_game_badges').insert({
+        const { error: awardError } = await supabase.from('user_game_badges').insert({
           user_id: user.id,
           badge_id: badge.id,
         });
+
+        if (awardError) {
+          console.error('Failed to award game badge', {
+            errorName: awardError instanceof Error ? awardError.name : 'DatabaseError',
+          });
+          continue;
+        }
 
         setNewBadge(badge);
         toast.success(`🏆 Achievement Unlocked: ${badge.name}!`, {
@@ -114,7 +121,7 @@ export function useGameBadges() {
           duration: 5000,
         });
       } catch (err) {
-        console.error('Error awarding badge:', err);
+        console.error('Game badge award failed', { errorName: err instanceof Error ? err.name : 'UnknownError' });
       }
     }
 
