@@ -9,6 +9,7 @@ const mockFunctionsInvoke = vi.fn();
 const mockRpc = vi.fn();
 const mockFrom = vi.fn();
 const mockGetSession = vi.fn();
+const mockRefreshSession = vi.fn();
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: {
@@ -19,6 +20,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
     from: (...args: any[]) => mockFrom(...args),
     auth: {
       getSession: (...args: any[]) => mockGetSession(...args),
+      refreshSession: (...args: any[]) => mockRefreshSession(...args),
       onAuthStateChange: vi.fn().mockReturnValue({
         data: { subscription: { unsubscribe: vi.fn() } },
       }),
@@ -44,6 +46,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
+    mockRefreshSession.mockResolvedValue({ data: { session: { access_token: 'refreshed-token' } }, error: null });
     localStorage.clear();
     mockCurrentUser = null;
 
