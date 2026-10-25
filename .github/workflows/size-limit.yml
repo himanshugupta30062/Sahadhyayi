@@ -14,7 +14,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
       - name: Test changed social navigation and page behavior
         run: npm test -- src/__tests__/socialMediaPage.test.tsx src/__tests__/globalUiAndAccessibility.test.tsx
       - name: Build and report largest rendered modules

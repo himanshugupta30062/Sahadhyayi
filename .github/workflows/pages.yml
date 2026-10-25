@@ -25,7 +25,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
       - name: Build application with repository Supabase variables
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
@@ -36,11 +37,11 @@ jobs:
         run: |
           set -euo pipefail
           test -s ./dist/index.html
-          if grep -Eq '/src/main\.tsx|/src/index\.css' ./dist/index.html; then
+          if grep -Eq '/src/main\\.tsx|/src/index\\.css' ./dist/index.html; then
             echo "::error::Built index.html still references Vite source files instead of compiled assets."
             exit 1
           fi
-          if ! grep -Eq 'src="/assets/[^"]+\.js"' ./dist/index.html; then
+          if ! grep -Eq 'src="/assets/[^"]+\\.js"' ./dist/index.html; then
             echo "::error::Built index.html does not reference a compiled JavaScript asset."
             exit 1
           fi
