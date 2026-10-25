@@ -40,4 +40,7 @@ async function upsertBook() {
   }
 }
 
-upsertBook();
+void upsertBook().catch((error) => {
+  console.error('Book upsert failed:', error instanceof Error ? error.name : 'UnknownError');
+  process.exitCode = 1;
+});
