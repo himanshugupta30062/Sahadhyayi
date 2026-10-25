@@ -49,3 +49,12 @@ In Supabase's Auth password security settings, enable leaked-password protection
 - [ ] Test Google/GitHub OAuth separately; provider-based signup is a separate identity path from email/password signup.
 
 **Operational note:** Repository changes can wire the challenge and confirmation route, but the live Auth toggles and provider secret must be saved in the Supabase dashboard. Do not consider production signup hardened until the checks above pass.
+
+
+## Production issue triage (2026-10-25)
+
+If the signup form shows `Signup verification is not configured yet`, the frontend build does not have `VITE_TURNSTILE_SITE_KEY` embedded. This variable is read at build time by `TurnstileCaptcha`; adding it at runtime without rebuilding does not fix the existing static bundle.
+
+If the form shows `Please complete the anti-bot verification before creating your account`, no Turnstile token reached the signup handler. First fix the site-key/widget load and verify that the widget's success callback sets the token. Do not remove the token check to bypass this error.
+
+After the widget works, Supabase Authentication must have CAPTCHA protection enabled with provider Cloudflare Turnstile and the matching server-side secret. A site key and secret are a pair from the same Turnstile widget. Set the public site key only in the active frontend build configuration; never put the secret in VITE_* or commit it. The live auth CAPTCHA configuration must be saved in Supabase Dashboard; this repository integration cannot safely change that setting.
