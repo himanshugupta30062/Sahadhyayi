@@ -43,7 +43,7 @@ export const useUserSearch = (searchTerm: string) => {
         if (error) throw error;
         return data as SearchUser[];
       } catch (err) {
-        console.error('User search exception:', err);
+        console.error('User search failed', { errorName: err instanceof Error ? err.name : 'UnknownError' });
         throw err;
       }
     },
@@ -109,7 +109,7 @@ export const useAllUsers = (options: { enabled?: boolean } = {}) => {
         if (error) throw error;
         return data as SearchUser[];
       } catch (err) {
-        console.error('All users exception:', err);
+        console.error('Loading user suggestions failed', { errorName: err instanceof Error ? err.name : 'UnknownError' });
         throw err;
       }
     },
