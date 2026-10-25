@@ -36,7 +36,7 @@ const DeleteProfileDialog: React.FC<DeleteProfileDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Permanently Delete Account</DialogTitle>
           <DialogDescription>
-            This permanently deletes your Sahadhyayi account, authentication record, profile, and associated account data.
+            This permanently deletes your Sahadhyayi sign-in account and profile. Some associated content may also be deleted.
             This action cannot be undone. You will be signed out immediately.
           </DialogDescription>
         </DialogHeader>
