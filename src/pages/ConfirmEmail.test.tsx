@@ -96,6 +96,17 @@ describe('ConfirmEmail verification flow', () => {
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'New code sent' }));
   });
 
+  it('checks for an already-confirmed session before reporting a stale URL token', async () => {
+    mocks.getSession.mockResolvedValueOnce({
+      data: { session: { user: { email_confirmed_at: '2026-10-25T15:31:18Z' } } },
+    });
+
+    renderConfirmEmail('/confirm-email?error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired');
+
+    expect(await screen.findByText(/Already Verified/i)).toBeInTheDocument();
+    expect(screen.queryByText(/This link has already been used or expired/i)).not.toBeInTheDocument();
+  });
+
   it('shows a recoverable message when resending is rate limited', async () => {
     mocks.resend.mockResolvedValueOnce({ error: { message: 'rate limit exceeded' } });
 
