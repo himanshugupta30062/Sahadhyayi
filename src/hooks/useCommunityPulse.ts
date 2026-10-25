@@ -448,6 +448,23 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     return parseStatsPayload(data, tf);
   }, [parseStatsPayload]);
 
+  /**
+   * Public-safe aggregate fallback keeps the Live Website Stats overview usable
+   * when the admin session is missing, expired, or no longer authorized. The
+   * public endpoint returns aggregate counts only; visitor-level data stays admin-only.
+   */
+  const fetchPublicFallbackStats = useCallback(async (tf: AnalyticsTimeframe): Promise<PulseStats> => {
+    const { data, error: publicError } = await supabase.functions.invoke('public-community-stats', {
+      body: { timeframe: tf },
+    });
+
+    if (publicError || !data || typeof data !== 'object') {
+      throw new Error('Public analytics summary is unavailable');
+    }
+
+    return parseStatsPayload(data, tf);
+  }, [parseStatsPayload]);
+
   // 2. Fetch Aggregate Stats with Seamless Fallback
   const fetchStats = useCallback(
     async (manual: boolean = false) => {
@@ -500,9 +517,21 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         } catch (edgeError) {
           primaryError = edgeError instanceof Error ? edgeError : new Error('Community stats Edge Function unavailable');
           const status = Number((edgeError as any)?.status ?? (edgeError as any)?.context?.status ?? 0);
-          // Auth failures must not fan out into direct table/RPC requests that are
-          // expected to be denied by RLS. Preserve cached data and surface auth state.
-          if (status !== 401 && status !== 403 && !/administrator session|required|authentication/i.test(primaryError.message)) {
+          // Never fan out into protected table/RPC requests after an auth failure.
+          // Recover the public overview through the aggregate-only endpoint instead.
+          const authFailure =
+            status === 401 ||
+            status === 403 ||
+            /administrator session|required|authentication/i.test(primaryError.message);
+
+          if (authFailure) {
+            try {
+              statsPayload = await fetchPublicFallbackStats(timeframe);
+              primaryError = null;
+            } catch {
+              // If public aggregates are unavailable too, preserve cached data and the auth error.
+            }
+          } else {
             try {
               statsPayload = await fetchDatabaseFallbackStats(timeframe);
               primaryError = null;
