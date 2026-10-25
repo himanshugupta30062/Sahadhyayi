@@ -180,7 +180,7 @@ export const useUpsertUserProfile = () => {
 
 export const useDeleteUserProfile = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
 
   return useMutation({
@@ -215,8 +215,21 @@ export const useDeleteUserProfile = () => {
 
       return data;
     },
-    onSuccess: () => {
-      queryClient.clear();
+    onSuccess: async () => {
+      // The server deletes auth.users before this callback runs, so global logout
+      // can return 403 (user_not_found). AuthContext falls back to local logout
+      // and always clears its in-memory session in finally.
+      try {
+        await signOut();
+      } catch (logoutError) {
+        // Account deletion is already committed server-side; a logout failure
+        // must not report deletion as failed or retain user-scoped cached data.
+        console.warn('Post-deletion sign-out needed local recovery', {
+          errorName: logoutError instanceof Error ? logoutError.name : 'UnknownError',
+        });
+      } finally {
+        queryClient.clear();
+      }
       toast({
         title: "Account deleted",
         description: "Your Sahadhyayi account and profile have been permanently deleted.",
