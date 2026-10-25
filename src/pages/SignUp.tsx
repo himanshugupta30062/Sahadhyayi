@@ -108,12 +108,15 @@ const SignUp = () => {
           errorMessage = 'Password does not meet requirements. Please try a stronger password.';
         } else if (error.message.includes('rate limit') || error.message.includes('too many')) {
           errorMessage = 'Too many attempts. Please wait a moment before trying again.';
-        } else if (error.message.includes('email') && error.message.includes('confirm')) {
-          errorMessage = 'A verification email has been sent to your email.';
-          setSuccess(errorMessage);
+        } else if (normalizedError.includes('email not confirmed') || normalizedError.includes('email confirmation')) {
+          // Keep the user in the verification flow immediately; never flash a
+          // transient success message on the signup form before navigating.
           setCaptchaToken(null);
           setCaptchaResetKey((key) => key + 1);
-          setTimeout(() => navigate(`/confirm-email?email=${encodeURIComponent(signupEmail)}`), 800);
+          navigate(`/confirm-email?email=${encodeURIComponent(signupEmail)}`, {
+            replace: true,
+            state: { message: 'Check your inbox for the verification code, then enter it here.' },
+          });
           setLoading(false);
           return;
         } else {
@@ -137,8 +140,12 @@ const SignUp = () => {
         return;
       }
 
-      setSuccess('A verification code has been sent. Enter it on the next screen to activate your account.');
-      navigate(`/confirm-email?email=${encodeURIComponent(signupEmail)}`, { replace: true });
+      // Move directly to the dedicated verification screen. Keep the signup
+      // form mounted only while the request is pending, never as a success interstitial.
+      navigate(`/confirm-email?email=${encodeURIComponent(signupEmail)}`, {
+        replace: true,
+        state: { message: 'We sent a verification email. Enter the code below, or open the confirmation link in that email.' },
+      });
     } catch (error: unknown) {
       console.error('Signup error:', error);
       setError('An unexpected error occurred. Please try again.');
