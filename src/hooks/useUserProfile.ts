@@ -221,8 +221,13 @@ export const useDeleteUserProfile = () => {
       // and always clears its in-memory session in finally.
       try {
         await signOut();
+      } catch (logoutError) {
+        // Account deletion is already committed server-side; a logout failure
+        // must not report deletion as failed or retain user-scoped cached data.
+        console.warn('Post-deletion sign-out needed local recovery', {
+          errorName: logoutError instanceof Error ? logoutError.name : 'UnknownError',
+        });
       } finally {
-        // Clear profile and user-scoped cached data even if remote logout fails.
         queryClient.clear();
       }
       toast({
