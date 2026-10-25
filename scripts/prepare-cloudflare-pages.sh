@@ -6,8 +6,10 @@ if [ -f bun.lockb ]; then
   rm bun.lockb
 fi
 
-# Refresh npm lockfile
-npm install
+# Refresh npm lockfile without executing dependency lifecycle scripts.
+# This script is a deployment-preparation helper; package scripts are not
+# required to resolve dependencies or update package-lock.json.
+npm install --ignore-scripts
 
 # Set Node version for Cloudflare Pages
 echo "18" > .nvmrc
