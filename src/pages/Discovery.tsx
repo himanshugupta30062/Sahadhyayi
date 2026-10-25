@@ -37,9 +37,9 @@ const Discovery = () => {
       );
     }
 
-    if (languageFilter !== 'all') list = list.filter(book => book.language === languageFilter);
-    if (genreFilter !== 'all') list = list.filter(book => book.genre === genreFilter);
-    if (availabilityFilter === 'readable') list = list.filter(book => Boolean(book.pdf_url));
+    if (languageFilter !== 'all') list = list.filter((book) => book.language === languageFilter);
+    if (genreFilter !== 'all') list = list.filter((book) => book.genre === genreFilter);
+    if (availabilityFilter === 'readable') list = list.filter((book) => Boolean(book.pdf_url));
 
     if (sortBy === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
@@ -47,8 +47,14 @@ const Discovery = () => {
     return list.slice(0, 24);
   }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy]);
 
-  const genres = useMemo(() => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort(), [books]);
-  const languages = useMemo(() => [...new Set(books.map((book) => book.language).filter(Boolean))].sort(), [books]);
+  const genres = useMemo(
+    () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
+    [books],
+  );
+  const languages = useMemo(
+    () => [...new Set(books.map((book) => book.language).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
+    [books],
+  );
 
   return (
     <div className="min-h-screen pt-20 pb-10 px-4">
