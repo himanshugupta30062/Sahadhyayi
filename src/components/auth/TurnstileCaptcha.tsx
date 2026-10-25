@@ -66,6 +66,7 @@ function loadTurnstile(): Promise<void> {
 
 type TurnstileCaptchaProps = {
   onTokenChange: (token: string | null) => void;
+  action?: 'signin' | 'signup';
 };
 
 /**
@@ -73,7 +74,7 @@ type TurnstileCaptchaProps = {
  * successful challenge, the signup forms cannot submit. The matching secret
  * must also be configured in Supabase Auth > Bot and Abuse Protection.
  */
-export function TurnstileCaptcha({ onTokenChange }: TurnstileCaptchaProps) {
+export function TurnstileCaptcha({ onTokenChange, action = 'signup' }: TurnstileCaptchaProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onTokenChangeRef = useRef(onTokenChange);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing-key'>('loading');
@@ -101,7 +102,7 @@ export function TurnstileCaptcha({ onTokenChange }: TurnstileCaptchaProps) {
 
         widgetId = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
-          action: 'signup',
+          action,
           theme: 'auto',
           callback: (token) => {
             if (cancelled) return;
@@ -137,17 +138,17 @@ export function TurnstileCaptcha({ onTokenChange }: TurnstileCaptchaProps) {
         }
       }
     };
-  }, [siteKey]);
+  }, [siteKey, action]);
 
   return (
     <div className="space-y-2">
       <div ref={containerRef} aria-label="Verify you are human" />
       {status === 'loading' && siteKey && (
-        <p className="text-xs text-muted-foreground" role="status">Loading signup verification…</p>
+        <p className="text-xs text-muted-foreground" role="status">{action === 'signin' ? 'Loading sign-in verification…' : 'Loading signup verification…'}</p>
       )}
       {status === 'missing-key' && (
         <p className="text-xs text-destructive" role="alert">
-          Signup verification is not configured yet. Please try again later.
+          {action === 'signin' ? 'Sign-in verification' : 'Signup verification'} is not configured yet. Please try again later.
         </p>
       )}
       {status === 'error' && (

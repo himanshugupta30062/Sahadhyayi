@@ -11,6 +11,7 @@ import { validateEmail, sanitizeInput, isRateLimited } from '@/utils/validation'
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
+import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
 
@@ -22,6 +23,8 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signIn, signInWithOAuth } = useAuth();
@@ -71,8 +74,12 @@ const SignIn = () => {
     }
 
     try {
+      if (!captchaToken) {
+        setError('Please complete the anti-bot verification before signing in.');
+        return;
+      }
       const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
-      await signIn(sanitizedEmail, formData.password);
+      await signIn(sanitizedEmail, formData.password, captchaToken);
       navigate(redirectPath, { replace: true });
     } catch (error: any) {
       console.error('Sign-in error:', error);
@@ -91,6 +98,8 @@ const SignIn = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      setCaptchaToken(null);
+      setCaptchaResetKey((key) => key + 1);
     }
   };
 
@@ -206,6 +215,7 @@ const SignIn = () => {
                   </div>
                 </div>
                 
+                <TurnstileCaptcha key={`signin-${captchaResetKey}`} action="signin" onTokenChange={setCaptchaToken} />
                 <Button 
                   type="submit" 
                   variant="auth" 
