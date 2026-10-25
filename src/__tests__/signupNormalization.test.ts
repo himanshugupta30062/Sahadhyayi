@@ -3,12 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { isRateLimited } from '@/utils/validation';
 
-const { mockSignUp } = vi.hoisted(() => ({ mockSignUp: vi.fn() }));
+const { mockSignUp, mockSignInWithPassword } = vi.hoisted(() => ({ mockSignUp: vi.fn(), mockSignInWithPassword: vi.fn() }));
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: {
     auth: {
       signUp: (...args: unknown[]) => mockSignUp(...args),
+      signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args),
     },
   },
 }));
@@ -28,6 +29,7 @@ import { normalizeAuthEmail, normalizeAuthName, useAuth } from '@/contexts/authH
 afterEach(() => {
   vi.restoreAllMocks();
   mockSignUp.mockReset();
+  mockSignInWithPassword.mockReset();
 });
 
 describe('signup input normalization', () => {
@@ -79,5 +81,25 @@ describe('signup input normalization', () => {
     });
 
     expect(isRateLimited('signup-storage-disabled', 3, 600_000)).toBe(false);
+  });
+});
+
+describe('captcha-protected password sign-in', () => {
+  it('passes the Turnstile token to Supabase password sign-in', async () => {
+    mockSignInWithPassword.mockResolvedValueOnce({
+      data: { user: { id: 'reader-1' }, session: { access_token: 'test-token' } },
+      error: null,
+    });
+    const { result } = renderHook(() => useAuth());
+
+    await act(async () => {
+      await result.current.signIn('reader@example.com', 'ValidPass1', 'valid-turnstile-token');
+    });
+
+    expect(mockSignInWithPassword).toHaveBeenCalledWith({
+      email: 'reader@example.com',
+      password: 'ValidPass1',
+      options: { captchaToken: 'valid-turnstile-token' },
+    });
   });
 });
