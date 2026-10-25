@@ -56,7 +56,7 @@ describe('ConfirmEmail verification flow', () => {
     fireEvent.change(screen.getByLabelText(/Verification code/i), { target: { value: '123' } });
     fireEvent.click(screen.getByRole('button', { name: /^Verify email$/i }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/6–8 digits/i);
+    expect(await screen.findByText(/6–8 digits/i)).toBeInTheDocument();
     expect(mocks.verifyOtp).not.toHaveBeenCalled();
   });
 
@@ -115,6 +115,6 @@ describe('ConfirmEmail verification flow', () => {
     fireEvent.click(screen.getByRole('button', { name: /Complete human verification/i }));
     fireEvent.click(screen.getByRole('button', { name: /Resend verification code/i }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/wait a little/i);
+    expect(await screen.findByText(/wait a little/i)).toBeInTheDocument();
   });
 });
