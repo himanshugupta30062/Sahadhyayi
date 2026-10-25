@@ -478,4 +478,30 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
       expect(screen.getByText(/Live refresh delayed/)).toBeInTheDocument();
     });
   });
+  it('does not call the service-role-only engagement RPC from the browser', async () => {
+    mockCurrentUser = { id: 'admin-1', email: 'admin@sahadhyayi.com' };
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: true, error: null });
+      if (fn === 'get_dual_table_website_analytics') {
+        return Promise.resolve({
+          data: {
+            period: { pageViews: 3, uniqueVisitors: null, registeredReaders: 4 },
+            lifetime: { totalVisits: 11, sourceTable: 'public.website_visits' },
+            rolling: { pageViews24h: 3 },
+            timeseries: [],
+            breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+            partialData: false,
+            lastUpdated: new Date().toISOString(),
+          },
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    render(<CommunityPulseDialog open={true} onClose={() => {}} />);
+    await waitFor(() => expect(screen.getAllByText('Page views').length).toBeGreaterThan(0));
+    expect(mockRpc).not.toHaveBeenCalledWith('get_website_engagement_stats', expect.anything());
+  });
+
 });
