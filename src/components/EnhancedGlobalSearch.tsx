@@ -583,7 +583,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-2xl p-0 gap-0 max-h-[85vh] bg-white dark:bg-[#111614] border border-stone-200 dark:border-white/[0.09] text-stone-900 dark:text-stone-100 rounded-2xl shadow-2xl overflow-hidden focus:outline-none"
+        className="sm:max-w-2xl p-0 gap-0 max-h-[85vh] bg-white dark:bg-[#111614] border border-stone-200 dark:border-white/[0.09] text-stone-900 dark:text-stone-100 rounded-2xl shadow-2xl overflow-hidden focus:outline-none [&>button:last-child]:hidden"
       >
         {/* Search Input Header */}
         <div className="relative flex items-center border-b border-stone-100 dark:border-white/[0.08] px-5 py-4">
