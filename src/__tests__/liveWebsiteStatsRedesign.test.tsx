@@ -181,4 +181,85 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
       expect(screen.getByText('Rolling 30-Day Table')).toBeInTheDocument();
     });
   });
+
+  it('resolves public-community-stats edge function when dual-table RPC and community-stats are restricted', async () => {
+    mockUser = null;
+    mockRpc.mockImplementation((name: string) => {
+      if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
+      if (name === 'get_dual_table_website_analytics') {
+        return Promise.resolve({ data: null, error: { message: 'Access denied: Admin privileges required' } });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    mockFunctionsInvoke.mockImplementation((name: string) => {
+      if (name === 'community-stats') {
+        return Promise.reject(new Error('Administrator access required'));
+      }
+      if (name === 'public-community-stats') {
+        return Promise.resolve({
+          data: {
+            source: 'public-aggregate',
+            pageViews: 45,
+            totalMembers: 12,
+            newReaders: 3,
+            totalVisits: 11986,
+            period: { pageViews: 45, registeredReaders: 12, newRegistrations: 3 },
+            hourlyActivity: [],
+            dailyActivity: [],
+            breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+            readingEngagement: { bookViews: null, readingProgressUpdates: 8, groupJoins: 2, discussions: null },
+            partialData: true,
+            lastUpdated: new Date().toISOString(),
+          },
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    render(<CommunityPulseDialog open={true} onClose={vi.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('11,986 visits')).toBeInTheDocument();
+      expect(screen.getByText('45')).toBeInTheDocument();
+      expect(screen.getByText('+3')).toBeInTheDocument();
+      expect(screen.getByText('12 Total')).toBeInTheDocument();
+    });
+  });
+
+  it('renders chart bar height and tooltip specifically using unique visitors when metricView is unique', async () => {
+    const mockPayload = {
+      timeframe: '24h',
+      period: {
+        pageViews: 100,
+        uniqueVisitors: 50,
+      },
+      timeseries: [
+        { label: '4 PM', count: 80, pageViews: 80, uniqueVisitors: 25, hourIndex: 16 },
+      ],
+      breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+      lastUpdated: new Date().toISOString(),
+    };
+
+    mockRpc.mockImplementation((name: string) => {
+      if (name === 'get_dual_table_website_analytics') {
+        return Promise.resolve({ data: mockPayload, error: null });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    render(<CommunityPulseDialog open={true} onClose={vi.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Traffic & Visitor Trend')).toBeInTheDocument();
+    });
+
+    const metricSelect = screen.getByRole('combobox', { name: 'Select metric' });
+    fireEvent.change(metricSelect, { target: { value: 'unique' } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/25 visitors/i)).toBeInTheDocument();
+    });
+  });
 });

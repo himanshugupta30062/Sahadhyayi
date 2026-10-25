@@ -284,12 +284,12 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     const dualTable: DualTableInfo = {
       lifetimeVisits: getNumber(raw.lifetime?.totalVisits, raw.totalVisits),
       lifetimeSourceTable: raw.lifetime?.sourceTable ?? 'public.website_visits',
-      rolling24hViews: getNumber(raw.rolling?.pageViews24h, raw.last24hVisits),
-      rolling7dViews: getNumber(raw.rolling?.pageViews7d, tf === '7d' ? (raw.pageViews ?? raw.last24hVisits) : null),
-      rolling30dViews: getNumber(raw.rolling?.pageViews30d, tf === '30d' ? (raw.pageViews ?? raw.last24hVisits) : null),
-      uniqueVisitors24h: getNumber(raw.rolling?.uniqueVisitors24h, raw.uniqueVisitors24h),
-      uniqueVisitors7d: getNumber(raw.rolling?.uniqueVisitors7d, tf === '7d' ? (raw.uniqueVisitors ?? raw.uniqueVisitors24h) : null),
-      uniqueVisitors30d: getNumber(raw.rolling?.uniqueVisitors30d, tf === '30d' ? (raw.uniqueVisitors ?? raw.uniqueVisitors24h) : null),
+      rolling24hViews: getNumber(raw.rolling?.pageViews24h, raw.last24hVisits, tf === '24h' ? (raw.period?.pageViews ?? raw.pageViews) : null),
+      rolling7dViews: getNumber(raw.rolling?.pageViews7d, tf === '7d' ? (raw.period?.pageViews ?? raw.pageViews ?? raw.last24hVisits) : null),
+      rolling30dViews: getNumber(raw.rolling?.pageViews30d, tf === '30d' ? (raw.period?.pageViews ?? raw.pageViews ?? raw.last24hVisits) : null),
+      uniqueVisitors24h: getNumber(raw.rolling?.uniqueVisitors24h, raw.uniqueVisitors24h, tf === '24h' ? (raw.period?.uniqueVisitors ?? raw.uniqueVisitors) : null),
+      uniqueVisitors7d: getNumber(raw.rolling?.uniqueVisitors7d, tf === '7d' ? (raw.period?.uniqueVisitors ?? raw.uniqueVisitors ?? raw.uniqueVisitors24h) : null),
+      uniqueVisitors30d: getNumber(raw.rolling?.uniqueVisitors30d, tf === '30d' ? (raw.period?.uniqueVisitors ?? raw.uniqueVisitors ?? raw.uniqueVisitors24h) : null),
       rollingSourceTable: raw.rolling?.sourceTable ?? 'public.website_visit_events',
       collectionStartedAt: raw.rolling?.collectionStartedAt ?? raw.collectionStartedAt ?? '2026-10-19T00:00:00Z',
       isInitialRollout: Boolean(raw.rolling?.isInitialRollout ?? raw.dataCoverage?.isInitialRollout),
@@ -501,7 +501,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
       safeCount('reading_room_events', 'created_at', timeframeStart, 'kind', 'chapter_complete'),
       safeCount('group_members', 'joined_at', timeframeStart),
       safeCount('posts', 'created_at', timeframeStart),
-      safeCount('comments', 'created_at', timeframeStart),
+      safeCount('post_comments', 'created_at', timeframeStart),
     ]);
 
     const rpcUsers = typeof (usersRpcRes as any)?.data === 'number' ? (usersRpcRes as any).data : null;
@@ -594,14 +594,25 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
             statsPayload = parseStatsPayload(edgeStats, timeframe);
             primaryError = null;
           } catch (edgeError) {
-            // Keep the first actionable error unless the Edge Function provided a
-            // more specific failure, then try public-safe RPC/table-count fallback.
-            primaryError = edgeError instanceof Error ? edgeError : primaryError;
+            // If community-stats is restricted or fails, try the public aggregate Edge Function
             try {
-              statsPayload = await fetchDatabaseFallbackStats(timeframe);
+              const { data: publicStats, error: publicError } = await supabase.functions.invoke('public-community-stats', {
+                body: { timeframe },
+              });
+              if (publicError) throw new Error(publicError.message || 'Public community stats Edge Function unavailable');
+              if (!publicStats || typeof publicStats !== 'object') {
+                throw new Error('Public community stats Edge Function returned an invalid payload');
+              }
+              statsPayload = parseStatsPayload(publicStats, timeframe);
               primaryError = null;
-            } catch {
-              // If all sources are unavailable, preserve cache and expose the cause.
+            } catch (publicEdgeError) {
+              primaryError = publicEdgeError instanceof Error ? publicEdgeError : (edgeError instanceof Error ? edgeError : primaryError);
+              try {
+                statsPayload = await fetchDatabaseFallbackStats(timeframe);
+                primaryError = null;
+              } catch {
+                // If all sources are unavailable, preserve cache and expose the cause.
+              }
             }
           }
         }
@@ -654,7 +665,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         }
       }
     },
-    [timeframe, isAdmin, fetchDatabaseFallbackStats, parseStatsPayload, safeCount]
+    [timeframe, fetchDatabaseFallbackStats, parseStatsPayload]
   );
 
   // 3. Fetch Recent Visitors (Strictly Admin-Only)

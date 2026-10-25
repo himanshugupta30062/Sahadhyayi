@@ -330,7 +330,15 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   const activeChartData = chartInterval === 'daily' && dailyData.length > 0 ? dailyData : hourlyData;
   const maxChartCount = Math.max(
     0,
-    ...activeChartData.map(h => metricView === 'dual' ? Math.max(h.pageViews ?? h.count ?? 0, h.uniqueVisitors ?? 0) : h.count)
+    ...activeChartData.map(h => {
+      if (metricView === 'dual') {
+        return Math.max(h.pageViews ?? h.count ?? 0, h.uniqueVisitors ?? 0);
+      }
+      if (metricView === 'unique') {
+        return h.uniqueVisitors ?? 0;
+      }
+      return h.pageViews ?? h.count ?? 0;
+    })
   );
   const chartPeak = maxChartCount > 0 ? Math.ceil(maxChartCount / 10) * 10 : 10;
 
@@ -1025,7 +1033,8 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                           );
                         }
 
-                        const heightPct = Math.max(6, Math.min(100, Math.round((h.count / chartPeak) * 100)));
+                        const metricCount = metricView === 'unique' ? (h.uniqueVisitors ?? 0) : (h.pageViews ?? h.count ?? 0);
+                        const heightPct = chartPeak > 0 ? Math.max(6, Math.min(100, Math.round((metricCount / chartPeak) * 100))) : 6;
                         return (
                           <div
                             key={i}
@@ -1035,7 +1044,9 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                             <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
                               <div className="bg-[#18241e] text-stone-100 text-[10px] py-1 px-2 rounded-lg border border-white/10 shadow-lg whitespace-nowrap">
                                 <div className="font-semibold">{h.label}</div>
-                                <div className="text-[#D5B16D]">{h.count} {metricView === 'unique' ? 'visitors' : 'views'}</div>
+                                <div className={metricView === 'unique' ? 'text-emerald-400' : 'text-[#D5B16D]'}>
+                                  {metricCount} {metricView === 'unique' ? 'visitors' : 'views'}
+                                </div>
                               </div>
                               <div className="w-1.5 h-1.5 bg-[#18241e] rotate-45 border-r border-b border-white/10 -mt-0.5" />
                             </div>
