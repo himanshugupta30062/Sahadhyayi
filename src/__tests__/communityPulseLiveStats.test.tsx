@@ -43,6 +43,7 @@ import type { CommunityPulseResponse } from '@/types/analytics';
 describe('Community Pulse Live Analytics & Truthful Metrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     localStorage.clear();
     mockCurrentUser = null;
 
