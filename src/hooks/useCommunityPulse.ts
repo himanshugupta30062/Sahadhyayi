@@ -563,17 +563,33 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         // Pass the current access token explicitly so browser clients never fall
         // back to anon credentials when the auth header is not attached automatically.
         try {
+          const invokeForToken = (accessToken: string) => supabase.functions.invoke('community-stats', {
+            body: { timeframe },
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
           const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-          const accessToken = sessionData?.session?.access_token;
+          let accessToken = sessionData?.session?.access_token;
           if (sessionError || !accessToken) {
             throw new Error('A valid administrator session is required to load live analytics');
           }
 
-          const { data: edgeStats, error: edgeError } = await supabase.functions.invoke('community-stats', {
-            body: { timeframe },
-            headers: { Authorization: `Bearer ${accessToken}` },
-          });
-          if (edgeError) throw new Error(edgeError.message || 'Community stats Edge Function unavailable');
+          let { data: edgeStats, error: edgeError } = await invokeForToken(accessToken);
+          const edgeStatus = (edgeError as any)?.context?.status ?? (edgeError as any)?.status;
+          // Access tokens can become stale across tabs or after a long-lived admin
+          // session. Refresh and retry one time on 401; never retry 403 (not admin).
+          if (edgeError && Number(edgeStatus) === 401) {
+            const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+            const refreshedToken = refreshedData?.session?.access_token;
+            if (!refreshError && refreshedToken) {
+              accessToken = refreshedToken;
+              ({ data: edgeStats, error: edgeError } = await invokeForToken(accessToken));
+            }
+          }
+          if (edgeError) {
+            const error = new Error(edgeError.message || 'Community stats Edge Function unavailable');
+            (error as any).status = (edgeError as any)?.context?.status ?? (edgeError as any)?.status;
+            throw error;
+          }
           if (!edgeStats || typeof edgeStats !== 'object') {
             throw new Error('Community stats Edge Function returned an invalid payload');
           }
@@ -581,11 +597,16 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           primaryError = null;
         } catch (edgeError) {
           primaryError = edgeError instanceof Error ? edgeError : new Error('Community stats Edge Function unavailable');
-          try {
-            statsPayload = await fetchDatabaseFallbackStats(timeframe);
-            primaryError = null;
-          } catch {
-            // If all sources are unavailable, preserve cache and expose the cause.
+          const status = Number((edgeError as any)?.status ?? (edgeError as any)?.context?.status ?? 0);
+          // Auth failures must not fan out into direct table/RPC requests that are
+          // expected to be denied by RLS. Preserve cached data and surface auth state.
+          if (status !== 401 && status !== 403 && !/administrator session|required|authentication/i.test(primaryError.message)) {
+            try {
+              statsPayload = await fetchDatabaseFallbackStats(timeframe);
+              primaryError = null;
+            } catch {
+              // If all sources are unavailable, preserve cache and expose the cause.
+            }
           }
         }
 
