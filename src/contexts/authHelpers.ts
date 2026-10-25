@@ -51,10 +51,14 @@ export const useAuth = () => {
   };
 
   const signInWithOAuth = async (provider: Provider) => {
+    const redirectTo = new URL('/auth/callback', window.location.origin);
+    // Use a fixed same-origin destination; never accept arbitrary external redirect URLs.
+    redirectTo.searchParams.set('next', '/dashboard');
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: redirectTo.toString(),
       },
     });
     if (error) throw error;

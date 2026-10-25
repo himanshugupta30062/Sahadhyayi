@@ -35,6 +35,7 @@ const Library = lazy(() => import('./pages/library'));
 const Auth = lazy(() => import('./pages/Auth'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const ConfirmEmail = lazy(() => import('./pages/ConfirmEmail'));
+const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
@@ -228,6 +229,7 @@ const App = memo(() => {
                         <Route path="/signin" element={<Suspense fallback={<LoadingFallback />}><SignIn /></Suspense>} />
                         <Route path="/reset-password" element={<Suspense fallback={<LoadingFallback />}><ResetPassword /></Suspense>} />
                         <Route path="/confirm-email" element={<Suspense fallback={<LoadingFallback />}><ConfirmEmail /></Suspense>} />
+                        <Route path="/auth/callback" element={<Suspense fallback={<LoadingFallback message="Completing sign-in..." />}><AuthCallback /></Suspense>} />
                         
                         {/* Primary routes - optimized lazy loading */}
                         <Route
