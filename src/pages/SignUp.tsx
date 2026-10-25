@@ -25,6 +25,7 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [duplicateEmailDetected, setDuplicateEmailDetected] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -73,6 +74,7 @@ const SignUp = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setDuplicateEmailDetected(false);
     // Validate first so empty/invalid submissions do not consume a rate-limit attempt.
     if (!validateForm()) return;
     if (isRateLimited('signup', 3, 600000)) {
@@ -92,7 +94,15 @@ const SignUp = () => {
     try {
       const signupName = normalizeAuthName(formData.name);
       const signupEmail = normalizeAuthEmail(formData.email);
-      const { error, requiresEmailVerification } = await signUp(signupEmail, formData.password, signupName, captchaToken);
+      const { error, requiresEmailVerification, emailMayAlreadyExist } = await signUp(signupEmail, formData.password, signupName, captchaToken);
+      if (emailMayAlreadyExist) {
+        setCaptchaToken(null);
+        setCaptchaResetKey((key) => key + 1);
+        setError('An account may already exist with this email. Try signing in or resetting your password.');
+        setDuplicateEmailDetected(true);
+        setLoading(false);
+        return;
+      }
       if (error) {
         setCaptchaToken(null);
         setCaptchaResetKey((key) => key + 1);
@@ -207,7 +217,15 @@ const SignUp = () => {
                 {error && (
                   <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
                     <Alert variant="destructive" className="rounded-xl">
-                      <AlertDescription>{error}</AlertDescription>
+                      <AlertDescription>
+                        {error}
+                        {duplicateEmailDetected && (
+                          <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                            <Link to="/signin" className="font-semibold underline underline-offset-2">Go to sign in</Link>
+                            <span>or use Forgot password on the sign-in page.</span>
+                          </span>
+                        )}
+                      </AlertDescription>
                     </Alert>
                   </motion.div>
                 )}
