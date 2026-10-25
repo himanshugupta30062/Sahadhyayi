@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const COLOR_PALETTES = [
@@ -19,8 +18,7 @@ const COLOR_PALETTES = [
 function hashString(str: string): number {
   let h = 0;
   for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
-    h |= 0;
+    h = Math.trunc((h << 5) - h + str.charCodeAt(i));
   }
   return Math.abs(h);
 }
@@ -45,21 +43,16 @@ const GeneratedBookCover: React.FC<GeneratedBookCoverProps> = ({ title, author, 
         background: `linear-gradient(${patternAngle + 135}deg, ${palette.from}, ${palette.to})`,
       }}
     >
-      {/* Decorative lines */}
       <div
         className="absolute inset-0 opacity-10"
         style={{
           backgroundImage: `repeating-linear-gradient(${patternAngle}deg, transparent, transparent ${patternOffset}px, ${palette.accent} ${patternOffset}px, ${palette.accent} ${patternOffset + 1}px)`,
         }}
       />
-
-      {/* Top accent bar */}
       <div
         className="absolute top-0 left-0 right-0 h-1.5"
         style={{ backgroundColor: palette.accent }}
       />
-
-      {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 py-6 text-center gap-2">
         {genre && (
           <span
@@ -69,7 +62,6 @@ const GeneratedBookCover: React.FC<GeneratedBookCoverProps> = ({ title, author, 
             {genre}
           </span>
         )}
-
         <h3
           className="font-bold leading-tight text-white"
           style={{
@@ -84,7 +76,6 @@ const GeneratedBookCover: React.FC<GeneratedBookCoverProps> = ({ title, author, 
         >
           {title}
         </h3>
-
         {author && (
           <p
             className="text-[10px] font-medium tracking-wide mt-auto opacity-80"
@@ -94,14 +85,10 @@ const GeneratedBookCover: React.FC<GeneratedBookCoverProps> = ({ title, author, 
           </p>
         )}
       </div>
-
-      {/* Bottom accent bar */}
       <div
         className="absolute bottom-0 left-0 right-0 h-1"
         style={{ backgroundColor: palette.accent }}
       />
-
-      {/* Corner decoration */}
       <div
         className="absolute bottom-3 right-3 w-6 h-6 rounded-full opacity-20"
         style={{ backgroundColor: palette.accent }}
