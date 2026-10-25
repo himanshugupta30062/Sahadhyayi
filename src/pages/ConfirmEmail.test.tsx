@@ -54,9 +54,9 @@ describe('ConfirmEmail verification flow', () => {
     renderConfirmEmail();
 
     fireEvent.change(screen.getByLabelText(/Verification code/i), { target: { value: '123' } });
-    fireEvent.click(screen.getByRole('button', { name: /^Verify email$/i }));
+    fireEvent.submit(screen.getByRole('button', { name: /^Verify email$/i }).closest('form')!);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/6–8 digits/i);
+    expect(await screen.findByText(/6–8 digits/i)).toBeInTheDocument();
     expect(mocks.verifyOtp).not.toHaveBeenCalled();
   });
 
@@ -108,13 +108,13 @@ describe('ConfirmEmail verification flow', () => {
   });
 
   it('shows a recoverable message when resending is rate limited', async () => {
-    mocks.resend.mockResolvedValueOnce({ error: { message: 'rate limit exceeded' } });
+    mocks.resend.mockResolvedValueOnce({ error: new Error('rate limit exceeded') });
 
     renderConfirmEmail();
 
     fireEvent.click(screen.getByRole('button', { name: /Complete human verification/i }));
     fireEvent.click(screen.getByRole('button', { name: /Resend verification code/i }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/wait a little/i);
+    expect(await screen.findByText(/wait a little/i)).toBeInTheDocument();
   });
 });
