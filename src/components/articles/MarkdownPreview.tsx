@@ -52,10 +52,51 @@ function markdownToHtml(md: string): string {
     // Single newlines to <br>
     .replace(/\n/g, '<br />');
 
-  // Wrap consecutive <li> in <ul>
-  html = html.replace(/(<li>.*?<\/li>(?:<br \/>)?)+/g, (match) => {
-    return '<ul class="list-disc pl-6 space-y-1 my-4">' + match.replace(/<br \/>/g, '') + '</ul>';
-  });
+  // Wrap consecutive list items without a backtracking-heavy regular expression.
+  const wrapListItems = (input: string): string => {
+    let output = '';
+    let cursor = 0;
+
+    while (cursor < input.length) {
+      const start = input.indexOf('<li>', cursor);
+      if (start === -1) {
+        output += input.slice(cursor);
+        break;
+      }
+
+      output += input.slice(cursor, start);
+      const items: string[] = [];
+      let position = start;
+
+      while (input.startsWith('<li>', position)) {
+        const itemEnd = input.indexOf('</li>', position + 4);
+        if (itemEnd === -1) break;
+
+        items.push(input.slice(position, itemEnd + '</li>'.length));
+        position = itemEnd + '</li>'.length;
+
+        if (input.startsWith('<br />', position)) {
+          const nextItem = position + '<br />'.length;
+          if (input.startsWith('<li>', nextItem)) position = nextItem;
+        }
+
+        if (!input.startsWith('<li>', position)) break;
+      }
+
+      if (items.length === 0) {
+        output += input.slice(start, start + '<li>'.length);
+        cursor = start + '<li>'.length;
+        continue;
+      }
+
+      output += '<ul class="list-disc pl-6 space-y-1 my-4">' + items.join('') + '</ul>';
+      cursor = position;
+    }
+
+    return output;
+  };
+
+  html = wrapListItems(html);
 
   return '<p>' + html + '</p>';
 }
