@@ -13,6 +13,8 @@ export function hasDeleteConfirmation(body: unknown): boolean {
     body &&
       typeof body === "object" &&
       !Array.isArray(body) &&
+      Object.keys(body as Record<string, unknown>).length === 1 &&
+      Object.prototype.hasOwnProperty.call(body, "confirmation") &&
       (body as { confirmation?: unknown }).confirmation === "DELETE",
   );
 }
