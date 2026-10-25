@@ -7,17 +7,30 @@ export interface AppError extends Error {
   code?: string;
   severity: ErrorSeverity;
   details?: unknown;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export function toAppError(input: unknown, fallback: Partial<AppError> = {}): AppError {
   const e = (input instanceof Error ? input : new Error(String(input))) as AppError;
+  const source =
+    input !== null && (typeof input === 'object' || typeof input === 'function')
+      ? (input as Record<string, unknown>)
+      : undefined;
+
   e.name = 'AppError';
   e.severity = fallback.severity ?? 'high';
-  if ('status' in (input as any)) e.status = (input as any).status;
-  if ('code' in (input as any)) e.code = (input as any).code;
-  e.context = { ...(fallback.context || {}), ...(e as any).context };
-  e.details = (input as any)?.details ?? fallback.details;
+
+  if (source && 'status' in source) e.status = source.status as number | undefined;
+  if (source && 'code' in source) e.code = source.code as string | undefined;
+
+  const inputContext = source?.context;
+  const safeInputContext =
+    inputContext !== null && typeof inputContext === 'object' && !Array.isArray(inputContext)
+      ? (inputContext as Record<string, unknown>)
+      : {};
+  e.context = { ...(fallback.context ?? {}), ...safeInputContext };
+  e.details = source?.details ?? fallback.details;
+
   return e;
 }
 
