@@ -98,8 +98,8 @@ export function useGameStats() {
         setStats(data as GameStats);
       }
     } catch (err: any) {
-      console.error('Error fetching game stats:', err);
-      setError(err.message);
+      console.error('Failed to fetch game stats', { errorName: err instanceof Error ? err.name : 'UnknownError' });
+      setError('Unable to load game stats. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export function useGameStats() {
       setStats(data as GameStats);
       return data;
     } catch (err: any) {
-      console.error('Error updating game stats:', err);
+      console.error('Failed to update game stats', { errorName: err instanceof Error ? err.name : 'UnknownError' });
       throw err;
     }
   }, [user, stats]);
@@ -169,7 +169,7 @@ export function useLeaderboard(limit: number = 10) {
         if (error) throw error;
         setLeaderboard((data || []) as LeaderboardEntry[]);
       } catch (err) {
-        console.error('Error fetching leaderboard:', err);
+        console.error('Failed to fetch game leaderboard', { errorName: err instanceof Error ? err.name : 'UnknownError' });
       } finally {
         setLoading(false);
       }
