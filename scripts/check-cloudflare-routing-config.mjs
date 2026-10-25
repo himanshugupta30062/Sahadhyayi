@@ -38,15 +38,22 @@ if (missing.length === 0) {
   }
 
   const workerRoutes = JSON.parse(wrangler).routes ?? [];
-  const hasApexWorkerRoute = workerRoutes.some(
-    (route) => route.pattern === "sahadhyayi.com/*" && route.zone_name === "sahadhyayi.com" && route.custom_domain !== true,
+  const hasApexCustomDomain = workerRoutes.some(
+    (route) => route.pattern === "sahadhyayi.com" && route.custom_domain === true,
   );
-  const hasWwwWorkerRoute = workerRoutes.some(
-    (route) => route.pattern === "www.sahadhyayi.com/*" && route.zone_name === "sahadhyayi.com" && route.custom_domain !== true,
+  const hasWwwCustomDomain = workerRoutes.some(
+    (route) => route.pattern === "www.sahadhyayi.com" && route.custom_domain === true,
   );
-  if (!hasApexWorkerRoute || !hasWwwWorkerRoute) {
+  const hasConflictingApplicationRoute = workerRoutes.some(
+    (route) =>
+      ["sahadhyayi.com/*", "www.sahadhyayi.com/*"].includes(route.pattern) &&
+      route.custom_domain !== true,
+  );
+
+  if (!hasApexCustomDomain || !hasWwwCustomDomain || hasConflictingApplicationRoute) {
     errors.push(
-      "wrangler.jsonc must route both sahadhyayi.com/* and www.sahadhyayi.com/* through the sahadhyayi.com zone."
+      "wrangler.jsonc must configure sahadhyayi.com and www.sahadhyayi.com as Worker Custom Domains " +
+      '(custom_domain: true), not wildcard Worker Routes, because this Worker is the static-site origin.'
     );
   }
 
@@ -69,7 +76,7 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "[deployment-routing] Cloudflare SPA fallback and Netlify SPA fallback are configured; " +
-    "no Cloudflare-incompatible _redirects file is present."
+    "[deployment-routing] Cloudflare Worker Custom Domains and SPA fallback are configured; " +
+    "Netlify keeps its own SPA fallback and no Cloudflare-incompatible _redirects file is present."
   );
 }
