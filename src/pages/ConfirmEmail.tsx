@@ -22,6 +22,14 @@ function isValidEmailAddress(value: string): boolean {
   return dot > 0 && dot < domain.length - 1 && !domain.includes('..');
 }
 
+function getNormalizedErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message.toLowerCase();
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+    return error.message.toLowerCase();
+  }
+  return '';
+}
+
 const ConfirmEmail = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,7 +46,6 @@ const ConfirmEmail = () => {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [countdown, setCountdown] = useState(3);
-  const [errorRevision, setErrorRevision] = useState(0);
 
   useEffect(() => {
     setEmail(emailFromUrl);
@@ -165,7 +172,6 @@ const ConfirmEmail = () => {
   const handleVerifyOtp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage('');
-    setErrorRevision((revision) => revision + 1);
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedOtp = otp.replace(/\s/g, '');
     if (!normalizedEmail) {
@@ -202,7 +208,7 @@ const ConfirmEmail = () => {
         setErrorMessage('The code was accepted but no session was returned. Please sign in to continue.');
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message.toLowerCase() : '';
+      const message = getNormalizedErrorMessage(err);
       setErrorMessage(message.includes('expired') || message.includes('otp_expired') || message.includes('one-time token not found')
         ? 'This code has already been used or expired. Use the newest verification email. If you can already sign in, your account may already be verified.'
         : message.includes('invalid') || message.includes('token')
@@ -225,7 +231,6 @@ const ConfirmEmail = () => {
     }
     setBusy(true);
     setErrorMessage('');
-    setErrorRevision((revision) => revision + 1);
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
