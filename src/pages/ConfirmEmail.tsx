@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,9 @@ type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'alread
 
 const ConfirmEmail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+  const infoMessage = typeof location.state?.message === 'string' ? location.state.message : '';
   const { toast } = useToast();
   const emailFromUrl = (searchParams.get('email') || '').trim().toLowerCase();
   const hasLinkToken = Boolean(searchParams.get('token_hash') || searchParams.get('code') || window.location.hash);
@@ -224,6 +226,7 @@ const ConfirmEmail = () => {
                   <CardDescription className="mt-2">Enter the 6-digit one-time code sent to your email address. You can also open the confirmation link in the email.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
+                  {infoMessage && <Alert role="status"><AlertDescription>{infoMessage}</AlertDescription></Alert>}
                   {errorMessage && <Alert variant="destructive" role="alert"><AlertDescription>{errorMessage}</AlertDescription></Alert>}
                   <form onSubmit={handleVerifyOtp} className="space-y-4">
                     <div className="space-y-2">
