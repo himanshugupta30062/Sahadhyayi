@@ -109,7 +109,11 @@ export default defineConfig(({ mode }) => ({
       output: {},
     },
     terserOptions: {
-      module: true,
+      // Do not enable Terser module-level assumptions for production bundles.
+      // The live app has failed before React mounts with a temporal-dead-zone
+      // ReferenceError; keep module initialization semantics conservative until
+      // the production smoke test confirms the optimized bundle is safe.
+      module: false,
       compress: {
         passes: 3,
         drop_console: true,
