@@ -206,11 +206,11 @@ Deno.serve(async (req: Request) => {
         const bucketStart = new Date(now - (24 - i) * 3600 * 1000);
         const bucketEnd = new Date(now - (23 - i) * 3600 * 1000);
         const { count, error } = await supabase
-          .from("website_visits")
+          .from("website_visit_events")
           .select("id", { count: "exact", head: true })
-          .eq("event_type", "pageview")
-          .gte("visited_at", bucketStart.toISOString())
-          .lt("visited_at", bucketEnd.toISOString());
+          .in("event_type", ["pageview", "page_view", "view"])
+          .gte("created_at", bucketStart.toISOString())
+          .lt("created_at", bucketEnd.toISOString());
 
         if (error || typeof count !== "number") return null;
         return {
