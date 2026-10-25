@@ -281,6 +281,32 @@ describe('Phase 3: Authentication and Account Entry', () => {
       expect(screen.getByRole('button', { name: /Back to Sign In/i })).toBeInTheDocument();
     });
 
+
+    it('shows sign-in and password-reset guidance when signup email may already exist', async () => {
+      mockSignUp.mockResolvedValueOnce({
+        error: null,
+        requiresEmailVerification: false,
+        emailMayAlreadyExist: true,
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/signup']}>
+          <SignUp />
+        </MemoryRouter>
+      );
+
+      fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: 'Priya Patel' } });
+      fireEvent.change(screen.getByLabelText(/^Email$/i), { target: { value: 'priya@example.com' } });
+      fireEvent.change(screen.getByLabelText(/^Password/i, { selector: 'input' }), { target: { value: 'ValidPass1' } });
+      fireEvent.change(screen.getByLabelText(/Confirm Password/i, { selector: 'input' }), { target: { value: 'ValidPass1' } });
+
+      fireEvent.click(screen.getByRole('button', { name: /^Create Account$/i }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(/account may already exist/i);
+      expect(screen.getByRole('link', { name: /Go to sign in/i })).toHaveAttribute('href', '/signin');
+      expect(screen.getByText(/Forgot password on the sign-in page/i)).toBeInTheDocument();
+    });
+
     it('displays clear error messages in standalone SignUp page when registration fails', async () => {
       mockSignUp.mockResolvedValueOnce({
         error: { message: 'Database error saving new user' } as any,
