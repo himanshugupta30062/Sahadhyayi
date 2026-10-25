@@ -96,8 +96,8 @@ jobs:
 
             origin="$(printf '%s' "$effective_url" | grep -oE '^https?://[^/]+' || true)"
             [[ -n "$origin" ]] || origin="${base_url%/}"
-            script_tag="$(grep -oE '<script[^>]*>' "$html_file" | grep -E 'type=["']module["']' | head -n 1 || true)"
-            entry_asset="$(printf '%s' "$script_tag" | grep -oE 'src=["'][^"']+\.js[^"']*["']' | head -n 1 | sed -E 's/^src=["'']//; s/["'']$//' || true)"
+            script_tag="$(grep -oE '<script[^>]*>' "$html_file" | grep -F 'type="module"' | head -n 1 || true)"
+            entry_asset="$(printf '%s' "$script_tag" | sed -nE 's/.*src="([^"]+\.js[^"]*)".*/\1/p')"
             [[ -n "$entry_asset" ]] || {
               echo "Host $label: no module entry script found in HTML from $effective_url." >&2
               return 1
