@@ -137,4 +137,24 @@ describe('App root routing and configuration', () => {
       expect(mocks.initializeSecureSession).toHaveBeenCalledTimes(1);
     });
   });
+
+  it('redirects legacy /auth links to sign-in and preserves query parameters', async () => {
+    window.history.replaceState({}, '', '/auth?intent=add_shelf&book_id=book-1&redirect=%2Flibrary');
+    render(<App />);
+
+    expect(await screen.findByText('Sign-in page rendered')).toBeTruthy();
+    expect(window.location.pathname).toBe('/signin');
+    expect(window.location.search).toContain('intent=add_shelf');
+    expect(window.location.search).toContain('book_id=book-1');
+    expect(window.location.search).toContain('redirect=%2Flibrary');
+  });
+
+  it('redirects legacy /auth?tab=signup links to sign-up', async () => {
+    window.history.replaceState({}, '', '/auth?tab=signup');
+    render(<App />);
+
+    expect(await screen.findByText('Sign-up page rendered')).toBeTruthy();
+    expect(window.location.pathname).toBe('/signup');
+    expect(window.location.search).toContain('tab=signup');
+  });
 });
