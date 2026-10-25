@@ -85,9 +85,15 @@ Deno.serve(async(req:Request)=>{
     if(!supabaseUrl||!serviceRoleKey){console.error('Analytics ingest missing environment configuration');return new Response(JSON.stringify({error:'Analytics ingestion unavailable'}),{status:503,headers:corsHeaders});}
     const body=await req.json().catch(()=>null) as VisitData|null;
     if(!body||typeof body!=='object'||Array.isArray(body))return new Response(JSON.stringify({error:'Expected a JSON event body'}),{status:400,headers:corsHeaders});
-    // Exclude the site owner's development/testing traffic before writing any analytics event.
+    // Exclude configured site-owner/testing IPs before writing analytics. Configure
+    // SITE_OWNER_EXCLUDED_IPS as a comma-separated list in the Edge Function secrets.
+    // An unset value intentionally disables exclusions rather than hardcoding an IP.
     const clientIp=normalizeIp(req.headers.get('cf-connecting-ip')||req.headers.get('x-real-ip'));
-    if(clientIp==='49.36.136.144')return new Response(JSON.stringify({success:true,ignored:true,reason:'excluded_test_traffic'}),{status:200,headers:corsHeaders});
+    const excludedIps=(Deno.env.get('SITE_OWNER_EXCLUDED_IPS')||'')
+      .split(',')
+      .map((value)=>normalizeIp(value.trim()))
+      .filter((value): value is string => value!==null);
+    if(clientIp && excludedIps.includes(clientIp))return new Response(JSON.stringify({success:true,ignored:true,reason:'excluded_test_traffic'}),{status:200,headers:corsHeaders});
     const eventType=clean(body.event_type,40)||'pageview';
     if(!['pageview','page_view','activity','event','engagement'].includes(eventType))return new Response(JSON.stringify({error:'Unsupported event_type'}),{status:400,headers:corsHeaders});
     const page=(clean(body.page,300)?.split(/[?#]/,1)[0]||'/').slice(0,300);
