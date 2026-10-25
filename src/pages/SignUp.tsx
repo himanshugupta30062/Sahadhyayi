@@ -71,6 +71,10 @@ const SignUp = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    // Validate first so empty/invalid submissions do not consume a rate-limit attempt.
+    if (!validateForm()) return;
     if (isRateLimited('signup', 3, 600000)) {
       toast({
         title: "Too Many Attempts",
@@ -80,12 +84,6 @@ const SignUp = () => {
       return;
     }
     setLoading(true);
-    setError('');
-    setSuccess('');
-    if (!validateForm()) {
-      setLoading(false);
-      return;
-    }
     if (!captchaToken) {
       setError('Please complete the anti-bot verification before creating your account.');
       setLoading(false);
@@ -113,8 +111,9 @@ const SignUp = () => {
         } else if (error.message.includes('email') && error.message.includes('confirm')) {
           errorMessage = 'A verification email has been sent to your email.';
           setSuccess(errorMessage);
-          setFormData({ name: '', email: '', password: '', confirmPassword: '' });
-          setTimeout(() => navigate('/signin'), 2000);
+          setCaptchaToken(null);
+          setCaptchaResetKey((key) => key + 1);
+          setTimeout(() => navigate(`/confirm-email?email=${encodeURIComponent(signupEmail)}`), 800);
           setLoading(false);
           return;
         } else {
@@ -128,9 +127,9 @@ const SignUp = () => {
       try { localStorage.setItem('sahadhyayi_stats_sync', Date.now().toString()); } catch { /* ignore storage error in private mode */ }
       setCaptchaToken(null);
       setCaptchaResetKey((key) => key + 1);
-      setSuccess('A verification email has been sent to your email.');
+      setSuccess('A verification code has been sent. Enter it on the next screen to activate your account.');
       setFormData({ name: '', email: '', password: '', confirmPassword: '' });
-      setTimeout(() => navigate('/signin'), 2000);
+      setTimeout(() => navigate(`/confirm-email?email=${encodeURIComponent(signupEmail)}`), 800);
     } catch (error: unknown) {
       console.error('Signup error:', error);
       setError('An unexpected error occurred. Please try again.');
