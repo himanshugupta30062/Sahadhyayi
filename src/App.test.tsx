@@ -72,6 +72,9 @@ vi.mock('./components/ui/BookFlipLoader', () => ({
 vi.mock('./pages/NotFound', () => ({ default: () => <div>Not found page</div> }));
 vi.mock('./pages/Index', () => ({ default: () => <div>Public marketing homepage</div> }));
 vi.mock('./pages/Dashboard', () => ({ default: () => <div>Reader dashboard</div> }));
+vi.mock('./pages/SignIn', () => ({ default: () => <div>Sign-in page rendered</div> }));
+vi.mock('./pages/SignUp', () => ({ default: () => <div>Sign-up page rendered</div> }));
+vi.mock('./components/book-expert/BookExpert', () => ({ default: () => null }));
 
 describe('App root routing and configuration', () => {
   beforeEach(() => {
