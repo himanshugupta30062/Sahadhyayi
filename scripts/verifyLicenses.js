@@ -28,4 +28,7 @@ async function main() {
   }
 }
 
-main();
+void main().catch((error) => {
+  console.error('License verification failed:', error instanceof Error ? error.message : 'Unknown error');
+  process.exitCode = 1;
+});

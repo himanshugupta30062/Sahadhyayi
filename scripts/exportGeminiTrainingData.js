@@ -26,4 +26,7 @@ async function exportData() {
   console.log(`Exported ${data.length} samples to gemini_training_data.json`);
 }
 
-exportData();
+void exportData().catch((error) => {
+  console.error('Failed to export training data:', error instanceof Error ? error.message : 'Unknown error');
+  process.exitCode = 1;
+});
