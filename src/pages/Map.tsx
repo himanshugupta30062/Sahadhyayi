@@ -78,7 +78,7 @@ const MapPage = () => {
     loadGoogleMaps(GOOGLE_MAPS_API_KEY)
       .then(() => setMapsLoaded(true))
       .catch(err => {
-        console.error('Failed to load Google Maps', err);
+        console.error('Failed to load Google Maps', { errorName: err instanceof Error ? err.name : 'UnknownError' });
         setMapsLoaded(false);
       });
   }, []);
@@ -100,7 +100,7 @@ const MapPage = () => {
         });
 
         if (error) {
-          console.error('Error fetching nearby readers:', error);
+          console.error('Failed to fetch nearby readers', { errorName: error instanceof Error ? error.name : 'UnknownError' });
           setReadersError('Unable to load nearby readers. Make sure you have location sharing enabled and are connected with friends.');
           setReaders([]);
           return;
@@ -127,7 +127,7 @@ const MapPage = () => {
 
         setReaders(readerList);
       } catch (err) {
-        console.error('Error in fetchReaders:', err);
+        console.error('Nearby readers request failed', { errorName: err instanceof Error ? err.name : 'UnknownError' });
         setReadersError('Failed to fetch readers');
         setReaders([]);
       }

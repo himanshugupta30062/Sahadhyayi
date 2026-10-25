@@ -41,7 +41,7 @@ const ReaderMap = () => {
         }
       })
       .catch(err => {
-        console.error('Failed to load Google Maps', err);
+        console.error('Failed to load Google Maps', { errorName: err instanceof Error ? err.name : 'UnknownError' });
       });
   }, []);
 
@@ -52,7 +52,7 @@ const ReaderMap = () => {
         .rpc('get_friend_locations');
       
       if (error) {
-        console.error('Error fetching readers', error);
+        console.error('Failed to fetch reader locations', { errorName: error instanceof Error ? error.name : 'UnknownError' });
         return;
       }
       setReaders((data || []) as ReaderProfile[]);
