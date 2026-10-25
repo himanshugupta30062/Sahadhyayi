@@ -21,7 +21,7 @@ export const useAuth = () => {
     password: string,
     fullName: string | undefined,
     captchaToken: string
-  ): Promise<{ error: AuthError | null }> => {
+  ): Promise<{ error: AuthError | null; requiresEmailVerification: boolean }> => {
     // Do not HTML-encode identity fields. React escapes rendered text, and
     // HTML entities would change valid email local-parts (for example '&' or '/').
     const normalizedEmail = normalizeAuthEmail(email);
@@ -34,10 +34,11 @@ export const useAuth = () => {
           message: 'Please complete the anti-bot verification before signing up.',
           status: 400,
         } as AuthError,
+        requiresEmailVerification: false,
       };
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
       options: {
@@ -47,7 +48,9 @@ export const useAuth = () => {
         data: normalizedName ? { full_name: normalizedName } : undefined,
       },
     });
-    return { error };
+    // Supabase returns a session when confirmation is disabled, and no session
+    // while the user still needs to verify their email.
+    return { error, requiresEmailVerification: !error && Boolean(data.user) && !data.session };
   };
 
   const signInWithOAuth = async (provider: Provider) => {

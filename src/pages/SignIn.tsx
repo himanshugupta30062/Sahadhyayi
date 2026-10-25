@@ -89,7 +89,13 @@ const SignIn = () => {
       if (rawMessage.toLowerCase().includes('invalid login credentials') || rawMessage.toLowerCase().includes('invalid credentials')) {
         errorMessage = 'Invalid email or password. Please check your credentials and try again.';
       } else if (rawMessage.toLowerCase().includes('email not confirmed')) {
-        errorMessage = 'Please check your email and click the verification link before signing in.';
+        // Unverified accounts must go straight to the OTP screen instead of
+        // leaving users stuck on sign-in with a generic error.
+        navigate(`/confirm-email?email=${encodeURIComponent(formData.email.trim().toLowerCase())}`, {
+          replace: true,
+          state: { message: 'Your email is not verified yet. Enter the code from your email to activate your account.' },
+        });
+        return;
       } else if (rawMessage.toLowerCase().includes('rate limit') || rawMessage.toLowerCase().includes('too many')) {
         errorMessage = 'Too many attempts. Please wait a moment before trying again.';
       } else if (rawMessage.toLowerCase().includes('network') || rawMessage.toLowerCase().includes('fetch')) {
