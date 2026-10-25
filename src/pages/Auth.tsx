@@ -109,30 +109,26 @@ const Auth = () => {
     e.preventDefault();
     if (loading) return;
 
-    if (isRateLimited('signin', 5, 300000)) {
-      setError('Too many sign-in attempts. Please wait 5 minutes before trying again.');
-      return;
-    }
-    setLoading(true);
+    // Validate locally before counting this as an authentication attempt.
     setError('');
-
     if (!signinData.email?.trim() || !signinData.password) {
       setError('Please fill in both email and password.');
-      setLoading(false);
       return;
     }
     if (!validateEmail(signinData.email)) {
       setError('Please enter a valid email address.');
-      setLoading(false);
       return;
     }
-
     if (!captchaToken) {
       setError('Please complete the anti-bot verification before signing in.');
-      setLoading(false);
+      return;
+    }
+    if (isRateLimited('signin', 5, 300000)) {
+      setError('Too many sign-in attempts. Please wait 5 minutes before trying again.');
       return;
     }
 
+    setLoading(true);
     try {
       await signIn(normalizeAuthEmail(signinData.email), signinData.password, captchaToken);
       window.dispatchEvent(new CustomEvent('communityStatsUpdate', { detail: { action: 'signin' } }));

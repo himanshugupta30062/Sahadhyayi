@@ -55,7 +55,18 @@ const SignIn = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    if (loading) return;
+
+    // Run field validation before rate limiting so empty/invalid submissions
+    // always receive useful feedback and do not consume an attempt.
+    setError('');
+    if (!validateForm()) return;
+
+    if (!captchaToken) {
+      setError('Please complete the anti-bot verification before signing in.');
+      return;
+    }
+
     if (isRateLimited('signin', 5, 300000)) {
       toast({
         title: "Too Many Attempts",
@@ -66,18 +77,7 @@ const SignIn = () => {
     }
 
     setLoading(true);
-    setError('');
-
-    if (!validateForm()) {
-      setLoading(false);
-      return;
-    }
-
     try {
-      if (!captchaToken) {
-        setError('Please complete the anti-bot verification before signing in.');
-        return;
-      }
       const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
       // AuthProvider updates `user`; the effect above performs the single post-login redirect.
       // Avoid navigating twice (here and in the user effect), which can race protected-route rendering.
@@ -163,10 +163,10 @@ const SignIn = () => {
               </p>
             </CardHeader>
             <CardContent className="px-6 pb-8">
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                 {error && (
                   <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-                    <Alert variant="destructive" className="rounded-xl">
+                    <Alert variant="destructive" className="rounded-xl" role="alert">
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   </motion.div>
