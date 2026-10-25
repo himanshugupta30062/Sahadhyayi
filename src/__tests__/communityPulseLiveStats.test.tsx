@@ -511,4 +511,41 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     expect(mockRpc).not.toHaveBeenCalledWith('get_website_engagement_stats', expect.anything());
   });
 
+
+  it('refreshes an expired admin session once after a 401 and retries analytics', async () => {
+    mockCurrentUser = { id: 'admin-1', email: 'admin@sahadhyayi.com' };
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({ data: null, error: { message: 'Invalid authentication token', context: { status: 401 } } })
+      .mockResolvedValueOnce({
+        data: {
+          timeframe: '24h',
+          period: { pageViews: 8, uniqueVisitors: null, registeredReaders: 4, newRegistrations: 1 },
+          rolling: { pageViews24h: 8 },
+          lifetime: { totalVisits: 40, sourceTable: 'public.website_visits' },
+          timeseries: [],
+          breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+          readingEngagement: {},
+          partialData: false,
+          lastUpdated: new Date().toISOString(),
+        },
+        error: null,
+      });
+
+    mockRpc.mockImplementation((fn: string) => {
+      if (fn === 'is_admin') return Promise.resolve({ data: true, error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    render(<CommunityPulseDialog open={true} onClose={() => {}} />);
+
+    await waitFor(() => {
+      expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+      expect(mockFunctionsInvoke).toHaveBeenCalledTimes(2);
+      expect(mockFunctionsInvoke).toHaveBeenLastCalledWith('community-stats', {
+        body: { timeframe: '24h' },
+        headers: { Authorization: 'Bearer refreshed-token' },
+      });
+    });
+  });
+
 });
