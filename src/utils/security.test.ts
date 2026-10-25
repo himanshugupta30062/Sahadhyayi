@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+vi.unmock('@/utils/security');
+vi.unmock('@/utils/security.ts');
 import {
   clearCSRFToken,
   createSecureHeaders,
