@@ -67,7 +67,7 @@ const ReadingGoalModal: React.FC<ReadingGoalModalProps> = ({
               id="new-goal"
               type="number"
               value={newGoal}
-              onChange={(e) => setNewGoal(parseInt(e.target.value) || 0)}
+              onChange={(e) => setNewGoal(Number.parseInt(e.target.value) || 0)}
               className="col-span-3"
               min="1"
             />
