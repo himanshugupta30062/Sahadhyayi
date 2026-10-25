@@ -22,7 +22,7 @@ try {
     const root = document.querySelector("#root");
     if (!root || root.childElementCount === 0) return false;
     return !root.innerText.includes("Sahadhyayi could not start");
-  }, { timeout: 25_000 });
+  }, undefined, { timeout: 25_000 });
 
   await page.waitForTimeout(1500);
   if (startupErrors.length) {
@@ -35,7 +35,7 @@ try {
   }
 
   console.log(`Production startup smoke test passed at ${baseURL}`);
-  console.log(`Rendered content sample: ${rootText.replace(/\\s+/g, " ").slice(0, 180)}`);
+  console.log(`Rendered content sample: ${rootText.replace(/\s+/g, " ").slice(0, 180)}`);
 } catch (error) {
   console.error(error);
   await page.screenshot({ path: "production-startup-failure.png", fullPage: true }).catch(() => {});
