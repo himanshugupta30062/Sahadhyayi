@@ -51,9 +51,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
+    try {
+      // Revoke all sessions when the Auth user still exists.
+      const { error } = await supabase.auth.signOut({ scope: "global" });
+
+      if (error) {
+        // A deleted account cannot have its global sessions revoked. Still
+        // remove this browser's stale session so the user can sign in again.
+        const { error: localError } = await supabase.auth.signOut({ scope: "local" });
+        if (localError) throw localError;
+      }
+    } finally {
+      // Never leave the UI in an authenticated state after a logout attempt.
+      setUser(null);
+      setSession(null);
+    }
   };
 
   return (
