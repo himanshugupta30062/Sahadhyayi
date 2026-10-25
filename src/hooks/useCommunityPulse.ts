@@ -437,7 +437,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
    * missing table grants/RLS must not produce repeated 401s or tempt broad grants.
    */
   const fetchDatabaseFallbackStats = useCallback(async (tf: AnalyticsTimeframe): Promise<PulseStats> => {
-    const { data, error: rpcError } = await supabase.rpc('get_community_pulse_stats', {
+    const { data, error: rpcError } = await supabase.rpc('get_dual_table_website_analytics', {
       p_timeframe: tf,
     });
 
