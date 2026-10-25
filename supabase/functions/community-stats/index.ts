@@ -188,7 +188,6 @@ Deno.serve(async (req: Request) => {
     const registeredReaders = totalSignupsRes.error ? null : totalSignupsRes.count;
     const newReaders = newSignupsPeriodRes.error ? null : newSignupsPeriodRes.count;
     const totalPageviews = totalPageviewsRes.error ? null : totalPageviewsRes.count;
-    const periodPageviews = periodPageviewsRes.error ? null : periodPageviewsRes.count;
     let pageViews24h = pageviews24hRes.error ? null : pageviews24hRes.count;
     let pageViews7d = pageviews7dRes.error ? null : pageviews7dRes.count;
     let pageViews30d = pageviews30dRes.error ? null : pageviews30dRes.count;
