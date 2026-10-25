@@ -65,23 +65,49 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Wait for Cloudflare rollout and verify production hosts
+      - name: Wait for Cloudflare rollout and verify matching entry bundles
         env:
           EXPECTED_SUPABASE_URL: https://rknxtatvlzunatpyqxro.supabase.co
         shell: bash
         run: |
           set -euo pipefail
 
-          verify_bundle() {
+          entry_path() {
             local base_url="$1"
-            local effective_url html js_assets asset asset_url bundle
+            local effective_url origin html module_script entry_asset entry_url normalized_path status
 
             effective_url="$(curl -fsSL --max-time 15 -o /tmp/smoke-page.html -w "%{url_effective}" "$base_url/" || true)"
             [[ -s /tmp/smoke-page.html ]] || return 1
-            html="$(cat /tmp/smoke-page.html)"
 
-            local origin
-            origin="$(echo "$effective_url" | grep -oE "^https?://[^/]+")"
+            html="$(cat /tmp/smoke-page.html)"
+            origin="$(printf '%s' "$effective_url" | grep -oE '^https?://[^/]+' || true)"
+            [[ -n "$origin" ]] || origin="${base_url%/}"
+
+            module_script="$(printf '%s' "$html" | grep -oE '<script[^>]*>' | grep -E 'type="module"' | head -n 1 || true)"
+            entry_asset="$(printf '%s' "$module_script" | grep -oE 'src="[^"]+\.js[^"]*"' | head -n 1 | cut -d '"' -f 2 || true)"
+            [[ -n "$entry_asset" ]] || return 1
+
+            case "$entry_asset" in
+              http://*|https://*) entry_url="$entry_asset" ;;
+              /*) entry_url="${origin%/}$entry_asset" ;;
+              *) entry_url="${origin%/}/$entry_asset" ;;
+            esac
+
+            normalized_path="$(printf '%s' "$entry_asset" | sed -E 's#^https?://[^/]+##; s/[?].*$//')"
+            status="$(curl -sSL --max-time 15 -o /tmp/smoke-entry.js -w "%{http_code}" "$entry_url" || true)"
+            [[ "$status" == "200" ]] || return 1
+
+            printf '%s\n' "$normalized_path"
+          }
+
+          asset_has_supabase_url() {
+            local base_url="$1"
+            local effective_url origin html js_assets asset asset_url bundle
+
+            effective_url="$(curl -fsSL --max-time 15 -o /tmp/smoke-config-page.html -w "%{url_effective}" "$base_url/" || true)"
+            [[ -s /tmp/smoke-config-page.html ]] || return 1
+            html="$(cat /tmp/smoke-config-page.html)"
+            origin="$(printf '%s' "$effective_url" | grep -oE '^https?://[^/]+' || true)"
             [[ -n "$origin" ]] || origin="${base_url%/}"
 
             js_assets="$(printf '%s' "$html" | grep -oE '(src|href)="[^"]+\.js[^"]*"' | cut -d '"' -f 2 || true)"
@@ -89,12 +115,15 @@ jobs:
               [[ -n "$asset" ]] || continue
               if [[ "$asset" == http* ]]; then
                 asset_url="$asset"
-              else
+              elif [[ "$asset" == /* ]]; then
                 asset_url="${origin%/}$asset"
+              else
+                asset_url="${origin%/}/$asset"
               fi
 
               bundle="$(curl -fsSL --max-time 15 "$asset_url" || true)"
               if [[ "$bundle" == *"$EXPECTED_SUPABASE_URL"* ]]; then
+                echo "Production Supabase URL found in $asset_url"
                 return 0
               fi
             done <<< "$js_assets"
@@ -113,31 +142,37 @@ jobs:
           curl -sSIL --max-time 15 https://sahadhyayi.com/ | head -n 30 || true
 
           worker_url="https://sahadhyayi.gyan-596.workers.dev"
-          worker_ready=0
+          worker_entry=""
+          apex_entry=""
+          www_entry=""
 
           for attempt in {1..18}; do
-            if verify_bundle "$worker_url"; then
-              worker_ready=1
-              echo "Worker endpoint is serving the configured production bundle."
-            fi
+            worker_entry="$(entry_path "$worker_url" || true)"
+            apex_entry="$(entry_path "https://sahadhyayi.com" || true)"
+            www_entry="$(entry_path "https://www.sahadhyayi.com" || true)"
 
-            if verify_bundle "https://sahadhyayi.com"; then
-              echo "Apex custom domain serves the configured production bundle."
-              if verify_bundle "https://www.sahadhyayi.com"; then
-                echo "www custom domain also serves the configured production bundle."
+            echo "Attempt $attempt/18 entry bundles:"
+            echo "  Worker: ${worker_entry:-MISSING}"
+            echo "  Apex:   ${apex_entry:-MISSING}"
+            echo "  www:    ${www_entry:-MISSING}"
+
+            if [[ -n "$worker_entry" && "$worker_entry" == "$apex_entry" && "$worker_entry" == "$www_entry" ]]; then
+              if asset_has_supabase_url "$worker_url" &&
+                asset_has_supabase_url "https://sahadhyayi.com" &&
+                asset_has_supabase_url "https://www.sahadhyayi.com"; then
+                echo "Worker and both production domains serve the same JavaScript entry bundle and configured Supabase project."
                 exit 0
               fi
-              echo "::error::The apex domain is healthy, but www.sahadhyayi.com is not serving the configured application."
-              exit 1
+              echo "Entry bundle matches, but a host has not yet exposed the production Supabase configuration."
+            else
+              echo "Entry bundle mismatch; waiting for the production deployment/cache to converge."
             fi
 
-            echo "Attempt $attempt/18: Cloudflare production rollout is not yet verifiable."
             sleep 10
           done
 
-          if [[ "$worker_ready" -eq 1 ]]; then
-            echo "::error::The Worker origin is configured correctly, but the custom domain still serves a different origin. Check Custom Domain binding and conflicting DNS records."
-          else
-            echo "::error::Neither the Worker URL nor the custom domain serves the configured production bundle. Check the active Cloudflare deployment and build variables."
-          fi
+          echo "::error::Production hosts do not all serve the same JavaScript entry bundle with the expected Supabase configuration."
+          echo "::error::Worker entry: ${worker_entry:-MISSING}"
+          echo "::error::Apex entry: ${apex_entry:-MISSING}"
+          echo "::error::www entry: ${www_entry:-MISSING}"
           exit 1
