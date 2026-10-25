@@ -91,7 +91,7 @@ const SignIn = () => {
       } else if (rawMessage.toLowerCase().includes('email not confirmed')) {
         // Unverified accounts must go straight to the OTP screen instead of
         // leaving users stuck on sign-in with a generic error.
-        navigate(`/confirm-email?email=${encodeURIComponent(sanitizedEmail)}`, {
+        navigate(`/confirm-email?email=${encodeURIComponent(formData.email.trim().toLowerCase())}`, {
           replace: true,
           state: { message: 'Your email is not verified yet. Enter the code from your email to activate your account.' },
         });
