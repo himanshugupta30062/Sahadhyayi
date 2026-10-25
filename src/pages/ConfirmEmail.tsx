@@ -9,6 +9,7 @@ import { CheckCircle2, XCircle, Mail, Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client-universal';
 import SEO from '@/components/SEO';
+import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
 
 type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'already-verified';
 
@@ -25,6 +26,8 @@ const ConfirmEmail = () => {
   const [otp, setOtp] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
@@ -165,12 +168,22 @@ const ConfirmEmail = () => {
       setErrorMessage('Enter a valid email address first.');
       return;
     }
+    if (!captchaToken) {
+      setErrorMessage('Complete the human verification before requesting a new code.');
+      return;
+    }
     setBusy(true);
     setErrorMessage('');
     try {
-      const { error } = await supabase.auth.resend({ type: 'signup', email: normalizedEmail });
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: normalizedEmail,
+        options: { captchaToken },
+      });
       if (error) throw error;
       setOtp('');
+      setCaptchaToken(null);
+      setCaptchaResetKey((key) => key + 1);
       toast({ title: 'New code sent', description: 'Check your inbox and use the newest verification code.' });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message.toLowerCase() : '';
@@ -240,7 +253,11 @@ const ConfirmEmail = () => {
                     </div>
                     <Button type="submit" disabled={busy} className="w-full h-11">{busy ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying…</> : 'Verify email'}</Button>
                   </form>
-                  <Button type="button" variant="outline" disabled={busy} onClick={handleResendCode} className="w-full">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">To protect accounts from automated abuse, verify before requesting another email.</p>
+                    <TurnstileCaptcha key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
+                  </div>
+                  <Button type="button" variant="outline" disabled={busy || !captchaToken} onClick={handleResendCode} className="w-full">
                     {busy ? 'Please wait…' : 'Resend verification code'}
                   </Button>
                   <div className="text-center pt-2">
