@@ -36,13 +36,13 @@ async function checkRateLimit(supabaseClient: any, identifier: string, endpoint:
     })
     
     if (error) {
-      console.error('Rate limit check error:', error)
+      console.error('Rate limit check failed:', error instanceof Error ? error.name : 'UnknownError')
       return true // Allow on error to prevent blocking legitimate requests
     }
     
     return data === true
   } catch (error) {
-    console.error('Rate limit exception:', error)
+    console.error('Rate limit check exception:', error instanceof Error ? error.name : 'UnknownError')
     return true
   }
 }
@@ -65,7 +65,7 @@ serve(async (req) => {
   // Check rate limit
   const isAllowed = await checkRateLimit(supabaseClient, clientIP, 'search-books')
   if (!isAllowed) {
-    console.log(`🚫 Rate limit exceeded for IP: ${clientIP}`)
+    console.warn('Book search rate limit exceeded.')
     return new Response(
       JSON.stringify({ error: 'Too many requests. Please try again later.' }),
       { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -82,7 +82,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('🔍 Ultimate Book Search for:', searchTerm)
+    console.log('Book search request received.')
 
     // Search all APIs in parallel for better performance
     const [openLibraryBooks, googleBooksData, gutenbergBooks, archiveBooks] = await Promise.all([
@@ -115,10 +115,10 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('💥 Error in ultimate book search:', error)
+    console.error('Book search failed:', error instanceof Error ? error.name : 'UnknownError')
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'An unknown error occurred' 
+        error: 'Book search failed. Please try again later.' 
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
@@ -150,7 +150,7 @@ async function searchOpenLibrary(searchTerm: string): Promise<BookData[]> {
     })).filter((book: BookData) => book.title && book.title !== 'Unknown Title')
 
   } catch (error) {
-    console.error('Error searching Open Library:', error)
+    console.error('Open Library search failed:', error instanceof Error ? error.name : 'UnknownError')
     return []
   }
 }
@@ -185,7 +185,7 @@ async function searchGoogleBooks(searchTerm: string): Promise<BookData[]> {
     }).filter((book: BookData) => book.title && book.title !== 'Unknown Title')
 
   } catch (error) {
-    console.error('Error searching Google Books:', error)
+    console.error('Google Books search failed:', error instanceof Error ? error.name : 'UnknownError')
     return []
   }
 }
@@ -214,7 +214,7 @@ async function searchProjectGutenberg(searchTerm: string): Promise<BookData[]> {
     })).filter((book: BookData) => book.title && book.title !== 'Unknown Title' && book.pdf_url)
 
   } catch (error) {
-    console.error('Error searching Project Gutenberg:', error)
+    console.error('Project Gutenberg search failed:', error instanceof Error ? error.name : 'UnknownError')
     return []
   }
 }
@@ -243,7 +243,7 @@ async function searchInternetArchive(searchTerm: string): Promise<BookData[]> {
     })).filter((book: BookData) => book.title && book.title !== 'Unknown Title')
 
   } catch (error) {
-    console.error('Error searching Internet Archive:', error)
+    console.error('Internet Archive search failed:', error instanceof Error ? error.name : 'UnknownError')
     return []
   }
 }
@@ -352,7 +352,7 @@ async function saveOrUpdateBook(supabaseClient: any, book: BookData): Promise<an
       .single()
 
     if (error) {
-      console.error('Error inserting book:', error)
+      console.error('Book insert failed:', error instanceof Error ? error.name : 'UnknownError')
       return null
     }
 
@@ -360,7 +360,7 @@ async function saveOrUpdateBook(supabaseClient: any, book: BookData): Promise<an
     return data
 
   } catch (error) {
-    console.error('Error in saveOrUpdateBook:', error)
+    console.error('Book save/update failed:', error instanceof Error ? error.name : 'UnknownError')
     return null
   }
 }
