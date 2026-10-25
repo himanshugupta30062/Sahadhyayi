@@ -77,7 +77,7 @@ RISKY_PACKAGES=(
 )
 
 echo "Upgrading safe packages..."
-npm install "${SAFE_PACKAGES[@]}"
+npm install --ignore-scripts "${SAFE_PACKAGES[@]}"
 
 if npm run lint && npm run build; then
   echo "Safe packages upgraded successfully."
@@ -91,7 +91,7 @@ echo
 printf '%s\n' "The following packages have major updates and may contain breaking changes:" "${RISKY_PACKAGES[@]}"
 read -p "Do you want to upgrade these risky packages? (y/N) " -r
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-  npm install "${RISKY_PACKAGES[@]}"
+  npm install --ignore-scripts "${RISKY_PACKAGES[@]}"
   npm run lint && npm run build
 else
   echo "Skipping risky package upgrades."
