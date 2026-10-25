@@ -23,7 +23,6 @@ const computeStreak = (timestamps: string[]): ReadingStreak => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // current streak: walk backwards from today (or yesterday if no activity today)
   let current = 0;
   const cursor = new Date(today);
   if (!daySet.has(`${cursor.getFullYear()}-${cursor.getMonth() + 1}-${cursor.getDate()}`)) {
@@ -34,7 +33,6 @@ const computeStreak = (timestamps: string[]): ReadingStreak => {
     cursor.setDate(cursor.getDate() - 1);
   }
 
-  // best streak: scan sorted unique days
   const days = Array.from(daySet)
     .map((k) => {
       const [y, m, d] = k.split('-').map(Number);
@@ -55,12 +53,11 @@ const computeStreak = (timestamps: string[]): ReadingStreak => {
   if (days.length === 0) best = 0;
   best = Math.max(best, current);
 
-  // days active in the last 7 days
   const weekAgo = new Date(today);
   weekAgo.setDate(weekAgo.getDate() - 6);
   const daysThisWeek = days.filter((t) => t >= weekAgo.getTime()).length;
 
-  const sortedIso = [...timestamps].sort();
+  const sortedIso = [...timestamps].sort((a, b) => a.localeCompare(b));
   return {
     current,
     best,
@@ -77,7 +74,6 @@ export const useReadingStreak = () => {
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<ReadingStreak> => {
       if (!user) return { current: 0, best: 0, daysThisWeek: 0, lastActiveAt: null };
-      // Pull recent activity timestamps; cap to last 365 days for safety.
       const since = new Date();
       since.setDate(since.getDate() - 365);
       const { data, error } = await supabase
