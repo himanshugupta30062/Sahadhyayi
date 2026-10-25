@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.112.3";
+import { getBearerToken, hasDeleteConfirmation } from "./validation.ts";
 
 const allowedOrigins = new Set([
   "https://www.sahadhyayi.com",
@@ -64,7 +65,7 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Invalid request body." }, 400, req.headers.get("Origin"));
     }
 
-    if (!body || typeof body !== "object" || (body as { confirmation?: unknown }).confirmation !== "DELETE") {
+    if (!hasDeleteConfirmation(body)) {
       return json({ error: "Explicit DELETE confirmation is required." }, 400, req.headers.get("Origin"));
     }
 
