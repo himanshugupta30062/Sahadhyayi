@@ -187,12 +187,6 @@ const Authors = () => {
                 >
                   Explore books <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
-                <Link
-                  to="/publishers"
-                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D5B16D]/50 bg-[#D5B16D]/10 px-5 text-sm font-semibold text-[#F7E6BD] transition hover:bg-[#D5B16D]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] sm:h-14"
-                >
-                  Publishers & institutions <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
               </div>
 
               <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/75">
