@@ -79,18 +79,20 @@ const SignIn = () => {
         return;
       }
       const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
+      // AuthProvider updates `user`; the effect above performs the single post-login redirect.
+      // Avoid navigating twice (here and in the user effect), which can race protected-route rendering.
       await signIn(sanitizedEmail, formData.password, captchaToken);
-      navigate(redirectPath, { replace: true });
     } catch (error: any) {
       console.error('Sign-in error:', error);
-      let errorMessage = error.message || 'Sign-in failed';
-      if (error.message.includes('Invalid login credentials') || error.message.includes('invalid credentials')) {
+      const rawMessage = typeof error?.message === 'string' ? error.message : '';
+      let errorMessage = rawMessage || 'Sign-in failed';
+      if (rawMessage.toLowerCase().includes('invalid login credentials') || rawMessage.toLowerCase().includes('invalid credentials')) {
         errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-      } else if (error.message.includes('Email not confirmed')) {
+      } else if (rawMessage.toLowerCase().includes('email not confirmed')) {
         errorMessage = 'Please check your email and click the verification link before signing in.';
-      } else if (error.message.includes('rate limit') || error.message.includes('too many')) {
+      } else if (rawMessage.toLowerCase().includes('rate limit') || rawMessage.toLowerCase().includes('too many')) {
         errorMessage = 'Too many attempts. Please wait a moment before trying again.';
-      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+      } else if (rawMessage.toLowerCase().includes('network') || rawMessage.toLowerCase().includes('fetch')) {
         errorMessage = 'Network error. Please check your connection and try again.';
       } else {
         errorMessage = 'Sign-in failed. Please try again.';
