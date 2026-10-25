@@ -48,7 +48,7 @@ const UserContentEditor: React.FC<UserContentEditorProps> = ({
         content: formData.content.trim(),
         content_type: formData.content_type,
         original_chapter_number: formData.original_chapter_number ? 
-          parseInt(formData.original_chapter_number) : null,
+          Number.parseInt(formData.original_chapter_number) : null,
         is_published: formData.is_published,
         is_approved: false,
       });

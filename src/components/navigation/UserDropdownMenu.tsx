@@ -50,8 +50,8 @@ const UserDropdownMenu = () => {
     
     if (!sessionStart || !lastActivity) return null;
     
-    const sessionAge = Date.now() - parseInt(sessionStart, 10);
-    const timeSinceActivity = Date.now() - parseInt(lastActivity, 10);
+    const sessionAge = Date.now() - Number.parseInt(sessionStart, 10);
+    const timeSinceActivity = Date.now() - Number.parseInt(lastActivity, 10);
     
     return {
       sessionAge: Math.floor(sessionAge / (1000 * 60)), // minutes

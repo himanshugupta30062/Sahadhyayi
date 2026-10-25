@@ -160,7 +160,7 @@ const PersonalLibrary = () => {
                     {book.title}
                   </Link>
                 </h3>
-                {book.author && (
+                {Boolean(book.author) && (
                   <p className="text-muted-foreground text-sm mt-1 truncate">
                     {book.author}
                   </p>
@@ -170,7 +170,7 @@ const PersonalLibrary = () => {
               {/* Metadata */}
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-wrap gap-1.5">
-                  {book.genre && (
+                  {Boolean(book.genre) && (
                     <span className="inline-block bg-sahadhyayi-amber-light text-sahadhyayi-warm px-2 py-1 rounded-full text-xs font-medium border border-sahadhyayi-amber/20">
                       {book.genre}
                     </span>
@@ -181,7 +181,7 @@ const PersonalLibrary = () => {
                     </span>
                   )}
                 </div>
-                {book.publication_year && (
+                {Boolean(book.publication_year) && (
                   <span className="text-muted-foreground text-sm">{book.publication_year}</span>
                 )}
               </div>
