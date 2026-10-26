@@ -103,6 +103,32 @@ describe('ConfirmEmail verification flow', () => {
     expect(screen.queryByRole('button', { name: /^Verify email$/i })).not.toBeInTheDocument();
   });
 
+  it('shows sign-in when a PKCE confirmation link verifies without a session', async () => {
+    mocks.exchangeCodeForSession.mockResolvedValueOnce({
+      data: { session: null, user: { id: 'reader-1', email_confirmed_at: '2026-10-26T10:00:00Z' } },
+      error: null,
+    });
+
+    renderConfirmEmail('/confirm-email?code=consumed-code');
+
+    expect(await screen.findByText(/Email Verified — Sign In/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue to Sign In/i })).toBeInTheDocument();
+    expect(mocks.verifyOtp).not.toHaveBeenCalled();
+  });
+
+  it('shows sign-in when a token-hash confirmation verifies without a session', async () => {
+    mocks.verifyOtp.mockResolvedValueOnce({
+      data: { session: null, user: { id: 'reader-1', email_confirmed_at: '2026-10-26T10:00:00Z' } },
+      error: null,
+    });
+
+    renderConfirmEmail('/confirm-email?token_hash=consumed-hash&type=signup');
+
+    expect(await screen.findByText(/Email Verified — Sign In/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue to Sign In/i })).toBeInTheDocument();
+    expect(mocks.verifyOtp).toHaveBeenCalledWith({ token_hash: 'consumed-hash', type: 'signup' });
+  });
+
   it('resends a signup code to the normalized email address', async () => {
     mocks.resend.mockResolvedValueOnce({ error: null });
 
@@ -142,6 +168,17 @@ describe('ConfirmEmail verification flow', () => {
 
     expect(await screen.findByText(/Already Verified/i)).toBeInTheDocument();
     expect(screen.queryByText(/This link has already been used or expired/i)).not.toBeInTheDocument();
+  });
+
+  it('shows a recoverable message when resending fails for a non-CAPTCHA reason', async () => {
+    mocks.resend.mockResolvedValueOnce({ error: new Error('network unavailable') });
+
+    renderConfirmEmail();
+
+    fireEvent.click(screen.getByRole('button', { name: /Complete human verification/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Resend verification code/i }));
+
+    expect(await screen.findByText(/Could not resend the code\. Check the email address and connection/i)).toBeInTheDocument();
   });
 
   it('shows a recoverable message when resending is rate limited', async () => {
