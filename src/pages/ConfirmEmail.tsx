@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import SEO from '@/components/SEO';
 import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
 
-type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'already-verified';
+type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'already-verified' | 'verified-needs-signin';
 
 function isValidEmailAddress(value: string): boolean {
   if (value.length === 0 || value.length > 254 || value.trim() !== value || /\\s/.test(value)) return false;
@@ -102,6 +102,11 @@ const ConfirmEmail = () => {
             setStatus('success');
             return;
           }
+          if (data.user?.email_confirmed_at && !cancelled) {
+            setStatus('verified-needs-signin');
+            setErrorMessage('');
+            return;
+          }
         }
 
         if (tokenHash) {
@@ -112,6 +117,11 @@ const ConfirmEmail = () => {
           if (error) throw error;
           if (data.session && !cancelled) {
             setStatus('success');
+            return;
+          }
+          if (data.user?.email_confirmed_at && !cancelled) {
+            setStatus('verified-needs-signin');
+            setErrorMessage('');
             return;
           }
         }
@@ -201,9 +211,12 @@ const ConfirmEmail = () => {
         setErrorMessage('');
         toast({ title: 'Email verified', description: 'Your Sahadhyayi account is ready.' });
       } else if (data.user?.email_confirmed_at) {
-        // Verification succeeded but no session exists; do not redirect to a
-        // protected dashboard as if the browser were signed in.
-        setErrorMessage('Your email is verified, but this browser is not signed in. Please use “Back to sign in” to continue.');
+        // The OTP is consumed and the address is verified even if this request
+        // did not establish a browser session. Do not leave the user on the OTP
+        // form where a second submit would only return otp_expired.
+        setStatus('verified-needs-signin');
+        setErrorMessage('');
+        toast({ title: 'Email verified', description: 'Sign in to continue to Sahadhyayi.' });
       } else {
         setErrorMessage('The code was accepted but no session was returned. Please sign in to continue.');
       }
@@ -243,16 +256,24 @@ const ConfirmEmail = () => {
       setCaptchaResetKey((key) => key + 1);
       toast({ title: 'New code sent', description: 'Check your inbox and use the newest verification code.' });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message.toLowerCase() : '';
-      setErrorMessage(message.includes('rate') || message.includes('too many')
-        ? 'Please wait a little before requesting another code.'
-        : 'Could not resend the code. Check the email address and try again.');
+      const message = getNormalizedErrorMessage(err);
+      if (message.includes('rate') || message.includes('too many')) {
+        setErrorMessage('Please wait a little before requesting another code.');
+      } else if (message.includes('captcha') || message.includes('challenge') || message.includes('captcha_token')) {
+        // A rejected/expired Turnstile token must not be submitted repeatedly.
+        // Reset the widget and require a new successful challenge.
+        setCaptchaToken(null);
+        setCaptchaResetKey((key) => key + 1);
+        setErrorMessage('Human verification expired or was rejected. Complete the challenge again, then request a fresh code.');
+      } else {
+        setErrorMessage('Could not resend the code. Check the email address and connection, then try again.');
+      }
     } finally {
       setBusy(false);
     }
   };
 
-  const verified = status === 'success' || status === 'already-verified';
+  const verified = status === 'success' || status === 'already-verified' || status === 'verified-needs-signin';
 
   return (
     <>
@@ -278,12 +299,26 @@ const ConfirmEmail = () => {
                   <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4 text-emerald-600">
                     <CheckCircle2 className="w-6 h-6" aria-hidden="true" />
                   </div>
-                  <CardTitle className="font-serif text-2xl font-bold">{status === 'success' ? 'Email Verified!' : 'Already Verified'}</CardTitle>
-                  <CardDescription className="mt-2">Your email is confirmed. Welcome to the Sahadhyayi reading community.</CardDescription>
+                  <CardTitle className="font-serif text-2xl font-bold">
+                    {status === 'success' ? 'Email Verified!' : status === 'already-verified' ? 'Already Verified' : 'Email Verified — Sign In'}
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    {status === 'verified-needs-signin'
+                      ? 'Your email address is confirmed, but this browser is not signed in. Sign in to continue to Sahadhyayi.'
+                      : 'Your email is confirmed. Welcome to the Sahadhyayi reading community.'}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center space-y-4 pt-4">
-                  <p className="text-xs text-muted-foreground">Redirecting to your dashboard in {countdown} seconds…</p>
-                  <Button onClick={() => navigate('/dashboard', { replace: true })} className="w-full">Go to Dashboard</Button>
+                  {status === 'verified-needs-signin' ? (
+                    <Button onClick={() => navigate('/signin', { replace: true })} className="w-full">
+                      Continue to Sign In
+                    </Button>
+                  ) : (
+                    <>
+                      <p className="text-xs text-muted-foreground">Redirecting to your dashboard in {countdown} seconds…</p>
+                      <Button onClick={() => navigate('/dashboard', { replace: true })} className="w-full">Go to Dashboard</Button>
+                    </>
+                  )}
                 </CardContent>
               </>
             )}
