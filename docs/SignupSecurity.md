@@ -78,7 +78,7 @@ These events indicate multiple conditions across different test/account attempts
 
 ### Required Auth template/config audit
 
-1. Check **Authentication → Emails → Confirm sign up** and **Authentication → Emails → Magic Link** (OTP template). Confirm the exact saved production templates. The template used for signup confirmation must render `{{ .Token }}` as a manual code. For the intended OTP-first flow, do not also expose a clickable single-use `{{ .ConfirmationURL }}` or `{{ .TokenHash }}` link in that email.
+1. For email/password signup, check **Authentication → Emails → Confirm sign up** and confirm the exact saved production template renders `{{ .Token }}` as the manual code. For the intended OTP-first flow, do not expose a clickable single-use `{{ .ConfirmationURL }}` or `{{ .TokenHash }}` link in that signup-confirmation email. The **Magic Link** template is a separate template for passwordless sign-in; inspect it only if that flow is enabled, and do not change it as a substitute for **Confirm sign up**.
 2. The only CTA in the OTP template should open the ordinary app route `https://www.sahadhyayi.com/confirm-email`; it should not embed an Auth verification token.
 3. Check **Authentication → URL Configuration** for both production hostnames only when needed: `https://sahadhyayi.com/confirm-email` and `https://www.sahadhyayi.com/confirm-email`.
 4. Check **Authentication → Bot and Abuse Protection**: the CAPTCHA provider and secret must match the Cloudflare Turnstile widget whose site key is in the production frontend build.
