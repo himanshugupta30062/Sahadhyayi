@@ -87,6 +87,22 @@ describe('ConfirmEmail verification flow', () => {
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Email verified' }));
   });
 
+  it('shows a sign-in action when OTP verification succeeded without a session', async () => {
+    mocks.verifyOtp.mockResolvedValueOnce({
+      data: { session: null, user: { id: 'reader-1', email_confirmed_at: '2026-10-26T10:00:00Z' } },
+      error: null,
+    });
+
+    renderConfirmEmail();
+
+    fireEvent.change(screen.getByLabelText(/Verification code/i), { target: { value: '123456' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Verify email$/i }));
+
+    expect(await screen.findByText(/Email Verified — Sign In/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue to Sign In/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Verify email$/i })).not.toBeInTheDocument();
+  });
+
   it('resends a signup code to the normalized email address', async () => {
     mocks.resend.mockResolvedValueOnce({ error: null });
 
