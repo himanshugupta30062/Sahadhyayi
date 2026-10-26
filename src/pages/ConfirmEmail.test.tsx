@@ -119,6 +119,20 @@ describe('ConfirmEmail verification flow', () => {
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'New code sent' }));
   });
 
+  it('requires a fresh human challenge after a CAPTCHA resend rejection', async () => {
+    mocks.resend.mockResolvedValueOnce({
+      error: new Error('captcha protection: request disallowed (no captcha_token found)'),
+    });
+
+    renderConfirmEmail();
+
+    fireEvent.click(screen.getByRole('button', { name: /Complete human verification/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Resend verification code/i }));
+
+    expect(await screen.findByText(/Human verification expired or was rejected/i)).toBeInTheDocument();
+    expect(mocks.resend).toHaveBeenCalledTimes(1);
+  });
+
   it('checks for an already-confirmed session before reporting a stale URL token', async () => {
     mocks.getSession.mockResolvedValueOnce({
       data: { session: { user: { email_confirmed_at: '2026-10-25T15:31:18Z' } } },
