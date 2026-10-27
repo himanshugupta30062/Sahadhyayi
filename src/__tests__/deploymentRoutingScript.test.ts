@@ -18,10 +18,10 @@ function createFixture({
       { pattern: "www.sahadhyayi.com", custom_domain: true },
     ],
   },
-  netlify = '[[redirects]]\nfrom = "/*"\nto = "/index.html"\nstatus = 200\n',
   publicRedirects = false,
   distRedirects = false,
   includeRequiredFiles = true,
+  includeDistIndex = true,
 } = {}) {
   const root = mkdtempSync(path.join(os.tmpdir(), "sahadhyayi-routing-"));
   tempRoots.push(root);
@@ -31,9 +31,10 @@ function createFixture({
       path.join(root, "wrangler.jsonc"),
       JSON.stringify(wrangler, null, 2),
     );
-    writeFileSync(path.join(root, "netlify.toml"), netlify);
-    mkdirSync(path.join(root, "dist"), { recursive: true });
-    writeFileSync(path.join(root, "dist", "index.html"), "<!doctype html>");
+    if (includeDistIndex) {
+      mkdirSync(path.join(root, "dist"), { recursive: true });
+      writeFileSync(path.join(root, "dist", "index.html"), "<!doctype html>");
+    }
   }
 
   if (publicRedirects) {
@@ -62,7 +63,7 @@ afterEach(() => {
 });
 
 describe("Cloudflare deployment routing guard", () => {
-  it("accepts valid Worker custom domains and both platform SPA fallbacks", () => {
+  it("accepts valid Worker custom domains and the Cloudflare SPA fallback", () => {
     const result = runCheck(createFixture());
 
     expect(result.status).toBe(0);
@@ -76,7 +77,6 @@ describe("Cloudflare deployment routing guard", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("Missing required deployment file(s)");
     expect(result.stderr).toContain("wrangler.jsonc");
-    expect(result.stderr).toContain("netlify.toml");
     expect(result.stderr).toContain("dist/index.html");
   });
 
@@ -143,12 +143,11 @@ describe("Cloudflare deployment routing guard", () => {
     expect(result.stderr).toContain("must configure sahadhyayi.com and www.sahadhyayi.com");
   });
 
-  it("rejects a broken Netlify SPA fallback", () => {
-    const result = runCheck(
-      createFixture({ netlify: '[[redirects]]\nfrom = "/old"\nto = "/index.html"\nstatus = 301\n' }),
-    );
+  it("fails with a useful message when the built SPA entry point is missing", () => {
+    const result = runCheck(createFixture({ includeDistIndex: false }));
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain("netlify.toml must keep the SPA fallback");
+    expect(result.stderr).toContain("dist/index.html");
+    expect(result.stderr).not.toContain("netlify.toml");
   });
 });
