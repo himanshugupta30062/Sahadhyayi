@@ -31,7 +31,6 @@ function createFixture({
       path.join(root, "wrangler.jsonc"),
       JSON.stringify(wrangler, null, 2),
     );
-    writeFileSync(path.join(root, "netlify.toml"), netlify);
     mkdirSync(path.join(root, "dist"), { recursive: true });
     writeFileSync(path.join(root, "dist", "index.html"), "<!doctype html>");
   }
@@ -76,7 +75,6 @@ describe("Cloudflare deployment routing guard", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("Missing required deployment file(s)");
     expect(result.stderr).toContain("wrangler.jsonc");
-    expect(result.stderr).toContain("netlify.toml");
     expect(result.stderr).toContain("dist/index.html");
   });
 
