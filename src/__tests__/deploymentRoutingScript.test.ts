@@ -18,7 +18,6 @@ function createFixture({
       { pattern: "www.sahadhyayi.com", custom_domain: true },
     ],
   },
-  netlify = '[[redirects]]\nfrom = "/*"\nto = "/index.html"\nstatus = 200\n',
   publicRedirects = false,
   distRedirects = false,
   includeRequiredFiles = true,
@@ -61,7 +60,7 @@ afterEach(() => {
 });
 
 describe("Cloudflare deployment routing guard", () => {
-  it("accepts valid Worker custom domains and both platform SPA fallbacks", () => {
+  it("accepts valid Worker custom domains and the Cloudflare SPA fallback", () => {
     const result = runCheck(createFixture());
 
     expect(result.status).toBe(0);
@@ -141,12 +140,20 @@ describe("Cloudflare deployment routing guard", () => {
     expect(result.stderr).toContain("must configure sahadhyayi.com and www.sahadhyayi.com");
   });
 
-  it("rejects a broken Netlify SPA fallback", () => {
+  it("rejects wildcard routes instead of Cloudflare Worker Custom Domains", () => {
     const result = runCheck(
-      createFixture({ netlify: '[[redirects]]\nfrom = "/old"\nto = "/index.html"\nstatus = 301\n' }),
+      createFixture({
+        wrangler: {
+          assets: { not_found_handling: "single-page-application" },
+          routes: [
+            { pattern: "sahadhyayi.com/*" },
+            { pattern: "www.sahadhyayi.com/*" },
+          ],
+        },
+      }),
     );
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain("netlify.toml must keep the SPA fallback");
+    expect(result.stderr).toContain("not wildcard Worker Routes");
   });
 });
