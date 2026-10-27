@@ -90,7 +90,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Fail closed if this bucket name already exists with weaker settings; never
 -- silently mutate an existing bucket as a side effect of this feature migration.
-DO $
+DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1
@@ -103,8 +103,7 @@ BEGIN
     RAISE EXCEPTION 'book-pdf-quarantine already exists with unexpected security settings';
   END IF;
 END
-$;
-
+$$;
 DROP POLICY IF EXISTS "Users can upload own quarantined book PDFs" ON storage.objects;
 CREATE POLICY "Users can upload own quarantined book PDFs"
   ON storage.objects FOR INSERT
