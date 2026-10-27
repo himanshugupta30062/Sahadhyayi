@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { brotliCompressSync } from 'node:zlib';
 
@@ -20,6 +20,10 @@ for (const asset of compressedAssetBudgets) {
     );
     if (!match) throw new Error('Required optimized asset is missing: ' + asset.path + '*.webp');
     assetPath = path.join(directory, match);
+  }
+
+  if (!existsSync(assetPath)) {
+    throw new Error('Required optimized asset is missing: ' + path.relative(dist, assetPath));
   }
 
   const bytes = readFileSync(assetPath).length;
