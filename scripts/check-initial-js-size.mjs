@@ -15,6 +15,9 @@ for (const asset of compressedAssetBudgets) {
   let assetPath = path.join(dist, asset.path);
   if (asset.prefix) {
     const directory = path.dirname(assetPath);
+    if (!existsSync(directory)) {
+      throw new Error('Required optimized asset directory is missing: ' + path.relative(dist, directory));
+    }
     const match = readdirSync(directory).find((name) =>
       name.startsWith(path.basename(asset.path)) && name.endsWith(asset.suffix)
     );
