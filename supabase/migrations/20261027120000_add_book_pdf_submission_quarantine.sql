@@ -86,10 +86,24 @@ CREATE POLICY "Users can create own PDF submissions"
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES ('book-pdf-quarantine', 'book-pdf-quarantine', false, 52428800, ARRAY['application/pdf']::text[])
-ON CONFLICT (id) DO UPDATE SET
-  public = false,
-  file_size_limit = 52428800,
-  allowed_mime_types = ARRAY['application/pdf']::text[];
+ON CONFLICT (id) DO NOTHING;
+
+-- Fail closed if this bucket name already exists with weaker settings; never
+-- silently mutate an existing bucket as a side effect of this feature migration.
+DO $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM storage.buckets
+    WHERE id = 'book-pdf-quarantine'
+      AND public = false
+      AND file_size_limit = 52428800
+      AND allowed_mime_types = ARRAY['application/pdf']::text[]
+  ) THEN
+    RAISE EXCEPTION 'book-pdf-quarantine already exists with unexpected security settings';
+  END IF;
+END
+$;
 
 DROP POLICY IF EXISTS "Users can upload own quarantined book PDFs" ON storage.objects;
 CREATE POLICY "Users can upload own quarantined book PDFs"
