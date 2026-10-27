@@ -86,6 +86,7 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const AdminLibraryQuality = lazy(() => import('./pages/AdminLibraryQuality'));
+const AdminBookPdfManager = lazy(() => import('./pages/AdminBookPdfManager'));
 const AdminLibraryArchive = lazy(() => import('./pages/AdminLibraryArchive'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 const AdminBookExpertRag = lazy(() => import('./pages/AdminBookExpertRag'));
@@ -527,6 +528,16 @@ const App = memo(() => {
                             <Suspense fallback={<LoadingFallback />}>
                               <Feedback />
                             </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/admin/book-pdfs"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading book PDF manager..." />}>
+                                <AdminBookPdfManager />
+                              </Suspense>
+                            </AdminRoute>
                           }
                         />
                         <Route
