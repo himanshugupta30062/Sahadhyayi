@@ -13,7 +13,7 @@ import {
   initializeSecurity,
   setCSRFToken,
   validateFileUpload,
-} from "@/utils/security";
+} from "@/utils/security.ts";
 
 describe("CSRF token helpers", () => {
   beforeEach(() => {

@@ -12,7 +12,7 @@ import {
   initializeSecureSession,
   setCSRFToken,
   validateFileUpload,
-} from './security';
+} from './security.ts';
 
 describe('client security utilities', () => {
   beforeEach(() => {
