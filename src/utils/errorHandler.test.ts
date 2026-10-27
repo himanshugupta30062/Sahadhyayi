@@ -21,6 +21,8 @@ const report = (
 
 describe('errorHandler', () => {
   beforeEach(() => {
+    // Keep route context deterministic; jsdom defaults to `/` rather than `/test`.
+    window.history.replaceState({}, '', '/test');
     errorHandler.clearErrors();
     toastMock.mockClear();
     vi.stubEnv('DEV', false);
