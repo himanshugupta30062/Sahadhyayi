@@ -35,7 +35,7 @@ export function normalizeBookIdentity(book: any): BookIdentity {
   // Generate alphanumeric key for fuzzy matching
   const normalizedTitleKey = titleNorm.cleanTitle
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}]/gu, '')
+    .replace(/[^\p{L}\p{N}\p{M}]/gu, '')
     .trim() || 'untitled';
 
   // 2. Authors & Contributors
