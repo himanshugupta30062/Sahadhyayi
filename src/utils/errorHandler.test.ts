@@ -117,6 +117,7 @@ describe('errorHandler', () => {
   });
 
   it('creates custom reports with the requested context and severity', () => {
+    window.history.replaceState({}, '', '/test');
     errorHandler.reportCustomError('custom failure', { userId: 'reader-1', action: 'save' }, 'high');
 
     const stats = errorHandler.getErrorStats();
