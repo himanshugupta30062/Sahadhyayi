@@ -494,7 +494,7 @@ const BookSelectionModal = ({
                           <div className="flex flex-wrap items-center gap-1.5 mt-2">
                             {renderSourceBadge(book.source)}
                             {renderAccessBadge(book.access_type)}
-                            {book.publication_year && (
+                            {Boolean(book.publication_year) && (
                               <Badge variant="outline" className="text-[11px] border-[#E8E2D9] dark:border-[#26302A]">
                                 {book.publication_year}
                               </Badge>
