@@ -85,12 +85,8 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
       lastUpdated: new Date().toISOString(),
     };
 
-    mockRpc.mockImplementation((name: string) => {
-      if (name === 'get_dual_table_website_analytics') {
-        return Promise.resolve({ data: mockPayload, error: null });
-      }
-      return Promise.resolve({ data: null, error: null });
-    });
+    // This test renders the public overview, so it consumes the public aggregate endpoint.
+    mockFunctionsInvoke.mockResolvedValue({ data: mockPayload, error: null });
 
     render(<CommunityPulseDialog open={true} onClose={vi.fn()} />);
 
