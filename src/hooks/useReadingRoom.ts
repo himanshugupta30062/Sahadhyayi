@@ -56,7 +56,7 @@ export const useReadingRooms = (bookId?: string, options: ReadingRoomsOptions = 
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reading_rooms' },
         () => {
-          qc.invalidateQueries({ queryKey: ["reading-rooms"] });
+          void qc.invalidateQueries({ queryKey: ["reading-rooms"] });
         }
       )
       .subscribe();
