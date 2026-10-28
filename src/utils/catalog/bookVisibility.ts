@@ -170,7 +170,7 @@ export async function detectBookSchemaCapabilities(): Promise<BookSchemaCapabili
     return cachedCapabilities;
   }
 
-  if (pendingDetectionPromise) {
+  if (pendingDetectionPromise !== null) {
     return pendingDetectionPromise;
   }
 
