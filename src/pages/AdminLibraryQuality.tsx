@@ -129,8 +129,8 @@ export const AdminLibraryQuality: React.FC = () => {
           description: data.message,
         });
         setIsPreviewOpen(false);
-        queryClient.invalidateQueries({ queryKey: ['library-duplicate-audit'] });
-        queryClient.invalidateQueries({ queryKey: ['duplicate-audit-logs'] });
+        void queryClient.invalidateQueries({ queryKey: ['library-duplicate-audit'] });
+        void queryClient.invalidateQueries({ queryKey: ['duplicate-audit-logs'] });
       }
     },
     onError: (err: any) => {

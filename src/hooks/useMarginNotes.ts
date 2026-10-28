@@ -144,8 +144,8 @@ export const useCreateMarginNoteReply = () => {
       return data;
     },
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["margin-note-replies", vars.noteId] });
-      qc.invalidateQueries({ queryKey: ["margin-notes"] });
+      void qc.invalidateQueries({ queryKey: ["margin-note-replies", vars.noteId] });
+      void qc.invalidateQueries({ queryKey: ["margin-notes"] });
     },
   });
 };

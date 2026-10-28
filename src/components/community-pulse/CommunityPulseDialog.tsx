@@ -348,7 +348,6 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     >
       <div
         className="relative flex flex-col w-full h-full sm:w-[95vw] sm:max-w-[1600px] sm:h-[92vh] sm:max-h-[94vh] my-auto rounded-none sm:rounded-2xl border-0 sm:border border-white/[0.09] bg-[#0B0D0C] text-stone-100 shadow-2xl overflow-hidden min-w-0"
-        onClick={e => e.stopPropagation()}
       >
         {/* Sticky Fixed Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-white/[0.08] bg-[#0E1210]/95 flex-shrink-0 min-w-0 z-20">
@@ -599,7 +598,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     type="button"
                     onClick={() => {
                       if (propOnRefresh) propOnRefresh();
-                      else refetchStats();
+                      else void refetchStats();
                     }}
                     className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#18241e] border border-white/10 hover:border-white/20 text-xs text-stone-200 hover:text-white transition-colors"
                   >

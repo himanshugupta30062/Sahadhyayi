@@ -154,12 +154,12 @@ const BooksCollection = ({
 
   const handleBooksAdded = () => {
     // Invalidate all related book queries so header, catalog count, and book grid update immediately
-    queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
-    queryClient.invalidateQueries({ queryKey: ['paginated-library-books'] });
-    queryClient.invalidateQueries({ queryKey: ['paginated-library-all'] });
-    queryClient.invalidateQueries({ queryKey: ['library-books'] });
-    queryClient.invalidateQueries({ queryKey: ['community-stats'] });
-    queryClient.invalidateQueries({ queryKey: ['all-library-books'] });
+    void queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
+    void queryClient.invalidateQueries({ queryKey: ['paginated-library-books'] });
+    void queryClient.invalidateQueries({ queryKey: ['paginated-library-all'] });
+    void queryClient.invalidateQueries({ queryKey: ['library-books'] });
+    void queryClient.invalidateQueries({ queryKey: ['community-stats'] });
+    void queryClient.invalidateQueries({ queryKey: ['all-library-books'] });
     refetchAll();
     window.dispatchEvent(new Event('shelfUpdated'));
     window.dispatchEvent(new Event('libraryUpdated'));
@@ -263,8 +263,8 @@ const BooksCollection = ({
                   variant="outline"
                   onClick={() => {
                     refetchAll();
-                    queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
-                    queryClient.invalidateQueries({ queryKey: ['paginated-library-all'] });
+                    void queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
+                    void queryClient.invalidateQueries({ queryKey: ['paginated-library-all'] });
                     window.dispatchEvent(new Event('shelfUpdated'));
                   }}
                   disabled={searchLoading}

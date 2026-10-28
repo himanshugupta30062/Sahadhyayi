@@ -12,7 +12,7 @@ export const useLibraryBookCount = () => {
 
   React.useEffect(() => {
     const handleUpdate = () => {
-      queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
+      void queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
     };
 
     window.addEventListener('shelfUpdated', handleUpdate);

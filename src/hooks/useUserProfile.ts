@@ -160,8 +160,8 @@ export const useUpsertUserProfile = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['user_profile', user?.id], data);
-      queryClient.invalidateQueries({ queryKey: ['user_profile'] });
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      void queryClient.invalidateQueries({ queryKey: ['user_profile'] });
+      void queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast({
         title: "Success",
         description: "Profile updated successfully",
