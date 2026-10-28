@@ -67,8 +67,8 @@ export const useGenerateReadingDna = () => {
       return data?.dna as ReadingDna;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["reading-dna", user?.id] });
-      qc.invalidateQueries({ queryKey: ["friend-dna"] });
+      void qc.invalidateQueries({ queryKey: ["reading-dna", user?.id] });
+      void qc.invalidateQueries({ queryKey: ["friend-dna"] });
     },
   });
 };
