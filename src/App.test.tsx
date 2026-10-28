@@ -79,6 +79,7 @@ vi.mock('./components/book-expert/BookExpert', () => ({ default: () => null }));
 
 describe('App root routing and configuration', () => {
   beforeEach(() => {
+    window.history.replaceState({}, '', '/');
     mocks.configured = true;
     mocks.user = null;
     mocks.loading = false;
