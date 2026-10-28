@@ -82,6 +82,7 @@ const Navigation = () => {
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
+    { name: "Blog", href: "/blog" },
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
@@ -89,6 +90,7 @@ const Navigation = () => {
     { name: "Games", href: "/games" },
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
+    { name: "Blog", href: "/blog" },
   ];
 
   const userDisplayName =
@@ -183,7 +185,7 @@ const Navigation = () => {
           {!isMobile && (
             <div className="hidden md:flex items-center space-x-8">
               {/* Navigation Links */}
-              <nav aria-label="Main navigation" className="flex items-center space-x-6">
+              <nav aria-label="Main navigation" className="flex items-center space-x-3 lg:space-x-5">
                 {navItems.map((item) => {
                   const isActive = isCurrentRoute(item.href);
                   return (
@@ -191,11 +193,17 @@ const Navigation = () => {
                       key={item.name}
                       to={item.href}
                       aria-current={isActive ? "page" : undefined}
-                      className={`text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm ${
-                        isActive 
-                          ? 'text-[hsl(var(--brand-primary))] border-b-2 border-[hsl(var(--brand-primary))] pb-1 font-semibold' 
-                          : 'text-muted-foreground'
-                      }`}
+                      className={item.href === "/blog"
+                        ? `inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                            isActive
+                              ? 'border-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary))] text-white shadow-sm'
+                              : 'border-[hsl(var(--brand-primary)/0.35)] bg-[hsl(var(--brand-primary)/0.08)] text-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.15)]'
+                          }`
+                        : `text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm ${
+                            isActive
+                              ? 'text-[hsl(var(--brand-primary))] border-b-2 border-[hsl(var(--brand-primary))] pb-1 font-semibold'
+                              : 'text-muted-foreground'
+                          }`}
                     >
                       {item.name}
                     </Link>
@@ -366,11 +374,17 @@ const Navigation = () => {
                     to={item.href}
                     onClick={() => setIsOpen(false)}
                     aria-current={isActive ? "page" : undefined}
-                    className={`block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 min-h-[44px] flex items-center ${
-                      isActive 
-                        ? 'text-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.1)] font-semibold' 
-                        : 'text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted'
-                    }`}
+                    className={item.href === "/blog"
+                      ? `block px-3 py-2 text-sm font-semibold rounded-md transition-colors duration-200 min-h-[44px] flex items-center border ${
+                          isActive
+                            ? 'text-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.1)] border-[hsl(var(--brand-primary)/0.3)]'
+                            : 'text-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.06)] border-[hsl(var(--brand-primary)/0.18)] hover:bg-[hsl(var(--brand-primary)/0.12)]'
+                        }`
+                      : `block px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 min-h-[44px] flex items-center ${
+                          isActive
+                            ? 'text-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.1)] font-semibold'
+                            : 'text-foreground hover:text-[hsl(var(--brand-primary))] hover:bg-muted'
+                        }`}
                   >
                     {item.name}
                   </Link>
