@@ -247,9 +247,9 @@ const BlogPost = () => {
   // This keeps every article's content as the source of truth and avoids hard-coded section lists.
   const sectionCounts: Record<string, number> = {};
   const articleSections: Array<{ id: string; title: string; level: number }> = [];
-  const articleHtml = post?.content.replace(/<(h[23])([^>]*)>([\\s\\S]*?)<\\/\\1>/gi, (heading, tag, attributes, innerHtml) => {
+  const articleHtml = post?.content.replace(/<(h[23])([^>]*)>([\s\S]*?)<\/\1>/gi, (heading, tag, attributes, innerHtml) => {
     const title = innerHtml.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
-    const baseId = title.toLowerCase().normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'section';
+    const baseId = title.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'section';
     sectionCounts[baseId] = (sectionCounts[baseId] || 0) + 1;
     const id = sectionCounts[baseId] === 1 ? baseId : `${baseId}-${sectionCounts[baseId]}`;
     articleSections.push({ id, title, level: tag.toLowerCase() === 'h2' ? 2 : 3 });
