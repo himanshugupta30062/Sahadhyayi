@@ -414,7 +414,7 @@ describe('Phase 3: Authentication and Account Entry', () => {
         </MemoryRouter>
       );
 
-      expect(await screen.findByRole('alert')).toHaveTextContent(/link has already been used or expired/i);
+      expect(await screen.findByRole('alert')).toHaveTextContent(/link is expired or has already been used/i);
       expect(screen.getByRole('link', { name: /Back to sign in/i })).toHaveAttribute('href', '/signin');
     });
   });
