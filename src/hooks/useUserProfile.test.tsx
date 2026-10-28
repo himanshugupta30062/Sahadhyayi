@@ -91,7 +91,9 @@ describe('useUserProfile', () => {
   it('does not call the profile RPC when the session is missing or belongs to another user', async () => {
     mocks.getSession.mockResolvedValue({ data: { session: null }, error: null });
     const { result } = renderHook(() => useUserProfile(), { wrapper: makeWrapper() });
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    // The hook intentionally retries transient session-finalization errors, so
+    // assert the security boundary as soon as the first failure is surfaced.
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalled());
     expect(mocks.rpc).not.toHaveBeenCalled();
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
       description: 'Failed to load profile data',

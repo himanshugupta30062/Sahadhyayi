@@ -51,6 +51,8 @@ describe('useUserSearch', () => {
     expect(mocks.rpc).not.toHaveBeenCalled();
 
     await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    // Use real timers for React Query's async state updates and retry scheduler.
+    vi.useRealTimers();
     await waitFor(() => expect(result.current.data).toEqual([{ id: 'other-user', full_name: 'Alex Reader' }]));
     expect(mocks.rpc).toHaveBeenCalledWith('get_public_profiles_for_search', { search_term: 'alex' });
     expect(mocks.neq).toHaveBeenCalledWith('id', 'current-user');
@@ -71,6 +73,8 @@ describe('useUserSearch', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const { result } = renderHook(() => useUserSearch('reader'), { wrapper: makeWrapper() });
     await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    // Let React Query's configured retry delay elapse under real timers.
+    vi.useRealTimers();
     await waitFor(() => expect(result.current.error).toBe(searchError));
     expect(consoleError).toHaveBeenCalledWith('User search failed', { errorName: 'Error' });
     consoleError.mockRestore();
