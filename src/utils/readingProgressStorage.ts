@@ -29,9 +29,13 @@ export const loadProgressLocally = (
     const key = getProgressStorageKey(bookId, userId);
     const raw = localStorage.getItem(key);
     if (raw) {
-      const parsed = JSON.parse(raw) as ReadingProgressRecord;
-      if (parsed && typeof parsed.currentPage === 'number') {
-        return parsed;
+      try {
+        const parsed = JSON.parse(raw) as ReadingProgressRecord;
+        if (parsed && typeof parsed.currentPage === 'number') {
+          return parsed;
+        }
+      } catch {
+        // Ignore a corrupted keyed record and continue to the legacy fallback.
       }
     }
 
