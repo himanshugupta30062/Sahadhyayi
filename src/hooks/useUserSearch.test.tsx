@@ -24,14 +24,12 @@ const makeWrapper = () => {
 
 describe('useUserSearch', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     mocks.useAuth.mockReturnValue({ user: { id: 'current-user' } });
     mocks.rpc.mockReturnValue({ neq: mocks.neq });
     mocks.neq.mockResolvedValue({ data: [{ id: 'other-user', full_name: 'Alex Reader' }], error: null });
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
@@ -50,9 +48,6 @@ describe('useUserSearch', () => {
     expect(result.current.isDebouncing).toBe(true);
     expect(mocks.rpc).not.toHaveBeenCalled();
 
-    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
-    // Use real timers for React Query's async state updates and retry scheduler.
-    vi.useRealTimers();
     await waitFor(() => expect(result.current.data).toEqual([{ id: 'other-user', full_name: 'Alex Reader' }]));
     expect(mocks.rpc).toHaveBeenCalledWith('get_public_profiles_for_search', { search_term: 'alex' });
     expect(mocks.neq).toHaveBeenCalledWith('id', 'current-user');
@@ -62,7 +57,7 @@ describe('useUserSearch', () => {
   it('keeps search disabled without an authenticated user', async () => {
     mocks.useAuth.mockReturnValue({ user: null });
     const { result } = renderHook(() => useUserSearch('reader'), { wrapper: makeWrapper() });
-    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    await waitFor(() => expect(result.current.fetchStatus).toBe('idle'));
     expect(result.current.fetchStatus).toBe('idle');
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
@@ -72,9 +67,6 @@ describe('useUserSearch', () => {
     mocks.neq.mockResolvedValue({ data: null, error: searchError });
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const { result } = renderHook(() => useUserSearch('reader'), { wrapper: makeWrapper() });
-    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
-    // Let React Query's configured retry delay elapse under real timers.
-    vi.useRealTimers();
     await waitFor(() => expect(result.current.error).toBe(searchError));
     expect(consoleError).toHaveBeenCalledWith('User search failed', { errorName: 'Error' });
     consoleError.mockRestore();
