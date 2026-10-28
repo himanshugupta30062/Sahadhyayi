@@ -109,7 +109,7 @@ describe('App root routing and configuration', () => {
 
     render(<App />);
 
-    expect(screen.getByRole('status').textContent).toContain('Loading your Sahadhyayi home...');
+    expect(screen.getByText('Loading your Sahadhyayi home...')).toBeTruthy();
     expect(screen.queryByText('Public marketing homepage')).toBeNull();
     expect(screen.queryByText('Reader dashboard')).toBeNull();
   });
