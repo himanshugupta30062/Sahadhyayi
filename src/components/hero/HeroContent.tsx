@@ -56,24 +56,22 @@ export const HeroContent: React.FC = () => {
         </Link>
       </div>
 
-      {/* Social proof strip */}
-      <div className="mt-8 flex items-center gap-3">
-        <div className="flex -space-x-2">
-          <div className="w-7 h-7 rounded-full border-2 border-[#FAF7F2] dark:border-[#0B0D0C] bg-[#1F2F24] flex items-center justify-center text-[10px] font-bold text-[#A7F3D0]">
-            S
-          </div>
-          <div className="w-7 h-7 rounded-full border-2 border-[#FAF7F2] dark:border-[#0B0D0C] bg-[#3B2C1B] flex items-center justify-center text-[10px] font-bold text-[#FDE68A]">
-            A
-          </div>
-          <div className="w-7 h-7 rounded-full border-2 border-[#FAF7F2] dark:border-[#0B0D0C] bg-[#1E2E3B] flex items-center justify-center text-[10px] font-bold text-[#BAE6FD]">
-            H
-          </div>
-          <div className="w-7 h-7 rounded-full border-2 border-[#FAF7F2] dark:border-[#0B0D0C] bg-[#2E1E3B] flex items-center justify-center text-[10px] font-bold text-[#E9D5FF]">
-            R
-          </div>
-        </div>
-        <span className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
-          A community of readers, thinkers, and dreamers
+      {/* Product-value strip: communicate real features without implying unverified user activity */}
+      <div
+        className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 text-xs sm:text-sm text-[#636B65] dark:text-[#A5ADA6]"
+        aria-label="Explore Sahadhyayi features"
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <BookOpen className="h-4 w-4 text-[#8F681C] dark:text-[#D5B16D]" aria-hidden="true" />
+          Curated books
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Sparkles className="h-4 w-4 text-[#8F681C] dark:text-[#D5B16D]" aria-hidden="true" />
+          Shared ideas
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <ArrowRight className="h-4 w-4 text-[#8F681C] dark:text-[#D5B16D]" aria-hidden="true" />
+          Reading groups
         </span>
       </div>
     </div>
