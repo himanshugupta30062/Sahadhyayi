@@ -9,20 +9,40 @@ import DOMPurify from 'dompurify';
 const blogPosts = {
   'what-is-sahadhyayi-meaning-story': {
     title: 'What is Sahadhyayi? Meaning & Story Behind Our Name',
-    description: 'Discover the meaning of Sahadhyayi and the idea behind a community of fellow readers.',
+    description: 'Discover the deep Sanskrit meaning of Sahadhyayi and how it embodies our mission to create a community of fellow readers and study companions.',
     content: `
-      <h2>The Deep Meaning of Sahadhyayi</h2>
-      <p>Sahadhyayi (सहाध्यायी) is a beautiful Sanskrit word that means "fellow reader" or "study companion." The word comes from two parts: "saha" meaning "together" and "adhyayi" meaning "one who reads or studies." At Sahadhyayi, we believe that reading is not just a solitary activity but a shared journey of discovery and growth.</p>
-      <h3>Why We Chose the Name Sahadhyayi</h3>
-      <p>When we were building our digital reading community, we wanted a name that captured the essence of what we stand for. Sahadhyayi perfectly embodies our mission - to create a platform where readers come together, share insights, and grow intellectually as companions on the reading journey.</p>
-      <p>In ancient Indian tradition, a Sahadhyayi was someone who studied alongside you, shared knowledge, and helped deepen your understanding. This is exactly what our platform aims to be - your digital reading companion that connects you with fellow book lovers, authors, and a wealth of literary resources.</p>
-      <h3>The Sahadhyayi Philosophy</h3><p>At Sahadhyayi, we believe that:</p>
-      <ul><li><strong>Reading is better together:</strong> When we share our reading experiences with others, we gain new perspectives and deeper insights.</li><li><strong>Every reader has something to offer:</strong> Whether you're a seasoned bibliophile or just starting your reading journey, your voice matters in our community.</li><li><strong>Deep reading transforms lives:</strong> In our age of digital distractions, Sahadhyayi promotes focused, immersive reading that builds concentration and critical thinking.</li><li><strong>Knowledge should be accessible:</strong> Our platform makes quality books and reading resources available to everyone, breaking down barriers to education and enlightenment.</li></ul>
-      <h3>How Sahadhyayi is Building the Future of Reading</h3><p>Today's Sahadhyayi platform combines the ancient wisdom of collaborative learning with modern technology. We provide:</p>
-      <ul><li>A comprehensive digital library with thousands of books</li><li>Reading communities where you can discuss your favorite titles</li><li>Direct connections with authors and literary experts</li><li>AI-powered reading assistance to enhance comprehension</li><li>Tools to track your reading progress and build lasting habits</li></ul>
-      <p>When you join Sahadhyayi, you're not just signing up for another reading app - you're becoming part of a movement to revive the transformative power of deep reading in our digital age.</p>
-      <h3>Join the Sahadhyayi Community Today</h3><p>Ready to experience what it means to be a true Sahadhyayi? Join readers who want to explore new genres, connect with like-minded readers, and rediscover their love for books.</p>
-    `,
+        <h2>The Deep Meaning of Sahadhyayi</h2>
+        <p>Sahadhyayi (सहाध्यायी) is a beautiful Sanskrit word that means "fellow reader" or "study companion." The word comes from two parts: "saha" meaning "together" and "adhyayi" meaning "one who reads or studies." At Sahadhyayi, we believe that reading is not just a solitary activity but a shared journey of discovery and growth.</p>
+
+        <h3>Why We Chose the Name Sahadhyayi</h3>
+        <p>When we were building our digital reading community, we wanted a name that captured the essence of what we stand for. Sahadhyayi perfectly embodies our mission - to create a platform where readers come together, share insights, and grow intellectually as companions on the reading journey.</p>
+
+        <p>In ancient Indian tradition, a Sahadhyayi was someone who studied alongside you, shared knowledge, and helped deepen your understanding. This is exactly what our platform aims to be - your digital reading companion that connects you with fellow book lovers, authors, and a wealth of literary resources.</p>
+
+        <h3>The Sahadhyayi Philosophy</h3>
+        <p>At Sahadhyayi, we believe that:</p>
+        <ul>
+          <li><strong>Reading is better together:</strong> When we share our reading experiences with others, we gain new perspectives and deeper insights.</li>
+          <li><strong>Every reader has something to offer:</strong> Whether you're a seasoned bibliophile or just starting your reading journey, your voice matters in our community.</li>
+          <li><strong>Deep reading transforms lives:</strong> In our age of digital distractions, Sahadhyayi promotes focused, immersive reading that builds concentration and critical thinking.</li>
+          <li><strong>Knowledge should be accessible:</strong> Our platform makes quality books and reading resources available to everyone, breaking down barriers to education and enlightenment.</li>
+        </ul>
+
+        <h3>How Sahadhyayi is Building the Future of Reading</h3>
+        <p>Today's Sahadhyayi platform combines the ancient wisdom of collaborative learning with modern technology. We provide:</p>
+        <ul>
+          <li>A comprehensive digital library with thousands of books</li>
+          <li>Reading communities where you can discuss your favorite titles</li>
+          <li>Direct connections with authors and literary experts</li>
+          <li>AI-powered reading assistance to enhance comprehension</li>
+          <li>Tools to track your reading progress and build lasting habits</li>
+        </ul>
+
+        <p>When you join Sahadhyayi, you're not just signing up for another reading app - you're becoming part of a movement to revive the transformative power of deep reading in our digital age.</p>
+
+        <h3>Join the Sahadhyayi Community Today</h3>
+        <p>Ready to experience what it means to be a true Sahadhyayi? Join the community and discover the joy of reading together. Whether you're looking to explore new genres, connect with like-minded readers, or rediscover your love for books, Sahadhyayi welcomes you.</p>
+      `,
     author: 'Himanshu Gupta', date: '2024-07-14', readTime: '6 min read',
     image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop'
   },
@@ -30,14 +50,35 @@ const blogPosts = {
     title: 'How Sahadhyayi Revives the Reading Culture',
     description: 'Learn how Sahadhyayi brings readers together around deeper, more intentional reading.',
     content: `
-      <h2>The Reading Crisis in Our Digital Age</h2><p>We live in an era where attention spans are shrinking, and deep reading is becoming a lost art. Social media, short-form videos, and endless digital distractions have fundamentally changed how we consume information. But at Sahadhyayi, we believe it's time to reclaim the transformative power of focused, immersive reading.</p>
-      <h3>Sahadhyayi's Mission: Bringing Back Deep Reading</h3><p>Sahadhyayi is more than just a digital library - it's a community for reviving reading culture.</p>
-      <h4>1. Community-Driven Reading Experience</h4><p>Reading doesn't have to be a lonely activity. Sahadhyayi connects readers who share their interests, discuss ideas, and discover new perspectives.</p>
-      <h4>2. Making Quality Literature Accessible</h4><p>Access to quality books can be a barrier. Sahadhyayi helps readers discover titles across genres and languages.</p>
-      <h4>3. Technology That Enhances, Not Distracts</h4><p>Reading tools should help people understand books, track progress, and connect with others without replacing the reading itself.</p>
-      <h3>Building Reading Habits That Last</h3><ul><li>Personalized reading discovery</li><li>Goal setting and progress tracking</li><li>Reading challenges and community events</li><li>Ways to connect around authors and books</li></ul>
-      <h3>The Future of Reading</h3><p>Sahadhyayi aims to bring community and technology together in service of literature. Start with a book that interests you, give it your attention, and share what you discover.</p>
-    `,
+        <h2>The Reading Crisis in Our Digital Age</h2>
+        <p>We live in an era where attention spans are shrinking, and deep reading is becoming a lost art. Social media, short-form videos, and endless digital distractions have fundamentally changed how we consume information. But at Sahadhyayi, we believe it's time to reclaim the transformative power of focused, immersive reading.</p>
+
+        <h3>Sahadhyayi's Mission: Bringing Back Deep Reading</h3>
+        <p>Sahadhyayi is more than just a digital library - it's a movement to revive reading culture in the 21st century. Our platform addresses the modern challenges that prevent people from developing strong reading habits:</p>
+
+        <h4>1. Community-Driven Reading Experience</h4>
+        <p>Reading doesn't have to be a lonely activity. Sahadhyayi connects you with fellow readers who share your interests, creating vibrant communities where you can discuss ideas, share insights, and discover new perspectives.</p>
+
+        <h4>2. Making Quality Literature Accessible</h4>
+        <p>Access to quality books can be a barrier. Sahadhyayi helps readers discover titles across genres and languages.</p>
+
+        <h4>3. Technology That Enhances, Not Distracts</h4>
+        <p>Reading tools should help people understand books, track progress, and connect with others without replacing the reading itself.</p>
+
+        <h3>The Science Behind Sahadhyayi's Approach</h3>
+        <p>Regular reading gives people time to practise focus, encounter new ideas, and reflect on experiences different from their own. The benefits of reading depend on the reader, the material, and the context; we encourage curiosity rather than one-size-fits-all promises.</p>
+
+        <h3>Building Reading Habits That Last</h3>
+        <ul>
+          <li><strong>Personalized reading discovery</strong> based on your interests</li>
+          <li><strong>Goal setting and progress tracking</strong> to keep you motivated</li>
+          <li><strong>Reading challenges and community events</strong> that make reading social</li>
+          <li><strong>Author discovery</strong> that deepens your connection to books</li>
+        </ul>
+
+        <h3>The Future of Reading is Here</h3>
+        <p>Sahadhyayi aims to bring community and technology together in service of literature. Start with a book that interests you, give it your attention, and share what you discover.</p>
+      `,
     author: 'Himanshu Gupta', date: '2024-07-14', readTime: '8 min read',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop'
   },
@@ -45,14 +86,23 @@ const blogPosts = {
     title: '5 Reasons Why Book Lovers Should Join Sahadhyayi',
     description: 'Discover books, connect with readers, and make reading a shared experience.',
     content: `
-      <h2>Discover Why Sahadhyayi Is for Book Lovers</h2><p>Book lovers benefit from spaces where they can find new titles, discuss ideas, and share the pleasure of reading.</p>
-      <h3>1. Connect with Fellow Readers</h3><p>Discuss favourite books and discover perspectives you might not have considered.</p>
-      <h3>2. Discover More Books</h3><p>Explore genres and titles beyond your usual reading list.</p>
-      <h3>3. Explore Different Languages and Traditions</h3><p>Reading across languages and cultures can introduce new writers, histories, and points of view.</p>
-      <h3>4. Keep Track of Your Reading Journey</h3><p>Reflect on books you've completed and ideas you'd like to revisit.</p>
-      <h3>5. Build a Sustainable Reading Habit</h3><p>Small goals and shared enthusiasm can help make reading a steady part of everyday life.</p>
-      <h3>Reading Is Better Together</h3><p>At Sahadhyayi, the aim is to create a space where the love of reading can flourish and grow. Explore the library and connect with fellow readers.</p>
-    `,
+        <h2>Discover Why Sahadhyayi is Every Book Lover's Dream Platform</h2>
+        <p>If you're passionate about books, you may want a community that helps you discover titles, exchange ideas, and connect with fellow readers. Sahadhyayi aims to bring these experiences together.</p>
+
+        <h3>1. Connect with Fellow Readers</h3>
+        <p>Discuss books and discover perspectives you might not have considered.</p>
+        <h3>2. Discover More Books</h3>
+        <p>Explore titles beyond your usual reading list.</p>
+        <h3>3. Explore Different Languages and Traditions</h3>
+        <p>Reading across languages and cultures can introduce new writers, histories, and points of view.</p>
+        <h3>4. Keep Track of Your Reading Journey</h3>
+        <p>Reflect on books you've completed and ideas you'd like to revisit.</p>
+        <h3>5. Build a Sustainable Reading Habit</h3>
+        <p>Small goals and shared enthusiasm can help make reading a steady part of everyday life.</p>
+        <h3>The Sahadhyayi Difference: More Than Just a Reading App</h3>
+        <p>We want to create a space where the love of reading can flourish and grow. Explore the library, discover authors, and connect with fellow readers.</p>
+        <p><strong>Because at Sahadhyayi, reading is better together.</strong></p>
+      `,
     author: 'Himanshu Gupta', date: '2024-07-14', readTime: '7 min read',
     image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&h=400&fit=crop'
   },
@@ -120,7 +170,7 @@ const BlogPost = () => {
         title={`${post.title} | Sahadhyayi Blog`}
         description={post.description}
         canonical={`https://sahadhyayi.com/blog/${slug}`}
-        keywords={['Indian books to read', 'Indian literature', 'regional Indian literature', 'Sahadhyayi', 'book recommendations']}
+        keywords={slug === 'best-indian-books-to-read' ? ['Indian books to read', 'Indian literature', 'regional Indian literature', 'Sahadhyayi', 'book recommendations'] : ['Sahadhyayi', 'reading community', 'digital library', 'book lovers']}
       />
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -144,7 +194,7 @@ const BlogPost = () => {
           <Card className="mt-8 bg-gradient-to-r from-orange-600 to-red-600 text-white border-0">
             <CardContent className="p-8 text-center">
               <h3 className="text-2xl font-bold mb-4">Ready to Join Sahadhyayi?</h3>
-              <p className="text-lg mb-6 opacity-90">Discover books and share your reading journey with a community of fellow readers.</p>
+              <p className="text-lg mb-6 opacity-90">Experience the joy of reading with our global community of book lovers.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/signup"><Button size="lg" variant="secondary" className="px-8 py-3">Join Sahadhyayi Today</Button></Link>
                 <Link to="/library"><Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600 px-8 py-3">Explore Our Library</Button></Link>
