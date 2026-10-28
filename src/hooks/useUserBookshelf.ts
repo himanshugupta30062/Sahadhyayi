@@ -47,7 +47,7 @@ export const useUserBookshelf = () => {
           filter: `user_id=eq.${user.id}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user.id] });
+          void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user.id] });
         }
       )
       .subscribe();
@@ -55,13 +55,13 @@ export const useUserBookshelf = () => {
     // Multi-tab sync via storage events
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'sahadhyayi_shelf_sync') {
-        queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user.id] });
+        void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user.id] });
       }
     };
     window.addEventListener('storage', handleStorage);
 
     const handleShelfUpdated = () => {
-      queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user.id] });
+      void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user.id] });
     };
     window.addEventListener('shelfUpdated', handleShelfUpdated);
 
@@ -104,10 +104,10 @@ export const useUserBookshelf = () => {
 };
 
 const notifyShelfChanged = (queryClient: ReturnType<typeof useQueryClient>) => {
-  queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
+  void queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
   // The database trigger updates challenge progress and awards badges on shelf changes.
-  queryClient.invalidateQueries({ queryKey: ['user-challenges'] });
-  queryClient.invalidateQueries({ queryKey: ['user-badges'] });
+  void queryClient.invalidateQueries({ queryKey: ['user-challenges'] });
+  void queryClient.invalidateQueries({ queryKey: ['user-badges'] });
   window.dispatchEvent(new Event('shelfUpdated'));
   try {
     localStorage.setItem('sahadhyayi_shelf_sync', Date.now().toString());
