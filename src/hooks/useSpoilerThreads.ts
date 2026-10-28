@@ -121,7 +121,7 @@ export const useCreateSpoilerThreadComment = () => {
       return data;
     },
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["spoiler-thread-comments", vars.thread_id] });
+      void qc.invalidateQueries({ queryKey: ["spoiler-thread-comments", vars.thread_id] });
     },
   });
 };
@@ -154,7 +154,7 @@ export const useUnlockChapter = () => {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["spoiler-threads"] });
+      void qc.invalidateQueries({ queryKey: ["spoiler-threads"] });
     },
   });
 };
