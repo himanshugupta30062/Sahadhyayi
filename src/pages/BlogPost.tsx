@@ -243,6 +243,19 @@ const BlogPost = () => {
 
   const post = blogPosts[slug as keyof typeof blogPosts];
 
+  // Build a lightweight table of contents from the article's existing H2/H3 headings.
+  // This keeps every article's content as the source of truth and avoids hard-coded section lists.
+  const sectionCounts: Record<string, number> = {};
+  const articleSections: Array<{ id: string; title: string; level: number }> = [];
+  const articleHtml = post?.content.replace(/<(h[23])([^>]*)>([\\s\\S]*?)<\\/\\1>/gi, (heading, tag, attributes, innerHtml) => {
+    const title = innerHtml.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+    const baseId = title.toLowerCase().normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'section';
+    sectionCounts[baseId] = (sectionCounts[baseId] || 0) + 1;
+    const id = sectionCounts[baseId] === 1 ? baseId : `${baseId}-${sectionCounts[baseId]}`;
+    articleSections.push({ id, title, level: tag.toLowerCase() === 'h2' ? 2 : 3 });
+    return `<${tag}${attributes} id="${id}" class="scroll-mt-24">${innerHtml}</${tag}>`;
+  }) || '';
+
   if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -304,9 +317,29 @@ const BlogPost = () => {
                 </div>
               </CardHeader>
               <CardContent>
+                {articleSections.length >= 3 && (
+                  <nav aria-label="Article contents" className="mb-8 rounded-xl border border-orange-200 bg-orange-50/70 p-5 sm:p-6">
+                    <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900">
+                      <span aria-hidden="true" className="text-orange-600">☷</span>
+                      In this article
+                    </h2>
+                    <ol className="space-y-2">
+                      {articleSections.map((section, index) => (
+                        <li key={section.id} className={section.level === 3 ? "ml-5" : ""}>
+                          <a
+                            href={`#${section.id}`}
+                            className="text-sm text-gray-700 underline-offset-4 transition-colors hover:text-orange-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-sm"
+                          >
+                            {section.level === 2 ? `${index + 1}. ` : "– "}{section.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                  </nav>
+                )}
                 <div 
-                  className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-blockquote:border-orange-300 prose-blockquote:bg-orange-50 prose-blockquote:p-4 prose-blockquote:rounded-lg"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+                  className="prose prose-lg max-w-none prose-headings:scroll-mt-24 prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-blockquote:border-orange-300 prose-blockquote:bg-orange-50 prose-blockquote:p-4 prose-blockquote:rounded-lg"
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(articleHtml) }}
                 />
               </CardContent>
             </Card>
