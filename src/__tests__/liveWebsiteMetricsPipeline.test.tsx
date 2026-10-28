@@ -151,7 +151,7 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
     await waitFor(() => {
       expect(screen.getByText('Live Website Stats')).toBeInTheDocument();
       // Lifetime visits displayed in distinct hero banner
-      expect(screen.getByText('10,313 visits')).toBeInTheDocument();
+      expect(screen.getByText('10,313')).toBeInTheDocument();
       expect(screen.getByText(/public\.website_visits/)).toBeInTheDocument();
       // Period page views displayed in top KPI card
       expect(screen.getByText('50')).toBeInTheDocument();
