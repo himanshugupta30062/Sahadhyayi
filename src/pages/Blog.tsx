@@ -42,6 +42,17 @@ const Blog = () => {
       readTime: '7 min read',
       image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&h=400&fit=crop'
     },
+  {
+    id: '7',
+    slug: 'best-indian-books-to-read',
+    title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',
+    excerpt: 'From Premchand and Tagore to Tamil historical epics and contemporary regional fiction, discover 25 books that open a window into India’s many literary worlds.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Book Recommendations',
+    readTime: '12 min read',
+    image: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1200&h=630&fit=crop'
+  },
     {
       id: '4',
       title: 'The Science Behind Deep Reading: Why It Matters More Than Ever',
@@ -74,7 +85,7 @@ const Blog = () => {
     }
   ];
 
-  const categories = ['All', 'About Sahadhyayi', 'Reading Culture', 'Community', 'Reading Science', 'Reading Tips', 'Technology', 'Lifestyle', 'Psychology'];
+  const categories = ['All', 'About Sahadhyayi', 'Reading Culture', 'Community', 'Reading Science', 'Reading Tips', 'Book Recommendations', 'Technology', 'Lifestyle', 'Psychology'];
   const [selectedCategory, setSelectedCategory] = React.useState('All');
 
   const filteredPosts = selectedCategory === 'All' 
@@ -88,7 +99,7 @@ const Blog = () => {
     <>
       <SEO
         title="Sahadhyayi Blog - Reading Insights, Community Stories & Tips"
-        description="Explore Sahadhyayi's blog for reading insights, community stories, book recommendations, and tips to enhance your reading journey. Learn what Sahadhyayi means and join the conversation with fellow book lovers."
+        description="Explore Sahadhyayi's blog for reading insights, community stories, book recommendations, and tips to enhance your reading journey, including Indian literature across languages."
         canonical="https://sahadhyayi.com/blog"
         keywords={['Sahadhyayi blog', 'reading insights', 'book community', 'reading tips', 'what is Sahadhyayi', 'Sahadhyayi meaning', 'reading culture']}
       />
