@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, ArrowRight, BookOpen, Users, Lightbulb } from 'lucide-react';
+import { Calendar, User, ArrowRight, Search, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '@/components/SEO';
 
@@ -18,7 +18,6 @@ const Blog = () => {
       category: 'About Sahadhyayi',
       readTime: '6 min read',
       image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop',
-      featured: true
     },
     {
       id: '2',
@@ -51,7 +50,8 @@ const Blog = () => {
     date: '2026-10-29',
     category: 'Book Recommendations',
     readTime: '12 min read',
-    image: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1200&h=630&fit=crop'
+    image: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1200&h=630&fit=crop',
+    featured: true
   },
     {
       id: '4',
@@ -85,15 +85,21 @@ const Blog = () => {
     }
   ];
 
-  const categories = ['All', 'About Sahadhyayi', 'Reading Culture', 'Community', 'Reading Science', 'Reading Tips', 'Book Recommendations', 'Technology', 'Lifestyle', 'Psychology'];
+  const categories = ['All', ...Array.from(new Set(blogPosts.map(post => post.category)))];
   const [selectedCategory, setSelectedCategory] = React.useState('All');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const filteredPosts = selectedCategory === 'All' 
-    ? blogPosts 
-    : blogPosts.filter(post => post.category === selectedCategory);
+  const filteredPosts = blogPosts.filter(post => {
+    const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
+    const searchableText = `${post.title} ${post.excerpt} ${post.author} ${post.category}`.toLowerCase();
+    return matchesCategory && (!normalizedQuery || searchableText.includes(normalizedQuery));
+  });
 
-  const featuredPost = blogPosts.find(post => post.featured);
-  const regularPosts = blogPosts.filter(post => !post.featured);
+  const featuredPost = selectedCategory === 'All' && !normalizedQuery
+    ? blogPosts.find(post => post.featured)
+    : undefined;
+  const regularPosts = filteredPosts.filter(post => post.slug !== featuredPost?.slug);
 
   return (
     <>
@@ -112,7 +118,26 @@ const Blog = () => {
               Sahadhyayi Blog - Reading Insights & Community Stories
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Discover the latest insights on Sahadhyayi, reading science, community building, and tips to enhance your reading journey.
+              Thoughtful reads, book lists, and ideas to help you discover your next favourite book and read together.
+            </p>
+          </div>
+
+          {/* Search */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <label htmlFor="blog-search" className="sr-only">Search articles</label>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
+              <input
+                id="blog-search"
+                type="search"
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
+                placeholder="Search articles, topics, or authors..."
+                className="w-full rounded-xl border border-orange-200 bg-white/90 py-3 pl-12 pr-4 text-gray-900 shadow-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+              />
+            </div>
+            <p className="mt-2 text-center text-sm text-gray-500">
+              {filteredPosts.length} {filteredPosts.length === 1 ? 'article' : 'articles'} to explore
             </p>
           </div>
 
@@ -181,7 +206,16 @@ const Blog = () => {
 
           {/* Blog Posts Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {filteredPosts.filter(post => !post.featured).map(post => (
+            {regularPosts.length === 0 ? (
+              <div className="col-span-full rounded-2xl border border-dashed border-orange-300 bg-white/70 px-6 py-12 text-center">
+                <BookOpen className="mx-auto mb-3 h-8 w-8 text-orange-500" aria-hidden="true" />
+                <h2 className="text-xl font-semibold text-gray-900">No articles found</h2>
+                <p className="mt-2 text-gray-600">Try a different search or choose another category.</p>
+                <Button variant="outline" className="mt-5 border-orange-300 text-orange-700" onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}>
+                  Clear filters
+                </Button>
+              </div>
+            ) : regularPosts.map(post => (
               <Card key={post.id} className="overflow-hidden bg-white/80 backdrop-blur-sm border-orange-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <div className="relative">
                   <img
@@ -196,9 +230,13 @@ const Blog = () => {
                 </div>
                 <CardHeader>
                   <CardTitle className="text-xl text-gray-900 hover:text-orange-600 cursor-pointer">
-                    <Link to={post.slug ? `/blog/${post.slug}` : '#'}>
-                      {post.title}
-                    </Link>
+                    {post.slug ? (
+                      <Link to={`/blog/${post.slug}`} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-sm">
+                        {post.title}
+                      </Link>
+                    ) : (
+                      <span>{post.title}</span>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -216,35 +254,35 @@ const Blog = () => {
                     <span className="text-sm text-gray-500">
                       {new Date(post.date).toLocaleDateString()}
                     </span>
-                    <Link to={post.slug ? `/blog/${post.slug}` : '#'}>
-                      <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
-                        Read More
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    </Link>
+                    {post.slug ? (
+                      <Link to={`/blog/${post.slug}`}>
+                        <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                          Read More
+                          <ArrowRight className="w-4 h-4 ml-1" />
+                        </Button>
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-gray-400">Coming soon</span>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Newsletter Signup */}
-          <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-2xl p-8 text-center">
-            <h3 className="text-2xl font-bold mb-4">Stay Updated with Sahadhyayi Insights</h3>
-            <p className="text-lg opacity-90 mb-6">
-              Get the latest articles about Sahadhyayi, reading tips, and community stories delivered to your inbox.
+          {/* Continue Reading CTA */}
+          <section className="rounded-2xl border border-orange-200 bg-white/80 px-6 py-10 text-center shadow-sm sm:px-10">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Keep turning pages</p>
+            <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Your next great read is waiting</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-gray-600">
+              Explore the library, find a book that speaks to you, and bring your reading journey into the Sahadhyayi community.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="px-4 py-2 rounded-lg text-gray-900 flex-1"
-              />
-              <Button variant="secondary" className="px-6">
-                Subscribe
+            <Link to="/library" className="mt-6 inline-block">
+              <Button className="bg-orange-600 hover:bg-orange-700">
+                Explore the Library <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </div>
-          </div>
+            </Link>
+          </section>
         </div>
       </div>
     </>
