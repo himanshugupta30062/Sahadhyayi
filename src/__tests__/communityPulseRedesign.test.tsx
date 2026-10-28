@@ -410,16 +410,21 @@ describe('Community Pulse Redesign & Visitor Intelligence', () => {
     mockFunctionsInvoke.mockRejectedValue(new Error('FunctionsFetchError: Failed to send a request to the Edge Function'));
     mockRpc.mockImplementation((name: string) => {
       if (name === 'is_admin') return Promise.resolve({ data: false, error: null });
-      if (name === 'get_website_visit_count') return Promise.resolve({ data: 3420, error: null });
-      if (name === 'get_total_users_count') return Promise.resolve({ data: 120, error: null });
+      if (name === 'get_admin_website_analytics') {
+        return Promise.resolve({
+          data: {
+            period: { pageViews: null, newRegistrations: 18, registeredReaders: 120 },
+            lifetime: { totalVisits: null, sourceTable: 'public.website_visits' },
+            rolling: { pageViews24h: null, sourceTable: 'public.website_visit_events' },
+            timeseries: [],
+            breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+            partialData: true,
+          },
+          error: null,
+        });
+      }
       return Promise.resolve({ data: null, error: null });
     });
-    mockFrom.mockImplementation((table: string) => ({
-      select: () => ({
-        gte: () => Promise.resolve({ count: 18, data: [], error: null }),
-        then: (resolve: any) => resolve({ count: 120, data: [], error: null }),
-      }),
-    }));
 
     const { result } = renderHook(() => useCommunityPulse(true));
 
