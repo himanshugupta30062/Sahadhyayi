@@ -101,7 +101,7 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     expect(container).toBeInTheDocument();
 
     // Check All-Time Platform Visits hero card
-    expect(screen.getByText(/10,337 visits/i)).toBeInTheDocument();
+    expect(screen.getByText('10,337')).toBeInTheDocument();
 
     // Check timeframe selector
     const select = screen.getByRole('combobox', { name: 'Select timeframe' });
