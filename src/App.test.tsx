@@ -20,7 +20,8 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
   },
 }));
 
-vi.mock('@/utils/security.ts', () => ({
+vi.mock('@/utils/security.ts', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/utils/security.ts')>()),
   initializeSecurity: mocks.initializeSecurity,
   initializeSecureSession: mocks.initializeSecureSession,
   setCSRFToken: mocks.setCSRFToken,
