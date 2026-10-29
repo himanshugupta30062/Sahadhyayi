@@ -99,9 +99,11 @@ const GroupCard: React.FC<GroupCardProps> = ({
             onClick={handleJoinLeave}
             disabled={joinGroup.isPending || leaveGroup.isPending || (isJoined && group.name === DEFAULT_READING_GROUP_NAME)}
             className={`${isJoined && onChat ? 'flex-1' : 'w-full'} ${
-              isJoined
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-amber-600 hover:bg-amber-700"
+              isJoined && group.name === DEFAULT_READING_GROUP_NAME
+                ? "bg-muted text-muted-foreground cursor-default"
+                : isJoined
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-amber-600 hover:bg-amber-700"
             }`}
           >
             {isJoined && group.name === DEFAULT_READING_GROUP_NAME ? 'Permanent Community Member' : isJoined ? 'Leave Group' : 'Join Group'}
