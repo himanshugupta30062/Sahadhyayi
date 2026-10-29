@@ -26,7 +26,7 @@ describe('Blog journal page', () => {
 
   it('filters journal stories by category and updates the visible heading', () => {
     render(<MemoryRouter><Blog /></MemoryRouter>);
-    fireEvent.click(screen.getByRole('button', { name: 'Reading Tips' }));
+    fireEvent.click(screen.getByRole('button', { name: /Reading Tips/ }));
     expect(screen.getByRole('heading', { name: 'Reading Tips' })).toBeInTheDocument();
     expect(screen.getByText('How to Build a Reading Habit That Actually Lasts')).toBeInTheDocument();
     expect(screen.queryByText('How to Start a Book Club: A Practical Guide for Readers')).not.toBeInTheDocument();
@@ -37,7 +37,7 @@ describe('Blog journal page', () => {
     fireEvent.change(screen.getByLabelText('Search journal stories'), { target: { value: 'Premchand' } });
     expect(screen.getByText('25 Best Indian Books to Read: Classics, Novels & Regional Literature')).toBeInTheDocument();
     expect(screen.queryByText("Editor's pick")).not.toBeInTheDocument();
-    expect(screen.getByText('1 story')).toBeInTheDocument();
+    expect(screen.getByText(/^1 story$/)).toBeInTheDocument();
   });
 
   it('shows an empty state for unmatched searches and clears both filters', () => {
