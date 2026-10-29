@@ -57,12 +57,12 @@ function setMeta(html, attribute, key, content) {
     "i",
   );
   const tag = `<meta ${attribute}="${key}" content="${escaped}" />`;
-  return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\\n</head>`);
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
 function createPage({ title, description, route, image, type }) {
   const canonical = `${SITE_URL}${route}`;
-  let html = template.replace(/<title>[\\s\\S]*?<\\/title>/i, `<title>${escapeHtml(title)}</title>`);
+  let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
   html = setMeta(html, "property", "og:title", title);
   html = setMeta(html, "property", "og:description", description);
@@ -75,15 +75,15 @@ function createPage({ title, description, route, image, type }) {
     html = setMeta(html, "name", "twitter:image", image);
   }
   const canonicalTag = `<link rel="canonical" href="${escapeHtml(canonical)}" />`;
-  const canonicalPattern = /<link\\s+[^>]*rel=["']canonical["'][^>]*>/i;
+  const canonicalPattern = /<link\s+[^>]*rel="canonical"[^>]*>/i;
   html = canonicalPattern.test(html)
     ? html.replace(canonicalPattern, canonicalTag)
-    : html.replace("</head>", `  ${canonicalTag}\\n</head>`);
+    : html.replace("</head>", `  ${canonicalTag}\n</head>`);
   return html;
 }
 
 function writeRoute(route, html) {
-  const outputPath = path.join(DIST_DIR, route.replace(/^\\//, ""), "index.html");
+  const outputPath = path.join(DIST_DIR, route.replace(/^\//, ""), "index.html");
   if (!outputPath.startsWith(DIST_DIR + path.sep)) {
     throw new Error(`Refusing to write outside dist: ${route}`);
   }
