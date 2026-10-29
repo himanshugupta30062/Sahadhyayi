@@ -66,7 +66,9 @@ export const useUserBookshelf = () => {
     window.addEventListener('shelfUpdated', handleShelfUpdated);
 
     return () => {
-      void supabase.removeChannel(channel);
+      void supabase.removeChannel(channel).catch((error: unknown) => {
+        console.error('Failed to remove user bookshelf realtime channel:', error);
+      });
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener('shelfUpdated', handleShelfUpdated);
     };
