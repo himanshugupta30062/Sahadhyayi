@@ -281,9 +281,9 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
       setSelectedBookToArchive(null);
       setArchiveReason('');
       setCanonicalBookId('');
-      refetchArchived();
-      refetchActive();
-      refetchAudit();
+      void refetchArchived();
+      void refetchActive();
+      void refetchAudit();
     } catch (err: any) {
       toast({
         title: 'Archive Failed',
@@ -303,9 +303,9 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
         title: 'Book Restored to Public Library',
         description: res.message,
       });
-      refetchArchived();
-      refetchActive();
-      refetchHistory();
+      void refetchArchived();
+      void refetchActive();
+      void refetchHistory();
     } catch (err: any) {
       toast({
         title: 'Restore Failed',
@@ -335,9 +335,9 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
       const res = await applyDuplicateResolution(selectedDupGroup.groupId, selectedDupAction, { dryRun: false });
       toast({ title: 'Resolution Applied', description: res.message });
       setIsPreviewOpen(false);
-      refetchAudit();
-      refetchArchived();
-      refetchHistory();
+      void refetchAudit();
+      void refetchArchived();
+      void refetchHistory();
     } catch (err: any) {
       toast({ title: 'Execution Failed', description: err.message, variant: 'destructive' });
     } finally {
@@ -468,7 +468,7 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
               </div>
 
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => refetchArchived()} className="gap-1.5">
+                <Button size="sm" variant="outline" onClick={() => { void refetchArchived(); }} className="gap-1.5">
                   <RefreshCw className="w-3.5 h-3.5" />
                   Refresh
                 </Button>
@@ -652,7 +652,7 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
                   className="pl-9 h-9 text-xs"
                 />
               </div>
-              <Button size="sm" variant="outline" onClick={() => refetchActive()} className="gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => { void refetchActive(); }} className="gap-1.5">
                 <RefreshCw className="w-3.5 h-3.5" /> Refresh
               </Button>
             </div>
@@ -783,7 +783,7 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
                   Best quality edition recommended first. Ambiguous translations and distinct authors are preserved.
                 </p>
               </div>
-              <Button size="sm" variant="outline" onClick={() => refetchAudit()} disabled={isAuditFetching} className="gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => { void refetchAudit(); }} disabled={isAuditFetching} className="gap-1.5">
                 <RefreshCw className={`w-3.5 h-3.5 ${isAuditFetching ? 'animate-spin' : ''}`} />
                 Run Duplicate Scan
               </Button>
@@ -893,7 +893,7 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
                 <h3 className="text-base font-bold text-slate-900">Archive & Resolution Audit Trail</h3>
                 <p className="text-xs text-slate-500">Every archive, restore, and merge operation is permanently logged.</p>
               </div>
-              <Button size="sm" variant="outline" onClick={() => refetchHistory()} className="gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => { void refetchHistory(); }} className="gap-1.5">
                 <RefreshCw className="w-3.5 h-3.5" /> Refresh
               </Button>
             </div>
@@ -998,7 +998,7 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => refetchVisits()}
+                  onClick={() => { void refetchVisits(); }}
                   disabled={isVisitsFetching}
                   className="gap-1.5 text-xs h-9"
                 >

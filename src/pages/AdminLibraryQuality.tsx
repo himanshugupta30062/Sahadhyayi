@@ -178,8 +178,8 @@ export const AdminLibraryQuality: React.FC = () => {
         title: 'Record Restored',
         description: result.message,
       });
-      refetchLogs();
-      refetchVault();
+      void refetchLogs();
+      void refetchVault();
       runAudit();
     } catch (err: any) {
       toast({
@@ -217,7 +217,7 @@ export const AdminLibraryQuality: React.FC = () => {
       setUnwantedBookId('');
       setArchiveReasonInput('');
       setIsArchiveModalOpen(false);
-      refetchVault();
+      void refetchVault();
       runAudit();
     } catch (err: any) {
       toast({
@@ -237,7 +237,7 @@ export const AdminLibraryQuality: React.FC = () => {
         title: 'Book Restored to Active Library',
         description: res.message,
       });
-      refetchVault();
+      void refetchVault();
       runAudit();
     } catch (err: any) {
       toast({
@@ -259,7 +259,7 @@ export const AdminLibraryQuality: React.FC = () => {
         title: 'Safe Cleanup Completed',
         description: `Moved ${count} redundant entries to the archive vault without deleting any records.`,
       });
-      refetchVault();
+      void refetchVault();
       runAudit();
     } catch (err: any) {
       toast({
@@ -724,7 +724,7 @@ export const AdminLibraryQuality: React.FC = () => {
                 <h3 className="text-lg font-bold text-slate-900">Duplicate Resolution Audit Logs</h3>
                 <p className="text-xs text-slate-500">Every cleanup action is recorded with full rollback snapshot.</p>
               </div>
-              <Button size="sm" variant="outline" onClick={() => refetchLogs()}>
+              <Button size="sm" variant="outline" onClick={() => { void refetchLogs(); }}>
                 <RefreshCw className="w-3.5 h-3.5 mr-1" /> Refresh
               </Button>
             </div>
@@ -841,7 +841,7 @@ export const AdminLibraryQuality: React.FC = () => {
                     className="pl-9 h-9 text-xs"
                   />
                 </div>
-                <Button size="sm" variant="outline" onClick={() => refetchVault()} className="gap-1.5">
+                <Button size="sm" variant="outline" onClick={() => { void refetchVault(); }} className="gap-1.5">
                   <RefreshCw className={`w-3.5 h-3.5 ${vaultLoading ? 'animate-spin' : ''}`} />
                   Refresh Vault
                 </Button>
