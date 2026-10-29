@@ -107,7 +107,7 @@ describe('Phase 2 — Public Website Experience', () => {
       const libraryLink = screen.getByRole('link', { name: /^Digital Library$/i });
       expect(libraryLink).toHaveAttribute('href', '/library');
 
-      const articlesLink = screen.getByRole('link', { name: /^Articles & Stories$/i });
+      const articlesLink = screen.getByRole('link', { name: /^Articles$/i });
       expect(articlesLink).toHaveAttribute('href', '/articles');
 
       // Community links

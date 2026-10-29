@@ -26,8 +26,8 @@ export function toSeoDescription(
     .replace(/^\s{0,3}#{1,6}\s+/gm, '')
     .replace(/(^|\s)[*_~`]{1,3}([^*_~`]+)[*_~`]{1,3}(?=\s|$)/g, '$2')
     .replace(/^\s*>\s?/gm, '')
-    .replace(/\s+([.,!?;:])/g, '$1')
     .replace(/\s+/g, ' ')
+    .replace(/\s+([.,!?;:])/g, '$1')
     .trim();
 
   if (plainText.length <= maxLength) return plainText;
