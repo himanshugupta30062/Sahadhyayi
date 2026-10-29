@@ -82,7 +82,7 @@ function createPage({ title, description, route, image, type }) {
   // Keep useful, route-specific HTML in the initial response for crawlers and
   // visitors with JavaScript disabled. React replaces this fallback when it mounts.
   const fallback = `<main id="seo-fallback" style="max-width:900px;margin:3rem auto;padding:0 1.25rem;font-family:system-ui,sans-serif;line-height:1.65">
-    <h1>${escapeHtml(title.replace(/\\s*\\|\\s*Sahadhyayi$/i, ""))}</h1>
+    <h1>${escapeHtml(title.replace(/\s*\|\s*Sahadhyayi$/i, ""))}</h1>
     <p>${escapeHtml(description)}</p>
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
   </main>`;
