@@ -12,7 +12,7 @@ export const setCSRFToken = (token: string | null): void => {
     document.cookie = 'csrfToken=; Path=/; Max-Age=0; SameSite=Strict; Secure';
   } else {
     sessionStorage.setItem('csrfToken', token);
-    document.cookie = `csrfToken=${token}; Path=/; SameSite=Strict; Secure`;
+    document.cookie = `csrfToken=${encodeURIComponent(token)}; Path=/; SameSite=Strict; Secure`;
   }
 };
 
