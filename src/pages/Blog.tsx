@@ -75,6 +75,39 @@ const Blog = () => {
     image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200&h=630&fit=crop'
   },
   {
+    id: '11',
+    slug: 'best-indian-short-story-collections',
+    title: 'Indian Short Story Collections to Start Reading Today',
+    excerpt: 'Explore Indian short fiction from different languages and literary traditions, with a practical guide to choosing your first collection.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Indian Literature',
+    readTime: '8 min read',
+    image: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1200&h=630&fit=crop'
+  },
+  {
+    id: '12',
+    slug: 'books-for-when-life-feels-stuck',
+    title: 'Books to Read When You Feel Stuck in Life',
+    excerpt: 'Choose books for uncertainty, change, low motivation, or a fresh perspective—without turning reading into another task.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Book Recommendations',
+    readTime: '7 min read',
+    image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200&h=630&fit=crop'
+  },
+  {
+    id: '13',
+    slug: 'exploring-indian-literature-in-translation',
+    title: 'How to Explore Indian Literature Beyond English',
+    excerpt: 'A beginner-friendly path into Indian literary languages through translations, anthologies, regional traditions, and reading groups.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Indian Literature',
+    readTime: '8 min read',
+    image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=630&fit=crop'
+  },
+  {
     id: '7',
     slug: 'best-indian-books-to-read',
     title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',
