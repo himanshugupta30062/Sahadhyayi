@@ -382,6 +382,59 @@ const BlogPost = () => {
         <p>India's literary richness becomes more visible when we read beyond the familiar. Start with one translation, follow the voice that interests you, and let each book introduce you to another language, place, or way of seeing the world.</p>
       `
     },
+    'osho-books-and-themes-in-his-discourses': {
+      title: 'The Books Osho Loved and the Many Dimensions He Explored in His Discourses',
+      description: 'Explore books Osho identified as favourites and the spiritual, philosophical, literary, psychological, and social traditions he discussed in his recorded talks.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '10 min read',
+      image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1200&h=630&fit=crop',
+      content: `
+        <p>Osho—also known as Bhagwan Shree Rajneesh—was a prolific speaker whose recorded talks ranged across spiritual traditions, philosophy, literature, psychology, and social questions. His published books are largely edited transcripts of spoken discourses rather than conventional books written from start to finish. To understand the range of his ideas, it helps to look at two related but different things: books he singled out as loved or important, and the scriptures, thinkers, and traditions he chose as subjects for extended talks.</p>
+        <p>This article is a reading map, not a claim that every title below shaped every lecture. The surviving lists and catalogues document some of his interests, while the full scale of a lifetime of reading is difficult to reconstruct precisely.</p>
+        <h2>1. Books He Explicitly Celebrated</h2>
+        <p>In <em>Books I Have Loved</em>, a collection associated with his reflections on favourite books, Osho discusses a striking mix of Eastern and Western writing. The listed works include Friedrich Nietzsche’s <em>Thus Spoke Zarathustra</em>, Fyodor Dostoevsky’s <em>The Brothers Karamazov</em>, Mikhail Naimy’s <em>The Book of Mirdad</em>, Richard Bach’s <em>Jonathan Livingston Seagull</em>, Lao Tzu’s <em>Tao Te Ching</em>, Chuang Tzu’s parables, the <em>Bhagavad Gita</em>, Rabindranath Tagore’s <em>Gitanjali</em>, and writings associated with Milarepa.</p>
+        <p>The range matters: this is not one school of thought. It brings together novels, poetry, mystical teachings, philosophical writing, and religious texts. The book list is a useful starting point for readers, but it should not be treated as a complete inventory of everything he read.</p>
+        <p><a href="https://oshosourcebook.com/appendix/" target="_blank" rel="noopener noreferrer">Explore the documented appendix for <em>Books I Have Loved</em></a>.</p>
+        <h2>2. Indian Scriptures and the Upanishadic Question</h2>
+        <p>Across his discourse catalogue, Osho returned to Indian philosophical texts including the Upanishads, the Bhagavad Gita, and the Vigyan Bhairav Tantra. These works invite questions about the self, awareness, desire, action, freedom, and the nature of reality. In his talks, he interpreted traditional material for contemporary audiences, often presenting it through the lens of direct experience and meditation.</p>
+        <p>For a first-hand route into this strand, readers can explore published discourse collections such as <em>That Art Thou</em>, which brings together talks on Upanishadic texts, and <em>The Book of Secrets</em>, his commentary on methods from the Vigyan Bhairav Tantra. These are Osho’s interpretations of the source texts, not neutral summaries of every scholarly interpretation.</p>
+        <h2>3. Zen, Taoism, and the Art of Not Forcing Life</h2>
+        <p>Zen and Taoist traditions were recurring subjects in Osho’s talks. Lao Tzu, Chuang Tzu, and Zen teachers offered material for exploring simplicity, spontaneity, silence, paradox, and the limits of overthinking. The Taoist idea of acting without excessive force is often discussed as a challenge to the impulse to control every outcome.</p>
+        <p>Readers curious about this dimension can look for discourse collections on Lao Tzu’s <em>Tao Te Ching</em>, as well as Osho’s talks on Zen figures such as Bodhidharma. It is worth reading the original traditions alongside his commentary: Osho’s voice is distinctive, and it is only one lens through which to approach them.</p>
+        <h2>4. Buddhism, Meditation, and Direct Experience</h2>
+        <p>Buddhist teachings and meditation practices form another major strand. Osho spoke about Gautama Buddha, mindfulness, awareness, attachment, suffering, and the possibility of observing thoughts without automatically following them. His talks often encourage readers to investigate experience rather than accept a belief simply because an authority states it.</p>
+        <p>This emphasis does not make all Buddhist schools interchangeable. If you explore these themes, compare Osho’s talks with Buddhist primary sources and reputable introductions to the different traditions.</p>
+        <h2>5. Sufism, Mystical Poetry, and the Language of Love</h2>
+        <p>Osho also drew on Sufi stories and poetry, including the work associated with Jalaluddin Rumi and Omar Khayyam. This material opens a different vocabulary for spiritual inquiry: longing, love, surrender, humour, the inadequacy of literal explanations, and the tension between formal religion and inward experience.</p>
+        <p>Poetry can be an especially approachable entry point because it works through image, rhythm, and ambiguity rather than only through argument. Read the poem itself, notice the translator, and then compare how Osho interprets it.</p>
+        <h2>6. Christianity, Jesus, and the Question of Organized Religion</h2>
+        <p>Christian texts and the figure of Jesus were also subjects of Osho’s discourses. In collections such as <em>The Mustard Seed</em>, he interprets sayings from the Gospel of Thomas; other talks engage with the Sermon on the Mount and the relationship between a living spiritual insight and an institution built around it.</p>
+        <p>Because these interpretations can be provocative, readers may find it useful to place them beside the relevant biblical or early Christian text and a range of historical perspectives. Doing so helps separate the source, Osho’s reading of it, and the reader’s own response.</p>
+        <h2>7. Western Philosophy, Literature, and the Modern Individual</h2>
+        <p>Nietzsche and Dostoevsky are among the Western writers listed in <em>Books I Have Loved</em>. Their works raise questions about morality, freedom, faith, responsibility, alienation, and what happens when inherited certainties break down. Osho’s reading interests also extended into modern philosophy and literature, including thinkers and writers who challenged conventional ideas about society and the individual.</p>
+        <p>Literature matters here because a novel can explore a moral conflict through characters and consequences rather than a neat set of principles. A reader can disagree with Osho’s interpretation and still use it as a prompt to return to the original work with new questions.</p>
+        <h2>8. Psychology, Relationships, Sexuality, and Social Conditioning</h2>
+        <p>Many discourses turn from classical texts toward the everyday life of the individual: fear, loneliness, relationships, desire, repression, identity, and the influence of social conditioning. Osho often connected these subjects to meditation and self-observation. He also questioned established institutions and norms, including organized religion, political ideology, and conventional ideas about education and morality.</p>
+        <p>These talks are best approached critically rather than as clinical or scientific authority. They are philosophical and spiritual commentary; readers should use appropriate specialist sources when evaluating psychological, medical, or historical claims.</p>
+        <h2>9. Politics, Science, Education, and the Wider World</h2>
+        <p>The range of his talks was not limited to meditation or scripture. Catalogues and collections show engagement with politics, social systems, science, education, and the pressures of modern life. His broad interests made the discourses feel more like an ongoing conversation with many intellectual traditions than a single systematic textbook.</p>
+        <p>That breadth can be stimulating, but breadth is not the same as consensus or proof. When a discourse makes a factual claim about science, history, or society, check it against reliable independent sources.</p>
+        <h2>10. How to Explore This Reading World for Yourself</h2>
+        <ul>
+          <li><strong>Begin with a book, not a quote collection.</strong> Try one title from <em>Books I Have Loved</em>, such as <em>Gitanjali</em>, <em>The Brothers Karamazov</em>, or <em>Tao Te Ching</em>, choosing a translation or edition that suits you.</li>
+          <li><strong>Pair commentary with the source.</strong> If Osho discusses a scripture or philosopher, read at least a portion of the original work alongside his interpretation.</li>
+          <li><strong>Follow one theme at a time.</strong> Choose meditation, freedom, love, the self, social conditioning, or another question and compare how different traditions approach it.</li>
+          <li><strong>Keep disagreement in the process.</strong> Ask what the text supports, what is Osho’s interpretation, and what remains your own question.</li>
+          <li><strong>Discuss with other readers.</strong> A reading group can reveal where people respond differently to the same passage and encourage careful, respectful disagreement.</li>
+        </ul>
+        <h2>Where to Verify Titles and Discourses</h2>
+        <p>The <a href="https://oshosourcebook.com/appendix/" target="_blank" rel="noopener noreferrer">OSHO Source Book appendix</a> lists works connected with <em>Books I Have Loved</em>, while its <a href="https://oshosourcebook.com/bibliography/" target="_blank" rel="noopener noreferrer">bibliography</a> documents many discourse publications and their source texts. The <a href="https://osholive.com/discourses" target="_blank" rel="noopener noreferrer">Osho Live discourse catalogue</a> provides another way to browse recorded talk series. These catalogues are research aids; compare editions and publication details when you need exact bibliographic information.</p>
+        <h2>A Library of Questions, Not Just Answers</h2>
+        <p>Osho’s reading world moves between mysticism and literature, silence and social critique, ancient scriptures and modern anxieties. The value of exploring it is not that one speaker resolves every question, but that the trail of books can lead readers toward traditions and writers they might not otherwise encounter.</p>
+        <p>Read the source, hear the interpretation, question both, and keep following the ideas that make you more attentive to life. That is a richer reading practice than treating any thinker as the final word.</p>
+      `
+    },
     'best-indian-books-to-read': {
     title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',
     description: 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.',
