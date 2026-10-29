@@ -42,7 +42,7 @@ staticPages.forEach(route => addUrl(route, 'weekly', route === '/library' || rou
 blogSlugs.forEach(slug => addUrl('/blog/' + slug, 'monthly', '0.6'));
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 if (SUPABASE_URL && SUPABASE_KEY) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
   const [booksResult, authorsResult] = await Promise.all([
@@ -52,7 +52,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   if (booksResult.error) console.warn('[sitemap] Could not fetch books:', booksResult.error.message);
   else (booksResult.data || []).forEach(book => addUrl('/book/' + encodeURIComponent(book.id), 'monthly', '0.5'));
   if (authorsResult.error) console.warn('[sitemap] Could not fetch authors:', authorsResult.error.message);
-  else (authorsResult.data || []).filter(author => author.name).forEach(author => addUrl('/authors/' + encodeURIComponent(slugify(author.name)), 'monthly', '0.5'));
+  else (authorsResult.data || []).filter(author => author.name).forEach(author => addUrl('/author/' + encodeURIComponent(slugify(author.name)), 'monthly', '0.5'));
 } else {
   console.warn('[sitemap] Supabase environment variables are missing; only static public URLs will be generated. No placeholder book or author URLs will be added.');
 }
