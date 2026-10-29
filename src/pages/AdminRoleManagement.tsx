@@ -10,6 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 
 type UserRole = { user_id: string; email: string; role: string; created_at: string };
+const PERMISSIONS = [
+  { role: 'moderator', permission: 'community.moderate', label: 'Moderate community', description: 'Moderate community discussions and reports.' },
+  { role: 'moderator', permission: 'feedback.manage', label: 'Manage feedback', description: 'Review and manage user feedback.' },
+  { role: 'editor', permission: 'content.edit', label: 'Edit content', description: 'Edit eligible articles and content.' },
+  { role: 'editor', permission: 'content.publish', label: 'Publish content', description: 'Publish eligible editorial content.' },
+  { role: 'support', permission: 'feedback.manage', label: 'Manage feedback', description: 'Review and manage user feedback.' },
+  { role: 'support', permission: 'users.support', label: 'User support tools', description: 'Access approved user support workflows.' },
+];
 const ROLE_OPTIONS = [
   { value: 'admin', label: 'Administrator', description: 'Full platform administration and role management.' },
   { value: 'moderator', label: 'Moderator', description: 'Community moderation tasks where explicitly permitted.' },
@@ -49,6 +57,29 @@ export default function AdminRoleManagement() {
       await queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
     },
     onError: (error: Error) => toast({ title: 'Could not update role', description: error.message, variant: 'destructive' }),
+  });
+
+  const permissionsQuery = useQuery({
+    queryKey: ['admin-role-permissions'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('admin_list_role_permissions');
+      if (error) throw error;
+      return (data ?? []) as { role: string; permission: string; enabled: boolean; updated_at: string }[];
+    },
+  });
+
+  const permissionMutation = useMutation({
+    mutationFn: async ({ targetRole, permission, enabled }: { targetRole: string; permission: string; enabled: boolean }) => {
+      const { error } = await supabase.rpc('admin_set_role_permission', {
+        p_role: targetRole, p_permission: permission, p_enabled: enabled,
+      });
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      toast({ title: 'Permission updated', description: 'The permission setting was saved securely.' });
+      await queryClient.invalidateQueries({ queryKey: ['admin-role-permissions'] });
+    },
+    onError: (error: Error) => toast({ title: 'Permission update failed', description: error.message, variant: 'destructive' }),
   });
 
   const filteredRoles = useMemo(() => {
@@ -106,6 +137,33 @@ export default function AdminRoleManagement() {
             )}
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><LockKeyhole className="h-5 w-5" /> Granular permissions</CardTitle>
+            <CardDescription>Enable or disable individual capabilities for moderator, editor and support roles. New permissions default to off.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {permissionsQuery.isLoading ? <p className="text-sm text-muted-foreground">Loading permission settings…</p> : permissionsQuery.error ? <p className="text-sm text-destructive">Could not load permissions: {(permissionsQuery.error as Error).message}</p> : (
+              ['moderator', 'editor', 'support'].map((targetRole) => (
+                <section key={targetRole} className="space-y-2">
+                  <h3 className="font-semibold capitalize">{targetRole}</h3>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {PERMISSIONS.filter((item) => item.role === targetRole).map((item) => {
+                      const setting = permissionsQuery.data?.find((p) => p.role === item.role && p.permission === item.permission);
+                      const enabled = setting?.enabled ?? false;
+                      return <div key={item.permission} className="flex items-start justify-between gap-3 rounded-xl border p-3">
+                        <div><div className="font-medium text-sm">{item.label}</div><p className="mt-1 text-xs text-muted-foreground">{item.description}</p><code className="mt-2 block text-[11px] text-muted-foreground">{item.permission}</code></div>
+                        <Button size="sm" variant={enabled ? 'default' : 'outline'} disabled={permissionMutation.isPending || !setting} onClick={() => permissionMutation.mutate({ targetRole, permission: item.permission, enabled: !enabled })}>{enabled ? 'Enabled' : 'Disabled'}</Button>
+                      </div>;
+                    })}
+                  </div>
+                </section>
+              ))
+            )}
+            <p className="text-xs text-muted-foreground">These toggles update the centralized permission registry. A feature is protected only after its backend operation explicitly checks <code>has_permission(permission_key)</code>; toggles alone do not bypass existing admin-only policies.</p>
+          </CardContent>
+        </Card>
+
         <p className="text-xs text-muted-foreground">Important: role management is separate from feature permissions. Existing admin-only pages continue to require the database admin check; moderator, editor, and support permissions must be explicitly wired into the relevant workflows.</p>
       </div>
     </main>
