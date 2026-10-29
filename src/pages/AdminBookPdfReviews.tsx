@@ -60,7 +60,7 @@ export default function AdminBookPdfReviews() {
     queryKey: ['admin-book-pdf-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase.from('book_pdf_submissions' as any)
-        .select('id,user_id,original_filename,storage_path,file_size_bytes,submitted_title,submitted_author,status,rights_attested,detected_metadata,validation_findings,match_confidence,rejection_reason,created_at,verification_model,verification_completed_at')
+        .select('id,user_id,original_filename,storage_path,file_size_bytes,submitted_title,submitted_author,status,rights_attested,detected_metadata,validation_findings,match_confidence,rejection_reason,created_at,verification_model,verification_completed_at,published_book_id')
         .order('created_at', { ascending: false }).limit(200);
       if (error) throw error;
       return (data || []) as Submission[];
@@ -157,7 +157,7 @@ export default function AdminBookPdfReviews() {
             ['Pending review', submissions.filter((s) => ['uploaded', 'queued', 'scanning', 'extracting', 'matching', 'needs_review', 'failed'].includes(s.status)).length],
             ['Approved', submissions.filter((s) => s.status === 'approved').length],
             ['Rejected', submissions.filter((s) => s.status === 'rejected').length],
-            ['Published', submissions.filter((s) => Boolean(s.published_book_id)).length.length],
+            ['Published', submissions.filter((s) => Boolean(s.published_book_id)).length],
           ].map(([label, value]) => <div key={String(label)} className="rounded-xl border bg-card p-4"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-semibold">{value}</p></div>)}
         </div>
 
