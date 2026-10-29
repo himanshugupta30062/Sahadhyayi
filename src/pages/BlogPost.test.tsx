@@ -41,7 +41,8 @@ describe('BlogPost', () => {
 
     expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: title })).toBeInTheDocument();
-    expect(screen.getByText('Himanshu Gupta')).toBeInTheDocument();
+    // Author metadata is present on the post record, but the current article layout intentionally omits the byline.
+    expect(screen.queryByText('Himanshu Gupta')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to Blog' })).toHaveAttribute('href', '/blog');
     expect(screen.getByRole('link', { name: 'Join Sahadhyayi Today' })).toHaveAttribute('href', '/signup');
     expect(screen.getByRole('link', { name: 'Explore Our Library' })).toHaveAttribute('href', '/library');
