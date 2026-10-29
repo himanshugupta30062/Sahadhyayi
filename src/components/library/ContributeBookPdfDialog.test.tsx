@@ -52,8 +52,17 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
   },
 }));
 
-const makePdf = (name = 'sample.pdf', bytes = '%PDF-1.7 test body', type = 'application/pdf') =>
-  new File([bytes], name, { type });
+const makePdf = (name = 'sample.pdf', bytes = '%PDF-1.7 test body', type = 'application/pdf') => {
+  const file = new File([bytes], name, { type });
+  // jsdom's File.slice() may not implement Blob.arrayBuffer(); mirror the browser API.
+  Object.defineProperty(file, 'slice', {
+    configurable: true,
+    value: (start = 0, end = file.size) => ({
+      arrayBuffer: async () => new TextEncoder().encode(bytes).slice(start, end).buffer,
+    }),
+  });
+  return file;
+}
 
 function renderDialog() {
   render(<ContributeBookPdfDialog />);
@@ -118,7 +127,7 @@ describe('ContributeBookPdfDialog', () => {
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
     await waitFor(() => expect(screen.getByRole('button', { name: /Submit for verification/i })).toBeEnabled());
-    fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
+    fireEvent.submit(screen.getByLabelText(/PDF file/i).closest('form')!);
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
       description: expect.stringMatching(/valid PDF signature/i),
