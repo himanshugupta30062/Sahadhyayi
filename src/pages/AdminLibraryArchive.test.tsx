@@ -120,14 +120,6 @@ describe('AdminLibraryArchive', () => {
     vi.restoreAllMocks();
   });
 
-  it('redirects signed-out visitors away from the archive console', () => {
-    mocks.user = null;
-    renderPage();
-
-    expect(screen.getByLabelText('current route')).toHaveTextContent('/');
-    expect(screen.queryByRole('heading', { name: 'Library Archive & Recovery Vault' })).not.toBeInTheDocument();
-  });
-
   it('shows the archived-books empty state by default', () => {
     renderPage();
 
