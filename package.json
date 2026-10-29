@@ -9,7 +9,7 @@
     "dev": "vite",
     "predev:vite": "node scripts/optimize-book-expert-artwork.mjs && node scripts/prepare-performance-assets.mjs",
     "dev:vite": "vite",
-    "prebuild": "node scripts/prepare-performance-assets.mjs",
+    "prebuild": "node scripts/prepare-performance-assets.mjs && node scripts/generateSitemap.js",
     "build": "node scripts/optimize-book-expert-artwork.mjs && vite build && npm run build:server:utils && npm run check:cloudflare-routing",
     "build:server:utils": "node scripts/build-server-utils.mjs",
     "check:cloudflare-routing": "node scripts/check-cloudflare-routing-config.mjs",
