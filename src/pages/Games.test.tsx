@@ -132,7 +132,7 @@ describe('Games page', () => {
     renderGames();
 
     expect(await screen.findByRole('heading', { name: /Book Quiz/ })).toBeInTheDocument();
-    expect(screen.getByText('240')).toBeInTheDocument();
+    expect(screen.getAllByText('240')).toHaveLength(2);
     expect(screen.getByText('Reader')).toBeInTheDocument();
     expect(screen.getByText('Streak 3')).toBeInTheDocument();
     expect(screen.getByText('Daily challenges mock')).toBeInTheDocument();
