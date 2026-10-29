@@ -629,7 +629,7 @@ const BlogPost = () => {
                 <BookOpen className="h-3.5 w-3.5" aria-hidden="true" /> Sahadhyayi Journal · Editor-published
               </div>
               <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight text-[#FBF7EF] sm:text-4xl md:text-5xl lg:text-6xl">{post.title}</h1>
-              {post.description && <p className="mt-5 max-w-2xl text-base leading-7 text-white/75 sm:text-lg">{post.description}</p>}
+              {(post as { description?: string }).description && <p className="mt-5 max-w-2xl text-base leading-7 text-white/75 sm:text-lg">{(post as { description?: string }).description}</p>}
               <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 text-xs text-white/70 sm:text-sm">
                 <span className="inline-flex items-center gap-2"><User className="h-4 w-4 text-[#D5B16D]" />{post.author}</span>
                 <span className="inline-flex items-center gap-2"><Calendar className="h-4 w-4 text-[#D5B16D]" />{new Date(post.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
