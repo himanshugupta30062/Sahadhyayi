@@ -31,6 +31,7 @@ describe('normalizeBookIdentity', () => {
     expect(result.normalizedTitleKey).toContain('गोदान');
     expect(result.normalizedTitleKey).not.toContain('volume2');
     expect(result.cleanTitle).toBe('गोदान');
+    expect(result.normalizedAuthorKey).toBe('munshipremchand');
     expect(result.volumeTag).toBe('vol-2');
     expect(result.cleanAuthors).toEqual(['Munshi Premchand', 'Translator Name']);
     expect(result.language).toBe('hi');
