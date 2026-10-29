@@ -33,6 +33,7 @@ const Navigation = () => {
   const isMobile = useIsMobile();
   const menuRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
+  const previousMenuOpenRef = React.useRef(false);
 
   React.useEffect(() => {
     if (user) setContactDialogRequested(false);
@@ -57,13 +58,13 @@ const Navigation = () => {
   }, []);
 
   React.useEffect(() => {
-    if (isMobile) {
-      if (isOpen) {
-        menuRef.current?.querySelector<HTMLElement>('a, button')?.focus();
-      } else {
-        menuButtonRef.current?.focus();
-      }
+    if (isMobile && isOpen) {
+      menuRef.current?.querySelector<HTMLElement>('a, button')?.focus();
+    } else if (isMobile && previousMenuOpenRef.current) {
+      // Restore focus only when the menu closes, not on initial page load.
+      menuButtonRef.current?.focus();
     }
+    previousMenuOpenRef.current = isOpen;
   }, [isOpen, isMobile]);
 
   React.useEffect(() => {
@@ -354,7 +355,7 @@ const Navigation = () => {
           <nav
             id="mobile-navigation-menu"
             aria-label="Mobile navigation"
-            className="md:hidden border-t border-border bg-background/98 backdrop-blur-md"
+            className="md:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-border bg-background/98 backdrop-blur-md"
             ref={menuRef}
           >
             <div className="px-3 pt-3 pb-3 space-y-1">
