@@ -1,23 +1,20 @@
 import React, { lazy } from 'react';
-import { Button } from "@/components/ui/button";
-import { BookOpen, UserPlus, ArrowRight, LayoutDashboard } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/authHelpers";
-import { useProfile } from "@/hooks/useProfile";
 import SEO from "@/components/SEO";
 import DeferredSection from "@/components/DeferredSection";
 import AnimatedHero from "@/components/AnimatedHero";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import HomeEditorialPreview from "@/components/home/HomeEditorialPreview";
 
 const SahadhyayiCapabilities = lazy(() => import("@/components/SahadhyayiCapabilities"));
 const CurrentReads = lazy(() => import("@/components/library/CurrentReads"));
 const HomeBookDiscovery = lazy(() => import("@/components/home/HomeBookDiscovery"));
 const HomeCommunityPreview = lazy(() => import("@/components/home/HomeCommunityPreview"));
+const HomeEditorialPreview = lazy(() => import("@/components/home/HomeEditorialPreview"));
 
 const Index = () => {
   const { user } = useAuth();
-  const { data: profile } = useProfile();
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -39,16 +36,6 @@ const Index = () => {
       "foundingDate": "2024"
     }
   };
-
-  const primaryCta = user
-    ? { to: "/dashboard", label: "Go to Dashboard", icon: LayoutDashboard }
-    : { to: "/signup", label: "Get Started Free", icon: UserPlus };
-
-  const PrimaryCtaIcon = primaryCta.icon;
-  const firstName =
-    (typeof profile?.full_name === 'string' && profile.full_name.trim().split(/\s+/)[0]) ||
-    (typeof user?.email === 'string' && user.email.split('@')[0]) ||
-    'Reader';
 
   return (
     <>
