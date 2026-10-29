@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
+import { fetchPaginatedRows, slugify } from './seoBuildUtils.mjs';
 
 // Public, canonical pages only. Do not include authentication or account routes.
 const staticPages = [
@@ -31,8 +32,6 @@ const SITE_URL = 'https://sahadhyayi.com';
 const HOME_IMAGE = SITE_URL + '/lovable-uploads/sahadhyayi-logo-digital-reading.png';
 const urls = [];
 const xmlEscape = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&apos;');
-const slugify = value => value.toLowerCase().trim().replace(/[^\p{L}\p{N}\p{M}]+/gu, '-').replace(/^-+|-+$/g, '');
-
 function addUrl(loc, changefreq = 'weekly', priority = '0.6', image) {
   urls.push({ loc: SITE_URL + loc, changefreq, priority, image });
 }
@@ -43,30 +42,13 @@ blogSlugs.forEach(slug => addUrl('/blog/' + slug, 'monthly', '0.6'));
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY;
-async function fetchAllRows(query, label) {
-  const pageSize = 1000;
-  const rows = [];
-  for (let offset = 0; ; offset += pageSize) {
-    const { data, error } = await query.range(offset, offset + pageSize - 1);
-    if (error) return { data: null, error };
-    rows.push(...(data || []));
-    if (!data || data.length < pageSize) break;
-    // Keep the build bounded if a malformed backend ever ignores range limits.
-    if (rows.length >= 100000) {
-      console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`);
-      break;
-    }
-  }
-  return { data: rows, error: null };
-}
-
 if (SUPABASE_URL && SUPABASE_KEY) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false }
   });
   const [booksResult, authorsResult] = await Promise.all([
-    fetchAllRows(supabase.from('books_library').select('id').not('id', 'is', null), 'books'),
-    fetchAllRows(supabase.from('authors').select('name').not('name', 'is', null), 'authors')
+    fetchPaginatedRows(supabase.from('books_library').select('id').not('id', 'is', null), 'books', 100000, (label) => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)),
+    fetchPaginatedRows(supabase.from('authors').select('name').not('name', 'is', null), 'authors', 100000, (label) => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`))
   ]);
   if (booksResult.error) console.warn('[sitemap] Could not fetch books:', booksResult.error.message);
   else (booksResult.data || []).forEach(book => addUrl('/book/' + encodeURIComponent(book.id), 'monthly', '0.5'));
