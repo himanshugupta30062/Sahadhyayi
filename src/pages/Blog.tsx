@@ -193,12 +193,13 @@ const Blog = () => {
     }
   ];
 
-  const categories = ['All', ...Array.from(new Set(blogPosts.map(post => post.category)))];
+  const publishedPosts = blogPosts.filter(post => Boolean(post.slug));
+  const categories = ['All', ...Array.from(new Set(publishedPosts.map(post => post.category)))];
   const [selectedCategory, setSelectedCategory] = React.useState('All');
   const [searchQuery, setSearchQuery] = React.useState('');
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const filteredPosts = blogPosts.filter(post => {
+  const filteredPosts = publishedPosts.filter(post => {
     const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
     const searchableText = `${post.title} ${post.excerpt} ${post.author} ${post.category}`.toLowerCase();
     return matchesCategory && (!normalizedQuery || searchableText.includes(normalizedQuery));
@@ -243,7 +244,7 @@ const Blog = () => {
               <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium uppercase tracking-[0.12em] text-white/60">
                 <span className="inline-flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-[#D5B16D]" /> Editor-published</span>
                 <span>Read-only for readers</span>
-                <span>{blogPosts.length} stories in the journal</span>
+                <span>{publishedPosts.length} published stories in the journal</span>
               </div>
               <div className="mt-8 max-w-2xl">
                 <label htmlFor="blog-search" className="sr-only">Search journal stories</label>
