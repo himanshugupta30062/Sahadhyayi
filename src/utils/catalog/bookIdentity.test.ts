@@ -81,4 +81,17 @@ describe('normalizeBookIdentity', () => {
       stableProviderId: 'standardebooks-example-author',
     });
   });
+  it('preserves Devanagari vowel signs in both NFC and decomposed titles', () => {
+    const canonicalTitle = 'गोदान';
+    const decomposedTitle = canonicalTitle.normalize('NFD');
+
+    for (const title of [canonicalTitle, decomposedTitle]) {
+      const result = normalizeBookIdentity({ title, author: 'मुंशी प्रेमचंद', language: 'Hindi' });
+
+      expect(result.cleanTitle).toBe(canonicalTitle);
+      expect(result.normalizedTitleKey).toBe(canonicalTitle.replace(/[^\\p{L}\\p{N}\\p{M}]/gu, ''));
+      expect(result.isOriginalScript).toBe(true);
+    }
+  });
+
 });
