@@ -15,6 +15,8 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/contexts/authHelpers', () => ({
+  normalizeAuthEmail: (value: string) => value.trim().toLowerCase(),
+  normalizeAuthName: (value: string) => value.trim().replace(/\\s+/g, ' '),
   useAuth: () => ({
     user: mocks.user,
     signUp: mocks.signUp,
