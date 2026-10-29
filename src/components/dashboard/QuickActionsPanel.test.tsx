@@ -19,6 +19,7 @@ const renderPanel = () => render(
   </MemoryRouter>,
 );
 
+// Keep each shortcut's destination route covered.
 describe('QuickActionsPanel', () => {
   afterEach(() => cleanup());
 
