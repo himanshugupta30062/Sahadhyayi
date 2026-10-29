@@ -181,7 +181,7 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
                 className={`w-1 bg-blue-400 rounded-t ${
                   (currentTime / duration) * 50 > i ? 'bg-blue-600' : 'bg-blue-300'
                 }`}
-                style={{ height: `${Math.random() * 100}%` }}
+                style={{ height: `${25 + ((i * 37) % 75)}%` }}
               />
             ))}
           </div>
@@ -189,7 +189,7 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
 
         {/* Progress bar */}
         <div className="space-y-2">
-          <Progress value={(currentTime / duration) * 100} className="w-full" />
+          <Progress value={duration > 0 ? (currentTime / duration) * 100 : 0} className="w-full" />
           <div className="flex justify-between text-sm text-blue-600">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
