@@ -28,6 +28,7 @@ type Submission = {
   created_at: string;
   verification_model: string | null;
   verification_completed_at: string | null;
+  published_book_id: string | null;
 };
 type Book = { id: string; title: string; author: string | null; pdf_url: string | null };
 type RightsBasis = 'public_domain' | 'open_license' | 'rights_holder' | 'written_permission' | 'official_source';
@@ -156,7 +157,7 @@ export default function AdminBookPdfReviews() {
             ['Pending review', submissions.filter((s) => ['uploaded', 'queued', 'scanning', 'extracting', 'matching', 'needs_review', 'failed'].includes(s.status)).length],
             ['Approved', submissions.filter((s) => s.status === 'approved').length],
             ['Rejected', submissions.filter((s) => s.status === 'rejected').length],
-            ['Published', submissions.filter((s) => Boolean((s as any).published_book_id).length).length],
+            ['Published', submissions.filter((s) => Boolean(s.published_book_id)).length.length],
           ].map(([label, value]) => <div key={String(label)} className="rounded-xl border bg-card p-4"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-semibold">{value}</p></div>)}
         </div>
 
