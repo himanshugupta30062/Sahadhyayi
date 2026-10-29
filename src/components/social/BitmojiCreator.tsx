@@ -132,7 +132,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
   };
 
   const adjustColor = (color: string, amount: number) => {
-    const num = parseInt(color.replace("#", ""), 16);
+    const num = Number.parseInt(color.replace("#", ""), 16);
     const amt = Math.round(2.55 * amount);
     const R = (num >> 16) + amt;
     const G = (num >> 8 & 0x00FF) + amt;
