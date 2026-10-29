@@ -117,6 +117,7 @@ const mockGroupsList = [
 ];
 
 vi.mock('@/hooks/useGroupManagement', () => ({
+  DEFAULT_READING_GROUP_NAME: 'Sahadhyayi Community Reading Circle',
   useGroups: () => ({
     data: mockGroupsList,
     isLoading: false,
