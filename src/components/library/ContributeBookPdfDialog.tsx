@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +13,12 @@ import { FileUp, Loader2, ShieldCheck } from 'lucide-react';
 
 const BUCKET = 'book-pdf-quarantine';
 const MAX_BYTES = 50 * 1024 * 1024;
+
+// This contribution dialog owns its submission-history cache and can also be
+// rendered on public pages that do not mount the app-wide React Query provider.
+const submissionQueryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
 
 type Submission = {
   id: string;
@@ -42,7 +48,7 @@ const statusLabel: Record<string, string> = {
   failed: 'Processing failed',
 };
 
-export default function ContributeBookPdfDialog() {
+function ContributeBookPdfDialogContent() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -184,5 +190,14 @@ export default function ContributeBookPdfDialog() {
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+
+export default function ContributeBookPdfDialog() {
+  return (
+    <QueryClientProvider client={submissionQueryClient}>
+      <ContributeBookPdfDialogContent />
+    </QueryClientProvider>
   );
 }
