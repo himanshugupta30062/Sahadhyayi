@@ -1,13 +1,15 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import { CommunityPulseDashboard, type CommunityPulseData } from './CommunityStats';
+import CommunityStats, { CommunityPulseDashboard, type CommunityPulseData } from './CommunityStats';
+
+const mocks = vi.hoisted(() => ({ invoke: vi.fn() }));
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
-  supabase: { functions: { invoke: vi.fn() } },
+  supabase: { functions: { invoke: (...args: unknown[]) => mocks.invoke(...args) } },
 }));
 
 const data = (overrides: Partial<CommunityPulseData> = {}): CommunityPulseData => ({
@@ -105,5 +107,97 @@ describe('CommunityPulseDashboard', () => {
     render(<CommunityPulseDashboard data={data()} />);
 
     expect(screen.getByRole('button', { name: 'Refresh community stats' })).toBeDisabled();
+  });
+});
+
+
+describe('CommunityStats aggregate loader', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    mocks.invoke.mockReset();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
+
+  it('loads the aggregate endpoint once, normalizes metrics, and caches the result', async () => {
+    mocks.invoke.mockResolvedValue({
+      data: {
+        totalVisits: 5000,
+        last24hVisits: 1234,
+        uniqueVisitors24h: 800,
+        newSignups24h: 7,
+        totalSignups: 100,
+        lastUpdated: '2026-10-29T10:00:00.000Z',
+        hourlyActivity: [{ label: '9 AM', count: 4 }, { hourIndex: 10, count: null }],
+        topCountries: [{ code: 'IN', count: 30 }, { code: 'US', name: '', count: 5 }],
+        topCities: [{ name: 'Delhi', count: 22 }],
+        topMembers: [{
+          userId: 'reader-1',
+          name: 'Reader One',
+          avatarUrl: 'https://example.com/avatar.jpg',
+          activityCount: 8,
+          breakdown: { posts: 2, comments: 3 },
+        }],
+        readingEngagement: {
+          bookOpens: { count: 15 },
+          readingProgressCompletions: 10,
+          groupJoins: 3,
+          discussions: 1,
+        },
+      },
+      error: null,
+    });
+    render(<CommunityStats />);
+
+    await waitFor(() => expect(screen.getByText('Reader One')).toBeInTheDocument());
+    expect(mocks.invoke).toHaveBeenCalledWith('community-stats', { body: { timeframe: '24h' } });
+    expect(screen.getByText('1,234')).toBeInTheDocument();
+    expect(screen.getByText('Delhi')).toBeInTheDocument();
+    expect(screen.getByText('India')).toBeInTheDocument();
+
+    const cached = JSON.parse(localStorage.getItem('community_pulse_dashboard_cache_v2') || '{}');
+    expect(cached).toMatchObject({
+      visits24h: 1234,
+      uniqueVisitors24h: 800,
+      newMembers24h: 7,
+      totalMembers: 100,
+      totalVisits: 5000,
+      topCity: { name: 'Delhi', visits: 22 },
+      engagement: {
+        bookViews: 15,
+        readingProgressUpdates: 10,
+        groupJoins: 3,
+        discussions: 1,
+      },
+    });
+  });
+
+  it('shows backend errors and keeps missing statistics unavailable', async () => {
+    const error = new Error('Backend unavailable');
+    mocks.invoke.mockResolvedValue({ data: null, error });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(<CommunityStats />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Could not refresh community data: Backend unavailable');
+    });
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+    expect(console.error).toHaveBeenCalledWith('Community Pulse refresh failed:', error);
+  });
+
+  it('rejects aggregate responses missing required visit totals', async () => {
+    mocks.invoke.mockResolvedValue({ data: { totalVisits: 100 }, error: null });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(<CommunityStats />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'The community-stats endpoint is missing required visit totals.',
+      );
+    });
   });
 });
