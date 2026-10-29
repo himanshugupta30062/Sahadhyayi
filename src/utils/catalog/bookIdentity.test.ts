@@ -89,7 +89,7 @@ describe('normalizeBookIdentity', () => {
       const result = normalizeBookIdentity({ title, author: 'मुंशी प्रेमचंद', language: 'Hindi' });
 
       expect(result.cleanTitle).toBe(canonicalTitle);
-      expect(result.normalizedTitleKey).toBe(canonicalTitle.replace(/[^\\p{L}\\p{N}\\p{M}]/gu, ''));
+      expect(result.normalizedTitleKey).toBe(canonicalTitle);
       expect(result.isOriginalScript).toBe(true);
     }
   });
