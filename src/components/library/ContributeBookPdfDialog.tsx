@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { FileUp, Loader2, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, FileText, FileUp, Loader2, ShieldCheck, X } from 'lucide-react';
 
 const BUCKET = 'book-pdf-quarantine';
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -144,7 +144,7 @@ function ContributeBookPdfDialogContent() {
       <DialogTrigger asChild>
         <Button variant="outline" className="gap-2"><FileUp className="h-4 w-4" /> Contribute a PDF</Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+      <DialogContent className="w-[calc(100vw-1rem)] max-h-[calc(100dvh-1rem)] overflow-y-auto p-4 sm:w-full sm:max-h-[90vh] sm:max-w-xl sm:p-6">
         <DialogHeader>
           <DialogTitle>Contribute a book PDF</DialogTitle>
           <DialogDescription>Help improve the catalogue. New files stay private while verification and rights review are pending.</DialogDescription>
@@ -161,22 +161,64 @@ function ContributeBookPdfDialogContent() {
               <p className="mt-1 text-muted-foreground">Uploading does not publish the PDF. A valid book match does not by itself establish distribution rights.</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contribute-pdf">PDF file (max 50 MB)</Label>
-              <Input id="contribute-pdf" ref={fileRef} type="file" accept="application/pdf,.pdf" required onChange={(e) => setFile(e.target.files?.[0] || null)} />
+              <Label htmlFor="contribute-pdf">PDF file</Label>
+              <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3 sm:p-4">
+                <Input
+                  id="contribute-pdf"
+                  ref={fileRef}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  required
+                  disabled={busy}
+                  className="sr-only"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                />
+                {!file ? (
+                  <div className="flex flex-col items-center gap-3 py-3 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <FileUp className="h-6 w-6" aria-hidden="true" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Choose a book PDF</p>
+                      <p className="text-xs text-muted-foreground">PDF format · Maximum file size 50 MB</p>
+                    </div>
+                    <Button type="button" variant="outline" className="min-h-11 w-full max-w-xs touch-manipulation" disabled={busy} onClick={() => fileRef.current?.click()}>
+                      <FileUp className="mr-2 h-4 w-4" aria-hidden="true" />
+                      Browse files
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <FileText className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="break-all text-sm font-medium">{file.name}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{(file.size / (1024 * 1024)).toFixed(2)} MB · PDF selected</p>
+                      <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground"><CheckCircle2 className="h-3.5 w-3.5" /> File signature will be checked before upload</p>
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0 touch-manipulation" aria-label="Remove selected PDF" disabled={busy} onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = ''; }}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="contribute-title">Book title (optional)</Label>
-              <Input id="contribute-title" value={title} maxLength={500} onChange={(e) => setTitle(e.target.value)} placeholder="Title printed in the book" />
+              <Input id="contribute-title" disabled={busy} value={title} maxLength={500} onChange={(e) => setTitle(e.target.value)} placeholder="Title printed in the book" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="contribute-author">Author (optional)</Label>
-              <Input id="contribute-author" value={author} maxLength={500} onChange={(e) => setAuthor(e.target.value)} placeholder="Author name" />
+              <Input id="contribute-author" disabled={busy} value={author} maxLength={500} onChange={(e) => setAuthor(e.target.value)} placeholder="Author name" />
             </div>
             <label className="flex items-start gap-3 text-sm leading-5">
-              <Checkbox checked={rightsAttested} onCheckedChange={(checked) => setRightsAttested(checked === true)} />
+              <Checkbox disabled={busy} checked={rightsAttested} onCheckedChange={(checked) => setRightsAttested(checked === true)} />
               <span>I confirm I am authorized to submit this file for review and have provided accurate information. I understand this does not automatically authorize public distribution.</span>
             </label>
-            <Button type="submit" className="w-full gap-2" disabled={busy || !file || !rightsAttested}>
+            <Button type="submit" className="min-h-12 w-full gap-2 touch-manipulation text-sm sm:text-base" disabled={busy || !file || !rightsAttested}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
               {busy ? 'Submitting privately…' : 'Submit for verification'}
             </Button>
