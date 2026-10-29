@@ -55,6 +55,11 @@ describe('Quality-First Catalog: Metadata Normalization', () => {
     // Different author produces different cluster
     const keyDiffAuthor = createCanonicalClusterKey('War and Peace', 'John Doe');
     expect(key1).not.toBe(keyDiffAuthor);
+
+    // Devanagari vowel signs are Unicode combining marks and must survive key normalization.
+    const hindiKey = createCanonicalClusterKey('गोदान', 'मुंशी प्रेमचंद');
+    expect(hindiKey).toBe('गोदान::मुंशी प्रेमचंद');
+    expect(createCanonicalClusterKey('गोदान'.normalize('NFD'), 'मुंशी प्रेमचंद')).toBe(hindiKey);
   });
 });
 
