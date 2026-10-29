@@ -194,7 +194,7 @@ describe('ContributeBookPdfDialog', () => {
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
     const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
     await waitFor(() => expect(submitButton).toBeEnabled());
-    fireEvent.click(submitButton);
+    fireEvent.submit(submitButton.closest('form')!);
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Submission failed',
