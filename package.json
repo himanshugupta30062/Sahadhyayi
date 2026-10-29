@@ -10,7 +10,7 @@
     "predev:vite": "node scripts/optimize-book-expert-artwork.mjs && node scripts/prepare-performance-assets.mjs",
     "dev:vite": "vite",
     "prebuild": "node scripts/prepare-performance-assets.mjs",
-    "build": "node scripts/generateSitemap.js && node scripts/optimize-book-expert-artwork.mjs && vite build && npm run build:server:utils && npm run check:cloudflare-routing",
+    "build": "node scripts/generateSitemap.js && node scripts/optimize-book-expert-artwork.mjs && vite build && node scripts/prerender-public-content.mjs && npm run build:server:utils && npm run check:cloudflare-routing",
     "build:server:utils": "node scripts/build-server-utils.mjs",
     "check:cloudflare-routing": "node scripts/check-cloudflare-routing-config.mjs",
     "size:initial": "node scripts/check-initial-js-size.mjs",
