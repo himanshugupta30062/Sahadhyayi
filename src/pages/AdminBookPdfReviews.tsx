@@ -117,11 +117,19 @@ export default function AdminBookPdfReviews() {
         body: { submissionId: selected.id, action, ...extra },
       });
       if (error) throw error;
-      if (action === 'preview' && data?.url) {
-        window.open(data.url, '_blank', 'noopener,noreferrer');
+      if (action === 'preview') {
+        if (!data?.url) throw new Error(data?.error || 'The server did not return a preview link.');
+        const preview = window.open(data.url, '_blank', 'noopener,noreferrer');
+        if (!preview) throw new Error('The preview popup was blocked. Allow pop-ups and try again.');
         toast({ title: 'Temporary preview opened', description: 'This private link expires in three minutes.' });
       } else {
-        toast({ title: action === 'publish' ? 'PDF published' : 'Review saved', description: data?.status ? `Status: ${data.status}` : 'The action completed.' });
+        if (data?.success !== true) throw new Error(data?.error || 'The server did not confirm that this action completed.');
+        const description = action === 'approve'
+          ? 'Approved for publishing review only. This does not make the PDF visible in the Library; complete the Publish step below.'
+          : action === 'publish'
+            ? 'The PDF was linked to the selected catalogue book. Refresh the Library page to see it.'
+            : data?.status ? `Status: ${data.status}` : 'The action completed.';
+        toast({ title: action === 'publish' ? 'PDF published' : action === 'approve' ? 'Approved — not yet published' : 'Review saved', description });
         setReason('');
         await refresh();
       }
