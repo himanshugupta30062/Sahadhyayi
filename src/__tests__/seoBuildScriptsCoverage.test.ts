@@ -51,9 +51,14 @@ function configureMockBackend() {
   }));
 }
 
-async function runScript(path: string) {
+async function runSitemapScript() {
   await vi.resetModules();
-  return import(path);
+  return import('../../scripts/generateSitemap.js');
+}
+
+async function runPrerenderScript() {
+  await vi.resetModules();
+  return import('../../scripts/prerender-public-content.mjs');
 }
 
 describe('SEO build-script coverage', () => {
@@ -97,7 +102,7 @@ describe('SEO build-script coverage', () => {
   }
 
   it('generates canonical static and dynamic sitemap URLs and escapes XML', async () => {
-    await runScript('../../scripts/generateSitemap.js');
+    await runSitemapScript();
     const sitemap = mocks.writes.find((entry) => entry.path.endsWith('sitemap.xml'))?.content || '';
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/library</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/book/book-1</loc>');
@@ -111,7 +116,7 @@ describe('SEO build-script coverage', () => {
   it('keeps sitemap generation useful when Supabase credentials are absent', async () => {
     delete process.env.VITE_SUPABASE_URL;
     delete process.env.VITE_SUPABASE_ANON_KEY;
-    await runScript('../../scripts/generateSitemap.js');
+    await runSitemapScript();
     const sitemap = mocks.writes.find((entry) => entry.path.endsWith('sitemap.xml'))?.content || '';
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/library</loc>');
     expect(sitemap).not.toContain('/book/book-1');
@@ -121,7 +126,7 @@ describe('SEO build-script coverage', () => {
 
   it('warns on dynamic sitemap query failures without inventing book or author URLs', async () => {
     mocks.errors = { books_library: { message: 'book query failed' }, authors: { message: 'author query failed' } };
-    await runScript('../../scripts/generateSitemap.js');
+    await runSitemapScript();
     const sitemap = mocks.writes.find((entry) => entry.path.endsWith('sitemap.xml'))?.content || '';
     expect(sitemap).not.toContain('/book/book-1');
     expect(sitemap).not.toContain('/author/munshi-premchand');
@@ -130,7 +135,7 @@ describe('SEO build-script coverage', () => {
   });
 
   it('prerenders safe public book and author HTML with metadata and canonical URLs', async () => {
-    await runScript('../../scripts/prerender-public-content.mjs');
+    await runPrerenderScript();
     const book = mocks.writes.find((entry) => entry.path.endsWith('/book/book-1/index.html'))?.content || '';
     const author = mocks.writes.find((entry) => entry.path.endsWith('/author/munshi-premchand/index.html'))?.content || '';
     expect(book).toContain('<title>A &lt;script&gt;alert(1)&lt;/script&gt; Book - Read Online | Sahadhyayi</title>');
@@ -146,13 +151,13 @@ describe('SEO build-script coverage', () => {
 
   it('fails early if the Vite HTML template is missing', async () => {
     mocks.existsSync.mockReturnValue(false);
-    await expect(runScript('../../scripts/prerender-public-content.mjs')).rejects.toThrow('dist/index.html is missing');
+    await expect(runPrerenderScript()).rejects.toThrow('dist/index.html is missing');
     expect(mocks.writes).toHaveLength(0);
   });
 
   it('skips failed dynamic prerender queries while retaining static landing pages', async () => {
     mocks.errors = { books_library: { message: 'books offline' }, authors: { message: 'authors offline' } };
-    await runScript('../../scripts/prerender-public-content.mjs');
+    await runPrerenderScript();
     expect(mocks.writes.some((entry) => entry.path.endsWith('/library/index.html'))).toBe(true);
     expect(mocks.writes.some((entry) => entry.path.endsWith('/book/book-1/index.html'))).toBe(false);
     expect(mocks.writes.some((entry) => entry.path.endsWith('/author/munshi-premchand/index.html'))).toBe(false);
