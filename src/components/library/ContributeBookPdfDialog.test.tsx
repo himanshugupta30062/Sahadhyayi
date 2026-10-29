@@ -52,8 +52,17 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
   },
 }));
 
-const makePdf = (name = 'sample.pdf', bytes = '%PDF-1.7 test body', type = 'application/pdf') =>
-  new File([bytes], name, { type });
+const makePdf = (name = 'sample.pdf', bytes = '%PDF-1.7 test body', type = 'application/pdf') => {
+  const file = new File([bytes], name, { type });
+  // jsdom's File.slice() may not implement Blob.arrayBuffer(); mirror the browser API.
+  Object.defineProperty(file, 'slice', {
+    configurable: true,
+    value: (start = 0, end = file.size) => ({
+      arrayBuffer: async () => new TextEncoder().encode(bytes).slice(start, end).buffer,
+    }),
+  });
+  return file;
+}
 
 function renderDialog() {
   render(<ContributeBookPdfDialog />);
