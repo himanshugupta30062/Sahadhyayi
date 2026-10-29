@@ -275,23 +275,38 @@ const Blog = () => {
         </section>
 
         <div className="sticky top-16 z-20 border-b border-[#E5E0D4] bg-[#F7F5EF]/95 backdrop-blur-md">
-          <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
-            {categories.map(category => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => setSelectedCategory(category)}
-                aria-pressed={selectedCategory === category}
-                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 ${
-                  selectedCategory === category
-                    ? 'border-[#1C442D] bg-[#1C442D] text-white shadow-sm'
-                    : 'border-[#DED9CD] bg-white/70 text-[#596258] hover:border-[#9BAA9A] hover:bg-white'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
+          <nav aria-label="Filter journal stories by topic" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex snap-x snap-mandatory items-center gap-2 overflow-x-auto py-3 [scrollbar-width:thin]">
+              {categories.map(category => {
+                const categoryCount = publishedPosts.filter(post => {
+                  const matchesCategory = category === 'All' || post.category === category;
+                  const searchableText = `${post.title} ${post.excerpt} ${post.author} ${post.category}`.toLowerCase();
+                  return matchesCategory && (!normalizedQuery || searchableText.includes(normalizedQuery));
+                }).length;
+
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setSelectedCategory(category)}
+                    aria-pressed={selectedCategory === category}
+                    className={`inline-flex shrink-0 snap-start items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 sm:px-4 ${
+                      selectedCategory === category
+                        ? 'border-[#1C442D] bg-[#1C442D] text-white shadow-sm'
+                        : 'border-[#DED9CD] bg-white/70 text-[#596258] hover:border-[#9BAA9A] hover:bg-white'
+                    }`}
+                  >
+                    <span>{category}</span>
+                    <span className={`min-w-5 rounded-full px-1.5 py-0.5 text-[10px] tabular-nums ${
+                      selectedCategory === category ? 'bg-white/15 text-white' : 'bg-[#EAEDE5] text-[#596258]'
+                    }`} aria-label={`${categoryCount} stories`}>
+                      {categoryCount}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
         </div>
 
         <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
