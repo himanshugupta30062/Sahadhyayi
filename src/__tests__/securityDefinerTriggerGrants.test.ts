@@ -17,8 +17,8 @@ describe('trigger-only SECURITY DEFINER execute grants migration', () => {
     ];
 
     for (const functionName of triggerFunctions) {
-      expect(migration).toMatch(
-        new RegExp('REVOKE EXECUTE ON FUNCTION public\\.' + functionName + '\\\\(\\\\) FROM PUBLIC, anon, authenticated', 'i'),
+      expect(migration).toContain(
+        'REVOKE EXECUTE ON FUNCTION public.' + functionName + '() FROM PUBLIC, anon, authenticated',
       );
     }
     expect(migration).not.toMatch(/DROP TRIGGER|DROP FUNCTION/i);
