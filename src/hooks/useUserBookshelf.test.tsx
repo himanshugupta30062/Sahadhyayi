@@ -178,7 +178,7 @@ describe('useUserBookshelf', () => {
   });
 
   it('throws Supabase errors rather than silently accepting failed mutations', async () => {
-    mocks.result = { data: null, error: new Error('database unavailable') };
+    mocks.single.mockReturnValue({ data: null, error: new Error('database unavailable') });
     renderHook(() => useUpdateBookshelfItem());
     await expect(mocks.mutationOptions.mutationFn({ id: 'shelf-1', updates: { status: 'completed' } })).rejects.toThrow('database unavailable');
   });
