@@ -62,6 +62,7 @@ const shelfItem = (overrides: Record<string, any> = {}) => ({
   ...overrides,
 });
 
+// Covers loading, error, empty, progress, and navigation branches.
 describe('CurrentReads', () => {
   beforeEach(() => {
     mocks.bookshelf = [];
