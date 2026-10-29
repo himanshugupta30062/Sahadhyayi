@@ -45,7 +45,7 @@ describe("reading progress storage", () => {
   });
 
   it("migrates legacy progress and safely defaults invalid page and bookmark data", () => {
-    localStorage.setItem("book-legacy-page", "not-a-page");
+    localStorage.setItem("book-legacy-book-page", "not-a-page");
     localStorage.setItem("book-legacy-bookmarks", "{broken");
 
     expect(loadProgressLocally("legacy-book", "user-2")).toEqual({
