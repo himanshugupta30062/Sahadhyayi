@@ -142,7 +142,7 @@ function ContributeBookPdfDialogContent() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2"><FileUp className="h-4 w-4" /> Contribute a PDF</Button>
+        <Button variant="outline" className="min-h-11 w-full justify-center gap-2 touch-manipulation sm:w-auto"><FileUp className="h-4 w-4 shrink-0" /> Contribute a PDF</Button>
       </DialogTrigger>
       <DialogContent className="w-[calc(100vw-1rem)] max-h-[calc(100dvh-1rem)] overflow-y-auto p-4 sm:w-full sm:max-h-[90vh] sm:max-w-xl sm:p-6">
         <DialogHeader>
