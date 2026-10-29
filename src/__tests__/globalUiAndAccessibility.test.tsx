@@ -205,6 +205,22 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       expect(mobileNav).toHaveAttribute('id', 'mobile-navigation-menu');
     });
 
+    it('closes the mobile menu after navigating to a route', () => {
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Navigation />
+        </MemoryRouter>
+      );
+
+      const toggleButton = screen.getByRole('button', { name: /open navigation menu/i });
+      fireEvent.click(toggleButton);
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+
+      fireEvent.click(screen.getByRole('link', { name: /^library$/i }));
+
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+    });
+
     it('closes mobile menu on Escape key press and restores focus to menu button', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
