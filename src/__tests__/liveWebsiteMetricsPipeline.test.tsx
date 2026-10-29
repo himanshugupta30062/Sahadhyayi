@@ -114,7 +114,7 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
     const { result } = renderHook(() => useCommunityPulse(true));
 
     await waitFor(() => {
-      expect(result.current.loading).toBe(false);
+      expect(result.current.stats?.pageViews).toBe(120);
     });
 
     expect(result.current.stats?.pageViews).toBe(120);

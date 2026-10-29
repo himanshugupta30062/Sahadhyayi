@@ -28,7 +28,7 @@ vi.mock('@/utils/security.ts', async (importOriginal) => ({
   generateCSRFToken: mocks.generateCSRFToken,
 }));
 
-vi.mock('@/contexts/authHelpers', () => ({
+vi.mock('./contexts/authHelpers', () => ({
   useAuth: () => ({ user: mocks.user, loading: mocks.loading }),
 }));
 
