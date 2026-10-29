@@ -34,8 +34,13 @@ serve(async (req) => {
   if (!["preview", "approve", "reject", "request_changes", "publish"].includes(String(action))) return json({ error: "Unsupported review action." }, 400);
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
-  const { data: isAdmin, error: roleError } = await admin.rpc("has_role", { _user_id: authData.user.id, _role: "admin" });
-  if (roleError || isAdmin !== true) return json({ error: "Administrator permission is required." }, 403);
+  // The service-role client has no auth.uid(); check the stored role after validating the caller JWT.
+  const { data: adminRole, error: roleError } = await admin.from("user_roles")
+    .select("role")
+    .eq("user_id", authData.user.id)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (roleError || !adminRole) return json({ error: "Administrator permission is required." }, 403);
 
   const { data: submission, error: readError } = await admin.from("book_pdf_submissions")
     .select("id,user_id,storage_path,original_filename,file_size_bytes,submitted_title,submitted_author,status,rights_attested,detected_metadata,validation_findings,published_book_id")
