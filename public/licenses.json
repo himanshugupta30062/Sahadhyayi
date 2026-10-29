@@ -14,13 +14,6 @@
     "description": "React Hook Form validation resolvers: Yup, Joi, Superstruct, Zod, Vest, Class Validator, io-ts, Nope, computed-types, TypeBox, arktype, Typanion, Effect-TS and VineJS"
   },
   {
-    "name": "@lottiefiles/react-lottie-player",
-    "version": "3.6.0",
-    "license": "MIT",
-    "url": "https://github.com/LottieFiles/lottie-react#readme",
-    "description": "Lottie web player wrapper for React"
-  },
-  {
     "name": "@radix-ui/react-accordion",
     "version": "1.2.0",
     "license": "MIT",
