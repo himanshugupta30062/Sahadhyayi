@@ -62,7 +62,7 @@ describe('ConfirmEmail verification flow', () => {
 
     fireEvent.change(screen.getByLabelText(/Email address/i), { target: { value: 'reader @example.com' } });
     fireEvent.change(screen.getByLabelText(/Verification code/i), { target: { value: '123456' } });
-    fireEvent.click(screen.getByRole('button', { name: /^Verify email$/i }));
+    fireEvent.submit(screen.getByRole('button', { name: /^Verify email$/i }).closest('form')!);
 
     expect(await screen.findByText(/Enter a valid email address/i)).toBeInTheDocument();
     expect(mocks.verifyOtp).not.toHaveBeenCalled();
