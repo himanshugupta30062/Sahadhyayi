@@ -37,6 +37,7 @@ vi.mock('@/contexts/authHelpers', () => ({
 }));
 
 import { CommunityPulseDialog } from '@/components/community-pulse/CommunityPulseDialog';
+import { getBaselineStats } from '@/hooks/useCommunityPulse';
 
 describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
   beforeEach(() => {
@@ -88,7 +89,32 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     // This test renders the public overview, so it consumes the public aggregate endpoint.
     mockFunctionsInvoke.mockResolvedValue({ data: mockPayload, error: null });
 
-    render(<CommunityPulseDialog open={true} onClose={vi.fn()} />);
+    render(
+      <CommunityPulseDialog
+        open={true}
+        onClose={vi.fn()}
+        stats={{
+          ...getBaselineStats('24h'),
+          pageViews: 140,
+          uniqueVisitors: 65,
+          newReaders: 12,
+          totalMembers: 1050,
+          lifetimeVisits: 10337,
+          dualTable: {
+            lifetimeVisits: 10337,
+            lifetimeSourceTable: 'public.website_visits',
+            rolling24hViews: 140,
+            rolling7dViews: 890,
+            rolling30dViews: 3400,
+            uniqueVisitors24h: 65,
+            uniqueVisitors7d: null,
+            uniqueVisitors30d: null,
+            rollingSourceTable: 'public.website_visit_events',
+            isInitialRollout: false,
+          },
+        }}
+      />
+    );
 
     await waitFor(() => {
       expect(screen.getByText('Live Website Stats')).toBeInTheDocument();
