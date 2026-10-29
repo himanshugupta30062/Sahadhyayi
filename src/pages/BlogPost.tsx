@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Calendar, User, Clock } from 'lucide-react';
 import SEO from '@/components/SEO';
