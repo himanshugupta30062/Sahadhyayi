@@ -198,6 +198,99 @@ const BlogPost = () => {
       readTime: '7 min read',
       image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&h=400&fit=crop'
     },
+    'build-a-reading-habit-that-lasts': {
+      title: 'How to Build a Reading Habit That Actually Lasts',
+      description: 'A practical, pressure-free guide to reading more consistently with small goals, better book choices, and simple routines.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '7 min read',
+      image: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1200&h=630&fit=crop',
+      content: `
+        <p>You do not need to finish a book every week to become a reader. A lasting reading habit is built through small, repeatable moments—not ambitious goals that make reading feel like another task. If you often buy books but struggle to finish them, the answer may be to make reading easier to begin.</p>
+        <h2>1. Start Smaller Than You Think</h2>
+        <p>Choose a target you can keep on a difficult day: five pages, ten minutes, or one short story. The purpose at first is not speed; it is repetition. Once the routine feels natural, you can increase the time if you want to.</p>
+        <h2>2. Attach Reading to an Existing Routine</h2>
+        <p>Habits are easier to remember when they have a reliable cue. Read after breakfast, during your commute if it is safe and practical, or for ten minutes before bed. Keep the book or reading device where you usually spend that time, and make starting as frictionless as possible.</p>
+        <h2>3. Choose Books You Genuinely Want to Read</h2>
+        <p>Do not choose a book only because it is famous, difficult, or recommended by someone else. Follow your curiosity. If you love mysteries, begin there. If you want to explore history, pick an accessible introduction. Interest gives you a reason to return to the page.</p>
+        <h2>4. Give Yourself Permission to Stop a Book</h2>
+        <p>Not every book will fit your mood, experience, or needs. Try a reasonable sample, then decide whether to continue. Putting a book aside is not failure; it is how you learn what holds your attention. You can always return to it later.</p>
+        <h2>5. Make Progress Visible</h2>
+        <p>Use a bookmark, a reading log, or a simple note with the date and page number. Record a sentence you liked or one idea you want to remember. Visible progress helps you notice that small reading sessions are adding up.</p>
+        <h2>6. Reduce Friction and Distractions</h2>
+        <p>Keep your current book easy to reach. Silence notifications for a short reading session and decide in advance where you will stop. If long sessions are difficult, try two ten-minute sessions rather than waiting for a free hour that may never arrive.</p>
+        <h2>7. Find Accountability Without Turning Reading into Pressure</h2>
+        <p>Share what you are reading with a friend, join a reading group, or discuss a chapter with other readers. A community can introduce new perspectives and make reading more enjoyable. Keep the goal personal: your pace does not have to match anyone else's.</p>
+        <h2>A Simple Seven-Day Reset</h2>
+        <ul><li><strong>Day 1:</strong> Pick one book you are excited to open.</li><li><strong>Day 2:</strong> Read for five to ten minutes at a set time.</li><li><strong>Day 3:</strong> Put the book somewhere visible.</li><li><strong>Day 4:</strong> Note one interesting idea or line.</li><li><strong>Day 5:</strong> Try a short session without notifications.</li><li><strong>Day 6:</strong> Tell someone what you are reading.</li><li><strong>Day 7:</strong> Reflect on what made reading easy or difficult, then adjust the plan.</li></ul>
+        <h2>Make Reading a Welcome Part of Your Day</h2>
+        <p>The best reading routine is one you can return to. Some days you will read several chapters; other days, a page may be enough. Consistency grows when you make room for real life instead of treating every missed session as a broken promise.</p>
+        <p>At Sahadhyayi, discover books, keep your reading journey moving, and find fellow readers who can share recommendations and ideas. Start small, stay curious, and let the habit grow at your own pace.</p>
+      `
+    },
+    'how-to-start-a-book-club': {
+      title: 'How to Start a Book Club: A Practical Guide for Readers',
+      description: 'Learn how to choose a book club format, invite members, select books together, and host discussions that welcome different perspectives.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '8 min read',
+      image: 'https://images.unsplash.com/photo-1521583641526-6ce8a8b8e2c5?w=1200&h=630&fit=crop',
+      content: `
+        <p>A good book club is not a literature exam. It is a welcoming space where people can share what they noticed, ask honest questions, and discover interpretations they may not have reached alone. You can start one with a few friends, colleagues, neighbours, or readers you meet online.</p>
+        <h2>1. Decide What Kind of Book Club You Want</h2>
+        <p>Start with a simple purpose. Will you read fiction, nonfiction, Indian literature, a particular genre, or whatever members are curious about? You might meet in person, online, or alternate between both. A clear starting point helps people understand what they are joining, but leave room for the club to evolve.</p>
+        <h2>2. Begin with a Small, Reliable Group</h2>
+        <p>Three to eight members can be enough for a lively first meeting. Invite people who are interested in exchanging ideas, not necessarily people who read at the same speed. Make it clear that beginners and occasional readers are welcome. A smaller group that meets consistently is often easier to sustain than a large group with no rhythm.</p>
+        <h2>3. Agree on a Realistic Schedule</h2>
+        <p>Monthly meetings give many readers enough time to finish a book without rushing. Choose a predictable day and duration, such as the first Saturday of each month for an hour. For longer books, discuss selected sections or allow members to join even if they have not finished.</p>
+        <h2>4. Choose the First Book Together</h2>
+        <p>Offer two or three options and let members vote. Consider length, availability, reading difficulty, and whether people can access the book in a language or format that works for them. For your first selection, a short novel, essay collection, or set of stories can make the commitment feel manageable.</p>
+        <h2>5. Make Discussion Easy to Join</h2>
+        <p>Prepare a few open questions, but do not turn the meeting into a quiz. Try prompts such as:</p>
+        <ul><li>Which moment or idea stayed with you?</li><li>Did your opinion of a character change?</li><li>What felt familiar, surprising, or difficult?</li><li>Was there a passage you would like to discuss?</li><li>Would you recommend this book to someone else—and why?</li></ul>
+        <h2>6. Create Space for Different Opinions</h2>
+        <p>Members do not need to agree on a book. Set a friendly norm: critique ideas, not people; let everyone finish speaking; and make room for quieter voices. A thoughtful disagreement can be one of the most valuable parts of the meeting.</p>
+        <h2>7. Keep the Format Simple</h2>
+        <p>A practical one-hour meeting might include ten minutes to catch up, thirty-five minutes of discussion, ten minutes to choose the next book, and five minutes for closing thoughts. Rotate the facilitator if the group wants to share responsibility. You can add snacks, themes, or author events later—none is required to begin.</p>
+        <h2>What If Members Do Not Finish the Book?</h2>
+        <p>It happens. Avoid making completion a test of belonging. You can hold a spoiler-free opening discussion, focus on the sections members have read, or occasionally choose shorter works. Ask whether the book length or schedule is working and adjust rather than blaming people for being busy.</p>
+        <h2>Help the Community Grow Naturally</h2>
+        <p>After a few meetings, ask members what they enjoy and what they would change. Keep a shared list of past and future reads, invite suggestions, and welcome new members with a short explanation of how the club works. A club becomes sustainable when members feel they help shape it.</p>
+        <p>Reading together turns individual reactions into a shared discovery. Start with one book, one date, and a few curious people. Sahadhyayi can be a place to explore books and connect with readers who want to keep the conversation going.</p>
+      `
+    },
+    'how-to-read-classic-literature': {
+      title: 'A Beginner’s Guide to Reading Classic Literature',
+      description: 'Discover how to approach classic books without intimidation, understand unfamiliar contexts, and enjoy older literature at your own pace.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '7 min read',
+      image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200&h=630&fit=crop',
+      content: `
+        <p>Classic literature can feel intimidating before you even open the book. The language may seem unfamiliar, the social world may be distant from your own, and the book's reputation can make it feel as though there is a correct interpretation you are expected to discover. You do not need specialist knowledge to begin. Curiosity and patience are enough.</p>
+        <h2>What Makes a Book a Classic?</h2>
+        <p>There is no single definition. Some books remain in conversation because they capture a period of history; others ask questions about love, power, family, identity, justice, or human nature that readers continue to debate. A book can be important and still not be the right book for you at this moment.</p>
+        <h2>1. Start with a Story That Interests You</h2>
+        <p>Choose a classic by theme rather than reputation alone. Interested in ambition? Look for a story about power and choices. Curious about society and inequality? Try a social novel. Prefer shorter reading sessions? Begin with short stories, essays, or a novella. You can work toward longer or more demanding books over time.</p>
+        <h2>2. Pick a Readable Edition or Translation</h2>
+        <p>For older works, editions may differ in notes, introductions, spelling, and translation style. A clear modern translation can be a helpful entry point. If you are reading a work originally written in another language, remember that every translation involves choices; a different edition may create a different reading experience.</p>
+        <h2>3. Learn Just Enough Context</h2>
+        <p>A short introduction can explain the historical setting, social customs, or literary conventions that shape a story. Keep the research focused. You do not need to master an entire era before reading; look up unfamiliar references when they affect your understanding, and return to the story.</p>
+        <h2>4. Read for Questions, Not Just Answers</h2>
+        <p>Instead of trying to decode every sentence, notice what the book makes you wonder. Why does a character make a particular choice? Whose perspective is missing? What does the story seem to value or criticise? How does the setting influence the characters? These questions make older texts feel active rather than distant.</p>
+        <h2>5. Use Notes Sparingly</h2>
+        <p>You do not need to annotate every page. Mark a passage that surprises you, jot down a character's name, or write one question at the end of a chapter. If a paragraph is confusing, continue for a little while; the meaning may become clearer with context. Re-reading a key passage is useful, but constant stopping can interrupt the story.</p>
+        <h2>6. Do Not Worry About Understanding Everything</h2>
+        <p>Even experienced readers miss references or disagree about meaning. It is fine to use a guide after reading a chapter, discuss the book with others, or leave some questions open. Your response is part of the reading experience, not a test you must pass.</p>
+        <h2>7. Talk About What You Read</h2>
+        <p>Discussion can reveal how differently readers respond to the same character or scene. Ask a friend what they noticed, join a book group, or write a short reflection. You may discover that a passage you found confusing became meaningful when another reader shared their perspective.</p>
+        <h2>A Gentle First-Book Plan</h2>
+        <ul><li>Read a short introduction to understand the setting.</li><li>Set a modest daily or weekly reading target.</li><li>Keep a note of characters and questions, not every detail.</li><li>After each session, write one sentence about what stood out.</li><li>At the end, read a discussion or review and compare it with your own reaction.</li></ul>
+        <h2>Let Classics Meet You Where You Are</h2>
+        <p>You do not have to read classics in a fixed order or finish every famous title. Let your interests guide you, choose an edition that supports your reading, and give yourself permission to pause or try another book. The point is not to prove that you have read a classic; it is to find out what the work can offer you.</p>
+        <p>Explore different authors and literary traditions, share your questions with fellow readers, and let each book lead naturally to the next. Reading becomes richer when it is a conversation rather than a checklist.</p>
+      `
+    },
     'best-indian-books-to-read': {
     title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',
     description: 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.',
