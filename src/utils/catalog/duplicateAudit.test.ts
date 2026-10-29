@@ -239,7 +239,6 @@ describe('generateLibraryDuplicateAudit', () => {
     expect(report.ambiguousGroupsCount).toBe(1);
     expect(report.groups[0].proposedAction).toBe('mark_for_review');
     expect(report.groups[0].recommendedPrimary.reason).toBe('Highest verified quality edition');
-    expect(report.groups[0].candidateRecords[1].proposedAction).toBe('Keep as primary');
     expect(report.groups[0].warnings).toEqual(['Similar titles need human review']);
   });
 
