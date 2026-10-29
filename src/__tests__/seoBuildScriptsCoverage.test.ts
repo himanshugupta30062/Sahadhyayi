@@ -33,6 +33,7 @@ vi.mock('@supabase/supabase-js', () => ({
 const originalEnv = {
   url: process.env.VITE_SUPABASE_URL,
   key: process.env.VITE_SUPABASE_ANON_KEY,
+  disablePublicConfig: process.env.SAHADHYAYI_DISABLE_PUBLIC_SEO_CONFIG,
 };
 
 function configureMockBackend() {
@@ -94,6 +95,8 @@ describe('SEO build-script coverage', () => {
     else process.env.VITE_SUPABASE_URL = originalEnv.url;
     if (originalEnv.key === undefined) delete process.env.VITE_SUPABASE_ANON_KEY;
     else process.env.VITE_SUPABASE_ANON_KEY = originalEnv.key;
+    if (originalEnv.disablePublicConfig === undefined) delete process.env.SAHADHYAYI_DISABLE_PUBLIC_SEO_CONFIG;
+    else process.env.SAHADHYAYI_DISABLE_PUBLIC_SEO_CONFIG = originalEnv.disablePublicConfig;
   }
 
   it('generates canonical static and dynamic sitemap URLs and escapes XML', async () => {
@@ -111,6 +114,7 @@ describe('SEO build-script coverage', () => {
   it('keeps sitemap generation useful when Supabase credentials are absent', async () => {
     delete process.env.VITE_SUPABASE_URL;
     delete process.env.VITE_SUPABASE_ANON_KEY;
+    process.env.SAHADHYAYI_DISABLE_PUBLIC_SEO_CONFIG = '1';
     await runScript('../../scripts/generateSitemap.js');
     const sitemap = mocks.writes.find((entry) => entry.path.endsWith('sitemap.xml'))?.content || '';
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/library</loc>');

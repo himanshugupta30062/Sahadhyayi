@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { fetchPaginatedRows, slugify } from './seoBuildUtils.mjs';
+import { getPublicSupabaseConfig } from './publicSupabaseConfig.mjs';
 
 // Public, canonical pages only. Do not include authentication or account routes.
 const staticPages = [
@@ -40,8 +41,7 @@ addUrl('/', 'weekly', '1.0', HOME_IMAGE);
 staticPages.forEach(route => addUrl(route, 'weekly', route === '/library' || route === '/articles' ? '0.9' : '0.5'));
 blogSlugs.forEach(slug => addUrl('/blog/' + slug, 'monthly', '0.6'));
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY;
+const { url: SUPABASE_URL, key: SUPABASE_KEY } = getPublicSupabaseConfig();
 if (SUPABASE_URL && SUPABASE_KEY) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false }

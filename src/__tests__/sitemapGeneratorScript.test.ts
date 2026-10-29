@@ -23,6 +23,7 @@ function runGenerator() {
       VITE_SUPABASE_URL: "",
       VITE_SUPABASE_ANON_KEY: "",
       SUPABASE_SERVICE_ROLE_KEY: "",
+      SAHADHYAYI_DISABLE_PUBLIC_SEO_CONFIG: "1",
     },
   });
 
