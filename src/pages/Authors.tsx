@@ -390,15 +390,21 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
       </Link>
 
       <div className="border-t border-[#EDE7DE] px-5 py-4 dark:border-[#26302A] sm:px-6">
-        <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#737B75] dark:text-[#89938B]">Books by this author</span>
-          <Link to={`/library?author=${encodeURIComponent(author.name)}`} className="shrink-0 text-[11px] font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">All books →</Link>
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="text-[#737B75] dark:text-[#89938B]">{author.books_count} in catalog</span>
+            <Link to={`/library?author=${encodeURIComponent(author.name)}`} className="shrink-0 font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">All books →</Link>
+          </div>
         </div>
         {topBooks.length > 0 ? (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {topBooks.map((book) => (
-              <Link key={book.id} to={`/book/${book.id}`} className="block truncate text-sm text-[#4F5D53] hover:text-[#1C442D] hover:underline dark:text-[#B9C9BC] dark:hover:text-[#D5B16D]">
-                {book.title}
+              <Link key={book.id} to={`/book/${book.id}`} className="flex min-w-0 items-center gap-2 text-sm text-[#4F5D53] hover:text-[#1C442D] hover:underline dark:text-[#B9C9BC] dark:hover:text-[#D5B16D]">
+                {book.cover_image_url && (
+                  <img src={book.cover_image_url} alt={book.title} width="28" height="40" loading="lazy" className="h-10 w-7 shrink-0 rounded-sm object-cover" />
+                )}
+                <span className="truncate">{book.title}</span>
               </Link>
             ))}
           </div>
