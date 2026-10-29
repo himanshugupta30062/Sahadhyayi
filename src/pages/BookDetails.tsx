@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BookCover from '@/components/books/BookCover';
 import BookDescription from '@/components/books/BookDescription';
 import SEO from '@/components/SEO';
+import { toSeoDescription } from '@/utils/seoText';
 import Breadcrumb from '@/components/Breadcrumb';
 import AuthorBio from '@/components/books/AuthorBio';
 import BookReadersConnection from '@/components/books/BookReadersConnection';
@@ -137,9 +138,9 @@ const BookDetails = () => {
   const canonicalUrl = `https://sahadhyayi.com/book/${id}`;
   
   const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} - Read Online`;
-  const seoDescription = book.description 
-    ? `${book.description.substring(0, 150)}...` 
-    : `Read ${book.title}${book.author ? ` by ${book.author}` : ''} online. Join Sahadhyayi's reading community for discussions and insights.`;
+  const seoDescription = toSeoDescription(
+    book.description || `Read ${book.title}${book.author ? ` by ${book.author}` : ''} online. Join Sahadhyayi's reading community for discussions and insights.`,
+  );
   
   const keywords = [
     'read online',

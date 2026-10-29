@@ -14,6 +14,7 @@ import {
 import { FollowButton } from '@/components/authors/FollowButton';
 import { VerificationBadge } from '@/components/authors/VerificationBadge';
 import SEO from '@/components/SEO';
+import { toSeoDescription } from '@/utils/seoText';
 import BookFlipLoader from '@/components/ui/BookFlipLoader';
 
 const AuthorDetails = () => {
@@ -54,7 +55,7 @@ const AuthorDetails = () => {
     <>
       <SEO
         title={`${author.name} - Author Profile | Sahadhyayi`}
-        description={author.bio || `Discover books by ${author.name} on Sahadhyayi.`}
+        description={toSeoDescription(author.bio || `Discover books by ${author.name} on Sahadhyayi.`)}
       />
 
       <div className="min-h-screen bg-background">

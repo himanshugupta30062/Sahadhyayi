@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, User, Clock } from 'lucide-react';
 import SEO from '@/components/SEO';
+import { toSeoDescription } from '@/utils/seoText';
 import DOMPurify from 'dompurify';
 
 const BlogPost = () => {
@@ -611,7 +612,7 @@ const BlogPost = () => {
     <>
       <SEO
         title={`${post.title} | Sahadhyayi Blog`}
-        description={slug === 'best-indian-books-to-read' ? 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.' : post.content.substring(0, 160)}
+        description={slug === 'best-indian-books-to-read' ? 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.' : toSeoDescription(post.content)}
         canonical={`https://sahadhyayi.com/blog/${slug}`}
         keywords={slug === 'best-indian-books-to-read' ? ['Indian books to read', 'Indian literature', 'regional Indian literature', 'Sahadhyayi', 'book recommendations'] : ['Sahadhyayi', 'reading community', 'digital library', 'book lovers']}
       />
