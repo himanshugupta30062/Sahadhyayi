@@ -291,6 +291,97 @@ const BlogPost = () => {
         <p>Explore different authors and literary traditions, share your questions with fellow readers, and let each book lead naturally to the next. Reading becomes richer when it is a conversation rather than a checklist.</p>
       `
     },
+    'best-indian-short-story-collections': {
+      title: 'Indian Short Story Collections to Start Reading Today',
+      description: 'Explore approachable short fiction from Indian literary traditions and learn how to choose stories that fit your time and interests.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '8 min read',
+      image: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1200&h=630&fit=crop',
+      content: `
+        <p>Short stories are a wonderful way to explore literature when your schedule is full or you want to sample an author's voice before committing to a long novel. A single story can introduce an entire world: a village, a family, a city street, or a moment when an ordinary life changes. Indian short fiction is especially rewarding because it spans many languages, regions, social experiences, and styles.</p>
+        <p>Rather than treating this as a definitive ranking, use the authors and collections below as a starting map. Editions, translations, and collection titles can vary, so check the contents and translator information when choosing a copy.</p>
+        <h2>1. Start with Rabindranath Tagore</h2>
+        <p>Tagore's short fiction often explores family relationships, social expectations, dignity, and the inner lives of people whose feelings are not always visible to the world. His stories can be an accessible entry into Bengali literature in translation. Look for a collection that includes a range of his short stories, and notice how much emotional tension he can build through small everyday details.</p>
+        <h2>2. Explore Munshi Premchand</h2>
+        <p>Premchand is known for stories that examine rural life, poverty, social hierarchy, moral choices, and compassion. His characters often face decisions shaped by material pressures and unequal systems. Read a few stories in sequence and compare how he portrays responsibility, power, and the meaning of fairness in different circumstances.</p>
+        <h2>3. Try Saadat Hasan Manto</h2>
+        <p>Manto's writing can be direct, unsettling, and morally complex. Many stories confront the violence and contradictions of society, including the human consequences of Partition. These works can be emotionally demanding, so read at a pace that feels right and consider the historical context rather than treating the stories as simple shock narratives.</p>
+        <h2>4. Read Ismat Chughtai</h2>
+        <p>Chughtai's fiction is notable for its sharp attention to gender, class, domestic life, and the restrictions placed on women. Her characters can be funny, defiant, contradictory, and deeply human. When reading in translation, look for notes that explain period-specific expressions or cultural context without dictating how you should interpret the story.</p>
+        <h2>5. Discover modern and regional voices</h2>
+        <p>Indian short fiction is not limited to a few widely known authors. Explore translated stories from Malayalam, Tamil, Kannada, Marathi, Urdu, Assamese, Odia, and other literary traditions. Contemporary collections can introduce readers to changing cities, migration, work, family, identity, and environmental concerns. Anthologies organized by language or region are useful when you want to discover several writers at once.</p>
+        <h2>How to Choose Your First Collection</h2>
+        <ul><li><strong>Choose by mood:</strong> look for humour, social realism, mystery, family stories, or reflective fiction depending on what you enjoy.</li><li><strong>Check the translation:</strong> a clear translation can make a big difference to rhythm, humour, and tone.</li><li><strong>Sample before buying:</strong> read the opening story or a legitimate preview to see whether the style suits you.</li><li><strong>Try one story at a time:</strong> pause after each story and notice the image, question, or character that remains with you.</li><li><strong>Keep a small list:</strong> record authors or languages you would like to explore next.</li></ul>
+        <h2>A Simple Way to Read Short Fiction</h2>
+        <p>Read the story once without stopping to research every reference. Then take a minute to ask what changed, what the main character wanted, and what the ending made you reconsider. If a historical or cultural detail seems important, look it up afterward. This keeps the story's emotional movement intact while allowing you to learn more.</p>
+        <h2>Let One Story Lead to Another</h2>
+        <p>Short fiction makes literary exploration manageable. One story may lead you to an author's novel, a language tradition, a historical period, or a topic you want to understand more deeply. You do not have to read every famous writer to become familiar with Indian literature. Start with one story that interests you, and follow your curiosity from there.</p>
+        <p>Explore books and authors on Sahadhyayi, share the stories that stayed with you, and discover how another reader's perspective can open up a familiar page in a new way.</p>
+      `
+    },
+    'books-for-when-life-feels-stuck': {
+      title: 'Books to Read When You Feel Stuck in Life',
+      description: 'A thoughtful guide to choosing books for periods of uncertainty, change, low motivation, or the need for a fresh perspective.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '7 min read',
+      image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200&h=630&fit=crop',
+      content: `
+        <p>There are seasons when life feels repetitive or unclear. You may be deciding what to do next, recovering from a disappointment, questioning a familiar routine, or simply feeling short on energy. A book cannot solve every practical problem, but it can offer language for what you are experiencing, introduce a different point of view, or help you sit with a question long enough to understand it.</p>
+        <p>The best choice depends on what you need. You do not have to turn reading into another self-improvement assignment; sometimes a story that gives you a little breathing room is exactly the right book.</p>
+        <h2>If You Need a Fresh Perspective: Try Essays and Philosophy</h2>
+        <p>Short essays and accessible philosophical writing can help you examine assumptions you have taken for granted. Choose a writer who asks clear questions about meaning, responsibility, attention, or how to live well. Read slowly and keep one question in mind rather than trying to agree with every argument.</p>
+        <h2>If You Feel Overwhelmed: Choose Short Stories</h2>
+        <p>A short story offers a complete reading experience without requiring a large time commitment. You can finish one in a sitting and return to daily life with a new character or idea to think about. Collections by writers such as Rabindranath Tagore, Munshi Premchand, Ismat Chughtai, or other authors you discover through translation can be a place to begin.</p>
+        <h2>If You Are Facing Change: Read a Novel About Reinvention</h2>
+        <p>Stories about migration, new beginnings, changing relationships, or people finding their place in unfamiliar circumstances can make transition feel less isolating. Look for characters who change gradually rather than waiting for one dramatic moment to fix everything. Their choices may help you identify which parts of your own situation you can influence.</p>
+        <h2>If You Need Hope Without Empty Promises: Read Biography or Memoir</h2>
+        <p>Life stories can show how people work through uncertainty, setbacks, and competing responsibilities. Prefer accounts that include difficulty and complexity, not only success stories polished in hindsight. A useful biography does not imply that everyone's path is the same; it gives you a closer look at one person's choices and circumstances.</p>
+        <h2>If You Have Lost Motivation: Return to Curiosity</h2>
+        <p>Choose a topic you genuinely wonder about—art, nature, science, history, language, or a place you have never visited. Curiosity can be a gentler starting point than demanding that every book make you more productive. A small discovery is still a meaningful reason to read.</p>
+        <h2>If You Want Practical Ideas: Pick One Focused Guide</h2>
+        <p>When you want advice, choose a book that addresses the specific challenge you are facing rather than a broad promise to transform your entire life. Read one chapter, identify one idea worth testing, and give yourself time to see whether it helps. You do not need to apply every suggestion or finish a book that is not useful to you.</p>
+        <h2>How to Choose Without Overthinking</h2>
+        <ul><li>Ask yourself whether you want comfort, perspective, inspiration, or practical steps.</li><li>Choose a manageable book length or a collection you can dip into.</li><li>Read a sample before committing.</li><li>Give the book a fair try, but stop if it feels like the wrong fit.</li><li>Write down one sentence or idea that you want to remember.</li></ul>
+        <h2>Let Reading Support You, Not Pressure You</h2>
+        <p>It is easy to turn reading into a list of things you should finish. If you are already tired, that can make books feel like more work. Set a small target, read when you can, and allow fiction, poetry, or a familiar favourite to count. You do not have to extract a lesson from every page.</p>
+        <p>If feeling stuck is persistent or is making everyday life difficult, a book can be one source of reflection, but it does not have to be your only source of support. Talking with someone you trust or seeking professional guidance may also be helpful.</p>
+        <h2>One Page Can Be a Beginning</h2>
+        <p>You do not need to find the perfect book or finish it in a weekend. Choose something that meets you where you are today. Let it offer a question, a little company, or a new direction to explore. Sometimes that is enough to make the next step feel more possible.</p>
+      `
+    },
+    'exploring-indian-literature-in-translation': {
+      title: 'How to Explore Indian Literature Beyond English',
+      description: 'A beginner-friendly path into India’s many literary languages through translations, anthologies, regional traditions, and reading groups.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '8 min read',
+      image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=630&fit=crop',
+      content: `
+        <p>Indian literature is not a single shelf or a single tradition. It is a conversation across languages, regions, communities, centuries, and forms. Reading only in English can introduce you to wonderful work, but translated literature offers another route into stories and ideas that may otherwise remain outside your reading life.</p>
+        <p>You do not need to know another language to begin. A thoughtful translation, a good anthology, and a little curiosity can open a path into a literary world you have not explored before.</p>
+        <h2>1. Begin with a Language or Region That Interests You</h2>
+        <p>Choose a starting point based on a place, family connection, historical period, or subject you want to understand. You might explore Bengali stories, Tamil historical fiction, Malayalam social novels, Marathi writing, Urdu poetry and fiction, Kannada literature, or works from Assamese, Odia, Punjabi, and other traditions. Treat this as a doorway, not a claim that one author represents an entire language.</p>
+        <h2>2. Use Anthologies to Discover Multiple Writers</h2>
+        <p>An anthology can introduce you to several voices without requiring you to commit to a full novel. Collections arranged by language, region, theme, or period let you compare styles and concerns. If one story captures your attention, follow the author into a larger collection or look for other writers included in the same volume.</p>
+        <h2>3. Pay Attention to the Translator</h2>
+        <p>Translation is a creative act as well as a linguistic one. A translator makes decisions about rhythm, idiom, humour, dialect, and cultural references. When possible, read the translator's introduction or notes. If a work feels difficult in one edition, another translation may make its voice more accessible.</p>
+        <h2>4. Learn a Little Context, Not Everything</h2>
+        <p>A short introduction to the author and period can clarify references to social customs, politics, religion, or historical events. You do not need to master the whole context before starting. Read first, note questions, and research only the details that meaningfully affect your understanding.</p>
+        <h2>5. Read Across Genres</h2>
+        <p>Do not limit your exploration to novels. Try short stories, poetry, plays, memoirs, children's literature, essays, and folk narratives. A poem may offer a different sense of a language's sound and imagery; a play can reveal how dialogue works; an essay can introduce a debate that shaped a period.</p>
+        <h2>6. Avoid Treating One Book as the Whole Tradition</h2>
+        <p>No single author or title can represent a language or region. Once you finish one book, ask what voices or experiences were absent. Seek out writers of different generations, genders, communities, and styles. Reading widely helps prevent one familiar story from becoming your only picture of a literary culture.</p>
+        <h2>7. Keep a Translation Reading Log</h2>
+        <p>Record the title, original language, translator, and one thing you noticed. You might note recurring themes, different ways of describing a city or family, or how humour survives across languages. Over time, the log can become a personal map of what you want to read next.</p>
+        <h2>A Four-Book Exploration Plan</h2>
+        <ul><li>Choose one short-story anthology from a language you have not read before.</li><li>Read a novel or novella in translation from that tradition.</li><li>Try a different genre, such as poetry, essays, or a play.</li><li>Choose a second author from another generation or region to broaden your view.</li></ul>
+        <h2>Share What You Discover</h2>
+        <p>Discussing translated literature with other readers can reveal details you missed and help you find new titles. Be open about what you do not know, and let questions lead to further reading rather than treating them as shortcomings.</p>
+        <p>India's literary richness becomes more visible when we read beyond the familiar. Start with one translation, follow the voice that interests you, and let each book introduce you to another language, place, or way of seeing the world.</p>
+      `
+    },
     'best-indian-books-to-read': {
     title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',
     description: 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.',
