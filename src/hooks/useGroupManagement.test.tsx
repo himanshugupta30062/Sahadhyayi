@@ -189,7 +189,7 @@ describe('useGroupManagement', () => {
 
   it('adds a member and invalidates that group member query', async () => {
     renderHook(() => useAddGroupMember());
-    await expect(mocks.mutationOptions.mutationFn({ groupId: 'group-2', userId: 'reader-2' })).resolves.toEqual({ data: { id: 'member-1' }, error: null });
+    await expect(mocks.mutationOptions.mutationFn({ groupId: 'group-2', userId: 'reader-2' })).resolves.toEqual({ id: 'member-1' });
     mocks.mutationOptions.onSuccess(undefined, { groupId: 'group-2', userId: 'reader-2' });
     expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['group-members', 'group-2'] });
   });
