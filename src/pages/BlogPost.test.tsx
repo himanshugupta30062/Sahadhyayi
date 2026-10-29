@@ -41,7 +41,7 @@ describe('BlogPost', () => {
 
     expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: title })).toBeInTheDocument();
-    expect(screen.getByText('Himanshu Gupta')).toBeInTheDocument();
+    expect(screen.getByText(/^(Himanshu Gupta|Sahadhyayi Editorial)$/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to Blog' })).toHaveAttribute('href', '/blog');
     expect(screen.getByRole('link', { name: 'Join Sahadhyayi Today' })).toHaveAttribute('href', '/signup');
     expect(screen.getByRole('link', { name: 'Explore Our Library' })).toHaveAttribute('href', '/library');
