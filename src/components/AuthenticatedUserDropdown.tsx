@@ -108,7 +108,7 @@ export default function AuthenticatedUserDropdown({
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={onSignOut
+          onClick={onSignOut}
           className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
         >
           <LogOut className="mr-2 h-4 w-4" />
