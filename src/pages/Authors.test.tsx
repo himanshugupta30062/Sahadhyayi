@@ -126,7 +126,7 @@ describe('Authors directory', () => {
       'src',
       'https://example.com/cover.jpg',
     );
-    expect(screen.getByRole('link', { name: /View profile/ })).toHaveAttribute('href', '/authors/ursula-k-le-guin');
+    expect(screen.getAllByRole('link', { name: /View profile/ })[0]).toHaveAttribute('href', '/authors/ursula-k-le-guin');
   });
 
   it('filters by author name and genre, and clears a no-results search', () => {
