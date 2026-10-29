@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, renderHook, waitFor } from '@testing-library/react';
+import { cleanup, renderHook } from '@testing-library/react';
 
 const mocks = vi.hoisted(() => ({
   user: null as null | { id: string; email?: string; user_metadata?: Record<string, any> },
