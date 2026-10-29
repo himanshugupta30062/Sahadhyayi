@@ -1,6 +1,5 @@
 import {
   addBreadcrumb,
-  browserTracingIntegration,
   captureException,
   captureMessage as sentryCaptureMessage,
   init,
@@ -12,8 +11,6 @@ import {
 
 init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
-  integrations: [browserTracingIntegration()],
-  tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
   environment: import.meta.env.MODE,
   release: import.meta.env.VITE_APP_VERSION || '1.0.0',
   beforeSend(event, hint) {
