@@ -50,7 +50,7 @@ describe('CommunityPulseDashboard', () => {
 
     expect(screen.getByRole('heading', { name: 'Community Pulse' })).toBeInTheDocument();
     expect(screen.getByText('1,234')).toBeInTheDocument();
-    expect(screen.getByText('Faridabad')).toBeInTheDocument();
+    expect(screen.getAllByText('Faridabad').length).toBeGreaterThan(1);
     expect(screen.getByText('Top community members')).toBeInTheDocument();
     expect(screen.getByText('Reader One')).toBeInTheDocument();
     expect(screen.getByText('India')).toBeInTheDocument();
@@ -156,7 +156,7 @@ describe('CommunityStats aggregate loader', () => {
     await waitFor(() => expect(screen.getByText('Reader One')).toBeInTheDocument());
     expect(mocks.invoke).toHaveBeenCalledWith('community-stats', { body: { timeframe: '24h' } });
     expect(screen.getByText('1,234')).toBeInTheDocument();
-    expect(screen.getByText('Delhi')).toBeInTheDocument();
+    expect(screen.getAllByText('Delhi').length).toBeGreaterThan(1);
     expect(screen.getByText('India')).toBeInTheDocument();
 
     const cached = JSON.parse(localStorage.getItem('community_pulse_dashboard_cache_v2') || '{}');
