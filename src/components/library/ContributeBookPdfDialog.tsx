@@ -128,10 +128,27 @@ function ContributeBookPdfDialogContent() {
       if (fileRef.current) fileRef.current.value = '';
       await queryClient.invalidateQueries({ queryKey: ['my-book-pdf-submissions', user.id] });
     } catch (error) {
-      console.error('Book PDF contribution failed', { submissionCreated, error });
+      // Supabase/PostgREST/Storage failures are plain objects, not necessarily
+      // Error instances. Preserve their actionable message instead of hiding
+      // every backend failure behind the same generic toast.
+      const failure = error && typeof error === 'object'
+        ? error as { message?: unknown; code?: unknown; details?: unknown; hint?: unknown }
+        : null;
+      const failureMessage = error instanceof Error
+        ? error.message
+        : typeof failure?.message === 'string'
+          ? failure.message
+          : 'The PDF could not be submitted. Please try again.';
+      console.error('Book PDF contribution failed', {
+        stage: submissionCreated ? 'storage-upload-or-verification' : 'submission-record-or-validation',
+        code: typeof failure?.code === 'string' ? failure.code : undefined,
+        details: typeof failure?.details === 'string' ? failure.details : undefined,
+        hint: typeof failure?.hint === 'string' ? failure.hint : undefined,
+        error,
+      });
       toast({
         title: submissionCreated ? 'Upload incomplete' : 'Submission failed',
-        description: error instanceof Error ? error.message : 'The PDF could not be submitted. Please try again.',
+        description: failureMessage,
         variant: 'destructive',
       });
     } finally {
