@@ -138,10 +138,10 @@ describe('Games page', () => {
     expect(screen.getByText('Daily challenges mock')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('tab', { name: /Social/ }));
-    expect(screen.getByText('Friend challenge mock')).toBeInTheDocument();
+    expect(await screen.findByText('Friend challenge mock')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('tab', { name: /Achievements/ }));
-    expect(screen.getByText('Achievement showcase mock')).toBeInTheDocument();
+    expect(await screen.findByText('Achievement showcase mock')).toBeInTheDocument();
   });
 
   it('lets a signed-in reader change difficulty and enter book selection', async () => {
