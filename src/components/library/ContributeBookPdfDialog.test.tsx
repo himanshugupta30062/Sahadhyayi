@@ -52,17 +52,15 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
   },
 }));
 
-const makePdf = (name = 'sample.pdf', bytes = '%PDF-1.7 test body', type = 'application/pdf') => {
-  const file = new File([bytes], name, { type });
-  // jsdom's File.slice() may not implement Blob.arrayBuffer(); mirror the browser API.
-  Object.defineProperty(file, 'slice', {
-    configurable: true,
-    value: (start = 0, end = file.size) => ({
-      arrayBuffer: async () => new TextEncoder().encode(bytes).slice(start, end).buffer,
-    }),
-  });
-  return file;
-}
+const makePdf = (name = 'sample.pdf', bytes = '%PDF-1.7 test body', type = 'application/pdf') => ({
+  name,
+  size: new TextEncoder().encode(bytes).length,
+  type,
+  // Use a browser-compatible Blob slice contract without relying on jsdom File.arrayBuffer support.
+  slice: (start = 0, end = new TextEncoder().encode(bytes).length) => ({
+    arrayBuffer: async () => new TextEncoder().encode(bytes).slice(start, end).buffer,
+  }),
+}) as File;
 
 function renderDialog() {
   render(<ContributeBookPdfDialog />);
