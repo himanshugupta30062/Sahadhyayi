@@ -33,16 +33,17 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
     if (!audio) return;
 
     const updateTime = () => setCurrentTime(audio.currentTime);
-    const updateDuration = () => setDuration(audio.duration);
+    const updateDuration = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+    const handleEnded = () => setIsPlaying(false);
 
     audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
-    audio.addEventListener('ended', () => setIsPlaying(false));
+    audio.addEventListener('ended', handleEnded);
 
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
-      audio.removeEventListener('ended', () => setIsPlaying(false));
+      audio.removeEventListener('ended', handleEnded);
     };
   }, [audioSummary]);
 
@@ -69,7 +70,7 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
     const audio = audioRef.current;
     if (!audio) return;
 
-    const newTime = (value[0] / 100) * duration;
+    const newTime = ((value[0] ?? 0) / 100) * duration;
     audio.currentTime = newTime;
     setCurrentTime(newTime);
   };
@@ -233,7 +234,7 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
             step="0.1"
             value={volume}
             onChange={(e) => {
-              const newVolume = parseFloat(e.target.value);
+              const newVolume = Number.parseFloat(e.target.value);
               setVolume(newVolume);
               if (audioRef.current) {
                 audioRef.current.volume = newVolume;
