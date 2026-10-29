@@ -617,96 +617,76 @@ const BlogPost = () => {
         keywords={slug === 'best-indian-books-to-read' ? ['Indian books to read', 'Indian literature', 'regional Indian literature', 'Sahadhyayi', 'book recommendations'] : ['Sahadhyayi', 'reading community', 'digital library', 'book lovers']}
       />
       
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          {/* Back Button */}
-          <Link to="/blog">
-            <Button variant="ghost" className="mb-6">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Blog
-            </Button>
-          </Link>
+      <main className="min-h-screen bg-[#F7F5EF] text-[#202820]">
+        <header className="relative isolate overflow-hidden bg-[#101A13]">
+          <div aria-hidden="true" className="absolute inset-0 bg-cover bg-center opacity-35" style={{ backgroundImage: `url('${post.image}')` }} />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#101A13] via-[#101A13]/90 to-[#101A13]/45" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#101A13]/70 via-transparent to-transparent" />
+          <div className="relative mx-auto max-w-5xl px-4 pb-10 pt-6 sm:px-6 sm:pb-16 lg:px-8">
+            <Link to="/blog" className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-medium text-white/85 transition hover:border-[#D5B16D]/70 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]">
+              <ArrowLeft className="h-4 w-4" /> Back to Journal
+            </Link>
+            <div className="max-w-3xl">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D5B16D]/40 bg-black/25 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#E4C17B] backdrop-blur-sm">
+                <BookOpen className="h-3.5 w-3.5" aria-hidden="true" /> Sahadhyayi Journal · Editor-published
+              </div>
+              <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight text-[#FBF7EF] sm:text-4xl md:text-5xl lg:text-6xl">{post.title}</h1>
+              {post.description && <p className="mt-5 max-w-2xl text-base leading-7 text-white/75 sm:text-lg">{post.description}</p>}
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 text-xs text-white/70 sm:text-sm">
+                <span className="inline-flex items-center gap-2"><User className="h-4 w-4 text-[#D5B16D]" />{post.author}</span>
+                <span className="inline-flex items-center gap-2"><Calendar className="h-4 w-4 text-[#D5B16D]" />{new Date(post.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                <span className="inline-flex items-center gap-2"><Clock className="h-4 w-4 text-[#D5B16D]" />{post.readTime}</span>
+              </div>
+            </div>
+          </div>
+        </header>
 
-          {/* Article */}
-          <article>
-            <Card className="bg-white/80 backdrop-blur-sm border-orange-200">
-              <CardHeader>
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  loading="lazy"
-                  className="w-full h-64 object-cover rounded-lg mb-6"
-                />
-                <CardTitle className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-                  {post.title}
-                </CardTitle>
-                <div className="flex items-center gap-4 text-gray-600 mt-4">
-                  <div className="flex items-center gap-1">
-                    <User className="w-4 h-4" />
-                    {post.author}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    {new Date(post.date).toLocaleDateString()}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {post.readTime}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {articleSections.length >= 3 && (
-                  <nav aria-label="Article contents" className="mb-8 rounded-xl border border-orange-200 bg-orange-50/70 p-5 sm:p-6">
-                    <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900">
-                      <span aria-hidden="true" className="text-orange-600">☷</span>
-                      In this article
-                    </h2>
-                    <ol className="space-y-2">
-                      {articleSections.map((section, index) => (
-                        <li key={section.id} className={section.level === 3 ? "ml-5" : ""}>
-                          <a
-                            href={`#${section.id}`}
-                            className="text-sm text-gray-700 underline-offset-4 transition-colors hover:text-orange-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-sm"
-                          >
-                            {section.level === 2 ? `${index + 1}. ` : "– "}{section.title}
-                          </a>
-                        </li>
-                      ))}
-                    </ol>
-                  </nav>
-                )}
-                <div 
-                  className="prose prose-lg max-w-none prose-headings:scroll-mt-24 prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-blockquote:border-orange-300 prose-blockquote:bg-orange-50 prose-blockquote:p-4 prose-blockquote:rounded-lg"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(articleHtml) }}
-                />
-              </CardContent>
-            </Card>
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_280px] lg:px-8 lg:py-14">
+          <article className="min-w-0 overflow-hidden rounded-2xl border border-[#E4DFD4] bg-white shadow-sm">
+            <img src={post.image} alt="" loading="eager" className="aspect-[16/7] w-full object-cover" />
+            <div className="px-5 py-7 sm:px-8 sm:py-10 lg:px-12">
+              {articleSections.length >= 3 && (
+                <nav aria-label="Article contents" className="mb-9 rounded-2xl border border-[#DDE2D7] bg-[#F4F6F0] p-5 sm:p-6">
+                  <h2 className="mb-4 flex items-center gap-2 font-serif text-xl font-bold text-[#202820]">
+                    <span aria-hidden="true" className="text-[#526B54]">☷</span> In this story
+                  </h2>
+                  <ol className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+                    {articleSections.map((section, index) => (
+                      <li key={section.id} className={section.level === 3 ? "sm:ml-4" : ""}>
+                        <a href={`#${section.id}`} className="text-sm leading-6 text-[#536153] underline-offset-4 transition-colors hover:text-[#1C442D] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D]">
+                          {section.level === 2 ? `${index + 1}. ` : "– "}{section.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                </nav>
+              )}
+              <div
+                className="prose prose-lg max-w-none prose-headings:scroll-mt-24 prose-headings:font-serif prose-headings:font-bold prose-headings:text-[#202820] prose-h2:mt-10 prose-h2:border-b prose-h2:border-[#E9E5DC] prose-h2:pb-2 prose-h3:mt-8 prose-p:leading-8 prose-p:text-[#4F5A50] prose-a:text-[#1C442D] prose-a:underline-offset-4 prose-li:text-[#4F5A50] prose-strong:text-[#273629] prose-blockquote:border-[#789078] prose-blockquote:bg-[#F4F6F0] prose-blockquote:rounded-r-xl prose-blockquote:py-2"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(articleHtml) }}
+              />
+              <div className="mt-10 border-t border-[#E9E5DC] pt-5 text-xs leading-5 text-[#737B70]">
+                Published by the Sahadhyayi editorial team. This is an official journal story; readers can read and share it, but cannot edit its content.
+              </div>
+            </div>
           </article>
 
-          {/* Call to Action */}
-          <Card className="mt-8 bg-gradient-to-r from-orange-600 to-red-600 text-white border-0">
-            <CardContent className="p-8 text-center">
-              <h3 className="text-2xl font-bold mb-4">Ready to Join Sahadhyayi?</h3>
-              <p className="text-lg mb-6 opacity-90">
-                Experience the joy of reading with our global community of book lovers.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/signup">
-                  <Button size="lg" variant="secondary" className="px-8 py-3">
-                    Join Sahadhyayi Today
-                  </Button>
-                </Link>
-                <Link to="/library">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600 px-8 py-3">
-                    Explore Our Library
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+          <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-2xl border border-[#DDE2D7] bg-white p-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#71816F]">Keep reading</p>
+              <h2 className="mt-2 font-serif text-xl font-bold text-[#202820]">Follow your curiosity.</h2>
+              <p className="mt-2 text-sm leading-6 text-[#687168]">Explore a book on the topic, or find readers to exchange ideas with.</p>
+              <Link to="/library" className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#1C442D] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#173824]">Explore the Library <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to="/articles" className="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-[#DDE2D7] bg-[#F7F8F4] px-4 py-3 text-sm font-semibold text-[#294632] transition hover:bg-[#EDF1E8]">Community Articles</Link>
+            </div>
+            <div className="rounded-2xl bg-[#EAEDE5] p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#526B54]">The Journal</p>
+              <p className="mt-2 text-sm leading-6 text-[#596558]">Official updates and curated reading stories from Sahadhyayi. Published content is read-only for community members.</p>
+              <Link to="/blog" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#1C442D] hover:underline">Browse all stories <ArrowLeft className="h-4 w-4 rotate-180" /></Link>
+            </div>
+          </aside>
         </div>
-      </div>
+      </main>
     </>
   );
 };
