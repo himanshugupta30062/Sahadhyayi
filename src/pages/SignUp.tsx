@@ -172,7 +172,7 @@ const SignUp = () => {
   };
 
   const inputClass = "pl-10 h-11 bg-white border-border/80 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all";
-  const inputWithToggleClass = "pl-10 pr-10 h-11 bg-white border-border/80 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all";
+  const inputWithToggleClass = "pl-10 pr-12 h-11 bg-white border-border/80 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all";
 
   return (
     <>
@@ -291,7 +291,9 @@ const SignUp = () => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-pressed={showPassword}
+                      className="absolute right-1 top-0 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -317,7 +319,9 @@ const SignUp = () => {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                      aria-pressed={showConfirmPassword}
+                      className="absolute right-1 top-0 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
