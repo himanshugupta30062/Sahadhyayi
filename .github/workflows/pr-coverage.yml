@@ -46,6 +46,8 @@ jobs:
           --coverage.reporter=json-summary
           --coverage.reportsDirectory=./coverage
           --coverage.reportOnFailure=true
+          --coverage.exclude=archive/**
+          --coverage.exclude=src/integrations/supabase/types.ts
 
       - name: Add coverage summary to workflow run
         if: always()
@@ -65,7 +67,7 @@ jobs:
 
           if (!fs.existsSync(summaryPath)) {
             lines.push('Coverage summary was not generated. Check the test step logs.');
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\\n') + '\\n');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
             process.exit(0);
           }
 
@@ -82,7 +84,7 @@ jobs:
             'The detailed LCOV report is attached as a workflow artifact named `pr-coverage-report`.',
             'Coverage is reported for the files included by Vitest instrumentation; this report does not itself prove that every repository script is instrumented.'
           );
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\\n') + '\\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
           NODE
 
       - name: Upload LCOV and coverage summary

@@ -18,7 +18,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/contexts/authHelpers', () => ({ useAuth: () => ({ user: mocks.user }) }));
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: (...args: unknown[]) => mocks.from(...args) },
+  supabase: { from: (table: string) => mocks.from(table) },
 }));
 vi.mock('sonner', () => ({
   toast: { success: (...args: unknown[]) => mocks.toastSuccess(...args) },
@@ -37,17 +37,23 @@ describe('useGameBadges', () => {
     mocks.badges = [badge('games', 'games_played', 3), badge('points', 'total_points', 100), badge('streak', 'streak', 2), badge('perfect', 'perfect_game'), badge('speed', 'speed_answers', 5)];
     mocks.earned = [];
     mocks.insertResult = { error: null };
-    mocks.from.mockReset().mockImplementation((table: string) => ({ table }));
-    mocks.select.mockReset().mockImplementation(function (this: { table: string }) {
-      const table = this.table;
-      return Promise.resolve({
-        data: table === 'game_badges' ? mocks.badges : mocks.earned,
-        error: null,
-      });
-    });
-    mocks.eq.mockReset().mockImplementation(function (this: { table: string }) {
-      return Promise.resolve({ data: mocks.earned, error: null });
-    });
+    mocks.from.mockReset().mockImplementation((table: string) => ({
+      select: (columns: string) => {
+        mocks.select(columns);
+        if (table === 'game_badges') {
+          return Promise.resolve({ data: mocks.badges, error: mocks.selectResult.error });
+        }
+        return {
+          eq: (column: string, value: string) => {
+            mocks.eq(column, value);
+            return Promise.resolve({ data: mocks.earned, error: mocks.selectResult.error });
+          },
+        };
+      },
+      insert: (...args: unknown[]) => mocks.insert(...args),
+    }));
+    mocks.select.mockReset();
+    mocks.eq.mockReset();
     mocks.insert.mockReset().mockImplementation(() => Promise.resolve(mocks.insertResult));
     mocks.toastSuccess.mockReset();
   });

@@ -46,6 +46,9 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
     storage: {
       from: () => ({ upload: mocks.upload }),
     },
+    functions: {
+      invoke: vi.fn().mockResolvedValue({ data: { accepted: true }, error: null }),
+    },
   },
 }));
 
@@ -71,6 +74,11 @@ beforeEach(() => {
   mocks.eq.mockReturnValue({ order: mocks.order });
   mocks.order.mockReturnValue({ limit: mocks.limit });
   vi.stubGlobal('crypto', { ...globalThis.crypto, randomUUID: () => 'submission-uuid' });
+  vi.stubGlobal('ResizeObserver', class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  });
 });
 
 afterEach(() => {
