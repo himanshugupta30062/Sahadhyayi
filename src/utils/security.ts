@@ -12,7 +12,7 @@ export const setCSRFToken = (token: string | null): void => {
     document.cookie = 'csrfToken=; Path=/; Max-Age=0; SameSite=Strict; Secure';
   } else {
     sessionStorage.setItem('csrfToken', token);
-    document.cookie = `csrfToken=${token}; Path=/; SameSite=Strict; Secure`;
+    document.cookie = `csrfToken=${encodeURIComponent(token)}; Path=/; SameSite=Strict; Secure`;
   }
 };
 
@@ -21,7 +21,13 @@ export const getCSRFToken = (): string | null => {
   const s = sessionStorage.getItem('csrfToken');
   if (s) return s;
   const m = document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/);
-  return m ? decodeURIComponent(m[1]) : null;
+  if (!m) return null;
+  try {
+    return decodeURIComponent(m[1]);
+  } catch {
+    // Ignore malformed cookie values instead of breaking callers that read the token.
+    return null;
+  }
 };
 
 export const clearCSRFToken = (): void => setCSRFToken(null);

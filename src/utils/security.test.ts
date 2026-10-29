@@ -50,6 +50,20 @@ describe('client security utilities', () => {
     expect(getCSRFToken()).toBe('cookie-token');
   });
 
+  it('round-trips cookie tokens containing reserved characters', () => {
+    setCSRFToken('token;with spaces%');
+
+    expect(getCSRFToken()).toBe('token;with spaces%');
+  });
+
+  it('ignores malformed encoded cookie tokens without throwing', () => {
+    sessionStorage.removeItem('csrfToken');
+    document.cookie = 'csrfToken=%E0%A4%A; Path=/; SameSite=Strict';
+
+    expect(() => getCSRFToken()).not.toThrow();
+    expect(getCSRFToken()).toBeNull();
+  });
+
   it('creates JSON request headers and optionally adds the CSRF header', () => {
     setCSRFToken('header-token');
 
