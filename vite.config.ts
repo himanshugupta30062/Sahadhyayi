@@ -51,6 +51,10 @@ function bundleDiagnosticsPlugin() {
 }
 
 export default defineConfig(({ mode }) => ({
+  test: {
+    environment: "node",
+    setupFiles: ["./src/test/setup.ts"],
+  },
   base: "/",
   server: {
     host: "::",
