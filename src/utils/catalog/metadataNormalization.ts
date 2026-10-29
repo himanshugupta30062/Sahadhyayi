@@ -61,18 +61,32 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
   let cleanTitle = title;
   let subtitle: string | undefined;
 
-  const subtitleSeparatorMatch = title.match(/^(.*?)(?:\s*[:—]\s*|\s+-\s+)(.*)$/);
-  if (subtitleSeparatorMatch && subtitleSeparatorMatch[1].trim().length >= 2) {
-    cleanTitle = subtitleSeparatorMatch[1].trim();
-    subtitle = subtitleSeparatorMatch[2].trim();
+  const subtitleSeparators = [
+    { index: title.indexOf(':'), length: 1 },
+    { index: title.indexOf('—'), length: 1 },
+    { index: title.indexOf(' - '), length: 3 },
+  ].filter((separator) => separator.index >= 0).sort((a, b) => a.index - b.index);
+
+  const subtitleSeparator = subtitleSeparators[0];
+  if (subtitleSeparator) {
+    const possibleTitle = title.slice(0, subtitleSeparator.index).trim();
+    if (possibleTitle.length >= 2) {
+      cleanTitle = possibleTitle;
+      subtitle = title.slice(subtitleSeparator.index + subtitleSeparator.length).trim();
+    }
   }
 
-  // If subtitle has trailing bracket, extract editionTag if needed and clean subtitle
+  // If subtitle ends with a simple bracket group, extract it without a backtracking regex.
   if (subtitle) {
-    const subEditionMatch = subtitle.match(/[([]\s*([^()[\]]+?)\s*[)\]]$/);
-    if (subEditionMatch) {
-      if (!editionTag) editionTag = subEditionMatch[1].trim();
-      subtitle = subtitle.replace(subEditionMatch[0], '').trim();
+    const closingBracket = subtitle.at(-1);
+    const openingBracket = closingBracket === ')' ? '(' : closingBracket === ']' ? '[' : null;
+    const openingIndex = openingBracket ? subtitle.lastIndexOf(openingBracket) : -1;
+    if (openingIndex >= 0) {
+      const bracketText = subtitle.slice(openingIndex + 1, -1).trim();
+      if (bracketText && !/[()[\]]/.test(bracketText)) {
+        if (!editionTag) editionTag = bracketText;
+        subtitle = subtitle.slice(0, openingIndex).trim();
+      }
     }
   }
 
