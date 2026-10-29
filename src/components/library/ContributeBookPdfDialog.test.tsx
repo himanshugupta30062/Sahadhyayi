@@ -158,7 +158,9 @@ describe('ContributeBookPdfDialog', () => {
     });
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
-    fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
+    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    fireEvent.submit(submitButton.closest('form')!);
 
     await waitFor(() => expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
       id: 'submission-uuid',
@@ -190,7 +192,9 @@ describe('ContributeBookPdfDialog', () => {
     });
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
-    fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
+    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    fireEvent.submit(submitButton.closest('form')!);
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Submission failed',
