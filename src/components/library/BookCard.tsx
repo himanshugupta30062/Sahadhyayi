@@ -310,15 +310,16 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
             
             <Link
               to={`/book/${book.id}`}
+              onClick={() => void trackBookOpened(book.id, book.title)}
               className="
-                flex items-center justify-center w-10 h-10 rounded-full
+                relative z-10 flex items-center justify-center w-10 h-10 rounded-full
                 bg-white/10 text-white hover:bg-white/20 border border-white/20
-                transition-all duration-200 backdrop-blur-sm
+                transition-all duration-200 backdrop-blur-sm touch-manipulation
               "
               title="View Details"
               aria-label={`View details for ${book.title}`}
             >
-              <Info className="w-4 h-4" />
+              <Info className="w-4 h-4 pointer-events-none" />
             </Link>
           </div>
         </div>
