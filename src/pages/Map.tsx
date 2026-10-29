@@ -1,15 +1,12 @@
-
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SEO from '@/components/SEO';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useFriends } from '@/hooks/useFriends';
-import { loadGoogleMaps } from '@/lib/googleMapsLoader';
-import { ReadersMap } from '@/components/maps/ReadersMap';
-import { FriendsMap } from '@/components/maps/FriendsMap';
 import { BookFilterDropdown } from '@/components/social/BookFilterDropdown';
-import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
+import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
+import { MAPPLS_API_KEY } from '@/config/mappls';
 
 interface ReaderLocation {
   latitude: number;
@@ -19,6 +16,8 @@ interface ReaderLocation {
     full_name: string | null;
     username: string | null;
   };
+  distance?: number;
+  reading_since?: string | null;
 }
 
 interface BookOption {
@@ -28,64 +27,35 @@ interface BookOption {
   cover_image_url?: string;
 }
 
-declare global {
-  interface Window {
-    google: any;
-    initGoogleMaps?: () => void;
-    googleMapsLoadingPromise?: Promise<void>;
-  }
-}
-
-const darkMapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
-  {
-    featureType: 'administrative.locality',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#d59563' }]
-  },
-  { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
-  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#263c3f' }] },
-  { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#6b9a76' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
-  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#9ca5b3' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#746855' }] },
-  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1f2835' }] },
-  { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#f3d19c' }] },
-  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2f3948' }] },
-  { featureType: 'transit.station', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] },
-  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#515c6d' }] },
-  { featureType: 'water', elementType: 'labels.text.stroke', stylers: [{ color: '#17263c' }] }
-];
-
 const MapPage = () => {
   const [tab, setTab] = useState<'readers' | 'friends'>('readers');
-  const [mapsLoaded, setMapsLoaded] = useState(false);
   const [readers, setReaders] = useState<ReaderLocation[]>([]);
   const [readersLoading, setReadersLoading] = useState(false);
   const [readersError, setReadersError] = useState<string | null>(null);
   const [selectedBook, setSelectedBook] = useState<BookOption | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Simplify friends data handling
   const friendsQuery = useFriends();
   const friends = friendsQuery.data || [];
-  const friendsLoading = friendsQuery.isLoading;
 
   useEffect(() => {
-    loadGoogleMaps(GOOGLE_MAPS_API_KEY)
-      .then(() => setMapsLoaded(true))
-      .catch(err => {
-        console.error('Failed to load Google Maps', { errorName: err instanceof Error ? err.name : 'UnknownError' });
-        setMapsLoaded(false);
-      });
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => setCurrentLocation({ lat: coords.latitude, lng: coords.longitude }),
+      () => {
+        // Location is optional; the map falls back to a country-level view.
+      },
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+    );
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
     if (!selectedBook?.id) {
       setReaders([]);
+      setReadersError(null);
+      setReadersLoading(false);
       return;
     }
 
@@ -93,57 +63,107 @@ const MapPage = () => {
       setReadersLoading(true);
       setReadersError(null);
       try {
-        // Use the new secure function to get nearby book readers
         const { data, error } = await supabase.rpc('get_nearby_book_readers', {
           book_uuid: selectedBook.id,
-          radius_km: 10
+          radius_km: 10,
         });
 
+        if (cancelled) return;
         if (error) {
-          console.error('Failed to fetch nearby readers', { errorName: error instanceof Error ? error.name : 'UnknownError' });
-          setReadersError('Unable to load nearby readers. Make sure you have location sharing enabled and are connected with friends.');
+          console.error('Failed to fetch nearby readers', { errorName: error.name });
+          setReadersError('Unable to load nearby readers. Check location-sharing permissions and try again.');
           setReaders([]);
           return;
         }
 
-        if (!data || data.length === 0) {
-          setReaders([]);
-          setReadersError('No friends are currently reading this book nearby. Invite friends to join!');
-          return;
-        }
-
-        // Transform the secure data (no exact coordinates exposed to frontend)
-        const readerList = data.map((reader: any) => ({
+        // The current RPC intentionally returns distance but not coordinates. Do not fabricate
+        // map positions; the backend must provide privacy-preserving approximate coordinates
+        // before these readers can be pinned to a map.
+        const readerList = (data || []).map((reader: any) => ({
           user_id: reader.reader_id,
-          latitude: 0, // Don't expose exact coordinates for privacy
-          longitude: 0, // Don't expose exact coordinates for privacy
+          latitude: Number(reader.approximate_latitude ?? 0),
+          longitude: Number(reader.approximate_longitude ?? 0),
           profiles: {
-            full_name: reader.reader_name,
-            username: (reader.reader_name || 'user').toLowerCase().replace(/\s+/g, '_')
+            full_name: reader.reader_name ?? null,
+            username: (reader.reader_name || 'reader').toLowerCase().replace(/\\s+/g, '_'),
           },
           distance: reader.distance_km,
-          reading_since: reader.reading_since
+          reading_since: reader.reading_since,
         }));
-
         setReaders(readerList);
-      } catch (err) {
-        console.error('Nearby readers request failed', { errorName: err instanceof Error ? err.name : 'UnknownError' });
-        setReadersError('Failed to fetch readers');
+        if (readerList.length === 0) {
+          setReadersError('No nearby readers were returned for this book yet.');
+        }
+      } catch (error) {
+        if (cancelled) return;
+        console.error('Nearby readers request failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
+        setReadersError('Failed to fetch readers. Please try again.');
         setReaders([]);
+      } finally {
+        if (!cancelled) setReadersLoading(false);
       }
-      setReadersLoading(false);
     };
 
-    fetchReaders();
+    void fetchReaders();
+    return () => {
+      cancelled = true;
+    };
   }, [selectedBook?.id]);
+
+  const readerPoints = useMemo<MapplsPoint[]>(
+    () =>
+      readers
+        .filter((reader) => reader.latitude !== 0 || reader.longitude !== 0)
+        .map((reader) => ({
+          id: reader.user_id,
+          lat: reader.latitude,
+          lng: reader.longitude,
+          title: reader.profiles?.full_name || reader.profiles?.username || 'Reader',
+          description: reader.distance == null ? 'Reading this book' : `${reader.distance.toFixed(1)} km away`,
+        })),
+    [readers]
+  );
+
+  const friendPoints = useMemo<MapplsPoint[]>(() => {
+    if (!Array.isArray(friends)) return [];
+    return friends.flatMap((friend: any) => {
+      const profile = friend?.friend_profile;
+      if (
+        !profile?.location_sharing ||
+        profile.location_lat == null ||
+        profile.location_lng == null
+      ) {
+        return [];
+      }
+
+      const lat = Number(profile.location_lat);
+      const lng = Number(profile.location_lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) return [];
+
+      return [{
+        id: String(friend.id ?? profile.id ?? `${lat},${lng}`),
+        lat,
+        lng,
+        title: profile.full_name || profile.username || 'Friend',
+        description: 'Friend who has enabled location sharing',
+      }];
+    });
+  }, [friends]);
 
   return (
     <>
-      <SEO title="Map" description="Readers and friends map" canonical="https://sahadhyayi.com/map" url="https://sahadhyayi.com/map" />
-      <div className="min-h-screen pt-8 pb-12 px-4">
-        <div className="max-w-5xl mx-auto">
-          <Tabs value={tab} onValueChange={value => setTab(value as 'readers' | 'friends')} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
+      <SEO title="Reader Map" description="Discover readers and friends who choose to share their location" canonical="https://sahadhyayi.com/map" url="https://sahadhyayi.com/map" />
+      <main className="min-h-screen px-4 pb-12 pt-8">
+        <div className="mx-auto max-w-5xl space-y-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Reader Map</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Discover reading connections while respecting each reader’s location-sharing choices.
+            </p>
+          </div>
+
+          <Tabs value={tab} onValueChange={(value) => setTab(value as 'readers' | 'friends')} className="w-full">
+            <TabsList className="mb-4 grid w-full grid-cols-2">
               <TabsTrigger value="readers">📚 Readers Map</TabsTrigger>
               <TabsTrigger value="friends">🧑‍🤝‍🧑 Friends Map</TabsTrigger>
             </TabsList>
@@ -151,7 +171,7 @@ const MapPage = () => {
             <TabsContent value="readers" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Select Book to View Readers</CardTitle>
+                  <CardTitle>Select a book</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <BookFilterDropdown
@@ -160,28 +180,41 @@ const MapPage = () => {
                   />
                 </CardContent>
               </Card>
-              
-              <ReadersMap
-                readers={readers}
-                readersLoading={readersLoading}
-                readersError={readersError}
-                mapsLoaded={mapsLoaded}
-                darkMapStyle={darkMapStyle}
-                selectedBook={selectedBook}
+
+              {readersLoading && (
+                <p className="text-sm text-muted-foreground" role="status">Finding readers for this book…</p>
+              )}
+              {readersError && !readersLoading && (
+                <p className="text-sm text-muted-foreground" role="status">{readersError}</p>
+              )}
+              <MapplsMap
+                apiKey={MAPPLS_API_KEY}
+                points={readerPoints}
+                center={currentLocation}
+                emptyMessage={selectedBook ? 'No privacy-safe reader map locations are available for this book yet.' : 'Choose a book to discover readers.'}
               />
+              <p className="text-xs text-muted-foreground">
+                Reader pins appear only when the backend supplies privacy-preserving approximate coordinates. Exact reader coordinates are not displayed.
+              </p>
             </TabsContent>
 
-            <TabsContent value="friends">
-              <FriendsMap
-                friends={friends}
-                friendsLoading={friendsLoading}
-                mapsLoaded={mapsLoaded}
-                darkMapStyle={darkMapStyle}
+            <TabsContent value="friends" className="space-y-3">
+              {friendsQuery.isLoading && (
+                <p className="text-sm text-muted-foreground" role="status">Loading friends…</p>
+              )}
+              <MapplsMap
+                apiKey={MAPPLS_API_KEY}
+                points={friendPoints}
+                center={currentLocation}
+                emptyMessage="No friends have shared a mappable location with you yet."
               />
+              <p className="text-xs text-muted-foreground">
+                Only friends whose location-sharing setting is enabled are shown.
+              </p>
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </main>
     </>
   );
 };
