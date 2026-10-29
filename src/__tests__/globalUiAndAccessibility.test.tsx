@@ -183,6 +183,25 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       mockIsMobileValue = true;
     });
 
+    it('gives mobile header controls touch targets of at least 44px', () => {
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Navigation />
+        </MemoryRouter>
+      );
+
+      const controls = [
+        screen.getByRole('button', { name: /search library and books/i }),
+        screen.getByRole('button', { name: /switch to dark mode/i }),
+        screen.getByRole('button', { name: /open navigation menu/i }),
+      ];
+
+      controls.forEach((control) => {
+        expect(control.className).toContain('min-h-[44px]');
+        expect(control.className).toContain('min-w-[44px]');
+      });
+    });
+
     it('controls mobile menu disclosure with aria-expanded and aria-controls', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
