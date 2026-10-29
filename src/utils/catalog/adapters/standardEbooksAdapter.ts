@@ -5,22 +5,22 @@ import { evaluateBookQuality } from '../qualityScoring';
 
 /** Extract text inside the first matching XML-like tag without a wildcard regex. */
 function extractTagText(source: string, tagName: string): string | null {
-  const openStart = source.indexOf(`<\${tagName}`);
+  const openStart = source.indexOf(`<${tagName}`);
   if (openStart < 0) return null;
   const contentStart = source.indexOf('>', openStart);
   if (contentStart < 0) return null;
-  const closeStart = source.indexOf(`</\${tagName}>`, contentStart + 1);
+  const closeStart = source.indexOf(`</${tagName}>`, contentStart + 1);
   if (closeStart < 0) return null;
   return source.slice(contentStart + 1, closeStart);
 }
 
 /** Extract the first complete tag block, such as an author block. */
 function extractTagBlock(source: string, tagName: string): string | null {
-  const openStart = source.indexOf(`<\${tagName}`);
+  const openStart = source.indexOf(`<${tagName}`);
   if (openStart < 0) return null;
   const openEnd = source.indexOf('>', openStart);
   if (openEnd < 0) return null;
-  const closeStart = source.indexOf(`</\${tagName}>`, openEnd + 1);
+  const closeStart = source.indexOf(`</${tagName}>`, openEnd + 1);
   if (closeStart < 0) return null;
   return source.slice(openStart, closeStart + tagName.length + 3);
 }
