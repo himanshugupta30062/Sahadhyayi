@@ -189,7 +189,7 @@ describe('Quality-First Catalog: Standard Ebooks Feed Parsing', () => {
     const sampleXml = `<?xml version="1.0" encoding="utf-8"?>
     <feed xmlns="http://www.w3.org/2005/Atom">
       <title>Standard Ebooks New Releases</title>
-      <entry>
+      <entry xml:lang="en">
         <id>https://standardebooks.org/ebooks/h-g-wells/the-time-machine</id>
         <title>The Time Machine</title>
         <author><name>H. G. Wells</name></author>
