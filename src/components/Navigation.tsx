@@ -197,6 +197,7 @@ const Navigation = () => {
                     <Link
                       key={item.name}
                       to={item.href}
+                      data-tour-target={item.href === "/library" ? "library" : item.href === "/articles" ? "articles" : item.href === "/social" ? "community" : undefined}
                       aria-current={isActive ? "page" : undefined}
                       className={`shrink-0 text-xs lg:text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm whitespace-nowrap ${
                         isActive
@@ -218,6 +219,7 @@ const Navigation = () => {
                   className="group relative flex h-9 w-9 xl:w-auto xl:gap-2 items-center justify-center xl:justify-start xl:px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-muted/50 hover:bg-muted hover:text-foreground border border-border/70 hover:border-border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer shadow-2xs"
                   aria-label="Search library, authors, and books"
                   title="Search library, authors, and books"
+                  data-tour-target="search"
                 >
                   <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true" />
                   <span className="hidden xl:inline text-xs text-foreground/80 font-normal">
@@ -299,6 +301,7 @@ const Navigation = () => {
                 onClick={() => setSearchOpen(true)}
                 aria-label="Search library and books"
                 title="Search library and books"
+                data-tour-target="search"
                 className="h-11 w-11 min-h-[44px] min-w-[44px] text-foreground hover:bg-muted p-1 touch-manipulation"
               >
                 <Search className="w-4 h-4" aria-hidden="true" />
@@ -361,6 +364,7 @@ const Navigation = () => {
                 }}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 mb-2 rounded-xl bg-muted/60 hover:bg-muted border border-border/70 text-left text-sm text-muted-foreground transition-colors cursor-pointer"
                 aria-label="Search books, authors, and articles"
+                data-tour-target="search"
               >
                 <Search className="w-4 h-4 text-foreground/70" />
                 <span className="text-foreground/90 font-medium">Search books & authors...</span>
@@ -371,6 +375,7 @@ const Navigation = () => {
                   <Link
                     key={item.name}
                     to={item.href}
+                    data-tour-target={item.href === "/library" ? "library" : item.href === "/articles" ? "articles" : item.href === "/social" ? "community" : undefined}
                     onClick={() => setIsOpen(false)}
                     aria-current={isActive ? "page" : undefined}
                     className={item.href === "/blog"
