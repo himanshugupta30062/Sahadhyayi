@@ -302,7 +302,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full aspect-square flex items-center justify-center ${className}`)
+      className={`relative w-full h-full aspect-square flex items-center justify-center ${className}` }
       style={
         typeof size === "number"
           ? { width: size, height: size }
