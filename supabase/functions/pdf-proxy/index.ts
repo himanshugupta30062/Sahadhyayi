@@ -86,17 +86,46 @@ serve(async (req) => {
       return new Response('Host not allowed', { status: 403, headers: corsHeaders })
     }
 
-    const response = await fetch(parsedUrl.toString(), {
-      redirect: 'manual',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Sahadhyayi/1.0)',
-        'Accept': 'application/pdf, */*',
-      },
-    })
+    // Follow a small number of redirects, validating every destination. Many
+    // legitimate public-domain PDF hosts redirect to a storage subdomain.
+    let currentUrl = parsedUrl
+    let response: Response | null = null
+    const maxRedirects = 5
 
-    // Reject redirects to avoid bypassing the allow-list via 3xx
-    if (response.status >= 300 && response.status < 400) {
-      return new Response('Redirects not allowed', { status: 403, headers: corsHeaders })
+    for (let redirectCount = 0; redirectCount <= maxRedirects; redirectCount += 1) {
+      if (currentUrl.protocol !== 'https:' && currentUrl.protocol !== 'http:') {
+        return new Response('Unsupported redirect protocol', { status: 403, headers: corsHeaders })
+      }
+      if (isPrivateOrLoopbackHost(currentUrl.hostname) || !isHostAllowed(currentUrl.hostname)) {
+        return new Response('Redirect destination not allowed', { status: 403, headers: corsHeaders })
+      }
+
+      response = await fetch(currentUrl.toString(), {
+        redirect: 'manual',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Sahadhyayi/1.0)',
+          'Accept': 'application/pdf, application/octet-stream;q=0.9, */*;q=0.8',
+        },
+      })
+
+      if (response.status < 300 || response.status >= 400) break
+      const location = response.headers.get('location')
+      if (!location || redirectCount === maxRedirects) {
+        return new Response('PDF source redirected too many times or omitted its destination', {
+          status: 502,
+          headers: corsHeaders,
+        })
+      }
+
+      try {
+        currentUrl = new URL(location, currentUrl)
+      } catch {
+        return new Response('Invalid PDF redirect destination', { status: 502, headers: corsHeaders })
+      }
+    }
+
+    if (!response) {
+      return new Response('PDF source did not respond', { status: 502, headers: corsHeaders })
     }
 
     if (!response.ok) {
