@@ -134,7 +134,7 @@ describe('ContributeBookPdfDialog', () => {
     fireEvent.change(screen.getByLabelText(/Book title/i), {
       target: { value: 'A Test Book' },
     });
-    fireEvent.change(screen.getByLabelText(/Author/i), {
+    fireEvent.change(screen.getByLabelText(/Author \(optional\)/i), {
       target: { value: 'A Test Author' },
     });
     fireEvent.click(screen.getByRole('checkbox'));
