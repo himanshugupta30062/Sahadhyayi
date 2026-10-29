@@ -51,10 +51,12 @@ export class StandardEbooksAdapter implements BookProviderAdapter {
    */
   parseAtomFeed(xmlText: string): StandardEbooksEntry[] {
     const entries: StandardEbooksEntry[] = [];
-    const entryBlocks = xmlText.split('<entry>');
+    // Atom feeds may include attributes on entry elements; match the element
+    // boundary rather than requiring the exact literal `<entry>` spelling.
+    const entryBlocks = xmlText.match(/<entry(?:\s[^>]*)?>([\s\S]*?)<\/entry\s*>/gi) || [];
 
-    for (let i = 1; i < entryBlocks.length; i++) {
-      const block = entryBlocks[i].split('</entry>')[0];
+    for (let i = 0; i < entryBlocks.length; i++) {
+      const block = entryBlocks[i].replace(/^<entry(?:\s[^>]*)?>/i, '').replace(/<\/entry\s*>$/i, '');
 
       const id = extractTagText(block, 'id');
       const title = extractTagText(block, 'title');
@@ -69,7 +71,7 @@ export class StandardEbooksAdapter implements BookProviderAdapter {
 
       if (title) {
         entries.push({
-          id: id || `se-${i}`,
+          id: id || `se-${i + 1}`,
           title: title.trim(),
           author: author?.trim() || 'Unknown Author',
           summary: summary?.replace(/<[^>]+>/g, '').trim() || '',

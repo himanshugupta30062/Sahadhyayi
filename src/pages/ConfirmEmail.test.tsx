@@ -60,6 +60,9 @@ describe('ConfirmEmail verification flow', () => {
   it('rejects email addresses containing internal whitespace before verification', async () => {
     renderConfirmEmail();
 
+    // The component synchronizes the query-string email after mount; wait for
+    // that initial effect before replacing it with the invalid value.
+    await waitFor(() => expect(screen.getByLabelText(/Email address/i)).toHaveValue('reader@example.com'));
     fireEvent.change(screen.getByLabelText(/Email address/i), { target: { value: 'reader @example.com' } });
     fireEvent.change(screen.getByLabelText(/Verification code/i), { target: { value: '123456' } });
     fireEvent.submit(screen.getByRole('button', { name: /^Verify email$/i }).closest('form')!);
