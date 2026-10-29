@@ -71,7 +71,7 @@ describe('game rank helpers', () => {
   });
 
   it.each([
-    [-1, 'Book Worm'],
+    [-1, 'Beginner'],
     [499, 'Book Worm'],
     [500, 'Scholar'],
     [2000, 'Expert'],
