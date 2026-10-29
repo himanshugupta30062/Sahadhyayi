@@ -86,7 +86,7 @@ function createPage({ title, description, route, image, type }) {
     <p>${escapeHtml(description)}</p>
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
   </main>`;
-  html = html.replace(/<div id="root">[\\s\\S]*?<\\/div>/i, `<div id="root">${fallback}</div>`);
+  html = html.replace(/<div id="root">[\s\S]*?<\/div>/i, `<div id="root">${fallback}</div>`);
   return html;
 }
 
