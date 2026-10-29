@@ -225,16 +225,16 @@ const Blog = () => {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Sahadhyayi Blog - Reading Insights & Community Stories
+              Blogs & Literary News
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Thoughtful reads, book lists, and ideas to help you discover your next favourite book and read together.
+              Editorially published book news, author updates, reading culture and curated literary guides from Sahadhyayi.
             </p>
           </div>
 
           {/* Search */}
           <div className="max-w-2xl mx-auto mb-8">
-            <label htmlFor="blog-search" className="sr-only">Search articles</label>
+            <label htmlFor="blog-search" className="sr-only">Search blogs</label>
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
               <input
@@ -242,12 +242,12 @@ const Blog = () => {
                 type="search"
                 value={searchQuery}
                 onChange={event => setSearchQuery(event.target.value)}
-                placeholder="Search articles, topics, or authors..."
+                placeholder="Search blogs, topics, or authors..."
                 className="w-full rounded-xl border border-orange-200 bg-white/90 py-3 pl-12 pr-4 text-gray-900 shadow-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
               />
             </div>
             <p className="mt-2 text-center text-sm text-gray-500">
-              {filteredPosts.length} {filteredPosts.length === 1 ? 'article' : 'articles'} to explore
+              {filteredPosts.length} {filteredPosts.length === 1 ? 'blog' : 'blogs'} to explore
             </p>
           </div>
 
@@ -287,7 +287,7 @@ const Blog = () => {
                     </div>
                     <Link to={`/blog/${featuredPost.slug}`}>
                       <Button className="bg-orange-600 hover:bg-orange-700">
-                        Read Full Article
+                        Read Blog
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </Link>
@@ -319,8 +319,8 @@ const Blog = () => {
             {regularPosts.length === 0 ? (
               <div className="col-span-full rounded-2xl border border-dashed border-orange-300 bg-white/70 px-6 py-12 text-center">
                 <BookOpen className="mx-auto mb-3 h-8 w-8 text-orange-500" aria-hidden="true" />
-                <h2 className="text-xl font-semibold text-gray-900">No articles found</h2>
-                <p className="mt-2 text-gray-600">Try a different search or choose another category.</p>
+                <h2 className="text-xl font-semibold text-gray-900">No blogs found</h2>
+                <p className="mt-2 text-gray-600">Try another search or choose a different category.</p>
                 <Button variant="outline" className="mt-5 border-orange-300 text-orange-700" onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}>
                   Clear filters
                 </Button>
