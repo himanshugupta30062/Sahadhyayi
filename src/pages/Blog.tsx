@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, ArrowRight, Search, BookOpen } from 'lucide-react';
+import { Calendar, User, ArrowRight, Search, BookOpen, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '@/components/SEO';
 
@@ -205,7 +205,7 @@ const Blog = () => {
     return matchesCategory && (!normalizedQuery || searchableText.includes(normalizedQuery));
   });
 
-  const sortedPosts = [...filteredPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sortedPosts = [...filteredPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || a.title.localeCompare(b.title));
   const featuredPost = selectedCategory === 'All' && !normalizedQuery
     ? (sortedPosts.find(post => post.featured) || sortedPosts[0])
     : undefined;
@@ -256,8 +256,18 @@ const Blog = () => {
                     value={searchQuery}
                     onChange={event => setSearchQuery(event.target.value)}
                     placeholder="Search stories, books, or topics…"
-                    className="h-12 w-full rounded-xl border border-white/20 bg-white/95 pl-12 pr-4 text-sm text-[#202820] shadow-xl outline-none transition placeholder:text-[#788078] focus:border-[#D5B16D] focus:ring-2 focus:ring-[#D5B16D]/50 sm:h-14"
+                    className="h-12 w-full rounded-xl border border-white/20 bg-white/95 pl-12 pr-12 text-sm text-[#202820] shadow-xl outline-none transition placeholder:text-[#788078] focus:border-[#D5B16D] focus:ring-2 focus:ring-[#D5B16D]/50 sm:h-14"
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Clear journal search"
+                      className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[#68756A] transition hover:bg-[#E9EDE6] hover:text-[#202820] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D]"
+                    >
+                      <X className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -292,7 +302,10 @@ const Blog = () => {
                 {selectedCategory === 'All' ? 'Latest stories' : selectedCategory}
               </h2>
             </div>
-            <p className="text-sm text-[#72796F]">{sortedPosts.length} {sortedPosts.length === 1 ? 'story' : 'stories'}</p>
+            <p aria-live="polite" className="text-sm text-[#72796F]">
+              {sortedPosts.length} {sortedPosts.length === 1 ? 'story' : 'stories'}
+              {normalizedQuery ? ` matching “${searchQuery.trim()}”` : ''}
+            </p>
           </div>
 
           {sortedPosts.length === 0 ? (
@@ -309,7 +322,7 @@ const Blog = () => {
               {featuredPost && (
                 <Link
                   to={`/blog/${featuredPost.slug}`}
-                  className="group mb-10 grid overflow-hidden rounded-3xl border border-[#E3DED2] bg-white shadow-sm transition hover:border-[#9CAB96] hover:shadow-xl md:grid-cols-2"
+                  className="group mb-10 grid overflow-hidden rounded-3xl border border-[#E3DED2] bg-white shadow-sm transition hover:border-[#9CAB96] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-4 md:grid-cols-2"
                 >
                   <div className="relative min-h-[250px] overflow-hidden bg-[#E7E8DF] sm:min-h-[340px]">
                     <img
