@@ -144,6 +144,18 @@ describe('AddBookToCurrentReadsDialog', () => {
     expect(mocks.toast).not.toHaveBeenCalled();
   });
 
+  it('continues when the reading-goal guard allows adding a book', async () => {
+    const checkReadingGoal = vi.fn(() => true);
+    (window as Window & { checkReadingGoal?: () => boolean }).checkReadingGoal = checkReadingGoal;
+    renderDialog();
+    openDialog();
+    fillRequiredFields();
+    submitDialog();
+
+    await waitFor(() => expect(mocks.insert).toHaveBeenCalled());
+    expect(checkReadingGoal).toHaveBeenCalledOnce();
+  });
+
   it('shows the Supabase error and keeps the dialog open when insertion fails', async () => {
     mocks.insert.mockResolvedValue({ error: new Error('Database unavailable') });
     renderDialog();
