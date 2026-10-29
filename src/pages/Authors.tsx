@@ -27,6 +27,7 @@ import LibraryPagination from '@/components/library/LibraryPagination';
 import { useAuthors, type Author } from '@/hooks/useAuthors';
 import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { slugify } from '@/utils/slugify';
+import AuthorDiscoverySection from '@/components/authors/AuthorDiscoverySection';
 import BookFlipLoader from '@/components/ui/BookFlipLoader';
 
 type SortMode = 'books' | 'name' | 'newest';
@@ -258,6 +259,16 @@ const Authors = () => {
               </div>
             )}
           </section>
+
+          {!hasActiveFilters && (
+            <AuthorDiscoverySection
+              authors={authors}
+              booksByAuthor={booksByAuthor}
+              title="Explore authors and their books"
+              description="Start with writers represented in our catalogue. Open a book directly or visit the author profile to explore more of their work."
+              limit={6}
+            />
+          )}
 
           <section aria-labelledby="authors-results-title">
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

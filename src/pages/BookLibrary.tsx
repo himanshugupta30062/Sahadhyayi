@@ -6,12 +6,15 @@ import BooksCollection from '@/components/library/BooksCollection';
 import GenreSelector from '@/components/library/GenreSelector';
 import SEO from '@/components/SEO';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuthors } from '@/hooks/useAuthors';
+import AuthorDiscoverySection from '@/components/authors/AuthorDiscoverySection';
 
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
 const BookLibrary = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { data: authors = [] } = useAuthors();
 
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
   const [selectedGenre, setSelectedGenre] = useState<string>(() => cap(searchParams.get('genre') || '') || 'All');
@@ -188,6 +191,15 @@ const BookLibrary = () => {
             </div>
           </div>
         </section>
+
+        {!searchQuery.trim() && selectedGenre === 'All' && selectedAuthor === 'All' && !selectedYear && selectedLanguage === 'All' && priceRange[0] === 0 && priceRange[1] === 100 && (
+          <AuthorDiscoverySection
+            authors={authors}
+            title="Explore books by author"
+            description="Discover writers already represented in the Sahadhyayi catalogue, then open their profile or browse their books."
+            limit={6}
+          />
+        )}
 
         {/* Books Collection Section */}
         <section aria-labelledby="books-collection-heading">
