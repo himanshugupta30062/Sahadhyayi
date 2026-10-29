@@ -264,7 +264,7 @@ const Authors = () => {
             <AuthorDiscoverySection
               authors={authors}
               booksByAuthor={booksByAuthor}
-              title="Famous authors and their books"
+              title="Explore authors and their books"
               description="Start with writers represented in our catalogue. Open a book directly or visit the author profile to explore more of their work."
               limit={6}
             />
