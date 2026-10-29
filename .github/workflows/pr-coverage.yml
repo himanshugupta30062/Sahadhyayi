@@ -46,6 +46,8 @@ jobs:
           --coverage.reporter=json-summary
           --coverage.reportsDirectory=./coverage
           --coverage.reportOnFailure=true
+          --coverage.exclude=archive/**
+          --coverage.exclude=src/integrations/supabase/types.ts
 
       - name: Add coverage summary to workflow run
         if: always()
