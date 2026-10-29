@@ -305,7 +305,7 @@ const Navigation = () => {
                 onClick={() => setSearchOpen(true)}
                 aria-label="Search library and books"
                 title="Search library and books"
-                className="h-9 w-9 text-foreground hover:bg-muted p-1"
+                className="h-11 w-11 min-h-[44px] min-w-[44px] text-foreground hover:bg-muted p-1 touch-manipulation"
               >
                 <Search className="w-4 h-4" aria-hidden="true" />
               </Button>
@@ -315,7 +315,7 @@ const Navigation = () => {
                 onClick={toggleTheme}
                 aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
                 title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                className="h-9 w-9 text-foreground hover:bg-muted p-1"
+                className="h-11 w-11 min-h-[44px] min-w-[44px] text-foreground hover:bg-muted p-1 touch-manipulation"
               >
                 {theme === 'dark' ? (
                   <Sun className="w-4 h-4 text-amber-400" />
@@ -337,7 +337,7 @@ const Navigation = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 border border-border text-foreground hover:bg-muted min-h-[40px] min-w-[40px]"
+                className="p-2 border border-border text-foreground hover:bg-muted min-h-[44px] min-w-[44px] touch-manipulation"
                 aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
                 aria-expanded={isOpen}
                 aria-controls="mobile-navigation-menu"
