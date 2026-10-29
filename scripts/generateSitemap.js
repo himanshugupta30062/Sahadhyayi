@@ -10,6 +10,23 @@ const staticPages = [
   '/terms-of-service', '/cookie-policy', '/dmca'
 ];
 
+const blogSlugs = [
+  'what-is-sahadhyayi-meaning-story',
+  'how-sahadhyayi-revives-reading-culture',
+  'why-book-lovers-should-join-sahadhyayi',
+  'build-a-reading-habit-that-lasts',
+  'how-to-start-a-book-club',
+  'how-to-read-classic-literature',
+  'best-indian-short-story-collections',
+  'books-for-when-life-feels-stuck',
+  'exploring-indian-literature-in-translation',
+  'choose-your-next-book-by-mood',
+  'how-to-read-without-distractions',
+  '30-day-reading-challenge',
+  'osho-books-and-themes-in-his-discourses',
+  'best-indian-books-to-read'
+];
+
 const SITE_URL = 'https://sahadhyayi.com';
 const HOME_IMAGE = SITE_URL + '/lovable-uploads/sahadhyayi-logo-digital-reading.png';
 const urls = [];
@@ -22,6 +39,7 @@ function addUrl(loc, changefreq = 'weekly', priority = '0.6', image) {
 
 addUrl('/', 'weekly', '1.0', HOME_IMAGE);
 staticPages.forEach(route => addUrl(route, 'weekly', route === '/library' || route === '/articles' ? '0.9' : '0.5'));
+blogSlugs.forEach(slug => addUrl('/blog/' + slug, 'monthly', '0.6'));
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
