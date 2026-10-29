@@ -45,6 +45,7 @@ const ArticleLikeButton: React.FC<Props> = ({ articleId, variant = 'full' }) => 
     <Button
       variant="ghost"
       size="sm"
+      data-variant={variant}
       onClick={handleClick}
       disabled={!user}
       className={cn(
