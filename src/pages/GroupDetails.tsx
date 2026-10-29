@@ -80,7 +80,7 @@ const GroupDetails = () => {
   const group = cachedGroup || directGroup;
   const isMember = group ? joinedGroups.some(g => g.id === group.id || (g as any).group_id === group.id) : false;
   const memberCount = group?.group_members?.[0]?.count ?? members.length;
-  const isDefaultReadingGroup = group.name === DEFAULT_READING_GROUP_NAME;
+  const isDefaultReadingGroup = group?.name === DEFAULT_READING_GROUP_NAME;
 
   const copyInviteLink = () => {
     if (!group) return;
@@ -205,7 +205,7 @@ const GroupDetails = () => {
                         {isCopied ? 'Link Copied' : 'Invite'}
                       </Button>
 
-{isDefaultReadingGroup ? (
+                      {isDefaultReadingGroup ? (
                       <Badge variant="secondary" className="text-xs">Permanent Community Member</Badge>
                     ) : (
                       <Button
