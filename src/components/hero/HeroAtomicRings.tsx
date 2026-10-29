@@ -130,6 +130,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
   const softFilterId = `soft-${generatedId}`;
   const gradientId = (orbitId: string) => `g-${orbitId}-${generatedId}`;
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const ringRefs = useRef<(SVGGElement | null)[]>([]);
   const atomRefs = useRef<(SVGGElement | null)[]>([]);
   const ringAngles = useRef(ORBITS.map(() => 0));
@@ -145,6 +146,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let prefersReducedMotion = motionQuery.matches;
     let raf: number | null = null;
+    let isInViewport = true;
     let lastFrameTime = performance.now();
 
     const renderScene = () => {
@@ -192,7 +194,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
       }
     };
     const startAnimation = () => {
-      if (prefersReducedMotion || document.hidden || raf !== null) return;
+      if (prefersReducedMotion || document.hidden || !isInViewport || raf !== null) return;
       lastFrameTime = performance.now();
       raf = window.requestAnimationFrame(tick);
     };
@@ -210,6 +212,15 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
       }
     };
 
+    const observer = typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(([entry]) => {
+          isInViewport = entry.isIntersecting;
+          if (isInViewport) startAnimation();
+          else stopAnimation();
+        }, { rootMargin: "100px" })
+      : null;
+    if (containerRef.current) observer?.observe(containerRef.current);
+
     renderScene();
     startAnimation();
     document.addEventListener("visibilitychange", onVisibilityChange);
@@ -221,6 +232,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
 
     return () => {
       stopAnimation();
+      observer?.disconnect();
       document.removeEventListener("visibilitychange", onVisibilityChange);
       if (typeof motionQuery.removeEventListener === "function") {
         motionQuery.removeEventListener("change", onMotionPreferenceChange);
@@ -290,7 +302,8 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
 
   return (
     <div
-      className={`relative w-full h-full aspect-square flex items-center justify-center ${className}`}
+      ref={containerRef}
+      className={`relative w-full h-full aspect-square flex items-center justify-center ${className}`)
       style={
         typeof size === "number"
           ? { width: size, height: size }
