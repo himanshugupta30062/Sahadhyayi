@@ -126,6 +126,11 @@ describe('Authors directory', () => {
       'src',
       'https://example.com/cover.jpg',
     );
+    expect(screen.getByRole('link', { name: /The Dispossessed/ })).toHaveAttribute('href', '/book/book-1');
+    expect(screen.getByRole('link', { name: /All books/ })).toHaveAttribute(
+      'href',
+      '/library?author=Ursula%20K.%20Le%20Guin',
+    );
     expect(screen.getAllByRole('link', { name: /View profile/ })[0]).toHaveAttribute('href', '/authors/ursula-k-le-guin');
   });
 
