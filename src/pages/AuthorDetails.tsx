@@ -56,6 +56,8 @@ const AuthorDetails = () => {
       <SEO
         title={`${author.name} - Author Profile | Sahadhyayi`}
         description={toSeoDescription(author.bio || `Discover books by ${author.name} on Sahadhyayi.`)}
+        canonical={`https://sahadhyayi.com/authors/${slug}`}
+        url={`https://sahadhyayi.com/authors/${slug}`}
       />
 
       <div className="min-h-screen bg-background">
