@@ -38,7 +38,7 @@ vi.mock('@/contexts/authHelpers', () => ({
 }));
 
 import { CommunityPulseDialog } from '@/components/community-pulse/CommunityPulseDialog';
-import { useCommunityPulse } from '@/hooks/useCommunityPulse';
+import { getBaselineStats, useCommunityPulse } from '@/hooks/useCommunityPulse';
 import { trackAnalyticsEvent } from '@/lib/analytics';
 
 describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
