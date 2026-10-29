@@ -37,7 +37,7 @@ describe('Blog journal page', () => {
     fireEvent.change(screen.getByLabelText('Search journal stories'), { target: { value: 'Premchand' } });
     expect(screen.getByText('25 Best Indian Books to Read: Classics, Novels & Regional Literature')).toBeInTheDocument();
     expect(screen.queryByText("Editor's pick")).not.toBeInTheDocument();
-    expect(screen.getByText(/^1 story$/)).toBeInTheDocument();
+    expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent?.trim().startsWith('1 story'))).toBeInTheDocument();
   });
 
   it('shows an empty state for unmatched searches and clears both filters', () => {
