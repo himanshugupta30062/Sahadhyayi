@@ -87,6 +87,12 @@ export default function AuthenticatedUserDropdown({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
+              <Link to="/admin/roles" className="flex items-center cursor-pointer">
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Role Management
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
               <Link to="/admin/book-pdf-reviews" className="flex items-center cursor-pointer">
                 <ShieldCheck className="mr-2 h-4 w-4" />
                 PDF Review Queue
