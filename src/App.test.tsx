@@ -28,11 +28,12 @@ vi.mock('@/utils/security.ts', async (importOriginal) => ({
   generateCSRFToken: mocks.generateCSRFToken,
 }));
 
-const authHelpersMock = () => ({
+vi.mock('./contexts/authHelpers', () => ({
   useAuth: () => ({ user: mocks.user, loading: mocks.loading }),
-});
-vi.mock('./contexts/authHelpers', authHelpersMock);
-vi.mock('@/contexts/authHelpers', authHelpersMock);
+}));
+vi.mock('@/contexts/authHelpers', () => ({
+  useAuth: () => ({ user: mocks.user, loading: mocks.loading }),
+}));
 
 vi.mock('@/hooks/use-toast', () => ({ toast: vi.fn() }));
 vi.mock('@/utils/errorHandler', () => ({ errorHandler: { reportCustomError: vi.fn() } }));
