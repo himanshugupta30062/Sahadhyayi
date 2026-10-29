@@ -152,6 +152,7 @@ describe('useQuizGame', () => {
   });
 
   it('loses a life after a wrong survival answer and ends after the final life', async () => {
+    mocks.invoke.mockResolvedValue({ data: { questions: [question(), question({ id: 'question-2' }), question({ id: 'question-3' }), question({ id: 'question-4' })] }, error: null });
     const { result } = renderHook(() => useQuizGame());
     await act(async () => { await result.current.startGame('book-1', 'medium', 'survival'); });
 
