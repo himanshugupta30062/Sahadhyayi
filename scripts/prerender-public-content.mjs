@@ -170,7 +170,7 @@ if (authorsError) {
     const name = String(author.name ?? "").trim();
     const slug = slugify(name);
     if (!name || !slug) continue;
-    const route = `/author/${slug}`;
+    const route = `/authors/${slug}`;
     const description = plainText(author.bio) ||
       `Discover books and learn about ${name} on Sahadhyayi.`;
     writeRoute(route, createPage({
