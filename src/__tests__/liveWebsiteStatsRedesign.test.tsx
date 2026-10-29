@@ -119,7 +119,7 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     await waitFor(() => {
       expect(screen.getByText('Live Website Stats')).toBeInTheDocument();
       // The dialog title appears before the asynchronous aggregate is ready.
-      expect(screen.getByText(/10,337/)).toBeInTheDocument();
+      expect(screen.getByText(/10[,.\s\u202f]?337/)).toBeInTheDocument();
     });
 
     // Check near-full-screen dialog container styling
@@ -129,7 +129,7 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     expect(container).toBeInTheDocument();
 
     // Check All-Time Platform Visits hero card
-    expect(screen.getByText('10,337')).toBeInTheDocument();
+    expect(screen.getByText(/10[,.\s\u202f]?337/)).toBeInTheDocument();
 
     // Check timeframe selector
     const select = screen.getByRole('combobox', { name: 'Select timeframe' });
