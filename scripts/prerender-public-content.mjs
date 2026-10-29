@@ -95,6 +95,22 @@ function createPage({ title, description, route, image, type }) {
   return html;
 }
 
+async function fetchRows(query, label, maxRows) {
+  const pageSize = 1000;
+  const rows = [];
+  for (let offset = 0; offset < maxRows; offset += pageSize) {
+    const end = Math.min(offset + pageSize - 1, maxRows - 1);
+    const { data, error } = await query.range(offset, end);
+    if (error) return { data: null, error };
+    rows.push(...(data || []));
+    if (!data || data.length < end - offset + 1) break;
+  }
+  if (rows.length >= maxRows) {
+    console.warn(`[prerender] Reached the ${maxRows}-row ${label} safety cap; additional records were not prerendered.`);
+  }
+  return { data: rows, error: null };
+}
+
 function writeRoute(route, html) {
   const outputPath = path.join(DIST_DIR, route.replace(/^\//, ""), "index.html");
   if (!outputPath.startsWith(DIST_DIR + path.sep)) {
@@ -135,12 +151,14 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 let bookCount = 0;
 let authorCount = 0;
 
-const { data: books, error: booksError } = await supabase
-  .from("books_library")
-  .select("id,title,description,cover_image_url")
-  .not("id", "is", null)
-  .not("title", "is", null)
-  .limit(10000);
+const { data: books, error: booksError } = await fetchRows(
+  supabase.from("books_library")
+    .select("id,title,description,cover_image_url")
+    .not("id", "is", null)
+    .not("title", "is", null),
+  "books",
+  10000,
+);
 
 if (booksError) {
   console.warn(`[prerender] Could not fetch public books: ${booksError.message}`);
@@ -163,11 +181,13 @@ if (booksError) {
   }
 }
 
-const { data: authors, error: authorsError } = await supabase
-  .from("authors")
-  .select("name,bio")
-  .not("name", "is", null)
-  .limit(5000);
+const { data: authors, error: authorsError } = await fetchRows(
+  supabase.from("authors")
+    .select("name,bio")
+    .not("name", "is", null),
+  "authors",
+  5000,
+);
 
 if (authorsError) {
   console.warn(`[prerender] Could not fetch public authors: ${authorsError.message}`);
