@@ -88,8 +88,8 @@ const Index = () => {
 
         {/* 3. Real Book Discovery */}
         <DeferredSection
-          fallback={<div className="min-h-[360px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[360px]"
+          fallback={<div className="min-h-[640px] sm:min-h-[680px] lg:min-h-[720px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[640px] sm:min-h-[680px] lg:min-h-[720px]"
         >
           <ErrorBoundary fallback={null}>
             <HomeBookDiscovery />
@@ -98,8 +98,8 @@ const Index = () => {
 
         {/* 4. Real Community Preview */}
         <DeferredSection
-          fallback={<div className="min-h-[400px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[400px]"
+          fallback={<div className="min-h-[1320px] sm:min-h-[1080px] lg:min-h-[820px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[1320px] sm:min-h-[1080px] lg:min-h-[820px]"
         >
           <ErrorBoundary fallback={null}>
             <HomeCommunityPreview />
@@ -108,8 +108,8 @@ const Index = () => {
 
         {/* 5. Explore the Platform / Capabilities */}
         <DeferredSection
-          fallback={<div className="min-h-[320px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[320px]"
+          fallback={<div className="min-h-[760px] sm:min-h-[650px] lg:min-h-[500px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[760px] sm:min-h-[650px] lg:min-h-[500px]"
         >
           <ErrorBoundary fallback={null}>
             <SahadhyayiCapabilities />
@@ -118,8 +118,8 @@ const Index = () => {
 
         {/* 6. Editorial blogs and community articles are distinct content destinations. */}
         <DeferredSection
-          fallback={<div className="min-h-[320px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[320px]"
+          fallback={<div className="min-h-[640px] sm:min-h-[560px] lg:min-h-[520px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[640px] sm:min-h-[560px] lg:min-h-[520px]"
         >
           <HomeEditorialPreview />
         </DeferredSection>
