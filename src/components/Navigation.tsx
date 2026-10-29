@@ -167,12 +167,12 @@ const Navigation = () => {
           : 'bg-background/85 backdrop-blur-sm border-b border-border/40'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div className="flex justify-between items-center min-h-16 gap-3">
           {/* Logo */}
           <Link
             to={user ? "/dashboard" : "/"}
-            className="flex items-center space-x-3 font-bold text-2xl text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+            className="flex shrink-0 items-center space-x-2 sm:space-x-3 font-bold text-xl xl:text-2xl text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
             aria-label="Sahadhyayi Home"
           >
             <EnhancedLazyImage
@@ -188,9 +188,9 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           {!isMobile && (
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex min-w-0 flex-1 items-center justify-end gap-3 xl:gap-5">
               {/* Navigation Links */}
-              <nav aria-label="Main navigation" className="flex items-center space-x-3 lg:space-x-5">
+              <nav aria-label="Main navigation" className="flex min-w-0 items-center gap-2 lg:gap-3 xl:gap-4 whitespace-nowrap">
                 {navItems.map((item) => {
                   const isActive = isCurrentRoute(item.href);
                   return (
@@ -198,17 +198,11 @@ const Navigation = () => {
                       key={item.name}
                       to={item.href}
                       aria-current={isActive ? "page" : undefined}
-                      className={item.href === "/blog"
-                        ? `inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                            isActive
-                              ? 'border-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary))] text-white shadow-sm'
-                              : 'border-[hsl(var(--brand-primary)/0.35)] bg-[hsl(var(--brand-primary)/0.08)] text-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.15)]'
-                          }`
-                        : `text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm ${
-                            isActive
-                              ? 'text-[hsl(var(--brand-primary))] border-b-2 border-[hsl(var(--brand-primary))] pb-1 font-semibold'
-                              : 'text-muted-foreground'
-                          }`}
+                      className={`shrink-0 text-xs lg:text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm whitespace-nowrap ${
+                        isActive
+                          ? 'text-[hsl(var(--brand-primary))] border-b-2 border-[hsl(var(--brand-primary))] pb-1 font-semibold'
+                          : item.href === "/blog" ? 'text-[hsl(var(--brand-primary))]' : 'text-muted-foreground'
+                      }`}
                     >
                       {item.name}
                     </Link>
@@ -217,16 +211,16 @@ const Navigation = () => {
               </nav>
 
               {/* User Actions */}
-              <div className="flex items-center space-x-4">
+              <div className="flex shrink-0 items-center gap-2 xl:gap-3">
                 <button
                   type="button"
                   onClick={() => setSearchOpen(true)}
-                  className="group relative flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-muted/50 hover:bg-muted hover:text-foreground border border-border/70 hover:border-border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer shadow-2xs"
+                  className="group relative flex h-9 w-9 xl:w-auto xl:gap-2 items-center justify-center xl:justify-start xl:px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-muted/50 hover:bg-muted hover:text-foreground border border-border/70 hover:border-border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer shadow-2xs"
                   aria-label="Search library, authors, and books"
                   title="Search library, authors, and books"
                 >
                   <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true" />
-                  <span className="text-xs text-foreground/80 font-normal">
+                  <span className="hidden xl:inline text-xs text-foreground/80 font-normal">
                     Search library & authors...
                   </span>
                 </button>
