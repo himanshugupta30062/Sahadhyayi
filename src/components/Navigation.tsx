@@ -38,6 +38,11 @@ const Navigation = () => {
     if (user) setContactDialogRequested(false);
   }, [user]);
 
+  // Close the mobile menu after any route change (link tap, redirect, or browser navigation).
+  React.useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
   React.useEffect(() => {
     const handleScroll = () => {
       const isScrolled = window.scrollY > 20;
