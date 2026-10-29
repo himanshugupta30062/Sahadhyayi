@@ -73,7 +73,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     bundleDiagnosticsPlugin(),
-    mode === "development" && componentTagger(),
   ].filter(Boolean),
   optimizeDeps: {
     include: [
