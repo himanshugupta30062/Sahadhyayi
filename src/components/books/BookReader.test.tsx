@@ -116,7 +116,7 @@ describe('BookReader', () => {
 
     expect(screen.getByRole('heading', { name: 'Read Book' })).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByText('Page 4 of 100')).toBeInTheDocument();
+      expect(screen.getAllByText('Page 4 of 100').length).toBeGreaterThan(1);
     });
     expect(mocks.getDocument).toHaveBeenCalledWith('https://example.com/book.pdf');
 
@@ -140,7 +140,7 @@ describe('BookReader', () => {
     renderReader('https://example.com/book.pdf');
 
     await waitFor(() => {
-      expect(screen.getByText('Page 12 of 100')).toBeInTheDocument();
+      expect(screen.getAllByText('Page 12 of 100').length).toBeGreaterThan(1);
     });
     expect(mocks.loadProgressLocally).toHaveBeenCalledWith('book-1', 'reader-1');
     expect(screen.getByText('1 Bookmarks')).toBeInTheDocument();
