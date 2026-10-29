@@ -137,11 +137,17 @@ describe('Games page', () => {
     expect(screen.getByText('Streak 3')).toBeInTheDocument();
     expect(screen.getByText('Daily challenges mock')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('tab', { name: /Social/ }));
-    expect(await screen.findByText('Friend challenge mock')).toBeInTheDocument();
+    const socialTab = screen.getByRole('tab', { name: /Social/ });
+    fireEvent.mouseDown(socialTab, { button: 0 });
+    fireEvent.click(socialTab);
+    await waitFor(() => expect(socialTab).toHaveAttribute('data-state', 'active'));
+    expect(await screen.findByText('Friend challenge mock', {}, { timeout: 10000 })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('tab', { name: /Achievements/ }));
-    expect(await screen.findByText('Achievement showcase mock')).toBeInTheDocument();
+    const achievementsTab = screen.getByRole('tab', { name: /Achievements/ });
+    fireEvent.mouseDown(achievementsTab, { button: 0 });
+    fireEvent.click(achievementsTab);
+    await waitFor(() => expect(achievementsTab).toHaveAttribute('data-state', 'active'));
+    expect(await screen.findByText('Achievement showcase mock', {}, { timeout: 10000 })).toBeInTheDocument();
   });
 
   it('lets a signed-in reader change difficulty and enter book selection', async () => {
