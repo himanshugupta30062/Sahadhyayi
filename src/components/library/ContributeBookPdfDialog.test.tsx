@@ -118,7 +118,7 @@ describe('ContributeBookPdfDialog', () => {
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
     await waitFor(() => expect(screen.getByRole('button', { name: /Submit for verification/i })).toBeEnabled());
-    fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
+    fireEvent.submit(screen.getByLabelText(/PDF file/i).closest('form')!);
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
       description: expect.stringMatching(/valid PDF signature/i),
