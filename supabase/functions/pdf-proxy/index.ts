@@ -35,7 +35,7 @@ function isPrivateOrLoopbackHost(hostname: string): boolean {
   // IPv4
   const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
   if (!m) return false
-  const [a, b] = [parseInt(m[1], 10), parseInt(m[2], 10)]
+  const [a, b] = [Number.parseInt(m[1], 10), Number.parseInt(m[2], 10)]
   if (a === 10) return true
   if (a === 127) return true
   if (a === 0) return true
