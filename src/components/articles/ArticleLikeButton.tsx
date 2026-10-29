@@ -44,7 +44,7 @@ const ArticleLikeButton: React.FC<Props> = ({ articleId, variant = 'full' }) => 
   const button = (
     <Button
       variant="ghost"
-      size={variant === 'compact' ? 'sm' : 'sm'}
+      size="sm"
       onClick={handleClick}
       disabled={!user}
       className={cn(
