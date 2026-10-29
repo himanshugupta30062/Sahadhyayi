@@ -1,6 +1,4 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, User, ArrowRight, Search, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -195,206 +193,197 @@ const Blog = () => {
     }
   ];
 
-  const categories = ['All', ...Array.from(new Set(blogPosts.map(post => post.category)))];
+  const publishedPosts = blogPosts.filter(post => Boolean(post.slug));
+  const categories = ['All', ...Array.from(new Set(publishedPosts.map(post => post.category)))];
   const [selectedCategory, setSelectedCategory] = React.useState('All');
   const [searchQuery, setSearchQuery] = React.useState('');
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const filteredPosts = blogPosts.filter(post => {
+  const filteredPosts = publishedPosts.filter(post => {
     const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
     const searchableText = `${post.title} ${post.excerpt} ${post.author} ${post.category}`.toLowerCase();
     return matchesCategory && (!normalizedQuery || searchableText.includes(normalizedQuery));
   });
 
+  const sortedPosts = [...filteredPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const featuredPost = selectedCategory === 'All' && !normalizedQuery
-    ? blogPosts.find(post => post.featured)
+    ? (sortedPosts.find(post => post.featured) || sortedPosts[0])
     : undefined;
-  const regularPosts = filteredPosts.filter(post => post.slug !== featuredPost?.slug);
+  const regularPosts = sortedPosts.filter(post => post.slug !== featuredPost?.slug);
 
   return (
     <>
       <SEO
-        title="Sahadhyayi Blog - Reading Insights, Community Stories & Tips"
-        description="Explore Sahadhyayi's blog for reading insights, community stories, book recommendations, and tips to enhance your reading journey, including Indian literature across languages."
+        title="Sahadhyayi Journal — Latest Reading News, Stories & Guides"
+        description="The Sahadhyayi Journal: official platform updates, literary news, reading guides, and curated stories from our editorial team."
         canonical="https://sahadhyayi.com/blog"
-        keywords={['Sahadhyayi blog', 'reading insights', 'book community', 'reading tips', 'what is Sahadhyayi', 'Sahadhyayi meaning', 'reading culture']}
+        keywords={['Sahadhyayi Journal', 'literary news', 'reading guides', 'book recommendations', 'reading culture']}
       />
-      
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Blogs & Literary News
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Editorially published book news, author updates, reading culture and curated literary guides from Sahadhyayi.
-            </p>
-          </div>
 
-          {/* Search */}
-          <div className="max-w-2xl mx-auto mb-8">
-            <label htmlFor="blog-search" className="sr-only">Search blogs</label>
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
-              <input
-                id="blog-search"
-                type="search"
-                value={searchQuery}
-                onChange={event => setSearchQuery(event.target.value)}
-                placeholder="Search blogs, topics, or authors..."
-                className="w-full rounded-xl border border-orange-200 bg-white/90 py-3 pl-12 pr-4 text-gray-900 shadow-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
-              />
-            </div>
-            <p className="mt-2 text-center text-sm text-gray-500">
-              {filteredPosts.length} {filteredPosts.length === 1 ? 'blog' : 'blogs'} to explore
-            </p>
-          </div>
-
-          {/* Featured Post */}
-          {featuredPost && (
-            <div className="mb-12">
-              <Card className="overflow-hidden bg-white/80 backdrop-blur-sm border-orange-200 hover:shadow-xl transition-all duration-300">
-                <div className="md:flex">
-                  <div className="md:w-1/2">
-                    <img
-                      src={featuredPost.image}
-                      alt={featuredPost.title}
-                      loading="lazy"
-                      className="w-full h-64 md:h-full object-cover"
-                    />
-                  </div>
-                  <div className="md:w-1/2 p-8">
-                    <Badge className="mb-4 bg-orange-100 text-orange-800">
-                      Featured
-                    </Badge>
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                      {featuredPost.title}
-                    </h2>
-                    <p className="text-gray-600 mb-6 text-lg">
-                      {featuredPost.excerpt}
-                    </p>
-                    <div className="flex items-center gap-4 mb-6 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
-                        {featuredPost.author}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {new Date(featuredPost.date).toLocaleDateString()}
-                      </div>
-                      <Badge variant="outline">{featuredPost.category}</Badge>
-                    </div>
-                    <Link to={`/blog/${featuredPost.slug}`}>
-                      <Button className="bg-orange-600 hover:bg-orange-700">
-                        Read Blog
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
-                  </div>
+      <main className="min-h-screen bg-[#F7F5EF] text-[#202820]">
+        <section className="relative isolate overflow-hidden bg-[#101A13]">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-cover bg-center opacity-35"
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2200&q=85')" }}
+          />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#101A13] via-[#101A13]/90 to-[#101A13]/45" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#101A13]/75 via-transparent to-transparent" />
+          <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+            <div className="max-w-3xl">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D5B16D]/40 bg-black/25 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#E4C17B] backdrop-blur-sm">
+                <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
+                Sahadhyayi Journal · Official Editorial
+              </div>
+              <h1 className="font-serif text-4xl font-bold leading-tight tracking-tight text-[#FBF7EF] sm:text-5xl md:text-6xl">
+                Stories for curious readers.
+              </h1>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
+                The latest from Sahadhyayi: reading guides, literary discoveries, book recommendations, and notes from our editorial desk.
+              </p>
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium uppercase tracking-[0.12em] text-white/60">
+                <span className="inline-flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-[#D5B16D]" /> Editor-published</span>
+                <span>Read-only for readers</span>
+                <span>{publishedPosts.length} published stories in the journal</span>
+              </div>
+              <div className="mt-8 max-w-2xl">
+                <label htmlFor="blog-search" className="sr-only">Search journal stories</label>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#68756A]" aria-hidden="true" />
+                  <input
+                    id="blog-search"
+                    type="search"
+                    value={searchQuery}
+                    onChange={event => setSearchQuery(event.target.value)}
+                    placeholder="Search stories, books, or topics…"
+                    className="h-12 w-full rounded-xl border border-white/20 bg-white/95 pl-12 pr-4 text-sm text-[#202820] shadow-xl outline-none transition placeholder:text-[#788078] focus:border-[#D5B16D] focus:ring-2 focus:ring-[#D5B16D]/50 sm:h-14"
+                  />
                 </div>
-              </Card>
+              </div>
             </div>
-          )}
+          </div>
+        </section>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-8 justify-center">
+        <div className="sticky top-16 z-20 border-b border-[#E5E0D4] bg-[#F7F5EF]/95 backdrop-blur-md">
+          <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
             {categories.map(category => (
-              <Button
+              <button
                 key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
+                type="button"
                 onClick={() => setSelectedCategory(category)}
-                className={selectedCategory === category 
-                  ? "bg-orange-600 hover:bg-orange-700" 
-                  : "border-orange-200 text-orange-600 hover:bg-orange-50"
-                }
+                aria-pressed={selectedCategory === category}
+                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 ${
+                  selectedCategory === category
+                    ? 'border-[#1C442D] bg-[#1C442D] text-white shadow-sm'
+                    : 'border-[#DED9CD] bg-white/70 text-[#596258] hover:border-[#9BAA9A] hover:bg-white'
+                }`}
               >
                 {category}
-              </Button>
+              </button>
             ))}
           </div>
+        </div>
 
-          {/* Blog Posts Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {regularPosts.length === 0 ? (
-              <div className="col-span-full rounded-2xl border border-dashed border-orange-300 bg-white/70 px-6 py-12 text-center">
-                <BookOpen className="mx-auto mb-3 h-8 w-8 text-orange-500" aria-hidden="true" />
-                <h2 className="text-xl font-semibold text-gray-900">No blogs found</h2>
-                <p className="mt-2 text-gray-600">Try another search or choose a different category.</p>
-                <Button variant="outline" className="mt-5 border-orange-300 text-orange-700" onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}>
-                  Clear filters
-                </Button>
-              </div>
-            ) : regularPosts.map(post => (
-              <Card key={post.id} className="overflow-hidden bg-white/80 backdrop-blur-sm border-orange-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="relative">
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    loading="lazy"
-                    className="w-full h-48 object-cover"
-                  />
-                  <Badge className="absolute top-3 left-3 bg-white/90 text-gray-800">
-                    {post.category}
-                  </Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-xl text-gray-900 hover:text-orange-600 cursor-pointer">
-                    {post.slug ? (
-                      <Link to={`/blog/${post.slug}`} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-sm">
-                        {post.title}
-                      </Link>
-                    ) : (
-                      <span>{post.title}</span>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <div className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      {post.author}
+        <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
+          <div className="mb-7 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6B7B6B]">From the editorial desk</p>
+              <h2 className="mt-1 font-serif text-2xl font-bold text-[#202820] sm:text-3xl">
+                {selectedCategory === 'All' ? 'Latest stories' : selectedCategory}
+              </h2>
+            </div>
+            <p className="text-sm text-[#72796F]">{sortedPosts.length} {sortedPosts.length === 1 ? 'story' : 'stories'}</p>
+          </div>
+
+          {sortedPosts.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-[#C9D0C4] bg-white px-6 py-16 text-center">
+              <BookOpen className="mx-auto mb-4 h-9 w-9 text-[#71836F]" aria-hidden="true" />
+              <h2 className="font-serif text-2xl font-bold text-[#202820]">No stories found</h2>
+              <p className="mt-2 text-sm text-[#687168]">Try another search or choose a different topic.</p>
+              <Button variant="outline" className="mt-5 border-[#C9D0C4]" onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}>
+                Clear filters
+              </Button>
+            </div>
+          ) : (
+            <>
+              {featuredPost && (
+                <Link
+                  to={`/blog/${featuredPost.slug}`}
+                  className="group mb-10 grid overflow-hidden rounded-3xl border border-[#E3DED2] bg-white shadow-sm transition hover:border-[#9CAB96] hover:shadow-xl md:grid-cols-2"
+                >
+                  <div className="relative min-h-[250px] overflow-hidden bg-[#E7E8DF] sm:min-h-[340px]">
+                    <img
+                      src={featuredPost.image}
+                      alt=""
+                      loading="eager"
+                      className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                    <span className="absolute left-5 top-5 rounded-full bg-[#D5B16D] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#182019]">Editor's pick</span>
+                  </div>
+                  <div className="flex flex-col justify-center p-6 sm:p-9 lg:p-12">
+                    <div className="mb-4 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#6B7B6B]">
+                      <span>{featuredPost.category}</span><span aria-hidden="true">·</span><span>Featured story</span>
                     </div>
-                    <span>{post.readTime}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">
-                      {new Date(post.date).toLocaleDateString()}
+                    <h3 className="font-serif text-2xl font-bold leading-tight text-[#202820] transition group-hover:text-[#1C442D] sm:text-3xl lg:text-4xl">
+                      {featuredPost.title}
+                    </h3>
+                    <p className="mt-4 text-sm leading-7 text-[#626B60] sm:text-base">{featuredPost.excerpt}</p>
+                    <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#ECE8DF] pt-5 text-xs text-[#6D756B]">
+                      <span className="inline-flex items-center gap-1.5"><User className="h-3.5 w-3.5" />{featuredPost.author}</span>
+                      <span className="inline-flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />{new Date(featuredPost.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      <span>{featuredPost.readTime}</span>
+                    </div>
+                    <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#1C442D]">
+                      Read the story <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </span>
-                    {post.slug ? (
-                      <Link to={`/blog/${post.slug}`}>
-                        <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
-                          Read More
-                          <ArrowRight className="w-4 h-4 ml-1" />
-                        </Button>
-                      </Link>
-                    ) : (
-                      <span className="text-xs text-gray-400">Coming soon</span>
-                    )}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </Link>
+              )}
 
-          {/* Continue Reading CTA */}
-          <section className="rounded-2xl border border-orange-200 bg-white/80 px-6 py-10 text-center shadow-sm sm:px-10">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Keep turning pages</p>
-            <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Your next great read is waiting</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-gray-600">
-              Explore the library, find a book that speaks to you, and bring your reading journey into the Sahadhyayi community.
-            </p>
-            <Link to="/library" className="mt-6 inline-block">
-              <Button className="bg-orange-600 hover:bg-orange-700">
-                Explore the Library <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {regularPosts.map(post => (
+                  <Link
+                    key={post.id}
+                    to={post.slug ? `/blog/${post.slug}` : '/blog'}
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E4DFD4] bg-white transition duration-300 hover:-translate-y-1 hover:border-[#A7B4A1] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2"
+                  >
+                    <div className="relative aspect-[16/9] overflow-hidden bg-[#E8E9E1]">
+                      <img src={post.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                      <span className="absolute left-3 top-3 rounded-full border border-white/70 bg-[#F7F5EF]/95 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#344538]">{post.category}</span>
+                    </div>
+                    <div className="flex flex-1 flex-col p-5 sm:p-6">
+                      <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#778173]">
+                        <span>{new Date(post.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span><span aria-hidden="true">·</span><span>{post.readTime}</span>
+                      </div>
+                      <h3 className="font-serif text-xl font-bold leading-snug text-[#202820] transition-colors group-hover:text-[#1C442D]">{post.title}</h3>
+                      <p className="mt-3 flex-1 text-sm leading-6 text-[#687067]">{post.excerpt}</p>
+                      <div className="mt-5 flex items-center justify-between border-t border-[#ECE8DF] pt-4">
+                        <span className="max-w-[70%] truncate text-xs font-medium text-[#687067]">{post.author}</span>
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1C442D]">Read story <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+
+          <section className="mt-14 rounded-3xl border border-[#DDE2D7] bg-[#EAEDE5] px-6 py-9 sm:px-10 sm:py-11">
+            <div className="mx-auto flex max-w-5xl flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#526B54]">Keep exploring</p>
+                <h2 className="mt-2 font-serif text-2xl font-bold text-[#202820] sm:text-3xl">A good story leads to another.</h2>
+                <p className="mt-3 text-sm leading-6 text-[#626B60]">Find your next book in the library, or share your own perspective in the community Articles section.</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/library"><Button className="bg-[#1C442D] text-white hover:bg-[#173824]">Explore library <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
+                <Link to="/articles"><Button variant="outline" className="border-[#B7C2B1] bg-white text-[#294632] hover:bg-[#F7F8F4]">Community articles</Button></Link>
+              </div>
+            </div>
           </section>
         </div>
-      </div>
+      </main>
     </>
   );
 };
