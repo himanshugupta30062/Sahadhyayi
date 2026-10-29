@@ -159,7 +159,7 @@ describe('useGroupManagement', () => {
 
   it('joins a group and invalidates all membership caches on success', async () => {
     renderHook(() => useJoinGroup());
-    await expect(mocks.mutationOptions.mutationFn('group-1')).resolves.toEqual({ data: { id: 'member-1' }, error: null });
+    await expect(mocks.mutationOptions.mutationFn('group-1')).resolves.toEqual({ id: 'member-1' });
     mocks.mutationOptions.onSuccess();
     expect(mocks.insert).toHaveBeenCalledWith('group_chat_members', [{ group_id: 'group-1', user_id: 'reader-1', role: 'member' }]);
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Successfully joined the group!');
