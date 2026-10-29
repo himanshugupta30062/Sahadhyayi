@@ -206,17 +206,17 @@ const BooksCollection = ({
     <div className="space-y-6">
       {/* Books Collection with Tabs */}
       <Tabs defaultValue="all-books" className="w-full">
-        <TabsList className={`grid w-full ${user ? 'grid-cols-3' : 'grid-cols-2'}`}>
-          <TabsTrigger value="all-books" className="flex items-center gap-2">
+        <TabsList className={`flex w-full max-w-full justify-start overflow-x-auto overscroll-x-contain sm:grid ${user ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+          <TabsTrigger value="all-books" className="min-w-max shrink-0 items-center gap-2 sm:min-w-0">
             <BookOpen className="w-4 h-4" />
             <span>Browse Catalog ({paginatedData?.totalCount ?? 0})</span>
           </TabsTrigger>
-          <TabsTrigger value="external-finder" className="flex items-center gap-2">
+          <TabsTrigger value="external-finder" className="min-w-max shrink-0 items-center gap-2 sm:min-w-0">
             <Sparkles className="w-4 h-4 text-[#B68A35] dark:text-[#D5B16D]" />
             <span>Ultimate Book Finder</span>
           </TabsTrigger>
           {user && (
-            <TabsTrigger value="my-library" className="flex items-center gap-2">
+            <TabsTrigger value="my-library" className="min-w-max shrink-0 items-center gap-2 sm:min-w-0">
               <div className="p-1 bg-gradient-to-br from-amber-500 to-orange-600 rounded">
                 <Library className="w-3 h-3 text-white" />
               </div>

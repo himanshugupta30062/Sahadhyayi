@@ -61,14 +61,14 @@ const LibraryFilters = ({
     Boolean(selectedYear?.trim());
 
   return (
-    <div className="space-y-4 mb-6">
+    <div className="mb-6 min-w-0 max-w-full space-y-4 overflow-hidden">
       {/* Genre Navigation Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex min-w-0 max-w-full items-center gap-2 overflow-x-auto overscroll-x-contain pb-2 scrollbar-none">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
           <Sparkles className="w-3.5 h-3.5 text-primary" />
           Genres:
         </span>
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex w-max shrink-0 items-center gap-1.5 pr-2">
           {POPULAR_GENRES.map((genre) => {
             const isSelected = selectedGenre === genre;
             return (
@@ -93,13 +93,13 @@ const LibraryFilters = ({
       </div>
 
       {/* Secondary Controls: Language & Publication Year */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-card/60 backdrop-blur-xs rounded-xl border border-border/60">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="flex min-w-0 flex-col items-stretch gap-3 rounded-xl border border-border/60 bg-card/60 p-3 backdrop-blur-xs sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           {/* Language Selector */}
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
             <span className="text-xs text-muted-foreground font-medium">Language:</span>
             <Select value={selectedLanguage} onValueChange={onLanguageChange}>
-              <SelectTrigger className="h-8 w-32 text-xs bg-background">
+              <SelectTrigger className="h-10 w-[min(9rem,58vw)] text-xs bg-background sm:h-8 sm:w-32">
                 <SelectValue placeholder="All Languages" />
               </SelectTrigger>
               <SelectContent className="bg-popover z-50">
@@ -120,7 +120,7 @@ const LibraryFilters = ({
               placeholder="e.g. 1950"
               value={selectedYear}
               onChange={(e) => onYearChange(e.target.value)}
-              className="h-8 w-24 text-xs bg-background"
+              className="h-10 w-28 text-xs bg-background sm:h-8 sm:w-24"
               min={1500}
               max={new Date().getFullYear()}
             />

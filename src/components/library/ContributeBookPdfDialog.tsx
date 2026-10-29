@@ -144,7 +144,7 @@ function ContributeBookPdfDialogContent() {
       <DialogTrigger asChild>
         <Button variant="outline" className="min-h-11 w-full justify-center gap-2 touch-manipulation sm:w-auto"><FileUp className="h-4 w-4 shrink-0" /> Contribute a PDF</Button>
       </DialogTrigger>
-      <DialogContent className="w-[calc(100vw-1rem)] max-h-[calc(100dvh-1rem)] overflow-y-auto p-4 sm:w-full sm:max-h-[90vh] sm:max-w-xl sm:p-6">
+      <DialogContent className="top-4 w-[calc(100vw-1rem)] max-h-[calc(100dvh-2rem)] translate-y-0 overflow-y-auto overscroll-contain p-4 sm:top-[50%] sm:w-full sm:max-h-[calc(100dvh-4rem)] sm:max-w-xl sm:translate-y-[-50%] sm:p-6">
         <DialogHeader>
           <DialogTitle>Contribute a book PDF</DialogTitle>
           <DialogDescription>Help improve the catalogue. New files stay private while verification and rights review are pending.</DialogDescription>
