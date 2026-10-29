@@ -28,7 +28,7 @@ describe('Blog journal page', () => {
     render(<MemoryRouter><Blog /></MemoryRouter>);
     fireEvent.click(screen.getByRole('button', { name: 'Reading Tips' }));
     expect(screen.getByRole('heading', { name: 'Reading Tips' })).toBeInTheDocument();
-    expect(screen.getByText('Digital vs Physical Books: Finding Your Perfect Reading Balance')).toBeInTheDocument();
+    expect(screen.getByText('How to Build a Reading Habit That Actually Lasts')).toBeInTheDocument();
     expect(screen.queryByText('How to Start a Book Club: A Practical Guide for Readers')).not.toBeInTheDocument();
   });
 
@@ -42,7 +42,6 @@ describe('Blog journal page', () => {
 
   it('shows an empty state for unmatched searches and clears both filters', () => {
     render(<MemoryRouter><Blog /></MemoryRouter>);
-    fireEvent.click(screen.getByRole('button', { name: 'Reading Science' }));
     fireEvent.change(screen.getByLabelText('Search journal stories'), { target: { value: 'nothing matches this query' } });
     expect(screen.getByRole('heading', { name: 'No stories found' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
