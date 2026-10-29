@@ -45,8 +45,13 @@ serve(async (req) => {
     .maybeSingle();
   if (submissionError || !submission) return json({ error: "Submission was not found." }, 404);
   if (submission.user_id !== authData.user.id) {
-    const { data: role, error: roleError } = await admin.rpc("has_role", { _user_id: authData.user.id, _role: "admin" });
-    if (roleError || role !== true) return json({ error: "You cannot verify this submission." }, 403);
+    // The service-role client has no auth.uid(); check the stored role after validating the caller JWT.
+    const { data: adminRole, error: roleError } = await admin.from("user_roles")
+      .select("role")
+      .eq("user_id", authData.user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (roleError || !adminRole) return json({ error: "You cannot verify this submission." }, 403);
   }
   if (!submission.rights_attested) return json({ error: "A rights attestation is required before verification." }, 400);
   if (!["uploaded", "failed", "needs_review"].includes(submission.status)) {
