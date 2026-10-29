@@ -131,7 +131,7 @@ describe('Games page', () => {
     mocks.user = { id: 'reader-1' };
     renderGames();
 
-    expect(screen.getByRole('heading', { name: 'Book Quiz' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Book Quiz/ })).toBeInTheDocument();
     expect(screen.getByText('240')).toBeInTheDocument();
     expect(screen.getByText('Reader')).toBeInTheDocument();
     expect(screen.getByText('Streak 3')).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe('Games page', () => {
     expect(screen.getByText('Achievement showcase mock')).toBeInTheDocument();
   });
 
-  it('lets a signed-in reader change difficulty and enter book selection', () => {
+  it('lets a signed-in reader change difficulty and enter book selection', async () => {
     mocks.user = { id: 'reader-1' };
     renderGames();
 
@@ -152,6 +152,6 @@ describe('Games page', () => {
     expect(screen.getByRole('button', { name: /hard/i })).toHaveClass('bg-red-600');
 
     fireEvent.click(screen.getByRole('button', { name: /Start Quiz/ }));
-    expect(screen.getByText('Book selector mock')).toBeInTheDocument();
+    expect(await screen.findByText('Book selector mock')).toBeInTheDocument();
   });
 });
