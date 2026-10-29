@@ -57,6 +57,12 @@ function renderDialog() {
   fireEvent.click(screen.getByRole('button', { name: /Contribute a PDF/i }));
 }
 
+async function attestRights() {
+  const checkbox = screen.getByRole('checkbox');
+  fireEvent.click(checkbox);
+  await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'true'));
+}
+
 beforeEach(() => {
   mocks.user = { id: 'reader-1' };
   mocks.toast.mockReset();
@@ -102,9 +108,10 @@ describe('ContributeBookPdfDialog', () => {
     fireEvent.change(screen.getByLabelText(/PDF file/i), {
       target: { files: [makePdf('not-a-pdf.pdf', 'NOTPDF')] },
     });
-    fireEvent.click(screen.getByRole('checkbox'));
-    await waitFor(() => expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true'));
-    fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
+    await attestRights();
+    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    fireEvent.click(submitButton);
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
       description: expect.stringMatching(/valid PDF signature/i),
@@ -124,9 +131,10 @@ describe('ContributeBookPdfDialog', () => {
     fireEvent.change(screen.getByLabelText(/Author \(optional\)/i), {
       target: { value: 'A Test Author' },
     });
-    fireEvent.click(screen.getByRole('checkbox'));
-    await waitFor(() => expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true'));
-    fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
+    await attestRights();
+    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    fireEvent.click(submitButton);
 
     await waitFor(() => expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
       id: 'submission-uuid',
@@ -156,9 +164,10 @@ describe('ContributeBookPdfDialog', () => {
     fireEvent.change(screen.getByLabelText(/PDF file/i), {
       target: { files: [makePdf()] },
     });
-    fireEvent.click(screen.getByRole('checkbox'));
-    await waitFor(() => expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true'));
-    fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
+    await attestRights();
+    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    fireEvent.click(submitButton);
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Submission failed',
