@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BookOpen, BookMarked, Compass, GraduationCap, HelpCircle, LibraryBig, MessageCircle, Sparkles, Users, UserRound, X, ChevronRight, MapPin, PenLine, Gamepad2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, BookMarked, Compass, GraduationCap, HelpCircle, LibraryBig, MessageCircle, Sparkles, Users, UserRound, X, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/authHelpers";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -20,7 +20,7 @@ const TOUR_STEPS: TourStep[] = [
   { eyebrow: "1 · DISCOVER", title: "Find your next great read", description: "Search the library, explore book details, discover authors and publishers, and find fresh recommendations.", tip: "Start with a book you already love, or browse by curiosity.", route: "/library", action: "Explore the library", icon: LibraryBig },
   { eyebrow: "2 · MAKE IT YOURS", title: "Build your reading space", description: "Keep a personal bookshelf, update your profile and return to your reading journey from your dashboard.", tip: "Saving a book is a simple first step toward a more personal experience.", route: "/dashboard", action: "Open dashboard", icon: BookMarked },
   { eyebrow: "3 · READ TOGETHER", title: "Meet your reading people", description: "Explore community activity, join reading groups and discover readers on the map when location-based features are available.", tip: "Your location and profile visibility should always reflect what you’re comfortable sharing.", route: "/social", action: "Explore community", icon: Users },
-  { eyebrow: "4 · CREATE & EXPLORE", title: "Share ideas and keep exploring", description: "Read articles and blog posts, write your own articles, explore book-related games and ask the Book Expert questions.", tip: "Articles are community-created; blog posts are site updates and editorial content.", route: "/articles", action: "Explore articles", icon: PenLine },
+  { eyebrow: "4 · CREATE & EXPLORE", title: "Share ideas and keep exploring", description: "Read articles and blog posts, write your own articles, explore book-related games and ask the Book Expert questions.", tip: "Articles are community-created; blog posts are site updates and editorial content.", route: "/articles", action: "Explore articles", icon: BookOpen },
   { eyebrow: "YOU’RE READY", title: "Choose your own adventure", description: "That’s the essentials. There are more features to discover, but you don’t need to learn everything at once.", tip: "You can reopen this guide any time with the “Take a tour” button. Pick one small action and start reading.", route: "/library", action: "Start discovering", icon: Compass },
 ];
 
@@ -33,7 +33,7 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     { title: "Authors", description: "Explore writer profiles and related books.", route: "/authors", icon: GraduationCap },
     { title: "Publishers", description: "Browse publisher information and catalogue titles.", route: "/publishers", icon: BookOpen },
     { title: "Discovery", description: "Explore more reading-related content.", route: "/discovery", icon: Compass },
-    { title: "Reader map", description: "Explore location-based reader discovery when available.", route: "/map", icon: MapPin },
+    { title: "Reader map", description: "Explore location-based reader discovery when available.", route: "/map", icon: Compass },
   ]},
   { title: "Your reading", subtitle: "Keep your reading life organised", features: [
     { title: "Dashboard", description: "Return to your reading home and activity.", route: "/dashboard", icon: Compass },
@@ -47,9 +47,9 @@ const FEATURE_GROUPS: FeatureGroup[] = [
   ]},
   { title: "Create & play", subtitle: "Publish ideas and enjoy reading", features: [
     { title: "Articles", description: "Read community writing and open full articles.", route: "/articles", icon: BookOpen },
-    { title: "Write an article", description: "Create reading-related writing.", route: "/articles/write", icon: PenLine },
+    { title: "Write an article", description: "Create reading-related writing.", route: "/articles/write", icon: BookOpen },
     { title: "My articles", description: "Return to your own article entries.", route: "/articles/my", icon: UserRound },
-    { title: "Games", description: "Explore book-related activities.", route: "/games", icon: Gamepad2 },
+    { title: "Games", description: "Explore book-related activities.", route: "/games", icon: Sparkles },
     { title: "Publish a book", description: "Open the book-publishing workflow.", route: "/publish", icon: BookMarked },
     { title: "My publications", description: "Review publications associated with your account.", route: "/my-publications", icon: BookMarked },
   ]},
@@ -60,10 +60,10 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     { title: "Feedback", description: "Share feedback about your experience.", route: "/feedback", icon: MessageCircle },
   ]},
   { title: "Your choices", subtitle: "Policies and community guidance", features: [
-    { title: "Community guidelines", description: "Review expectations for community participation.", route: "/community-guidelines", icon: ShieldCheck },
-    { title: "Privacy policy", description: "Understand the platform’s privacy practices.", route: "/privacy-policy", icon: ShieldCheck },
-    { title: "Terms of service", description: "Review the terms for using the site.", route: "/terms-of-service", icon: ShieldCheck },
-    { title: "Cookie policy", description: "Learn about cookies and related technologies.", route: "/cookie-policy", icon: ShieldCheck },
+    { title: "Community guidelines", description: "Review expectations for community participation.", route: "/community-guidelines", icon: HelpCircle },
+    { title: "Privacy policy", description: "Understand the platform’s privacy practices.", route: "/privacy-policy", icon: HelpCircle },
+    { title: "Terms of service", description: "Review the terms for using the site.", route: "/terms-of-service", icon: HelpCircle },
+    { title: "Cookie policy", description: "Learn about cookies and related technologies.", route: "/cookie-policy", icon: HelpCircle },
   ]},
 ];
 
