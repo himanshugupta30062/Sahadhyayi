@@ -64,7 +64,7 @@ export function normalizeBookIdentity(book: any): BookIdentity {
   const primaryAuthor = cleanAuthors[0];
   const normalizedAuthorKey = primaryAuthor
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}]/gu, '')
+    .replace(/[^\p{L}\p{N}\p{M}]/gu, '')
     .trim() || 'unknownauthor';
 
   // 3. ISBNs with Checksum Verification
