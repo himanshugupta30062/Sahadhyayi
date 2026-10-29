@@ -84,7 +84,7 @@ export default function PublishBook() {
 
   const canProceedStep1 = form.title.trim() && form.author_name.trim();
   const canSubmit = canProceedStep1;
-  const readingTime = form.pages ? estimateReadingTime(parseInt(form.pages)) : null;
+  const readingTime = form.pages ? estimateReadingTime(Number.parseInt(form.pages)) : null;
 
   const handleSubmit = async () => {
     if (!user) return;
@@ -103,7 +103,7 @@ export default function PublishBook() {
       }
       setUploadProgress(80);
 
-      const pages = form.pages ? parseInt(form.pages) : undefined;
+      const pages = form.pages ? Number.parseInt(form.pages) : undefined;
       const book = await createBook.mutateAsync({
         title: form.title.trim(),
         subtitle: form.subtitle.trim() || undefined,
