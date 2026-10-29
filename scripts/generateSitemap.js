@@ -14,15 +14,16 @@ const staticPages = [
   '/book-search',
   '/about',
   '/social',
-  '/help',
+  '/help-center',
+  '/community-guidelines',
+  '/games',
+  '/articles',
   '/feedback',
-  '/signin',
-  '/signup',
   '/privacy',
   '/terms',
   '/cookies',
   '/dmca',
-  '/investors'
+  '/dmca'
 ];
 
 let books = [];
@@ -49,32 +50,8 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   }
 }
 
-if (books.length === 0) {
-  books = [
-    { id: '1', title: 'A Brief History of Time' },
-    { id: '2', title: 'गोदान' },
-    { id: '3', title: 'Pride and Prejudice' },
-    { id: '4', title: 'Sapiens' },
-    { id: '5', title: 'गुनाहों का देवता' }
-  ];
-}
-
-if (authors.length === 0) {
-  authors = [
-    { name: 'Rabindranath Tagore' },
-    { name: 'Haruki Murakami' }
-  ];
-}
-
-const slugify = text =>
-  encodeURIComponent(
-    text
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-  );
-
 const urls = [];
+const xmlEscape = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&apos;');
 
 function addUrl(loc, changefreq='weekly', priority='0.6', image) {
   urls.push({ loc: `https://sahadhyayi.com${loc}`, changefreq, priority, image });
@@ -92,9 +69,9 @@ const xml =
   urls
     .map(u => {
       const imageTag = u.image
-        ? `\n    <image:image>\n      <image:loc>${u.image}</image:loc>\n    </image:image>`
+        ? `\n    <image:image>\n      <image:loc>${xmlEscape(u.image)}</image:loc>\n    </image:image>`
         : '';
-      return `  <url>\n    <loc>${u.loc}</loc>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>${imageTag}\n  </url>`;
+      return `  <url>\n    <loc>${xmlEscape(u.loc)}</loc>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>${imageTag}\n  </url>`;
     })
     .join('\n') +
   '\n</urlset>\n';
