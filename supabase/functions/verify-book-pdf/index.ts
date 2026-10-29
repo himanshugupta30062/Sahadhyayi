@@ -116,10 +116,38 @@ serve(async (req) => {
       ? String(report.recommendation) : "needs_review";
     const findings = Array.isArray(report.warnings) ? report.warnings.filter((item) => typeof item === "string").slice(0, 20) : [];
     findings.push("Automated content review only: malware scanning and copyright clearance have not been performed.");
-    const nextStatus = recommendation === "likely_match" && confidence !== null && confidence >= 0.85 ? "needs_review" : "needs_review";
+
+    // Compare extracted metadata with existing catalogue records so the admin
+    // can spot likely duplicates/editions before linking the PDF.
+    const cleanTitle = typeof report.detected_title === "string"
+      ? report.detected_title.trim().replace(/[,%_\\\\]/g, " ").slice(0, 120)
+      : "";
+    const cleanAuthor = typeof report.detected_author === "string"
+      ? report.detected_author.trim().replace(/[,%_\\\\]/g, " ").slice(0, 120)
+      : "";
+    let catalogueCandidates: Record<string, unknown>[] = [];
+    if (cleanTitle.length >= 3) {
+      const { data: titleMatches } = await admin.from("books_library")
+        .select("id,title,author,isbn,pdf_url")
+        .ilike("title", `%${cleanTitle}%`)
+        .limit(10);
+      catalogueCandidates = (titleMatches || []) as Record<string, unknown>[];
+    }
+    if (cleanAuthor.length >= 3 && catalogueCandidates.length < 10) {
+      const { data: authorMatches } = await admin.from("books_library")
+        .select("id,title,author,isbn,pdf_url")
+        .ilike("author", `%${cleanAuthor}%`)
+        .limit(10);
+      const ids = new Set(catalogueCandidates.map((candidate) => candidate.id));
+      for (const candidate of (authorMatches || []) as Record<string, unknown>[]) {
+        if (!ids.has(candidate.id) && catalogueCandidates.length < 10) catalogueCandidates.push(candidate);
+      }
+    }
+    if (catalogueCandidates.length) findings.push(`Possible catalogue matches found: ${catalogueCandidates.length}. Check for duplicate editions before publishing.`);
+    const nextStatus = "needs_review";
     const { error: updateError } = await admin.from("book_pdf_submissions").update({
       status: nextStatus,
-      detected_metadata: { ...report, recommendation },
+      detected_metadata: { ...report, recommendation, catalogue_candidates: catalogueCandidates }, 
       validation_findings: findings,
       match_confidence: confidence,
       verification_model: model,
