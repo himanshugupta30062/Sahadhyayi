@@ -117,10 +117,21 @@ export default function AdminBookPdfReviews() {
         body: { submissionId: selected.id, action, ...extra },
       });
       if (error) throw error;
-      if (action === 'preview' && data?.url) {
-        window.open(data.url, '_blank', 'noopener,noreferrer');
+      if (data?.error) throw new Error(String(data.error));
+      if (action === 'preview') {
+        if (typeof data?.url !== 'string' || !data.url) {
+          throw new Error('The server did not return a preview link. Please refresh and try again.');
+        }
+        const previewWindow = window.open(data.url, '_blank', 'noopener,noreferrer');
+        if (!previewWindow) {
+          toast({ title: 'Preview link ready', description: 'Your browser blocked the new tab. Allow pop-ups for Sahadhyayi and try Preview PDF again.', variant: 'destructive' });
+          return;
+        }
         toast({ title: 'Temporary preview opened', description: 'This private link expires in three minutes.' });
       } else {
+        if (data?.success !== true) {
+          throw new Error('The server did not confirm that this action succeeded. Refresh the queue and check the submission status.');
+        }
         toast({ title: action === 'publish' ? 'PDF published' : 'Review saved', description: data?.status ? `Status: ${data.status}` : 'The action completed.' });
         setReason('');
         await refresh();
