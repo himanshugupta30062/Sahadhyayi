@@ -53,7 +53,7 @@ const DeferredSection = ({
   }, [container, idle, rootMargin, shouldRender]);
 
   return (
-    <div ref={setContainer} className={!shouldRender ? minHeightClassName : undefined}>
+    <div ref={setContainer} className={minHeightClassName} // Keep the reserved space after lazy content mounts to prevent collapse.>
       {shouldRender ? <Suspense fallback={fallback}>{children}</Suspense> : fallback}
     </div>
   );
