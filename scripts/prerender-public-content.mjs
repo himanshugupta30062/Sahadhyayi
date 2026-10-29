@@ -79,6 +79,14 @@ function createPage({ title, description, route, image, type }) {
   html = canonicalPattern.test(html)
     ? html.replace(canonicalPattern, canonicalTag)
     : html.replace("</head>", `  ${canonicalTag}\n</head>`);
+  // Keep useful, route-specific HTML in the initial response for crawlers and
+  // visitors with JavaScript disabled. React replaces this fallback when it mounts.
+  const fallback = `<main id="seo-fallback" style="max-width:900px;margin:3rem auto;padding:0 1.25rem;font-family:system-ui,sans-serif;line-height:1.65">
+    <h1>${escapeHtml(title.replace(/\s*\|\s*Sahadhyayi$/i, ""))}</h1>
+    <p>${escapeHtml(description)}</p>
+    <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
+  </main>`;
+  html = html.replace(/<div id="root">[^]*?div>/i, `<div id="root">${fallback}</div>`);
   return html;
 }
 
@@ -91,8 +99,28 @@ function writeRoute(route, html) {
   fs.writeFileSync(outputPath, html);
 }
 
+// Generate high-intent public landing pages on every build, even when the
+// deployment does not provide Supabase credentials. This ensures each URL
+// returns a unique title, description, canonical URL, and useful initial HTML.
+const publicPages = [
+  { route: "/library", title: "Online Book Library - Discover Books to Read | Sahadhyayi", description: "Discover books across genres, explore your next read, and build a consistent reading habit with Sahadhyayi's online book library." },
+  { route: "/articles", title: "Reading Articles, Book Ideas & Literary Insights | Sahadhyayi", description: "Explore thoughtful articles about books, reading habits, literature, and ideas from the Sahadhyayi reading community." },
+  { route: "/authors", title: "Discover Authors and Their Books | Sahadhyayi", description: "Explore author profiles, discover their books, and connect with the people behind the stories on Sahadhyayi." },
+  { route: "/groups", title: "Online Book Clubs and Reading Groups | Sahadhyayi", description: "Find a book club, join reading groups, discuss books with fellow readers, and make reading a shared experience." },
+  { route: "/blog", title: "Sahadhyayi Blog - Book Recommendations & Reading Culture", description: "Read guides on building a reading habit, choosing books, exploring literature, and joining a community of readers." },
+  { route: "/discovery", title: "Discover Books, Readers and New Ideas | Sahadhyayi", description: "Discover books, reading inspiration, literary ideas, and fellow readers with Sahadhyayi." },
+  { route: "/about", title: "About Sahadhyayi - A Community for Readers", description: "Learn about Sahadhyayi's mission to bring readers together, support deeper reading, and make literature more social." },
+  { route: "/community-stories", title: "Reader Stories and Reading Experiences | Sahadhyayi", description: "Explore stories and perspectives from readers who share a love of books, literature, and learning together." },
+  { route: "/quotes", title: "Book Quotes and Literary Inspiration | Sahadhyayi", description: "Discover memorable literary quotes and ideas that inspire reflection, reading, and conversation." },
+  { route: "/games", title: "Literary Games and Book Quizzes | Sahadhyayi", description: "Challenge your book knowledge with literary games, reading quizzes, and activities for book lovers." },
+];
+
+for (const page of publicPages) {
+  writeRoute(page.route, createPage({ ...page, type: "website" }));
+}
+
 if (!supabaseUrl || !supabaseKey) {
-  console.warn("[prerender] Supabase read-only build credentials are not configured; dynamic book/author HTML was skipped.");
+  console.warn("[prerender] Supabase read-only build credentials are not configured; generated static public landing pages, but skipped dynamic book/author HTML.");
   process.exit(0);
 }
 
