@@ -42,6 +42,39 @@ const Blog = () => {
       image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&h=400&fit=crop'
     },
   {
+    id: '8',
+    slug: 'build-a-reading-habit-that-lasts',
+    title: 'How to Build a Reading Habit That Actually Lasts',
+    excerpt: 'Build a sustainable reading routine with small goals, better book choices, and practical ways to make reading part of everyday life.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Reading Tips',
+    readTime: '7 min read',
+    image: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1200&h=630&fit=crop'
+  },
+  {
+    id: '9',
+    slug: 'how-to-start-a-book-club',
+    title: 'How to Start a Book Club: A Practical Guide for Readers',
+    excerpt: 'From choosing your first book to hosting inclusive discussions, here is how to start a book club that people enjoy returning to.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Community',
+    readTime: '8 min read',
+    image: 'https://images.unsplash.com/photo-1521583641526-6ce8a8b8e2c5?w=1200&h=630&fit=crop'
+  },
+  {
+    id: '10',
+    slug: 'how-to-read-classic-literature',
+    title: 'A Beginner’s Guide to Reading Classic Literature',
+    excerpt: 'Approach classic books with confidence: choose a readable edition, learn the context you need, and read for curiosity rather than perfection.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Reading Tips',
+    readTime: '7 min read',
+    image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200&h=630&fit=crop'
+  },
+  {
     id: '7',
     slug: 'best-indian-books-to-read',
     title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',
