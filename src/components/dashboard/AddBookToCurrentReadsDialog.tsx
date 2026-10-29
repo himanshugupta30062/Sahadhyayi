@@ -37,7 +37,7 @@ const AddBookToCurrentReadsDialog = () => {
         .insert({
           user_id: user.id,
           book_title: bookTitle.trim(),
-          total_pages: Number.Number.parseInt(totalPages),
+          total_pages: Number.parseInt(totalPages),
           current_page: 1,
           cover_image_url: coverUrl.trim() || null,
         });

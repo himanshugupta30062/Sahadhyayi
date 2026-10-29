@@ -177,7 +177,7 @@ async function searchGoogleBooks(searchTerm: string): Promise<BookData[]> {
           id.type === 'ISBN_13' || id.type === 'ISBN_10'
         )?.identifier,
         publication_year: book.publishedDate ? 
-          parseInt(book.publishedDate.split('-')[0]) : undefined,
+          Number.parseInt(book.publishedDate.split('-')[0]) : undefined,
         pages: book.pageCount,
         language: book.language || 'English',
         pdf_url: item.accessInfo?.pdf?.isAvailable ? book.previewLink : undefined,
@@ -207,7 +207,7 @@ async function searchProjectGutenberg(searchTerm: string): Promise<BookData[]> {
       cover_image_url: undefined,
       description: undefined,
       isbn: undefined,
-      publication_year: book.authors?.[0]?.death_year ? parseInt(book.authors[0].death_year) - 50 : undefined,
+      publication_year: book.authors?.[0]?.death_year ? Number.parseInt(book.authors[0].death_year) - 50 : undefined,
       pages: undefined,
       language: book.languages?.[0] === 'en' ? 'English' : book.languages?.[0],
       pdf_url: book.formats?.['application/pdf'] || book.formats?.['text/pdf'],
@@ -236,7 +236,7 @@ async function searchInternetArchive(searchTerm: string): Promise<BookData[]> {
       cover_image_url: undefined,
       description: Array.isArray(item.description) ? item.description[0] : item.description,
       isbn: undefined,
-      publication_year: item.date ? parseInt(item.date.split('-')[0]) : undefined,
+      publication_year: item.date ? Number.parseInt(item.date.split('-')[0]) : undefined,
       pages: undefined,
       language: 'English',
       pdf_url: item.identifier ? `https://archive.org/download/${item.identifier}/${item.identifier}.pdf` : undefined,

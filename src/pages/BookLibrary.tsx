@@ -30,7 +30,7 @@ const BookLibrary = () => {
   useEffect(() => {
     const stored = sessionStorage.getItem('scroll-/library');
     if (stored) {
-      const y = parseInt(stored, 10);
+      const y = Number.parseInt(stored, 10);
       window.scrollTo(0, y);
     }
     return () => {

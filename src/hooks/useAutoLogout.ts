@@ -156,7 +156,7 @@ export const useAutoLogout = () => {
         handleSessionTimeout();
       }, SESSION_TIMEOUT);
     } else {
-      const sessionAge = now - parseInt(sessionStart, 10);
+      const sessionAge = now - Number.parseInt(sessionStart, 10);
       
       if (sessionAge > SESSION_TIMEOUT) {
         // Session has expired
