@@ -144,7 +144,30 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
 
     render(
       <BrowserRouter>
-        <CommunityPulseDialog open={true} onClose={vi.fn()} />
+        <CommunityPulseDialog
+        open={true}
+        onClose={vi.fn()}
+        stats={{
+          ...getBaselineStats('24h'),
+          pageViews: 50,
+          uniqueVisitors: 20,
+          newReaders: 2,
+          totalMembers: 500,
+          lifetimeVisits: 10313,
+          dualTable: {
+            lifetimeVisits: 10313,
+            lifetimeSourceTable: 'public.website_visits',
+            rolling24hViews: 50,
+            rolling7dViews: 350,
+            rolling30dViews: 1200,
+            uniqueVisitors24h: 20,
+            uniqueVisitors7d: null,
+            uniqueVisitors30d: null,
+            rollingSourceTable: 'public.website_visit_events',
+            isInitialRollout: false,
+          },
+        }}
+      />
       </BrowserRouter>
     );
 
