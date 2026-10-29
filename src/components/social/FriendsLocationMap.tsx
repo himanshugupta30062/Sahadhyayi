@@ -25,7 +25,7 @@ type SharedProfile = {
   bio?: string | null;
 };
 
-function createFriendInfoContent(profile: SharedProfile): HTMLElement {
+export function createFriendInfoContent(profile: SharedProfile): HTMLElement {
   // Google Maps InfoWindow accepts a DOM node. Use textContent for profile fields so
   // reader-controlled names/bios can never be interpreted as HTML or script.
   const root = document.createElement('div');
