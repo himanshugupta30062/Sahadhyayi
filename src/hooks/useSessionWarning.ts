@@ -30,7 +30,7 @@ export const useSessionWarning = () => {
       const lastActivity = localStorage.getItem('lastActivity');
       if (!lastActivity) return;
 
-      const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
+      const timeSinceLastActivity = Date.now() - Number.parseInt(lastActivity, 10);
       const timeUntilTimeout = INACTIVITY_TIMEOUT - timeSinceLastActivity;
 
       if (timeUntilTimeout <= WARNING_TIME && timeUntilTimeout > 0) {
