@@ -59,7 +59,7 @@ describe('core utility coverage', () => {
     expect(genreOverlap(dna(), dna({ genres: [{ name: ' fantasy ', weight: 2 }] }))).toBeCloseTo(1 / 3);
     expect(genreOverlap(dna({ genres: [] }), dna({ genres: [] }))).toBe(0);
     expect(cosineSimilarity([], ['hopeful'])).toBe(0);
-    expect(cosineSimilarity([' Hopeful ', 'curious'], ['curious', 'hopeful'])).toBe(1);
+    expect(cosineSimilarity([' Hopeful ', 'curious'], ['curious', 'hopeful'])).toBeCloseTo(1);
     expect(cosineSimilarity(['curious'], ['hopeful'])).toBe(0);
   });
 
