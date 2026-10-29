@@ -108,6 +108,17 @@ const Blog = () => {
     image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=630&fit=crop'
   },
   {
+  {
+    id: '17',
+    slug: 'osho-books-and-themes-in-his-discourses',
+    title: 'The Books Osho Loved and the Many Dimensions He Explored in His Discourses',
+    excerpt: 'From Nietzsche and Dostoevsky to the Upanishads, Taoism, Zen, Sufism, poetry, psychology, and social questions, explore the wide reading world behind Osho’s talks.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Philosophy & Ideas',
+    readTime: '10 min read',
+    image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1200&h=630&fit=crop'
+  },
     id: '7',
     slug: 'best-indian-books-to-read',
     title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',
