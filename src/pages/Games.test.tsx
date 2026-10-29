@@ -144,7 +144,7 @@ describe('Games page', () => {
     expect(screen.getByText('Achievement showcase mock')).toBeInTheDocument();
   });
 
-  it('lets a signed-in reader change difficulty and enter book selection', () => {
+  it('lets a signed-in reader change difficulty and enter book selection', async () => {
     mocks.user = { id: 'reader-1' };
     renderGames();
 
