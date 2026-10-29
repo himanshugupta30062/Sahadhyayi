@@ -20,14 +20,14 @@ describe('permanent default reading community membership', () => {
     expect(migration).toMatch(/CREATE TRIGGER protect_default_reading_community_membership[\s\S]*BEFORE DELETE OR UPDATE ON public\.group_chat_members/i);
     expect(migration).toMatch(/You cannot leave the Sahadhyayi Community Reading Circle/i);
     expect(migration).toMatch(/Membership in the Sahadhyayi Community Reading Circle cannot be changed/i);
-    expect(migration).toMatch(/CREATE TRIGGER protect_legacy_default_reading_community_membership[\\s\\S]*BEFORE DELETE OR UPDATE ON public\\.group_members/i);
+    expect(migration).toMatch(/CREATE TRIGGER protect_legacy_default_reading_community_membership[\s\S]*BEFORE DELETE OR UPDATE ON public\.group_members/i);
   });
 
   it('protects the default group from deletion and renaming', () => {
     expect(migration).toMatch(/CREATE TRIGGER protect_default_reading_community_group[\s\S]*BEFORE DELETE OR UPDATE ON public\.group_chats/i);
     expect(migration).toMatch(/The Sahadhyayi Community Reading Circle cannot be deleted/i);
     expect(migration).toMatch(/The default community group name cannot be changed/i);
-    expect(migration).toMatch(/CREATE TRIGGER protect_legacy_default_reading_community_group[\\s\\S]*BEFORE DELETE OR UPDATE ON public\\.groups/i);
+    expect(migration).toMatch(/CREATE TRIGGER protect_legacy_default_reading_community_group[\s\S]*BEFORE DELETE OR UPDATE ON public\.groups/i);
   });
 
   it('does not offer a leave action for the default community in group screens', () => {
