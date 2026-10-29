@@ -9,6 +9,7 @@ import { BrowserRouter } from 'react-router-dom';
 const mockFunctionsInvoke = vi.fn();
 const mockRpc = vi.fn();
 const mockFrom = vi.fn();
+const mockGetSession = vi.fn().mockResolvedValue({ data: { session: null }, error: null });
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: {
@@ -18,7 +19,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
     rpc: (...args: any[]) => mockRpc(...args),
     from: (...args: any[]) => mockFrom(...args),
     auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      getSession: (...args: any[]) => mockGetSession(...args),
       onAuthStateChange: vi.fn().mockReturnValue({
         data: { subscription: { unsubscribe: vi.fn() } },
       }),
@@ -107,12 +108,8 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
       lastUpdated: new Date().toISOString(),
     };
 
-    mockRpc.mockImplementation((name: string) => {
-      if (name === 'get_dual_table_website_analytics') {
-        return Promise.resolve({ data: canonicalPayload, error: null });
-      }
-      return Promise.resolve({ data: null, error: null });
-    });
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
+    mockFunctionsInvoke.mockResolvedValue({ data: canonicalPayload, error: null });
 
     const { result } = renderHook(() => useCommunityPulse(true));
 
@@ -132,34 +129,17 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
   });
 
   it('renders single authoritative timeframe selector driving metrics without duplicate cards', async () => {
-    mockRpc.mockImplementation((name: string) => {
-      if (name === 'get_dual_table_website_analytics') {
-        return Promise.resolve({
-          data: {
-            timeframe: '24h',
-            period: {
-              pageViews: 50,
-              uniqueVisitors: 20,
-              newRegistrations: 2,
-              registeredReaders: 500,
-            },
-            lifetime: { totalVisits: 10313, sourceTable: 'public.website_visits' },
-            rolling: {
-              pageViews24h: 50,
-              pageViews7d: 350,
-              pageViews30d: 1200,
-              uniqueVisitors24h: 20,
-              sourceTable: 'public.website_visit_events',
-              isInitialRollout: false,
-            },
-            breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
-            timeseries: [],
-            lastUpdated: new Date().toISOString(),
-          },
-          error: null,
-        });
-      }
-      return Promise.resolve({ data: null, error: null });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        timeframe: '24h',
+        period: { pageViews: 50, uniqueVisitors: 20, newRegistrations: 2, registeredReaders: 500 },
+        lifetime: { totalVisits: 10313, sourceTable: 'public.website_visits' },
+        rolling: { pageViews24h: 50, pageViews7d: 350, pageViews30d: 1200, uniqueVisitors24h: 20, sourceTable: 'public.website_visit_events', isInitialRollout: false },
+        breakdowns: { countries: [], pages: [], devices: [], referrers: [] },
+        timeseries: [],
+        lastUpdated: new Date().toISOString(),
+      },
+      error: null,
     });
 
     render(
@@ -171,7 +151,7 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
     await waitFor(() => {
       expect(screen.getByText('Live Website Stats')).toBeInTheDocument();
       // Lifetime visits displayed in distinct hero banner
-      expect(screen.getByText('10,313 visits')).toBeInTheDocument();
+      expect(screen.getByText('10,313')).toBeInTheDocument();
       expect(screen.getByText(/public\.website_visits/)).toBeInTheDocument();
       // Period page views displayed in top KPI card
       expect(screen.getByText('50')).toBeInTheDocument();

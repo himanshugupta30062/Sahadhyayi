@@ -179,6 +179,7 @@ describe('Dual-Table Website Analytics & Rolling 30-Day Architecture', () => {
 
   // 4. Timeframe Boundaries (24h, 7d, 30d)
   it('calculates recent-period metrics using distinct timestamp boundaries', async () => {
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: 'fake-token' } }, error: null });
     mockFunctionsInvoke.mockImplementation((fn: string, options?: any) => {
       if (fn === 'community-stats') {
         const tf = options?.body?.timeframe || '24h';

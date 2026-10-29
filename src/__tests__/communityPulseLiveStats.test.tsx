@@ -370,6 +370,7 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
 
   // Selected-period totals must come from an aggregate endpoint, never raw browser table reads.
   it('uses the selected-period aggregate and never substitutes lifetime visits or raw browser table counts', async () => {
+    mockFunctionsInvoke.mockRejectedValue(new Error('Edge analytics unavailable; use the server-side aggregate fallback'));
     mockRpc.mockImplementation((fn: string) => {
       if (fn === 'is_admin') return Promise.resolve({ data: false, error: null });
       if (fn === 'get_admin_website_analytics') {
@@ -404,7 +405,8 @@ describe('Community Pulse Live Analytics & Truthful Metrics', () => {
     });
 
     expect(mockFrom).not.toHaveBeenCalledWith('website_visits');
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('community-stats', expect.anything());
+    expect(mockFrom).not.toHaveBeenCalledWith('website_visit_events');
 
     fireEvent.change(screen.getByLabelText('Select metric'), { target: { value: 'unique' } });
     await waitFor(() => {

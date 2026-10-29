@@ -85,12 +85,8 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
       lastUpdated: new Date().toISOString(),
     };
 
-    mockRpc.mockImplementation((name: string) => {
-      if (name === 'get_dual_table_website_analytics') {
-        return Promise.resolve({ data: mockPayload, error: null });
-      }
-      return Promise.resolve({ data: null, error: null });
-    });
+    // This test renders the public overview, so it consumes the public aggregate endpoint.
+    mockFunctionsInvoke.mockResolvedValue({ data: mockPayload, error: null });
 
     render(<CommunityPulseDialog open={true} onClose={vi.fn()} />);
 
@@ -105,7 +101,7 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     expect(container).toBeInTheDocument();
 
     // Check All-Time Platform Visits hero card
-    expect(screen.getByText(/10,337 visits/i)).toBeInTheDocument();
+    expect(screen.getByText('10,337')).toBeInTheDocument();
 
     // Check timeframe selector
     const select = screen.getByRole('combobox', { name: 'Select timeframe' });

@@ -565,7 +565,7 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
         }
       }
     },
-    [timeframe, isAdmin, fetchDatabaseFallbackStats, fetchPublicFallbackStats, parseStatsPayload]
+    [timeframe, fetchDatabaseFallbackStats, fetchPublicFallbackStats, parseStatsPayload]
   );
 
   // 3. Fetch Recent Visitors (Strictly Admin-Only)
@@ -685,14 +685,17 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
   // Initial and timeframe change fetch when opened
   useEffect(() => {
-    if (isOpen) {
-      void fetchStats(false);
-      if (isAdmin) {
-        void fetchRecentVisitors();
-        void fetchAdminLeaderboard();
-      }
+    // Resolve the current user's admin state before the first analytics request.
+    // Otherwise an open dialog starts one request as a non-admin and immediately
+    // starts another when the admin check completes, duplicating network traffic.
+    if (!isOpen || checkingAdmin) return;
+
+    void fetchStats(false);
+    if (isAdmin) {
+      void fetchRecentVisitors();
+      void fetchAdminLeaderboard();
     }
-  }, [isOpen, timeframe, isAdmin, fetchStats, fetchRecentVisitors, fetchAdminLeaderboard]);
+  }, [isOpen, timeframe, isAdmin, checkingAdmin, fetchStats, fetchRecentVisitors, fetchAdminLeaderboard]);
 
   // Periodic polling only when dialog is open and document is visible
   useEffect(() => {

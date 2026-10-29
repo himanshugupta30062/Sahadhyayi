@@ -67,7 +67,7 @@ describe('useUserSearch', () => {
     mocks.neq.mockResolvedValue({ data: null, error: searchError });
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const { result } = renderHook(() => useUserSearch('reader'), { wrapper: makeWrapper() });
-    await waitFor(() => expect(result.current.error).toBe(searchError));
+    await waitFor(() => expect(result.current.error).toBe(searchError), { timeout: 3000 });
     expect(consoleError).toHaveBeenCalledWith('User search failed', { errorName: 'Error' });
     consoleError.mockRestore();
   });

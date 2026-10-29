@@ -74,6 +74,8 @@ vi.mock('@/hooks/use-toast', () => ({
 }));
 
 beforeEach(() => {
+  localStorage.clear();
+  sessionStorage.clear();
   mockUser = null;
   mockLoading = false;
   mockSignIn.mockReset();
@@ -412,8 +414,8 @@ describe('Phase 3: Authentication and Account Entry', () => {
         </MemoryRouter>
       );
 
-      expect(await screen.findByText(/Verification Failed/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Go to Sign In/i })).toBeInTheDocument();
+      expect(await screen.findByRole('alert')).toHaveTextContent(/link is expired or has already been used/i);
+      expect(screen.getByRole('link', { name: /Back to sign in/i })).toHaveAttribute('href', '/signin');
     });
   });
 
