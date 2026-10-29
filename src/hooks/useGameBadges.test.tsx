@@ -37,18 +37,28 @@ describe('useGameBadges', () => {
     mocks.badges = [badge('games', 'games_played', 3), badge('points', 'total_points', 100), badge('streak', 'streak', 2), badge('perfect', 'perfect_game'), badge('speed', 'speed_answers', 5)];
     mocks.earned = [];
     mocks.insertResult = { error: null };
-    mocks.from.mockReset().mockImplementation((table: string) => ({ table }));
-    mocks.select.mockReset().mockImplementation(function (this: { table: string }) {
-      const table = this.table;
-      return Promise.resolve({
-        data: table === 'game_badges' ? mocks.badges : mocks.earned,
-        error: null,
-      });
+    // Supabase queries are fluent and awaitable; keep that contract in the test double.
+    mocks.from.mockReset().mockImplementation((table: string) => {
+      const query: any = {
+        table,
+        select: vi.fn(() => query),
+        eq: vi.fn(() => query),
+        insert: (...args: unknown[]) => {
+          mocks.insert(...args);
+          return Promise.resolve(mocks.insertResult);
+        },
+        then: (resolve: (value: { data: any[]; error: null }) => unknown, reject?: (reason: unknown) => unknown) =>
+          Promise.resolve({
+            data: table === 'game_badges' ? mocks.badges : mocks.earned,
+            error: null,
+          }).then(resolve, reject),
+      };
+      return query;
     });
-    mocks.eq.mockReset().mockImplementation(function (this: { table: string }) {
-      return Promise.resolve({ data: mocks.earned, error: null });
-    });
-    mocks.insert.mockReset().mockImplementation(() => Promise.resolve(mocks.insertResult));
+    mocks.select.mockReset();
+    mocks.eq.mockReset();
+    mocks.insert.mockReset();
+    mocks.toastSuccess.mockReset();
     mocks.toastSuccess.mockReset();
   });
 
