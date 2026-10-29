@@ -20,6 +20,7 @@ import {
 import { useAuth } from '@/contexts/authHelpers';
 import {
   Group,
+  DEFAULT_READING_GROUP_NAME,
   useCreateGroup,
   useDeleteGroup,
   useGroups,
@@ -495,16 +496,20 @@ const ReadingGroupsDirectory = () => {
                           )}
                           {isCopied ? 'Copied!' : 'Invite'}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-xs"
-                          disabled={membershipPending}
-                          onClick={() => void handleMembership(group, true)}
-                        >
-                          {membershipPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                          Leave
-                        </Button>
+{group.name === DEFAULT_READING_GROUP_NAME ? (
+                          <Badge variant="secondary" className="text-[10px]">Permanent Community Member</Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-xs"
+                            disabled={membershipPending}
+                            onClick={() => void handleMembership(group, true)}
+                          >
+                            {membershipPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                            Leave
+                          </Button>
+                        )}
                       </>
                     ) : (
                       <>
