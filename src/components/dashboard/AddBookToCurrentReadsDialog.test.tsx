@@ -63,6 +63,7 @@ const fillRequiredFields = () => {
   });
 };
 
+// Exercises submit guards, persistence success/failure, and dialog reset behavior.
 describe('AddBookToCurrentReadsDialog', () => {
   beforeEach(() => {
     mocks.user = { id: 'reader-123' };
