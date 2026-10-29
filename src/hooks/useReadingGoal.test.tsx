@@ -80,12 +80,14 @@ describe('useReadingGoal', () => {
 
   it('falls back to the legacy goal and ignores invalid saved values', () => {
     localStorage.setItem(legacyKey, '9');
-    const { result, rerender } = renderGoalHook();
-    expect(result.current.goal).toBe(9);
+    const first = renderGoalHook();
+    expect(first.result.current.goal).toBe(9);
+    first.unmount();
 
     localStorage.setItem(legacyKey, '-4');
-    rerender();
-    expect(result.current.goal).toBe(9);
+    const second = renderGoalHook();
+    expect(second.result.current.goal).toBe(12);
+    second.unmount();
   });
 
   it('synchronizes the goal when the readingGoalUpdated event fires', async () => {
