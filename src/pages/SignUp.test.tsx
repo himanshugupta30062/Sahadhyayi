@@ -78,7 +78,9 @@ describe('SignUp', () => {
 
   it('validates required fields, short names and password mismatch', () => {
     renderSignUp();
-    fireEvent.click(screen.getByRole('button', { name: 'Create Account' }));
+    // Submit programmatically to exercise the component's validation handler.
+    // A real browser may intercept empty required fields with native validation.
+    fireEvent.submit(screen.getByRole('button', { name: 'Create Account' }).closest('form')!);
     expect(screen.getByText('Please fill in all fields.')).toBeInTheDocument();
 
     fillForm({ 'Full Name': 'R' });
