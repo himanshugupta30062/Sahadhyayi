@@ -2,7 +2,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button as ButtonComponent } from '@/components/ui/button';
 import { ArrowLeft, Calendar, User, Clock } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { toSeoDescription } from '@/utils/seoText';
@@ -601,7 +601,7 @@ const BlogPost = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Blog post not found</h1>
           <Link to="/blog">
-            <Button>Back to Blog</Button>
+            <ButtonComponent>Back to Blog</ButtonComponent>
           </Link>
         </div>
       </div>
@@ -621,10 +621,10 @@ const BlogPost = () => {
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Back Button */}
           <Link to="/blog">
-            <Button variant="ghost" className="mb-6">
+            <ButtonComponent variant="ghost" className="mb-6">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Blog
-            </Button>
+            </ButtonComponent>
           </Link>
 
           {/* Article */}
@@ -693,14 +693,14 @@ const BlogPost = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/signup">
-                  <Button size="lg" variant="secondary" className="px-8 py-3">
+                  <ButtonComponent size="lg" variant="secondary" className="px-8 py-3">
                     Join Sahadhyayi Today
-                  </Button>
+                  </ButtonComponent>
                 </Link>
                 <Link to="/library">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600 px-8 py-3">
+                  <ButtonComponent size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600 px-8 py-3">
                     Explore Our Library
-                  </Button>
+                  </ButtonComponent>
                 </Link>
               </div>
             </CardContent>
