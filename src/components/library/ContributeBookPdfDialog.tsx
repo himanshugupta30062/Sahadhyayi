@@ -110,6 +110,16 @@ function ContributeBookPdfDialogContent() {
       });
       if (uploadError) throw uploadError;
 
+      // Kick off AI verification after the private upload succeeds. Failure to
+      // start the worker must not turn a successful upload into a failed submission;
+      // the admin queue can retry verification later.
+      const { error: verificationError } = await supabase.functions.invoke('verify-book-pdf', {
+        body: { submissionId: id },
+      });
+      if (verificationError) {
+        console.warn('PDF was uploaded privately but automatic verification did not start.', verificationError);
+      }
+
       toast({ title: 'PDF submitted privately', description: 'Your file is quarantined for verification. It is not publicly downloadable.' });
       setFile(null);
       setTitle('');
