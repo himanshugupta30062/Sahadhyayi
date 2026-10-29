@@ -108,7 +108,6 @@ const Blog = () => {
     image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=630&fit=crop'
   },
   {
-  {
     id: '14',
     slug: 'choose-your-next-book-by-mood',
     title: 'How to Choose Your Next Book by Mood',
