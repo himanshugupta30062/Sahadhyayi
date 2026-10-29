@@ -57,6 +57,17 @@ describe('ConfirmEmail verification flow', () => {
     expect(screen.queryByText(/or open the confirmation link in the email/i)).not.toBeInTheDocument();
   });
 
+  it('rejects email addresses containing internal whitespace before verification', async () => {
+    renderConfirmEmail();
+
+    fireEvent.change(screen.getByLabelText(/Email address/i), { target: { value: 'reader @example.com' } });
+    fireEvent.change(screen.getByLabelText(/Verification code/i), { target: { value: '123456' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Verify email$/i }));
+
+    expect(await screen.findByText(/Enter a valid email address/i)).toBeInTheDocument();
+    expect(mocks.verifyOtp).not.toHaveBeenCalled();
+  });
+
   it('validates the email code before calling Supabase', async () => {
     renderConfirmEmail();
 

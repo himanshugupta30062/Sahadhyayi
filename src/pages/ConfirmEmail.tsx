@@ -14,7 +14,7 @@ import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
 type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'already-verified' | 'verified-needs-signin';
 
 function isValidEmailAddress(value: string): boolean {
-  if (value.length === 0 || value.length > 254 || value.trim() !== value || /\\s/.test(value)) return false;
+  if (value.length === 0 || value.length > 254 || value.trim() !== value || /\s/.test(value)) return false;
   const at = value.indexOf('@');
   if (at <= 0 || at !== value.lastIndexOf('@') || at > 64) return false;
   const domain = value.slice(at + 1);
