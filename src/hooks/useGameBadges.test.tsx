@@ -37,7 +37,21 @@ describe('useGameBadges', () => {
     mocks.badges = [badge('games', 'games_played', 3), badge('points', 'total_points', 100), badge('streak', 'streak', 2), badge('perfect', 'perfect_game'), badge('speed', 'speed_answers', 5)];
     mocks.earned = [];
     mocks.insertResult = { error: null };
-    mocks.from.mockReset().mockImplementation((table: string) => ({ table }));
+    mocks.from.mockReset().mockImplementation((table: string) => ({
+      select: vi.fn(() => {
+        const response = Promise.resolve({
+          data: table === 'game_badges' ? mocks.badges : mocks.earned,
+          error: null,
+        });
+        return {
+          then: response.then.bind(response),
+          catch: response.catch.bind(response),
+          finally: response.finally.bind(response),
+          eq: vi.fn(() => Promise.resolve({ data: mocks.earned, error: null })),
+        };
+      }),
+      insert: (...args: unknown[]) => mocks.insert(...args),
+    }));
     mocks.select.mockReset().mockImplementation(function (this: { table: string }) {
       const table = this.table;
       return Promise.resolve({
