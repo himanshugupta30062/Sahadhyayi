@@ -191,7 +191,7 @@ describe('useReadingRoom', () => {
       await messageInsert?.callback({ new: { id: 'msg-2', room_id: 'room-1', user_id: 'reader-3', body: 'Realtime', created_at: '2026-01-04' } });
     });
     await waitFor(() => expect(result.current.messages).toHaveLength(2));
-    expect(result.current.messages[1].profiles).toMatchObject({ full_name: 'Reader Two' });
+    expect(result.current.messages[1].profiles).toMatchObject({ full_name: 'Reader One' });
 
     const sync = mocks.channelHandlers.find((handler) => handler.type === 'presence');
     act(() => { sync?.callback(); });
