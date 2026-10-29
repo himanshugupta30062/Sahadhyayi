@@ -220,7 +220,7 @@ const Navigation = () => {
                   title="Search library, authors, and books"
                 >
                   <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true" />
-                  <span className="text-xs text-foreground/80 font-normal">
+                  <span className="hidden xl:inline text-xs text-foreground/80 font-normal">
                     Search library & authors...
                   </span>
                 </button>
