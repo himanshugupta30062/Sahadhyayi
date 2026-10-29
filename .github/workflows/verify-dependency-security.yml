@@ -1,0 +1,53 @@
+name: Verify dependency security remediation
+
+on:
+  push:
+    branches:
+      - security/fix-transitive-audit-findings
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dependency-security-remediation
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: security/fix-transitive-audit-findings
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install and refresh lockfile
+        run: |
+          npm install
+          npm audit fix || echo "::warning::Some audit findings need manual or breaking-change remediation."
+
+      - name: Commit lockfile updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- package-lock.json package.json; then
+            git add package-lock.json package.json
+            git commit -m "fix: refresh dependency lockfile"
+            git push origin security/fix-transitive-audit-findings
+          fi
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Enforce dependency audit
+        run: npm audit --audit-level=high
