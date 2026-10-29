@@ -85,3 +85,9 @@
     animation: none;
   }
 }
+
+
+/* Avoid animation work on decorative books outside the viewport. */
+.home-floating-books.is-offscreen .home-floating-book {
+  animation-play-state: paused;
+}
