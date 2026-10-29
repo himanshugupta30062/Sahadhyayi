@@ -12,7 +12,8 @@
   opacity: 0.40;
   transform-origin: center;
   animation: sahadhyayiTinyBookFloat 20s ease-in-out infinite;
-  filter: drop-shadow(0 5px 5px rgba(36, 55, 42, 0.09));
+  /* Keep the moving element transform-only so the browser can composite it efficiently. */
+  will-change: transform;
 }
 
 .home-floating-book__cover {
