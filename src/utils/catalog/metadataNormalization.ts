@@ -217,8 +217,8 @@ export function createCanonicalClusterKey(title: string, author?: string | null)
   const normAuthor = normalizeAuthor(author).normalizedAuthor;
 
   // Keep all unicode letters and numbers, lowercase, remove symbols
-  const tKey = normTitle.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
-  const aKey = normAuthor.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  const tKey = normTitle.toLowerCase().replace(/[^\p{L}\p{N}\p{M}]+/gu, ' ').trim();
+  const aKey = normAuthor.toLowerCase().replace(/[^\p{L}\p{N}\p{M}]+/gu, ' ').trim();
 
   return `${tKey}::${aKey || 'unknown'}`;
 }
