@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 declare global {
   interface Window {
@@ -31,16 +31,28 @@ const loadMappls = (apiKey: string): Promise<void> => {
     script.src = `https://sdk.mappls.com/map/sdk/web?v=3.0&access_token=${encodeURIComponent(apiKey)}`;
     script.async = true;
     script.defer = true;
+    script.dataset.mapplsSdk = 'true';
+
+    const resetPromise = () => {
+      window.mapplsLoadingPromise = undefined;
+      script.remove();
+    };
+
     script.onload = () => {
-      if (window.mappls?.Map && window.mappls?.Marker) resolve();
-      else reject(new Error('Mappls SDK loaded but its map API was not available.'));
+      if (window.mappls?.Map && window.mappls?.Marker) {
+        resolve();
+      } else {
+        resetPromise();
+        reject(new Error('Mappls SDK loaded, but the map API was not available. Verify that this key is enabled for Web Maps.'));
+      }
     };
     script.onerror = () => {
-      window.mapplsLoadingPromise = undefined;
-      reject(new Error('Unable to load Mappls Maps SDK. Check the key, web SDK access and domain allowlist.'));
+      resetPromise();
+      reject(new Error('Mappls SDK could not be downloaded. Verify the static key, Web Maps access, and allowed domains.'));
     };
     document.head.appendChild(script);
   });
+
   return window.mapplsLoadingPromise;
 };
 
@@ -48,8 +60,10 @@ export function MapplsMap({
   apiKey,
   points,
   center,
-  emptyMessage = 'No shared reader locations are available yet.'
+  emptyMessage = 'No shared reader locations are available yet.',
 }: MapplsMapProps) {
+  const generatedId = useId().replace(/:/g, '');
+  const containerId = `mappls-map-${generatedId}`;
   const mapElement = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markers = useRef<any[]>([]);
@@ -58,16 +72,21 @@ export function MapplsMap({
 
   useEffect(() => {
     let cancelled = false;
+
     if (!apiKey.trim()) {
       setStatus('missing-key');
       return;
     }
 
+    setStatus('loading');
+    setErrorMessage('');
+
     loadMappls(apiKey)
       .then(() => {
         if (cancelled || !mapElement.current || mapInstance.current) return;
         const initialCenter = center ?? { lat: 22.9734, lng: 78.6569 };
-        mapInstance.current = new window.mappls!.Map(mapElement.current, {
+        // The Web SDK examples initialize the map using the container element's ID.
+        mapInstance.current = new window.mappls!.Map(containerId, {
           center: { lat: initialCenter.lat, lng: initialCenter.lng },
           zoom: center ? 10 : 4,
         });
@@ -81,8 +100,34 @@ export function MapplsMap({
 
     return () => {
       cancelled = true;
+      markers.current.forEach((marker) => {
+        try {
+          marker.remove?.();
+          marker.setMap?.(null);
+        } catch {
+          // Ignore SDK-specific cleanup differences.
+        }
+      });
+      markers.current = [];
+      try {
+        mapInstance.current?.remove?.();
+        mapInstance.current?.destroy?.();
+      } catch {
+        // Some SDK builds do not expose explicit map disposal.
+      }
+      mapInstance.current = null;
     };
-  }, [apiKey]);
+    // Recreate only when the key/container changes; center changes are handled below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiKey, containerId]);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (status !== 'ready' || !map) return;
+    if (center && Number.isFinite(center.lat) && Number.isFinite(center.lng)) {
+      map.setCenter?.({ lat: center.lat, lng: center.lng });
+    }
+  }, [center, status]);
 
   useEffect(() => {
     const map = mapInstance.current;
@@ -104,7 +149,7 @@ export function MapplsMap({
         Number.isFinite(point.lng) &&
         Math.abs(point.lat) <= 90 &&
         Math.abs(point.lng) <= 180 &&
-        !(point.lat === 0 && point.lng === 0)
+        !(point.lat === 0 && point.lng === 0),
     );
 
     validPoints.forEach((point) => {
@@ -132,7 +177,7 @@ export function MapplsMap({
         <div className="max-w-md space-y-2">
           <p className="font-semibold">Mappls is not configured yet</p>
           <p className="text-sm text-muted-foreground">
-            Add VITE_MAPPLS_API_KEY to the production build environment, enable the Mappls Web Maps SDK,
+            Add VITE_MAPPLS_API_KEY to the Cloudflare Pages build environment, enable the Mappls Web Maps SDK,
             and allow sahadhyayi.com and www.sahadhyayi.com in the Mappls Console.
           </p>
           <a className="text-sm underline" href="https://auth.mappls.com/console" target="_blank" rel="noreferrer">
@@ -145,24 +190,41 @@ export function MapplsMap({
 
   if (status === 'error') {
     return (
-      <div className="flex h-[500px] items-center justify-center rounded-xl border bg-muted/30 p-6 text-center">
+      <div className="flex h-[500px] items-center justify-center rounded-xl border bg-muted/30 p-6 text-center" role="alert">
         <div className="max-w-md space-y-2">
           <p className="font-semibold">Mappls could not load</p>
           <p className="text-sm text-muted-foreground">{errorMessage}</p>
+          <a className="text-sm underline" href="https://developer.mappls.com/documentation/sdk/Web/Web%20JS/" target="_blank" rel="noreferrer">
+            Check Mappls Web Maps documentation
+          </a>
         </div>
       </div>
     );
   }
 
+  const validPointCount = points.filter(
+    (point) =>
+      Number.isFinite(point.lat) &&
+      Number.isFinite(point.lng) &&
+      Math.abs(point.lat) <= 90 &&
+      Math.abs(point.lng) <= 180 &&
+      !(point.lat === 0 && point.lng === 0),
+  ).length;
+
   return (
     <div className="relative">
-      <div ref={mapElement} className="h-[500px] w-full overflow-hidden rounded-xl border" aria-label="Interactive Mappls map" />
+      <div
+        id={containerId}
+        ref={mapElement}
+        className="h-[500px] w-full overflow-hidden rounded-xl border"
+        aria-label="Interactive Mappls map"
+      />
       {status === 'loading' && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/80">
           <p className="text-sm text-muted-foreground">Loading Mappls map…</p>
         </div>
       )}
-      {status === 'ready' && points.filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng) && !(point.lat === 0 && point.lng === 0)).length === 0 && (
+      {status === 'ready' && validPointCount === 0 && (
         <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-lg bg-background/95 px-4 py-2 text-sm shadow">
           {emptyMessage}
         </div>
