@@ -131,7 +131,7 @@ describe('Games page', () => {
     mocks.user = { id: 'reader-1' };
     renderGames();
 
-    expect(screen.getByRole('heading', { name: 'Book Quiz' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Book Quiz Challenge' })).toBeInTheDocument();
     expect(screen.getByText('240')).toBeInTheDocument();
     expect(screen.getByText('Reader')).toBeInTheDocument();
     expect(screen.getByText('Streak 3')).toBeInTheDocument();
