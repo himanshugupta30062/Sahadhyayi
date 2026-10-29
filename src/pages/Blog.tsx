@@ -1,6 +1,4 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, User, ArrowRight, Search, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -205,11 +203,6 @@ const Blog = () => {
     const searchableText = `${post.title} ${post.excerpt} ${post.author} ${post.category}`.toLowerCase();
     return matchesCategory && (!normalizedQuery || searchableText.includes(normalizedQuery));
   });
-
-  const featuredPost = selectedCategory === 'All' && !normalizedQuery
-    ? blogPosts.find(post => post.featured)
-    : undefined;
-  const regularPosts = filteredPosts.filter(post => post.slug !== featuredPost?.slug);
 
   const sortedPosts = [...filteredPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const featuredPost = selectedCategory === 'All' && !normalizedQuery
