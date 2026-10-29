@@ -127,7 +127,7 @@ describe('Authors directory', () => {
       'https://example.com/cover.jpg',
     );
     expect(screen.getByRole('link', { name: /The Dispossessed/ })).toHaveAttribute('href', '/book/book-1');
-    expect(screen.getByRole('link', { name: /All books/ })).toHaveAttribute(
+    expect(screen.getAllByRole('link', { name: /All books/ })[0]).toHaveAttribute(
       'href',
       '/library?author=Ursula%20K.%20Le%20Guin',
     );
