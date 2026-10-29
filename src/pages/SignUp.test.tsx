@@ -14,11 +14,15 @@ const mocks = vi.hoisted(() => ({
   passwordValid: true,
 }));
 
-vi.mock('@/contexts/authHelpers', () => ({
+vi.mock('@/contexts/authHelpers', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/contexts/authHelpers')>();
+  return {
+    ...actual,
   normalizeAuthEmail: (value: string) => value.trim().toLowerCase(),
   normalizeAuthName: (value: string) => value.trim().replace(/\s+/g, ' '),
   useAuth: () => ({ user: mocks.user, signUp: mocks.signUp }),
-}));
+  };
+});
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock('@/components/SEO', () => ({ default: () => null }));
 vi.mock('@/components/auth/TurnstileCaptcha', () => ({
