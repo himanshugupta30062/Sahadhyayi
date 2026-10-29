@@ -1,49 +1,35 @@
 User-agent: *
 Allow: /
 
-# Allow public discovery paths
+# Public discovery pages
 Allow: /library
 Allow: /articles
 Allow: /authors
 Allow: /book/
-Allow: /author/
 Allow: /about
 Allow: /blog
-Allow: /social
 Allow: /groups
-Allow: /map
 Allow: /games
+Allow: /discovery
+Allow: /quotes
+Allow: /community-stories
 Allow: /help-center
-Allow: /feedback
-Allow: /privacy-policy
-Allow: /terms-of-service
-Allow: /cookie-policy
 Allow: /community-guidelines
 
-# Disallow private user and editor areas
-Disallow: /dashboard/
-Disallow: /profile/
-Disallow: /settings/
-Disallow: /bookshelf/
+# Keep account and editing surfaces out of crawling. These are not access controls.
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /settings
+Disallow: /bookshelf
 Disallow: /articles/my
 Disallow: /articles/write
 Disallow: /articles/edit/
 Disallow: /my-publications
 Disallow: /functions/v1/
-
-# Disallow auth flows
 Disallow: /signin
 Disallow: /signup
 Disallow: /auth
 Disallow: /reset-password
 Disallow: /confirm-email
 
-# Search Engine Specific
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-# Canonical Sitemap
 Sitemap: https://sahadhyayi.com/sitemap.xml
