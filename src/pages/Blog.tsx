@@ -108,6 +108,39 @@ const Blog = () => {
     image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=630&fit=crop'
   },
   {
+  {
+    id: '14',
+    slug: 'choose-your-next-book-by-mood',
+    title: 'How to Choose Your Next Book by Mood',
+    excerpt: 'Match your next read to the time, energy, and kind of story you want—from comfort reading to a thoughtful challenge.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Book Recommendations',
+    readTime: '6 min read',
+    image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1200&h=630&fit=crop'
+  },
+  {
+    id: '15',
+    slug: 'how-to-read-without-distractions',
+    title: 'How to Read Without Getting Distracted',
+    excerpt: 'Build a calmer reading setup, manage phone interruptions, and return to a book without blaming yourself for every lapse in focus.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Reading Tips',
+    readTime: '7 min read',
+    image: 'https://images.unsplash.com/photo-1455390582262-044c025c3f5b?w=1200&h=630&fit=crop'
+  },
+  {
+    id: '16',
+    slug: '30-day-reading-challenge',
+    title: 'A Gentle 30-Day Reading Challenge for Any Reader',
+    excerpt: 'A flexible month of small reading prompts designed to help you explore genres, notice ideas, and make reading feel rewarding.',
+    author: 'Sahadhyayi Editorial',
+    date: '2026-10-29',
+    category: 'Reading Challenges',
+    readTime: '8 min read',
+    image: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=1200&h=630&fit=crop'
+  },
     id: '7',
     slug: 'best-indian-books-to-read',
     title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',

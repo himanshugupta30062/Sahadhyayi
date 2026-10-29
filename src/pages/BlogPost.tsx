@@ -382,6 +382,88 @@ const BlogPost = () => {
         <p>India's literary richness becomes more visible when we read beyond the familiar. Start with one translation, follow the voice that interests you, and let each book introduce you to another language, place, or way of seeing the world.</p>
       `
     },
+    'choose-your-next-book-by-mood': {
+      title: 'How to Choose Your Next Book by Mood',
+      description: 'A practical guide to choosing books by mood, available attention, and the kind of reading experience you want.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '6 min read',
+      image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1200&h=630&fit=crop',
+      content: `
+        <p>Choosing your next book should feel inviting, not like another decision to optimise. Sometimes you want a fast-paced mystery; sometimes you want a quiet story, a new idea, or a few pages that fit into a busy day. Letting your current mood guide you can make reading easier to begin.</p>
+        <h2>Start by Asking What You Need From Reading</h2>
+        <p>Do you want to relax, feel curious, laugh, understand a difficult subject, or see the world from another perspective? You do not need to find a perfect match. Naming the experience you want is enough to narrow the field.</p>
+        <h2>When You Want Comfort</h2>
+        <p>Try a familiar favourite, gentle humour, a cosy mystery, short stories, or a book whose world you already enjoy. Rereading counts: a familiar book can be a welcome place to return to, not a lesser choice.</p>
+        <h2>When You Want Energy and Momentum</h2>
+        <p>Look for clear prose, short chapters, strong narrative questions, adventure, suspense, or a collection of brief essays. If you are tired, a book that is easy to pick up and put down may work better than an ambitious doorstopper.</p>
+        <h2>When You Want to Think Deeply</h2>
+        <p>Choose literary fiction, history, philosophy, biography, or thoughtful nonfiction. Keep a pencil or note nearby, but do not turn every page into homework. One question worth thinking about is a successful reading session.</p>
+        <h2>When You Have Very Little Time</h2>
+        <p>Poetry, flash fiction, essays, and short stories offer natural stopping points. You can also read a longer book in small portions. A ten-minute session is still reading; consistency matters more than a dramatic daily target.</p>
+        <h2>Use a Three-Book Shortlist</h2>
+        <p>Keep three options ready: one easy, one intriguing, and one that stretches your interests. Choose from the list based on the day you are having. This reduces the friction of browsing endlessly when you could be reading.</p>
+        <h2>Give a Book a Fair, Not Endless, Trial</h2>
+        <p>Try a reasonable sample—perhaps a chapter or a few short sessions. If the voice, subject, or pace is not working for you, it is fine to pause or stop. You can return later, or let the book go without treating it as a failure.</p>
+        <h2>Make Your Reading Mood Visible</h2>
+        <p>On Sahadhyayi, use your library and reading community to keep track of books that appeal to different moods. Share what you are in the mood for and ask fellow readers for suggestions; a brief explanation of why a book worked for someone can be more helpful than a star rating alone.</p>
+        <p>Your mood is a starting point, not a rule. Follow your curiosity, change direction when you need to, and let the next book meet you where you are.</p>
+      `
+    },
+    'how-to-read-without-distractions': {
+      title: 'How to Read Without Getting Distracted',
+      description: 'Practical, forgiving ways to reduce interruptions and build a more focused reading routine.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '7 min read',
+      image: 'https://images.unsplash.com/photo-1455390582262-044c025c3f5b?w=1200&h=630&fit=crop',
+      content: `
+        <p>If you read a page and realise you have not absorbed a word, you are not alone. Notifications, open browser tabs, noise, fatigue, and a busy mind can all compete for attention. Better focus usually comes from making reading easier to return to—not from demanding perfect concentration.</p>
+        <h2>Choose a Small, Specific Session</h2>
+        <p>Instead of promising to read for hours, choose a manageable window: ten or fifteen minutes, or a few pages. A clear finish line makes it easier to begin and gives you a chance to build gradually.</p>
+        <h2>Make Your Phone Less Interesting</h2>
+        <p>Put the phone out of arm's reach, enable Do Not Disturb, or silence non-essential notifications. If you read on your phone, use a reading app or full-screen mode and close unrelated tabs before you start.</p>
+        <h2>Prepare Your Reading Spot</h2>
+        <p>Keep your book, glasses, bookmark, and water nearby. Choose a comfortable place with enough light. You do not need a perfect reading nook; you need a setup that removes a few avoidable reasons to get up or switch tasks.</p>
+        <h2>Give Your Mind a Parking Place</h2>
+        <p>When a task or thought interrupts you, write a short reminder on paper and return to the page. This can reassure you that the thought will not be lost, without requiring you to solve it immediately.</p>
+        <h2>Use a Gentle Restart</h2>
+        <p>When you notice your attention wandering, pause, reread the last paragraph, and continue. Avoid turning a brief lapse into a reason to abandon the session. Returning to the text is part of reading practice.</p>
+        <h2>Choose the Right Format for the Moment</h2>
+        <p>A demanding book may be better suited to a quiet period, while short stories, essays, or audiobooks can fit other parts of the day. Experiment with print, e-books, and audio based on what helps you engage with the material.</p>
+        <h2>Track What Helps, Not Just Pages</h2>
+        <p>After a session, note one thing that made focusing easier: a quieter room, a shorter goal, or putting the phone away. Repeat the changes that work for you. Avoid measuring every session only by page count; understanding and enjoyment matter too.</p>
+        <h2>Build a Routine You Can Repeat</h2>
+        <p>Attach reading to an existing cue, such as after breakfast or before bed, and keep the initial goal modest. If you miss a day, resume at the next opportunity rather than trying to compensate with an exhausting session.</p>
+        <p>Focus is not an all-or-nothing talent. Create a few helpful conditions, practise returning when your mind wanders, and let each session be a fresh start.</p>
+      `
+    },
+    '30-day-reading-challenge': {
+      title: 'A Gentle 30-Day Reading Challenge for Any Reader',
+      description: 'A flexible 30-day reading plan with small prompts for discovery, reflection, and community.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '8 min read',
+      image: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=1200&h=630&fit=crop',
+      content: `
+        <p>A reading challenge should make books more inviting, not turn them into a race. This 30-day plan is designed for beginners and returning readers alike. Use a few minutes a day, skip prompts that do not fit, and treat the schedule as an invitation rather than a strict streak.</p>
+        <h2>Week 1: Make Reading Easy to Begin</h2>
+        <ul><li><strong>Day 1:</strong> Pick a book you genuinely want to read.</li><li><strong>Day 2:</strong> Read for five to ten minutes.</li><li><strong>Day 3:</strong> Find a comfortable reading spot.</li><li><strong>Day 4:</strong> Read one page before opening a social app.</li><li><strong>Day 5:</strong> Try a short story, poem, or essay.</li><li><strong>Day 6:</strong> Read at a different time of day.</li><li><strong>Day 7:</strong> Reflect on what made reading enjoyable this week.</li></ul>
+        <h2>Week 2: Follow Your Curiosity</h2>
+        <ul><li><strong>Day 8:</strong> Read a passage twice and notice what changes.</li><li><strong>Day 9:</strong> Explore a genre you rarely choose.</li><li><strong>Day 10:</strong> Look up one unfamiliar word or reference.</li><li><strong>Day 11:</strong> Read a few pages without multitasking.</li><li><strong>Day 12:</strong> Find out something about the author.</li><li><strong>Day 13:</strong> Read a book from a language or place new to you, in translation if needed.</li><li><strong>Day 14:</strong> Write one sentence about an idea that stayed with you.</li></ul>
+        <h2>Week 3: Read With Other People</h2>
+        <ul><li><strong>Day 15:</strong> Recommend a book to a friend.</li><li><strong>Day 16:</strong> Ask someone what they are reading.</li><li><strong>Day 17:</strong> Share a question the book raised for you.</li><li><strong>Day 18:</strong> Read a passage that someone else recommended.</li><li><strong>Day 19:</strong> Compare two readers' interpretations respectfully.</li><li><strong>Day 20:</strong> Join or start a small reading discussion.</li><li><strong>Day 21:</strong> Record one thing you learned from another reader.</li></ul>
+        <h2>Week 4: Find Your Own Reading Rhythm</h2>
+        <ul><li><strong>Day 22:</strong> Revisit a book you once loved.</li><li><strong>Day 23:</strong> Try a nonfiction chapter or an essay.</li><li><strong>Day 24:</strong> Read somewhere new, if practical.</li><li><strong>Day 25:</strong> Put your phone away for one short session.</li><li><strong>Day 26:</strong> Decide whether to continue or pause your current book.</li><li><strong>Day 27:</strong> Make a short list of books you want to explore.</li><li><strong>Day 28:</strong> Read purely for pleasure, with no notes or goals.</li></ul>
+        <h2>Days 29–30: Reflect and Continue</h2>
+        <ul><li><strong>Day 29:</strong> Look back at the formats, times, and genres you enjoyed most.</li><li><strong>Day 30:</strong> Choose a small, realistic routine for the next month.</li></ul>
+        <h2>Make the Challenge Work for You</h2>
+        <p>Missed a day? Continue with the next prompt. Finished no books? That is fine: the goal is to build a relationship with reading, not to maximise a number. You can repeat a week, replace prompts, or invite a friend to take part with you.</p>
+        <h2>Celebrate What You Discovered</h2>
+        <p>At the end of the month, note what surprised you, which book you want to continue, and what you would change about your routine. Share your progress with fellow readers on Sahadhyayi and ask for recommendations based on what you enjoyed.</p>
+        <p>Thirty days will not look the same for everyone. A few meaningful minutes, repeated with flexibility, can be a strong beginning.</p>
+      `
+    },
     'best-indian-books-to-read': {
     title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',
     description: 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.',
