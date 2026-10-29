@@ -72,6 +72,8 @@ const SignUp = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Prevent concurrent account-creation requests if the form submits more than once.
+    if (loading) return;
     setError('');
     setSuccess('');
     setDuplicateEmailDetected(false);
