@@ -60,6 +60,7 @@ describe('SEO build-script coverage', () => {
   beforeEach(() => {
     process.env.VITE_SUPABASE_URL = 'https://test.supabase.co';
     process.env.VITE_SUPABASE_ANON_KEY = 'test-anon-key';
+    mocks.createClient.mockClear();
     mocks.rows = {
       books_library: [
         { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg' },
