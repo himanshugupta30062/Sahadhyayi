@@ -152,6 +152,8 @@ describe('Games page', () => {
     expect(screen.getByRole('button', { name: /hard/i })).toHaveClass('bg-red-600');
 
     fireEvent.click(screen.getByRole('button', { name: /Start Quiz/ }));
-    expect(screen.getByText('Book selector mock')).toBeInTheDocument();
+
+    // Lazy-loaded book selection is rendered asynchronously after the route's state changes.
+    expect(await screen.findByText('Book selector mock')).toBeInTheDocument();
   });
 });
