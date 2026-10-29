@@ -103,7 +103,7 @@ BEGIN
     RAISE EXCEPTION 'book-pdf-quarantine already exists with unexpected security settings';
   END IF;
 END;
-$;
+$$;
 DROP POLICY IF EXISTS "Users can upload own quarantined book PDFs" ON storage.objects;
 CREATE POLICY "Users can upload own quarantined book PDFs"
   ON storage.objects FOR INSERT
