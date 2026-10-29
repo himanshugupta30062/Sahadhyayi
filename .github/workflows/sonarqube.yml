@@ -25,7 +25,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
-          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'himanshugupta30062_Sahadhyayi' }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'sahadhyayi' }}
         run: |
           if [ -z "$SONAR_TOKEN" ]; then
             echo "::error::Missing GitHub Actions secret SONAR_TOKEN."
@@ -89,7 +89,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
         with:
           args: >
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'himanshugupta30062_Sahadhyayi' }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'sahadhyayi' }}
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.verbose=true
 
