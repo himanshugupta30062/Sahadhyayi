@@ -8,6 +8,7 @@ import SEO from "@/components/SEO";
 import DeferredSection from "@/components/DeferredSection";
 import AnimatedHero from "@/components/AnimatedHero";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import HomeEditorialPreview from "@/components/home/HomeEditorialPreview";
 
 const SahadhyayiCapabilities = lazy(() => import("@/components/SahadhyayiCapabilities"));
 const CurrentReads = lazy(() => import("@/components/library/CurrentReads"));
@@ -128,7 +129,15 @@ const Index = () => {
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* 6. Atmospheric Final Call-to-Action with warm library aesthetic */}
+        {/* 6. Editorial blogs and community articles are distinct content destinations. */}
+        <DeferredSection
+          fallback={<div className="min-h-[320px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[320px]"
+        >
+          <HomeEditorialPreview />
+        </DeferredSection>
+
+        {/* 7. Atmospheric Final Call-to-Action with warm library aesthetic */}
         <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300">
 
           <div className="relative z-10 max-w-3xl mx-auto text-center">
