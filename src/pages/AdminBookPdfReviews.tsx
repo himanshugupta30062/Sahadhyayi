@@ -31,6 +31,21 @@ type Submission = {
   published_book_id: string | null;
 };
 type Book = { id: string; title: string; author: string | null; pdf_url: string | null };
+async function getFunctionErrorMessage(error: unknown, fallback: string): Promise<string> {
+  const candidate = error as { message?: string; context?: Response } | null;
+  const response = candidate?.context;
+  if (response && typeof response.clone === "function") {
+    try {
+      const payload = await response.clone().json();
+      if (typeof payload?.error === "string" && payload.error.trim()) return payload.error;
+      if (typeof payload?.message === "string" && payload.message.trim()) return payload.message;
+    } catch {
+      // Some gateway/runtime errors return non-JSON bodies; fall through to the SDK message.
+    }
+  }
+  return candidate?.message || fallback;
+}
+
 type RightsBasis = 'public_domain' | 'open_license' | 'rights_holder' | 'written_permission' | 'official_source';
 
 const RIGHTS_OPTIONS: { value: RightsBasis; label: string }[] = [
@@ -111,7 +126,7 @@ export default function AdminBookPdfReviews() {
         await refresh();
       }
     } catch (error) {
-      toast({ title: 'Action failed', description: error instanceof Error ? error.message : 'The review action could not be completed.', variant: 'destructive' });
+      toast({ title: 'Action failed', description: await getFunctionErrorMessage(error, 'The review action could not be completed.'), variant: 'destructive' });
     } finally {
       setBusyAction('');
     }
@@ -130,7 +145,7 @@ export default function AdminBookPdfReviews() {
         setSelectedId(selected.id);
       }
     } catch (error) {
-      toast({ title: 'Verification failed', description: error instanceof Error ? error.message : 'The AI verification could not be completed.', variant: 'destructive' });
+      toast({ title: 'Verification failed', description: await getFunctionErrorMessage(error, 'The AI verification could not be completed.'), variant: 'destructive' });
       await refresh();
     } finally {
       setBusyAction('');

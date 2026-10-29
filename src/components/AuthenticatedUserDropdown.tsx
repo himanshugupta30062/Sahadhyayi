@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { verifyAdminStatus } from "@/utils/catalog/duplicateResolution";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { BookOpen, ChevronDown, FileText, LogOut, User } from "lucide-react";
+import { BookOpen, ChevronDown, FileText, LogOut, ShieldCheck, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +35,12 @@ export default function AuthenticatedUserDropdown({
   userDisplayName,
   onSignOut,
 }: AuthenticatedUserDropdownProps) {
+  const { data: isAdmin } = useQuery({
+    queryKey: ["authenticated-user-dropdown-admin", user.id],
+    queryFn: verifyAdminStatus,
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -75,9 +83,26 @@ export default function AuthenticatedUserDropdown({
             My Articles
           </Link>
         </DropdownMenuItem>
+        {isAdmin === true && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/admin/book-pdf-reviews" className="flex items-center cursor-pointer">
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                PDF Review Queue
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/admin/book-pdfs" className="flex items-center cursor-pointer">
+                <BookOpen className="mr-2 h-4 w-4" />
+                PDF Manager
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={onSignOut}
+          onClick={onSignOut
           className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
         >
           <LogOut className="mr-2 h-4 w-4" />
