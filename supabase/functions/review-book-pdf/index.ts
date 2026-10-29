@@ -94,6 +94,37 @@ serve(async (req) => {
   const signature = new Uint8Array(await source.slice(0, 5).arrayBuffer());
   if (new TextDecoder().decode(signature) !== "%PDF-") return json({ error: "Source PDF signature validation failed." }, 422);
 
+  // Fail closed: AI review and a PDF signature are not malware scanning. A
+  // configured scanner must return { clean: true } before a public copy is made.
+  const scannerUrl = Deno.env.get("PDF_MALWARE_SCAN_URL");
+  const scannerToken = Deno.env.get("PDF_MALWARE_SCAN_TOKEN");
+  if (!scannerUrl || !scannerToken) {
+    return json({ error: "Publishing is disabled until the malware-scanning service is configured." }, 503);
+  }
+  let scannerEndpoint: URL;
+  try {
+    scannerEndpoint = new URL(scannerUrl);
+    if (scannerEndpoint.protocol !== "https:") throw new Error("HTTPS required");
+  } catch {
+    return json({ error: "The malware scanner URL must use HTTPS." }, 503);
+  }
+  let scanResult: { clean?: boolean; status?: string };
+  try {
+    const scanResponse = await fetch(scannerEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/pdf", "Authorization": `Bearer ${scannerToken}` },
+      body: source,
+      signal: AbortSignal.timeout(45000),
+    });
+    if (!scanResponse.ok) return json({ error: "The malware scanner is unavailable; the PDF was not published." }, 503);
+    scanResult = await scanResponse.json();
+  } catch {
+    return json({ error: "The malware scan failed or timed out; the PDF was not published." }, 503);
+  }
+  if (scanResult.clean !== true) {
+    return json({ error: "The malware scanner did not confirm this PDF is clean. It was not published." }, 422);
+  }
+
   const publicPath = `${targetBookId}/${submissionId}.pdf`;
   const { error: uploadError } = await admin.storage.from("book-pdfs").upload(publicPath, source, {
     contentType: "application/pdf", cacheControl: "3600", upsert: false,
