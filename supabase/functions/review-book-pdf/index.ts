@@ -99,35 +99,103 @@ serve(async (req) => {
   const signature = new Uint8Array(await source.slice(0, 5).arrayBuffer());
   if (new TextDecoder().decode(signature) !== "%PDF-") return json({ error: "Source PDF signature validation failed." }, 422);
 
-  // Fail closed: AI review and a PDF signature are not malware scanning. A
-  // configured scanner must return { clean: true } before a public copy is made.
-  const scannerUrl = Deno.env.get("PDF_MALWARE_SCAN_URL");
-  const scannerToken = Deno.env.get("PDF_MALWARE_SCAN_TOKEN");
-  if (!scannerUrl || !scannerToken) {
-    return json({ error: "Publishing is disabled until the malware-scanning service is configured." }, 503);
+  // Fail closed: AI review and a PDF signature are not malware scanning.
+  // Bouncer scans asynchronously; only a completed "clean" verdict permits publication.
+  const scannerToken = Deno.env.get("BOUNCER_API_KEY");
+  if (!scannerToken) {
+    return json({ error: "Publishing is disabled until the Bouncer API key is configured in Supabase Edge Function secrets." }, 503);
   }
-  let scannerEndpoint: URL;
+
   try {
-    scannerEndpoint = new URL(scannerUrl);
-    if (scannerEndpoint.protocol !== "https:") throw new Error("HTTPS required");
-  } catch {
-    return json({ error: "The malware scanner URL must use HTTPS." }, 503);
-  }
-  let scanResult: { clean?: boolean; status?: string };
-  try {
-    const scanResponse = await fetch(scannerEndpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/pdf", "Authorization": `Bearer ${scannerToken}` },
-      body: source,
-      signal: AbortSignal.timeout(45000),
-    });
-    if (!scanResponse.ok) return json({ error: "The malware scanner is unavailable; the PDF was not published." }, 503);
-    scanResult = await scanResponse.json();
-  } catch {
-    return json({ error: "The malware scan failed or timed out; the PDF was not published." }, 503);
-  }
-  if (scanResult.clean !== true) {
-    return json({ error: "The malware scanner did not confirm this PDF is clean. It was not published." }, 422);
+    const apiBase = "https://api.usebouncer.dev";
+    const timeoutMs = 45000;
+    const deadline = Date.now() + timeoutMs;
+    let scanId = "";
+    let pollPath = "";
+
+    // Bouncer v1 accepts files up to ~4.5 MB. Use v2 direct upload for larger PDFs.
+    if (source.size <= 4_500_000) {
+      const form = new FormData();
+      form.append("file", source, "submission.pdf");
+      const response = await fetch(`${apiBase}/v1/scan`, {
+        method: "POST",
+        headers: { "X-API-Key": scannerToken },
+        body: form,
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!response.ok) {
+        console.error("Bouncer v1 scan creation failed", response.status);
+        return json({ error: "Bouncer could not accept this PDF for scanning. Check the API key, quota, and file size." }, 503);
+      }
+      const payload = await response.json();
+      scanId = payload?.data?.scan_id;
+      pollPath = payload?.data?.poll_url || (scanId ? `/v1/scan/${encodeURIComponent(scanId)}` : "");
+    } else {
+      const createResponse = await fetch(`${apiBase}/v2/scan`, {
+        method: "POST",
+        headers: { "X-API-Key": scannerToken, "Content-Type": "application/json" },
+        body: JSON.stringify({ file_name: "submission.pdf", mime_type: "application/pdf" }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!createResponse.ok) {
+        console.error("Bouncer v2 scan creation failed", createResponse.status);
+        return json({ error: "Bouncer could not create a direct-upload scan. Check the API key, quota, and file-size limit." }, 503);
+      }
+      const payload = await createResponse.json();
+      scanId = payload?.data?.scan_id;
+      pollPath = payload?.data?.poll_url || (scanId ? `/v2/scan/${encodeURIComponent(scanId)}` : "");
+      const upload = payload?.data?.upload;
+      if (!scanId || !pollPath || !upload?.url || !upload?.fields || source.size > Number(payload?.data?.max_file_size || 0)) {
+        return json({ error: "Bouncer returned an invalid or insufficient upload target for this PDF." }, 503);
+      }
+      const uploadForm = new FormData();
+      for (const [key, value] of Object.entries(upload.fields as Record<string, string>)) {
+        uploadForm.append(key, value);
+      }
+      uploadForm.append("file", source, "submission.pdf");
+      const uploadResponse = await fetch(upload.url, {
+        method: "POST",
+        body: uploadForm,
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!uploadResponse.ok) {
+        console.error("Bouncer direct upload failed", uploadResponse.status);
+        return json({ error: "The PDF could not be uploaded to Bouncer for scanning." }, 503);
+      }
+    }
+
+    if (!scanId || !pollPath || !pollPath.startsWith("/v1/scan/") && !pollPath.startsWith("/v2/scan/")) {
+      return json({ error: "Bouncer did not return a valid scan identifier." }, 503);
+    }
+
+    let verdict = "";
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const pollResponse = await fetch(new URL(pollPath, apiBase), {
+        headers: { "X-API-Key": scannerToken },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!pollResponse.ok) {
+        console.error("Bouncer scan polling failed", pollResponse.status);
+        return json({ error: "Bouncer could not return the scan result. The PDF was not published." }, 503);
+      }
+      const result = await pollResponse.json();
+      const status = result?.data?.status;
+      if (status === "failed") {
+        return json({ error: "Bouncer's scan failed. The PDF was not published." }, 422);
+      }
+      if (status === "completed") {
+        verdict = result?.data?.verdict || "";
+        break;
+      }
+    }
+
+    if (verdict !== "clean") {
+      return json({ error: verdict ? "Bouncer did not classify this PDF as clean. Suspicious or malicious files cannot be published." : "Bouncer's scan timed out or did not complete. Try again later; the PDF was not published." }, 422);
+    }
+  } catch (error) {
+    console.error("Bouncer scan request failed", error instanceof Error ? error.message : "unknown error");
+    return json({ error: "The Bouncer scan failed or timed out. The PDF was not published." }, 503);
   }
 
   const publicPath = `${targetBookId}/${submissionId}.pdf`;
