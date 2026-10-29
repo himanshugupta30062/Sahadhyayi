@@ -105,12 +105,12 @@ describe('App root routing and configuration', () => {
     expect(screen.queryByText('Test navigation')).toBeNull();
   });
 
-  it('waits for auth restoration before choosing the homepage', () => {
+  it('waits for auth restoration before choosing the homepage', async () => {
     mocks.loading = true;
 
     render(<App />);
 
-    expect(screen.getByText('Loading your Sahadhyayi home...')).toBeTruthy();
+    expect(await screen.findByText('Loading your Sahadhyayi home...')).toBeTruthy();
     expect(screen.queryByText('Public marketing homepage')).toBeNull();
     expect(screen.queryByText('Reader dashboard')).toBeNull();
   });
