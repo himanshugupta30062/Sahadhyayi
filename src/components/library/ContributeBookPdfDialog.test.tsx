@@ -103,6 +103,7 @@ describe('ContributeBookPdfDialog', () => {
       target: { files: [makePdf('not-a-pdf.pdf', 'NOTPDF')] },
     });
     fireEvent.click(screen.getByRole('checkbox'));
+    await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
     fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
@@ -124,6 +125,7 @@ describe('ContributeBookPdfDialog', () => {
       target: { value: 'A Test Author' },
     });
     fireEvent.click(screen.getByRole('checkbox'));
+    await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
     fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
 
     await waitFor(() => expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
@@ -155,6 +157,7 @@ describe('ContributeBookPdfDialog', () => {
       target: { files: [makePdf()] },
     });
     fireEvent.click(screen.getByRole('checkbox'));
+    await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
     fireEvent.click(screen.getByRole('button', { name: /Submit for verification/i }));
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
