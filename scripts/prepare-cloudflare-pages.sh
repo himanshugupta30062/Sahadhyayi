@@ -2,7 +2,7 @@
 set -e
 
 # Remove bun lockfile if it exists
-if [ -f bun.lockb ]; then
+if [[ -f bun.lockb ]]; then
   rm bun.lockb
 fi
 
