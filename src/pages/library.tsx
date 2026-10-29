@@ -5,6 +5,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, PenTool } from 'lucide-react';
 import SortingInfoTooltip from '@/components/library/SortingInfoTooltip';
+import ContributeBookPdfDialog from '@/components/library/ContributeBookPdfDialog';
 import LibraryHero from '@/components/library/LibraryHero';
 import LibraryFilters from '@/components/library/LibraryFilters';
 import BooksCollection from '@/components/library/BooksCollection';
@@ -133,6 +134,7 @@ export default function Library() {
               </Button>
             )}
 
+            <ContributeBookPdfDialog />
             <Button onClick={() => navigate('/publish')} className="gap-2">
               <PenTool className="h-4 w-4" />
               Publish Your Book
