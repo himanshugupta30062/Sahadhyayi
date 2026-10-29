@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { fetchPaginatedRows, slugify } from "./seoBuildUtils.mjs";
+import { getPublicSupabaseConfig } from "./publicSupabaseConfig.mjs";
 
 const DIST_DIR = path.resolve("dist");
 const TEMPLATE_PATH = path.join(DIST_DIR, "index.html");
@@ -12,8 +13,7 @@ if (!fs.existsSync(TEMPLATE_PATH)) {
 }
 
 const template = fs.readFileSync(TEMPLATE_PATH, "utf8");
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+const { url: supabaseUrl, key: supabaseKey } = getPublicSupabaseConfig();
 
 const escapeHtml = (value = "") =>
   String(value).replace(/[&<>"']/g, (character) => ({
