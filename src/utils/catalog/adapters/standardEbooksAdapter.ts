@@ -3,6 +3,28 @@ import type { BookProviderAdapter } from './providerAdapter';
 import { normalizeAuthor, normalizeTitle } from '../metadataNormalization';
 import { evaluateBookQuality } from '../qualityScoring';
 
+/** Extract text inside the first matching XML-like tag without a wildcard regex. */
+function extractTagText(source: string, tagName: string): string | null {
+  const openStart = source.indexOf(\`<\${tagName}\`);
+  if (openStart < 0) return null;
+  const contentStart = source.indexOf('>', openStart);
+  if (contentStart < 0) return null;
+  const closeStart = source.indexOf(\`</\${tagName}>\`, contentStart + 1);
+  if (closeStart < 0) return null;
+  return source.slice(contentStart + 1, closeStart);
+}
+
+/** Extract the first complete tag block, such as an author block. */
+function extractTagBlock(source: string, tagName: string): string | null {
+  const openStart = source.indexOf(\`<\${tagName}\`);
+  if (openStart < 0) return null;
+  const openEnd = source.indexOf('>', openStart);
+  if (openEnd < 0) return null;
+  const closeStart = source.indexOf(\`</\${tagName}>\`, openEnd + 1);
+  if (closeStart < 0) return null;
+  return source.slice(openStart, closeStart + tagName.length + 3);
+}
+
 export interface StandardEbooksEntry {
   id: string;
   title: string;
@@ -34,26 +56,26 @@ export class StandardEbooksAdapter implements BookProviderAdapter {
     for (let i = 1; i < entryBlocks.length; i++) {
       const block = entryBlocks[i].split('</entry>')[0];
 
-      const idMatch = block.match(/<id>([^<]+)<\/id>/);
-      const titleMatch = block.match(/<title>([^<]+)<\/title>/);
-      const authorMatch = block.match(/<author>[\s\S]*?<name>([^<]+)<\/name>/);
-      const summaryMatch = block.match(/<summary[^>]*>([\s\S]*?)<\/summary>/);
+      const id = extractTagText(block, 'id');
+      const title = extractTagText(block, 'title');
+      const authorBlock = extractTagBlock(block, 'author');
+      const author = authorBlock ? extractTagText(authorBlock, 'name') : null;
+      const summary = extractTagText(block, 'summary');
 
-      // Match epub download link
-      const epubMatch = block.match(/<link\s+[^>]*href="([^"]+\.epub)"/i);
-      // Match cover thumbnail
-      const coverMatch = block.match(/<link\s+[^>]*href="([^"]+\.jpg)"/i);
-      const publishedMatch = block.match(/<published>([^<]+)<\/published>/);
+      // Match href values directly rather than backtracking across whole link tags.
+      const epubMatch = block.match(/href="([^"]*\.epub)"/i);
+      const coverMatch = block.match(/href="([^"]*\.jpg)"/i);
+      const published = extractTagText(block, 'published');
 
-      if (titleMatch) {
+      if (title) {
         entries.push({
-          id: idMatch ? idMatch[1] : `se-${i}`,
-          title: titleMatch[1].trim(),
-          author: authorMatch ? authorMatch[1].trim() : 'Unknown Author',
-          summary: summaryMatch ? summaryMatch[1].replace(/<[^>]+>/g, '').trim() : '',
+          id: id || `se-${i}`,
+          title: title.trim(),
+          author: author?.trim() || 'Unknown Author',
+          summary: summary?.replace(/<[^>]+>/g, '').trim() || '',
           epubUrl: epubMatch ? epubMatch[1] : '',
           coverUrl: coverMatch ? coverMatch[1] : undefined,
-          published: publishedMatch ? publishedMatch[1] : '',
+          published: published || '',
         });
       }
     }
