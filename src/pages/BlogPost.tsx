@@ -1,9 +1,7 @@
 
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, User, Clock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Calendar, User, Clock } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { toSeoDescription } from '@/utils/seoText';
 import DOMPurify from 'dompurify';
