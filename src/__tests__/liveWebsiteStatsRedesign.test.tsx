@@ -100,6 +100,10 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     const container = dialog.querySelector('.sm\\:max-w-\\[1600px\\]');
     expect(container).toBeInTheDocument();
 
+    // Lifetime total and provenance should be visible in the hero banner.
+    expect(screen.getByText(/10,337 visits/)).toBeInTheDocument();
+    expect(screen.getByText(/public\.website_visits/)).toBeInTheDocument();
+
     // Check timeframe selector
     const select = screen.getByRole('combobox', { name: 'Select timeframe' });
     expect(select).toBeInTheDocument();
