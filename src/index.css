@@ -444,7 +444,7 @@ mark.search-highlight {
 }
 
 /* High contrast mode support */
-@media (prefers-contrast: more {
+@media (prefers-contrast: more) {
   .bg-gradient-to-r {
     background: hsl(var(--primary)) !important;
   }
