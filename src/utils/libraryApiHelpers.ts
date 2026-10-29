@@ -72,7 +72,7 @@ export const prepareBookForLibrary = (bookData: CleanBookData) => {
     description: bookData.description,
     cover_image_url: bookData.imageUrl,
     isbn: bookData.isbn,
-    publication_year: bookData.publishedDate ? parseInt(bookData.publishedDate.split('-')[0]) : undefined,
+    publication_year: bookData.publishedDate ? Number.parseInt(bookData.publishedDate.split('-')[0]) : undefined,
     pages: bookData.pageCount,
     language: bookData.language,
     genre: bookData.genre,

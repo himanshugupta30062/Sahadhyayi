@@ -61,7 +61,7 @@ export const useInfiniteLibraryBooks = ({
       }
 
       if (year) {
-        query = query.eq('publication_year', parseInt(year, 10));
+        query = query.eq('publication_year', Number.parseInt(year, 10));
       }
 
       if (language !== 'All') {
