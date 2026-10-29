@@ -95,7 +95,11 @@ const AdminAuthorEnrichment = lazy(() => import('./pages/AdminAuthorEnrichment')
 
 // Optimized loading fallback
 const LoadingFallback = memo(({ message = "Loading..." }: { message?: string }) => (
-  <div className="flex items-center justify-center min-h-[200px]">
+  <div
+    className="flex min-h-[calc(100svh-4rem)] items-center justify-center bg-[#F8F8F2] px-4 dark:bg-[#0B0D0C]"
+    aria-live="polite"
+    aria-busy="true"
+  >
     <BookFlipLoader size="md" text={message} />
   </div>
 ));
