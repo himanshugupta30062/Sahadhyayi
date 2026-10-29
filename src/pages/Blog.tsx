@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, ArrowRight, Search, BookOpen, X } from 'lucide-react';
+import { Calendar, User, ArrowRight, Search, BookOpen, X, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '@/components/SEO';
 
@@ -344,6 +344,7 @@ const Blog = () => {
                       src={featuredPost.image}
                       alt=""
                       loading="eager"
+                      decoding="async"
                       className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
@@ -360,7 +361,7 @@ const Blog = () => {
                     <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#ECE8DF] pt-5 text-xs text-[#6D756B]">
                       <span className="inline-flex items-center gap-1.5"><User className="h-3.5 w-3.5" />{featuredPost.author}</span>
                       <span className="inline-flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />{new Date(featuredPost.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                      <span>{featuredPost.readTime}</span>
+                      <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden="true" />{featuredPost.readTime}</span>
                     </div>
                     <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#1C442D]">
                       Read the story <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -377,12 +378,12 @@ const Blog = () => {
                     className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E4DFD4] bg-white transition duration-300 hover:-translate-y-1 hover:border-[#A7B4A1] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2"
                   >
                     <div className="relative aspect-[16/9] overflow-hidden bg-[#E8E9E1]">
-                      <img src={post.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                      <img src={post.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                       <span className="absolute left-3 top-3 rounded-full border border-white/70 bg-[#F7F5EF]/95 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#344538]">{post.category}</span>
                     </div>
                     <div className="flex flex-1 flex-col p-5 sm:p-6">
                       <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#778173]">
-                        <span>{new Date(post.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span><span aria-hidden="true">·</span><span>{post.readTime}</span>
+                        <span>{new Date(post.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span><span aria-hidden="true">·</span><span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" aria-hidden="true" />{post.readTime}</span>
                       </div>
                       <h3 className="font-serif text-xl font-bold leading-snug text-[#202820] transition-colors group-hover:text-[#1C442D]">{post.title}</h3>
                       <p className="mt-3 flex-1 text-sm leading-6 text-[#687067]">{post.excerpt}</p>
