@@ -5,17 +5,6 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ContributeBookPdfDialog from '@/components/library/ContributeBookPdfDialog';
 
-// Radix UI's measured layout hooks rely on ResizeObserver, which jsdom does not provide.
-class TestResizeObserver implements ResizeObserver {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
-if (typeof globalThis.ResizeObserver === 'undefined') {
-  vi.stubGlobal('ResizeObserver', TestResizeObserver);
-}
-
 const mocks = vi.hoisted(() => ({
   user: { id: 'reader-1' } as { id: string } | null,
   toast: vi.fn(),
