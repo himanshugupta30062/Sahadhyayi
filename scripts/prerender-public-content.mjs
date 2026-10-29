@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
+import { fetchPaginatedRows, slugify } from "./seoBuildUtils.mjs";
 
 const DIST_DIR = path.resolve("dist");
 const TEMPLATE_PATH = path.join(DIST_DIR, "index.html");
@@ -40,19 +41,6 @@ const plainText = (value, maxLength = 160) => {
   const excerpt = text.slice(0, maxLength - 1);
   const lastSpace = excerpt.lastIndexOf(" ");
   return (lastSpace > maxLength * 0.6 ? excerpt.slice(0, lastSpace) : excerpt).trimEnd() + "…";
-};
-
-// Keep this identical to src/utils/slugify.ts so generated author routes
-// match the client-side author lookup, including names in non-Latin scripts.
-const slugify = (value) => {
-  if (!value) return "";
-  const text = String(value);
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\p{L}\p{N}\p{M}]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
-    || text.replace(/\s+/g, "-").toLowerCase();
 };
 
 function setMeta(html, attribute, key, content) {
@@ -95,22 +83,6 @@ function createPage({ title, description, route, image, type }) {
   return html;
 }
 
-async function fetchRows(query, label, maxRows) {
-  const pageSize = 1000;
-  const rows = [];
-  for (let offset = 0; offset < maxRows; offset += pageSize) {
-    const end = Math.min(offset + pageSize - 1, maxRows - 1);
-    const { data, error } = await query.range(offset, end);
-    if (error) return { data: null, error };
-    rows.push(...(data || []));
-    if (!data || data.length < end - offset + 1) break;
-  }
-  if (rows.length >= maxRows) {
-    console.warn(`[prerender] Reached the ${maxRows}-row ${label} safety cap; additional records were not prerendered.`);
-  }
-  return { data: rows, error: null };
-}
-
 function writeRoute(route, html) {
   const outputPath = path.join(DIST_DIR, route.replace(/^\//, ""), "index.html");
   if (!outputPath.startsWith(DIST_DIR + path.sep)) {
@@ -151,13 +123,14 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 let bookCount = 0;
 let authorCount = 0;
 
-const { data: books, error: booksError } = await fetchRows(
+const { data: books, error: booksError } = await fetchPaginatedRows(
   supabase.from("books_library")
     .select("id,title,description,cover_image_url")
     .not("id", "is", null)
     .not("title", "is", null),
   "books",
   10000,
+  (label, maxRows) => console.warn(`[prerender] Reached the ${maxRows}-row ${label} safety cap; additional records were not prerendered.`),
 );
 
 if (booksError) {
@@ -181,12 +154,13 @@ if (booksError) {
   }
 }
 
-const { data: authors, error: authorsError } = await fetchRows(
+const { data: authors, error: authorsError } = await fetchPaginatedRows(
   supabase.from("authors")
     .select("name,bio")
     .not("name", "is", null),
   "authors",
   5000,
+  (label, maxRows) => console.warn(`[prerender] Reached the ${maxRows}-row ${label} safety cap; additional records were not prerendered.`),
 );
 
 if (authorsError) {
