@@ -42,9 +42,10 @@ describe('BlogPost', () => {
     expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: title })).toBeInTheDocument();
     expect(screen.getByText(author)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back to Blog' })).toHaveAttribute('href', '/blog');
-    expect(screen.getByRole('link', { name: 'Join Sahadhyayi Today' })).toHaveAttribute('href', '/signup');
-    expect(screen.getByRole('link', { name: 'Explore Our Library' })).toHaveAttribute('href', '/library');
+    expect(screen.getByRole('link', { name: 'Back to Journal' })).toHaveAttribute('href', '/blog');
+    expect(screen.getByRole('link', { name: 'Explore the Library' })).toHaveAttribute('href', '/library');
+    expect(screen.getByRole('link', { name: 'Community Articles' })).toHaveAttribute('href', '/articles');
+    expect(screen.getByRole('link', { name: 'Browse all stories' })).toHaveAttribute('href', '/blog');
   });
 
   it('builds working table-of-contents anchors from article headings', () => {
