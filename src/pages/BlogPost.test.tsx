@@ -17,31 +17,31 @@ const renderPost = (slug: string) => render(
 );
 
 const posts = [
-  ['what-is-sahadhyayi-meaning-story', 'What is Sahadhyayi? Meaning & Story Behind Our Name'],
-  ['how-sahadhyayi-revives-reading-culture', 'How Sahadhyayi Revives the Reading Culture'],
-  ['why-book-lovers-should-join-sahadhyayi', '5 Reasons Why Book Lovers Should Join Sahadhyayi'],
-  ['build-a-reading-habit-that-lasts', 'How to Build a Reading Habit That Actually Lasts'],
-  ['how-to-start-a-book-club', 'How to Start a Book Club: A Practical Guide for Readers'],
-  ['how-to-read-classic-literature', 'A Beginner’s Guide to Reading Classic Literature'],
-  ['best-indian-short-story-collections', 'Indian Short Story Collections to Start Reading Today'],
-  ['books-for-when-life-feels-stuck', 'Books to Read When You Feel Stuck in Life'],
-  ['exploring-indian-literature-in-translation', 'How to Explore Indian Literature Beyond English'],
-  ['choose-your-next-book-by-mood', 'How to Choose Your Next Book by Mood'],
-  ['how-to-read-without-distractions', 'How to Read Without Getting Distracted'],
-  ['30-day-reading-challenge', 'A Gentle 30-Day Reading Challenge for Any Reader'],
-  ['osho-books-and-themes-in-his-discourses', 'The Books Osho Read: Ashtavakra Gita, Vedas, Puranas, and the Worlds Explored in His Discourses'],
-  ['best-indian-books-to-read', '25 Best Indian Books to Read: Classics, Novels & Regional Literature'],
+  ['what-is-sahadhyayi-meaning-story', 'What is Sahadhyayi? Meaning & Story Behind Our Name', 'Himanshu Gupta'],
+  ['how-sahadhyayi-revives-reading-culture', 'How Sahadhyayi Revives the Reading Culture', 'Himanshu Gupta'],
+  ['why-book-lovers-should-join-sahadhyayi', '5 Reasons Why Book Lovers Should Join Sahadhyayi', 'Himanshu Gupta'],
+  ['build-a-reading-habit-that-lasts', 'How to Build a Reading Habit That Actually Lasts', 'Sahadhyayi Editorial'],
+  ['how-to-start-a-book-club', 'How to Start a Book Club: A Practical Guide for Readers', 'Sahadhyayi Editorial'],
+  ['how-to-read-classic-literature', 'A Beginner’s Guide to Reading Classic Literature', 'Sahadhyayi Editorial'],
+  ['best-indian-short-story-collections', 'Indian Short Story Collections to Start Reading Today', 'Sahadhyayi Editorial'],
+  ['books-for-when-life-feels-stuck', 'Books to Read When You Feel Stuck in Life', 'Sahadhyayi Editorial'],
+  ['exploring-indian-literature-in-translation', 'How to Explore Indian Literature Beyond English', 'Sahadhyayi Editorial'],
+  ['choose-your-next-book-by-mood', 'How to Choose Your Next Book by Mood', 'Sahadhyayi Editorial'],
+  ['how-to-read-without-distractions', 'How to Read Without Getting Distracted', 'Sahadhyayi Editorial'],
+  ['30-day-reading-challenge', 'A Gentle 30-Day Reading Challenge for Any Reader', 'Sahadhyayi Editorial'],
+  ['osho-books-and-themes-in-his-discourses', 'The Books Osho Read: Ashtavakra Gita, Vedas, Puranas, and the Worlds Explored in His Discourses', 'Sahadhyayi Editorial'],
+  ['best-indian-books-to-read', '25 Best Indian Books to Read: Classics, Novels & Regional Literature', 'Sahadhyayi Editorial'],
 ] as const;
 
 describe('BlogPost', () => {
   afterEach(() => cleanup());
 
-  it.each(posts)('renders the article for slug %s', (slug, title) => {
+  it.each(posts)('renders the article for slug %s', (slug, title, author) => {
     renderPost(slug);
 
     expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: title })).toBeInTheDocument();
-    expect(screen.getByText('Himanshu Gupta')).toBeInTheDocument();
+    expect(screen.getByText(author)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to Blog' })).toHaveAttribute('href', '/blog');
     expect(screen.getByRole('link', { name: 'Join Sahadhyayi Today' })).toHaveAttribute('href', '/signup');
     expect(screen.getByRole('link', { name: 'Explore Our Library' })).toHaveAttribute('href', '/library');
