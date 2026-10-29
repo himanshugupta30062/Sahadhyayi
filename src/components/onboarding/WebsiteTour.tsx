@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BookOpen, Compass, HelpCircle, LibraryBig, MessageCircle, Search, Sparkles, Users, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, HelpCircle, LibraryBig, MessageCircle, Search, Sparkles, Users, X } from "lucide-react";
 import { useAuth } from "@/contexts/authHelpers";
 import { Button } from "@/components/ui/button";
 
@@ -62,7 +61,6 @@ type TooltipPosition = { top: number; left: number };
 
 export default function WebsiteTour() {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
@@ -160,9 +158,6 @@ export default function WebsiteTour() {
 
   if (!user || loading) return null;
 
-  const targetSelector = currentStep.target
-    ? `[data-tour-target="${currentStep.target}"]`
-    : undefined;
   const tooltipWidth = "min(370px, calc(100vw - 24px))";
 
   return (
