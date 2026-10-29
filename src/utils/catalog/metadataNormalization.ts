@@ -34,15 +34,27 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
   // Normalize Unicode to Canonical Decomposition followed by Canonical Composition
   let title = rawTitle.normalize('NFC').trim();
 
-  // Extract edition brackets at end of title or matching edition keywords (including Hindi संस्करण)
+  // Extract edition brackets at end of title or matching edition keywords (including Hindi संस्करण).
+  // Scan simple bracket groups first so matching stays linear in the title length.
   let editionTag: string | undefined;
-  const editionMatch =
-    title.match(/[([]\s*([^()[\]]*?(?:illustrated|annotated|revised|expanded|edition|संस्करण|classics?|\d+(?:st|nd|rd|th)?\s+ed\w*)[^()[\]]*?)\s*[)\]]/i) ||
-    title.match(/[([]\s*([^()[\]]+?)\s*[)\]]$/); // trailing brackets
+  const editionKeywords = /illustrated|annotated|revised|expanded|edition|संस्करण|classics?|\d+(?:st|nd|rd|th)?\s+ed\w*/i;
+  const bracketPattern = /[([]([^()[\]]*)[)\]]/g;
+  let editionMatch: RegExpExecArray | null = null;
+  let bracketMatch: RegExpExecArray | null;
+
+  while ((bracketMatch = bracketPattern.exec(title)) !== null) {
+    const bracketText = bracketMatch[1].trim();
+    const isTrailingBracket = bracketMatch.index + bracketMatch[0].length === title.length;
+    if (editionKeywords.test(bracketText) || isTrailingBracket) {
+      editionMatch = bracketMatch;
+      break;
+    }
+  }
 
   if (editionMatch) {
     editionTag = editionMatch[1].trim();
-    title = title.replace(editionMatch[0], '').trim();
+    title = title.slice(0, editionMatch.index) + title.slice(editionMatch.index + editionMatch[0].length);
+    title = title.trim();
   }
 
   // Extract subtitle after colon, long dash or spaced hyphen
