@@ -362,18 +362,26 @@ const SahadhyayiCircuit: React.FC = () => {
 
           {/* Floating particles for extra visual appeal */}
           <div className="absolute inset-0 pointer-events-none">
-            {[...Array(12)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-pulse opacity-60"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 3}s`,
-                  animationDuration: `${2 + Math.random() * 2}s`,
-                }}
-              ></div>
-            ))}
+            {Array.from({ length: 12 }, (_, i) => {
+              // Stable positions avoid hydration/render mismatches and unnecessary visual jitter.
+              const left = (i * 37 + 13) % 100;
+              const top = (i * 61 + 7) % 100;
+              const animationDelay = (i % 4) * 0.6;
+              const animationDuration = 2 + (i % 3) * 0.5;
+
+              return (
+                <div
+                  key={i}
+                  className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-pulse opacity-60"
+                  style={{
+                    left: `${left}%`,
+                    top: `${top}%`,
+                    animationDelay: `${animationDelay}s`,
+                    animationDuration: `${animationDuration}s`,
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
