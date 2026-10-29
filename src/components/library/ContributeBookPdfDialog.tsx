@@ -58,7 +58,7 @@ export default function ContributeBookPdfDialog() {
     queryKey: ['my-book-pdf-submissions', user?.id],
     enabled: Boolean(user && open),
     queryFn: async () => {
-      const { data, error } = await supabase.from('book_pdf_submissions').select('id,original_filename,submitted_title,submitted_author,status,created_at').eq('user_id', user!.id).order('created_at', { ascending: false }).limit(10);
+      const { data, error } = await supabase.from('book_pdf_submissions' as any).select('id,original_filename,submitted_title,submitted_author,status,created_at').eq('user_id', user!.id).order('created_at', { ascending: false }).limit(10);
       if (error) throw error;
       return (data || []) as Submission[];
     },
@@ -81,7 +81,7 @@ export default function ContributeBookPdfDialog() {
     let submissionCreated = false;
     try {
       await validatePdf(file);
-      const { error: insertError } = await supabase.from('book_pdf_submissions').insert({
+      const { error: insertError } = await supabase.from('book_pdf_submissions' as any).insert({
         id,
         user_id: user.id,
         submission_source: 'user_upload',
