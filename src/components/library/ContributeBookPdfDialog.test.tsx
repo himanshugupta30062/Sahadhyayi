@@ -25,10 +25,14 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mocks.toast }),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQueryClient: () => ({ invalidateQueries: mocks.invalidateQueries }),
-  useQuery: () => ({ data: [], isLoading: false }),
-}));
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQueryClient: () => ({ invalidateQueries: mocks.invalidateQueries }),
+    useQuery: () => ({ data: [], isLoading: false }),
+  };
+});
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: {
