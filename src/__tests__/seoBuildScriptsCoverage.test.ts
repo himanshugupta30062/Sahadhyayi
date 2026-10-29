@@ -101,7 +101,7 @@ describe('SEO build-script coverage', () => {
     const sitemap = mocks.writes.find((entry) => entry.path.endsWith('sitemap.xml'))?.content || '';
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/library</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/book/book-1</loc>');
-    expect(sitemap).toContain('<loc>https://sahadhyayi.com/author/munshi-premchand</loc>');
+    expect(sitemap).toContain('<loc>https://sahadhyayi.com/authors/munshi-premchand</loc>');
     expect(sitemap).not.toContain('/book/../unsafe');
     expect(sitemap).toContain('sahadhyayi-logo-digital-reading.png');
     expect(sitemap).toContain('<urlset');
@@ -124,7 +124,7 @@ describe('SEO build-script coverage', () => {
     await runScript('../../scripts/generateSitemap.js');
     const sitemap = mocks.writes.find((entry) => entry.path.endsWith('sitemap.xml'))?.content || '';
     expect(sitemap).not.toContain('/book/book-1');
-    expect(sitemap).not.toContain('/author/munshi-premchand');
+    expect(sitemap).not.toContain('/authors/munshi-premchand');
     expect(console.warn).toHaveBeenCalledWith('[sitemap] Could not fetch books:', 'book query failed');
     expect(console.warn).toHaveBeenCalledWith('[sitemap] Could not fetch authors:', 'author query failed');
   });
@@ -132,7 +132,7 @@ describe('SEO build-script coverage', () => {
   it('prerenders safe public book and author HTML with metadata and canonical URLs', async () => {
     await runScript('../../scripts/prerender-public-content.mjs');
     const book = mocks.writes.find((entry) => entry.path.endsWith('/book/book-1/index.html'))?.content || '';
-    const author = mocks.writes.find((entry) => entry.path.endsWith('/author/munshi-premchand/index.html'))?.content || '';
+    const author = mocks.writes.find((entry) => entry.path.endsWith('/authors/munshi-premchand/index.html'))?.content || '';
     expect(book).toContain('<title>A &lt;script&gt;alert(1)&lt;/script&gt; Book - Read Online | Sahadhyayi</title>');
     expect(book).toContain('<meta property="og:image" content="https://images.example/cover.jpg" />');
     expect(book).toContain('<link rel="canonical" href="https://sahadhyayi.com/book/book-1" />');
@@ -155,7 +155,7 @@ describe('SEO build-script coverage', () => {
     await runScript('../../scripts/prerender-public-content.mjs');
     expect(mocks.writes.some((entry) => entry.path.endsWith('/library/index.html'))).toBe(true);
     expect(mocks.writes.some((entry) => entry.path.endsWith('/book/book-1/index.html'))).toBe(false);
-    expect(mocks.writes.some((entry) => entry.path.endsWith('/author/munshi-premchand/index.html'))).toBe(false);
+    expect(mocks.writes.some((entry) => entry.path.endsWith('/authors/munshi-premchand/index.html'))).toBe(false);
     expect(console.warn).toHaveBeenCalledWith('[prerender] Could not fetch public books: books offline');
     expect(console.warn).toHaveBeenCalledWith('[prerender] Could not fetch public authors: authors offline');
   });
