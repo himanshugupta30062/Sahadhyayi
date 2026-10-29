@@ -42,13 +42,18 @@ const plainText = (value, maxLength = 160) => {
   return (lastSpace > maxLength * 0.6 ? excerpt.slice(0, lastSpace) : excerpt).trimEnd() + "…";
 };
 
-const slugify = (value) =>
-  String(value ?? "")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
+// Keep this identical to src/utils/slugify.ts so generated author routes
+// match the client-side author lookup, including names in non-Latin scripts.
+const slugify = (value) => {
+  if (!value) return "";
+  const text = String(value);
+  return text
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .trim()
+    .replace(/[^\p{L}\p{N}\p{M}]+/gu, "-")
+    .replace(/^-+|-+$/g, "")
+    || text.replace(/\s+/g, "-").toLowerCase();
+};
 
 function setMeta(html, attribute, key, content) {
   const escaped = escapeHtml(content);
