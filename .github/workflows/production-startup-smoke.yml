@@ -9,6 +9,7 @@ on:
       - "vite.config.ts"
       - "package.json"
       - "package-lock.json"
+      - ".npmrc"
       - "scripts/production-startup-smoke.mjs"
       - ".github/workflows/production-startup-smoke.yml"
   push:
