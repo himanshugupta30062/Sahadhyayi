@@ -183,14 +183,14 @@ const Navigation = () => {
               width={32}
               height={32}
             />
-            <span className="whitespace-nowrap leading-none">Sahadhyayi</span>
+            <span className="whitespace-nowrap text-lg leading-none xl:text-xl 2xl:text-2xl">Sahadhyayi</span>
           </Link>
 
           {/* Desktop Navigation */}
           {!isMobile && (
             <div className="hidden min-w-0 flex-1 items-center justify-end gap-3 md:flex 2xl:gap-5">
               {/* Navigation Links */}
-              <nav aria-label="Main navigation" className="flex min-w-0 items-center gap-2 whitespace-nowrap xl:gap-3 2xl:gap-4">
+              <nav aria-label="Main navigation" className="flex min-w-0 items-center gap-1 whitespace-nowrap xl:gap-2 2xl:gap-3">
                 {navItems.map((item) => {
                   const isActive = isCurrentRoute(item.href);
                   return (
@@ -199,12 +199,12 @@ const Navigation = () => {
                       to={item.href}
                       aria-current={isActive ? "page" : undefined}
                       className={item.href === "/blog"
-                        ? `inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 py-1.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        ? `inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2 py-1.5 text-xs font-semibold xl:px-2.5 xl:text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                             isActive
                               ? 'border-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary))] text-white shadow-sm'
                               : 'border-[hsl(var(--brand-primary)/0.35)] bg-[hsl(var(--brand-primary)/0.08)] text-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.15)]'
                           }`
-                         : `shrink-0 whitespace-nowrap text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm ${
+                         : `shrink-0 whitespace-nowrap text-xs font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm ${
                             isActive
                               ? 'text-[hsl(var(--brand-primary))] border-b-2 border-[hsl(var(--brand-primary))] pb-1 font-semibold'
                               : 'text-muted-foreground'
@@ -217,11 +217,11 @@ const Navigation = () => {
               </nav>
 
               {/* User Actions */}
-              <div className="flex shrink-0 items-center gap-2 2xl:gap-3">
+              <div className="flex shrink-0 items-center gap-1 xl:gap-2 2xl:gap-3">
                 <button
                   type="button"
                   onClick={() => setSearchOpen(true)}
-                  className="group relative flex w-40 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-border/70 bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-2xs transition-all duration-150 hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer xl:w-44 2xl:w-48"
+                  className="group relative flex w-32 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-border/70 bg-muted/50 px-2.5 py-1.5 text-xs font-medium text-muted-foreground shadow-2xs transition-all duration-150 hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer xl:w-40 xl:gap-2 xl:px-3 2xl:w-48"
                   aria-label="Search library, authors, and books"
                   title="Search library, authors, and books"
                 >
