@@ -53,7 +53,7 @@ const slugify = (value) =>
 function setMeta(html, attribute, key, content) {
   const escaped = escapeHtml(content);
   const pattern = new RegExp(
-    `<meta\\s+[^>]*${attribute}=["']${key.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}["'][^>]*>`,
+    `<meta\\s+[^>]*${attribute}=["']${key}["'][^>]*>`,
     "i",
   );
   const tag = `<meta ${attribute}="${key}" content="${escaped}" />`;
