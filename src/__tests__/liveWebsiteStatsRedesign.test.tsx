@@ -92,6 +92,8 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Live Website Stats')).toBeInTheDocument();
+      // The dialog title appears before the asynchronous aggregate is ready.
+      expect(screen.getByText('10,337')).toBeInTheDocument();
     });
 
     // Check near-full-screen dialog container styling
