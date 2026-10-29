@@ -1,6 +1,7 @@
 
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Calendar, User, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
 import { toSeoDescription } from '@/utils/seoText';
 import DOMPurify from 'dompurify';
@@ -640,7 +641,7 @@ const BlogPost = () => {
 
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_280px] lg:px-8 lg:py-14">
           <article className="min-w-0 overflow-hidden rounded-2xl border border-[#E4DFD4] bg-white shadow-sm">
-            <img src={post.image} alt="" loading="eager" className="aspect-[16/7] w-full object-cover" />
+            <img src={post.image} alt={post.title} loading="eager" className="aspect-[16/7] w-full object-cover" />
             <div className="px-5 py-7 sm:px-8 sm:py-10 lg:px-12">
               {articleSections.length >= 3 && (
                 <nav aria-label="Article contents" className="mb-9 rounded-2xl border border-[#DDE2D7] bg-[#F4F6F0] p-5 sm:p-6">
