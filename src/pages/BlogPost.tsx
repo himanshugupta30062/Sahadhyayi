@@ -464,6 +464,78 @@ const BlogPost = () => {
         <p>Thirty days will not look the same for everyone. A few meaningful minutes, repeated with flexibility, can be a strong beginning.</p>
       `
     },
+    'osho-books-and-themes-in-his-discourses': {
+      title: 'The Books Osho Read: Ashtavakra Gita, Vedas, Puranas, and the Worlds Explored in His Discourses',
+      description: 'A research-guided map of Osho’s talks on the Ashtavakra Gita, Upanishads, Vedas, Puranic stories, Buddhist and Jain traditions, Taoism, Zen, Sufism, Christianity, literature, psychology, and society.',
+      author: 'Sahadhyayi Editorial',
+      date: '2026-10-29',
+      readTime: '12 min read',
+      image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1200&h=630&fit=crop',
+      content: `
+        <p>Osho—also known as Bhagwan Shree Rajneesh—gave thousands of recorded talks that moved across Indian scriptures, Asian spiritual traditions, Western philosophy, literature, psychology, and social questions. His books are often edited transcripts of these spoken discourses. To explore his reading world responsibly, it helps to distinguish three things: texts he explicitly praised, scriptures he discussed in dedicated series, and broader topics that appeared throughout his talks.</p>
+        <p>This is a guide to that landscape, not a claim that every book listed was a personal favourite or that one article can catalogue every discourse. Titles and series can vary between editions and translations, so the linked catalogues at the end are useful for checking details.</p>
+        <h2>1. Ashtavakra Gita: The Mahageeta</h2>
+        <p>The Ashtavakra Gita—also called the Ashtavakra Samhita—is central to Osho’s discourse series published as <em>The Mahageeta</em>. Its dialogue between the sage Ashtavakra and King Janaka explores liberation, the witness, identity, non-attachment, and the difference between awareness and the changing contents of experience. Osho spoke about this text with exceptional admiration, describing it as an unusually direct expression of truth.</p>
+        <p>For readers, the key is to read the source verses as well as Osho’s interpretation. The Ashtavakra text has its own philosophical history and interpretive traditions; Osho’s strong comparisons with other scriptures are his evaluative view, not an objective ranking accepted by all traditions.</p>
+        <p><a href="https://oshoworld.com/the-mahageeta-vol-1" target="_blank" rel="noopener noreferrer">Read about <em>The Mahageeta, Vol. 1</em> at Osho World</a> · <a href="https://www.penguin.co.in/book/enlightenment-the-only-revolution/" target="_blank" rel="noopener noreferrer">Publisher information for <em>Enlightenment: The Only Revolution</em></a>.</p>
+        <h2>2. The Upanishads and the Question “Who Am I?”</h2>
+        <p>The Upanishads examine consciousness, the self, ultimate reality, knowledge, and liberation. Osho gave dedicated discourses on several Upanishadic texts. Published collections include <em>That Art Thou</em>, based on the Sarvasar, Kaivalya, and Adhyatma Upanishads; <em>The Supreme Doctrine</em>, on the Kenopanishad; <em>The Heartbeat of the Absolute</em>, on the Ishavasya Upanishad; and <em>Vedanta: Seven Steps to Samadhi</em>, on the Akshya Upanishad.</p>
+        <p>These are not interchangeable texts. Each has its own setting, language, and questions. A good reading approach is to choose one Upanishad, read a translation slowly, and then compare Osho’s commentary with another scholarly or traditional interpretation.</p>
+        <h2>3. Vedas, Vedanta, and the Wider Vedic Tradition</h2>
+        <p>The Vedas are a large and diverse body of hymns, rituals, and sacred knowledge; Vedanta is a set of philosophical traditions that developed especially through interpretations of the Upanishads, the Bhagavad Gita, and the Brahma Sutras. In everyday conversation these terms are sometimes blurred, but they do not mean exactly the same thing.</p>
+        <p>Osho’s recorded talks engage extensively with Upanishadic and Vedantic questions, and he sometimes compares the authority or style of different scriptures. When describing this work, it is more precise to name the specific text or discourse series rather than imply that every Vedic hymn or school received a systematic commentary from him.</p>
+        <h2>4. Puranas, Epics, and Stories of the Indian Imagination</h2>
+        <p>The Puranas preserve expansive narratives about deities, creation, lineages, cosmology, sacred places, and moral or devotional themes. The Ramayana and Mahabharata are epic traditions with many tellings, regional forms, and interpretations. Osho drew on stories, characters, and religious narratives from the broader Indian tradition in talks about desire, duty, attachment, devotion, power, and the human mind.</p>
+        <p>Because “the Puranas” refers to many works rather than one book, it would be misleading to say that a single discourse series covers them all. If you are researching a particular Purana, episode, or character, check the discourse title and source text in a catalogue before attributing a specific interpretation to Osho.</p>
+        <h2>5. Bhagavad Gita: Action, Responsibility, and Inner Freedom</h2>
+        <p>The Bhagavad Gita places a dialogue about duty, action, knowledge, devotion, and liberation within the Mahabharata. Osho discussed the Gita and contrasted its approach with other Indian texts, including the Ashtavakra Gita. Reading both is especially interesting because their dramatic situations and ways of speaking about action and freedom differ.</p>
+        <p>Rather than treating one as the final answer, compare the questions each text asks: What does it mean to act? What does freedom from attachment look like? How should insight relate to ordinary responsibility? Those questions can open a richer discussion than simply ranking scriptures.</p>
+        <h2>6. Yoga Sutras, Tantra, and Meditation Methods</h2>
+        <p>Osho’s discourse catalogue includes <em>Yoga: The Alpha and the Omega</em>, a series on Patanjali’s Yoga Sutras, and <em>The Book of Secrets</em>, his commentary on meditation methods associated with the Vigyan Bhairav Tantra. Other series discuss Tantra, Mahamudra, and mystics such as Saraha and Tilopa.</p>
+        <p>These works explore the mind, attention, discipline, the body, desire, meditation, and the possibility of observing experience directly. The texts come from distinct historical contexts, so it is useful to treat Osho’s synthesis as one modern interpretation rather than as a substitute for learning the traditions in their own terms.</p>
+        <h2>7. Jainism, Mahavira, and Non-Attachment</h2>
+        <p>Osho also spoke about Mahavira and Jain ideas, including restraint, non-violence, awareness, and freedom from attachment. Jain philosophy has a long and internally diverse intellectual history, including distinctive approaches to non-violence, karma, and multiple-sided truth. Osho’s talks can serve as an entry point, but readers should consult Jain sources to understand the tradition beyond a single speaker’s account.</p>
+        <h2>8. Buddhism, Zen, and Taoism</h2>
+        <p>Gautama Buddha, Buddhist meditation, Zen teachers such as Bodhidharma, and Taoist thinkers such as Lao Tzu and Chuang Tzu recur across Osho’s discourses. These traditions offer different ways to consider suffering, impermanence, attention, spontaneity, silence, and the limits of rigid concepts.</p>
+        <p>For Taoism, begin with a translation of the <em>Tao Te Ching</em> and compare it with Osho’s comments. For Zen, look at the source stories and teachings as well as the commentary. Paradox and humour can be powerful teaching tools, but their meaning often depends on context.</p>
+        <h2>9. Sufism, Rumi, and the Language of Love</h2>
+        <p>Osho’s talks also draw on Sufi stories, mystical poetry, and writers such as Rumi and Omar Khayyam. These works use longing, love, surrender, humour, and metaphor to explore spiritual searching. Reading the poem itself before or after hearing a commentary can reveal how much depends on translation and interpretation.</p>
+        <h2>10. Christianity, Jesus, and Mystical Readings</h2>
+        <p>Christian texts and the sayings attributed to Jesus appear in discourse collections such as <em>The Mustard Seed</em>, which explores the Gospel of Thomas. Osho also spoke about the Sermon on the Mount and the relationship between spiritual insight and organised religion.</p>
+        <p>These interpretations can be provocative. Readers can make their own assessment by comparing the relevant source text, Osho’s reading, and historical or theological scholarship. That approach preserves the value of debate without mistaking one interpretation for the only possible one.</p>
+        <h2>11. Books He Explicitly Named as Beloved</h2>
+        <p>In <em>Books I Have Loved</em>, Osho discusses a varied group of works rather than a single philosophical canon. Titles associated with the collection include Friedrich Nietzsche’s <em>Thus Spoke Zarathustra</em>, Fyodor Dostoevsky’s <em>The Brothers Karamazov</em>, Mikhail Naimy’s <em>The Book of Mirdad</em>, Richard Bach’s <em>Jonathan Livingston Seagull</em>, Lao Tzu’s <em>Tao Te Ching</em>, Chuang Tzu’s writings, the <em>Bhagavad Gita</em>, Rabindranath Tagore’s <em>Gitanjali</em>, and works connected with the mystic Milarepa.</p>
+        <p>The mix spans novels, poetry, mystical texts, and philosophical writing. It is a documented selection of books discussed in that collection—not a complete list of everything Osho read throughout his life.</p>
+        <p><a href="https://oshoworld.com/books-i-have-loved" target="_blank" rel="noopener noreferrer">Explore <em>Books I Have Loved</em> at Osho World</a>.</p>
+        <h2>12. Western Philosophy, Literature, and the Modern Individual</h2>
+        <p>Nietzsche and Dostoevsky raise questions about morality, freedom, faith, responsibility, alienation, and what happens when inherited certainties are challenged. Osho’s wider talks also moved into modern social and philosophical concerns. Literature gave him characters and conflicts through which to discuss ideas rather than only abstract arguments.</p>
+        <p>You do not have to accept his interpretation to benefit from it. Treat a commentary as an invitation to revisit the original book and ask what the text itself supports, what the speaker adds, and where you disagree.</p>
+        <h2>13. Psychology, Relationships, Society, and Science</h2>
+        <p>Across his talks, Osho addressed fear, loneliness, relationships, desire, repression, identity, social conditioning, education, politics, and organised belief. These themes connect the ancient texts to the concerns of modern life. They also require care: spiritual or philosophical commentary is not automatically scientific evidence or professional mental-health guidance. Verify factual claims about science, medicine, and history using independent specialist sources.</p>
+        <h2>14. A Practical Reading Path for Curious Readers</h2>
+        <ol>
+          <li><strong>Start with the Ashtavakra Gita.</strong> Read a translation of the source text, then explore Osho’s <em>The Mahageeta</em>.</li>
+          <li><strong>Choose one Upanishad.</strong> Try the Ishavasya or Kena Upanishad and compare the text with a discourse collection.</li>
+          <li><strong>Read the Bhagavad Gita alongside it.</strong> Compare how each text approaches action, awareness, and liberation.</li>
+          <li><strong>Explore a meditation tradition.</strong> Choose Patanjali’s Yoga Sutras or the Vigyan Bhairav Tantra and keep the historical differences in view.</li>
+          <li><strong>Move beyond India.</strong> Try the Tao Te Ching, a Zen collection, a Sufi poem, or one of the literary works in <em>Books I Have Loved</em>.</li>
+          <li><strong>Keep a source-and-commentary notebook.</strong> Record the original text, the passage, Osho’s interpretation, another perspective, and your own questions.</li>
+        </ol>
+        <h2>15. Sources for Further Research</h2>
+        <p>The following catalogues help readers check titles and explore the breadth of Osho’s published talks:</p>
+        <ul>
+          <li><a href="https://oshoworld.com/the-mahageeta-vol-1" target="_blank" rel="noopener noreferrer"><em>The Mahageeta, Vol. 1</em> — Osho World</a>, for the Ashtavakra Gita discourse series.</li>
+          <li><a href="https://oshoworld.com/books-i-have-loved" target="_blank" rel="noopener noreferrer"><em>Books I Have Loved</em> — Osho World</a>, for books Osho discussed as beloved.</li>
+          <li><a href="https://oshosourcebook.com/appendix/" target="_blank" rel="noopener noreferrer">OSHO Source Book appendix</a>, for subject groupings and discourse references.</li>
+          <li><a href="https://oshosourcebook.com/bibliography/" target="_blank" rel="noopener noreferrer">OSHO Source Book bibliography</a>, for publication and series details.</li>
+          <li><a href="https://osholive.com/discourses" target="_blank" rel="noopener noreferrer">Osho Live discourse catalogue</a>, for browsing recorded talk series.</li>
+        </ul>
+        <p>Catalogues and editions may differ, and some Hindi material has not been translated into English. Where an exact title or attribution matters, verify it against the relevant edition rather than relying on a general summary.</p>
+        <h2>A Reading Journey Across Many Worlds</h2>
+        <p>Osho’s discourse landscape stretches from the uncompromising language of the Ashtavakra Gita to the Upanishads, Vedic and Puranic traditions, yoga and tantra, Jain and Buddhist thought, Zen and Taoism, Sufi poetry, Christianity, modern literature, psychology, and social criticism. No short list can represent it all, and no single speaker settles the meaning of every source.</p>
+        <p>The most rewarding approach is to read widely and critically: return to the original text, hear the interpretation, compare perspectives, and keep asking your own questions. A good book does not end inquiry—it gives it a deeper beginning.</p>
+      `
+    },
     'best-indian-books-to-read': {
     title: '25 Best Indian Books to Read: Classics, Novels & Regional Literature',
     description: 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.',
