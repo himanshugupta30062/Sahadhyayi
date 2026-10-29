@@ -207,6 +207,7 @@ export default function AdminBookPdfReviews() {
                   </dl>
                 )}
                 {findings.length > 0 && <div className="mt-4 rounded-md bg-muted p-3"><p className="text-sm font-medium">Warnings</p><ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted-foreground">{findings.map((finding, index) => <li key={index}>{typeof finding === 'string' ? finding : JSON.stringify(finding)}</li>)}</ul></div>}
+                {Array.isArray(report.catalogue_candidates) && report.catalogue_candidates.length > 0 && <div className="mt-4 rounded-md border p-3"><p className="text-sm font-medium">Possible catalogue matches</p><ul className="mt-2 space-y-2">{(report.catalogue_candidates as Record<string, unknown>[]).map((candidate, index) => <li key={String(candidate.id || index)} className="flex flex-wrap items-center justify-between gap-2 text-sm"><span><strong>{String(candidate.title || 'Untitled')}</strong>{candidate.author ? ` — ${String(candidate.author)}` : ''}</span><Badge variant={candidate.pdf_url ? 'secondary' : 'outline'}>{candidate.pdf_url ? 'PDF already linked' : 'No PDF linked'}</Badge></li>)}</ul><p className="mt-2 text-xs text-muted-foreground">Check title, author, ISBN and edition before linking this submission.</p></div>}
                 <p className="mt-3 text-xs text-muted-foreground">AI findings are advisory only. They do not confirm malware-free status, authenticity, completeness, or copyright clearance.</p>
               </div>
 
