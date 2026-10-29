@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { uniqueChannelName } from '@/lib/realtime';
 
+export const DEFAULT_READING_GROUP_NAME = 'Sahadhyayi Community Reading Circle';
+
 export interface Group {
   id: string;
   name: string;
@@ -206,12 +208,23 @@ export const useLeaveGroup = () => {
       const userId = (await supabase.auth.getUser()).data.user?.id;
       if (!userId) throw new Error('User not authenticated');
       
+      const { data: group, error: groupLookupError } = await supabase
+        .from('group_chats')
+        .select('name')
+        .eq('id', groupId)
+        .maybeSingle();
+
+      if (groupLookupError) throw groupLookupError;
+      if (group?.name === DEFAULT_READING_GROUP_NAME) {
+        throw new Error('You cannot leave the Sahadhyayi Community Reading Circle.');
+      }
+
       const { error } = await supabase
         .from('group_chat_members')
         .delete()
         .eq('group_id', groupId)
         .eq('user_id', userId);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
