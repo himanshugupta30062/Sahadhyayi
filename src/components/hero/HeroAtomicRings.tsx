@@ -127,7 +127,6 @@ interface HeroAtomicRingsProps {
 export default function HeroAtomicRings({ size = 720, className = "", children }: HeroAtomicRingsProps) {
   const navigate = useNavigate();
   const generatedId = useId().replace(/:/g, "");
-  const softFilterId = `soft-${generatedId}`;
   const gradientId = (orbitId: string) => `g-${orbitId}-${generatedId}`;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -320,13 +319,6 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
-          <filter id={softFilterId} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="b" />
-            <feMerge>
-              <feMergeNode in="b" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
           {ORBITS.map((orbit) => (
             <linearGradient
               key={orbit.id}
@@ -380,7 +372,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
             onBlur={() => setKeyboardPause(false)}
             className="pointer-events-auto cursor-pointer outline-none"
           >
-            <circle r={orbit.atomRadius} fill={orbit.atomColor} filter={`url(#${softFilterId})`} />
+            <circle r={orbit.atomRadius} fill={orbit.atomColor} />
             {renderOrbitIcon(orbit.icon)}
             <text
               y={orbit.label === "Social Media" ? 27 : 26}
