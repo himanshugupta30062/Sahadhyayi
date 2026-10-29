@@ -129,10 +129,14 @@ class ErrorHandler {
   }
 
   private createContext(additional: Partial<ErrorContext> = {}): ErrorContext {
+    const hasWindow = typeof window !== 'undefined';
+    const userAgent =
+      typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown';
+
     return {
       timestamp: Date.now(),
-      userAgent: navigator.userAgent,
-      route: window.location.pathname,
+      userAgent,
+      route: hasWindow ? window.location.pathname : '/',
       ...additional,
     };
   }

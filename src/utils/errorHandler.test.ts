@@ -138,6 +138,13 @@ describe('errorHandler', () => {
     expect(stats.recentErrors[0].context.timestamp).toEqual(expect.any(Number));
   });
 
+  it('uses a stable fallback route when the current location is unavailable', () => {
+    // Explicit route context must remain usable even in non-browser callers.
+    errorHandler.reportCustomError('server-rendered failure', { route: '/server' }, 'low');
+
+    expect(errorHandler.getErrorStats().recentErrors[0].context.route).toBe('/server');
+  });
+
   it('exposes report, stats, and clear helpers through useErrorHandler', () => {
     const helper = useErrorHandler();
     helper.reportError('reported by hook', { component: 'TestPanel' }, 'low');
