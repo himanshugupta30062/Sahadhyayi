@@ -27,7 +27,6 @@ import LibraryPagination from '@/components/library/LibraryPagination';
 import { useAuthors, type Author } from '@/hooks/useAuthors';
 import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { slugify } from '@/utils/slugify';
-import AuthorDiscoverySection from '@/components/authors/AuthorDiscoverySection';
 import BookFlipLoader from '@/components/ui/BookFlipLoader';
 
 type SortMode = 'books' | 'name' | 'newest';
@@ -260,16 +259,6 @@ const Authors = () => {
             )}
           </section>
 
-          {!hasActiveFilters && (
-            <AuthorDiscoverySection
-              authors={authors}
-              booksByAuthor={booksByAuthor}
-              title="Explore authors and their books"
-              description="Start with writers represented in our catalogue. Open a book directly or visit the author profile to explore more of their work."
-              limit={6}
-            />
-          )}
-
           <section aria-labelledby="authors-results-title">
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -341,7 +330,7 @@ const Authors = () => {
 const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
   const initials = author.name.trim().split(/\s+/).map((part) => part[0] || '').slice(0, 2).join('').toUpperCase() || 'A';
   const profilePath = `/authors/${slugify(author.name)}`;
-  const topBooks = books.filter((book) => Boolean(book.cover_image_url)).slice(0, 3);
+  const topBooks = books.slice(0, 2);
   const bio = author.bio?.trim() && author.bio !== 'Bio will be updated by the author.' ? author.bio : null;
 
   return (
@@ -397,30 +386,26 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
             </div>
           )}
 
-          {topBooks.length > 0 && (
-            <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#EDE7DE] pt-4 dark:border-[#26302A]">
-              <div className="flex items-center gap-2">
-                {topBooks.map((book) => (
-                  <div key={book.id} className="h-12 w-8 overflow-hidden rounded-sm border border-black/10 bg-[#F4EFEA] shadow-sm sm:h-14 sm:w-9">
-                    <img src={book.cover_image_url!} alt={book.title} loading="lazy" className="h-full w-full object-cover" />
-                  </div>
-                ))}
-              </div>
-              <span className="text-right text-[11px] leading-4 text-[#737B75] dark:text-[#89938B]">
-                Selected works<br />
-                <strong className="font-semibold text-[#1C201D] dark:text-[#F3F0E7]">{author.books_count} in catalog</strong>
-              </span>
-            </div>
-          )}
-
-          {topBooks.length === 0 && (
-            <div className="mt-5 border-t border-[#EDE7DE] pt-4 text-xs text-[#737B75] dark:border-[#26302A] dark:text-[#89938B]">
-              <BookOpen className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" />
-              {author.books_count} {author.books_count === 1 ? 'book' : 'books'} in catalog
-            </div>
-          )}
         </div>
       </Link>
+
+      <div className="border-t border-[#EDE7DE] px-5 py-4 dark:border-[#26302A] sm:px-6">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#737B75] dark:text-[#89938B]">Books by this author</span>
+          <Link to={`/library?author=${encodeURIComponent(author.name)}`} className="shrink-0 text-[11px] font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">All books →</Link>
+        </div>
+        {topBooks.length > 0 ? (
+          <div className="space-y-1.5">
+            {topBooks.map((book) => (
+              <Link key={book.id} to={`/book/${book.id}`} className="block truncate text-sm text-[#4F5D53] hover:text-[#1C442D] hover:underline dark:text-[#B9C9BC] dark:hover:text-[#D5B16D]">
+                {book.title}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-[#737B75] dark:text-[#89938B]">{author.books_count} books in catalogue</p>
+        )}
+      </div>
 
       <div className="mt-auto flex items-center gap-2 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
         <FollowButton authorId={author.id} size="sm" showText={true} />
