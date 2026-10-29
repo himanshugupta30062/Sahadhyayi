@@ -58,6 +58,11 @@ function renderDialog() {
 }
 
 beforeEach(() => {
+  vi.stubGlobal('ResizeObserver', class ResizeObserverMock {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  });
   mocks.user = { id: 'reader-1' };
   mocks.toast.mockReset();
   mocks.insert.mockReset().mockResolvedValue({ error: null });
