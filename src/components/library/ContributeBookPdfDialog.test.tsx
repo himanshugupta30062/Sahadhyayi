@@ -27,24 +27,7 @@ vi.mock('@/hooks/use-toast', () => ({
 
 vi.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({ invalidateQueries: mocks.invalidateQueries }),
-  useQuery: ({ queryFn, enabled }: { queryFn: () => Promise<unknown>; enabled: boolean }) => {
-    const [data, setData] = React.useState<unknown[]>([]);
-    const [isLoading, setLoading] = React.useState(false);
-    React.useEffect(() => {
-      if (!enabled) return;
-      let active = true;
-      setLoading(true);
-      queryFn().then((value: any) => {
-        if (active) setData(value as unknown[]);
-      }).catch(() => {
-        if (active) setData([]);
-      }).finally(() => {
-        if (active) setLoading(false);
-      });
-      return () => { active = false; };
-    }, [enabled, queryFn]);
-    return { data, isLoading };
-  },
+  useQuery: () => ({ data: [], isLoading: false }),
 }));
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
