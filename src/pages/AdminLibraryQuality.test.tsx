@@ -275,19 +275,19 @@ describe('AdminLibraryQuality', () => {
     ]);
     renderPage();
 
-    expect(screen.getByText('The Dispossessed')).toBeInTheDocument();
-    expect(screen.getByText('The Hobbit')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'The Dispossessed' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'The Hobbit' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /High Confidence/ }));
-    expect(screen.getByText('The Dispossessed')).toBeInTheDocument();
-    expect(screen.queryByText('The Hobbit')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'The Dispossessed' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'The Hobbit' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /All Groups/ }));
     fireEvent.change(screen.getByPlaceholderText('Search by title or author...'), {
       target: { value: 'tolkien' },
     });
-    expect(screen.getByText('The Hobbit')).toBeInTheDocument();
-    expect(screen.queryByText('The Dispossessed')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'The Hobbit' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'The Dispossessed' })).not.toBeInTheDocument();
   });
 
   it('expands candidate records for a duplicate group', () => {
@@ -296,6 +296,6 @@ describe('AdminLibraryQuality', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Inspect All \(2\)/ }));
     expect(screen.getByText('Candidate Records in this Cluster (2)')).toBeInTheDocument();
-    expect(screen.getByText('The Dispossessed (Illustrated)')).toBeInTheDocument();
+    expect(screen.getAllByText('The Dispossessed (Illustrated)').length).toBeGreaterThan(1);
   });
 });
