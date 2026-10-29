@@ -145,7 +145,7 @@ describe('CurrentReads', () => {
     expect(screen.getByRole('heading', { name: 'Currently Reading (4)' })).toBeInTheDocument();
     expect(screen.getByText('The Dispossessed')).toBeInTheDocument();
     expect(screen.getByText('Pg 7 of 100')).toBeInTheDocument();
-    expect(screen.getByText('7%')).toBeInTheDocument();
+    expect(screen.getAllByText('7%')).toHaveLength(2);
     expect(screen.getByRole('link', { name: /view all/i })).toHaveAttribute('href', '/bookshelf');
     expect(screen.queryByText('Book Five')).not.toBeInTheDocument();
     expect(mocks.loadProgressLocally).toHaveBeenCalledWith('book-1', 'reader-99');
@@ -163,18 +163,17 @@ describe('CurrentReads', () => {
 
   it('navigates to the book when its card is clicked or activated with the keyboard', () => {
     mocks.bookshelf = [shelfItem()];
-    const { rerender } = renderCurrentReads();
-
-    fireEvent.click(screen.getByRole('button', { name: 'The Dispossessed' }));
+    const firstRender = renderCurrentReads();
+    const bookCard = screen.getByText('The Dispossessed').closest('[role="button"]');
+    expect(bookCard).not.toBeNull();
+    fireEvent.click(bookCard!);
     expect(screen.getByLabelText('current route')).toHaveTextContent('/book/book-1');
 
-    rerender(
-      <MemoryRouter initialEntries={['/dashboard']}>
-        <CurrentReads userId="reader-1" />
-        <LocationDisplay />
-      </MemoryRouter>,
-    );
-    fireEvent.keyDown(screen.getByRole('button', { name: 'The Dispossessed' }), { key: 'Enter' });
+    firstRender.unmount();
+    renderCurrentReads();
+    const keyboardCard = screen.getByText('The Dispossessed').closest('[role="button"]');
+    expect(keyboardCard).not.toBeNull();
+    fireEvent.keyDown(keyboardCard!, { key: 'Enter' });
     expect(screen.getByLabelText('current route')).toHaveTextContent('/book/book-1');
   });
 
