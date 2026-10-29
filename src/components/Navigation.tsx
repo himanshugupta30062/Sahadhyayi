@@ -87,7 +87,7 @@ const Navigation = () => {
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
-    { name: "Blog", href: "/blog" },
+    { name: "Blogs", href: "/blog" },
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
@@ -95,7 +95,7 @@ const Navigation = () => {
     { name: "Games", href: "/games" },
     { name: "Authors", href: "/authors" },
     { name: "Social Media", href: "/social" },
-    { name: "Blog", href: "/blog" },
+    { name: "Blogs", href: "/blog" },
   ];
 
   const userDisplayName =
