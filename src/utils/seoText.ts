@@ -29,6 +29,7 @@ export function toSeoDescription(
     .replace(/\s+([.,!?;:])/g, '$1')
     .replace(/\s+([.!?])/g, '$1')
     .replace(/\s+/g, ' ')
+    .replace(/\s+([.,!?;:])/g, '$1')
     .trim();
 
   if (plainText.length <= maxLength) return plainText;
