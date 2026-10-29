@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/Breadcrumb';
 import { useAuth } from '@/contexts/authHelpers';
-import { useGroups, useJoinGroup, useLeaveGroup, Group } from '@/hooks/useGroupManagement';
+import { DEFAULT_READING_GROUP_NAME, useGroups, useJoinGroup, useLeaveGroup, Group } from '@/hooks/useGroupManagement';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import { useGroupMembers } from '@/hooks/useGroupMessaging';
 import { useQuery } from '@tanstack/react-query';
@@ -80,6 +80,7 @@ const GroupDetails = () => {
   const group = cachedGroup || directGroup;
   const isMember = group ? joinedGroups.some(g => g.id === group.id || (g as any).group_id === group.id) : false;
   const memberCount = group?.group_members?.[0]?.count ?? members.length;
+  const isDefaultReadingGroup = group.name === DEFAULT_READING_GROUP_NAME;
 
   const copyInviteLink = () => {
     if (!group) return;
@@ -204,6 +205,9 @@ const GroupDetails = () => {
                         {isCopied ? 'Link Copied' : 'Invite'}
                       </Button>
 
+{isDefaultReadingGroup ? (
+                      <Badge variant="secondary" className="text-xs">Permanent Community Member</Badge>
+                    ) : (
                       <Button
                         variant="ghost"
                         onClick={handleMembership}
@@ -214,6 +218,7 @@ const GroupDetails = () => {
                         {leaveGroup.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />}
                         Leave Group
                       </Button>
+                    )}
                     </>
                   ) : (
                     <>
