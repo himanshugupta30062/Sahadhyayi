@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Calendar, MapPin, BookOpen, MessageCircle } from 'lucide-react';
 import { Group } from '@/hooks/useGroupManagement';
-import { useJoinGroup, useLeaveGroup } from '@/hooks/useGroupManagement';
+import { DEFAULT_READING_GROUP_NAME, useJoinGroup, useLeaveGroup } from '@/hooks/useGroupManagement';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 
@@ -97,14 +97,14 @@ const GroupCard: React.FC<GroupCardProps> = ({
           )}
           <Button
             onClick={handleJoinLeave}
-            disabled={joinGroup.isPending || leaveGroup.isPending}
+            disabled={joinGroup.isPending || leaveGroup.isPending || (isJoined && group.name === DEFAULT_READING_GROUP_NAME)}
             className={`${isJoined && onChat ? 'flex-1' : 'w-full'} ${
               isJoined
                 ? "bg-red-600 hover:bg-red-700"
                 : "bg-amber-600 hover:bg-amber-700"
             }`}
           >
-            {isJoined ? 'Leave Group' : 'Join Group'}
+            {isJoined && group.name === DEFAULT_READING_GROUP_NAME ? 'Permanent Community Member' : isJoined ? 'Leave Group' : 'Join Group'}
           </Button>
         </div>
       </CardContent>
