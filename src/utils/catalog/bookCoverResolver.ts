@@ -196,7 +196,7 @@ export async function fetchGoogleBooksCover(
 function cleanTitleForMatch(title: string): string {
   if (!title) return '';
   return title
-    .replace(/\[.*?\]|\(.*?\)/g, '')
+    .replace(/\[[^\]]*\]|\([^)]*\)/g, '')
     .replace(/[^\w\s]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim()
