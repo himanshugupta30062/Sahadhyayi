@@ -62,7 +62,9 @@ export const useReadingRooms = (bookId?: string, options: ReadingRoomsOptions = 
       .subscribe();
 
     return () => {
-      void supabase.removeChannel(channel);
+      void supabase.removeChannel(channel).catch((error: unknown) => {
+        console.error("Failed to remove reading rooms channel:", error);
+      });
     };
   }, [qc, enabled]);
 
@@ -225,18 +227,24 @@ export const useReadingRoomLive = (
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
-          await channel.track({
-            user_id: user.id,
-            name: user.email?.split("@")[0] ?? "Reader",
-            page: sharePage ? page : null,
-            share_page: sharePage,
-            joined_at: new Date().toISOString(),
-          } satisfies RoomPresence);
+          try {
+            await channel.track({
+              user_id: user.id,
+              name: user.email?.split("@")[0] ?? "Reader",
+              page: sharePage ? page : null,
+              share_page: sharePage,
+              joined_at: new Date().toISOString(),
+            } satisfies RoomPresence);
+          } catch (error) {
+            console.error("Failed to publish reading room presence:", error);
+          }
         }
       });
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel).catch((error: unknown) => {
+        console.error("Failed to remove reading room channel:", error);
+      });
       channelRef.current = null;
     };
   }, [roomId, bookId, user]);
@@ -245,13 +253,15 @@ export const useReadingRoomLive = (
   useEffect(() => {
     const ch = channelRef.current;
     if (!ch || !user) return;
-    ch.track({
+    void ch.track({
       user_id: user.id,
       name: user.email?.split("@")[0] ?? "Reader",
       page: sharePage ? page : null,
       share_page: sharePage,
       joined_at: new Date().toISOString(),
-    } satisfies RoomPresence);
+    } satisfies RoomPresence).catch((error: unknown) => {
+      console.error("Failed to update reading room presence:", error);
+    });
   }, [sharePage, page, user]);
 
   const sendMessage = useCallback(
