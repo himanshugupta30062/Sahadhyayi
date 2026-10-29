@@ -23,11 +23,11 @@ Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' blob: https://maps.googleapis.com https://static.cloudflareinsights.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "script-src 'self' 'unsafe-inline' blob: https://sdk.mappls.com https://*.mappls.com https://*.mapmyindia.com https://maps.googleapis.com https://static.cloudflareinsights.com",
+  "style-src 'self' 'unsafe-inline' https://*.mappls.com https://*.mapmyindia.com https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self' https://*.supabase.co wss:",
+  "font-src 'self' https://*.mappls.com https://*.mapmyindia.com https://fonts.gstatic.com",
+  "connect-src 'self' https://*.supabase.co https://*.mappls.com https://*.mapmyindia.com wss:",
   "frame-src 'self'",
   "report-uri /csp-report",
 ];
