@@ -17,9 +17,13 @@ const mocks = vi.hoisted(() => ({
   invalidateQueries: vi.fn(),
 }));
 
-vi.mock('@/contexts/authHelpers', () => ({
+vi.mock('@/contexts/authHelpers', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/contexts/authHelpers')>();
+  return {
+    ...actual,
   useAuth: () => ({ user: mocks.user }),
-}));
+  };
+});
 
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mocks.toast }),
