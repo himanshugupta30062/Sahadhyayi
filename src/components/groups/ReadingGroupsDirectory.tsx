@@ -371,8 +371,9 @@ const ReadingGroupsDirectory = () => {
           {filteredGroups.map((group) => {
             const membership = membershipByGroup.get(group.id);
             const isJoined = Boolean(membership);
-            const canEdit = membership?.role === 'admin' || group.created_by === user?.id;
-            const canDelete = group.created_by === user?.id;
+            const isDefaultCommunity = group.name === DEFAULT_READING_GROUP_NAME;
+            const canEdit = !isDefaultCommunity && (membership?.role === 'admin' || group.created_by === user?.id);
+            const canDelete = !isDefaultCommunity && group.created_by === user?.id;
             const membershipPending =
               (joinGroup.isPending && joinGroup.variables === group.id) ||
               (leaveGroup.isPending && leaveGroup.variables === group.id);
@@ -496,7 +497,7 @@ const ReadingGroupsDirectory = () => {
                           )}
                           {isCopied ? 'Copied!' : 'Invite'}
                         </Button>
-{group.name === DEFAULT_READING_GROUP_NAME ? (
+                        {group.name === DEFAULT_READING_GROUP_NAME ? (
                           <Badge variant="secondary" className="text-[10px]">Permanent Community Member</Badge>
                         ) : (
                           <Button
