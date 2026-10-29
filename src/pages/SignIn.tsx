@@ -269,13 +269,15 @@ const SignIn = () => {
                       placeholder="Enter your password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="pl-10 pr-10 h-11 bg-white border-border/80 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                      className="pl-10 pr-12 h-11 bg-white border-border/80 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-3 text-slate-500 hover:text-slate-900 transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-pressed={showPassword}
+                      className="absolute right-1 top-0 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-500 transition-colors hover:text-slate-900 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
