@@ -167,12 +167,12 @@ const Navigation = () => {
           : 'bg-background/85 backdrop-blur-sm border-b border-border/40'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 xl:px-8">
+        <div className="flex h-16 min-w-0 items-center justify-between gap-3">
           {/* Logo */}
           <Link
             to={user ? "/dashboard" : "/"}
-            className="flex items-center space-x-3 font-bold text-2xl text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+            className="flex shrink-0 items-center space-x-2 font-bold text-xl text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md sm:space-x-3 sm:text-2xl"
             aria-label="Sahadhyayi Home"
           >
             <EnhancedLazyImage
@@ -188,9 +188,9 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           {!isMobile && (
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden min-w-0 flex-1 items-center justify-end gap-3 xl:flex 2xl:gap-5">
               {/* Navigation Links */}
-              <nav aria-label="Main navigation" className="flex items-center space-x-3 lg:space-x-5">
+              <nav aria-label="Main navigation" className="flex min-w-0 items-center gap-2 whitespace-nowrap xl:gap-3 2xl:gap-4">
                 {navItems.map((item) => {
                   const isActive = isCurrentRoute(item.href);
                   return (
@@ -204,7 +204,7 @@ const Navigation = () => {
                               ? 'border-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary))] text-white shadow-sm'
                               : 'border-[hsl(var(--brand-primary)/0.35)] bg-[hsl(var(--brand-primary)/0.08)] text-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.15)]'
                           }`
-                        : `text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm ${
+                         : `shrink-0 whitespace-nowrap text-sm font-medium transition-colors duration-200 hover:text-[hsl(var(--brand-primary))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm ${
                             isActive
                               ? 'text-[hsl(var(--brand-primary))] border-b-2 border-[hsl(var(--brand-primary))] pb-1 font-semibold'
                               : 'text-muted-foreground'
@@ -217,11 +217,11 @@ const Navigation = () => {
               </nav>
 
               {/* User Actions */}
-              <div className="flex items-center space-x-4">
+              <div className="flex shrink-0 items-center gap-2 2xl:gap-3">
                 <button
                   type="button"
                   onClick={() => setSearchOpen(true)}
-                  className="group relative flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-muted/50 hover:bg-muted hover:text-foreground border border-border/70 hover:border-border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer shadow-2xs"
+                  className="group relative flex w-40 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-border/70 bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-2xs transition-all duration-150 hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer xl:w-44 2xl:w-48"
                   aria-label="Search library, authors, and books"
                   title="Search library, authors, and books"
                 >
