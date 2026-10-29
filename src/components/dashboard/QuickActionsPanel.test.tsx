@@ -13,7 +13,7 @@ const LocationDisplay = () => {
 };
 
 const renderPanel = () => render(
-  <MemoryRouter initialEntries={['/dashboard']}>
+  <MemoryRouter initialEntries={['/home']}>
     <QuickActionsPanel />
     <LocationDisplay />
   </MemoryRouter>,
