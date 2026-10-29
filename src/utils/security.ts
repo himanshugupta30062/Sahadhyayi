@@ -46,10 +46,15 @@ export const validateFileUpload = (file: File, allowedTypes: string[] = [], maxS
 };
 
 export const createSecureHeaders = (includeCSRF: boolean = true): HeadersInit => {
-  const headers: HeadersInit = { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+  // A string map accurately models the custom request headers we add here and
+  // avoids casting a general HeadersInit union to `any` to mutate it.
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+  };
   if (includeCSRF) {
     const token = getCSRFToken();
-    if (token) (headers as any)['X-CSRF-Token'] = token;
+    if (token) headers['X-CSRF-Token'] = token;
   }
   return headers;
 };
