@@ -120,23 +120,25 @@ export default function Library() {
       />
 
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Breadcrumb items={breadcrumbItems} />
             <SortingInfoTooltip />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
             {hasActiveFilters && (
-              <Button variant="outline" onClick={handleReset} className="gap-2">
-                <RefreshCw className="h-4 w-4" />
+              <Button variant="outline" onClick={handleReset} className="min-h-11 w-full gap-2 touch-manipulation sm:w-auto">
+                <RefreshCw className="h-4 w-4 shrink-0" />
                 Reset filters
               </Button>
             )}
 
-            <ContributeBookPdfDialog />
-            <Button onClick={() => navigate('/publish')} className="gap-2">
-              <PenTool className="h-4 w-4" />
+            <div className="w-full sm:w-auto">
+              <ContributeBookPdfDialog />
+            </div>
+            <Button onClick={() => navigate('/publish')} className="min-h-11 w-full gap-2 touch-manipulation sm:w-auto">
+              <PenTool className="h-4 w-4 shrink-0" />
               Publish Your Book
             </Button>
           </div>
