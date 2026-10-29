@@ -81,7 +81,6 @@ const setResponses = (responses: Record<string, Array<{ data?: any; error?: any 
       delete: () => builder,
       update: () => builder,
       maybeSingle: () => builder,
-      single: () => builder,
       eq: () => builder,
       in: () => builder,
       order: () => builder,
