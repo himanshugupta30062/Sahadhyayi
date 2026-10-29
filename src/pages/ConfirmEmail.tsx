@@ -181,6 +181,7 @@ const ConfirmEmail = () => {
 
   const handleVerifyOtp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (busy) return;
     setErrorMessage('');
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedOtp = otp.replace(/\s/g, '');
@@ -233,6 +234,7 @@ const ConfirmEmail = () => {
   };
 
   const handleResendCode = async () => {
+    if (busy) return;
     const normalizedEmail = email.trim().toLowerCase();
     if (!isValidEmailAddress(normalizedEmail)) {
       setErrorMessage('Enter a valid email address first.');
