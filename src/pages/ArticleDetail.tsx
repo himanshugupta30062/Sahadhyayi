@@ -9,6 +9,7 @@ import { ArrowLeft, Clock, Eye, Calendar, Pencil } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
+import { toSeoDescription } from '@/utils/seoText';
 import BookFlipLoader from '@/components/ui/BookFlipLoader';
 import MarkdownPreview from '@/components/articles/MarkdownPreview';
 import ArticleLikeButton from '@/components/articles/ArticleLikeButton';
@@ -70,7 +71,7 @@ const ArticleDetail = () => {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: article.title,
-    description: article.subtitle || article.content.slice(0, 155),
+    description: toSeoDescription(article.subtitle || article.content),
     image: article.cover_image_url ? [article.cover_image_url] : undefined,
     datePublished: (article as any).published_at || (article as any).created_at,
     dateModified: (article as any).updated_at || (article as any).published_at || (article as any).created_at,
@@ -97,7 +98,7 @@ const ArticleDetail = () => {
     <>
       <SEO
         title={`${article.title} - Sahadhyayi`}
-        description={article.subtitle || article.content.slice(0, 155)}
+        description={toSeoDescription(article.subtitle || article.content)}
         canonical={fullArticleUrl}
         url={fullArticleUrl}
         type="article"
