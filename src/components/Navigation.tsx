@@ -188,7 +188,7 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           {!isMobile && (
-            <div className="hidden min-w-0 flex-1 items-center justify-end gap-3 xl:flex 2xl:gap-5">
+            <div className="hidden min-w-0 flex-1 items-center justify-end gap-3 md:flex 2xl:gap-5">
               {/* Navigation Links */}
               <nav aria-label="Main navigation" className="flex min-w-0 items-center gap-2 whitespace-nowrap xl:gap-3 2xl:gap-4">
                 {navItems.map((item) => {
@@ -199,7 +199,7 @@ const Navigation = () => {
                       to={item.href}
                       aria-current={isActive ? "page" : undefined}
                       className={item.href === "/blog"
-                        ? `inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        ? `inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 py-1.5 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                             isActive
                               ? 'border-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary))] text-white shadow-sm'
                               : 'border-[hsl(var(--brand-primary)/0.35)] bg-[hsl(var(--brand-primary)/0.08)] text-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.15)]'
