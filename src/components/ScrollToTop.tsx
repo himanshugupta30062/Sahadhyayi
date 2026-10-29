@@ -10,7 +10,7 @@ const ScrollToTop = () => {
       window.history.scrollRestoration = 'manual';
     }
     const stored = sessionStorage.getItem(`scroll-${pathname}`);
-    const y = stored ? Number.Number.parseInt(stored, 10) : 0;
+    const y = stored ? Number.parseInt(stored, 10) : 0;
     window.scrollTo({ top: y, left: 0, behavior: 'auto' });
   }, [pathname]);
 
