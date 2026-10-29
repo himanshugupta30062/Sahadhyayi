@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './HomeFloatingBooks.css';
 
 type FloatingBookPlacement = 'hero' | 'section' | 'cta';
@@ -35,11 +35,26 @@ const BOOK_LAYOUTS: Record<FloatingBookPlacement, FloatingBook[]> = {
 
 const HomeFloatingBooks: React.FC<{ placement?: FloatingBookPlacement }> = ({ placement = 'section' }) => {
   const books = BOOK_LAYOUTS[placement];
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isOffscreen, setIsOffscreen] = useState(false);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsOffscreen(!entry.isIntersecting);
+    }, { rootMargin: '100px' });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div
+      ref={containerRef}
       aria-hidden="true"
-      className={`home-floating-books home-floating-books--${placement} pointer-events-none absolute inset-0 z-0 overflow-hidden dark:hidden`}
+      className={`home-floating-books${isOffscreen ? " is-offscreen" : ""} home-floating-books--${placement} pointer-events-none absolute inset-0 z-0 overflow-hidden dark:hidden`}
     >
       {books.map((book, index) => (
         <span
