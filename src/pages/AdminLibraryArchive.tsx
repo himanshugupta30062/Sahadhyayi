@@ -1200,8 +1200,9 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
               )}
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-800">Archive Reason (Required)</label>
+                <label htmlFor="archive-reason" className="font-semibold text-slate-800">Archive Reason (Required)</label>
                 <Input
+                  id="archive-reason"
                   required
                   placeholder="e.g. Duplicate edition / Low scan quality / Unwanted entry"
                   value={archiveReason}
@@ -1211,8 +1212,9 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-800">Classification</label>
+                <label htmlFor="archive-classification" className="font-semibold text-slate-800">Classification</label>
                 <select
+                  id="archive-classification"
                   value={archiveClassification}
                   onChange={(e) => setArchiveClassification(e.target.value as ArchiveClassification)}
                   className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 text-slate-700"
@@ -1226,8 +1228,9 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-slate-800">Canonical Book UUID (Optional)</label>
+                <label htmlFor="canonical-book-id" className="font-semibold text-slate-800">Canonical Book UUID (Optional)</label>
                 <Input
+                  id="canonical-book-id"
                   placeholder="If duplicate, enter UUID of primary canonical book"
                   value={canonicalBookId}
                   onChange={(e) => setCanonicalBookId(e.target.value)}
