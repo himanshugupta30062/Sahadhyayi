@@ -16,13 +16,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/contexts/authHelpers', () => ({
   normalizeAuthEmail: (value: string) => value.trim().toLowerCase(),
-  normalizeAuthName: (value: string) => value.trim().replace(/\\s+/g, ' '),
-  useAuth: () => ({
-    user: mocks.user,
-    signUp: mocks.signUp,
-    normalizeAuthEmail: (value: string) => value.trim().toLowerCase(),
-    normalizeAuthName: (value: string) => value.trim().replace(/\s+/g, ' '),
-  }),
+  normalizeAuthName: (value: string) => value.trim().replace(/\s+/g, ' '),
+  useAuth: () => ({ user: mocks.user, signUp: mocks.signUp }),
 }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock('@/components/SEO', () => ({ default: () => null }));
