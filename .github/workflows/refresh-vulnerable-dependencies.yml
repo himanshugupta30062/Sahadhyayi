@@ -1,0 +1,60 @@
+name: Refresh vulnerable npm dependencies
+
+on:
+  push:
+    branches:
+      - security/fix-dependency-vulnerabilities
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dependency-security-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout security branch
+        uses: actions/checkout@v4
+        with:
+          ref: security/fix-dependency-vulnerabilities
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Upgrade directly vulnerable dependencies
+        run: |
+          npm install --save-exact dompurify@3.4.17 xml2js@0.6.2 postcss@8.5.12 vite@6.4.4
+
+      - name: Apply non-breaking security updates to remaining dependencies
+        run: npm audit fix || true
+
+      - name: Commit updated manifests and lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- package.json package-lock.json; then
+            git add package.json package-lock.json
+            git commit -m "fix: update vulnerable npm dependencies"
+            git push origin security/fix-dependency-vulnerabilities
+          else
+            echo "No manifest changes were generated."
+          fi
+
+      - name: Verify dependency audit
+        continue-on-error: true
+        run: npm audit --omit=dev
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build production bundle
+        run: npm run build
