@@ -65,7 +65,7 @@ jobs:
 
           if (!fs.existsSync(summaryPath)) {
             lines.push('Coverage summary was not generated. Check the test step logs.');
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\\n') + '\\n');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\\n');
             process.exit(0);
           }
 
