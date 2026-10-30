@@ -6,6 +6,8 @@ import {
 } from "@/lib/scientistProfileValidation";
 
 const validProfile = {
+  initials: "CVR",
+  birthplace: "Tiruchirappalli",
   headline: "A life in science",
   legacy: "A lasting contribution.",
   knownFor: ["Discovery"],
