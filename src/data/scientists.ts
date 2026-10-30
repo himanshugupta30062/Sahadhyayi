@@ -93,7 +93,8 @@ export const scientists: ScientistProfile[] = [
     legacy: 'Raman spectroscopy is used across chemistry, materials science, medicine and other fields. The discovery remains one of the most influential contributions to experimental physics made in India.',
     sources: [
       { label: 'C. V. Raman — Biographical', publisher: 'Nobel Prize', url: 'https://www.nobelprize.org/prizes/physics/1930/raman/biographical/' },
-      { label: 'The Raman Effect: International Historic Chemical Landmark', publisher: 'American Chemical Society', url: 'https://www.acs.org/education/whatischemistry/landmarks/ramaneffect.html' }
+      { label: 'The Raman Effect: International Historic Chemical Landmark', publisher: 'American Chemical Society', url: 'https://www.acs.org/education/whatischemistry/landmarks/ramaneffect.html' },
+      { label: 'C. V. Raman — The Master of Light & Sound', publisher: 'New India Samachar · Government of India', url: 'https://newindiasamachar.pib.gov.in/archive/pdf/NIS%20English%20November16-30.pdf' }
     ]
   },
   {
@@ -120,7 +121,6 @@ export const scientists: ScientistProfile[] = [
       { year: '1894', title: 'Born in Calcutta', description: 'Born on 1 January in the city now known as Kolkata.' },
       { year: '1915', title: 'Master’s degree', description: 'Completed an M.Sc. in mixed mathematics at the University of Calcutta.' },
       { year: '1924', title: 'Quantum statistics paper', description: 'Sent his paper on Planck’s law to Albert Einstein, beginning a pivotal exchange.' },
-      { year: '1954', title: 'Padma Vibhushan', description: 'Received one of India’s highest civilian honours.' },
       { year: '1974', title: 'Died in Kolkata', description: 'His name continues to be used across modern particle physics.' }
     ],
     legacy: 'The word “boson” carries Bose’s name throughout modern physics. Bose–Einstein statistics helps describe particles that can share the same quantum state and underpins research into phenomena such as Bose–Einstein condensation.',
