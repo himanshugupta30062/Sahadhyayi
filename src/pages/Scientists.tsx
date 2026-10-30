@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Atom, Globe2, Landmark, Search, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -6,15 +6,25 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Breadcrumb from '@/components/Breadcrumb';
 import SEO from '@/components/SEO';
-import { scientists, type ScientistRegion } from '@/data/scientists';
+import { scientists as fallbackScientists, type ScientistRegion } from '@/data/scientists';
+import { fetchScientistProfiles } from '@/lib/scientistsRepository';
 
 const Scientists = () => {
   const [collection, setCollection] = useState<ScientistRegion>('india');
   const [search, setSearch] = useState('');
+  const [scientistProfiles, setScientistProfiles] = useState(fallbackScientists);
+
+  useEffect(() => {
+    let active = true;
+    void fetchScientistProfiles().then((profiles) => {
+      if (active) setScientistProfiles(profiles);
+    });
+    return () => { active = false; };
+  }, []);
 
   const visibleScientists = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
-    return scientists.filter((scientist) => {
+    return scientistProfiles.filter((scientist) => {
       const inCollection = scientist.region === collection;
       const matchesQuery = !query || [
         scientist.name,
@@ -24,10 +34,10 @@ const Scientists = () => {
       ].join(' ').toLocaleLowerCase().includes(query);
       return inCollection && matchesQuery;
     });
-  }, [collection, search]);
+  }, [collection, search, scientistProfiles]);
 
-  const indianCount = scientists.filter((scientist) => scientist.region === 'india').length;
-  const globalCount = scientists.filter((scientist) => scientist.region === 'world').length;
+  const indianCount = scientistProfiles.filter((scientist) => scientist.region === 'india').length;
+  const globalCount = scientistProfiles.filter((scientist) => scientist.region === 'world').length;
 
   return (
     <>
