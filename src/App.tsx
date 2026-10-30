@@ -556,6 +556,16 @@ const App = memo(() => {
                           }
                         />
                         <Route
+                          path="/admin"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading admin workspace..." />}>
+                                <AdminOverview />
+                              </Suspense>
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
                           path="/admin/book-pdfs"
                           element={
                             <AdminRoute>
