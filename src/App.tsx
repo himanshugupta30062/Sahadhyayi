@@ -47,6 +47,8 @@ const WebsiteTour = lazy(() => import("./components/onboarding/WebsiteTour"));
 const Profile = lazy(() => import('./pages/Profile'));
 const SocialMedia = lazy(() => import('./pages/SocialMedia'));
 const Authors = lazy(() => import('./pages/Authors'));
+const Scientists = lazy(() => import('./pages/Scientists'));
+const ScientistProfile = lazy(() => import('./pages/ScientistProfile'));
 const Publishers = lazy(() => import('./pages/Publishers'));
 const AuthorSlugPage = lazy(() => import('./pages/authors/[slug]'));
 const AuthorDetails = lazy(() => import('./pages/AuthorDetails'));
@@ -357,6 +359,23 @@ const App = memo(() => {
                           element={
                             <Suspense fallback={<LoadingFallback />}>
                               <Authors />
+                            </Suspense>
+                          }
+                        />
+
+                        <Route
+                          path="/scientists"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading scientists..." />}>
+                              <Scientists />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/scientists/:slug"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading scientist profile..." />}>
+                              <ScientistProfile />
                             </Suspense>
                           }
                         />
