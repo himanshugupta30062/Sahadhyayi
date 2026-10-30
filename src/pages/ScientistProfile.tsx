@@ -51,7 +51,7 @@ const ScientistProfile = () => {
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">{scientist.summary}</p>
               </div>
               <div className="flex aspect-square w-full max-w-[220px] items-center justify-center justify-self-start rounded-[2rem] border border-white/15 bg-white/[0.06] font-serif text-6xl font-bold text-white/80 shadow-2xl backdrop-blur-sm lg:justify-self-end">
-                {scientist.initials}
+                {scientist.portrait ? scientist.portrait.alt : scientist.initials}
               </div>
             </div>
           </div>
