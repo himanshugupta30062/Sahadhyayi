@@ -99,6 +99,7 @@ const publicPages = [
   { route: "/library", title: "Online Book Library - Discover Books to Read | Sahadhyayi", description: "Discover books across genres, explore your next read, and build a consistent reading habit with Sahadhyayi's online book library." },
   { route: "/articles", title: "Reading Articles, Book Ideas & Literary Insights | Sahadhyayi", description: "Explore thoughtful articles about books, reading habits, literature, and ideas from the Sahadhyayi reading community." },
   { route: "/authors", title: "Discover Authors and Their Books | Sahadhyayi", description: "Explore author profiles, discover their books, and connect with the people behind the stories on Sahadhyayi." },
+  { route: "/scientists", title: "Scientists & Their Discoveries | Sahadhyayi", description: "Explore the lives, ideas and discoveries of Indian scientists and remarkable researchers from around the world, with biographies and references." },
   { route: "/groups", title: "Online Book Clubs and Reading Groups | Sahadhyayi", description: "Find a book club, join reading groups, discuss books with fellow readers, and make reading a shared experience." },
   { route: "/blog", title: "Sahadhyayi Blog - Book Recommendations & Reading Culture", description: "Read guides on building a reading habit, choosing books, exploring literature, and joining a community of readers." },
   { route: "/discovery", title: "Discover Books, Readers and New Ideas | Sahadhyayi", description: "Discover books, reading inspiration, literary ideas, and fellow readers with Sahadhyayi." },
@@ -110,6 +111,26 @@ const publicPages = [
 
 for (const page of publicPages) {
   writeRoute(page.route, createPage({ ...page, type: "website" }));
+}
+
+const scientistProfiles = [
+  { slug: "amal-kumar-raychaudhuri", name: "Amal Kumar Raychaudhuri", description: "Explore the life and work of Indian physicist Amal Kumar Raychaudhuri, whose equation became a key result in general relativity and cosmology." },
+  { slug: "c-v-raman", name: "C. V. Raman", description: "Learn about C. V. Raman, the Indian physicist whose discovery of the Raman Effect earned the 1930 Nobel Prize in Physics." },
+  { slug: "satyendra-nath-bose", name: "Satyendra Nath Bose", description: "Discover the life and quantum physics contributions of Satyendra Nath Bose, whose work led to Bose–Einstein statistics." },
+  { slug: "srinivasa-ramanujan", name: "Srinivasa Ramanujan", description: "Explore the life, notebooks and mathematical contributions of Srinivasa Ramanujan, one of India's most influential mathematicians." },
+  { slug: "marie-curie", name: "Marie Curie", description: "Explore Marie Curie's pioneering research on radioactivity and the discoveries of polonium and radium." },
+  { slug: "albert-einstein", name: "Albert Einstein", description: "Learn about Albert Einstein's life and contributions to relativity, quantum theory and modern physics." },
+  { slug: "katherine-johnson", name: "Katherine Johnson", description: "Discover NASA mathematician Katherine Johnson's calculations for Mercury, Apollo and early human spaceflight." }
+];
+
+for (const scientist of scientistProfiles) {
+  const route = `/scientists/${scientist.slug}`;
+  writeRoute(route, createPage({
+    title: `${scientist.name} — Life, Work & Discoveries | Sahadhyayi`,
+    description: scientist.description,
+    route,
+    type: "profile"
+  }));
 }
 
 if (!supabaseUrl || !supabaseKey) {

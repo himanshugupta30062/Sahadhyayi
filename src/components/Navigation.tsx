@@ -85,6 +85,7 @@ const Navigation = () => {
     { name: "Articles", href: "/articles" },
     { name: "Games", href: "/games" },
     { name: "Authors", href: "/authors" },
+    { name: "Scientists", href: "/scientists" },
     { name: "Social Media", href: "/social" },
     { name: "My Books", href: "/bookshelf" },
     { name: "Blogs", href: "/blog" },
@@ -94,6 +95,7 @@ const Navigation = () => {
     { name: "Articles", href: "/articles" },
     { name: "Games", href: "/games" },
     { name: "Authors", href: "/authors" },
+    { name: "Scientists", href: "/scientists" },
     { name: "Social Media", href: "/social" },
     { name: "Blogs", href: "/blog" },
   ];
@@ -146,6 +148,9 @@ const Navigation = () => {
         location.pathname.startsWith('/authors/') ||
         location.pathname.startsWith('/author/')
       );
+    }
+    if (href === '/scientists') {
+      return location.pathname === '/scientists' || location.pathname.startsWith('/scientists/');
     }
     if (href === '/library') {
       return (

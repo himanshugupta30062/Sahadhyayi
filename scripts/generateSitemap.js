@@ -6,7 +6,7 @@ import { getPublicSupabaseConfig } from './publicSupabaseConfig.mjs';
 
 // Public, canonical pages only. Do not include authentication or account routes.
 const staticPages = [
-  '/library', '/articles', '/authors', '/groups', '/blog', '/discovery',
+  '/library', '/articles', '/authors', '/groups', '/blog', '/discovery', '/scientists',
   '/games', '/quotes', '/community-stories', '/about', '/social', '/map',
   '/book-search', '/help-center', '/community-guidelines', '/privacy-policy',
   '/terms-of-service', '/cookie-policy', '/dmca'
@@ -40,6 +40,16 @@ function addUrl(loc, changefreq = 'weekly', priority = '0.6', image) {
 addUrl('/', 'weekly', '1.0', HOME_IMAGE);
 staticPages.forEach(route => addUrl(route, 'weekly', route === '/library' || route === '/articles' ? '0.9' : '0.5'));
 blogSlugs.forEach(slug => addUrl('/blog/' + slug, 'monthly', '0.6'));
+const scientistSlugs = [
+  'amal-kumar-raychaudhuri',
+  'c-v-raman',
+  'satyendra-nath-bose',
+  'srinivasa-ramanujan',
+  'marie-curie',
+  'albert-einstein',
+  'katherine-johnson'
+];
+scientistSlugs.forEach(slug => addUrl('/scientists/' + slug, 'monthly', '0.6'));
 
 const { url: SUPABASE_URL, key: SUPABASE_KEY } = getPublicSupabaseConfig();
 if (SUPABASE_URL && SUPABASE_KEY) {
