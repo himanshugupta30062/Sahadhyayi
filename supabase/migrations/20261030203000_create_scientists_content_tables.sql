@@ -43,7 +43,9 @@ ALTER TABLE public.scientists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scientist_publications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scientist_archives ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public can read published scientists" ON public.scientists FOR SELECT TO anon, authenticated
+CREATE POLICY "Anon can read published scientists" ON public.scientists FOR SELECT TO anon
+  USING (status = 'published');
+CREATE POLICY "Authenticated can read published scientists" ON public.scientists FOR SELECT TO authenticated
   USING (status = 'published' OR public.has_role((SELECT auth.uid()), 'admin'));
 CREATE POLICY "Admins can insert scientists" ON public.scientists FOR INSERT TO authenticated
   WITH CHECK (public.has_role((SELECT auth.uid()), 'admin'));
@@ -52,7 +54,9 @@ CREATE POLICY "Admins can update scientists" ON public.scientists FOR UPDATE TO 
 CREATE POLICY "Admins can delete scientists" ON public.scientists FOR DELETE TO authenticated
   USING (public.has_role((SELECT auth.uid()), 'admin'));
 
-CREATE POLICY "Public can read publications for published scientists" ON public.scientist_publications FOR SELECT TO anon, authenticated
+CREATE POLICY "Anon can read publications for published scientists" ON public.scientist_publications FOR SELECT TO anon
+  USING (EXISTS (SELECT 1 FROM public.scientists s WHERE s.id = scientist_id AND s.status = 'published'));
+CREATE POLICY "Authenticated can read publications for published scientists" ON public.scientist_publications FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.scientists s WHERE s.id = scientist_id AND (s.status = 'published' OR public.has_role((SELECT auth.uid()), 'admin'))));
 CREATE POLICY "Admins can insert scientist publications" ON public.scientist_publications FOR INSERT TO authenticated
   WITH CHECK (public.has_role((SELECT auth.uid()), 'admin'));
@@ -61,7 +65,9 @@ CREATE POLICY "Admins can update scientist publications" ON public.scientist_pub
 CREATE POLICY "Admins can delete scientist publications" ON public.scientist_publications FOR DELETE TO authenticated
   USING (public.has_role((SELECT auth.uid()), 'admin'));
 
-CREATE POLICY "Public can read archives for published scientists" ON public.scientist_archives FOR SELECT TO anon, authenticated
+CREATE POLICY "Anon can read archives for published scientists" ON public.scientist_archives FOR SELECT TO anon
+  USING (EXISTS (SELECT 1 FROM public.scientists s WHERE s.id = scientist_id AND s.status = 'published'));
+CREATE POLICY "Authenticated can read archives for published scientists" ON public.scientist_archives FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.scientists s WHERE s.id = scientist_id AND (s.status = 'published' OR public.has_role((SELECT auth.uid()), 'admin'))));
 CREATE POLICY "Admins can insert scientist archives" ON public.scientist_archives FOR INSERT TO authenticated
   WITH CHECK (public.has_role((SELECT auth.uid()), 'admin'));
