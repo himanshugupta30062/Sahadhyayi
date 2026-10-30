@@ -214,7 +214,7 @@ export default function AdminScientists() {
     } finally { setSaving(false); }
   };
 
-  const update = <K extends keyof EditorState>(key: K, value: EditorState[K]) => setEditor((previous) => ({ ...previous, [key]: value }));
+  const update = <K extends keyof EditorState,>(key: K, value: EditorState[K]) => setEditor((previous) => ({ ...previous, [key]: value }));
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] px-4 py-8 text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7] sm:px-6 lg:px-8">
