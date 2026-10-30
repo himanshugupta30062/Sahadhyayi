@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Activity, BookOpen, ChevronLeft, ChevronRight, FileCheck2, FlaskConical,
+  Activity, BookOpen, ChevronRight, FileCheck2, FlaskConical,
   LayoutDashboard, LogOut, Menu, MessageSquare, PanelLeftClose, PanelLeftOpen,
-  Settings2, ShieldCheck, Users, X, UserRoundCog, WandSparkles, Globe2,
+  ShieldCheck, Users, X, UserRoundCog, WandSparkles, Globe2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/authHelpers";
 import { Button } from "@/components/ui/button";
