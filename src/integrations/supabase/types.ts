@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      scientists: {
+        Row: { created_at: string; discipline: string; id: string; lifespan: string; name: string; profile_data: Json; region: string; slug: string; sort_order: number; status: string; summary: string; updated_at: string }
+        Insert: { created_at?: string; discipline: string; id?: string; lifespan: string; name: string; profile_data?: Json; region: string; slug: string; sort_order?: number; status?: string; summary: string; updated_at?: string }
+        Update: { created_at?: string; discipline?: string; id?: string; lifespan?: string; name?: string; profile_data?: Json; region?: string; slug?: string; sort_order?: number; status?: string; summary?: string; updated_at?: string }
+        Relationships: []
+      }
+      scientist_publications: {
+        Row: { access: string; authors: string; created_at: string; doi: string | null; id: string; note: string; scientist_id: string; sort_order: number; title: string; updated_at: string; url: string; venue: string; year: string }
+        Insert: { access: string; authors: string; created_at?: string; doi?: string | null; id?: string; note?: string; scientist_id: string; sort_order?: number; title: string; updated_at?: string; url: string; venue: string; year: string }
+        Update: { access?: string; authors?: string; created_at?: string; doi?: string | null; id?: string; note?: string; scientist_id?: string; sort_order?: number; title?: string; updated_at?: string; url?: string; venue?: string; year?: string }
+        Relationships: [{ foreignKeyName: "scientist_publications_scientist_id_fkey"; columns: ["scientist_id"]; isOneToOne: false; referencedRelation: "scientists"; referencedColumns: ["id"] }]
+      }
+      scientist_archives: {
+        Row: { created_at: string; id: string; institution: string; material: string; note: string; scientist_id: string; sort_order: number; title: string; updated_at: string; url: string }
+        Insert: { created_at?: string; id?: string; institution: string; material: string; note?: string; scientist_id: string; sort_order?: number; title: string; updated_at?: string; url: string }
+        Update: { created_at?: string; id?: string; institution?: string; material?: string; note?: string; scientist_id?: string; sort_order?: number; title?: string; updated_at?: string; url?: string }
+        Relationships: [{ foreignKeyName: "scientist_archives_scientist_id_fkey"; columns: ["scientist_id"]; isOneToOne: false; referencedRelation: "scientists"; referencedColumns: ["id"] }]
+      }
       article_author_followers: {
         Row: {
           author_user_id: string

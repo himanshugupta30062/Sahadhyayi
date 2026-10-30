@@ -1,13 +1,27 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, ExternalLink, MapPin, ScrollText, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Breadcrumb from '@/components/Breadcrumb';
 import SEO from '@/components/SEO';
-import { getScientistBySlug, scientists } from '@/data/scientists';
+import { getScientistBySlug, scientists as fallbackScientists, type ScientistProfile as ScientistProfileType } from '@/data/scientists';
+import { fetchScientistProfiles } from '@/lib/scientistsRepository';
 
 const ScientistProfile = () => {
   const { slug = '' } = useParams<{ slug: string }>();
-  const scientist = getScientistBySlug(slug);
+  const [scientist, setScientist] = useState<ScientistProfileType | undefined>(() => getScientistBySlug(slug));
+  const [scientistCollection, setScientistCollection] = useState(fallbackScientists);
+
+  useEffect(() => {
+    let active = true;
+    setScientist(getScientistBySlug(slug));
+    void fetchScientistProfiles().then((profiles) => {
+      if (!active) return;
+      setScientistCollection(profiles);
+      setScientist(profiles.find((item) => item.slug === slug));
+    });
+    return () => { active = false; };
+  }, [slug]);
 
   if (!scientist) {
     return (
@@ -19,7 +33,7 @@ const ScientistProfile = () => {
     );
   }
 
-  const relatedScientists = scientists
+  const relatedScientists = scientistCollection
     .filter((item) => item.region === scientist.region && item.slug !== scientist.slug)
     .slice(0, 3);
 
