@@ -43,7 +43,7 @@ export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
 
   return data.flatMap((row) => {
     const fallback = getScientistBySlug(row.slug);
-    const profileData = (row.profile_data ?? {}) as ProfileData;
+    const profileData = (row.profile_data ?? {}) as unknown as ProfileData;
     // A newly created record must contain a complete profile before it can appear publicly.
     // Existing curated profiles can continue using their reviewed static biography.
     if (!fallback && !isCompleteProfile(profileData)) return [];
