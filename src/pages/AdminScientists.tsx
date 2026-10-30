@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import SEO from "@/components/SEO";
 import { useToast } from "@/hooks/use-toast";
+import { parseScientistJson, validateScientistProfile } from "@/lib/scientistProfileValidation";
 
 type Region = "india" | "world";
 type Status = "draft" | "published" | "archived";
@@ -40,7 +41,6 @@ const emptyEditor: EditorState = {
   }, null, 2),
   publications: "[]", archives: "[]",
 };
-import { parseScientistJson, validateScientistProfile } from "@/lib/scientistProfileValidation";
 function toEditor(row?: ScientistRow, publications: PublicationRow[] = [], archives: ArchiveRow[] = []): EditorState {
   if (!row) return emptyEditor;
   return {
@@ -157,18 +157,20 @@ export default function AdminScientists() {
         const existingIds = new Set((existingRows.data ?? []).map((item) => item.id));
         const keptIds = new Set(items.flatMap((item) => item.id ? [item.id] : []));
         const removedIds = [...existingIds].filter((id) => !keptIds.has(id));
+        if (items.length) {
+          const rows = items.map((item, index) => ({ ...item, scientist_id: scientistId, sort_order: item.sort_order ?? index }));
+          const upsert = table === "scientist_publications"
+            ? await supabase.from("scientist_publications").upsert(rows as never[])
+            : await supabase.from("scientist_archives").upsert(rows as never[]);
+          if (upsert.error) throw upsert.error;
+        }
+        // Remove omitted rows only after every submitted row has been saved successfully.
         if (removedIds.length) {
           const deletion = table === "scientist_publications"
             ? await supabase.from("scientist_publications").delete().eq("scientist_id", scientistId).in("id", removedIds)
             : await supabase.from("scientist_archives").delete().eq("scientist_id", scientistId).in("id", removedIds);
           if (deletion.error) throw deletion.error;
         }
-        if (!items.length) return;
-        const rows = items.map((item, index) => ({ ...item, scientist_id: scientistId, sort_order: item.sort_order ?? index }));
-        const upsert = table === "scientist_publications"
-          ? await supabase.from("scientist_publications").upsert(rows as never[])
-          : await supabase.from("scientist_archives").upsert(rows as never[]);
-        if (upsert.error) throw upsert.error;
       };
 
       await syncChildren("scientist_publications", publications);
