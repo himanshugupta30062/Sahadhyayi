@@ -20,6 +20,7 @@ import { fetchScientistProfiles } from "@/lib/scientistsRepository";
 
 const completeProfile = {
   initials: "NEW",
+  birthplace: "India",
   headline: "A scientist's story",
   birthplace: "India",
   knownFor: ["Research"],
