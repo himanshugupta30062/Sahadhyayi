@@ -169,7 +169,7 @@ export default function AdminScientists() {
       const payload = {
         slug, name: editor.name.trim(), region: editor.region, discipline: editor.discipline.trim(),
         lifespan: editor.lifespan.trim(), summary: editor.summary.trim(), status: editor.status,
-        sort_order: Number.parseInt(editor.sort_order, 10) || 0, profile_data: profileData, updated_at: new Date().toISOString(),
+        sort_order: Number.parseInt(editor.sort_order, 10) || 0, profile_data: profileData as never, updated_at: new Date().toISOString(),
       };
       const existing = selectedId !== "new" ? scientists.find((item) => item.id === selectedId) : undefined;
       const { data: saved, error } = await supabase.from("scientists")
@@ -178,7 +178,7 @@ export default function AdminScientists() {
       if (error) throw error;
       const scientistId = saved.id;
 
-      const syncChildren = async <T extends { id?: string; sort_order?: number }>(
+      const syncChildren = async <T extends { id?: string; sort_order?: number },>(
         table: "scientist_publications" | "scientist_archives",
         items: T[],
       ) => {
