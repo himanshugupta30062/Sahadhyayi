@@ -25,6 +25,14 @@ export interface ScientistArchive {
   note: string;
 }
 
+export interface ScientistPortrait {
+  imageUrl: string;
+  alt: string;
+  credit: string;
+  rights: string;
+  sourceUrl: string;
+}
+
 export interface ScientistMilestone {
   year: string;
   title: string;
@@ -47,6 +55,7 @@ export interface ScientistProfile {
   milestones: ScientistMilestone[];
   publications?: ScientistPublication[];
   archives?: ScientistArchive[];
+  portrait?: ScientistPortrait;
   legacy: string;
   sources: ScientistSource[];
 }
@@ -133,6 +142,13 @@ export const scientists: ScientistProfile[] = [
       { year: '1954', title: 'Bharat Ratna', description: 'Received India’s highest civilian award.' }
     ],
     legacy: 'Raman spectroscopy is used across chemistry, materials science, medicine and other fields. The discovery remains one of the most influential contributions to experimental physics made in India.',
+    portrait: {
+      imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Sir_CV_Raman.JPG',
+      alt: 'Archival portrait of C. V. Raman, photographed in 1930',
+      credit: 'Nobel Foundation · from Nobel Lectures, Physics 1922–1941',
+      rights: 'Public domain (as documented on Wikimedia Commons)',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Sir_CV_Raman.JPG'
+    },
     publications: [
       {
         title: 'A New Type of Secondary Radiation',
@@ -205,6 +221,13 @@ export const scientists: ScientistProfile[] = [
       { year: '1974', title: 'Died in Kolkata', description: 'His name continues to be used across modern particle physics.' }
     ],
     legacy: 'The word “boson” carries Bose’s name throughout modern physics. Bose–Einstein statistics helps describe particles that can share the same quantum state and underpins research into phenomena such as Bose–Einstein condensation.',
+    portrait: {
+      imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Satyendra-nath-bose.jpg',
+      alt: 'Historical portrait of Satyendra Nath Bose, circa 1915',
+      credit: 'Unknown photographer · courtesy of Falguni Sarkar / The S. N. Bose Project',
+      rights: 'Marked public domain in India on Wikimedia Commons; verify territorial status before reuse elsewhere',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Satyendra-nath-bose.jpg'
+    },
     publications: [
       {
         title: 'Plancks Gesetz und Lichtquantenhypothese',
@@ -277,6 +300,13 @@ export const scientists: ScientistProfile[] = [
       { year: '1920', title: 'Died in India', description: 'Died on 26 April, aged 32.' }
     ],
     legacy: 'Ramanujan’s notebooks remain a rich source of mathematical research. His work is studied across number theory and mathematical analysis, and his life continues to inspire people who discover mathematics outside conventional paths.',
+    portrait: {
+      imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Srinivasa_Ramanujan-_Add._MS_a947.jpg',
+      alt: 'Copy of Srinivasa Ramanujan’s passport photograph, dated 1913',
+      credit: 'Unknown photographer · archival copy held by Trinity College Library, Cambridge',
+      rights: 'Marked public domain on Wikimedia Commons; Trinity College archive record identifies the source item',
+      sourceUrl: 'https://archives.trin.cam.ac.uk/index.php/copy-passport-photograph-of-ramanujan'
+    },
     publications: [
       {
         title: 'Highly Composite Numbers',
