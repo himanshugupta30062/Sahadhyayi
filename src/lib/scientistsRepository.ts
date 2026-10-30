@@ -4,15 +4,10 @@ import {
   scientists as fallbackScientists,
   type ScientistProfile,
 } from '@/data/scientists';
+import { isCompleteScientistProfile } from '@/lib/scientistProfileValidation';
 
 type ProfileData = Partial<ScientistProfile> & Record<string, unknown>;
 
-function isCompleteProfile(profile: ProfileData): boolean {
-  const requiredArrays = ['knownFor', 'lifeStory', 'work', 'milestones', 'sources'];
-  return requiredArrays.every((key) => Array.isArray(profile[key]) && (profile[key] as unknown[]).length > 0)
-    && typeof profile.headline === 'string' && Boolean(profile.headline.trim())
-    && typeof profile.legacy === 'string' && Boolean(profile.legacy.trim());
-}
 
 export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
   const { data, error } = await supabase
@@ -46,7 +41,7 @@ export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
     const profileData = (row.profile_data ?? {}) as unknown as ProfileData;
     // A newly created record must contain a complete profile before it can appear publicly.
     // Existing curated profiles can continue using their reviewed static biography.
-    if (!fallback && !isCompleteProfile(profileData)) return [];
+    if (!fallback && !isCompleteScientistProfile(profileData)) return [];
 
     const publications = (publicationResult.data ?? [])
       .filter((item) => item.scientist_id === row.id)
