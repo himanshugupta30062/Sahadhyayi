@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,8 @@ function parseArray(value: string): StringRecord[] {
 function Field({ label, value, onChange, multiline = false, placeholder }: {
   label: string; value: string; onChange: (value: string) => void; multiline?: boolean; placeholder?: string;
 }) {
-  const id = `scientist-field-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const generatedId = useId();
+  const id = `scientist-field-${generatedId}`;
   return (
     <div className="min-w-0 space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
