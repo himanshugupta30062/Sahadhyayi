@@ -29,7 +29,9 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Install matching Vitest coverage provider
-        run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @vitest/coverage-v8@1.6.1
+        run: |
+          VITEST_VERSION=$(node -p "require('./node_modules/vitest/package.json').version")
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund "@vitest/coverage-v8@$VITEST_VERSION"
 
       - name: Run tests and collect coverage
         id: tests
