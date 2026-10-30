@@ -7,10 +7,11 @@ import { useFriends } from '@/hooks/useFriends';
 import { BookFilterDropdown } from '@/components/social/BookFilterDropdown';
 import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
 import { MAPPLS_API_KEY } from '@/config/mappls';
+import { useAuth } from '@/contexts/authHelpers';
 
 interface ReaderLocation {
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   user_id: string;
   profiles?: {
     full_name: string | null;
@@ -34,25 +35,56 @@ const MapPage = () => {
   const [readersError, setReadersError] = useState<string | null>(null);
   const [selectedBook, setSelectedBook] = useState<BookOption | null>(null);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationSharingEnabled, setLocationSharingEnabled] = useState(false);
+  const [locationConsentChecked, setLocationConsentChecked] = useState(false);
+  const { user } = useAuth();
 
   const friendsQuery = useFriends();
   const friends = friendsQuery.data || [];
 
+  // Use only the location the signed-in user has already chosen to share.
+  // Opening this page must never trigger a new GPS permission prompt.
   useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => setCurrentLocation({ lat: coords.latitude, lng: coords.longitude }),
-      () => {
-        // Location is optional; the map falls back to a country-level view.
-      },
-      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
-    );
-  }, []);
+    let active = true;
+    const loadSharingState = async () => {
+      setLocationConsentChecked(false);
+      setLocationSharingEnabled(false);
+      setCurrentLocation(null);
+      if (!user?.id) {
+        setLocationConsentChecked(true);
+        return;
+      }
+      const [profileResult, consentResult] = await Promise.all([
+        supabase.from('profiles').select('location_lat, location_lng, location_sharing').eq('id', user.id).maybeSingle(),
+        supabase.rpc('has_location_consent', { user_uuid: user.id }),
+      ]);
+      if (!active) return;
+      const enabled = !profileResult.error &&
+        !consentResult.error &&
+        consentResult.data === true &&
+        profileResult.data?.location_sharing === true &&
+        profileResult.data.location_lat != null &&
+        profileResult.data.location_lng != null;
+      setLocationSharingEnabled(enabled);
+      if (enabled) {
+        setCurrentLocation({
+          lat: Number(profileResult.data!.location_lat),
+          lng: Number(profileResult.data!.location_lng),
+        });
+      }
+      setLocationConsentChecked(true);
+    };
+    void loadSharingState().catch((error) => {
+      console.error('Failed to check saved location-sharing state', { errorName: error instanceof Error ? error.name : 'UnknownError' });
+      if (active) setLocationConsentChecked(true);
+    });
+    return () => { active = false; };
+  }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
 
-    if (!selectedBook?.id) {
+    if (!selectedBook?.id || !locationSharingEnabled) {
       setReaders([]);
       setReadersError(null);
       setReadersLoading(false);
@@ -81,8 +113,8 @@ const MapPage = () => {
         // before these readers can be pinned to a map.
         const readerList = (data || []).map((reader: any) => ({
           user_id: reader.reader_id,
-          latitude: Number(reader.approximate_latitude ?? 0),
-          longitude: Number(reader.approximate_longitude ?? 0),
+          latitude: reader.approximate_latitude == null ? null : Number(reader.approximate_latitude),
+          longitude: reader.approximate_longitude == null ? null : Number(reader.approximate_longitude),
           profiles: {
             full_name: reader.reader_name ?? null,
             username: (reader.reader_name || 'reader').toLowerCase().replace(/\\s+/g, '_'),
@@ -92,7 +124,7 @@ const MapPage = () => {
         }));
         setReaders(readerList);
         if (readerList.length === 0) {
-          setReadersError('No nearby readers were returned for this book yet.');
+          setReadersError(null);
         }
       } catch (error) {
         if (cancelled) return;
@@ -108,16 +140,16 @@ const MapPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedBook?.id]);
+  }, [selectedBook?.id, locationSharingEnabled]);
 
   const readerPoints = useMemo<MapplsPoint[]>(
     () =>
       readers
-        .filter((reader) => reader.latitude !== 0 || reader.longitude !== 0)
+        .filter((reader) => reader.latitude != null && reader.longitude != null && Number.isFinite(reader.latitude) && Number.isFinite(reader.longitude) && !(reader.latitude === 0 && reader.longitude === 0))
         .map((reader) => ({
           id: reader.user_id,
-          lat: reader.latitude,
-          lng: reader.longitude,
+          lat: reader.latitude!,
+          lng: reader.longitude!,
           title: reader.profiles?.full_name || reader.profiles?.username || 'Reader',
           description: reader.distance == null ? 'Reading this book' : `${reader.distance.toFixed(1)} km away`,
         })),
@@ -181,6 +213,9 @@ const MapPage = () => {
                 </CardContent>
               </Card>
 
+              {!user && <p className="text-sm text-muted-foreground" role="status">Sign in to discover readers near you.</p>}
+              {user && !locationConsentChecked && <p className="text-sm text-muted-foreground" role="status">Checking your saved location-sharing settings…</p>}
+              {user && locationConsentChecked && !locationSharingEnabled && <p className="text-sm text-muted-foreground" role="status">Enable location sharing in your social settings to discover nearby readers. Your location is not requested automatically.</p>}
               {readersLoading && (
                 <p className="text-sm text-muted-foreground" role="status">Finding readers for this book…</p>
               )}
@@ -191,10 +226,10 @@ const MapPage = () => {
                 apiKey={MAPPLS_API_KEY}
                 points={readerPoints}
                 center={currentLocation}
-                emptyMessage={selectedBook ? 'No privacy-safe reader map locations are available for this book yet.' : 'Choose a book to discover readers.'}
+                emptyMessage={!selectedBook ? 'Choose a book to discover readers.' : !locationSharingEnabled ? 'Enable location sharing to discover nearby readers.' : 'No nearby friends are sharing this book location yet.'}
               />
               <p className="text-xs text-muted-foreground">
-                Reader pins appear only when the backend supplies privacy-preserving approximate coordinates. Exact reader coordinates are not displayed.
+                This map shows friends who share the selected book and have both enabled location sharing. Pins use approximate coordinates; exact reader coordinates are never displayed.
               </p>
             </TabsContent>
 
