@@ -164,6 +164,8 @@ const Navigation = () => {
     return location.pathname === href || location.pathname.startsWith(`${href}/`);
   };
 
+  if (location.pathname.startsWith("/admin")) return null;
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
