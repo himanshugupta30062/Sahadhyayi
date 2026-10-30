@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { verifyAdminStatus } from "@/utils/catalog/duplicateResolution";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { BookOpen, ChevronDown, FileText, LogOut, ShieldCheck, User } from "lucide-react";
+import { BookOpen, ChevronDown, FileText, LayoutDashboard, LogOut, ShieldCheck, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,6 +86,12 @@ export default function AuthenticatedUserDropdown({
         {isAdmin === true && (
           <>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/admin" className="flex items-center cursor-pointer">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Admin Workspace
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/admin/roles" className="flex items-center cursor-pointer">
                 <ShieldCheck className="mr-2 h-4 w-4" />
