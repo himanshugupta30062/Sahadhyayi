@@ -33,12 +33,19 @@ describe("Scientist profile validation", () => {
     expect(() => validateScientistProfile({ ...validProfile, lifeStory: [] })).toThrow(/lifeStory/);
     expect(() => validateScientistProfile({ ...validProfile, work: [] })).toThrow(/work/);
     expect(() => validateScientistProfile({ ...validProfile, milestones: [] })).toThrow(/milestone/);
-    expect(() => validateScientistProfile({ ...validProfile, sources: [] })).toThrow(/cited source/);
+    expect(() => validateScientistProfile({ ...validProfile, sources: [] })).toThrow(/source/);
   });
 
   it("requires a headline and a legacy summary", () => {
     expect(() => validateScientistProfile({ ...validProfile, headline: " " })).toThrow(/headline/);
     expect(() => validateScientistProfile({ ...validProfile, legacy: "" })).toThrow(/legacy/);
+  });
+
+  it("rejects malformed nested work and citation records", () => {
+    expect(() => validateScientistProfile({ ...validProfile, work: [{ title: "No description" }] })).toThrow(/work item/);
+    expect(() => validateScientistProfile({ ...validProfile, sources: [{ label: "Source", publisher: "Archive", url: "javascript:alert(1)" }] })).toThrow(/http or https/);
+    expect(() => validateScientistProfile({ ...validProfile, initials: "" })).toThrow(/initials/);
+    expect(() => validateScientistProfile({ ...validProfile, birthplace: "" })).toThrow(/birthplace/);
   });
 
   it("parses valid JSON and provides a useful error for malformed JSON", () => {
