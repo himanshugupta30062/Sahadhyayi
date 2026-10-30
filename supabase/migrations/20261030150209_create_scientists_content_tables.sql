@@ -78,3 +78,4 @@ CREATE POLICY "Admins can delete scientist archives" ON public.scientist_archive
 
 GRANT SELECT ON public.scientists, public.scientist_publications, public.scientist_archives TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.scientists, public.scientist_publications, public.scientist_archives TO authenticated;
+REVOKE INSERT, UPDATE, DELETE ON public.scientists, public.scientist_publications, public.scientist_archives FROM anon;
