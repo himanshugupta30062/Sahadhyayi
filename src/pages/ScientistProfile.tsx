@@ -50,10 +50,18 @@ const ScientistProfile = () => {
                 <p className="mt-5 max-w-2xl font-serif text-xl leading-relaxed text-[#E9D7B5] sm:text-2xl">{scientist.headline}</p>
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">{scientist.summary}</p>
               </div>
-              <div className="flex aspect-square w-full max-w-[220px] items-center justify-center justify-self-start rounded-[2rem] border border-white/15 bg-white/[0.06] font-serif text-6xl font-bold text-white/80 shadow-2xl backdrop-blur-sm lg:justify-self-end">
-                {scientist.initials}
-              </div>
-            </div>
+              <figure className="w-full max-w-[220px] justify-self-start lg:justify-self-end">
+                <div className="flex aspect-square items-center justify-center overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.06] shadow-2xl backdrop-blur-sm">
+                  {scientist.portrait ? <img src={scientist.portrait.imageUrl} alt={scientist.portrait.alt} className="h-full w-full object-cover" width="440" height="440" fetchPriority="high" /> : <span className="font-serif text-6xl font-bold text-white/80">{scientist.initials}</span>}
+                </div>
+                {scientist.portrait ? (
+                  <figcaption className="mt-3 space-y-1 text-[10px] leading-4 text-white/60">
+                    <span className="block">{scientist.portrait.credit}</span>
+                    <span className="block">{scientist.portrait.rights}</span>
+                    <a href={scientist.portrait.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-[#E4C17B] hover:underline">Image source <ExternalLink className="h-3 w-3" /></a>
+                  </figcaption>
+                ) : <figcaption className="mt-3 text-center text-[10px] leading-4 text-white/55">Portrait not yet verified for publication</figcaption>}
+              </figure>           </div>
           </div>
         </section>
 
