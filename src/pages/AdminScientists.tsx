@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import SEO from "@/components/SEO";
 import { useToast } from "@/hooks/use-toast";
 import { parseScientistJson, validateScientistProfile } from "@/lib/scientistProfileValidation";
+import { getScientistBySlug } from "@/data/scientists";
 
 type Region = "india" | "world";
 type Status = "draft" | "published" | "archived";
@@ -43,11 +44,28 @@ const emptyEditor: EditorState = {
 };
 function toEditor(row?: ScientistRow, publications: PublicationRow[] = [], archives: ArchiveRow[] = []): EditorState {
   if (!row) return emptyEditor;
+  const curated = getScientistBySlug(row.slug);
+  const profileData = row.profile_data && Object.keys(row.profile_data).length
+    ? row.profile_data
+    : curated
+      ? {
+          initials: curated.initials,
+          headline: curated.headline,
+          birthplace: curated.birthplace,
+          knownFor: curated.knownFor,
+          lifeStory: curated.lifeStory,
+          work: curated.work,
+          milestones: curated.milestones,
+          legacy: curated.legacy,
+          sources: curated.sources,
+          portrait: curated.portrait ?? null,
+        }
+      : {};
   return {
     slug: row.slug, name: row.name, region: row.region, discipline: row.discipline,
     lifespan: row.lifespan, summary: row.summary, status: row.status,
     sort_order: String(row.sort_order),
-    profileData: JSON.stringify(row.profile_data ?? {}, null, 2),
+    profileData: JSON.stringify(profileData, null, 2),
     publications: JSON.stringify(publications.map(({ scientist_id: _scientistId, ...item }) => item), null, 2),
     archives: JSON.stringify(archives.map(({ scientist_id: _scientistId, ...item }) => item), null, 2),
   };
