@@ -6,6 +6,7 @@ import { verifyAdminStatus } from '@/utils/catalog/duplicateResolution';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AdminLayout from '@/layouts/AdminLayout';
 
 interface AdminRouteProps {
   children: ReactNode;
@@ -82,7 +83,7 @@ export const AdminRoute: FC<AdminRouteProps> = memo(({ children }) => {
   }
 
   // 4. Authorized administrator
-  return <>{children}</>;
+  return <AdminLayout>{children}</AdminLayout>;
 });
 
 AdminRoute.displayName = 'AdminRoute';
