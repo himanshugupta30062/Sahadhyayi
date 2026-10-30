@@ -40,8 +40,7 @@ const emptyEditor: EditorState = {
   }, null, 2),
   publications: "[]", archives: "[]",
 };
-const PROFILE_ARRAYS = ["knownFor", "lifeStory", "work", "milestones", "sources"] as const;
-
+import { parseScientistJson, validateScientistProfile } from "@/lib/scientistProfileValidation";
 function toEditor(row?: ScientistRow, publications: PublicationRow[] = [], archives: ArchiveRow[] = []): EditorState {
   if (!row) return emptyEditor;
   return {
@@ -52,37 +51,6 @@ function toEditor(row?: ScientistRow, publications: PublicationRow[] = [], archi
     publications: JSON.stringify(publications.map(({ scientist_id: _scientistId, ...item }) => item), null, 2),
     archives: JSON.stringify(archives.map(({ scientist_id: _scientistId, ...item }) => item), null, 2),
   };
-}
-
-function parseJson<T>(value: string, label: string): T {
-  try { return JSON.parse(value) as T; }
-  catch { throw new Error(label + " must contain valid JSON."); }
-}
-
-function validateProfile(profile: Record<string, unknown>) {
-  const missing = PROFILE_ARRAYS.filter((key) => !Array.isArray(profile[key]));
-  if (missing.length) throw new Error("Profile details need valid arrays for: " + missing.join(", ") + ".");
-  if (!Array.isArray(profile.knownFor) || profile.knownFor.length === 0) {
-    throw new Error("Add at least one item to knownFor before saving or publishing.");
-  }
-  if (!Array.isArray(profile.lifeStory) || profile.lifeStory.length === 0) {
-    throw new Error("Add at least one lifeStory paragraph before saving or publishing.");
-  }
-  if (!Array.isArray(profile.work) || profile.work.length === 0) {
-    throw new Error("Add at least one work item before saving or publishing.");
-  }
-  if (!Array.isArray(profile.milestones) || profile.milestones.length === 0) {
-    throw new Error("Add at least one milestone before saving or publishing.");
-  }
-  if (!Array.isArray(profile.sources) || profile.sources.length === 0) {
-    throw new Error("Add at least one cited source before saving or publishing.");
-  }
-  if (typeof profile.headline !== "string" || !profile.headline.trim()) {
-    throw new Error("A profile headline is required.");
-  }
-  if (typeof profile.legacy !== "string" || !profile.legacy.trim()) {
-    throw new Error("A legacy summary is required.");
-  }
 }
 
 export default function AdminScientists() {
@@ -150,10 +118,10 @@ export default function AdminScientists() {
       if (!editor.name.trim() || !editor.discipline.trim() || !editor.lifespan.trim() || !editor.summary.trim()) {
         throw new Error("Name, discipline, lifespan and summary are required.");
       }
-      const profileData = parseJson<Record<string, unknown>>(editor.profileData, "Profile data");
-      validateProfile(profileData);
-      const publications = parseJson<PublicationRow[]>(editor.publications, "Publications");
-      const archives = parseJson<ArchiveRow[]>(editor.archives, "Archives");
+      const profileData = parseScientistJson<Record<string, unknown>>(editor.profileData, "Profile data");
+      validateScientistProfile(profileData);
+      const publications = parseScientistJson<PublicationRow[]>(editor.publications, "Publications");
+      const archives = parseScientistJson<ArchiveRow[]>(editor.archives, "Archives");
       if (!Array.isArray(publications) || !Array.isArray(archives)) throw new Error("Publications and archives must be JSON arrays.");
       publications.forEach((item, index) => {
         if (!item.title || !item.year || !item.venue || !item.authors || !item.url || !["publisher", "open", "catalogue"].includes(item.access)) {
