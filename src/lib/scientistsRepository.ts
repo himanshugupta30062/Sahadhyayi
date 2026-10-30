@@ -5,6 +5,15 @@ import {
   type ScientistProfile,
 } from '@/data/scientists';
 
+type ProfileData = Partial<ScientistProfile> & Record<string, unknown>;
+
+function isCompleteProfile(profile: ProfileData): boolean {
+  const requiredArrays = ['knownFor', 'lifeStory', 'work', 'milestones', 'sources'];
+  return requiredArrays.every((key) => Array.isArray(profile[key]) && (profile[key] as unknown[]).length > 0)
+    && typeof profile.headline === 'string' && Boolean(profile.headline.trim())
+    && typeof profile.legacy === 'string' && Boolean(profile.legacy.trim());
+}
+
 export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
   const { data, error } = await supabase
     .from('scientists')
@@ -15,10 +24,10 @@ export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
 
   // Keep the curated static collection available if the Data API is temporarily unavailable
   // or the database has not yet been populated in a preview environment.
-  if (error || !data?.length) return fallbackScientists;
+  if (error) return fallbackScientists;
+  if (!data?.length) return [];
 
-  const rows = data;
-  const ids = rows.map((row) => row.id);
+  const ids = data.map((row) => row.id);
   const [publicationResult, archiveResult] = await Promise.all([
     supabase
       .from('scientist_publications')
@@ -32,9 +41,13 @@ export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
       .order('sort_order', { ascending: true }),
   ]);
 
-  return rows.map((row) => {
+  return data.flatMap((row) => {
     const fallback = getScientistBySlug(row.slug);
-    const profileData = (row.profile_data ?? {}) as unknown as Partial<ScientistProfile>;
+    const profileData = (row.profile_data ?? {}) as ProfileData;
+    // A newly created record must contain a complete profile before it can appear publicly.
+    // Existing curated profiles can continue using their reviewed static biography.
+    if (!fallback && !isCompleteProfile(profileData)) return [];
+
     const publications = (publicationResult.data ?? [])
       .filter((item) => item.scientist_id === row.id)
       .map(({ title, year, venue, authors, doi, url, access, note }) => ({
@@ -46,8 +59,7 @@ export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
       .map(({ title, institution, url, material, note }) => ({
         title, institution, url, material, note,
       }));
-
-    return {
+    const merged = {
       ...fallback,
       ...profileData,
       slug: row.slug,
@@ -56,9 +68,11 @@ export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
       discipline: row.discipline,
       lifespan: row.lifespan,
       summary: row.summary,
-      publications: publications.length ? publications : profileData.publications ?? fallback?.publications,
-      archives: archives.length ? archives : profileData.archives ?? fallback?.archives,
+      // A successful empty query means the admin intentionally removed all rows.
+      publications: publicationResult.error ? fallback?.publications ?? [] : publications,
+      archives: archiveResult.error ? fallback?.archives ?? [] : archives,
     } as ScientistProfile;
+    return [merged];
   });
 }
 
