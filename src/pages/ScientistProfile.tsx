@@ -80,6 +80,47 @@ const ScientistProfile = () => {
                 </div>
               </section>
 
+              {scientist.publications && scientist.publications.length > 0 && (
+                <section id="original-papers" className="border-t border-[#E5DED2] pt-8 dark:border-[#29332D]">
+                  <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8F681C] dark:text-[#D5B16D]"><ScrollText className="h-4 w-4" /> Original research & publications</div>
+                  <p className="mb-5 max-w-2xl text-sm leading-6 text-[#687067] dark:text-[#A5ADA6]">Primary publications are separated from biographies and general references. Access labels describe what the linked source currently provides.</p>
+                  <div className="space-y-3">
+                    {scientist.publications.map((paper) => (
+                      <article key={paper.title} className="rounded-2xl border border-[#E5DED2] bg-white p-5 dark:border-[#29332D] dark:bg-[#111614]">
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#8F681C] dark:text-[#D5B16D]">
+                          <span>{paper.year}</span><span aria-hidden="true">·</span><span>{paper.access === 'open' ? 'Open text' : paper.access === 'catalogue' ? 'Catalogue record' : 'Publisher record'}</span>
+                        </div>
+                        <h2 className="mt-2 font-serif text-lg font-bold text-[#202820] dark:text-[#F3F0E7]">{paper.title}</h2>
+                        <p className="mt-1 text-xs leading-5 text-[#788076] dark:text-[#A5ADA6]">{paper.authors} · {paper.venue}</p>
+                        <p className="mt-3 text-sm leading-6 text-[#687067] dark:text-[#A5ADA6]">{paper.note}</p>
+                        <a href={paper.url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">
+                          {paper.access === 'open' ? 'Read available text' : paper.access === 'catalogue' ? 'View catalogue record' : 'Open publisher record'}
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                        {paper.doi && <p className="mt-2 break-all text-[11px] text-[#899187]">DOI: {paper.doi}</p>}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {scientist.archives && scientist.archives.length > 0 && (
+                <section id="archives" className="border-t border-[#E5DED2] pt-8 dark:border-[#29332D]">
+                  <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8F681C] dark:text-[#D5B16D]"><BookOpen className="h-4 w-4" /> Archives & historical records</div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {scientist.archives.map((record) => (
+                      <a key={record.url} href={record.url} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border border-[#E5DED2] bg-white p-5 transition hover:border-[#A7B4A1] hover:shadow-sm dark:border-[#29332D] dark:bg-[#111614]">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8F681C] dark:text-[#D5B16D]">{record.material}</span>
+                        <span className="mt-2 block font-serif text-base font-bold text-[#202820] group-hover:text-[#1C442D] dark:text-[#F3F0E7] dark:group-hover:text-[#D5B16D]">{record.title}</span>
+                        <span className="mt-1 block text-xs text-[#788076] dark:text-[#A5ADA6]">{record.institution}</span>
+                        <span className="mt-3 block text-sm leading-6 text-[#687067] dark:text-[#A5ADA6]">{record.note}</span>
+                        <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">Explore record <ExternalLink className="h-3 w-3" /></span>
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               <section id="timeline" className="border-t border-[#E5DED2] pt-8 dark:border-[#29332D]">
                 <div className="mb-6 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8F681C] dark:text-[#D5B16D]"><ScrollText className="h-4 w-4" /> Life & work timeline</div>
                 <ol className="relative ml-2 space-y-6 border-l border-[#D8CDBB] pl-6 dark:border-[#465448]">
@@ -132,6 +173,8 @@ const ScientistProfile = () => {
                 <nav className="mt-3 space-y-2 text-sm">
                   <a href="#life-story" className="block text-[#687067] hover:text-[#1C442D] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D]">Life story</a>
                   <a href="#scientific-work" className="block text-[#687067] hover:text-[#1C442D] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D]">Discoveries & work</a>
+                  {scientist.publications?.length ? <a href="#original-papers" className="block text-[#687067] hover:text-[#1C442D] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D]">Original papers</a> : null}
+                  {scientist.archives?.length ? <a href="#archives" className="block text-[#687067] hover:text-[#1C442D] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D]">Archives</a> : null}
                   <a href="#timeline" className="block text-[#687067] hover:text-[#1C442D] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D]">Timeline</a>
                   <a href="#legacy" className="block text-[#687067] hover:text-[#1C442D] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D]">Legacy</a>
                   <a href="#sources" className="block text-[#687067] hover:text-[#1C442D] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D]">Sources</a>
