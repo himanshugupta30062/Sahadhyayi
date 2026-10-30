@@ -20,11 +20,11 @@ type ScientistRow = {
   sort_order: number;
 };
 type PublicationRow = {
-  id?: string; title: string; year: string; venue: string; authors: string;
+  id?: string; scientist_id?: string; title: string; year: string; venue: string; authors: string;
   doi?: string; url: string; access: "publisher" | "open" | "catalogue"; note: string; sort_order?: number;
 };
 type ArchiveRow = {
-  id?: string; title: string; institution: string; url: string; material: string;
+  id?: string; scientist_id?: string; title: string; institution: string; url: string; material: string;
   note: string; sort_order?: number;
 };
 type EditorState = {
