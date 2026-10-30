@@ -22,7 +22,6 @@ const completeProfile = {
   initials: "NEW",
   birthplace: "India",
   headline: "A scientist's story",
-  birthplace: "India",
   knownFor: ["Research"],
   lifeStory: ["Biography paragraph"],
   work: [{ title: "Work", description: "Contribution" }],
