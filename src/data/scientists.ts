@@ -6,6 +6,25 @@ export interface ScientistSource {
   publisher: string;
 }
 
+export interface ScientistPublication {
+  title: string;
+  year: string;
+  venue: string;
+  authors: string;
+  doi?: string;
+  url: string;
+  access: 'publisher' | 'open' | 'catalogue';
+  note: string;
+}
+
+export interface ScientistArchive {
+  title: string;
+  institution: string;
+  url: string;
+  material: string;
+  note: string;
+}
+
 export interface ScientistMilestone {
   year: string;
   title: string;
@@ -26,6 +45,8 @@ export interface ScientistProfile {
   lifeStory: string[];
   work: { title: string; description: string }[];
   milestones: ScientistMilestone[];
+  publications?: ScientistPublication[];
+  archives?: ScientistArchive[];
   legacy: string;
   sources: ScientistSource[];
 }
@@ -58,6 +79,27 @@ export const scientists: ScientistProfile[] = [
       { year: '2005', title: 'A lasting scientific legacy', description: 'Died on 18 June; the equation bearing his name remains part of relativistic cosmology.' }
     ],
     legacy: 'The Raychaudhuri equation is now a standard tool in general relativity. Its importance is a reminder that a carefully developed mathematical idea can shape major advances far beyond the setting in which it was first introduced.',
+    publications: [
+      {
+        title: 'Relativistic Cosmology. I',
+        year: '1955',
+        venue: 'Physical Review, 98(4), 1123–1126',
+        authors: 'Amalkumar Raychaudhuri',
+        doi: '10.1103/PhysRev.98.1123',
+        url: 'https://journals.aps.org/pr/abstract/10.1103/PhysRev.98.1123',
+        access: 'publisher',
+        note: 'Original research paper introducing the cosmological analysis associated with Raychaudhuri. The publisher page provides the abstract and bibliographic record; full text may require access.'
+      }
+    ],
+    archives: [
+      {
+        title: 'Deceased Fellow record: Professor A. K. Raychaudhuri',
+        institution: 'Indian National Science Academy',
+        url: 'https://insaindia.res.in/07062023_no.php?id=N87-0976',
+        material: 'Institutional biographical record',
+        note: 'An institutional record for biographical verification, not an original research manuscript.'
+      }
+    ],
     sources: [
       { label: 'Deceased Fellow: Professor A. K. Raychaudhuri', publisher: 'Indian National Science Academy', url: 'https://insaindia.res.in/07062023_no.php?id=N87-0976' },
       { label: 'Amal Kumar Raychaudhuri', publisher: 'India Science · Department of Science and Technology', url: 'https://indiascience.dst.gov.in/videos/amal-kumar-raychaudhuri-e-1' }
@@ -91,6 +133,45 @@ export const scientists: ScientistProfile[] = [
       { year: '1954', title: 'Bharat Ratna', description: 'Received India’s highest civilian award.' }
     ],
     legacy: 'Raman spectroscopy is used across chemistry, materials science, medicine and other fields. The discovery remains one of the most influential contributions to experimental physics made in India.',
+    publications: [
+      {
+        title: 'A New Type of Secondary Radiation',
+        year: '1928',
+        venue: 'Nature, 121, 501–502',
+        authors: 'C. V. Raman and K. S. Krishnan',
+        doi: '10.1038/121501c0',
+        url: 'https://www.nature.com/articles/121501c0',
+        access: 'publisher',
+        note: 'Contemporary 1928 communication reporting the modified-frequency component of scattered light; the Nature page provides the original article record.'
+      },
+      {
+        title: 'A New Radiation',
+        year: '1928',
+        venue: 'Indian Journal of Physics, 2, 387–398',
+        authors: 'C. V. Raman',
+        url: 'https://repository.ias.ac.in/70648/',
+        access: 'open',
+        note: 'Repository record with a publisher-version PDF preview. Rights remain with the Indian Association for the Cultivation of Science.'
+      },
+      {
+        title: 'A New Class of Spectra Due to Secondary Radiation. Part I',
+        year: '1928',
+        venue: 'Indian Journal of Physics, 2, 399–419',
+        authors: 'C. V. Raman and K. S. Krishnan',
+        url: 'https://repository.ias.ac.in/70550/',
+        access: 'catalogue',
+        note: 'Institutional repository catalogue record; the repository notes that full text is not available there.'
+      }
+    ],
+    archives: [
+      {
+        title: 'Publications of C. V. Raman — 1928 records',
+        institution: 'Indian Academy of Sciences Repository',
+        url: 'https://repository.ias.ac.in/view/year/1928.html',
+        material: 'Publication catalogue',
+        note: 'A year-filtered institutional bibliography listing multiple 1928 papers by Raman and collaborators.'
+      }
+    ],
     sources: [
       { label: 'C. V. Raman — Biographical', publisher: 'Nobel Prize', url: 'https://www.nobelprize.org/prizes/physics/1930/raman/biographical/' },
       { label: 'The Raman Effect: International Historic Chemical Landmark', publisher: 'American Chemical Society', url: 'https://www.acs.org/education/whatischemistry/landmarks/ramaneffect.html' },
@@ -124,6 +205,43 @@ export const scientists: ScientistProfile[] = [
       { year: '1974', title: 'Died in Kolkata', description: 'His name continues to be used across modern particle physics.' }
     ],
     legacy: 'The word “boson” carries Bose’s name throughout modern physics. Bose–Einstein statistics helps describe particles that can share the same quantum state and underpins research into phenomena such as Bose–Einstein condensation.',
+    publications: [
+      {
+        title: 'Plancks Gesetz und Lichtquantenhypothese',
+        year: '1924',
+        venue: 'Zeitschrift für Physik, 26, 178–181',
+        authors: 'S. N. Bose',
+        doi: '10.1007/BF01327326',
+        url: 'https://doi.org/10.1007/BF01327326',
+        access: 'publisher',
+        note: 'The original German-language journal publication of Bose’s derivation. The surviving manuscript sent to Einstein is described by historical sources as lost; this is the published paper, not that manuscript.'
+      },
+      {
+        title: 'Collected Scientific Papers of S. N. Bose',
+        year: 'Collected edition',
+        venue: 'S. N. Bose National Centre for Basic Sciences',
+        authors: 'S. N. Bose',
+        url: 'https://www.bose.res.in/Prof.S.N.Bose-Archive/objects/Collected%20Scientific%20Papers.pdf',
+        access: 'open',
+        note: 'Institutional collected-papers PDF containing the published German text and other scientific works.'
+      }
+    ],
+    archives: [
+      {
+        title: 'Satyendra Nath Bose — archival biographical record',
+        institution: 'Indian Institute of Astrophysics Archives',
+        url: 'https://archives.iiap.res.in/index.php/bose-satyendra-nath',
+        material: 'Archival authority record and digitised photograph metadata',
+        note: 'An archival description with identity information and digital-object metadata.'
+      },
+      {
+        title: 'Bose–Einstein correspondence and quantum-history exhibit',
+        institution: 'Quantum History Wall',
+        url: 'https://www.quantum-history.de/',
+        material: 'Historical correspondence exhibit',
+        note: 'Describes Bose’s 1924 letter to Einstein and the publication history; it is an interpretive exhibit, not the original manuscript.'
+      }
+    ],
     sources: [
       { label: 'BoseStat@100: Centenary of Bose Statistics', publisher: 'S. N. Bose National Centre for Basic Sciences', url: 'https://www.bose.res.in/sevents/bosestat100/index.jsp' },
       { label: 'Satyendra Nath Bose', publisher: 'West Bengal Tourism', url: 'https://wbtourism.gov.in/legends-view-byId/63e0acbe50952a1a1b0e9609/SATYENDRA%20NATH%20BOSE%20%281894%20-%201974%29' }
@@ -159,6 +277,35 @@ export const scientists: ScientistProfile[] = [
       { year: '1920', title: 'Died in India', description: 'Died on 26 April, aged 32.' }
     ],
     legacy: 'Ramanujan’s notebooks remain a rich source of mathematical research. His work is studied across number theory and mathematical analysis, and his life continues to inspire people who discover mathematics outside conventional paths.',
+    publications: [
+      {
+        title: 'Highly Composite Numbers',
+        year: '1915',
+        venue: 'Proceedings of the London Mathematical Society, 2(14), 347–409',
+        authors: 'S. Ramanujan',
+        url: 'https://ramanujan.sirinudi.org/Volumes/published/ram15.pdf',
+        access: 'open',
+        note: 'Digitised copy of a major original paper, available through the Ramanujan research archive.'
+      },
+      {
+        title: 'Published papers of Srinivasa Ramanujan',
+        year: '1911–1920',
+        venue: 'Multiple mathematical journals',
+        authors: 'Srinivasa Ramanujan',
+        url: 'https://ramanujan.sirinudi.org/html/published_papers.html',
+        access: 'catalogue',
+        note: 'A bibliography of published papers with journal and page details; individual scans are linked where available.'
+      }
+    ],
+    archives: [
+      {
+        title: 'Letters from Srinivasa Ramanujan to G. H. Hardy',
+        institution: 'Trinity College, University of Cambridge Archives',
+        url: 'https://archives.trin.cam.ac.uk/index.php/informationobject/browse?levels=232&onlyMedia=1&query=Srinivasa+Ramanujan&sf_culture=en&sort=alphabetic&sortDir=asc&sq0=Srinivasa+Ramanujan&topLod=0',
+        material: 'Archival correspondence catalogue',
+        note: 'Catalogue records identify surviving correspondence and related manuscript collections; not every item is digitised.'
+      }
+    ],
     sources: [
       { label: 'Srinivasa Ramanujan (1887–1920)', publisher: 'MacTutor History of Mathematics · University of St Andrews', url: 'https://mathshistory.st-andrews.ac.uk/Biographies/Ramanujan/' },
       { label: 'Srinivasa Ramanujan', publisher: 'Explore Trinity · University of Cambridge', url: 'https://explore.trin.cam.ac.uk/assets/ramanujan/' }
