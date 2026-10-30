@@ -5,19 +5,6 @@ import {
   type ScientistProfile,
 } from '@/data/scientists';
 
-type ScientistRow = {
-  id: string;
-  slug: string;
-  name: string;
-  region: string;
-  discipline: string;
-  lifespan: string;
-  summary: string;
-  status: string;
-  profile_data: Partial<ScientistProfile>;
-  sort_order: number;
-};
-
 export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
   const { data, error } = await supabase
     .from('scientists')
@@ -30,7 +17,7 @@ export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
   // or the database has not yet been populated in a preview environment.
   if (error || !data?.length) return fallbackScientists;
 
-  const rows = data as ScientistRow[];
+  const rows = data;
   const ids = rows.map((row) => row.id);
   const [publicationResult, archiveResult] = await Promise.all([
     supabase
@@ -47,7 +34,7 @@ export async function fetchScientistProfiles(): Promise<ScientistProfile[]> {
 
   return rows.map((row) => {
     const fallback = getScientistBySlug(row.slug);
-    const profileData = row.profile_data ?? {};
+    const profileData = (row.profile_data ?? {}) as unknown as Partial<ScientistProfile>;
     const publications = (publicationResult.data ?? [])
       .filter((item) => item.scientist_id === row.id)
       .map(({ title, year, venue, authors, doi, url, access, note }) => ({
