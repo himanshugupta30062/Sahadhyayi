@@ -9,7 +9,9 @@ export function parseScientistJson<T>(value: string, label: string): T {
 }
 
 export function isCompleteScientistProfile(profile: Record<string, unknown>): boolean {
-  return REQUIRED_PROFILE_ARRAYS.every((key) =>
+  return typeof profile.initials === "string" && Boolean(profile.initials.trim())
+    && typeof profile.birthplace === "string" && Boolean(profile.birthplace.trim())
+    && REQUIRED_PROFILE_ARRAYS.every((key) =>
     Array.isArray(profile[key]) && (profile[key] as unknown[]).length > 0
   )
     && typeof profile.headline === "string" && Boolean(profile.headline.trim())
@@ -17,6 +19,8 @@ export function isCompleteScientistProfile(profile: Record<string, unknown>): bo
 }
 
 export function validateScientistProfile(profile: Record<string, unknown>): void {
+  if (typeof profile.initials !== "string" || !profile.initials.trim()) throw new Error("Scientist initials are required.");
+  if (typeof profile.birthplace !== "string" || !profile.birthplace.trim()) throw new Error("A birthplace is required.");
   const missing = REQUIRED_PROFILE_ARRAYS.filter((key) => !Array.isArray(profile[key]));
   if (missing.length) {
     throw new Error("Profile details need valid arrays for: " + missing.join(", ") + ".");
