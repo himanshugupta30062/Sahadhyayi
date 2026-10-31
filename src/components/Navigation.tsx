@@ -519,19 +519,27 @@ const Navigation = () => {
       >
         <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
           <div className="flex min-h-16 items-center gap-2 lg:gap-3">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen((current) => !current)}
-              aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
-              aria-expanded={isOpen}
-              aria-controls="site-navigation-drawer"
-              ref={menuButtonRef}
-              className="min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 text-foreground hover:bg-muted"
-            >
-              {isOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
-            </Button>
+            {!isMobile ? (
+              <SidebarTrigger
+                aria-label="Toggle left navigation"
+                title="Toggle left navigation"
+                className="min-h-11 min-w-11 h-11 w-11 shrink-0 rounded-lg text-foreground hover:bg-muted"
+              />
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen((current) => !current)}
+                aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={isOpen}
+                aria-controls="site-navigation-drawer"
+                ref={menuButtonRef}
+                className="min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 text-foreground hover:bg-muted"
+              >
+                {isOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
+              </Button>
+            )}
 
             <Link
               to={homeHref}
@@ -710,13 +718,6 @@ const Navigation = () => {
             )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-              {!isMobile && (
-                <SidebarTrigger
-                  aria-label="Open page navigation"
-                  title="Open page navigation"
-                  className="h-10 w-10 rounded-full border border-border/70 bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
-                />
-              )}
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
