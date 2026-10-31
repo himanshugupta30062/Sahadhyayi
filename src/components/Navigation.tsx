@@ -480,7 +480,7 @@ const Navigation = () => {
               <span className="whitespace-nowrap leading-none">Sahadhyayi</span>
             </Link>
 
-              {!isMobile && user && (
+              {!isMobile && (
               <>
                 <nav
                 aria-label="Main navigation"
@@ -499,11 +499,14 @@ const Navigation = () => {
                   {homeLabel}
                 </Link>
 
-                {[
-                  { key: "library", label: "Library", section: NAVIGATION_SECTIONS[0], tourTarget: "library" },
-                  { key: "articles", label: "Articles", section: NAVIGATION_SECTIONS[1], tourTarget: "articles" },
-                  { key: "social", label: "Social Media", section: NAVIGATION_SECTIONS[2], tourTarget: "community" },
-                ].map(({ key, label, section, tourTarget }) => (
+                {(user ? NAVIGATION_SECTIONS : PUBLIC_NAVIGATION_SECTIONS.filter((section) => section.name !== "Authors"))
+                  .map((section) => ({
+                    key: section.name.toLowerCase().replace(/\s+/g, "-"),
+                    label: section.name,
+                    section,
+                    tourTarget: section.items[0]?.tourTarget,
+                  }))
+                  .map(({ key, label, section, tourTarget }) => (
                   <DropdownMenu
                     key={key}
                     open={openDesktopMenu === key}
@@ -559,6 +562,13 @@ const Navigation = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ))}
+                <Link
+                  to="/authors"
+                  aria-current={isCurrentRoute("/authors") ? "page" : undefined}
+                  className={"min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " + (isCurrentRoute("/authors") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")}
+                >
+                  Authors
+                </Link>
               </nav>
               </>
             )}
