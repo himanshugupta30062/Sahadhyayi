@@ -6,18 +6,12 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
-import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
-import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
 import { uniqueChannelName } from '@/lib/realtime';
 import { LocationConsentModal } from './LocationConsentModal';
 import { LocationPermissionModal } from './LocationPermissionModal';
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
+import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
+import { MAPPLS_API_KEY } from '@/config/mappls';
 
 type SharedProfile = {
   full_name?: string | null;
@@ -81,14 +75,7 @@ export const FriendsLocationMap: React.FC = () => {
   const { user } = useAuth();
   const { data: friends = [], isLoading: isLoadingFriends, error: friendsError, refetch } = useFriends();
 
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-  const [map, setMap] = useState<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isLoadingMap, setIsLoadingMap] = useState(true);
-  const [mapLoadError, setMapLoadError] = useState<string | null>(null);
-  const [mapLoadAttempt, setMapLoadAttempt] = useState(0);
+  const [mapCenter, setMapCenter] = useState<LocationCoords | null>(null);
 
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
   const [isSharingLocation, setIsSharingLocation] = useState(false);
@@ -198,139 +185,6 @@ export const FriendsLocationMap: React.FC = () => {
     };
   }, [friends, refetch, user?.id]);
 
-  // Load the map independently from geolocation permissions.
-  useEffect(() => {
-    let cancelled = false;
-    const loadMap = async () => {
-      setIsLoadingMap(true);
-      setMapLoadError(null);
-      try {
-        await loadGoogleMaps(GOOGLE_MAPS_API_KEY);
-        if (!cancelled) setIsLoaded(true);
-      } catch (error) {
-        console.error('Error loading Google Maps:', error);
-        if (!cancelled) {
-          setIsLoaded(false);
-          setMapLoadError('Unable to load the map. Check your connection and try again.');
-        }
-      } finally {
-        if (!cancelled) setIsLoadingMap(false);
-      }
-    };
-    void loadMap();
-    return () => {
-      cancelled = true;
-    };
-  }, [mapLoadAttempt]);
-
-  useEffect(() => {
-    if (!isLoaded || isLoadingMap || !mapRef.current || !window.google?.maps) return;
-
-    const instance = new window.google.maps.Map(mapRef.current, {
-      center: userLocation || { lat: 20, lng: 0 },
-      zoom: userLocation && isSharingLocation ? 10 : 2,
-      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: true,
-      styles: [{
-        featureType: 'poi',
-        elementType: 'labels',
-        stylers: [{ visibility: 'off' }],
-      }],
-    });
-
-    mapInstanceRef.current = instance;
-    setMap(instance);
-    return () => {
-      markersRef.current.forEach((marker) => marker.setMap(null));
-      markersRef.current = [];
-      mapInstanceRef.current = null;
-    };
-  }, [isLoaded, isLoadingMap]);
-
-  // Rebuild markers when friend coordinates or the signed-in user's own opt-in state changes.
-  useEffect(() => {
-    markersRef.current.forEach((marker) => marker.setMap(null));
-    markersRef.current = [];
-    if (!map || !window.google?.maps) return;
-
-    const nextMarkers: any[] = [];
-    if (isSharingLocation && userLocation) {
-      const ownMarker = new window.google.maps.Marker({
-        position: userLocation,
-        map,
-        title: 'Your saved location',
-        icon: {
-          path: window.google.maps.SymbolPath.CIRCLE,
-          scale: 11,
-          fillColor: '#1C442D',
-          fillOpacity: 1,
-          strokeColor: '#ffffff',
-          strokeWeight: 3,
-        },
-      });
-      const ownContent = document.createElement('div');
-      ownContent.textContent = 'Your saved location';
-      ownContent.style.padding = '8px';
-      const ownInfoWindow = new window.google.maps.InfoWindow({ content: ownContent });
-      ownMarker.addListener('click', () => ownInfoWindow.open({ map, anchor: ownMarker }));
-      nextMarkers.push(ownMarker);
-      map.setCenter(userLocation);
-      map.setZoom(10);
-    }
-
-    friends.forEach((friend) => {
-      const profile = friend.friend_profile;
-      if (
-        profile?.location_sharing === true &&
-        profile.location_lat != null &&
-        profile.location_lng != null
-      ) {
-        const position = {
-          lat: Number(profile.location_lat),
-          lng: Number(profile.location_lng),
-        };
-        if (!Number.isFinite(position.lat) || !Number.isFinite(position.lng)) return;
-        const marker = new window.google.maps.Marker({
-          position,
-          map,
-          title: profile.full_name || profile.username || 'Friend',
-          icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillColor: '#10b981',
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 3,
-          },
-        });
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: createFriendInfoContent(profile),
-        });
-        marker.addListener('click', () => infoWindow.open({ map, anchor: marker }));
-        nextMarkers.push(marker);
-      }
-    });
-
-    markersRef.current = nextMarkers;
-    if (nextMarkers.length > 1) {
-      const bounds = new window.google.maps.LatLngBounds();
-      nextMarkers.forEach((marker) => {
-        const position = marker.getPosition();
-        if (position) bounds.extend(position);
-      });
-      map.fitBounds(bounds);
-    } else if (nextMarkers.length === 0) {
-      map.setCenter({ lat: 20, lng: 0 });
-      map.setZoom(2);
-    }
-
-    return () => {
-      nextMarkers.forEach((marker) => marker.setMap(null));
-    };
-  }, [friends, map, userLocation, isSharingLocation]);
-
   // Local centering is an explicit, one-time action; this does not enable sharing or save coordinates.
   const centerOnMe = useCallback(async () => {
     try {
@@ -338,10 +192,7 @@ export const FriendsLocationMap: React.FC = () => {
       // This is a one-off local centering action, not a sharing toggle or saved location.
       // Don't update the persistent-sharing state, which would otherwise rebuild markers
       // and immediately snap the map back to the friends' bounds.
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.setCenter(position);
-        mapInstanceRef.current.setZoom(12);
-      }
+      setMapCenter(position);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not access your location.');
     }
@@ -380,6 +231,7 @@ export const FriendsLocationMap: React.FC = () => {
       if (writeResult.error) throw writeResult.error;
 
       setUserLocation(position);
+      setMapCenter(position);
       setIsSharingLocation(true);
       setShowLocationModal(false);
       toast.success('Location sharing enabled. Only friends with mutual consent can see it.');
@@ -456,38 +308,16 @@ export const FriendsLocationMap: React.FC = () => {
     friend.friend_profile.location_lng != null
   );
 
-  if (isLoadingMap) {
-    return (
-      <Card className="border border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] rounded-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <MapPin className="w-5 h-5 text-[#1C442D] dark:text-[#D5B16D]" />
-            Friends Map
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex h-[320px] items-center justify-center">
-          <div className="text-center text-[#636B65] dark:text-[#A5ADA6]">
-            <Loader2 className="mx-auto mb-2 h-7 w-7 animate-spin" />
-            <p className="text-sm">Loading map…</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const mapPoints: MapplsPoint[] = [
+    ...(isSharingLocation && userLocation ? [{ id: 'self', lat: userLocation.lat, lng: userLocation.lng, title: 'Your saved location' }] : []),
+    ...friendsWithLocation.map((friend) => ({
+      id: friend.friend_profile!.id || friend.id,
+      lat: Number(friend.friend_profile!.location_lat),
+      lng: Number(friend.friend_profile!.location_lng),
+      title: friend.friend_profile!.full_name || friend.friend_profile!.username || 'Friend',
+    })).filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng)),
+  ];
 
-  if (!isLoaded) {
-    return (
-      <Card className="border border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] rounded-2xl">
-        <CardHeader><CardTitle className="flex items-center gap-2 text-lg font-bold"><MapPin className="w-5 h-5" />Friends Map</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <p role="alert" className="text-sm text-[#636B65] dark:text-[#A5ADA6]">{mapLoadError || 'The map is unavailable.'}</p>
-          <Button type="button" variant="outline" onClick={() => setMapLoadAttempt((attempt) => attempt + 1)} className="gap-2">
-            <RefreshCw className="h-4 w-4" /> Try again
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <>
@@ -512,11 +342,7 @@ export const FriendsLocationMap: React.FC = () => {
               </Button>
             </div>
           )}
-          <div
-            ref={mapRef}
-            aria-label="Map showing friends who have mutually enabled location sharing"
-            className="h-[400px] w-full overflow-hidden rounded-xl border border-[#E8E2D9] dark:border-[#29332D]"
-          />
+          <MapplsMap apiKey={MAPPLS_API_KEY} points={mapPoints} center={mapCenter || (isSharingLocation ? userLocation : null)} emptyMessage="No friends have shared a mappable location with you yet." />
 
           {isLoadingFriends ? (
             <div className="flex items-center justify-center gap-2 py-3 text-sm text-[#636B65] dark:text-[#A5ADA6]" role="status">
