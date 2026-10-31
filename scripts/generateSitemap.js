@@ -7,7 +7,7 @@ import { getPublicSupabaseConfig } from './publicSupabaseConfig.mjs';
 // Public, canonical pages only. Do not include authentication or account routes.
 const staticPages = [
   '/library', '/articles', '/authors', '/groups', '/blog', '/discovery', '/scientists',
-  '/games', '/quotes', '/community-stories', '/life-stories', '/about', '/social', '/map',
+  '/games', '/quotes', '/community-stories', '/life-stories', '/social-activists', '/freedom-fighters', '/about', '/social', '/map',
   '/book-search', '/help-center', '/community-guidelines', '/privacy-policy',
   '/terms-of-service', '/cookie-policy', '/dmca'
 ];
