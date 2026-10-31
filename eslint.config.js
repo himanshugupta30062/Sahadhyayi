@@ -20,7 +20,11 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      // Preserve the existing lint baseline when moving to ESLint 10.
+      "no-useless-assignment": "off",
+      "no-unassigned-vars": "off",
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
