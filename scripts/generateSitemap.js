@@ -50,6 +50,8 @@ const scientistSlugs = [
   'katherine-johnson'
 ];
 scientistSlugs.forEach(slug => addUrl('/scientists/' + slug, 'monthly', '0.6'));
+const lifeStorySlugs = ['kalpana-chawla', 'arunima-sinha', 'a-p-j-abdul-kalam', 'sudha-murty', 'mary-kom', 'dashrath-manjhi'];
+lifeStorySlugs.forEach(slug => addUrl('/life-stories/' + slug, 'monthly', '0.6'));
 
 const { url: SUPABASE_URL, key: SUPABASE_KEY } = getPublicSupabaseConfig();
 if (SUPABASE_URL && SUPABASE_KEY) {
