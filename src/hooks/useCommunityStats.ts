@@ -72,7 +72,7 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
     let edgeSignups: number | null = null;
     let edgeVisits: number | null = null;
     let edge24h: number | null = null;
-    let topCountries: CountryVisit[] = [];
+    const topCountries: CountryVisit[] = [];
     let edgeLastUpdated: string | null = null;
 
     try {
@@ -92,8 +92,8 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
     try {
       // If Edge Function did not provide counts, check direct database RPCs
-      let rpcUsers: number | null = edgeSignups;
-      let rpcVisits: number | null = edgeVisits;
+      const rpcUsers: number | null = edgeSignups;
+      const rpcVisits: number | null = edgeVisits;
 
       // Do not fall back to legacy count RPCs: they are intentionally restricted
       // and caused avoidable 403 responses from ordinary reader sessions.
