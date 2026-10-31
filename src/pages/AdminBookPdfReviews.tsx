@@ -208,7 +208,7 @@ export default function AdminBookPdfReviews() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={() => void invokeReview('preview')} disabled={Boolean(busyAction)}><ExternalLink className="mr-2 h-4 w-4" /> Preview PDF</Button>
-                <Button onClick={() => void verify()} disabled={Boolean(busyAction) || ['approved', 'rejected'].includes(selected.status)}><FileSearch className="mr-2 h-4 w-4" /> {busyAction === 'verify' ? 'Verifying…' : 'Run Gemini verification'}</Button>
+                <Button onClick={() => void verify()} disabled={Boolean(busyAction) || selected.status === 'rejected' || Boolean(selected.published_book_id) || ['scanning', 'extracting', 'matching'].includes(selected.status) || (selected.status === 'approved' && Boolean(selected.verification_completed_at))}><FileSearch className="mr-2 h-4 w-4" /> {busyAction === 'verify' ? 'Verifying…' : 'Run Gemini verification'}</Button>
               </div>
 
               <div className="rounded-lg border p-4">
