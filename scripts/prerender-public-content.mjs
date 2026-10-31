@@ -106,6 +106,9 @@ const publicPages = [
   { route: "/discovery", title: "Discover Books, Readers and New Ideas | Sahadhyayi", description: "Discover books, reading inspiration, literary ideas, and fellow readers with Sahadhyayi." },
   { route: "/about", title: "About Sahadhyayi - A Community for Readers", description: "Learn about Sahadhyayi's mission to bring readers together, support deeper reading, and make literature more social." },
   { route: "/community-stories", title: "Reader Stories and Reading Experiences | Sahadhyayi", description: "Explore stories and perspectives from readers who share a love of books, literature, and learning together." },
+  { route: "/life-stories", title: "Life Stories of Real People | Sahadhyayi", description: "Explore source-linked life stories of real people whose choices, persistence and work shaped communities and fields." },
+  { route: "/social-activists", title: "Social Activists and Their Work | Sahadhyayi", description: "Discover the lives and work of social activists who organised for children's rights, workers, environmental justice and public accountability." },
+  { route: "/freedom-fighters", title: "Indian Freedom Fighters | Sahadhyayi", description: "Explore source-linked profiles of people and movements that shaped India's struggle against colonial rule." },
   { route: "/quotes", title: "Book Quotes and Literary Inspiration | Sahadhyayi", description: "Discover memorable literary quotes and ideas that inspire reflection, reading, and conversation." },
   { route: "/games", title: "Literary Games and Book Quizzes | Sahadhyayi", description: "Challenge your book knowledge with literary games, reading quizzes, and activities for book lovers." },
 ];
