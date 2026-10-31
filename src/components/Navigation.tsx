@@ -553,23 +553,28 @@ const Navigation = () => {
                         </div>
                       )}
                       <div className={key === "social-media" ? "space-y-0.5" : undefined}>
-                      {visibleItems(section.items).map((item) => (
+                      {(visibleItems(section.items).some((item) => item.href === section.href)
+                        ? visibleItems(section.items)
+                        : [{ name: section.name, href: section.href, tourTarget }, ...visibleItems(section.items)]
+                      ).map((item) => {
+                        const active = isCurrentRoute(item.href);
+                        return (
                         <DropdownMenuItem key={item.name} asChild>
                           <Link
                             to={item.href}
                             data-tour-target={item.tourTarget}
-                            aria-current={isCurrentRoute(item.href) ? "page" : undefined}
+                            aria-current={active ? "page" : undefined}
                             className={
                               "flex min-h-10 cursor-pointer items-center rounded-lg px-3 py-2 text-sm transition-colors " +
-                              (isCurrentRoute(item.href)
+                              (active
                                 ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
-                                : "")
+                                : "text-foreground hover:bg-muted")
                             }
                           >
                             {item.name}
                           </Link>
                         </DropdownMenuItem>
-                      ))}
+                      );})}
                       </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
