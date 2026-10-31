@@ -588,7 +588,7 @@ const Navigation = () => {
               <span className="whitespace-nowrap leading-none">Sahadhyayi</span>
             </Link>
 
-              {!isMobile && user && (
+              {!isMobile && (
               <>
                 <nav
                 aria-label="Main navigation"
@@ -607,11 +607,14 @@ const Navigation = () => {
                   {homeLabel}
                 </Link>
 
-                {[
-                  { key: "library", label: "Library", section: NAVIGATION_SECTIONS[0], tourTarget: "library" },
-                  { key: "articles", label: "Articles", section: NAVIGATION_SECTIONS[1], tourTarget: "articles" },
-                  { key: "social", label: "Social Media", section: NAVIGATION_SECTIONS[2], tourTarget: "community" },
-                ].map(({ key, label, section, tourTarget }) => (
+                {(user ? NAVIGATION_SECTIONS : PUBLIC_NAVIGATION_SECTIONS.filter((section) => section.name !== "Authors"))
+                  .map((section) => ({
+                    key: section.name.toLowerCase().replace(/\\s+/g, "-"),
+                    label: section.name,
+                    section,
+                    tourTarget: section.items[0]?.tourTarget,
+                  }))
+                  .map(({ key, label, section, tourTarget }) => (
                   <DropdownMenu
                     key={key}
                     open={openDesktopMenu === key}
