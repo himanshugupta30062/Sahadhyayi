@@ -864,8 +864,6 @@ const Navigation = () => {
                   {PEOPLE_AND_MORE.slice(4).map(renderDrawerLink)}
                 </div>
               </details>
-
-
                 </>
               ) : (
                 <>
