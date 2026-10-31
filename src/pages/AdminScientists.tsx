@@ -13,6 +13,7 @@ import SEO from "@/components/SEO";
 import { useToast } from "@/hooks/use-toast";
 import { parseScientistJson, validateScientistProfile } from "@/lib/scientistProfileValidation";
 import { getScientistBySlug } from "@/data/scientists";
+import { ArchivesStructuredEditor, ProfileStructuredEditor, PublicationsStructuredEditor } from "@/components/admin/ScientistStructuredEditors";
 
 type Region = "india" | "world";
 type Status = "draft" | "published" | "archived";
@@ -261,9 +262,9 @@ export default function AdminScientists() {
                 <div className="space-y-2 sm:col-span-2"><Label htmlFor="scientist-summary">Short summary</Label><Textarea id="scientist-summary" rows={3} value={editor.summary} onChange={(event) => update("summary", event.target.value)} /></div>
                 <div className="space-y-2"><Label htmlFor="scientist-order">Display order</Label><Input id="scientist-order" type="number" value={editor.sort_order} onChange={(event) => update("sort_order", event.target.value)} /></div>
               </section>
-              <section className="space-y-3"><div><h2 className="font-semibold">Biography, work and sources</h2><p className="text-xs text-muted-foreground">JSON object fields: initials, headline, birthplace, knownFor, lifeStory, work, milestones, legacy, sources, portrait. Follow the existing scientist profile structure.</p></div><Textarea className="min-h-[320px] font-mono text-xs" value={editor.profileData} onChange={(event) => update("profileData", event.target.value)} spellCheck={false} /></section>
-              <section className="space-y-3"><div><h2 className="font-semibold">Original publications</h2><p className="text-xs text-muted-foreground">JSON array. Each item: title, year, venue, authors, optional doi, url, access (publisher/open/catalogue), note. Existing IDs are retained when editing.</p></div><Textarea className="min-h-[220px] font-mono text-xs" value={editor.publications} onChange={(event) => update("publications", event.target.value)} spellCheck={false} /></section>
-              <section className="space-y-3"><div><h2 className="font-semibold">Archives and historical records</h2><p className="text-xs text-muted-foreground">JSON array. Each item: title, institution, url, material, note. Existing IDs are retained when editing.</p></div><Textarea className="min-h-[180px] font-mono text-xs" value={editor.archives} onChange={(event) => update("archives", event.target.value)} spellCheck={false} /></section>
+              <section className="space-y-3"><div><h2 className="font-semibold">Biography, work and sources</h2><p className="text-xs text-muted-foreground">Use guided fields to build the profile. You can add or remove paragraphs, milestones, research contributions and citations without editing JSON.</p></div><ProfileStructuredEditor value={editor.profileData} onChange={(value) => update("profileData", value)} /></section>
+              <PublicationsStructuredEditor value={editor.publications} onChange={(value) => update("publications", value)} />
+              <ArchivesStructuredEditor value={editor.archives} onChange={(value) => update("archives", value)} />
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
                 <div>{selected && <Button variant="destructive" onClick={() => void remove()} disabled={saving}><Trash2 className="mr-2 h-4 w-4" />Delete profile</Button>}</div>
                 <div className="flex gap-2"><Button variant="outline" onClick={() => void selectScientist("new")} disabled={saving}>Reset</Button><Button onClick={() => void save()} disabled={saving || loading}><Save className="mr-2 h-4 w-4" />{saving ? "Saving…" : editor.status === "published" ? "Save & publish" : "Save changes"}</Button></div>
