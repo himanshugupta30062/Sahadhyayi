@@ -285,12 +285,12 @@ const Navigation = () => {
     return isNavigationItemActive(location.pathname, location.search, href);
   };
 
-  const isNavigationItemActive = (item: NavigationItem): boolean =>
+  const isNavigationEntryActive = (item: NavigationItem): boolean =>
     (!item.disabled && isCurrentRoute(item.href)) ||
-    Boolean(item.children?.some(isNavigationItemActive));
+    Boolean(item.children?.some(isNavigationEntryActive));
 
   const isSectionActive = (section: NavigationSection) =>
-    isCurrentRoute(section.href) || section.items.some(isNavigationItemActive);
+    isCurrentRoute(section.href) || section.items.some(isNavigationEntryActive);
 
   const visibleItems = (items: NavigationItem[]) =>
     items.filter((item) => !item.authOnly || Boolean(user));
