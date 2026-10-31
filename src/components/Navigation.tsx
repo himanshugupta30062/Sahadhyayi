@@ -333,7 +333,11 @@ const Navigation = () => {
       <Link
         key={item.name}
         to={item.href}
-        onClick={() => setIsOpen(false)}
+        onClick={() => {
+          setIsOpen(false);
+          setExpandedPublicSections({});
+          if (active) window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
         data-tour-target={item.tourTarget}
         aria-current={active ? "page" : undefined}
         className={
@@ -348,30 +352,26 @@ const Navigation = () => {
     );
   };
 
-  const renderDrawerSection = (section: NavigationSection) => (
-    <div key={section.name} className="border-b border-border/70 py-1">
-      <div className="min-w-0 flex-1">
-        {renderDrawerLink({
-          name: section.name,
-          href: section.href,
-          tourTarget: section.items[0]?.tourTarget,
-        })}
-      </div>
-      <details className="group shrink-0">
-        <summary
-          aria-label={section.name + " submenu"}
-          className="flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&::-webkit-details-marker]:hidden"
-        >
-          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+  const renderDrawerSection = (section: NavigationSection) => {
+    const active = isSectionActive(section);
+    return (
+      <details key={section.name} className="group overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm open:border-[hsl(var(--brand-primary)/0.35)] open:shadow-md">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 [&::-webkit-details-marker]:hidden">
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span className={"h-2.5 w-2.5 shrink-0 rounded-full " + (active ? "bg-[hsl(var(--brand-primary))] shadow-[0_0_0_4px_hsl(var(--brand-primary)/0.12)]" : "bg-muted-foreground/40")} />
+            <span>{section.name}</span>
+            {active && <span className="rounded-full bg-[hsl(var(--brand-primary)/0.10)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[hsl(var(--brand-primary))]">Current</span>}
+          </span>
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>
-        <div className="absolute right-1 top-full z-20 mt-1 max-h-72 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background p-2 shadow-lg">
+        <div className="space-y-0.5 border-t border-border/70 bg-muted/20 px-2 py-2">
           {visibleItems(section.items)
             .filter((item) => item.href !== section.href)
             .map(renderDrawerLink)}
         </div>
       </details>
-    </div>
-  );
+    );
+  };
 
   const publicNavKey = (value: string) =>
     value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -560,6 +560,10 @@ const Navigation = () => {
                       collisionPadding={12}
                       className={"z-[60] max-h-[min(75vh,600px)] overflow-y-auto rounded-xl border border-border/80 bg-popover/95 p-3 shadow-2xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150 " + (key === "social-media" ? "w-[min(760px,calc(100vw-2rem))]" : "w-64")}
                     >
+                      <div className="mb-3 overflow-hidden rounded-lg border border-[hsl(var(--brand-primary)/0.18)] bg-gradient-to-r from-[hsl(var(--brand-primary)/0.12)] via-[hsl(var(--brand-primary)/0.06)] to-transparent px-3 py-2.5">
+                        <p className="text-sm font-bold tracking-tight text-foreground">{section.name}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{key === "social-media" ? "Connect, discover readers and explore conversations" : key === "library" ? "Explore books, collections and research" : key === "articles" ? "Read ideas, updates and stories" : "Meet the people shaping ideas and knowledge"}</p>
+                      </div>
                       {key === "social-media" ? (() => {
                         const socialItems = visibleItems(section.items).flatMap((item) =>
                           item.children?.length ? item.children : [item]
@@ -576,9 +580,9 @@ const Navigation = () => {
                               const items = socialItems.filter((item) => group.names.includes(item.name));
                               if (!items.length) return null;
                               return (
-                                <section key={group.title} className="min-w-0 border-b border-border/70 pb-2 last:border-0 sm:border-b-0 sm:border-r sm:pr-3 sm:last:border-0">
-                                  <h3 className="px-2 pb-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">{group.title}</h3>
-                                  <p className="px-2 pb-2 text-xs leading-relaxed text-muted-foreground/80">{group.description}</p>
+                                <section key={group.title} className="min-w-0 rounded-lg border border-border/70 bg-card/70 p-2.5 shadow-sm transition-colors hover:border-[hsl(var(--brand-primary)/0.28)]">
+                                  <h3 className="px-1 pb-1 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">{group.title}</h3>
+                                  <p className="px-1 pb-2 text-xs leading-relaxed text-muted-foreground/80">{group.description}</p>
                                   <div className="space-y-0.5">
                                     {items.map((item) => {
                                       const active = isCurrentRoute(item.href);
