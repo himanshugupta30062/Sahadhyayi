@@ -69,7 +69,7 @@ const AppSidebar = () => {
     <Sidebar
       collapsible="offcanvas"
       variant="sidebar"
-      className="border-r border-border/70 bg-background"
+      className="border-r border-border/70 bg-background md:top-16 md:h-[calc(100svh-4rem)]"
     >
       <SidebarHeader className="border-b border-sidebar-border/70 px-4 py-4">
         <div className="flex items-center justify-between gap-2">
