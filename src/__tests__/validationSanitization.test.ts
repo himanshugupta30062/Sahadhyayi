@@ -3,7 +3,7 @@ import { encodeHTML, sanitizeHTML } from '@/utils/validation';
 
 describe('encodeHTML security encoding', () => {
   it('encodes each supported special character', () => {
-    expect(encodeHTML('&<>"\'\`=/')).toBe(
+    expect(encodeHTML("&<>\"'`=/")).toBe(
       '&amp;&lt;&gt;&quot;&#39;&#x60;&#x3D;&#x2F;',
     );
   });
