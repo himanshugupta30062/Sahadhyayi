@@ -1,0 +1,1 @@
+Temporary trigger for the security dependency remediation workflow. This file can be removed after the regenerated package-lock.json is committed.
