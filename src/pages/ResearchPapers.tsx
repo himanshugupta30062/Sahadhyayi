@@ -51,8 +51,11 @@ function getAbstract(index?: Record<string, number[]> | null) {
   return words.filter(Boolean).join(' ');
 }
 
-function getAuthors(authorships: OpenAlexAuthor[] = []) {
-  const names = authorships.map((item) => item.author?.display_name).filter(Boolean) as string[];
+function getAuthors(authorships?: OpenAlexAuthor[] | null) {
+  // Public catalogue records can contain incomplete/null nested metadata.
+  const names = (Array.isArray(authorships) ? authorships : [])
+    .map((item) => item?.author?.display_name)
+    .filter((name): name is string => typeof name === 'string' && name.trim().length > 0);
   if (names.length <= 3) return names.join(', ');
   return `${names.slice(0, 3).join(', ')} and ${names.length - 3} more`;
 }
@@ -109,8 +112,13 @@ const ResearchPapers = () => {
           ? 'The research catalogue is busy. Please try again in a moment.'
           : `Research catalogue returned an error (${response.status}).`);
         const payload = await response.json() as OpenAlexResponse;
-        setPapers(payload.results ?? []);
-        setTotalCount(payload.meta?.count ?? 0);
+        // Treat the API response as untrusted external data; discard malformed rows
+        // so one incomplete record cannot crash the entire page render.
+        const safeResults = Array.isArray(payload.results)
+          ? payload.results.filter((item): item is OpenAlexWork => Boolean(item && typeof item === 'object' && typeof item.id === 'string'))
+          : [];
+        setPapers(safeResults);
+        setTotalCount(typeof payload.meta?.count === 'number' ? payload.meta.count : safeResults.length);
       } catch (loadError) {
         if (loadError instanceof Error && loadError.name === 'AbortError') return;
         setError(loadError instanceof Error ? loadError.message : 'Unable to load research papers.');
