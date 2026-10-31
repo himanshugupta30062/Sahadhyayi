@@ -51,7 +51,7 @@ export default function AdminNews() {
       });
       if (error) throw error;
     },
-    onSuccess: async () => {
+    onSuccess: async (_data, publishNow) => {
       toast({ title: publishNow ? "News published" : "Draft saved" });
       setTitle(""); setSummary(""); setContent(""); setCover(""); setSourceName(""); setSourceUrl(""); setAuthorName("");
       await queryClient.invalidateQueries({ queryKey: ["admin-news"] });
