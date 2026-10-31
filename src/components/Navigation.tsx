@@ -545,38 +545,81 @@ const Navigation = () => {
                       sideOffset={6}
                       avoidCollisions={true}
                       collisionPadding={12}
-                      className={"z-[60] max-h-[min(70vh,520px)] overflow-y-auto rounded-xl border border-border/80 bg-popover/95 p-2 shadow-xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150 " + (key === "social-media" ? "w-72" : "w-64")}
+                      className={"z-[60] max-h-[min(75vh,600px)] overflow-y-auto rounded-xl border border-border/80 bg-popover/95 p-3 shadow-2xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150 " + (key === "social-media" ? "w-[min(760px,calc(100vw-2rem))]" : "w-64")}
                     >
-                      {key === "social-media" && (
-                        <div className="mb-1 border-b border-border/70 px-3 pb-2 pt-1">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Community</p>
-                          <p className="mt-0.5 text-xs text-muted-foreground/80">Connect, discover and discuss books</p>
+                      {key === "social-media" ? (() => {
+                        const socialItems = visibleItems(section.items).flatMap((item) =>
+                          item.children?.length ? item.children : [item]
+                        );
+                        const groups = [
+                          { title: "Community", description: "Meet readers and build connections", names: ["Feed", "Community Feed", "Discover Friends", "Reading Groups"] },
+                          { title: "Discover", description: "Find readers and reading activity", names: ["Reader's Map", "Reader Map by Book", "Friends & Readers Map"] },
+                          { title: "Book Discussions", description: "Go deeper into every book", names: ["Book Discussion", "Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"] },
+                          { title: "Stories", description: "Ideas and experiences from readers", names: ["Community Stories", "Life Stories"] },
+                        ];
+                        return (
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            {groups.map((group) => {
+                              const items = socialItems.filter((item) => group.names.includes(item.name));
+                              if (!items.length) return null;
+                              return (
+                                <section key={group.title} className="min-w-0 border-b border-border/70 pb-2 last:border-0 sm:border-b-0 sm:border-r sm:pr-3 sm:last:border-0">
+                                  <h3 className="px-2 pb-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">{group.title}</h3>
+                                  <p className="px-2 pb-2 text-xs leading-relaxed text-muted-foreground/80">{group.description}</p>
+                                  <div className="space-y-0.5">
+                                    {items.map((item) => {
+                                      const active = isCurrentRoute(item.href);
+                                      return (
+                                        <DropdownMenuItem key={item.name} asChild>
+                                          <Link
+                                            to={item.href}
+                                            data-tour-target={item.tourTarget}
+                                            aria-current={active ? "page" : undefined}
+                                            className={
+                                              "flex min-h-10 cursor-pointer items-center rounded-lg px-2 py-2 text-sm transition-colors " +
+                                              (active
+                                                ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
+                                                : "text-foreground hover:bg-muted")
+                                            }
+                                          >
+                                            {item.name}
+                                          </Link>
+                                        </DropdownMenuItem>
+                                      );
+                                    })}
+                                  </div>
+                                </section>
+                              );
+                            })}
+                          </div>
+                        );
+                      })() : (
+                        <div>
+                          {(visibleItems(section.items).some((item) => item.href === section.href)
+                            ? visibleItems(section.items)
+                            : [{ name: section.name, href: section.href, tourTarget }, ...visibleItems(section.items)]
+                          ).map((item) => {
+                            const active = isCurrentRoute(item.href);
+                            return (
+                              <DropdownMenuItem key={item.name} asChild>
+                                <Link
+                                  to={item.href}
+                                  data-tour-target={item.tourTarget}
+                                  aria-current={active ? "page" : undefined}
+                                  className={
+                                    "flex min-h-10 cursor-pointer items-center rounded-lg px-3 py-2 text-sm transition-colors " +
+                                    (active
+                                      ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
+                                      : "text-foreground hover:bg-muted")
+                                  }
+                                >
+                                  {item.name}
+                                </Link>
+                              </DropdownMenuItem>
+                            );
+                          })}
                         </div>
                       )}
-                      <div className={key === "social-media" ? "space-y-0.5" : undefined}>
-                      {(visibleItems(section.items).some((item) => item.href === section.href)
-                        ? visibleItems(section.items)
-                        : [{ name: section.name, href: section.href, tourTarget }, ...visibleItems(section.items)]
-                      ).map((item) => {
-                        const active = isCurrentRoute(item.href);
-                        return (
-                        <DropdownMenuItem key={item.name} asChild>
-                          <Link
-                            to={item.href}
-                            data-tour-target={item.tourTarget}
-                            aria-current={active ? "page" : undefined}
-                            className={
-                              "flex min-h-10 cursor-pointer items-center rounded-lg px-3 py-2 text-sm transition-colors " +
-                              (active
-                                ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
-                                : "text-foreground hover:bg-muted")
-                            }
-                          >
-                            {item.name}
-                          </Link>
-                        </DropdownMenuItem>
-                      );})}
-                      </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ))}
