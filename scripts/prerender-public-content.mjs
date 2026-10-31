@@ -97,6 +97,7 @@ function writeRoute(route, html) {
 // returns a unique title, description, canonical URL, and useful initial HTML.
 const publicPages = [
   { route: "/library", title: "Online Book Library - Discover Books to Read | Sahadhyayi", description: "Discover books across genres, explore your next read, and build a consistent reading habit with Sahadhyayi's online book library." },
+  { route: "/research-papers", title: "Research Papers & Academic Studies | Sahadhyayi", description: "Discover research papers, academic studies, preprints and technical reports across disciplines." },
   { route: "/articles", title: "Reading Articles, Book Ideas & Literary Insights | Sahadhyayi", description: "Explore thoughtful articles about books, reading habits, literature, and ideas from the Sahadhyayi reading community." },
   { route: "/authors", title: "Discover Authors and Their Books | Sahadhyayi", description: "Explore author profiles, discover their books, and connect with the people behind the stories on Sahadhyayi." },
   { route: "/scientists", title: "Scientists & Their Discoveries | Sahadhyayi", description: "Explore the lives, ideas and discoveries of Indian scientists and remarkable researchers from around the world, with biographies and references." },
