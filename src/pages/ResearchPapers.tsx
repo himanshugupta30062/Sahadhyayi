@@ -135,7 +135,7 @@ const ResearchPapers = () => {
                 })}
               </div>
               <div className="mt-7">
-                <LibraryPagination currentPage={page} totalPages={totalPages} onPageChange={setPage} pageSize={pageSize} onPageSizeChange={setPageSize} totalItems={data?.totalCount ?? 0} />
+                <LibraryPagination currentPage={page} totalPages={totalPages} onPageChange={setPage} pageSize={pageSize} onPageSizeChange={setPageSize} totalItems={data?.totalCount ?? 0} itemLabel="papers" />
               </div>
             </>
           )}
