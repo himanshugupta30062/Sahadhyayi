@@ -367,7 +367,7 @@ const Navigation = () => {
 
     if (item.children?.length) {
       return (
-        <details key={item.name} className="group rounded-md border border-border/70">
+        <details key={item.name} className="group">
           <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted [&::-webkit-details-marker]:hidden">
             {item.name}
             <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
@@ -383,7 +383,7 @@ const Navigation = () => {
   };
 
   const renderPublicDrawerSection = (section: NavigationSection) => (
-    <div key={section.name} className="relative flex items-start gap-1 rounded-lg border border-border bg-background p-1">
+    <div key={section.name} className="border-b border-border/70 py-1">
       <div className="min-w-0 flex-1">
         {renderDrawerLink({
           name: section.name,
@@ -404,67 +404,6 @@ const Navigation = () => {
           </div>
         </div>
       </details>
-    </div>
-  );
-
-  const renderPublicDropdownItem = (item: NavigationItem): React.ReactNode => {
-    if (item.children?.length) {
-      return (
-        <DropdownMenuSub key={item.name}>
-          <DropdownMenuSubTrigger>{item.name}</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="w-56 p-2">
-            {item.children.map(renderPublicDropdownItem)}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
-      );
-    }
-
-    if (item.disabled) {
-      return (
-        <DropdownMenuItem key={item.name} disabled className="justify-between gap-3">
-          <span>{item.name}</span>
-          <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Coming soon</span>
-        </DropdownMenuItem>
-      );
-    }
-
-    return (
-      <DropdownMenuItem key={item.name} asChild>
-        <Link to={item.href} aria-current={isCurrentRoute(item.href) ? "page" : undefined} className="cursor-pointer">
-          {item.name}
-        </Link>
-      </DropdownMenuItem>
-    );
-  };
-
-  const renderPublicDesktopSection = (section: NavigationSection, align: "start" | "end" = "start") => (
-    <div key={section.name} className="flex shrink-0 items-center gap-0.5">
-      <Link
-        to={section.href}
-        aria-current={isCurrentRoute(section.href) ? "page" : undefined}
-        className={
-          "min-h-10 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:bg-muted " +
-          (isSectionActive(section)
-            ? "text-[hsl(var(--brand-primary))]"
-            : "text-muted-foreground hover:text-foreground")
-        }
-      >
-        {section.name}
-      </Link>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            aria-label={section.name + " submenu"}
-            className="inline-flex min-h-10 min-w-8 items-center justify-center rounded-md px-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align={align} sideOffset={8} className="w-60 p-2">
-          {section.items.map(renderPublicDropdownItem)}
-        </DropdownMenuContent>
-      </DropdownMenu>
     </div>
   );
 
@@ -514,10 +453,6 @@ const Navigation = () => {
               />
               <span className="whitespace-nowrap leading-none">Sahadhyayi</span>
             </Link>
-
-            {!isMobile && !user && (
-              <div className="ml-1 min-w-0 flex-1" aria-hidden="true" />
-            )}
 
             {!isMobile && (
               user ? (
@@ -668,8 +603,6 @@ const Navigation = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </nav>
-              ) : (
-                <div className="ml-1 min-w-0 flex-1" aria-hidden="true" />
               )
             )}
 
