@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Info,
   Menu,
+  PanelLeftOpen,
   MessageCircle,
   Moon,
   Search,
@@ -227,6 +228,7 @@ function isNavigationItemActive(pathname: string, search: string, href: string) 
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [contextSidebarOpen, setContextSidebarOpen] = useState(false);
   const [openDesktopMenu, setOpenDesktopMenu] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -297,6 +299,80 @@ const Navigation = () => {
 
   const visibleItems = (items: NavigationItem[]) =>
     items.filter((item) => !item.authOnly || Boolean(user));
+
+  // The contextual panel is intentionally separate from the global top navigation.
+  // It changes with the current route and remains user-toggleable rather than fixed.
+  const isSocialArea = location.pathname === "/social" ||
+    ["/groups", "/reader-map", "/map", "/community-stories", "/life-stories"].some((path) =>
+      location.pathname === path || location.pathname.startsWith(path + "/")
+    );
+  const isLibraryArea = ["/library", "/book-library", "/bookshelf", "/discovery", "/research-papers", "/book", "/books", "/reader"].some((path) =>
+    location.pathname === path || location.pathname.startsWith(path + "/")
+  );
+  const isAuthorsArea = ["/authors", "/author", "/author-profile", "/scientists", "/social-activists", "/freedom-fighters", "/publishers", "/author-connect"].some((path) =>
+    location.pathname === path || location.pathname.startsWith(path + "/")
+  );
+  const isArticlesArea = ["/articles", "/news", "/blog", "/quotes"].some((path) =>
+    location.pathname === path || location.pathname.startsWith(path + "/")
+  );
+
+  const contextualTitle = isSocialArea ? "Your community"
+    : isLibraryArea ? "Explore the library"
+    : isAuthorsArea ? "Explore authors"
+    : isArticlesArea ? "Stories & articles"
+    : "Discover Sahadhyayi";
+
+  const contextualLinks: NavigationItem[] = isSocialArea
+    ? [
+        { name: "Community Feed", href: "/social" },
+        { name: "Discover Friends", href: "/social?tab=friends" },
+        { name: "Reading Groups", href: "/groups" },
+        { name: "Reader's Map", href: "/social?tab=map" },
+        { name: "Book Discussions", href: "/social?tab=threads" },
+        { name: "Reading Rooms", href: "/social?tab=rooms" },
+        { name: "Shared Marginalia", href: "/social?tab=margins" },
+        { name: "Reading DNA", href: "/social?tab=dna" },
+      ]
+    : isLibraryArea
+    ? [
+        { name: "All Books", href: "/library" },
+        { name: "Psychology", href: "/library?genre=Psychology" },
+        { name: "Fiction", href: "/library?genre=Fiction" },
+        { name: "Science", href: "/library?genre=Science" },
+        { name: "Fantasy", href: "/library?genre=Fantasy" },
+        { name: "Mystery", href: "/library?genre=Mystery" },
+        { name: "History", href: "/library?genre=History" },
+        { name: "Biography", href: "/library?genre=Biography" },
+        { name: "Hindi", href: "/library?language=Hindi" },
+        { name: "Research Papers", href: "/research-papers" },
+        { name: "My Bookshelf", href: "/bookshelf", authOnly: true },
+      ]
+    : isAuthorsArea
+    ? [
+        { name: "All Authors", href: "/authors" },
+        { name: "Scientists", href: "/scientists" },
+        { name: "Indian Scientists", href: "/scientists?collection=indian" },
+        { name: "Global Scientists", href: "/scientists?collection=global" },
+        { name: "Publishers", href: "/publishers" },
+        { name: "Author Connect", href: "/author-connect" },
+      ]
+    : isArticlesArea
+    ? [
+        { name: "All Articles", href: "/articles" },
+        { name: "Newsroom", href: "/news" },
+        { name: "Blogs", href: "/blog" },
+        { name: "Quotes", href: "/quotes" },
+        { name: "Life Stories", href: "/life-stories" },
+      ]
+    : [
+        { name: "Latest Book News", href: "/news" },
+        { name: "New Books", href: "/library" },
+        { name: "Library", href: "/library" },
+        { name: "Research Papers", href: "/research-papers" },
+        { name: "Authors", href: "/authors" },
+        { name: "Social Media", href: "/social" },
+        { name: "Articles & Blogs", href: "/articles" },
+      ];
 
   const contactButton = (onClick?: () => void) => (
     <Button
@@ -555,9 +631,22 @@ const Navigation = () => {
             )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setContextSidebarOpen(true)}
+                aria-label="Open contextual sidebar"
+                aria-expanded={contextSidebarOpen}
+                aria-controls="contextual-navigation-sidebar"
+                title="Open section navigation"
+                className="min-h-[44px] min-w-[44px] h-11 w-11 text-foreground hover:bg-muted"
+              >
+                <PanelLeftOpen className="h-5 w-5" aria-hidden="true" />
+              </Button>
               <button
                 type="button"
-                onClick={() => setSearchOpen(true)}
+                onClick={() => setSearchOpen(true)
                 className="group flex min-h-[44px] min-w-[44px] h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-muted/50 text-muted-foreground shadow-2xs transition-colors hover:border-border hover:bg-muted hover:text-foreground xl:w-auto xl:justify-start xl:gap-2 xl:px-3"
                 aria-label="Search library and books"
                 title="Search library and books"
@@ -778,6 +867,60 @@ const Navigation = () => {
                 </div>
               )}
             </div>
+          </nav>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={contextSidebarOpen} onOpenChange={setContextSidebarOpen}>
+        <SheetContent
+          id="contextual-navigation-sidebar"
+          side="left"
+          className="w-[min(86vw,340px)] max-w-[340px] overflow-y-auto border-r border-border bg-background p-0 shadow-2xl sm:max-w-[340px]"
+        >
+          <SheetHeader className="border-b border-border bg-muted/40 px-5 py-5 pr-12 text-left">
+            <SheetTitle className="flex items-center gap-2 text-lg">
+              <PanelLeftOpen className="h-5 w-5 text-primary" aria-hidden="true" />
+              {contextualTitle}
+            </SheetTitle>
+            <SheetDescription>
+              Navigation and shortcuts for the section you are viewing.
+            </SheetDescription>
+          </SheetHeader>
+
+          {isSocialArea && user && (
+            <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+              <Suspense fallback={<span className="inline-block h-10 w-10" aria-hidden="true" />}>
+                <MessageDropdown />
+              </Suspense>
+              <Suspense fallback={<span className="inline-block h-10 w-10" aria-hidden="true" />}>
+                <NotificationDropdown />
+              </Suspense>
+              <span className="text-xs text-muted-foreground">Messages & notifications</span>
+            </div>
+          )}
+
+          <nav aria-label="Section navigation" className="space-y-1 px-3 py-4">
+            {contextualLinks
+              .filter((item) => !item.authOnly || Boolean(user))
+              .map((item) => {
+                const active = isCurrentRoute(item.href);
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    data-tour-target={item.tourTarget}
+                    aria-current={active ? "page" : undefined}
+                    className={
+                      "flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm transition-colors " +
+                      (active
+                        ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
+                        : "text-foreground hover:bg-muted hover:text-[hsl(var(--brand-primary))]")
+                    }
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
           </nav>
         </SheetContent>
       </Sheet>
