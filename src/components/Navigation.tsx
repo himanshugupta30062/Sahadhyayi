@@ -94,6 +94,7 @@ const Navigation = () => {
   ] : [
     { name: "Home", href: "/" },
     { name: "Library", href: "/library" },
+    { name: "Research Papers", href: "/research-papers" },
     { name: "Articles", href: "/articles" },
     { name: "Newsroom", href: "/news" },
     { name: "Games", href: "/games" },
