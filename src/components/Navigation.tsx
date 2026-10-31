@@ -331,7 +331,7 @@ const Navigation = () => {
   };
 
   const renderDrawerSection = (section: NavigationSection) => (
-    <div key={section.name} className="relative flex items-start gap-1 rounded-lg border border-border bg-background p-1">
+    <div key={section.name} className="border-b border-border/70 py-1">
       <div className="min-w-0 flex-1">
         {renderDrawerLink({
           name: section.name,
@@ -367,7 +367,7 @@ const Navigation = () => {
 
     if (item.children?.length) {
       return (
-        <details key={item.name} className="group rounded-md border border-border/70">
+        <details key={item.name} className="group">
           <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted [&::-webkit-details-marker]:hidden">
             {item.name}
             <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
@@ -383,86 +383,29 @@ const Navigation = () => {
   };
 
   const renderPublicDrawerSection = (section: NavigationSection) => (
-    <div key={section.name} className="relative flex items-start gap-1 rounded-lg border border-border bg-background p-1">
-      <div className="min-w-0 flex-1">
-        {renderDrawerLink({
-          name: section.name,
-          href: section.href,
-          tourTarget: section.items[0]?.tourTarget,
-        })}
-      </div>
-      <details className="group shrink-0">
-        <summary
-          aria-label={section.name + " submenu"}
-          className="flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&::-webkit-details-marker]:hidden"
-        >
-          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
-        </summary>
-        <div className="absolute right-1 top-full z-20 mt-1 max-h-96 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background p-2 shadow-lg">
-          {section.items.map(renderPublicDrawerItem)}
+    <div key={section.name} className="border-b border-border/70 py-1">
+      <div className="flex items-center gap-1">
+        <div className="min-w-0 flex-1">
+          {renderDrawerLink({
+            name: section.name,
+            href: section.href,
+            tourTarget: section.items[0]?.tourTarget,
+          })}
         </div>
-      </details>
-    </div>
-  );
-
-  const renderPublicDropdownItem = (item: NavigationItem): React.ReactNode => {
-    if (item.children?.length) {
-      return (
-        <DropdownMenuSub key={item.name}>
-          <DropdownMenuSubTrigger>{item.name}</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="w-56 p-2">
-            {item.children.map(renderPublicDropdownItem)}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
-      );
-    }
-
-    if (item.disabled) {
-      return (
-        <DropdownMenuItem key={item.name} disabled className="justify-between gap-3">
-          <span>{item.name}</span>
-          <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Coming soon</span>
-        </DropdownMenuItem>
-      );
-    }
-
-    return (
-      <DropdownMenuItem key={item.name} asChild>
-        <Link to={item.href} aria-current={isCurrentRoute(item.href) ? "page" : undefined} className="cursor-pointer">
-          {item.name}
-        </Link>
-      </DropdownMenuItem>
-    );
-  };
-
-  const renderPublicDesktopSection = (section: NavigationSection, align: "start" | "end" = "start") => (
-    <div key={section.name} className="flex shrink-0 items-center gap-0.5">
-      <Link
-        to={section.href}
-        aria-current={isCurrentRoute(section.href) ? "page" : undefined}
-        className={
-          "min-h-10 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:bg-muted " +
-          (isSectionActive(section)
-            ? "text-[hsl(var(--brand-primary))]"
-            : "text-muted-foreground hover:text-foreground")
-        }
-      >
-        {section.name}
-      </Link>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
+        <details className="group relative shrink-0">
+          <summary
             aria-label={section.name + " submenu"}
-            className="inline-flex min-h-10 min-w-8 items-center justify-center rounded-md px-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden"
           >
-            <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align={align} sideOffset={8} className="w-60 p-2">
-          {section.items.map(renderPublicDropdownItem)}
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <div className="absolute right-0 top-full z-30 mt-1 max-h-96 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background py-1 shadow-xl">
+            <div className="space-y-0.5 px-1">
+              {section.items.map(renderPublicDrawerItem)}
+            </div>
+          </div>
+        </details>
+      </div>
     </div>
   );
 
@@ -487,10 +430,10 @@ const Navigation = () => {
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => setIsOpen((open) => !open)}
-              aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+              onClick={() => setIsOpen(true)}
+              aria-label="Open navigation menu"
               aria-expanded={isOpen}
-              aria-controls="mobile-navigation-menu"
+              aria-controls="site-navigation-drawer"
               ref={menuButtonRef}
               className="min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 text-foreground hover:bg-muted"
             >
@@ -513,8 +456,8 @@ const Navigation = () => {
               <span className="whitespace-nowrap leading-none">Sahadhyayi</span>
             </Link>
 
-            {!isMobile && (
-              user ? (
+              {!isMobile && user && (
+              <>
                 <nav
                 aria-label="Main navigation"
                 className="ml-2 flex min-w-0 flex-1 items-center justify-center gap-1 xl:gap-2"
@@ -662,23 +605,7 @@ const Navigation = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </nav>
-              ) : (
-                <nav aria-label="Main navigation" className="ml-1 flex min-w-0 flex-1 items-center justify-center gap-0.5 xl:gap-1">
-                  <Link
-                    to="/"
-                    aria-current={isCurrentRoute("/") ? "page" : undefined}
-                    className={
-                      "min-h-10 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:bg-muted " +
-                      (isCurrentRoute("/") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")
-                    }
-                  >
-                    Home
-                  </Link>
-                  {PUBLIC_NAVIGATION_SECTIONS.map((section, index) =>
-                    renderPublicDesktopSection(section, index === PUBLIC_NAVIGATION_SECTIONS.length - 1 ? "end" : "start")
-                  )}
-                </nav>
-              )
+              </>
             )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
@@ -759,10 +686,10 @@ const Navigation = () => {
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent
           side="left"
-          className="w-[min(88vw,380px)] overflow-y-auto p-0"
+          className="w-[min(88vw,390px)] max-w-[390px] overflow-y-auto border-r border-border bg-background p-0 shadow-2xl sm:max-w-[390px]"
         >
-          <SheetHeader className="border-b border-border px-5 py-5 pr-12 text-left">
-            <SheetTitle className="flex items-center gap-2 text-lg">
+          <SheetHeader className="border-b border-[#263342] bg-[#1F2B39] px-5 py-5 pr-12 text-left text-white dark:bg-[#17212D]">
+            <SheetTitle className="flex items-center gap-2 text-lg text-white">
               <EnhancedLazyImage
                 src="/optimized-assets/site-logo.webp"
                 alt=""
@@ -771,9 +698,9 @@ const Navigation = () => {
                 width={28}
                 height={28}
               />
-              Browse Sahadhyayi
+              Hello, {user ? userDisplayName : "Reader"}
             </SheetTitle>
-            <SheetDescription>
+            <SheetDescription className="text-white/70">
               Books, research, stories and the reading community.
             </SheetDescription>
             {user ? (
@@ -828,7 +755,7 @@ const Navigation = () => {
             )}
           </SheetHeader>
 
-          <nav id="mobile-navigation-menu" aria-label="Mobile navigation">
+          <nav id="site-navigation-drawer" aria-label="Main navigation">
             <div className="space-y-2 px-3 py-3">
               <button
                 type="button"
@@ -878,8 +805,6 @@ const Navigation = () => {
                   {PEOPLE_AND_MORE.slice(4).map(renderDrawerLink)}
                 </div>
               </details>
-
-
                 </>
               ) : (
                 <>
