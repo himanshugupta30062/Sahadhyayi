@@ -87,6 +87,7 @@ const CommunityGuidelines = lazy(() => import('./pages/CommunityGuidelines'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
+const AdminOverview = lazy(() => import('./pages/AdminOverview'));
 const AdminLibraryQuality = lazy(() => import('./pages/AdminLibraryQuality'));
 const AdminBookPdfManager = lazy(() => import('./pages/AdminBookPdfManager'));
 const AdminBookPdfReviews = lazy(() => import('./pages/AdminBookPdfReviews'));
