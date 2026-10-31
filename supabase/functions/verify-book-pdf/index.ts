@@ -54,8 +54,9 @@ serve(async (req) => {
     if (roleError || !adminRole) return json({ error: "You cannot verify this submission." }, 403);
   }
   if (!submission.rights_attested) return json({ error: "A rights attestation is required before verification." }, 400);
-  if (!["uploaded", "failed", "needs_review"].includes(submission.status)) {
-    return json({ error: "This submission is already being processed or has been reviewed." }, 409);
+  const retryingUnverifiedApproval = submission.status === "approved" && !submission.verification_completed_at;
+  if (!["uploaded", "failed", "needs_review"].includes(submission.status) && !retryingUnverifiedApproval) {
+    return json({ error: "This submission is already being processed or has a completed review." }, 409);
   }
 
   const { error: startError } = await admin.from("book_pdf_submissions").update({ status: "scanning" }).eq("id", submissionId);
