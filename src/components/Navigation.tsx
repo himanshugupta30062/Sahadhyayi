@@ -230,6 +230,7 @@ const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [contactDialogRequested, setContactDialogRequested] = useState(false);
+  const [expandedPublicSections, setExpandedPublicSections] = useState<Record<string, boolean>>({});
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -355,10 +356,16 @@ const Navigation = () => {
     </div>
   );
 
-  const renderPublicDrawerItem = (item: NavigationItem): React.ReactNode => {
+  const publicNavKey = (value: string) =>
+    value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  const togglePublicSection = (key: string) =>
+    setExpandedPublicSections((current) => ({ ...current, [key]: !current[key] }));
+
+  const renderPublicDrawerItem = (item: NavigationItem, parentKey = "public"): React.ReactNode => {
     if (item.disabled) {
       return (
-        <div key={item.name} aria-disabled="true" className="flex min-h-[44px] items-center justify-between gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground/60">
+        <div key={parentKey + "-" + publicNavKey(item.name)} aria-disabled="true" className="flex min-h-[44px] items-center justify-between gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground/60">
           <span>{item.name}</span>
           <span className="text-[10px] font-medium uppercase tracking-wide">Coming soon</span>
         </div>
@@ -366,48 +373,68 @@ const Navigation = () => {
     }
 
     if (item.children?.length) {
+      const disclosureKey = parentKey + "." + publicNavKey(item.name);
+      const panelId = "public-nav-" + publicNavKey(disclosureKey);
+      const expanded = Boolean(expandedPublicSections[disclosureKey]);
       return (
-        <details key={item.name} className="group">
-          <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted [&::-webkit-details-marker]:hidden">
+        <div key={disclosureKey} className="rounded-md">
+          <button
+            type="button"
+            aria-expanded={expanded}
+            aria-controls={panelId}
+            onClick={() => togglePublicSection(disclosureKey)}
+            className="flex min-h-[44px] w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
             {item.name}
-            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
-          </summary>
-          <div className="space-y-0.5 border-t border-border/70 px-1 py-1.5">
-            {item.children.map(renderPublicDrawerItem)}
-          </div>
-        </details>
+            <ChevronDown className={"h-4 w-4 shrink-0 transition-transform " + (expanded ? "rotate-180" : "")} aria-hidden="true" />
+          </button>
+          {expanded && (
+            <div id={panelId} className="ml-3 space-y-0.5 border-l-2 border-border py-1 pl-2">
+              {item.children.map((child) => renderPublicDrawerItem(child, disclosureKey))}
+            </div>
+          )}
+        </div>
       );
     }
 
     return renderDrawerLink(item);
   };
 
-  const renderPublicDrawerSection = (section: NavigationSection) => (
-    <div key={section.name} className="border-b border-border/70 py-1">
-      <div className="flex items-center gap-1">
-        <div className="min-w-0 flex-1">
-          {renderDrawerLink({
-            name: section.name,
-            href: section.href,
-            tourTarget: section.items[0]?.tourTarget,
-          })}
-        </div>
-        <details className="group relative shrink-0">
-          <summary
+  const renderPublicDrawerSection = (section: NavigationSection) => {
+    const disclosureKey = "section." + publicNavKey(section.name);
+    const panelId = "public-nav-" + publicNavKey(disclosureKey);
+    const expanded = Boolean(expandedPublicSections[disclosureKey]);
+    return (
+      <div key={section.name} className="border-b border-border/70 py-1">
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1">
+            {renderDrawerLink({
+              name: section.name,
+              href: section.href,
+              tourTarget: section.items[0]?.tourTarget,
+            })}
+          </div>
+          <button
+            type="button"
             aria-label={section.name + " submenu"}
-            className="flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden"
+            aria-expanded={expanded}
+            aria-controls={panelId}
+            onClick={() => togglePublicSection(disclosureKey)}
+            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
-          </summary>
-          <div className="absolute right-0 top-full z-30 mt-1 max-h-96 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background py-1 shadow-xl">
-            <div className="space-y-0.5 px-1">
-              {section.items.map(renderPublicDrawerItem)}
+            <ChevronDown className={"h-4 w-4 transition-transform " + (expanded ? "rotate-180" : "")} aria-hidden="true" />
+          </button>
+        </div>
+        {expanded && (
+          <div id={panelId} className="mt-1 max-h-96 overflow-y-auto rounded-md border-l-2 border-border bg-muted/20 py-1 pl-2">
+            <div className="space-y-0.5">
+              {section.items.map((item) => renderPublicDrawerItem(item, disclosureKey))}
             </div>
           </div>
-        </details>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   if (location.pathname.startsWith("/admin")) return null;
 
