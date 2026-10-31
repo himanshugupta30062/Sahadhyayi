@@ -569,6 +569,13 @@ const Navigation = () => {
                 >
                   Authors
                 </Link>
+                <Link
+                  to="/games"
+                  aria-current={isCurrentRoute("/games") ? "page" : undefined}
+                  className={"min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " + (isCurrentRoute("/games") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")}
+                >
+                  Games
+                </Link>
               </nav>
               </>
             )}
