@@ -58,7 +58,7 @@ const sections = [
 
 const AppSidebar = () => {
   const location = useLocation();
-  const { state, toggleSidebar } = useSidebar();
+  const { state, open, setOpen } = useSidebar();
 
   const isActive = (url: string) => {
     if (url === "/dashboard") return location.pathname === "/dashboard" || location.pathname === "/";
@@ -101,7 +101,7 @@ const AppSidebar = () => {
           type="button"
           variant="ghost"
           size="sm"
-          onClick={toggleSidebar}
+          onClick={() => setOpen(!open)}
           aria-label={state === "expanded" ? "Collapse navigation" : "Expand navigation"}
           title={state === "expanded" ? "Collapse navigation" : "Expand navigation"}
           className="h-8 shrink-0 gap-2 rounded-lg px-2 text-muted-foreground hover:bg-muted hover:text-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:px-0"
