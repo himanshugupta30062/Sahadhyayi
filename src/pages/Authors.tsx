@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowRight,
@@ -34,13 +34,14 @@ type SortMode = 'books' | 'name' | 'newest';
 const normalizeKey = (value?: string | null) => (value || '').trim().toLocaleLowerCase();
 
 const Authors = () => {
+  const [searchParams] = useSearchParams();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const scrollTargetRef = useRef<HTMLDivElement>(null);
   const { data: authors = [], isLoading, error, refetch } = useAuthors();
   const { data: libraryBooks = [] } = useAllLibraryBooks();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('all');
+  const [selectedGenre, setSelectedGenre] = useState(() => searchParams.get('genre') || 'all');
   const [sortBy, setSortBy] = useState<SortMode>('books');
 
   const booksByAuthor = useMemo(() => {
@@ -84,6 +85,11 @@ const Authors = () => {
   const totalPages = Math.max(1, Math.ceil(filteredAuthors.length / pageSize));
   const paginatedAuthors = filteredAuthors.slice((page - 1) * pageSize, page * pageSize);
   const hasActiveFilters = Boolean(searchTerm) || selectedGenre !== 'all' || sortBy !== 'books';
+
+  useEffect(() => {
+    const requestedGenre = searchParams.get('genre') || 'all';
+    setSelectedGenre((current) => current === requestedGenre ? current : requestedGenre);
+  }, [searchParams]);
 
   useEffect(() => {
     setPage(1);
