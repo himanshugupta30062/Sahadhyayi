@@ -29,17 +29,18 @@ import useDebouncedValue from '@/lib/useDebouncedValue';
 import { slugify } from '@/utils/slugify';
 import { useTheme } from '@/contexts/ThemeContext';
 import { BookExpertContext } from '@/contexts/book-expert.utils';
+import { isNonBookDocument } from '@/hooks/useLibraryBooks';
 
 interface EnhancedGlobalSearchProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export type SearchCategory = 'all' | 'books' | 'authors' | 'articles' | 'commands';
+export type SearchCategory = 'all' | 'books' | 'research-papers' | 'authors' | 'articles' | 'commands';
 
 export interface GlobalSearchResult {
   id: string;
-  category: 'book' | 'author' | 'article' | 'command';
+  category: 'book' | 'research-paper' | 'author' | 'article' | 'command';
   title: string;
   subtitle?: string;
   meta?: string;
@@ -116,6 +117,16 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
         url: '/library',
         keywords: ['library', 'books', 'catalog', 'free', 'classics', 'read', 'digital'],
         score: 50,
+      },
+      {
+        id: 'cmd-research-papers',
+        category: 'command' as const,
+        title: 'Explore Research Papers',
+        subtitle: 'Find academic papers, preprints and technical reports',
+        meta: 'Research',
+        url: '/research-papers',
+        keywords: ['research', 'research papers', 'academic papers', 'studies', 'preprints', 'technical reports', 'journals'],
+        score: 48,
       },
       {
         id: 'cmd-authors',
@@ -345,14 +356,15 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
       // Quick commands are local and should remain useful even if catalog APIs are slow.
       if (isMounted) {
         setResults(matchedCommands);
-        setIsLoading(false);
+        // Keep the loading state active until catalog, author and article
+        // requests settle; otherwise the empty state flashes before results arrive.
       }
 
       const [booksResult, authorsResult, articlesResult] = await Promise.allSettled([
         // 1. Books query
         supabase
           .from('books_library')
-          .select('id, title, author, genre, cover_image_url, language')
+          .select('id, title, author, genre, cover_image_url, language, pdf_url, description')
           .or(bookOr)
           .limit(12),
 
@@ -381,11 +393,11 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
         for (const b of booksResult.value.data) {
           combined.push({
             id: `book-${b.id}`,
-            category: 'book',
+            category: isNonBookDocument(b) ? 'research-paper' : 'book',
             title: b.title,
             subtitle: b.author ? `by ${b.author}` : undefined,
             meta: b.genre || b.language || undefined,
-            url: `/book/${b.id}`,
+            url: isNonBookDocument(b) ? `/research-papers?search=${encodeURIComponent(b.title)}` : `/book/${b.id}`,
             imageUrl: b.cover_image_url,
             score: computeRelevance(cleanTerm, b.title, b.author, b.genre),
           });
@@ -445,6 +457,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
   const filteredResults = useMemo(() => {
     if (selectedCategory === 'all') return results;
     if (selectedCategory === 'books') return results.filter((r) => r.category === 'book');
+    if (selectedCategory === 'research-papers') return results.filter((r) => r.category === 'research-paper');
     if (selectedCategory === 'authors') return results.filter((r) => r.category === 'author');
     if (selectedCategory === 'articles') return results.filter((r) => r.category === 'article');
     if (selectedCategory === 'commands') return results.filter((r) => r.category === 'command');
@@ -455,6 +468,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
     return {
       all: results.length,
       books: results.filter((r) => r.category === 'book').length,
+      'research-papers': results.filter((r) => r.category === 'research-paper').length,
       authors: results.filter((r) => r.category === 'author').length,
       articles: results.filter((r) => r.category === 'article').length,
       commands: results.filter((r) => r.category === 'command').length,
@@ -464,6 +478,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
   const availableTabs = useMemo<SearchCategory[]>(() => {
     const tabs: SearchCategory[] = ['all'];
     if (counts.books > 0) tabs.push('books');
+    if (counts['research-papers'] > 0) tabs.push('research-papers');
     if (counts.authors > 0) tabs.push('authors');
     if (counts.articles > 0) tabs.push('articles');
     if (counts.commands > 0) tabs.push('commands');
@@ -551,6 +566,8 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
     switch (category) {
       case 'book':
         return <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />;
+      case 'research-paper':
+        return <FileText className="w-4 h-4 text-sky-600 dark:text-sky-400" aria-hidden="true" />;
       case 'author':
         return <User className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />;
       case 'article':
@@ -571,6 +588,8 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
     switch (category) {
       case 'book':
         return 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40';
+      case 'research-paper':
+        return 'bg-sky-50 text-sky-700 border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/40';
       case 'author':
         return 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40';
       case 'article':
@@ -590,7 +609,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
           <Search className="w-5 h-5 text-stone-400 dark:text-stone-500 flex-shrink-0" aria-hidden="true" />
           <Input
             ref={inputRef}
-            placeholder="Search books, authors, or articles..."
+            placeholder="Search books, research papers, authors, or articles..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -630,6 +649,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
               [
                 { id: 'all' as const, label: 'All Results', count: counts.all },
                 { id: 'books' as const, label: 'Books', count: counts.books },
+                ...(counts['research-papers'] > 0 ? [{ id: 'research-papers' as const, label: 'Research Papers', count: counts['research-papers'] }] : []),
                 { id: 'authors' as const, label: 'Authors', count: counts.authors },
                 { id: 'articles' as const, label: 'Articles', count: counts.articles },
                 ...(counts.commands > 0 ? [{ id: 'commands' as const, label: 'Commands', count: counts.commands }] : []),
@@ -688,25 +708,27 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
                 </div>
                 <div className="space-y-1">
                   {recentSearches.map((search, index) => (
-                    <button
+                    <div
                       key={search}
-                      onClick={() => {
-                        setSearchQuery(search);
-                        handleLibraryFallback(search);
-                      }}
                       className={cn(
-                        'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors text-left group cursor-pointer',
+                        'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors text-left group',
                         activeIndex === index
                           ? 'bg-stone-100 dark:bg-white/[0.08] border border-stone-200 dark:border-white/[0.12]'
                           : 'hover:bg-stone-50 dark:hover:bg-white/[0.04] border border-transparent'
                       )}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-white/[0.06] flex-shrink-0 flex items-center justify-center text-stone-500 dark:text-stone-400">
-                        <Search className="w-4 h-4" aria-hidden="true" />
-                      </div>
-                      <span className="text-sm font-medium text-stone-800 dark:text-stone-200 truncate flex-1">
-                        {search}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleLibraryFallback(search)}
+                        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                      >
+                        <span className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-white/[0.06] flex-shrink-0 flex items-center justify-center text-stone-500 dark:text-stone-400">
+                          <Search className="w-4 h-4" aria-hidden="true" />
+                        </span>
+                        <span className="text-sm font-medium text-stone-800 dark:text-stone-200 truncate">
+                          {search}
+                        </span>
+                      </button>
                       <button
                         type="button"
                         onClick={(e) => removeRecentSearch(search, e)}
@@ -716,7 +738,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
                         <X className="w-3.5 h-3.5" />
                       </button>
                       <ArrowRight className="w-3.5 h-3.5 text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>

@@ -314,9 +314,21 @@ export function isNonBookDocument(book: any): boolean {
   const author = (book.author || '').trim().toLowerCase();
   const genre = (book.genre || '').trim().toLowerCase();
   const pdf = (book.pdf_url || book.pdfUrl || '').trim().toLowerCase();
+  const description = (book.description || '').trim().toLowerCase();
 
   // Document/Report repositories in URL
   if (pdf.includes('/arxiv-') || pdf.includes('nasa_ntrs') || pdf.includes('eparlib.')) {
+    return true;
+  }
+
+  // Common academic-document language, including records whose title does not
+  // literally contain the words "research paper".
+  if (
+    /\b(journal article|research article|research paper|academic paper|preprint|dissertation|thesis|working paper|white paper|conference paper|case study|systematic review|meta-analysis)\b/i.test(title) ||
+    (/\b(abstract|methodology|method|results|findings|literature review|doi:|references)\b/i.test(description) &&
+      /\b(science|technology|engineering|medicine|research|academic|preprint|journal)\b/i.test(genre) &&
+      Boolean(pdf))
+  ) {
     return true;
   }
 
@@ -358,13 +370,10 @@ export function isNonBookDocument(book: any): boolean {
     return true;
   }
 
-  // Explicit document genres
+  // Explicit document genres. Use token/phrase checks so variants such as
+  // "Peer-reviewed Research Paper" and "Conference Proceedings" are included.
   if (
-    genre === 'technical report' ||
-    genre === 'research paper' ||
-    genre === 'academic paper' ||
-    genre === 'preprint' ||
-    genre === 'government document'
+    /research|academic paper|preprint|technical report|working paper|conference proceeding|journal article|thesis|dissertation|white paper|government document|scientific study/i.test(genre)
   ) {
     return true;
   }
