@@ -3,10 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   ChevronDown,
-  FileText,
   Info,
-  Library,
-  LogIn,
   Menu,
   MessageCircle,
   Moon,
@@ -24,6 +21,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -51,7 +51,9 @@ type NavigationItem = {
   name: string;
   href: string;
   authOnly?: boolean;
+  disabled?: boolean;
   tourTarget?: string;
+  children?: NavigationItem[];
 };
 
 type NavigationSection = {
@@ -101,6 +103,55 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
       { name: "Reading DNA", href: "/social?tab=dna" },
       { name: "Community Stories", href: "/community-stories" },
       { name: "Friends & Readers Map", href: "/map" },
+    ],
+  },
+];
+
+const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
+  {
+    name: "Library",
+    href: "/library",
+    items: [
+      { name: "Research Papers", href: "/research-papers" },
+    ],
+  },
+  {
+    name: "Social Media",
+    href: "/social",
+    items: [
+      { name: "Feed", href: "/social", tourTarget: "community" },
+      { name: "Discover Friends", href: "/social?tab=friends" },
+      { name: "Reading Groups", href: "/groups" },
+      { name: "Reader's Map", href: "/social?tab=map" },
+      {
+        name: "Book Discussion",
+        href: "/social?tab=threads",
+        children: [
+          { name: "Book Discussions", href: "/social?tab=threads" },
+          { name: "Reading Rooms", href: "/social?tab=rooms" },
+          { name: "Shared Marginalia", href: "/social?tab=margins" },
+          { name: "Reading DNA", href: "/social?tab=dna" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Articles",
+    href: "/articles",
+    items: [
+      { name: "Blogs", href: "/blog" },
+      { name: "News", href: "/news" },
+      { name: "Life Stories", href: "/life-stories", disabled: true },
+      { name: "Quotes", href: "/quotes" },
+    ],
+  },
+  {
+    name: "Authors",
+    href: "/authors",
+    items: [
+      { name: "Scientists", href: "/scientists" },
+      { name: "Social Activists", href: "/authors", disabled: true },
+      { name: "Freedom Fighters", href: "/authors", disabled: true },
     ],
   },
 ];
@@ -233,8 +284,12 @@ const Navigation = () => {
     return isNavigationItemActive(location.pathname, location.search, href);
   };
 
+  const isNavigationItemActive = (item: NavigationItem): boolean =>
+    (!item.disabled && isCurrentRoute(item.href)) ||
+    Boolean(item.children?.some(isNavigationItemActive));
+
   const isSectionActive = (section: NavigationSection) =>
-    section.items.some((item) => isCurrentRoute(item.href));
+    isCurrentRoute(section.href) || section.items.some(isNavigationItemActive);
 
   const visibleItems = (items: NavigationItem[]) =>
     items.filter((item) => !item.authOnly || Boolean(user));
@@ -247,7 +302,7 @@ const Navigation = () => {
       className="border-border text-foreground hover:bg-muted font-medium"
     >
       <MessageCircle className="mr-1.5 h-4 w-4" />
-      Contact me
+      Contact Us
     </Button>
   );
 
@@ -294,6 +349,117 @@ const Navigation = () => {
             .map(renderDrawerLink)}
         </div>
       </details>
+    </div>
+  );
+
+  const renderPublicDrawerItem = (item: NavigationItem): React.ReactNode => {
+    if (item.disabled) {
+      return (
+        <div key={item.name} aria-disabled="true" className="flex min-h-[44px] items-center justify-between gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground/60">
+          <span>{item.name}</span>
+          <span className="text-[10px] font-medium uppercase tracking-wide">Coming soon</span>
+        </div>
+      );
+    }
+
+    if (item.children?.length) {
+      return (
+        <details key={item.name} className="group rounded-md border border-border/70">
+          <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted [&::-webkit-details-marker]:hidden">
+            {item.name}
+            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <div className="space-y-0.5 border-t border-border/70 px-1 py-1.5">
+            {item.children.map(renderPublicDrawerItem)}
+          </div>
+        </details>
+      );
+    }
+
+    return renderDrawerLink(item);
+  };
+
+  const renderPublicDrawerSection = (section: NavigationSection) => (
+    <div key={section.name} className="relative flex items-start gap-1 rounded-lg border border-border bg-background p-1">
+      <div className="min-w-0 flex-1">
+        {renderDrawerLink({
+          name: section.name,
+          href: section.href,
+          tourTarget: section.items[0]?.tourTarget,
+        })}
+      </div>
+      <details className="group shrink-0">
+        <summary
+          aria-label={section.name + " submenu"}
+          className="flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&::-webkit-details-marker]:hidden"
+        >
+          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        <div className="absolute right-1 top-full z-20 mt-1 max-h-96 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background p-2 shadow-lg">
+          {section.items.map(renderPublicDrawerItem)}
+        </div>
+      </details>
+    </div>
+  );
+
+  const renderPublicDropdownItem = (item: NavigationItem): React.ReactNode => {
+    if (item.children?.length) {
+      return (
+        <DropdownMenuSub key={item.name}>
+          <DropdownMenuSubTrigger>{item.name}</DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="w-56 p-2">
+            {item.children.map(renderPublicDropdownItem)}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+      );
+    }
+
+    if (item.disabled) {
+      return (
+        <DropdownMenuItem key={item.name} disabled className="justify-between gap-3">
+          <span>{item.name}</span>
+          <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Coming soon</span>
+        </DropdownMenuItem>
+      );
+    }
+
+    return (
+      <DropdownMenuItem key={item.name} asChild>
+        <Link to={item.href} aria-current={isCurrentRoute(item.href) ? "page" : undefined} className="cursor-pointer">
+          {item.name}
+        </Link>
+      </DropdownMenuItem>
+    );
+  };
+
+  const renderPublicDesktopSection = (section: NavigationSection, align: "start" | "end" = "start") => (
+    <div key={section.name} className="flex shrink-0 items-center gap-0.5">
+      <Link
+        to={section.href}
+        aria-current={isCurrentRoute(section.href) ? "page" : undefined}
+        className={
+          "min-h-10 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:bg-muted " +
+          (isSectionActive(section)
+            ? "text-[hsl(var(--brand-primary))]"
+            : "text-muted-foreground hover:text-foreground")
+        }
+      >
+        {section.name}
+      </Link>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label={section.name + " submenu"}
+            className="inline-flex min-h-10 min-w-8 items-center justify-center rounded-md px-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align={align} sideOffset={8} className="w-60 p-2">
+          {section.items.map(renderPublicDropdownItem)}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 
@@ -345,7 +511,8 @@ const Navigation = () => {
             </Link>
 
             {!isMobile && (
-              <nav
+              user ? (
+                <nav
                 aria-label="Main navigation"
                 className="ml-2 flex min-w-0 flex-1 items-center justify-center gap-1 xl:gap-2"
               >
@@ -492,6 +659,23 @@ const Navigation = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </nav>
+              ) : (
+                <nav aria-label="Main navigation" className="ml-1 flex min-w-0 flex-1 items-center justify-center gap-0.5 xl:gap-1">
+                  <Link
+                    to="/"
+                    aria-current={isCurrentRoute("/") ? "page" : undefined}
+                    className={
+                      "min-h-10 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:bg-muted " +
+                      (isCurrentRoute("/") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")
+                    }
+                  >
+                    Home
+                  </Link>
+                  {PUBLIC_NAVIGATION_SECTIONS.map((section, index) =>
+                    renderPublicDesktopSection(section, index === PUBLIC_NAVIGATION_SECTIONS.length - 1 ? "end" : "start")
+                  )}
+                </nav>
+              )
             )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
@@ -555,10 +739,9 @@ const Navigation = () => {
                       ) : (
                         contactButton(() => setContactDialogRequested(true))
                       )}
-                      <Link to="/auth">
+                      <Link to="/signup">
                         <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 font-medium text-white hover:from-amber-700 hover:to-orange-700">
-                          <LogIn className="mr-1.5 h-4 w-4" />
-                          Sign In
+                          Sign up
                         </Button>
                       </Link>
                     </>
@@ -588,7 +771,7 @@ const Navigation = () => {
               Browse Sahadhyayi
             </SheetTitle>
             <SheetDescription>
-              Books, research, stories, games and the reading community.
+              Books, research, stories and the reading community.
             </SheetDescription>
             {user ? (
               <>
@@ -630,12 +813,13 @@ const Navigation = () => {
                 )}
               </>
             ) : (
-              <div className="flex gap-2 pt-2">
+              <div className="flex flex-wrap gap-2 pt-2">
+                {contactButton(() => setContactDialogRequested(true))}
                 <Button asChild size="sm" className="flex-1">
-                  <Link to="/auth" onClick={() => setIsOpen(false)}>Sign In</Link>
+                  <Link to="/signup" onClick={() => setIsOpen(false)}>Sign up</Link>
                 </Button>
-                <Button asChild size="sm" variant="outline" className="flex-1">
-                  <Link to="/signup" onClick={() => setIsOpen(false)}>Sign Up</Link>
+                <Button asChild size="sm" variant="ghost" className="flex-1">
+                  <Link to="/signin" onClick={() => setIsOpen(false)}>Sign In</Link>
                 </Button>
               </div>
             )}
@@ -656,6 +840,8 @@ const Navigation = () => {
                 Search books, authors and articles
               </button>
 
+              {user ? (
+                <>
               {renderDrawerLink({ name: homeLabel, href: homeHref })}
 
               {renderDrawerSection(NAVIGATION_SECTIONS[0])}
@@ -689,6 +875,15 @@ const Navigation = () => {
                   {PEOPLE_AND_MORE.slice(4).map(renderDrawerLink)}
                 </div>
               </details>
+
+
+                </>
+              ) : (
+                <>
+                  {renderDrawerLink({ name: "Home", href: "/" })}
+                  {PUBLIC_NAVIGATION_SECTIONS.map(renderPublicDrawerSection)}
+                </>
+              )}
 
               {user && isMobile && (
                 <div className="space-y-0.5 rounded-lg border border-border p-2">
