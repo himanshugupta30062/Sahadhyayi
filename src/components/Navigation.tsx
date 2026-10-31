@@ -713,8 +713,8 @@ const Navigation = () => {
                 type="button"
                 onClick={() => setSearchOpen(true)}
                 className="flex h-10 w-10 min-h-[40px] min-w-[40px] shrink-0 items-center justify-center rounded-full border border-border/70 bg-muted/40 text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Search library and books"
-                title="Search library and books"
+                aria-label="Search Sahadhyayi"
+                title="Search Sahadhyayi"
                 data-tour-target="search"
               >
                 <Search className="h-4 w-4" aria-hidden="true" />
@@ -788,7 +788,7 @@ const Navigation = () => {
               type="button"
               onClick={() => { setIsOpen(false); setSearchOpen(true); }}
               className="mb-3 flex min-h-[44px] w-full items-center gap-3 rounded-xl border border-border/70 bg-muted/50 px-3 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Search books, authors, and articles"
+              aria-label="Search Sahadhyayi"
               data-tour-target="search"
             >
               <Search className="h-4 w-4" aria-hidden="true" />
@@ -855,7 +855,7 @@ const Navigation = () => {
       )}
 
       {searchOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/40 px-4 pt-[15vh]" role="status" aria-label="Loading search"><div className="rounded-xl border border-border bg-background px-5 py-4 text-sm text-muted-foreground shadow-xl">Opening search…</div></div>}>
           <EnhancedGlobalSearch isOpen onClose={() => setSearchOpen(false)} />
         </Suspense>
       )}
