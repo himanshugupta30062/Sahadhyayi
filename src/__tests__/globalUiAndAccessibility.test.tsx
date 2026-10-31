@@ -305,8 +305,8 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       );
 
       fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
-      fireEvent.click(screen.getByText('Social Media').parentElement!.querySelector('summary')!);
-      fireEvent.click(screen.getByText('Book Discussion'));
+      fireEvent.click(screen.getByRole('button', { name: /social media submenu/i }));
+      fireEvent.click(screen.getByRole('button', { name: /^book discussion$/i }));
 
       expect(screen.getByRole('link', { name: /book discussions/i })).toHaveAttribute('href', '/social?tab=threads');
       expect(screen.getByRole('link', { name: /reading rooms/i })).toHaveAttribute('href', '/social?tab=rooms');
