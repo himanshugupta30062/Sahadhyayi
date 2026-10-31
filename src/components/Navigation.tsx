@@ -398,26 +398,30 @@ const Navigation = () => {
     );
   };
 
-  const renderDrawerSection = (section: NavigationSection) => {
-    const active = isSectionActive(section);
-    return (
-      <details key={section.name} className="group overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm open:border-[hsl(var(--brand-primary)/0.35)] open:shadow-md">
-        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 [&::-webkit-details-marker]:hidden">
-          <span className="flex min-w-0 items-center gap-2.5">
-            <span className={"h-2.5 w-2.5 shrink-0 rounded-full " + (active ? "bg-[hsl(var(--brand-primary))] shadow-[0_0_0_4px_hsl(var(--brand-primary)/0.12)]" : "bg-muted-foreground/40")} />
-            <span>{section.name}</span>
-            {active && <span className="rounded-full bg-[hsl(var(--brand-primary)/0.10)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[hsl(var(--brand-primary))]">Current</span>}
-          </span>
-          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+  const renderDrawerSection = (section: NavigationSection) => (
+    <div key={section.name} className="border-b border-border/70 py-1">
+      <div className="min-w-0 flex-1">
+        {renderDrawerLink({
+          name: section.name,
+          href: section.href,
+          tourTarget: section.items[0]?.tourTarget,
+        })}
+      </div>
+      <details className="group shrink-0">
+        <summary
+          aria-label={section.name + " submenu"}
+          className="flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&::-webkit-details-marker]:hidden"
+        >
+          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>
-        <div className="space-y-0.5 border-t border-border/70 bg-muted/20 px-2 py-2">
+        <div className="absolute right-1 top-full z-20 mt-1 max-h-72 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background p-2 shadow-lg">
           {visibleItems(section.items)
             .filter((item) => item.href !== section.href)
             .map(renderDrawerLink)}
         </div>
       </details>
-    );
-  };
+    </div>
+  );
 
   const publicNavKey = (value: string) =>
     value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -776,7 +780,7 @@ const Navigation = () => {
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent
-          side={isMobile ? "right" : "left"}
+          side="left"
           className="w-[min(88vw,390px)] max-w-[390px] overflow-y-auto border-r border-border bg-background p-0 shadow-2xl sm:max-w-[390px]"
         >
           <SheetHeader className="border-b border-[#263342] bg-[#1F2B39] px-5 py-5 pr-12 text-left text-white dark:bg-[#17212D]">
