@@ -301,9 +301,10 @@ const Navigation = () => {
   }, [user]);
 
   useEffect(() => {
+    clearDesktopMenuCloseTimer();
     setIsOpen(false);
     setOpenDesktopMenu(null);
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.search, clearDesktopMenuCloseTimer]);
 
   useEffect(() => {
     const handleScroll = () => {
