@@ -272,6 +272,30 @@ const Navigation = () => {
     );
   };
 
+  const renderDrawerSection = (section: NavigationSection) => (
+    <details key={section.name} className="group overflow-hidden rounded-lg border border-border bg-background">
+      <summary
+        className={
+          "flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-semibold transition-colors hover:bg-muted [&::-webkit-details-marker]:hidden " +
+          (isSectionActive(section)
+            ? "text-[hsl(var(--brand-primary))]"
+            : "text-foreground")
+        }
+      >
+        <span className="flex items-center gap-3">
+          {section.name === "Library" && <Library className="h-4 w-4" aria-hidden="true" />}
+          {section.name === "Articles" && <FileText className="h-4 w-4" aria-hidden="true" />}
+          {section.name === "Social Media" && <Users className="h-4 w-4" aria-hidden="true" />}
+          {section.name}
+        </span>
+        <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+      </summary>
+      <div className="space-y-0.5 border-t border-border px-2 py-2">
+        {visibleItems(section.items).map(renderDrawerLink)}
+      </div>
+    </details>
+  );
+
   if (location.pathname.startsWith("/admin")) return null;
 
   const homeHref = user ? "/dashboard" : "/";
@@ -633,31 +657,10 @@ const Navigation = () => {
 
               {renderDrawerLink({ name: homeLabel, href: homeHref })}
 
-              {NAVIGATION_SECTIONS.map((section) => (
-                <details key={section.name} className="group overflow-hidden rounded-lg border border-border bg-background">
-                  <summary
-                    className={
-                      "flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-semibold transition-colors hover:bg-muted [&::-webkit-details-marker]:hidden " +
-                      (isSectionActive(section)
-                        ? "text-[hsl(var(--brand-primary))]"
-                        : "text-foreground")
-                    }
-                  >
-                    <span className="flex items-center gap-3">
-                      {section.name === "Library" && <Library className="h-4 w-4" aria-hidden="true" />}
-                      {section.name === "Articles" && <FileText className="h-4 w-4" aria-hidden="true" />}
-                      {section.name === "Social Media" && <Users className="h-4 w-4" aria-hidden="true" />}
-                      {section.name}
-                    </span>
-                    <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
-                  </summary>
-                  <div className="space-y-0.5 border-t border-border px-2 py-2">
-                    {visibleItems(section.items).map(renderDrawerLink)}
-                  </div>
-                </details>
-              ))}
-
+              {renderDrawerSection(NAVIGATION_SECTIONS[0])}
+              {renderDrawerSection(NAVIGATION_SECTIONS[1])}
               {renderDrawerLink({ name: "Games", href: "/games" })}
+              {renderDrawerSection(NAVIGATION_SECTIONS[2])}
 
               <details className="group overflow-hidden rounded-lg border border-border bg-background">
                 <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted [&::-webkit-details-marker]:hidden">
