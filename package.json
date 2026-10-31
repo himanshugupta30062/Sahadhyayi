@@ -26,7 +26,7 @@
     "generate:sitemap": "node scripts/generateSitemap.js",
     "prerender": "node scripts/prerender.js",
     "generate:licenses": "node scripts/generateLicenseList.js",
-    "generate:sbom": "cyclonedx-npm --output-file sbom.json",
+    "generate:sbom": "npm sbom --sbom-format=cyclonedx --sbom-type=application --output-file=sbom.json",
     "verify:licenses": "node scripts/verifyLicenses.js",
     "size": "size-limit"
   },
@@ -73,8 +73,8 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.4",
     "@react-google-maps/api": "^2.20.7",
-    "@sentry/node": "^10.2.0",
-    "@sentry/react": "^10.2.0",
+    "@sentry/node": "^11.9.0",
+    "@sentry/react": "^11.9.0",
     "@supabase/supabase-js": "^2.50.0",
     "@tanstack/react-query": "^5.56.2",
     "@tanstack/react-virtual": "^3.0.0",
@@ -118,8 +118,7 @@
   },
   "devDependencies": {
     "@axe-core/react": "^4.10.2",
-    "@cyclonedx/cyclonedx-npm": "^4.0.0",
-    "@eslint/js": "^9.9.0",
+    "@eslint/js": "^10.0.1",
     "@size-limit/file": "^11.2.0",
     "@tailwindcss/typography": "^0.5.15",
     "@testing-library/jest-dom": "^6.8.0",
@@ -129,11 +128,11 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.7.2",
     "autoprefixer": "^10.4.20",
-    "eslint": "^9.9.0",
+    "eslint": "^10.14.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
-    "eslint-plugin-react-refresh": "^0.4.9",
-    "globals": "^15.9.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
     "jsdom": "^26.1.0",
     "postcss": "8.5.12",
     "rollup": "^4.59.0",
@@ -141,13 +140,18 @@
     "size-limit": "^11.2.0",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
-    "typescript-eslint": "^8.0.1",
+    "typescript-eslint": "^8.72.1",
     "vite": "6.4.4",
-    "vitest": "^3.2.6"
+    "vitest": "^3.2.6",
+    "@eslint/compat": "^2.1.1"
   },
   "overrides": {
     "form-data": "2.5.6",
     "lodash": "^4.18.0",
-    "flatted": "^3.4.2"
+    "flatted": "^3.4.2",
+    "glob": "^14.0.3",
+    "eslint-plugin-jsx-a11y": {
+      "eslint": "$eslint"
+    }
   }
 }

@@ -211,14 +211,14 @@
   },
   {
     "name": "@sentry/node",
-    "version": "10.2.0",
+    "version": "11.10.0",
     "license": "MIT",
     "url": "https://github.com/getsentry/sentry-javascript/tree/master/packages/node",
-    "description": "Sentry Node SDK using OpenTelemetry for performance instrumentation"
+    "description": "Official Sentry SDK for Node.js"
   },
   {
     "name": "@sentry/react",
-    "version": "10.2.0",
+    "version": "11.10.0",
     "license": "MIT",
     "url": "https://github.com/getsentry/sentry-javascript/tree/master/packages/react",
     "description": "Official Sentry SDK for React.js"

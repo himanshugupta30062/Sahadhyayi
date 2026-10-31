@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import { fixupPluginRules } from "@eslint/compat";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
@@ -30,7 +31,7 @@ export default tseslint.config(
   },
   {
     files: ["src/components/chatbot/**/*.{ts,tsx}", "src/App.tsx"],
-    plugins: { "jsx-a11y": jsxA11y },
+    plugins: { "jsx-a11y": fixupPluginRules(jsxA11y) },
     rules: {
       ...jsxA11y.configs.recommended.rules,
       "jsx-a11y/no-redundant-roles": "off",
