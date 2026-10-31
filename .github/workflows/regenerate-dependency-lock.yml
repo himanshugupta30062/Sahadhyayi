@@ -26,7 +26,7 @@ jobs:
           node-version: 22
           cache: npm
       - name: Resolve updated dependency graph
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund --no-progress eslint@10.14.0 @eslint/js@10.0.1 @eslint/compat@2.1.1 @sentry/node@11.9.0 @sentry/react@11.9.0 eslint-plugin-react-hooks@7.1.1 eslint-plugin-react-refresh@0.5.7 globals@17.13.0 typescript-eslint@8.72.1 @typescript-eslint/eslint-plugin@8.72.1 @typescript-eslint/parser@8.72.1
+        run: npm update --package-lock-only --ignore-scripts --no-audit --no-fund --no-progress --force eslint @eslint/js @sentry/node @sentry/react eslint-plugin-react-hooks eslint-plugin-react-refresh globals typescript-eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser
       - name: Commit refreshed lockfile
         run: |
           git config user.name "github-actions[bot]"
