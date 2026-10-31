@@ -47,16 +47,28 @@ const AudioSummaryPlayer: React.FC<AudioSummaryPlayerProps> = ({
     };
   }, [audioSummary]);
 
-  const togglePlayPause = () => {
+  const togglePlayPause = async () => {
     const audio = audioRef.current;
     if (!audio) return;
 
     if (isPlaying) {
       audio.pause();
-    } else {
-      audio.play();
+      setIsPlaying(false);
+      return;
     }
-    setIsPlaying(!isPlaying);
+
+    try {
+      await audio.play();
+      setIsPlaying(true);
+    } catch (error) {
+      console.error('Unable to play audio summary:', error);
+      toast({
+        title: 'Playback unavailable',
+        description: 'The audio could not be played. Please try again.',
+        variant: 'destructive',
+      });
+      setIsPlaying(false);
+    }
   };
 
   const skipTime = (seconds: number) => {
