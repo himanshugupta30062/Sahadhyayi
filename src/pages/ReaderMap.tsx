@@ -1,11 +1,10 @@
-
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import SEO from '@/components/SEO';
 import { supabase } from '@/integrations/supabase/client-universal';
-import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { useParams } from 'react-router-dom';
-import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
+import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
+import { MAPPLS_API_KEY } from '@/config/mappls';
 
 interface ReaderProfile {
   id: string;
@@ -14,71 +13,34 @@ interface ReaderProfile {
   location_lng: number | null;
 }
 
-declare global {
-  interface Window {
-    google: any;
-    initGoogleMaps?: () => void;
-    googleMapsLoadingPromise?: Promise<void>;
-  }
-}
-
 const ReaderMap = () => {
   const { bookId } = useParams<{ bookId: string }>();
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<any>(null);
   const [readers, setReaders] = useState<ReaderProfile[]>([]);
 
   useEffect(() => {
-    loadGoogleMaps(GOOGLE_MAPS_API_KEY)
-      .then(() => {
-        if (mapRef.current && window.google && window.google.maps) {
-          const center = { lat: 20, lng: 0 };
-          const newMap = new window.google.maps.Map(mapRef.current, {
-            center,
-            zoom: 2,
-          });
-          setMap(newMap);
-        }
-      })
-      .catch(err => {
-        console.error('Failed to load Google Maps', { errorName: err instanceof Error ? err.name : 'UnknownError' });
-      });
-  }, []);
-
-  useEffect(() => {
+    let active = true;
     const fetchReaders = async () => {
       if (!bookId) return;
-      const { data, error } = await supabase
-        .rpc('get_friend_locations');
-      
+      const { data, error } = await supabase.rpc('get_friend_locations');
       if (error) {
         console.error('Failed to fetch reader locations', { errorName: error instanceof Error ? error.name : 'UnknownError' });
         return;
       }
-      setReaders((data || []) as ReaderProfile[]);
+      if (active) setReaders((data || []) as ReaderProfile[]);
     };
-
-    fetchReaders();
+    void fetchReaders();
+    return () => { active = false; };
   }, [bookId]);
 
-  useEffect(() => {
-    if (!map || !window.google) return;
-    readers.forEach(reader => {
-      if (
-        reader.location_lat != null &&
-        reader.location_lng != null
-      ) {
-        new window.google.maps.Marker({
-          position: {
-            lat: Number(reader.location_lat),
-            lng: Number(reader.location_lng),
-          },
-          map,
-          title: reader.full_name || 'Reader',
-        });
-      }
-    });
-  }, [readers, map]);
+  const points = useMemo<MapplsPoint[]>(() => readers
+    .filter((reader) => reader.location_lat != null && reader.location_lng != null)
+    .map((reader) => ({
+      id: reader.id,
+      lat: Number(reader.location_lat),
+      lng: Number(reader.location_lng),
+      title: reader.full_name || 'Reader',
+    }))
+    .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng)), [readers]);
 
   return (
     <>
@@ -88,7 +50,7 @@ const ReaderMap = () => {
         canonical={`https://sahadhyayi.com/map/${bookId ?? ''}`}
         url={`https://sahadhyayi.com/map/${bookId ?? ''}`}
       />
-      <div ref={mapRef} style={{ height: '500px', width: '100%' }} />
+      <MapplsMap apiKey={MAPPLS_API_KEY} points={points} emptyMessage="No readers have shared a mappable location for this book yet." />
       {readers.length === 0 && (
         <Card className="mt-4">
           <CardContent className="p-4 text-center text-sm text-gray-600">
