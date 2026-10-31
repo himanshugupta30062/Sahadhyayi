@@ -7,7 +7,7 @@ import { getPublicSupabaseConfig } from './publicSupabaseConfig.mjs';
 // Public, canonical pages only. Do not include authentication or account routes.
 const staticPages = [
   '/library', '/articles', '/authors', '/groups', '/blog', '/discovery', '/scientists',
-  '/games', '/quotes', '/community-stories', '/about', '/social', '/map',
+  '/games', '/quotes', '/community-stories', '/life-stories', '/about', '/social', '/map',
   '/book-search', '/help-center', '/community-guidelines', '/privacy-policy',
   '/terms-of-service', '/cookie-policy', '/dmca'
 ];
@@ -50,6 +50,8 @@ const scientistSlugs = [
   'katherine-johnson'
 ];
 scientistSlugs.forEach(slug => addUrl('/scientists/' + slug, 'monthly', '0.6'));
+const lifeStorySlugs = ['kalpana-chawla', 'arunima-sinha', 'a-p-j-abdul-kalam', 'sudha-murty', 'mary-kom', 'dashrath-manjhi'];
+lifeStorySlugs.forEach(slug => addUrl('/life-stories/' + slug, 'monthly', '0.6'));
 
 const { url: SUPABASE_URL, key: SUPABASE_KEY } = getPublicSupabaseConfig();
 if (SUPABASE_URL && SUPABASE_KEY) {

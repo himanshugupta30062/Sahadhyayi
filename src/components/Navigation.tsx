@@ -102,6 +102,7 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
       { name: "Shared Marginalia", href: "/social?tab=margins" },
       { name: "Reading DNA", href: "/social?tab=dna" },
       { name: "Community Stories", href: "/community-stories" },
+      { name: "Life Stories", href: "/life-stories" },
       { name: "Friends & Readers Map", href: "/map" },
     ],
   },

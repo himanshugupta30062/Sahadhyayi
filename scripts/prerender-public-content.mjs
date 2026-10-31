@@ -106,12 +106,32 @@ const publicPages = [
   { route: "/discovery", title: "Discover Books, Readers and New Ideas | Sahadhyayi", description: "Discover books, reading inspiration, literary ideas, and fellow readers with Sahadhyayi." },
   { route: "/about", title: "About Sahadhyayi - A Community for Readers", description: "Learn about Sahadhyayi's mission to bring readers together, support deeper reading, and make literature more social." },
   { route: "/community-stories", title: "Reader Stories and Reading Experiences | Sahadhyayi", description: "Explore stories and perspectives from readers who share a love of books, literature, and learning together." },
+  { route: "/life-stories", title: "Life Stories — Real People, Remarkable Journeys | Sahadhyayi", description: "Discover true stories of remarkable people from India and around the world: their lives, challenges, achievements and the lessons they leave behind." },
   { route: "/quotes", title: "Book Quotes and Literary Inspiration | Sahadhyayi", description: "Discover memorable literary quotes and ideas that inspire reflection, reading, and conversation." },
   { route: "/games", title: "Literary Games and Book Quizzes | Sahadhyayi", description: "Challenge your book knowledge with literary games, reading quizzes, and activities for book lovers." },
 ];
 
 for (const page of publicPages) {
   writeRoute(page.route, createPage({ ...page, type: "website" }));
+}
+
+const lifeStoryProfiles = [
+  { slug: "kalpana-chawla", name: "Kalpana Chawla", description: "Explore the life of Kalpana Chawla, the astronaut and aerospace engineer from Karnal who became the first woman of Indian origin to travel to space." },
+  { slug: "arunima-sinha", name: "Arunima Sinha", description: "Discover mountaineer Arunima Sinha's journey from recovery after a train accident to becoming the first female amputee to summit Mount Everest." },
+  { slug: "a-p-j-abdul-kalam", name: "A. P. J. Abdul Kalam", description: "Learn about the aerospace scientist, former President of India and educator whose work helped shape India's space and defence programmes." },
+  { slug: "sudha-murty", name: "Sudha Murty", description: "Explore the life of engineer, author, educator and philanthropist Sudha Murty and her work in technology, literature and social initiatives." },
+  { slug: "mary-kom", name: "Mary Kom", description: "Discover the career of Indian boxer Mary Kom, a six-time world champion and Olympic bronze medalist." },
+  { slug: "dashrath-manjhi", name: "Dashrath Manjhi", description: "Read about Dashrath Manjhi, the Mountain Man of Bihar, who spent years carving a passage through a hill for his community." }
+];
+
+for (const person of lifeStoryProfiles) {
+  const route = `/life-stories/${person.slug}`;
+  writeRoute(route, createPage({
+    title: `${person.name} — Life Story | Sahadhyayi`,
+    description: person.description,
+    route,
+    type: "profile"
+  }));
 }
 
 const scientistProfiles = [
