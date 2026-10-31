@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -231,9 +231,32 @@ function isNavigationItemActive(pathname: string, search: string, href: string) 
   return true;
 }
 
+const NAVIGATION_ORDER = ["Library", "Social Media", "Articles", "Authors"];
+
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openDesktopMenu, setOpenDesktopMenu] = useState<string | null>(null);
+  const closeDesktopMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearDesktopMenuCloseTimer = useCallback(() => {
+    if (closeDesktopMenuTimer.current !== null) {
+      clearTimeout(closeDesktopMenuTimer.current);
+      closeDesktopMenuTimer.current = null;
+    }
+  }, []);
+
+  const openDesktopMenuByKey = useCallback((key: string) => {
+    clearDesktopMenuCloseTimer();
+    setOpenDesktopMenu(key);
+  }, [clearDesktopMenuCloseTimer]);
+
+  const scheduleDesktopMenuClose = useCallback((key: string) => {
+    clearDesktopMenuCloseTimer();
+    closeDesktopMenuTimer.current = setTimeout(() => {
+      setOpenDesktopMenu((current) => current === key ? null : current);
+      closeDesktopMenuTimer.current = null;
+    }, 150);
+  }, [clearDesktopMenuCloseTimer]);
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [contactDialogRequested, setContactDialogRequested] = useState(false);
@@ -250,6 +273,28 @@ const Navigation = () => {
     user?.user_metadata?.name ||
     user?.email?.split("@")[0] ||
     "Reader";
+
+  const desktopSections = useMemo(() => {
+    const sections = user
+      ? [
+          ...NAVIGATION_SECTIONS,
+          ...PUBLIC_NAVIGATION_SECTIONS.filter((section) => section.name === "Authors"),
+        ]
+      : [...PUBLIC_NAVIGATION_SECTIONS];
+
+    return sections
+      .sort((a, b) => NAVIGATION_ORDER.indexOf(a.name) - NAVIGATION_ORDER.indexOf(b.name))
+      .map((section) => ({
+        key: section.name.toLowerCase().replace(/\\s+/g, "-"),
+        label: section.name,
+        section,
+        tourTarget: section.items[0]?.tourTarget,
+      }));
+  }, [Boolean(user)]);
+
+  useEffect(() => () => {
+    clearDesktopMenuCloseTimer();
+  }, [clearDesktopMenuCloseTimer]);
 
   useEffect(() => {
     if (user) setContactDialogRequested(false);
@@ -516,24 +561,15 @@ const Navigation = () => {
                   {homeLabel}
                 </Link>
 
-                {(user
-                  ? [...NAVIGATION_SECTIONS, ...PUBLIC_NAVIGATION_SECTIONS.filter((section) => section.name === "Authors")]
-                  : PUBLIC_NAVIGATION_SECTIONS
-                )
-                  .sort((a, b) => ["Library", "Social Media", "Articles", "Authors"].indexOf(a.name) - ["Library", "Social Media", "Articles", "Authors"].indexOf(b.name))
-                  .map((section) => ({
-                    key: section.name.toLowerCase().replace(/\s+/g, "-"),
-                    label: section.name,
-                    section,
-                    tourTarget: section.items[0]?.tourTarget,
-                  }))
-                  .map(({ key, label, section, tourTarget }) => (
+                {desktopSections.map(({ key, label, section, tourTarget }) => (
                   <DropdownMenu
                     key={key}
+                    modal={false}
                     open={openDesktopMenu === key}
                     onOpenChange={(open) => {
+                      clearDesktopMenuCloseTimer();
                       if (open) {
-                        setOpenDesktopMenu(key);
+                        openDesktopMenuByKey(key);
                       } else {
                         setOpenDesktopMenu((current) => current === key ? null : current);
                       }
@@ -542,6 +578,8 @@ const Navigation = () => {
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
+                        onMouseEnter={() => openDesktopMenuByKey(key)}
+                        onMouseLeave={() => scheduleDesktopMenuClose(key)}
                         data-tour-target={tourTarget}
                         aria-haspopup="menu"
                         aria-expanded={openDesktopMenu === key}
@@ -560,6 +598,8 @@ const Navigation = () => {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
+                      onMouseEnter={clearDesktopMenuCloseTimer}
+                      onMouseLeave={() => scheduleDesktopMenuClose(key)}
                       align="start"
                       side="bottom"
                       sideOffset={6}
