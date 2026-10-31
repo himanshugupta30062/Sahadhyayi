@@ -1,20 +1,29 @@
-
 import React, { useEffect, useState } from 'react';
 import { QuotesContext, type Quote } from './quotesHelpers';
 
 const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
-
   const [quotes, setQuotes] = useState<Quote[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem('savedQuotes');
-    if (stored) {
-      setQuotes(JSON.parse(stored));
+    try {
+      const stored = window.localStorage.getItem('savedQuotes');
+      if (!stored) return;
+
+      const parsed: unknown = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        setQuotes(parsed as Quote[]);
+      }
+    } catch {
+      // Ignore unavailable storage or malformed persisted data.
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('savedQuotes', JSON.stringify(quotes));
+    try {
+      window.localStorage.setItem('savedQuotes', JSON.stringify(quotes));
+    } catch {
+      // Quotes remain usable in memory when persistence is unavailable.
+    }
   }, [quotes]);
 
   const addQuote = (text: string, source?: string, note?: string) => {
