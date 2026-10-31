@@ -30,11 +30,13 @@ const OptimizedProtectedRoute: FC<ProtectedRouteProps> = memo(({ children }) => 
   }
 
   if (!user) {
-    // Save scroll position for restoration after login
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('redirectScrollY', String(window.scrollY));
+    // Saving scroll position is optional; redirecting must still work without storage.
+    try {
+      window.sessionStorage.setItem('redirectScrollY', String(window.scrollY));
+    } catch {
+      // Ignore unavailable browser storage.
     }
-    
+
     const redirect = getSafeRedirectUrl(
       `${location.pathname}${location.search}${location.hash}`,
       '/dashboard'
