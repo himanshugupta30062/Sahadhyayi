@@ -10,6 +10,7 @@ import {
   Search,
   Sun,
   Users,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/authHelpers";
