@@ -331,7 +331,7 @@ const Navigation = () => {
   };
 
   const renderDrawerSection = (section: NavigationSection) => (
-    <div key={section.name} className="relative flex items-start gap-1 rounded-lg border border-border bg-background p-1">
+    <div key={section.name} className="border-b border-border/70 py-1">
       <div className="min-w-0 flex-1">
         {renderDrawerLink({
           name: section.name,
@@ -398,8 +398,10 @@ const Navigation = () => {
         >
           <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>
-        <div className="absolute right-1 top-full z-20 mt-1 max-h-96 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background p-2 shadow-lg">
-          {section.items.map(renderPublicDrawerItem)}
+        <div className="mt-1 max-h-96 overflow-y-auto border-l-2 border-border bg-muted/20 py-1 pl-2">
+          <div className="space-y-0.5">
+            {section.items.map(renderPublicDrawerItem)}
+          </div>
         </div>
       </details>
     </div>
@@ -512,6 +514,10 @@ const Navigation = () => {
               />
               <span className="whitespace-nowrap leading-none">Sahadhyayi</span>
             </Link>
+
+            {!isMobile && !user && (
+              <div className="ml-1 min-w-0 flex-1" aria-hidden="true" />
+            )}
 
             {!isMobile && (
               user ? (
@@ -757,7 +763,7 @@ const Navigation = () => {
                 width={28}
                 height={28}
               />
-              Browse Sahadhyayi
+              Hello, {user ? userDisplayName : "Reader"}
             </SheetTitle>
             <SheetDescription className="text-white/70">
               Books, research, stories and the reading community.
