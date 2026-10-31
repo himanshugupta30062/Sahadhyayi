@@ -21,6 +21,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
 import Navigation from "./components/Navigation";
+import AppSidebar from "@/components/dashboard/AppSidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import DeferredSection from "./components/DeferredSection";
@@ -275,6 +277,9 @@ const App = memo(() => {
                   <BookExpertProvider>
                     <ScrollToTop />
                     <PageTracker />
+                  <SidebarProvider defaultOpen>
+                    <AppSidebar />
+                    <SidebarInset className="min-w-0 bg-background">
                   <div className="min-h-screen bg-background text-foreground flex flex-col">
                     {/* Skip to main content link for keyboard accessibility */}
                     <a
@@ -753,6 +758,8 @@ const App = memo(() => {
                       <WebsiteTour />
                     </DeferredSection>
                   </div>
+                    </SidebarInset>
+                  </SidebarProvider>
                   
                   {/* Book Expert - load only after idle time so it does not compete with the initial route */}
                   <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
