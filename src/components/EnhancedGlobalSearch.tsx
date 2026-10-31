@@ -587,6 +587,8 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
     switch (category) {
       case 'book':
         return 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40';
+      case 'research-paper':
+        return 'bg-sky-50 text-sky-700 border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/40';
       case 'author':
         return 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40';
       case 'article':
@@ -606,7 +608,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
           <Search className="w-5 h-5 text-stone-400 dark:text-stone-500 flex-shrink-0" aria-hidden="true" />
           <Input
             ref={inputRef}
-            placeholder="Search books, authors, or articles..."
+            placeholder="Search books, research papers, authors, or articles..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -646,6 +648,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
               [
                 { id: 'all' as const, label: 'All Results', count: counts.all },
                 { id: 'books' as const, label: 'Books', count: counts.books },
+                ...(counts['research-papers'] > 0 ? [{ id: 'research-papers' as const, label: 'Research Papers', count: counts['research-papers'] }] : []),
                 { id: 'authors' as const, label: 'Authors', count: counts.authors },
                 { id: 'articles' as const, label: 'Articles', count: counts.articles },
                 ...(counts.commands > 0 ? [{ id: 'commands' as const, label: 'Commands', count: counts.commands }] : []),
@@ -704,8 +707,17 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
                 </div>
                 <div className="space-y-1">
                   {recentSearches.map((search, index) => (
-                    <button
+                    <div
                       key={search}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSearchQuery(search);
+                          handleLibraryFallback(search);
+                        }
+                      }}
                       onClick={() => {
                         setSearchQuery(search);
                         handleLibraryFallback(search);
@@ -732,7 +744,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
                         <X className="w-3.5 h-3.5" />
                       </button>
                       <ArrowRight className="w-3.5 h-3.5 text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
