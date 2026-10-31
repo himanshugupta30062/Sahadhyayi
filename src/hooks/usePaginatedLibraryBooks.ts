@@ -6,6 +6,7 @@ import {
   getBookCompletenessScore,
   compareLibraryBooks,
   diversifyBooksPerPage,
+  isNonBookDocument,
 } from './useLibraryBooks';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { mapRawToEdition } from '@/utils/catalog/deduplicationEngine';
@@ -24,6 +25,7 @@ interface UsePaginatedLibraryBooksParams {
   selectedYear?: string;
   selectedLanguage?: string;
   priceRange?: [number, number];
+  contentType?: 'books' | 'research-papers';
 }
 
 interface PaginatedBooksResponse {
@@ -43,6 +45,7 @@ async function fetchFilteredBooks(
   selectedAuthor?: string,
   selectedYear?: string,
   selectedLanguage?: string,
+  contentType?: 'books' | 'research-papers',
 ): Promise<Book[]> {
   const caps = await detectBookSchemaCapabilities();
   const selectColumns = getPublicBookSelectColumns(caps);
@@ -172,17 +175,22 @@ async function fetchFilteredBooks(
   });
 
   // Sort deterministically by library completeness hierarchy
-  catalogBooks.sort(compareLibraryBooks);
+  const typedBooks = contentType === 'research-papers'
+    ? catalogBooks.filter(isNonBookDocument)
+    : contentType === 'books'
+      ? catalogBooks.filter((item) => !isNonBookDocument(item))
+      : catalogBooks;
+  typedBooks.sort(compareLibraryBooks);
 
   // Return deterministically sorted catalog; paginatedData applies dynamic diversification per active pageSize
-  return catalogBooks;
+  return typedBooks;
 }
 
 export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams = {}) => {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(12);
 
-  const { searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange } = params;
+  const { searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange, contentType } = params;
 
   // Reset page when filters change
   React.useEffect(() => {
@@ -192,8 +200,8 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
   // Fetch ALL matching books once per filter set (cached 5 min).
   // Page changes just slice this cached array — no new network request.
   const allBooksQuery = useQuery({
-    queryKey: ['paginated-library-all', searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage],
-    queryFn: () => fetchFilteredBooks(searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage),
+    queryKey: ['paginated-library-all', searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, contentType],
+    queryFn: () => fetchFilteredBooks(searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, contentType),
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
