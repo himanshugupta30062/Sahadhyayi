@@ -142,7 +142,7 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
     items: [
       { name: "Blogs", href: "/blog" },
       { name: "News", href: "/news" },
-      { name: "Life Stories", href: "/life-stories", disabled: true },
+      { name: "Life Stories", href: "/life-stories" },
       { name: "Quotes", href: "/quotes" },
     ],
   },
