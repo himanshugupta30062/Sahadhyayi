@@ -13,6 +13,7 @@ Allow: /games
 Allow: /discovery
 Allow: /quotes
 Allow: /community-stories
+Allow: /life-stories
 Allow: /help-center
 Allow: /community-guidelines
 
