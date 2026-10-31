@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/authHelpers";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -710,6 +711,13 @@ const Navigation = () => {
             )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+              {!isMobile && (
+                <SidebarTrigger
+                  aria-label="Open page navigation"
+                  title="Open page navigation"
+                  className="h-10 w-10 rounded-full border border-border/70 bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
+                />
+              )}
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
