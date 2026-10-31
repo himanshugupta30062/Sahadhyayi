@@ -24,7 +24,7 @@ jobs:
       - name: Check out remediation branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
           fetch-depth: 0
 
       - name: Set up Node.js
@@ -34,7 +34,9 @@ jobs:
           cache: npm
 
       - name: Regenerate npm lockfile safely
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+        run: |
+          rm -f package-lock.json
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
       - name: Commit regenerated lockfile
         run: |
