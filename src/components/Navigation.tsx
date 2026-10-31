@@ -609,7 +609,7 @@ const Navigation = () => {
 
                 {(user ? NAVIGATION_SECTIONS : PUBLIC_NAVIGATION_SECTIONS.filter((section) => section.name !== "Authors"))
                   .map((section) => ({
-                    key: section.name.toLowerCase().replace(/\\s+/g, "-"),
+                    key: section.name.toLowerCase().replaceAll(" ", "-"),
                     label: section.name,
                     section,
                     tourTarget: section.items[0]?.tourTarget,
