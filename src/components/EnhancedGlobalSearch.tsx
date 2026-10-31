@@ -710,32 +710,25 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
                   {recentSearches.map((search, index) => (
                     <div
                       key={search}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          setSearchQuery(search);
-                          handleLibraryFallback(search);
-                        }
-                      }}
-                      onClick={() => {
-                        setSearchQuery(search);
-                        handleLibraryFallback(search);
-                      }}
                       className={cn(
-                        'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors text-left group cursor-pointer',
+                        'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors text-left group',
                         activeIndex === index
                           ? 'bg-stone-100 dark:bg-white/[0.08] border border-stone-200 dark:border-white/[0.12]'
                           : 'hover:bg-stone-50 dark:hover:bg-white/[0.04] border border-transparent'
                       )}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-white/[0.06] flex-shrink-0 flex items-center justify-center text-stone-500 dark:text-stone-400">
-                        <Search className="w-4 h-4" aria-hidden="true" />
-                      </div>
-                      <span className="text-sm font-medium text-stone-800 dark:text-stone-200 truncate flex-1">
-                        {search}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleLibraryFallback(search)}
+                        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                      >
+                        <span className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-white/[0.06] flex-shrink-0 flex items-center justify-center text-stone-500 dark:text-stone-400">
+                          <Search className="w-4 h-4" aria-hidden="true" />
+                        </span>
+                        <span className="text-sm font-medium text-stone-800 dark:text-stone-200 truncate">
+                          {search}
+                        </span>
+                      </button>
                       <button
                         type="button"
                         onClick={(e) => removeRecentSearch(search, e)}
