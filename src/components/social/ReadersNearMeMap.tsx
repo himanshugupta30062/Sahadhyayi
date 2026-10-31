@@ -5,19 +5,13 @@ import { MapPin, MapPinOff, Users, BookOpen, MessageCircle, ShieldCheck, Loader2
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
-import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 import { LocationConsentModal } from './LocationConsentModal';
 import { LocationPermissionModal } from './LocationPermissionModal';
 import { BookFilterDropdown } from './BookFilterDropdown';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
-import { GOOGLE_MAPS_API_KEY } from '@/config/maps';
 import { ChatWindow } from './ChatWindow';
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
+import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
+import { MAPPLS_API_KEY } from '@/config/mappls';
 
 interface NearbyReader {
   id: string;
@@ -38,15 +32,8 @@ const MAX_DISTANCE_KM = 50;
 
 export const ReadersNearMeMap: React.FC = () => {
   const { user } = useAuth();
-  const mapRef = useRef<HTMLDivElement>(null);
-  const userMarkerRef = useRef<any>(null);
   const requestIdRef = useRef(0);
-
-  const [map, setMap] = useState<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isLoadingMap, setIsLoadingMap] = useState(true);
-  const [mapLoadError, setMapLoadError] = useState<string | null>(null);
-  const [mapLoadAttempt, setMapLoadAttempt] = useState(0);
+  const [mapCenter, setMapCenter] = useState<LocationCoords | null>(null);
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
   const [isLocationSharing, setIsLocationSharing] = useState(false);
   const [isLoadingSharingStatus, setIsLoadingSharingStatus] = useState(true);
@@ -124,59 +111,6 @@ export const ReadersNearMeMap: React.FC = () => {
     };
   }, [user?.id, sharingStatusAttempt]);
 
-  // Load Google Maps independently of location consent.
-  useEffect(() => {
-    let cancelled = false;
-    const loadMap = async () => {
-      setIsLoadingMap(true);
-      setMapLoadError(null);
-      try {
-        await loadGoogleMaps(GOOGLE_MAPS_API_KEY);
-        if (!cancelled) setIsLoaded(true);
-      } catch (error) {
-        console.error('Error loading Google Maps:', error);
-        if (!cancelled) {
-          setIsLoaded(false);
-          setMapLoadError('The map service could not be loaded. Check your connection and try again.');
-        }
-      } finally {
-        if (!cancelled) setIsLoadingMap(false);
-      }
-    };
-
-    void loadMap();
-    return () => {
-      cancelled = true;
-    };
-  }, [mapLoadAttempt]);
-
-  useEffect(() => {
-    if (!isLoaded || isLoadingMap || !mapRef.current || !window.google?.maps) return;
-
-    const instance = new window.google.maps.Map(mapRef.current, {
-      center: userLocation || { lat: 20, lng: 0 },
-      zoom: userLocation ? 11 : 2,
-      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
-      streetViewControl: false,
-      mapTypeControl: false,
-      fullscreenControl: true,
-      styles: [{
-        featureType: 'poi',
-        elementType: 'labels',
-        stylers: [{ visibility: 'off' }],
-      }],
-    });
-
-    setMap(instance);
-
-    return () => {
-      if (userMarkerRef.current) {
-        userMarkerRef.current.setMap(null);
-        userMarkerRef.current = null;
-      }
-    };
-  }, [isLoaded, isLoadingMap]);
-
   // The nearby-reader RPC deliberately returns distance, not another person's exact
   // coordinates. Show these readers in the list; never pin them at fake 0,0 locations.
   const fetchNearbyReaders = useCallback(async () => {
@@ -229,44 +163,6 @@ export const ReadersNearMeMap: React.FC = () => {
     }
   }, [isLocationSharing, selectedBook, fetchNearbyReaders]);
 
-  // Render a marker only for the signed-in user's own explicitly shared location.
-  useEffect(() => {
-    if (userMarkerRef.current) {
-      userMarkerRef.current.setMap(null);
-      userMarkerRef.current = null;
-    }
-    if (!map || !window.google?.maps || !userLocation || !isLocationSharing) return;
-
-    map.setCenter(userLocation);
-    map.setZoom(11);
-    const marker = new window.google.maps.Marker({
-      position: userLocation,
-      map,
-      title: 'Your saved location',
-      icon: {
-        path: window.google.maps.SymbolPath.CIRCLE,
-        scale: 10,
-        fillColor: '#1C442D',
-        fillOpacity: 1,
-        strokeColor: '#ffffff',
-        strokeWeight: 3,
-      },
-    });
-
-    const content = document.createElement('div');
-    content.textContent = 'Your saved location';
-    content.style.padding = '8px';
-    const infoWindow = new window.google.maps.InfoWindow({ content });
-    marker.addListener('click', () => infoWindow.open({ map, anchor: marker }));
-    userMarkerRef.current = marker;
-
-    return () => {
-      marker.setMap(null);
-      infoWindow.close();
-      if (userMarkerRef.current === marker) userMarkerRef.current = null;
-    };
-  }, [map, userLocation, isLocationSharing]);
-
   const handleEnableSharing = async () => {
     if (!user?.id) {
       toast.error('Sign in to share your location.');
@@ -301,6 +197,7 @@ export const ReadersNearMeMap: React.FC = () => {
       if (profileWrite.error) throw profileWrite.error;
 
       setUserLocation(position);
+      setMapCenter(position);
       setIsLocationSharing(true);
       setShowLocationModal(false);
       toast.success('Location sharing enabled. Only friends who also consent can see it.');
@@ -373,45 +270,6 @@ export const ReadersNearMeMap: React.FC = () => {
     setChatFriendId(reader.id);
   };
 
-  if (isLoadingMap) {
-    return (
-      <Card className="border border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] rounded-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <MapPin className="w-5 h-5 text-[#1C442D] dark:text-[#D5B16D]" />
-            Readers Near Me
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[360px] rounded-xl border border-[#E8E2D9] dark:border-[#29332D] flex items-center justify-center">
-            <div className="text-center text-[#636B65] dark:text-[#A5ADA6]">
-              <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin text-[#1C442D] dark:text-[#D5B16D]" />
-              <p className="text-sm">Loading the map…</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!isLoaded) {
-    return (
-      <Card className="border border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] rounded-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <MapPin className="w-5 h-5 text-[#1C442D] dark:text-[#D5B16D]" />
-            Readers Near Me
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p role="alert" className="text-sm text-[#636B65] dark:text-[#A5ADA6]">{mapLoadError || 'The map is unavailable.'}</p>
-          <Button onClick={() => setMapLoadAttempt((attempt) => attempt + 1)} variant="outline" className="gap-2">
-            <RefreshCw className="w-4 h-4" /> Try again
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <>
@@ -467,11 +325,7 @@ export const ReadersNearMeMap: React.FC = () => {
             />
           </div>
 
-          <div
-            ref={mapRef}
-            aria-label="Map showing your saved location only"
-            className="h-[360px] w-full overflow-hidden rounded-xl border border-[#E8E2D9] dark:border-[#29332D]"
-          />
+          <MapplsMap apiKey={MAPPLS_API_KEY} points={userLocation && isLocationSharing ? [{ id: 'self', lat: userLocation.lat, lng: userLocation.lng, title: 'Your saved location' }] : []} center={mapCenter || (isLocationSharing ? userLocation : null)} emptyMessage="Your saved location will appear here when sharing is enabled." />
 
           <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
             For privacy, the map does not plot other readers’ exact positions. Confirmed nearby matches appear below with distance only; no placeholder or guessed map pins are used.
