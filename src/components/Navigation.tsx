@@ -273,7 +273,7 @@ const Navigation = () => {
   };
 
   const renderDrawerSection = (section: NavigationSection) => (
-    <div key={section.name} className="flex items-start gap-1 rounded-lg border border-border bg-background p-1">
+    <div key={section.name} className="relative flex items-start gap-1 rounded-lg border border-border bg-background p-1">
       <div className="min-w-0 flex-1">
         {renderDrawerLink({
           name: section.name,
@@ -288,7 +288,7 @@ const Navigation = () => {
         >
           <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>
-        <div className="absolute right-4 z-20 mt-1 max-h-72 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background p-2 shadow-lg">
+        <div className="absolute right-1 top-full z-20 mt-1 max-h-72 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background p-2 shadow-lg">
           {visibleItems(section.items)
             .filter((item) => item.href !== section.href)
             .map(renderDrawerLink)}
