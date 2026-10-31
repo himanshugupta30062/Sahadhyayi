@@ -113,17 +113,22 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
     name: "Library",
     href: "/library",
     items: [
+      { name: "Library", href: "/library", tourTarget: "library" },
       { name: "Research Papers", href: "/research-papers" },
+      { name: "Book Library", href: "/book-library" },
+      { name: "Discover Books", href: "/discovery" },
     ],
   },
   {
     name: "Social Media",
     href: "/social",
     items: [
-      { name: "Feed", href: "/social", tourTarget: "community" },
+      { name: "Community Feed", href: "/social", tourTarget: "community" },
       { name: "Discover Friends", href: "/social?tab=friends" },
       { name: "Reading Groups", href: "/groups" },
       { name: "Reader's Map", href: "/social?tab=map" },
+      { name: "Reader Map by Book", href: "/reader-map" },
+      { name: "Friends & Readers Map", href: "/map" },
       {
         name: "Book Discussion",
         href: "/social?tab=threads",
@@ -134,25 +139,26 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
           { name: "Reading DNA", href: "/social?tab=dna" },
         ],
       },
+      { name: "Community Stories", href: "/community-stories" },
+      { name: "Life Stories", href: "/life-stories" },
     ],
   },
   {
     name: "Articles",
     href: "/articles",
     items: [
+      { name: "Articles", href: "/articles" },
+      { name: "Newsroom", href: "/news" },
       { name: "Blogs", href: "/blog" },
-      { name: "News", href: "/news" },
       { name: "Quotes", href: "/quotes" },
-      { name: "Life Stories", href: "/life-stories" },
     ],
   },
   {
     name: "Authors",
     href: "/authors",
     items: [
+      { name: "Authors", href: "/authors" },
       { name: "Scientists", href: "/scientists" },
-      // These destinations intentionally remain distinct. Until their pages exist,
-      // React Router's catch-all route displays the standard 404 page.
       { name: "Social Activists", href: "/social-activists" },
       { name: "Freedom Fighters", href: "/freedom-fighters" },
     ],
