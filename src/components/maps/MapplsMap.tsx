@@ -4,8 +4,6 @@ declare global {
   interface Window {
     mappls?: any;
     mapplsLoadingPromise?: Promise<void>;
-    L?: any;
-    leafletLoadingPromise?: Promise<void>;
   }
 }
 
@@ -58,82 +56,6 @@ const loadMappls = (apiKey: string): Promise<void> => {
   return window.mapplsLoadingPromise;
 };
 
-
-const loadLeaflet = (): Promise<void> => {
-  if (window.L?.map) return Promise.resolve();
-  if (window.leafletLoadingPromise) return window.leafletLoadingPromise;
-
-  window.leafletLoadingPromise = new Promise((resolve, reject) => {
-    if (!document.querySelector('link[data-leaflet-css]')) {
-      const css = document.createElement('link');
-      css.rel = 'stylesheet';
-      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      css.dataset.leafletCss = 'true';
-      document.head.appendChild(css);
-    }
-    const existing = document.querySelector<HTMLScriptElement>('script[data-leaflet-sdk]');
-    const script = existing ?? document.createElement('script');
-    const reset = () => {
-      window.leafletLoadingPromise = undefined;
-      if (!window.L?.map) script.remove();
-    };
-    script.onload = () => window.L?.map ? resolve() : (reset(), reject(new Error('Fallback map library did not initialize.')));
-    script.onerror = () => (reset(), reject(new Error('Fallback map library could not be downloaded.')));
-    if (!existing) {
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.async = true;
-      script.dataset.leafletSdk = 'true';
-      document.head.appendChild(script);
-    }
-  });
-  return window.leafletLoadingPromise;
-};
-
-function LeafletFallback({ points, center }: { points: MapplsPoint[]; center?: { lat: number; lng: number } | null }) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const instanceRef = useRef<any>(null);
-  const [failed, setFailed] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    loadLeaflet().then(() => {
-      if (cancelled || !mapRef.current || instanceRef.current) return;
-      const L = window.L;
-      const initial = center ?? { lat: 22.9734, lng: 78.6569 };
-      const map = L.map(mapRef.current, { scrollWheelZoom: false }).setView([initial.lat, initial.lng], center ? 10 : 5);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-      }).addTo(map);
-      const valid = points.filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng) && Math.abs(p.lat) <= 90 && Math.abs(p.lng) <= 180 && !(p.lat === 0 && p.lng === 0));
-      valid.forEach(p => {
-        const marker = L.circleMarker([p.lat, p.lng], { radius: 7, color: '#2563eb', fillColor: '#60a5fa', fillOpacity: 0.9 }).addTo(map);
-        const popup = document.createElement('div');
-        popup.textContent = p.title + (p.description ? ' — ' + p.description : '');
-        marker.bindPopup(popup);
-      });
-      if (valid.length === 1) map.setView([valid[0].lat, valid[0].lng], 10);
-      else if (valid.length > 1) {
-        const bounds = L.latLngBounds(valid.map(p => [p.lat, p.lng]));
-        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });
-      }
-      instanceRef.current = map;
-      window.setTimeout(() => map.invalidateSize(), 0);
-    }).catch(() => { if (!cancelled) setFailed(true); });
-    return () => {
-      cancelled = true;
-      instanceRef.current?.remove();
-      instanceRef.current = null;
-    };
-  }, [points, center]);
-  return (
-    <div className="space-y-2">
-      <div ref={mapRef} className="h-[500px] w-full overflow-hidden rounded-xl border" aria-label="Interactive OpenStreetMap fallback" />
-      <p className="text-xs text-muted-foreground">
-        {failed ? 'The map service could not load. Please check your connection and retry.' : 'Using OpenStreetMap fallback because Mappls is unavailable.'}
-      </p>
-    </div>
-  );
-}
 
 export function MapplsMap({
   apiKey,
@@ -268,7 +190,14 @@ export function MapplsMap({
   }
 
   if (status === 'error') {
-    return <LeafletFallback points={points} center={center} />;
+    return (
+      <div className="flex h-[500px] items-center justify-center rounded-xl border bg-muted/30 p-6 text-center" role="alert">
+        <div className="max-w-md space-y-2">
+          <p className="font-semibold">Mappls could not load</p>
+          <p className="text-sm text-muted-foreground">{errorMessage || 'Check the Mappls Web Maps key, domain restrictions, and network access, then retry.'}</p>
+        </div>
+      </div>
+    );
   }
 
   const validPointCount = points.filter(
