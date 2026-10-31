@@ -356,7 +356,8 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
       // Quick commands are local and should remain useful even if catalog APIs are slow.
       if (isMounted) {
         setResults(matchedCommands);
-        setIsLoading(false);
+        // Keep the loading state active until catalog, author and article
+        // requests settle; otherwise the empty state flashes before results arrive.
       }
 
       const [booksResult, authorsResult, articlesResult] = await Promise.allSettled([
