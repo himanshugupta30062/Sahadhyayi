@@ -273,27 +273,28 @@ const Navigation = () => {
   };
 
   const renderDrawerSection = (section: NavigationSection) => (
-    <details key={section.name} className="group overflow-hidden rounded-lg border border-border bg-background">
-      <summary
-        className={
-          "flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-semibold transition-colors hover:bg-muted [&::-webkit-details-marker]:hidden " +
-          (isSectionActive(section)
-            ? "text-[hsl(var(--brand-primary))]"
-            : "text-foreground")
-        }
-      >
-        <span className="flex items-center gap-3">
-          {section.name === "Library" && <Library className="h-4 w-4" aria-hidden="true" />}
-          {section.name === "Articles" && <FileText className="h-4 w-4" aria-hidden="true" />}
-          {section.name === "Social Media" && <Users className="h-4 w-4" aria-hidden="true" />}
-          {section.name}
-        </span>
-        <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
-      </summary>
-      <div className="space-y-0.5 border-t border-border px-2 py-2">
-        {visibleItems(section.items).map(renderDrawerLink)}
+    <div key={section.name} className="flex items-start gap-1 rounded-lg border border-border bg-background p-1">
+      <div className="min-w-0 flex-1">
+        {renderDrawerLink({
+          name: section.name,
+          href: section.href,
+          tourTarget: section.items[0]?.tourTarget,
+        })}
       </div>
-    </details>
+      <details className="group shrink-0">
+        <summary
+          aria-label={section.name + " submenu"}
+          className="flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&::-webkit-details-marker]:hidden"
+        >
+          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        <div className="absolute right-4 z-20 mt-1 max-h-72 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background p-2 shadow-lg">
+          {visibleItems(section.items)
+            .filter((item) => item.href !== section.href)
+            .map(renderDrawerLink)}
+        </div>
+      </details>
+    </div>
   );
 
   if (location.pathname.startsWith("/admin")) return null;
@@ -661,17 +662,18 @@ const Navigation = () => {
               {renderDrawerSection(NAVIGATION_SECTIONS[1])}
               {renderDrawerLink({ name: "Games", href: "/games" })}
               {renderDrawerSection(NAVIGATION_SECTIONS[2])}
+              {renderDrawerLink({ name: "Authors", href: "/authors" })}
 
               <details className="group overflow-hidden rounded-lg border border-border bg-background">
                 <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted [&::-webkit-details-marker]:hidden">
                   <span className="flex items-center gap-3">
                     <BookOpen className="h-4 w-4" aria-hidden="true" />
-                    Authors & people
+                    More people
                   </span>
                   <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
                 </summary>
                 <div className="space-y-0.5 border-t border-border px-2 py-2">
-                  {PEOPLE_AND_MORE.slice(0, 4).map(renderDrawerLink)}
+                  {PEOPLE_AND_MORE.slice(1, 4).map(renderDrawerLink)}
                 </div>
               </details>
 
