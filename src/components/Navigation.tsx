@@ -161,7 +161,6 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
 ];
 
 const PEOPLE_AND_MORE: NavigationItem[] = [
-  { name: "Authors", href: "/authors" },
   { name: "Scientists", href: "/scientists" },
   { name: "Publishers", href: "/publishers" },
   { name: "Author Connect", href: "/author-connect" },
@@ -808,9 +807,9 @@ const Navigation = () => {
               {renderDrawerLink({ name: homeLabel, href: homeHref })}
               {user ? (
                 <>
-                  {NAVIGATION_SECTIONS.map(renderDrawerSection)}
-                  {renderDrawerLink({ name: "Games", href: "/games" })}
+                  {[...NAVIGATION_SECTIONS].sort((a, b) => NAVIGATION_ORDER.indexOf(a.name) - NAVIGATION_ORDER.indexOf(b.name)).map(renderDrawerSection)}
                   {renderDrawerLink({ name: "Authors", href: "/authors" })}
+                  {renderDrawerLink({ name: "Games", href: "/games" })}
                   {PEOPLE_AND_MORE.map(renderDrawerLink)}
                 </>
               ) : (
