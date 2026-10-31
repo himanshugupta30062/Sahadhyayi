@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { parseScientistJson, validateScientistProfile } from "@/lib/scientistProfileValidation";
 import { getScientistBySlug } from "@/data/scientists";
 import { ArchivesStructuredEditor, ProfileStructuredEditor, PublicationsStructuredEditor } from "@/components/admin/ScientistStructuredEditors";
+import { ScientistLivePreview } from "@/components/admin/ScientistLivePreview";
 
 type Region = "india" | "world";
 type Status = "draft" | "published" | "archived";
@@ -265,6 +266,27 @@ export default function AdminScientists() {
               <section className="space-y-3"><div><h2 className="font-semibold">Biography, work and sources</h2><p className="text-xs text-muted-foreground">Use guided fields to build the profile. You can add or remove paragraphs, milestones, research contributions and citations without editing JSON.</p></div><ProfileStructuredEditor value={editor.profileData} onChange={(value) => update("profileData", value)} /></section>
               <PublicationsStructuredEditor value={editor.publications} onChange={(value) => update("publications", value)} />
               <ArchivesStructuredEditor value={editor.archives} onChange={(value) => update("archives", value)} />
+              <details className="group rounded-xl border border-border/70 bg-muted/10 p-4" open>
+                <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                  <span className="flex flex-wrap items-center justify-between gap-2">
+                    <span><span className="block font-semibold">Live profile preview</span><span className="mt-1 block text-xs text-muted-foreground">Updates as you edit. Check the public-facing layout before saving.</span></span>
+                    <span className="text-xs font-semibold text-primary group-open:hidden">Show preview</span>
+                    <span className="hidden text-xs font-semibold text-primary group-open:inline">Hide preview</span>
+                  </span>
+                </summary>
+                <div className="mt-4">
+                  <ScientistLivePreview
+                    name={editor.name}
+                    region={editor.region}
+                    discipline={editor.discipline}
+                    lifespan={editor.lifespan}
+                    summary={editor.summary}
+                    profileData={editor.profileData}
+                    publications={editor.publications}
+                    archives={editor.archives}
+                  />
+                </div>
+              </details>
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
                 <div>{selected && <Button variant="destructive" onClick={() => void remove()} disabled={saving}><Trash2 className="mr-2 h-4 w-4" />Delete profile</Button>}</div>
                 <div className="flex gap-2"><Button variant="outline" onClick={() => void selectScientist("new")} disabled={saving}>Reset</Button><Button onClick={() => void save()} disabled={saving || loading}><Save className="mr-2 h-4 w-4" />{saving ? "Saving…" : editor.status === "published" ? "Save & publish" : "Save changes"}</Button></div>
