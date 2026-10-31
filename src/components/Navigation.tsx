@@ -510,7 +510,7 @@ const Navigation = () => {
     <>
       <header
         className={
-          "fixed left-0 right-0 top-0 z-40 border-b transition-all duration-300 " +
+          "fixed left-0 right-0 top-0 z-[120] border-b transition-all duration-300 " +
           (scrolled
             ? "border-border bg-background/95 shadow-xs backdrop-blur-md"
             : "border-border/40 bg-background/85 backdrop-blur-sm")
@@ -529,7 +529,7 @@ const Navigation = () => {
               ref={menuButtonRef}
               className="min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 text-foreground hover:bg-muted"
             >
-              <Menu className="h-5 w-5" aria-hidden="true" />
+              {isOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
             </Button>
 
             <Link
@@ -782,8 +782,8 @@ const Navigation = () => {
 
       {/* Mobile menu: retain the earlier full-width dropdown-panel design. */}
       {isMobile && isOpen && (
-        <div className="fixed inset-x-0 top-16 z-[99] border-b border-border bg-background/98 shadow-lg backdrop-blur-md">
-          <nav id="site-navigation-drawer" aria-label="Mobile navigation" className="mx-auto max-h-[calc(100dvh-4rem)] max-w-7xl overflow-y-auto px-3 py-3 sm:px-4">
+        <div className="fixed inset-x-0 top-16 z-[119] max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-border bg-background shadow-xl">
+          <nav id="site-navigation-drawer" aria-label="Mobile navigation" className="mx-auto max-w-7xl px-3 py-3 sm:px-4">
             <button
               type="button"
               onClick={() => { setIsOpen(false); setSearchOpen(true); }}
