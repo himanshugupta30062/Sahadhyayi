@@ -176,10 +176,6 @@ const AppSidebar = () => {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-    <SidebarTrigger
-      aria-label="Open navigation"
-      className="fixed left-3 top-[4.75rem] z-[60] h-10 w-10 rounded-xl border border-border bg-background/95 text-foreground shadow-md backdrop-blur-sm hover:bg-muted md:hidden"
-    />
     </>
   );
 };
