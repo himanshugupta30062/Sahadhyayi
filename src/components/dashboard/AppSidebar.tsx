@@ -1,13 +1,14 @@
 
 import React from "react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { Home, Compass, Users, BookOpen, User, Settings, FileText } from "lucide-react";
+import { Home, Compass, Users, BookOpen, User, Settings, FileText, Microscope } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 // Updated sidebar items to match new navigation structure
 const items = [
   { title: "Home", url: "/dashboard", icon: Home },
   { title: "Library", url: "/library", icon: Compass },
+  { title: "Research Papers", url: "/research-papers", icon: Microscope },
   { title: "Articles", url: "/articles", icon: FileText },
   { title: "Publish", url: "/publish", icon: BookOpen },
   { title: "Games", url: "/games", icon: Compass },
