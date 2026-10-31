@@ -9,6 +9,8 @@ import {
   PenLine,
   Microscope,
   LibraryBig,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -22,8 +24,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 
 const sections = [
   {
@@ -55,6 +58,7 @@ const sections = [
 
 const AppSidebar = () => {
   const location = useLocation();
+  const { state, toggleSidebar } = useSidebar();
 
   const isActive = (url: string) => {
     if (url === "/dashboard") return location.pathname === "/dashboard" || location.pathname === "/";
@@ -93,10 +97,24 @@ const AppSidebar = () => {
             </span>
           </span>
         </Link>
-        <SidebarTrigger
-          aria-label="Collapse or expand navigation"
-          className="h-8 w-8 shrink-0 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground group-data-[collapsible=icon]:mx-auto"
-        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={toggleSidebar}
+          aria-label={state === "expanded" ? "Collapse navigation" : "Expand navigation"}
+          title={state === "expanded" ? "Collapse navigation" : "Expand navigation"}
+          className="h-8 shrink-0 gap-2 rounded-lg px-2 text-muted-foreground hover:bg-muted hover:text-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:px-0"
+        >
+          {state === "expanded" ? (
+            <>
+              <PanelLeftClose className="h-4 w-4" />
+              <span className="text-xs font-medium">Collapse</span>
+            </>
+          ) : (
+            <PanelLeftOpen className="h-4 w-4" />
+          )}
+        </Button>
         </div>
       </SidebarHeader>
 
