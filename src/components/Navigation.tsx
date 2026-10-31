@@ -486,54 +486,69 @@ const Navigation = () => {
                     open={openDesktopMenu === key}
                     onOpenChange={(open) => setOpenDesktopMenu(open ? key : null)}
                   >
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
+                    <div
+                      className="relative inline-flex items-center gap-0.5"
+                      onMouseEnter={() => setOpenDesktopMenu(key)}
+                      onMouseLeave={() => setOpenDesktopMenu((current) => current === key ? null : current)}
+                    >
+                      <Link
+                        to={section.href}
                         data-tour-target={tourTarget}
-                        aria-haspopup="menu"
-                        aria-expanded={openDesktopMenu === key}
-                        onMouseEnter={() => setOpenDesktopMenu(key)}
-                        onFocus={() => setOpenDesktopMenu(key)}
+                        aria-current={isCurrentRoute(section.href) ? "page" : undefined}
                         className={
-                          "inline-flex min-h-10 items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +
+                          "inline-flex min-h-10 items-center rounded-md px-2.5 py-2 text-sm font-medium transition-colors duration-200 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +
                           (isSectionActive(section)
                             ? "text-[hsl(var(--brand-primary))]"
                             : "text-muted-foreground hover:text-foreground")
                         }
                       >
                         {label}
-                        <ChevronDown
-                          className={"h-3.5 w-3.5 transition-transform duration-200 " + (openDesktopMenu === key ? "rotate-180" : "")}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="start"
-                      side="bottom"
-                      sideOffset={6}
-                      avoidCollisions={true}
-                      collisionPadding={12}
-                      className="z-[60] w-64 rounded-xl border border-border/80 bg-popover/95 p-2 shadow-xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150"
-                    >
-                      {visibleItems(section.items).map((item) => (
-                        <DropdownMenuItem key={item.name} asChild>
-                          <Link
-                            to={item.href}
-                            data-tour-target={item.tourTarget}
-                            aria-current={isCurrentRoute(item.href) ? "page" : undefined}
-                            className={
-                              "flex min-h-10 cursor-pointer items-center rounded-lg px-3 py-2 text-sm transition-colors " +
-                              (isCurrentRoute(item.href)
-                                ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
-                                : "")
-                            }
-                          >
-                            {item.name}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
+                      </Link>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label={label + " submenu"}
+                          aria-haspopup="menu"
+                          aria-expanded={openDesktopMenu === key}
+                          onFocus={() => setOpenDesktopMenu(key)}
+                          className={
+                            "inline-flex min-h-10 min-w-7 items-center justify-center rounded-md px-1 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +
+                            (isSectionActive(section) ? "text-[hsl(var(--brand-primary))]" : "")
+                          }
+                        >
+                          <ChevronDown
+                            className={"h-3.5 w-3.5 transition-transform duration-200 " + (openDesktopMenu === key ? "rotate-180" : "")}
+                            aria-hidden="true"
+                          />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="start"
+                        side="bottom"
+                        sideOffset={4}
+                        avoidCollisions={true}
+                        collisionPadding={12}
+                        className="z-[60] w-64 rounded-xl border border-border/80 bg-popover/95 p-2 shadow-xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150"
+                      >
+                        {visibleItems(section.items).map((item) => (
+                          <DropdownMenuItem key={item.name} asChild>
+                            <Link
+                              to={item.href}
+                              data-tour-target={item.tourTarget}
+                              aria-current={isCurrentRoute(item.href) ? "page" : undefined}
+                              className={
+                                "flex min-h-10 cursor-pointer items-center rounded-lg px-3 py-2 text-sm transition-colors " +
+                                (isCurrentRoute(item.href)
+                                  ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
+                                  : "")
+                              }
+                            >
+                              {item.name}
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </div>
                   </DropdownMenu>
                 ))}
               </nav>
