@@ -69,11 +69,6 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     items: [
       { name: "Library", href: "/library", tourTarget: "library" },
       { name: "Research Papers", href: "/research-papers" },
-      { name: "Book Library", href: "/book-library" },
-      { name: "Discover Books", href: "/discovery" },
-      { name: "My Bookshelf", href: "/bookshelf", authOnly: true },
-      { name: "Publish a Book", href: "/publish", authOnly: true },
-      { name: "My Publications", href: "/my-publications", authOnly: true },
     ],
   },
   {
@@ -115,8 +110,6 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
     items: [
       { name: "Library", href: "/library", tourTarget: "library" },
       { name: "Research Papers", href: "/research-papers" },
-      { name: "Book Library", href: "/book-library" },
-      { name: "Discover Books", href: "/discovery" },
     ],
   },
   {
@@ -623,7 +616,7 @@ const Navigation = () => {
                     >
                       <div className="mb-3 overflow-hidden rounded-lg border border-[hsl(var(--brand-primary)/0.18)] bg-gradient-to-r from-[hsl(var(--brand-primary)/0.12)] via-[hsl(var(--brand-primary)/0.06)] to-transparent px-3 py-2.5">
                         <p className="text-sm font-bold tracking-tight text-foreground">{section.name}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{key === "social-media" ? "Connect, discover readers and explore conversations" : key === "library" ? "Explore books, collections and research" : key === "articles" ? "Read ideas, updates and stories" : "Meet the people shaping ideas and knowledge"}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{key === "social-media" ? "Connect, discover readers and explore conversations" : key === "library" ? "Browse the library and research papers" : key === "articles" ? "Read ideas, updates and stories" : "Meet the people shaping ideas and knowledge"}</p>
                       </div>
                       {key === "social-media" ? (() => {
                         const socialItems = visibleItems(section.items).flatMap((item) =>
