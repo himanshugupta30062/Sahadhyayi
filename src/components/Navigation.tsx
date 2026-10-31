@@ -227,6 +227,7 @@ function isNavigationItemActive(pathname: string, search: string, href: string) 
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [openDesktopMenu, setOpenDesktopMenu] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [contactDialogRequested, setContactDialogRequested] = useState(false);
@@ -475,135 +476,66 @@ const Navigation = () => {
                   {homeLabel}
                 </Link>
 
-                <Link
-                  to="/library"
-                  data-tour-target="library"
-                  aria-current={isCurrentRoute("/library") ? "page" : undefined}
-                  className={
-                    "min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " +
-                    (isSectionActive(NAVIGATION_SECTIONS[0])
-                      ? "text-[hsl(var(--brand-primary))]"
-                      : "text-muted-foreground hover:text-foreground")
-                  }
-                >
-                  Library
-                </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label="Library submenu"
-                      className="inline-flex min-h-10 min-w-8 items-center justify-center rounded-md px-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                {[
+                  { key: "library", label: "Library", section: NAVIGATION_SECTIONS[0], tourTarget: "library" },
+                  { key: "articles", label: "Articles", section: NAVIGATION_SECTIONS[1], tourTarget: "articles" },
+                  { key: "social", label: "Social Media", section: NAVIGATION_SECTIONS[2], tourTarget: "community" },
+                ].map(({ key, label, section, tourTarget }) => (
+                  <DropdownMenu
+                    key={key}
+                    open={openDesktopMenu === key}
+                    onOpenChange={(open) => setOpenDesktopMenu(open ? key : null)}
+                  >
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        data-tour-target={tourTarget}
+                        aria-haspopup="menu"
+                        aria-expanded={openDesktopMenu === key}
+                        onMouseEnter={() => setOpenDesktopMenu(key)}
+                        onFocus={() => setOpenDesktopMenu(key)}
+                        className={
+                          "inline-flex min-h-10 items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +
+                          (isSectionActive(section)
+                            ? "text-[hsl(var(--brand-primary))]"
+                            : "text-muted-foreground hover:text-foreground")
+                        }
+                      >
+                        {label}
+                        <ChevronDown
+                          className={"h-3.5 w-3.5 transition-transform duration-200 " + (openDesktopMenu === key ? "rotate-180" : "")}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      side="bottom"
+                      sideOffset={6}
+                      avoidCollisions={true}
+                      collisionPadding={12}
+                      className="z-[60] w-64 rounded-xl border border-border/80 bg-popover/95 p-2 shadow-xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150"
                     >
-                      <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" sideOffset={8} className="w-60 p-2">
-                    {visibleItems(NAVIGATION_SECTIONS[0].items).map((item) => (
-                      <DropdownMenuItem key={item.name} asChild>
-                        <Link
-                          to={item.href}
-                          data-tour-target={item.tourTarget}
-                          aria-current={isCurrentRoute(item.href) ? "page" : undefined}
-                          className="cursor-pointer"
-                        >
-                          {item.name}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Link
-                  to="/articles"
-                  data-tour-target="articles"
-                  aria-current={isCurrentRoute("/articles") ? "page" : undefined}
-                  className={
-                    "min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " +
-                    (isSectionActive(NAVIGATION_SECTIONS[1])
-                      ? "text-[hsl(var(--brand-primary))]"
-                      : "text-muted-foreground hover:text-foreground")
-                  }
-                >
-                  Articles
-                </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label="Articles submenu"
-                      className="inline-flex min-h-10 min-w-8 items-center justify-center rounded-md px-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" sideOffset={8} className="w-60 p-2">
-                    {visibleItems(NAVIGATION_SECTIONS[1].items).map((item) => (
-                      <DropdownMenuItem key={item.name} asChild>
-                        <Link
-                          to={item.href}
-                          data-tour-target={item.tourTarget}
-                          aria-current={isCurrentRoute(item.href) ? "page" : undefined}
-                          className="cursor-pointer"
-                        >
-                          {item.name}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Link
-                  to="/games"
-                  aria-current={isCurrentRoute("/games") ? "page" : undefined}
-                  className={
-                    "min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " +
-                    (isCurrentRoute("/games")
-                      ? "text-[hsl(var(--brand-primary))]"
-                      : "text-muted-foreground hover:text-foreground")
-                  }
-                >
-                  Games
-                </Link>
-
-                <Link
-                  to="/social"
-                  data-tour-target="community"
-                  aria-current={isCurrentRoute("/social") ? "page" : undefined}
-                  className={
-                    "min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " +
-                    (isSectionActive(NAVIGATION_SECTIONS[2])
-                      ? "text-[hsl(var(--brand-primary))]"
-                      : "text-muted-foreground hover:text-foreground")
-                  }
-                >
-                  Social Media
-                </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label="Social Media submenu"
-                      className="inline-flex min-h-10 min-w-8 items-center justify-center rounded-md px-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-60 p-2">
-                    {visibleItems(NAVIGATION_SECTIONS[2].items).map((item) => (
-                      <DropdownMenuItem key={item.name} asChild>
-                        <Link
-                          to={item.href}
-                          data-tour-target={item.tourTarget}
-                          aria-current={isCurrentRoute(item.href) ? "page" : undefined}
-                          className="cursor-pointer"
-                        >
-                          {item.name}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      {visibleItems(section.items).map((item) => (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link
+                            to={item.href}
+                            data-tour-target={item.tourTarget}
+                            aria-current={isCurrentRoute(item.href) ? "page" : undefined}
+                            className={
+                              "flex min-h-10 cursor-pointer items-center rounded-lg px-3 py-2 text-sm transition-colors " +
+                              (isCurrentRoute(item.href)
+                                ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
+                                : "")
+                            }
+                          >
+                            {item.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ))}
               </nav>
               </>
             )}
