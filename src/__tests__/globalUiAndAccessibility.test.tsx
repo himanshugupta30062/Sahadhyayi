@@ -134,6 +134,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
         </MemoryRouter>
       );
 
+      fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
       const mainNav = screen.getByRole('navigation', { name: /main navigation/i });
       expect(mainNav).toBeInTheDocument();
     });
@@ -145,6 +146,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
         </MemoryRouter>
       );
 
+      fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
       const libraryLink = screen.getByRole('link', { name: /^library$/i });
       expect(libraryLink).toHaveAttribute('aria-current', 'page');
 
@@ -284,6 +286,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       );
 
       expect(screen.queryByRole('link', { name: /^library$/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
 
       const drawer = screen.getByRole('navigation', { name: /main navigation/i });
@@ -293,7 +296,6 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       expect(screen.getByText('Social Media')).toBeInTheDocument();
       expect(screen.getByText('Articles')).toBeInTheDocument();
       expect(screen.getByText('Authors')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument();
     });
 
     it('expands Book Discussion into its nested links inside the public drawer', () => {
