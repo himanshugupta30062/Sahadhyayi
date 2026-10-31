@@ -49,6 +49,9 @@ const SocialMedia = lazy(() => import('./pages/SocialMedia'));
 const Authors = lazy(() => import('./pages/Authors'));
 const Scientists = lazy(() => import('./pages/Scientists'));
 const ScientistProfile = lazy(() => import('./pages/ScientistProfile'));
+const LifeStories = lazy(() => import('./pages/LifeStories'));
+const SocialActivists = lazy(() => import('./pages/SocialActivists'));
+const FreedomFighters = lazy(() => import('./pages/FreedomFighters'));
 const Publishers = lazy(() => import('./pages/Publishers'));
 const AuthorSlugPage = lazy(() => import('./pages/authors/[slug]'));
 const AuthorDetails = lazy(() => import('./pages/AuthorDetails'));
@@ -392,6 +395,8 @@ const App = memo(() => {
                             </Suspense>
                           }
                         />
+                        <Route path="/social-activists" element={<Suspense fallback={<LoadingFallback message="Loading social activists..." />}><SocialActivists /></Suspense>} />
+                        <Route path="/freedom-fighters" element={<Suspense fallback={<LoadingFallback message="Loading freedom fighters..." />}><FreedomFighters /></Suspense>} />
                         <Route
                           path="/publishers"
                           element={
@@ -730,6 +735,7 @@ const App = memo(() => {
                         <Route path="/investors" element={<Suspense fallback={<LoadingFallback />}><Investors /></Suspense>} />
                         <Route path="/quotes" element={<Suspense fallback={<LoadingFallback />}><QuotesPage /></Suspense>} />
                         <Route path="/community-stories" element={<Suspense fallback={<LoadingFallback />}><CommunityStories /></Suspense>} />
+                        <Route path="/life-stories" element={<Suspense fallback={<LoadingFallback message="Loading life stories..." />}><LifeStories /></Suspense>} />
                         <Route path="/book-library" element={<Suspense fallback={<LoadingFallback />}><BookLibrary /></Suspense>} />
                         <Route path="/dmca" element={<Suspense fallback={<LoadingFallback />}><DmcaPolicy /></Suspense>} />
                         <Route path="/dmca-policy" element={<Navigate to="/dmca" replace />} />
