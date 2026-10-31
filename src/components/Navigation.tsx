@@ -499,7 +499,11 @@ const Navigation = () => {
                   {homeLabel}
                 </Link>
 
-                {(user ? NAVIGATION_SECTIONS : PUBLIC_NAVIGATION_SECTIONS.filter((section) => section.name !== "Authors"))
+                {(user
+                  ? [...NAVIGATION_SECTIONS, ...PUBLIC_NAVIGATION_SECTIONS.filter((section) => section.name === "Authors")]
+                  : PUBLIC_NAVIGATION_SECTIONS
+                )
+                  .sort((a, b) => ["Library", "Social Media", "Articles", "Authors"].indexOf(a.name) - ["Library", "Social Media", "Articles", "Authors"].indexOf(b.name))
                   .map((section) => ({
                     key: section.name.toLowerCase().replace(/\s+/g, "-"),
                     label: section.name,
@@ -562,13 +566,6 @@ const Navigation = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ))}
-                <Link
-                  to="/authors"
-                  aria-current={isCurrentRoute("/authors") ? "page" : undefined}
-                  className={"min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " + (isCurrentRoute("/authors") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")}
-                >
-                  Authors
-                </Link>
                 <Link
                   to="/games"
                   aria-current={isCurrentRoute("/games") ? "page" : undefined}
