@@ -388,11 +388,9 @@ const Navigation = () => {
             {item.name}
             <ChevronDown className={"h-4 w-4 shrink-0 transition-transform " + (expanded ? "rotate-180" : "")} aria-hidden="true" />
           </button>
-          {expanded && (
-            <div id={panelId} className="ml-3 space-y-0.5 border-l-2 border-border py-1 pl-2">
-              {item.children.map((child) => renderPublicDrawerItem(child, disclosureKey))}
-            </div>
-          )}
+          <div id={panelId} hidden={!expanded} className="ml-3 space-y-0.5 border-l-2 border-border py-1 pl-2">
+            {item.children.map((child) => renderPublicDrawerItem(child, disclosureKey))}
+          </div>
         </div>
       );
     }
@@ -425,13 +423,11 @@ const Navigation = () => {
             <ChevronDown className={"h-4 w-4 transition-transform " + (expanded ? "rotate-180" : "")} aria-hidden="true" />
           </button>
         </div>
-        {expanded && (
-          <div id={panelId} className="mt-1 max-h-96 overflow-y-auto rounded-md border-l-2 border-border bg-muted/20 py-1 pl-2">
-            <div className="space-y-0.5">
-              {section.items.map((item) => renderPublicDrawerItem(item, disclosureKey))}
-            </div>
+        <div id={panelId} hidden={!expanded} className="mt-1 max-h-96 overflow-y-auto rounded-md border-l-2 border-border bg-muted/20 py-1 pl-2">
+          <div className="space-y-0.5">
+            {section.items.map((item) => renderPublicDrawerItem(item, disclosureKey))}
           </div>
-        )}
+        </div>
       </div>
     );
   };
