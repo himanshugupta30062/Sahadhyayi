@@ -151,8 +151,8 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/authors",
     items: [
       { name: "Scientists", href: "/scientists" },
-      { name: "Social Activists", href: "/authors", disabled: true },
-      { name: "Freedom Fighters", href: "/authors", disabled: true },
+      { name: "Social Activists", href: "/social-activists" },
+      { name: "Freedom Fighters", href: "/freedom-fighters" },
     ],
   },
 ];
