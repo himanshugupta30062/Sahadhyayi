@@ -70,20 +70,50 @@ serve(async (req) => {
     const header = new Uint8Array(await pdfBlob.slice(0, 5).arrayBuffer());
     if (new TextDecoder().decode(header) !== "%PDF-") throw new Error("The uploaded file does not have a PDF signature.");
 
-    const form = new FormData();
-    form.append("metadata", new Blob([JSON.stringify({ name: `sahadhyayi-review-${submissionId}` })], { type: "application/json" }));
-    form.append("file", new File([pdfBlob], "submission.pdf", { type: "application/pdf" }));
-    const uploadResponse = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${encodeURIComponent(geminiKey)}`, {
+    // Gemini Files API requires a resumable upload session; multipart/form-data
+    // is not a supported upload protocol and returns HTTP 400.
+    const uploadStartResponse = await fetch("https://generativelanguage.googleapis.com/upload/v1beta/files", {
       method: "POST",
-      headers: { "X-Goog-Upload-Protocol": "multipart" },
-      body: form,
+      headers: {
+        "x-goog-api-key": geminiKey,
+        "X-Goog-Upload-Protocol": "resumable",
+        "X-Goog-Upload-Command": "start",
+        "X-Goog-Upload-Header-Content-Length": String(pdfBlob.size),
+        "X-Goog-Upload-Header-Content-Type": "application/pdf",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ file: { display_name: `sahadhyayi-review-${submissionId}` } }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!uploadStartResponse.ok) {
+      const providerError = (await uploadStartResponse.text()).slice(0, 500);
+      console.error("Gemini upload session creation failed", uploadStartResponse.status, providerError);
+      throw new Error(`Gemini upload session creation failed (${uploadStartResponse.status}).`);
+    }
+    const uploadUrl = uploadStartResponse.headers.get("x-goog-upload-url");
+    if (!uploadUrl) throw new Error("Gemini did not return a resumable upload URL.");
+
+    const uploadResponse = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        "Content-Length": String(pdfBlob.size),
+        "X-Goog-Upload-Offset": "0",
+        "X-Goog-Upload-Command": "upload, finalize",
+      },
+      body: pdfBlob,
       signal: AbortSignal.timeout(90000),
     });
-    if (!uploadResponse.ok) throw new Error(`Gemini file upload failed (${uploadResponse.status}).`);
+    if (!uploadResponse.ok) {
+      const providerError = (await uploadResponse.text()).slice(0, 500);
+      console.error("Gemini PDF bytes upload failed", uploadResponse.status, providerError);
+      throw new Error(`Gemini PDF upload failed (${uploadResponse.status}).`);
+    }
     const uploadPayload = await uploadResponse.json();
-    const fileUri = uploadPayload?.file?.uri || uploadPayload?.uri;
-    uploadedGeminiName = uploadPayload?.file?.name || uploadPayload?.name || null;
-    if (typeof fileUri !== "string" || !fileUri) throw new Error("Gemini did not return a usable file reference.");
+    const fileUri = uploadPayload?.file?.uri;
+    uploadedGeminiName = uploadPayload?.file?.name || null;
+    if (typeof fileUri !== "string" || !fileUri || typeof uploadedGeminiName !== "string") {
+      throw new Error("Gemini did not return a usable uploaded file reference.");
+    }
 
     await admin.from("book_pdf_submissions").update({ status: "extracting" }).eq("id", submissionId);
     const prompt = [
@@ -95,9 +125,9 @@ serve(async (req) => {
       "Compare the provided metadata against the PDF's title page, table of contents, and content. State uncertainty explicitly.",
     ].join("\n\n");
     const model = Deno.env.get("BOOK_PDF_GEMINI_MODEL") || "gemini-2.5-flash";
-    const analysisResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+    const analysisResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: prompt }, { file_data: { mime_type: "application/pdf", file_uri: fileUri } }] }],
         generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 1800 },
