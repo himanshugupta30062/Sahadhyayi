@@ -251,6 +251,7 @@ const Navigation = () => {
 
   useEffect(() => {
     setIsOpen(false);
+    setOpenDesktopMenu(null);
   }, [location.pathname, location.search]);
 
   useEffect(() => {
