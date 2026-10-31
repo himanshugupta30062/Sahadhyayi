@@ -487,10 +487,10 @@ const Navigation = () => {
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => setIsOpen((open) => !open)}
-              aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+              onClick={() => setIsOpen(true)}
+              aria-label="Open navigation menu"
               aria-expanded={isOpen}
-              aria-controls="mobile-navigation-menu"
+              aria-controls="site-navigation-drawer"
               ref={menuButtonRef}
               className="min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 text-foreground hover:bg-muted"
             >
@@ -663,21 +663,7 @@ const Navigation = () => {
                 </DropdownMenu>
               </nav>
               ) : (
-                <nav aria-label="Main navigation" className="ml-1 flex min-w-0 flex-1 items-center justify-center gap-0.5 xl:gap-1">
-                  <Link
-                    to="/"
-                    aria-current={isCurrentRoute("/") ? "page" : undefined}
-                    className={
-                      "min-h-10 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:bg-muted " +
-                      (isCurrentRoute("/") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")
-                    }
-                  >
-                    Home
-                  </Link>
-                  {PUBLIC_NAVIGATION_SECTIONS.map((section, index) =>
-                    renderPublicDesktopSection(section, index === PUBLIC_NAVIGATION_SECTIONS.length - 1 ? "end" : "start")
-                  )}
-                </nav>
+                <div className="ml-1 min-w-0 flex-1" aria-hidden="true" />
               )
             )}
 
@@ -759,10 +745,10 @@ const Navigation = () => {
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent
           side="left"
-          className="w-[min(88vw,380px)] overflow-y-auto p-0"
+          className="w-[min(88vw,390px)] max-w-[390px] overflow-y-auto border-r border-border bg-background p-0 shadow-2xl sm:max-w-[390px]"
         >
-          <SheetHeader className="border-b border-border px-5 py-5 pr-12 text-left">
-            <SheetTitle className="flex items-center gap-2 text-lg">
+          <SheetHeader className="border-b border-[#263342] bg-[#1F2B39] px-5 py-5 pr-12 text-left text-white dark:bg-[#17212D]">
+            <SheetTitle className="flex items-center gap-2 text-lg text-white">
               <EnhancedLazyImage
                 src="/optimized-assets/site-logo.webp"
                 alt=""
@@ -773,7 +759,7 @@ const Navigation = () => {
               />
               Browse Sahadhyayi
             </SheetTitle>
-            <SheetDescription>
+            <SheetDescription className="text-white/70">
               Books, research, stories and the reading community.
             </SheetDescription>
             {user ? (
@@ -828,7 +814,7 @@ const Navigation = () => {
             )}
           </SheetHeader>
 
-          <nav id="mobile-navigation-menu" aria-label="Mobile navigation">
+          <nav id="site-navigation-drawer" aria-label="Main navigation">
             <div className="space-y-2 px-3 py-3">
               <button
                 type="button"
