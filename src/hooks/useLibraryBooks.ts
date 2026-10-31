@@ -358,13 +358,10 @@ export function isNonBookDocument(book: any): boolean {
     return true;
   }
 
-  // Explicit document genres
+  // Explicit document genres. Use token/phrase checks so variants such as
+  // "Peer-reviewed Research Paper" and "Conference Proceedings" are included.
   if (
-    genre === 'technical report' ||
-    genre === 'research paper' ||
-    genre === 'academic paper' ||
-    genre === 'preprint' ||
-    genre === 'government document'
+    /research|academic paper|preprint|technical report|working paper|conference proceeding|journal article|thesis|dissertation|white paper|government document|scientific study/i.test(genre)
   ) {
     return true;
   }
