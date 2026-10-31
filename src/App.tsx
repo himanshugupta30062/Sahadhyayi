@@ -76,6 +76,7 @@ const ReaderMap = lazy(() => import('./pages/ReaderMap'));
 const Investors = lazy(() => import('./pages/Investors'));
 const QuotesPage = lazy(() => import('./pages/Quotes'));
 const CommunityStories = lazy(() => import('./pages/CommunityStories'));
+const LifeStories = lazy(() => import('./pages/LifeStories'));
 const BookLibrary = lazy(() => import('./pages/BookLibrary'));
 const ResearchPapers = lazy(() => import('./pages/ResearchPapers'));
 const DmcaPolicy = lazy(() => import('./pages/DmcaPolicy'));
@@ -730,6 +731,7 @@ const App = memo(() => {
                         <Route path="/investors" element={<Suspense fallback={<LoadingFallback />}><Investors /></Suspense>} />
                         <Route path="/quotes" element={<Suspense fallback={<LoadingFallback />}><QuotesPage /></Suspense>} />
                         <Route path="/community-stories" element={<Suspense fallback={<LoadingFallback />}><CommunityStories /></Suspense>} />
+                        <Route path="/life-stories/:slug?" element={<Suspense fallback={<LoadingFallback message="Loading life stories..." />}><LifeStories /></Suspense>} />
                         <Route path="/book-library" element={<Suspense fallback={<LoadingFallback />}><BookLibrary /></Suspense>} />
                         <Route path="/dmca" element={<Suspense fallback={<LoadingFallback />}><DmcaPolicy /></Suspense>} />
                         <Route path="/dmca-policy" element={<Navigate to="/dmca" replace />} />
