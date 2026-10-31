@@ -1,0 +1,38 @@
+name: Verify dependency deprecation cleanup
+
+on:
+  push:
+    branches:
+      - chore/npm-deprecation-cleanup-2026-11-01
+    paths:
+      - .github/workflows/verify-dependency-cleanup.yml
+      - eslint.config.js
+      - src/hooks/useCommunityStats.ts
+      - src/__tests__/utils.test.ts
+      - src/__tests__/validationSanitization.test.ts
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: Clean install
+        run: npm ci --ignore-scripts
+      - name: Validate ESLint 10 configuration
+        run: npm run lint
+      - name: Validate built-in CycloneDX SBOM generation
+        run: npm run generate:sbom
+      - name: Verify deprecated dependency chains are absent
+        run: |
+          npm ls prebuild-install libxmljs2 @opentelemetry/sdk-trace-base glob eslint
