@@ -89,10 +89,23 @@ Deno.serve(async(req:Request)=>{
     // Configure SITE_OWNER_TEST_IPS as a comma-separated list to keep QA traffic
     // in the private owner table. No personal IP address is hardcoded in source.
     const clientIp=normalizeIp(req.headers.get('cf-connecting-ip')||req.headers.get('x-real-ip'));
-    const ownerTestIps=(Deno.env.get('SITE_OWNER_TEST_IPS')||'')
+    const configuredOwnerIps=(Deno.env.get('SITE_OWNER_TEST_IPS')||'')
       .split(',')
       .map((value)=>normalizeIp(value.trim()))
       .filter((value): value is string => value!==null);
+    // Database-backed allowlist makes owner QA traffic manageable without
+    // redeploying the function whenever a residential public IP changes.
+    const {data: ownerIpRows, error: ownerIpConfigError}=await supabase
+      .from('owner_test_ip_allowlist')
+      .select('ip_address')
+      .eq('enabled',true);
+    if(ownerIpConfigError){
+      console.warn('Owner IP allowlist table unavailable; using configured environment allowlist only',{code:ownerIpConfigError.code});
+    }
+    const databaseOwnerIps=(ownerIpRows||[])
+      .map((row:{ip_address:string})=>normalizeIp(row.ip_address))
+      .filter((value): value is string => value!==null);
+    const ownerTestIps=[...new Set([...configuredOwnerIps,...databaseOwnerIps])];
     const eventType=clean(body.event_type,40)||'pageview';
     if(!['pageview','page_view','activity','event','engagement'].includes(eventType))return new Response(JSON.stringify({error:'Unsupported event_type'}),{status:400,headers:corsHeaders});
     const page=(clean(body.page,300)?.split(/[?#]/,1)[0]||'/').slice(0,300);
