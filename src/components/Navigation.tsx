@@ -3,10 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   ChevronDown,
-  FileText,
   Info,
   Library,
-  LogIn,
   Menu,
   MessageCircle,
   Moon,
@@ -774,7 +772,7 @@ const Navigation = () => {
               Browse Sahadhyayi
             </SheetTitle>
             <SheetDescription>
-              Books, research, stories, games and the reading community.
+              Books, research, stories and the reading community.
             </SheetDescription>
             {user ? (
               <>
