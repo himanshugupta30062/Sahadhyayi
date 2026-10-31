@@ -20,14 +20,14 @@ export function toSeoDescription(
   const plainText = decodeCommonEntities(value)
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/<[^>\r\n]{0,2048}>/g, ' ')
+    .replace(/!\[([^\]]{0,512})\]\([^)]{0,2048}\)/g, '$1')
+    .replace(/\[([^\]]{1,512})\]\([^)]{0,2048}\)/g, '$1')
     .replace(/^\s{0,3}#{1,6}\s+/gm, '')
     .replace(/(^|\s)[*_~`]{1,3}([^*_~`]+)[*_~`]{1,3}(?=\s|$)/g, '$2')
-    .replace(/^\s*>\s?/gm, '')
+    .replace(/^[ \t]{0,3}>[ \t]?/gm, '')
     .replace(/\s+/g, ' ')
-    .replace(/\s+([.,!?;:])/g, '$1')
+    .replace(/[ \t]{1,64}([.,!?;:])/g, '$1')
     .trim();
 
   if (plainText.length <= maxLength) return plainText;
