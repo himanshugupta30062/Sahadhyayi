@@ -504,6 +504,7 @@ const Navigation = () => {
               >
                 <Link
                   to={homeHref}
+                  onClick={() => handleDesktopNavigationClick(homeHref)}
                   aria-current={isCurrentRoute(homeHref) ? "page" : undefined}
                   className={
                     "min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " +
@@ -530,7 +531,13 @@ const Navigation = () => {
                   <DropdownMenu
                     key={key}
                     open={openDesktopMenu === key}
-                    onOpenChange={(open) => setOpenDesktopMenu(open ? key : null)}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        setOpenDesktopMenu(key);
+                      } else {
+                        setOpenDesktopMenu((current) => current === key ? null : current);
+                      }
+                    }}
                   >
                     <DropdownMenuTrigger asChild>
                       <button
@@ -644,6 +651,7 @@ const Navigation = () => {
                 ))}
                 <Link
                   to="/games"
+                  onClick={() => handleDesktopNavigationClick("/games")}
                   aria-current={isCurrentRoute("/games") ? "page" : undefined}
                   className={"min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " + (isCurrentRoute("/games") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")}
                 >
