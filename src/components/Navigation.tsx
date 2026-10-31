@@ -384,26 +384,28 @@ const Navigation = () => {
 
   const renderPublicDrawerSection = (section: NavigationSection) => (
     <div key={section.name} className="border-b border-border/70 py-1">
-      <div className="min-w-0 flex-1">
-        {renderDrawerLink({
-          name: section.name,
-          href: section.href,
-          tourTarget: section.items[0]?.tourTarget,
-        })}
-      </div>
-      <details className="group shrink-0">
-        <summary
-          aria-label={section.name + " submenu"}
-          className="flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&::-webkit-details-marker]:hidden"
-        >
-          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
-        </summary>
-        <div className="mt-1 max-h-96 overflow-y-auto border-l-2 border-border bg-muted/20 py-1 pl-2">
-          <div className="space-y-0.5">
-            {section.items.map(renderPublicDrawerItem)}
-          </div>
+      <div className="flex items-center gap-1">
+        <div className="min-w-0 flex-1">
+          {renderDrawerLink({
+            name: section.name,
+            href: section.href,
+            tourTarget: section.items[0]?.tourTarget,
+          })}
         </div>
-      </details>
+        <details className="group relative shrink-0">
+          <summary
+            aria-label={section.name + " submenu"}
+            className="flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden"
+          >
+            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <div className="absolute right-0 top-full z-30 mt-1 max-h-96 w-[min(78vw,320px)] overflow-y-auto rounded-lg border border-border bg-background py-1 shadow-xl">
+            <div className="space-y-0.5 px-1">
+              {section.items.map(renderPublicDrawerItem)}
+            </div>
+          </div>
+        </details>
+      </div>
     </div>
   );
 
