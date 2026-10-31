@@ -22,6 +22,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 const sections = [
@@ -61,12 +62,14 @@ const AppSidebar = () => {
   };
 
   return (
+    <>
     <Sidebar
       collapsible="icon"
       variant="sidebar"
       className="border-r border-border/70 bg-background"
     >
-      <SidebarHeader className="px-4 pb-5 pt-6 group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="px-4 pb-5 pt-4 group-data-[collapsible=icon]:px-2">
+        <div className="flex items-center justify-between gap-2">
         <Link
           to="/dashboard"
           className="flex min-w-0 items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/70 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
@@ -90,6 +93,11 @@ const AppSidebar = () => {
             </span>
           </span>
         </Link>
+        <SidebarTrigger
+          aria-label="Collapse or expand navigation"
+          className="h-8 w-8 shrink-0 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground group-data-[collapsible=icon]:mx-auto"
+        />
+        </div>
       </SidebarHeader>
 
       <SidebarContent className="gap-5 px-3 py-2 group-data-[collapsible=icon]:px-2">
@@ -168,6 +176,11 @@ const AppSidebar = () => {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
+    <SidebarTrigger
+      aria-label="Open navigation"
+      className="fixed left-3 top-[4.75rem] z-[60] h-10 w-10 rounded-xl border border-border bg-background/95 text-foreground shadow-md backdrop-blur-sm hover:bg-muted md:hidden"
+    />
+    </>
   );
 };
 
