@@ -40,7 +40,7 @@ serve(async (req) => {
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
   const { data: submission, error: submissionError } = await admin
     .from("book_pdf_submissions")
-    .select("id,user_id,storage_path,file_size_bytes,submitted_title,submitted_author,status,rights_attested")
+    .select("id,user_id,storage_path,file_size_bytes,submitted_title,submitted_author,status,rights_attested,verification_completed_at,published_book_id")
     .eq("id", submissionId)
     .maybeSingle();
   if (submissionError || !submission) return json({ error: "Submission was not found." }, 404);
@@ -54,7 +54,7 @@ serve(async (req) => {
     if (roleError || !adminRole) return json({ error: "You cannot verify this submission." }, 403);
   }
   if (!submission.rights_attested) return json({ error: "A rights attestation is required before verification." }, 400);
-  const retryingUnverifiedApproval = submission.status === "approved" && !submission.verification_completed_at;
+  const retryingUnverifiedApproval = submission.status === "approved" && !submission.verification_completed_at && !submission.published_book_id;
   if (!["uploaded", "failed", "needs_review"].includes(submission.status) && !retryingUnverifiedApproval) {
     return json({ error: "This submission is already being processed or has a completed review." }, 409);
   }
