@@ -18,8 +18,6 @@ import ReadingStreakCard from '@/components/dashboard/ReadingStreakCard';
 import DashboardCommunityPulse from '@/components/dashboard/DashboardCommunityPulse';
 import { useReadingGoal } from '@/hooks/useReadingGoal';
 import { trackUiEvent } from '@/lib/analytics';
-import AppSidebar from '@/components/dashboard/AppSidebar';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 const DashboardContent = () => {
   const { user, loading: authLoading } = useAuth();
@@ -340,13 +338,6 @@ const DashboardContent = () => {
   );
 };
 
-const Dashboard = () => (
-  <SidebarProvider defaultOpen>
-    <AppSidebar />
-    <SidebarInset className="min-w-0 bg-background">
-      <DashboardContent />
-    </SidebarInset>
-  </SidebarProvider>
-);
+const Dashboard = () => <DashboardContent />;
 
 export default Dashboard;
