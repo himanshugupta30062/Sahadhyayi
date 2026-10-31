@@ -69,13 +69,15 @@ export const CreatePostForm = ({ authorId, onPostCreated }: CreatePostFormProps)
     return (
       <Card className="mb-6">
         <CardContent className="pt-6">
-          <div 
-            className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70 transition-colors"
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-auto w-full justify-start gap-3 rounded-lg bg-muted/50 p-4 text-left font-normal text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
             onClick={() => setIsExpanded(true)}
           >
-            <PenTool className="w-5 h-5 text-muted-foreground" />
-            <span className="text-muted-foreground">Share an update with your followers...</span>
-          </div>
+            <PenTool className="h-5 w-5 shrink-0" aria-hidden="true" />
+            <span>Share an update with your followers...</span>
+          </Button>
         </CardContent>
       </Card>
     );
@@ -96,8 +98,12 @@ export const CreatePostForm = ({ authorId, onPostCreated }: CreatePostFormProps)
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="post-type">Post Type</Label>
-          <Select value={postType} onValueChange={(value: any) => setPostType(value)}>
-            <SelectTrigger>
+          <Select value={postType} onValueChange={(value) => {
+            if (value === 'status_update' || value === 'blog_post' || value === 'announcement') {
+              setPostType(value);
+            }
+          }}>
+            <SelectTrigger id="post-type">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

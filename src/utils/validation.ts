@@ -18,23 +18,65 @@ export const encodeHTML = (str: string): string => {
 };
 
 // Advanced XSS sanitization using DOMPurify-like approach
+function removeScriptElements(input: string): string {
+  const lowerInput = input.toLowerCase();
+  let output = '';
+  let cursor = 0;
+
+  while (cursor < input.length) {
+    const scriptStart = lowerInput.indexOf('<script', cursor);
+    if (scriptStart === -1) {
+      output += input.slice(cursor);
+      break;
+    }
+
+    const boundary = lowerInput[scriptStart + 7];
+    if (boundary && !/[\s>]/.test(boundary)) {
+      output += input.slice(cursor, scriptStart + 7);
+      cursor = scriptStart + 7;
+      continue;
+    }
+
+    const openingEnd = lowerInput.indexOf('>', scriptStart + 7);
+    if (openingEnd === -1) {
+      output += input.slice(cursor, scriptStart);
+      break;
+    }
+
+    const closingStart = lowerInput.indexOf('</script', openingEnd + 1);
+    if (closingStart === -1) {
+      output += input.slice(cursor, scriptStart);
+      break;
+    }
+
+    const closingEnd = lowerInput.indexOf('>', closingStart + 8);
+    if (closingEnd === -1) {
+      output += input.slice(cursor, scriptStart);
+      break;
+    }
+
+    output += input.slice(cursor, scriptStart);
+    cursor = closingEnd + 1;
+  }
+
+  return output;
+}
+
 export const sanitizeHTML = (dirty: string): string => {
-  // Remove script tags and their content
-  let clean = dirty.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-  
-  // Remove javascript: protocols
+  // Scan script blocks without a nested, backtracking-heavy regular expression.
+  let clean = removeScriptElements(dirty);
+
+  // Remove javascript: protocols.
   clean = clean.replace(/javascript:/gi, '');
-  
-  // Remove on* event handlers
-  clean = clean.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
-  
-  // Remove style attributes that could contain expressions
+
+  // Remove inline event handlers and style attributes.
+  clean = clean.replace(/\s*on[a-z]+\s*=\s*["'][^"']*["']/gi, '');
   clean = clean.replace(/\s*style\s*=\s*["'][^"']*["']/gi, '');
-  
-  // Remove data: protocols (except data:image)
+
+  // Remove data: protocols (except data:image).
   clean = clean.replace(/data:(?!image\/)[^;]+;/gi, '');
-  
-  // HTML encode the result
+
+  // HTML encode the result.
   return encodeHTML(clean);
 };
 

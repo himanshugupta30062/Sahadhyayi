@@ -41,37 +41,48 @@ export const useGroupMessages = (groupId: string) => {
           filter: `group_id=eq.${groupId}`
         },
         async (payload) => {
-          // Fetch the complete message with sender details
-          const { data: newMessage } = await supabase
-            .from('group_messages')
-            .select(`
-              *,
-              sender:profiles!sender_id(id, full_name, profile_photo_url, username)
-            `)
-            .eq('id', payload.new.id)
-            .single();
+          try {
+            // Fetch the complete message with sender details.
+            const { data: newMessage, error } = await supabase
+              .from('group_messages')
+              .select(`
+                *,
+                sender:profiles!sender_id(id, full_name, profile_photo_url, username)
+              `)
+              .eq('id', payload.new.id)
+              .single();
 
-          if (newMessage) {
+            if (error) throw error;
+            if (!newMessage) return;
+
             queryClient.setQueryData<GroupMessage[]>(['group-messages', groupId], (old = []) => {
-              // Check if message already exists to avoid duplicates
-              if (old.some(msg => msg.id === newMessage.id)) return old;
+              // Check if message already exists to avoid duplicates.
+              if (old.some((msg) => msg.id === newMessage.id)) return old;
               return [...old, newMessage];
             });
 
-            // Show notification for messages from others
+            // Show notification for messages from others.
             if (newMessage.sender_id !== user.id) {
               toast({
                 title: 'New Message',
                 description: `${newMessage.sender?.full_name || 'Someone'} sent a message`,
               });
             }
+          } catch (error) {
+            console.error('Failed to process incoming group message:', error);
           }
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel).then((status) => {
+        if (status !== 'ok') {
+          console.warn('Group message channel cleanup did not complete:', status);
+        }
+      }).catch((error: unknown) => {
+        console.error('Failed to remove group message channel:', error);
+      });
     };
   }, [groupId, user?.id, queryClient, toast]);
 
