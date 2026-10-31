@@ -211,17 +211,17 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
 
       const toggleButton = screen.getByRole('button', { name: /open navigation menu/i });
       expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
-      expect(toggleButton).toHaveAttribute('aria-controls', 'mobile-navigation-menu');
+      expect(toggleButton).toHaveAttribute('aria-controls', 'site-navigation-drawer');
 
       // Click to open
       fireEvent.click(toggleButton);
 
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
-      expect(toggleButton).toHaveAttribute('aria-label', 'Close navigation menu');
+      expect(toggleButton).toHaveAttribute('aria-label', 'Open navigation menu');
 
-      const mobileNav = screen.getByRole('navigation', { name: /mobile navigation/i });
+      const mobileNav = screen.getByRole('navigation', { name: /main navigation/i });
       expect(mobileNav).toBeInTheDocument();
-      expect(mobileNav).toHaveAttribute('id', 'mobile-navigation-menu');
+      expect(mobileNav).toHaveAttribute('id', 'site-navigation-drawer');
     });
 
     it('closes the mobile menu after navigating to a route', () => {
@@ -271,6 +271,47 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       mobileLinks.forEach((link) => {
         expect(link.className).toContain('min-h-[44px]');
       });
+    });
+  });
+
+  describe('Public navigation drawer and dropdown hierarchy', () => {
+    it('opens a left-side public drawer from the desktop header with the requested menu hierarchy', () => {
+      mockIsMobileValue = false;
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Navigation />
+        </MemoryRouter>
+      );
+
+      expect(screen.queryByRole('link', { name: /^library$/i })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+
+      const drawer = screen.getByRole('navigation', { name: /main navigation/i });
+      expect(drawer).toHaveAttribute('id', 'site-navigation-drawer');
+      expect(screen.getByRole('link', { name: /^home$/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /^library$/i })).toHaveAttribute('href', '/library');
+      expect(screen.getByText('Social Media')).toBeInTheDocument();
+      expect(screen.getByText('Articles')).toBeInTheDocument();
+      expect(screen.getByText('Authors')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument();
+    });
+
+    it('expands Book Discussion into its nested links inside the public drawer', () => {
+      mockIsMobileValue = true;
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Navigation />
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+      fireEvent.click(screen.getByText('Social Media').parentElement!.querySelector('summary')!);
+      fireEvent.click(screen.getByText('Book Discussion'));
+
+      expect(screen.getByRole('link', { name: /book discussions/i })).toHaveAttribute('href', '/social?tab=threads');
+      expect(screen.getByRole('link', { name: /reading rooms/i })).toHaveAttribute('href', '/social?tab=rooms');
+      expect(screen.getByRole('link', { name: /shared marginalia/i })).toHaveAttribute('href', '/social?tab=margins');
+      expect(screen.getByRole('link', { name: /reading dna/i })).toHaveAttribute('href', '/social?tab=dna');
     });
   });
 
