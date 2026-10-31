@@ -21,14 +21,18 @@ export async function fetchPaginatedRows(
   return { data: rows, error: null };
 }
 
+function trimHyphens(value) {
+  let start = 0;
+  let end = value.length;
+  while (start < end && value[start] === "-") start += 1;
+  while (end > start && value[end - 1] === "-") end -= 1;
+  return value.slice(start, end);
+}
+
 /** Keep generated author routes consistent with the client-side Unicode slug rules. */
 export function slugify(value) {
   if (!value) return '';
   const text = String(value);
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\p{L}\p{N}\p{M}]+/gu, '-')
-    .replace(/^-+|-+$/g, '')
-    || text.replace(/\s+/g, '-').toLowerCase();
+  const normalized = text.toLowerCase().trim().replace(/[^\p{L}\p{N}\p{M}]+/gu, '-');
+  return trimHyphens(normalized) || text.replace(/\s+/g, '-').toLowerCase();
 }
