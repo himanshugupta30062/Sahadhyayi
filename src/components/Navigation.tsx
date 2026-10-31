@@ -4,7 +4,6 @@ import {
   BookOpen,
   ChevronDown,
   Info,
-  Library,
   Menu,
   MessageCircle,
   Moon,
