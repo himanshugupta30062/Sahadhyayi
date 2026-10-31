@@ -296,6 +296,15 @@ const Navigation = () => {
     return isNavigationItemActive(location.pathname, location.search, href);
   };
 
+  const handleDesktopNavigationClick = (href: string) => {
+    setOpenDesktopMenu(null);
+    const [targetPath, targetQuery = ""] = href.split("?");
+    const targetSearch = targetQuery ? `?${targetQuery}` : "";
+    if (location.pathname === targetPath && location.search === targetSearch) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const isNavigationEntryActive = (item: NavigationItem): boolean =>
     (!item.disabled && isCurrentRoute(item.href)) ||
     Boolean(item.children?.some(isNavigationEntryActive));
@@ -529,8 +538,6 @@ const Navigation = () => {
                         data-tour-target={tourTarget}
                         aria-haspopup="menu"
                         aria-expanded={openDesktopMenu === key}
-                        onMouseEnter={() => setOpenDesktopMenu(key)}
-                        onFocus={() => setOpenDesktopMenu(key)}
                         className={
                           "inline-flex min-h-10 items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +
                           (isSectionActive(section)
@@ -579,6 +586,7 @@ const Navigation = () => {
                                         <DropdownMenuItem key={item.name} asChild>
                                           <Link
                                             to={item.href}
+                                            onClick={() => handleDesktopNavigationClick(item.href)}
                                             data-tour-target={item.tourTarget}
                                             aria-current={active ? "page" : undefined}
                                             className={
@@ -610,6 +618,7 @@ const Navigation = () => {
                               <DropdownMenuItem key={item.name} asChild>
                                 <Link
                                   to={item.href}
+                                  onClick={() => handleDesktopNavigationClick(item.href)}
                                   data-tour-target={item.tourTarget}
                                   aria-current={active ? "page" : undefined}
                                   className={
