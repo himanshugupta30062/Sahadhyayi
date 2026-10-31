@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, Users } from 'lucide-react';
 import { SearchBar } from '@/components/ui/search-bar';
 import FilterPopup from '@/components/library/FilterPopup';
@@ -41,8 +41,27 @@ const BookLibrary = () => {
     };
   }, []);
 
-  // Sync filter state -> URL for shareable searches
+  // Apply incoming sidebar/deep-link filters before writing local filters back to the URL.
+  const lastAppliedSearchParams = useRef(searchParams.toString());
   useEffect(() => {
+    const incoming = searchParams.toString();
+    if (incoming !== lastAppliedSearchParams.current) {
+      lastAppliedSearchParams.current = incoming;
+      setSearchQuery(searchParams.get('q') || '');
+      setSelectedGenre(cap(searchParams.get('genre') || '') || 'All');
+      setSelectedAuthor(searchParams.get('author') || 'All');
+      setSelectedYear(searchParams.get('year') || '');
+      setSelectedLanguage(cap(searchParams.get('language') || '') || 'All');
+      const price = searchParams.get('price');
+      if (price) {
+        const [low, high] = price.split('-').map(Number);
+        if (!Number.isNaN(low) && !Number.isNaN(high)) setPriceRange([low, high]);
+      } else {
+        setPriceRange([0, 100]);
+      }
+      return;
+    }
+
     const next = new URLSearchParams();
     if (searchQuery.trim()) next.set('q', searchQuery.trim());
     if (selectedGenre && selectedGenre !== 'All') next.set('genre', selectedGenre);
@@ -50,8 +69,12 @@ const BookLibrary = () => {
     if (selectedYear) next.set('year', selectedYear);
     if (selectedLanguage && selectedLanguage !== 'All') next.set('language', selectedLanguage);
     if (priceRange[0] !== 0 || priceRange[1] !== 100) next.set('price', `${priceRange[0]}-${priceRange[1]}`);
-    setSearchParams(next, { replace: true });
-  }, [searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange, setSearchParams]);
+    const nextQuery = next.toString();
+    if (nextQuery !== lastAppliedSearchParams.current) {
+      lastAppliedSearchParams.current = nextQuery;
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange, setSearchParams]);
 
   const handleClearFilters = () => {
     setSelectedGenre('All');
