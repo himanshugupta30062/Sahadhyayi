@@ -18,8 +18,10 @@ import ReadingStreakCard from '@/components/dashboard/ReadingStreakCard';
 import DashboardCommunityPulse from '@/components/dashboard/DashboardCommunityPulse';
 import { useReadingGoal } from '@/hooks/useReadingGoal';
 import { trackUiEvent } from '@/lib/analytics';
+import AppSidebar from '@/components/dashboard/AppSidebar';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
-const Dashboard = () => {
+const DashboardContent = () => {
   const { user, loading: authLoading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: userBooks = [] } = useUserBookshelf();
@@ -337,5 +339,14 @@ const Dashboard = () => {
     </>
   );
 };
+
+const Dashboard = () => (
+  <SidebarProvider defaultOpen>
+    <AppSidebar />
+    <SidebarInset className="min-w-0 bg-background">
+      <DashboardContent />
+    </SidebarInset>
+  </SidebarProvider>
+);
 
 export default Dashboard;
