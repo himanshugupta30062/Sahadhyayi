@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Send, Star, MessageSquare, Lightbulb, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,13 +12,17 @@ import { supabase } from "@/integrations/supabase/client-universal";
 import SEO from "@/components/SEO";
 
 const Feedback = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    type: "",
-    subject: "",
-    message: "",
-    rating: 0
+  const [searchParams] = useSearchParams();
+  const [formData, setFormData] = useState(() => {
+    const requestedType = searchParams.get("type");
+    return {
+      name: "",
+      email: "",
+      type: requestedType === "bug" ? "bug" : "",
+      subject: (searchParams.get("subject") || "").slice(0, 160),
+      message: (searchParams.get("message") || "").slice(0, 3000),
+      rating: 0,
+    };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();

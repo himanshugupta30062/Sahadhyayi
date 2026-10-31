@@ -56,6 +56,9 @@ describe('ErrorBoundary', () => {
 
     expect(screen.getByRole('heading', { name: 'Something went wrong' })).toBeTruthy();
     expect(screen.getByText(/Our team has been notified/i)).toBeTruthy();
+    const reportLink = screen.getByRole('link', { name: /Report this issue/i });
+    expect(reportLink.getAttribute('href')).toContain('/feedback?');
+    expect(reportLink.getAttribute('href')).toContain('type=bug');
     expect(onError).toHaveBeenCalledTimes(1);
     expect(onError.mock.calls[0][0]).toBeInstanceOf(Error);
 

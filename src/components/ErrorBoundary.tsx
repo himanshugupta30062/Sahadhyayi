@@ -51,25 +51,27 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     this.props.onError?.(error, errorInfo);
   }
 
+  private getReportUrl = () => {
+    const params = new URLSearchParams({
+      type: "bug",
+      subject: "Issue report: Something went wrong",
+      message: [
+        "I encountered an unexpected error on Sahadhyayi.",
+        `Page: ${window.location.origin}${window.location.pathname}`,
+        `Time: ${new Date().toISOString()}`,
+        this.state.errorId ? `Error ID: ${this.state.errorId}` : null,
+      ].filter(Boolean).join("\n"),
+    });
+
+    return `/feedback?${params.toString()}`;
+  };
+
   handleReload = () => {
     window.location.reload();
   };
 
   handleGoHome = () => {
     window.location.href = "/";
-  };
-
-  handleReportFeedback = () => {
-    const eventId = this.state.errorId;
-    if (!eventId) return;
-
-    void import("@/sentry")
-      .then(({ default: Sentry }) => Sentry.showReportDialog({ eventId }))
-      .catch(() => {
-        if (import.meta.env.DEV) {
-          console.warn("Sentry could not be loaded to open the feedback dialog.");
-        }
-      });
   };
 
   render() {
@@ -121,16 +123,12 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               </Button>
             </div>
 
-            {this.state.errorId && (
-              <Button
-                onClick={this.handleReportFeedback}
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-              >
-                Report this issue
-              </Button>
-            )}
+            <a
+              href={this.getReportUrl()}
+              className="inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              Report this issue
+            </a>
           </div>
         </div>
       );
