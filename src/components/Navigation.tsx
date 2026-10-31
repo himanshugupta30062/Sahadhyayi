@@ -399,23 +399,36 @@ const Navigation = () => {
   };
 
   const renderDrawerSection = (section: NavigationSection) => {
-    const active = isSectionActive(section);
+    const disclosureKey = "signed-in." + section.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const panelId = "signed-in-nav-" + disclosureKey.replace(/[^a-z0-9-]/g, "");
+    const expanded = Boolean(expandedPublicSections[disclosureKey]);
     return (
-      <details key={section.name} className="group overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm open:border-[hsl(var(--brand-primary)/0.35)] open:shadow-md">
-        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 [&::-webkit-details-marker]:hidden">
-          <span className="flex min-w-0 items-center gap-2.5">
-            <span className={"h-2.5 w-2.5 shrink-0 rounded-full " + (active ? "bg-[hsl(var(--brand-primary))] shadow-[0_0_0_4px_hsl(var(--brand-primary)/0.12)]" : "bg-muted-foreground/40")} />
-            <span>{section.name}</span>
-            {active && <span className="rounded-full bg-[hsl(var(--brand-primary)/0.10)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[hsl(var(--brand-primary))]">Current</span>}
-          </span>
-          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
-        </summary>
-        <div className="space-y-0.5 border-t border-border/70 bg-muted/20 px-2 py-2">
+      <div key={section.name} className="border-b border-border/70 py-1">
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1">
+            {renderDrawerLink({
+              name: section.name,
+              href: section.href,
+              tourTarget: section.items[0]?.tourTarget,
+            })}
+          </div>
+          <button
+            type="button"
+            aria-label={section.name + " submenu"}
+            aria-expanded={expanded}
+            aria-controls={panelId}
+            onClick={() => setExpandedPublicSections((current) => ({ ...current, [disclosureKey]: !current[disclosureKey] }))}
+            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ChevronDown className={"h-4 w-4 transition-transform " + (expanded ? "rotate-180" : "")} aria-hidden="true" />
+          </button>
+        </div>
+        <div id={panelId} hidden={!expanded} className="space-y-0.5 border-l-2 border-border py-1 pl-2">
           {visibleItems(section.items)
             .filter((item) => item.href !== section.href)
             .map(renderDrawerLink)}
         </div>
-      </details>
+      </div>
     );
   };
 
