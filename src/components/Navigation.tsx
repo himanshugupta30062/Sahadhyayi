@@ -544,8 +544,15 @@ const Navigation = () => {
                       sideOffset={6}
                       avoidCollisions={true}
                       collisionPadding={12}
-                      className="z-[60] w-64 rounded-xl border border-border/80 bg-popover/95 p-2 shadow-xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150"
+                      className={"z-[60] max-h-[min(70vh,520px)] overflow-y-auto rounded-xl border border-border/80 bg-popover/95 p-2 shadow-xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150 " + (key === "social-media" ? "w-72" : "w-64")}
                     >
+                      {key === "social-media" && (
+                        <div className="mb-1 border-b border-border/70 px-3 pb-2 pt-1">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Community</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground/80">Connect, discover and discuss books</p>
+                        </div>
+                      )}
+                      <div className={key === "social-media" ? "space-y-0.5" : undefined}>
                       {visibleItems(section.items).map((item) => (
                         <DropdownMenuItem key={item.name} asChild>
                           <Link
@@ -563,6 +570,7 @@ const Navigation = () => {
                           </Link>
                         </DropdownMenuItem>
                       ))}
+                      </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ))}
@@ -581,15 +589,12 @@ const Navigation = () => {
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
-                className="group flex min-h-[44px] min-w-[44px] h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-muted/50 text-muted-foreground shadow-2xs transition-colors hover:border-border hover:bg-muted hover:text-foreground xl:w-auto xl:justify-start xl:gap-2 xl:px-3"
+                className="flex h-10 w-10 min-h-[40px] min-w-[40px] shrink-0 items-center justify-center rounded-full border border-border/70 bg-muted/40 text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Search library and books"
                 title="Search library and books"
                 data-tour-target="search"
               >
                 <Search className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden text-xs font-normal text-foreground/80 xl:inline">
-                  Search books & authors...
-                </span>
               </button>
 
               <Button
