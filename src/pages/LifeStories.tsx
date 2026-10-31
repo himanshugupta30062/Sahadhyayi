@@ -129,8 +129,8 @@ const stories: LifeStory[] = [
       'His story is also a reminder that infrastructure, healthcare access and public services should not depend on one person’s extraordinary effort. Individual determination can draw attention to barriers communities should not have to face.'
     ],
     lesson: 'Persistence can change a community, while lasting progress also requires systems that make essential services accessible.',
-    sourceLabel: 'BBC – profile and reporting',
-    sourceUrl: 'https://www.bbc.com/news/world-asia-india-',
+    sourceLabel: 'YourStory – Dashrath Manjhi: The Man Who Moved a Mountain',
+    sourceUrl: 'https://yourstory.com/2015/01/dashrath-manjhi',
     accent: 'from-stone-950 via-stone-800 to-amber-800',
     initials: 'DM'
   }
