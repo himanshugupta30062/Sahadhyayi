@@ -266,6 +266,7 @@ const Navigation = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [contactDialogRequested, setContactDialogRequested] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const desktopMenuCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
@@ -281,6 +282,30 @@ const Navigation = () => {
   useEffect(() => {
     if (user) setContactDialogRequested(false);
   }, [user]);
+
+  const cancelDesktopMenuClose = () => {
+    if (desktopMenuCloseTimer.current) {
+      clearTimeout(desktopMenuCloseTimer.current);
+      desktopMenuCloseTimer.current = null;
+    }
+  };
+
+  const openDesktopMenuOnHover = (key: string) => {
+    cancelDesktopMenuClose();
+    setOpenDesktopMenu(key);
+  };
+
+  const scheduleDesktopMenuClose = () => {
+    cancelDesktopMenuClose();
+    desktopMenuCloseTimer.current = setTimeout(() => {
+      setOpenDesktopMenu(null);
+      desktopMenuCloseTimer.current = null;
+    }, 160);
+  };
+
+  useEffect(() => () => {
+    if (desktopMenuCloseTimer.current) clearTimeout(desktopMenuCloseTimer.current);
+  }, []);
 
   useEffect(() => {
     setIsOpen(false);
@@ -590,11 +615,15 @@ const Navigation = () => {
                   <DropdownMenu
                     key={key}
                     open={openDesktopMenu === key}
-                    onOpenChange={(open) => setOpenDesktopMenu(open ? key : null)}
+                    onOpenChange={(open) => {
+                      if (open) openDesktopMenuOnHover(key);
+                      else setOpenDesktopMenu(null);
+                    }}
                   >
                     <div
                       className="relative inline-flex items-center gap-0.5"
-                      onMouseEnter={() => setOpenDesktopMenu(key)}
+                      onMouseEnter={() => openDesktopMenuOnHover(key)}
+                      onMouseLeave={scheduleDesktopMenuClose}
                     >
                       <Link
                         to={section.href}
@@ -615,7 +644,7 @@ const Navigation = () => {
                           aria-label={label + " submenu"}
                           aria-haspopup="menu"
                           aria-expanded={openDesktopMenu === key}
-                          onFocus={() => setOpenDesktopMenu(key)}
+                          onFocus={() => openDesktopMenuOnHover(key)}
                           className={
                             "inline-flex min-h-10 min-w-7 items-center justify-center rounded-md px-1 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +
                             (isSectionActive(section) ? "text-[hsl(var(--brand-primary))]" : "")
@@ -628,21 +657,24 @@ const Navigation = () => {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
+                        onMouseEnter={cancelDesktopMenuClose}
+                        onMouseLeave={scheduleDesktopMenuClose}
                         align="start"
                         side="bottom"
                         sideOffset={4}
                         avoidCollisions={true}
                         collisionPadding={12}
-                        className="z-[60] w-64 rounded-xl border border-border/80 bg-popover/95 p-2 shadow-xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150"
+                        className="z-[60] w-[min(92vw,340px)] rounded-2xl border border-border/80 bg-popover p-2.5 shadow-[0_18px_50px_-18px_hsl(var(--foreground)/0.28)] ring-1 ring-black/[0.04] backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 data-[state=open]:slide-in-from-top-2 data-[state=closed]:slide-out-to-top-1 data-[state=open]:duration-200 data-[state=closed]:duration-150 motion-reduce:animate-none"
                       >
                         {visibleItems(section.items).map((item) => (
                           <DropdownMenuItem key={item.name} asChild>
                             <Link
                               to={item.href}
+                              onClick={() => setOpenDesktopMenu(null)}
                               data-tour-target={item.tourTarget}
                               aria-current={isCurrentRoute(item.href) ? "page" : undefined}
                               className={
-                                "flex min-h-10 cursor-pointer items-center rounded-lg px-3 py-2 text-sm transition-colors " +
+                                "flex min-h-11 cursor-pointer items-center rounded-xl px-3.5 py-2.5 text-sm transition-[background-color,color,transform] duration-150 ease-out hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +
                                 (isCurrentRoute(item.href)
                                   ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
                                   : "")
