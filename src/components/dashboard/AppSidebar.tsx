@@ -66,7 +66,7 @@ const AppSidebar = () => {
     <Sidebar
       collapsible="icon"
       variant="sidebar"
-      className="border-r border-border/70 bg-background"
+      className="border-r border-border/70 bg-background md:top-16 md:h-[calc(100svh-4rem)]"
     >
       <SidebarHeader className="px-4 pb-5 pt-4 group-data-[collapsible=icon]:px-2">
         <div className="flex items-center justify-between gap-2">
