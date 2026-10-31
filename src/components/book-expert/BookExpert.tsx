@@ -66,6 +66,14 @@ function renderInlineMarkdown(line: string, citationIds: Set<string>, sourceSect
   });
 }
 
+function parseMarkdownHeading(line: string): string | null {
+  let markerCount = 0;
+  while (markerCount < line.length && markerCount < 4 && line[markerCount] === "#") markerCount += 1;
+  if (markerCount < 1 || markerCount > 3 || line[markerCount] !== " ") return null;
+  const heading = line.slice(markerCount).trim();
+  return heading || null;
+}
+
 function AnswerText({ text, citations, sourceSectionId }: { text: string; citations?: BookExpertCitation[]; sourceSectionId: string }) {
   const blocks = text.trim().split(/\n{2,}/).filter(Boolean);
   const citationIds = new Set((citations ?? []).map((citation) => citation.id));
@@ -73,12 +81,12 @@ function AnswerText({ text, citations, sourceSectionId }: { text: string; citati
     <div className="space-y-3 break-words">
       {blocks.map((block, blockIndex) => {
         const lines = block.split("\n");
-        const heading = lines[0].match(/^#{1,3}\s+(.+)$/);
+        const heading = parseMarkdownHeading(lines[0]);
         const bulletLines = lines.every((line) => /^\s*[-*]\s+/.test(line));
         const numberedLines = lines.every((line) => /^\s*\d+[.)]\s+/.test(line));
 
         if (heading && lines.length === 1) {
-          return <h4 key={blockIndex} className="text-sm font-semibold tracking-tight text-foreground">{renderInlineMarkdown(heading[1], citationIds, sourceSectionId)}</h4>;
+          return <h4 key={blockIndex} className="text-sm font-semibold tracking-tight text-foreground">{renderInlineMarkdown(heading, citationIds, sourceSectionId)}</h4>;
         }
         if (bulletLines) {
           return (
