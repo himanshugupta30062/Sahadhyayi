@@ -29,17 +29,18 @@ import useDebouncedValue from '@/lib/useDebouncedValue';
 import { slugify } from '@/utils/slugify';
 import { useTheme } from '@/contexts/ThemeContext';
 import { BookExpertContext } from '@/contexts/book-expert.utils';
+import { isNonBookDocument } from '@/hooks/useLibraryBooks';
 
 interface EnhancedGlobalSearchProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export type SearchCategory = 'all' | 'books' | 'authors' | 'articles' | 'commands';
+export type SearchCategory = 'all' | 'books' | 'research-papers' | 'authors' | 'articles' | 'commands';
 
 export interface GlobalSearchResult {
   id: string;
-  category: 'book' | 'author' | 'article' | 'command';
+  category: 'book' | 'research-paper' | 'author' | 'article' | 'command';
   title: string;
   subtitle?: string;
   meta?: string;
@@ -116,6 +117,16 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
         url: '/library',
         keywords: ['library', 'books', 'catalog', 'free', 'classics', 'read', 'digital'],
         score: 50,
+      },
+      {
+        id: 'cmd-research-papers',
+        category: 'command' as const,
+        title: 'Explore Research Papers',
+        subtitle: 'Find academic papers, preprints and technical reports',
+        meta: 'Research',
+        url: '/research-papers',
+        keywords: ['research', 'research papers', 'academic papers', 'studies', 'preprints', 'technical reports', 'journals'],
+        score: 48,
       },
       {
         id: 'cmd-authors',
@@ -352,7 +363,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
         // 1. Books query
         supabase
           .from('books_library')
-          .select('id, title, author, genre, cover_image_url, language')
+          .select('id, title, author, genre, cover_image_url, language, pdf_url, description')
           .or(bookOr)
           .limit(12),
 
@@ -381,11 +392,11 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
         for (const b of booksResult.value.data) {
           combined.push({
             id: `book-${b.id}`,
-            category: 'book',
+            category: isNonBookDocument(b) ? 'research-paper' : 'book',
             title: b.title,
             subtitle: b.author ? `by ${b.author}` : undefined,
             meta: b.genre || b.language || undefined,
-            url: `/book/${b.id}`,
+            url: isNonBookDocument(b) ? `/research-papers?search=${encodeURIComponent(b.title)}` : `/book/${b.id}`,
             imageUrl: b.cover_image_url,
             score: computeRelevance(cleanTerm, b.title, b.author, b.genre),
           });
@@ -445,6 +456,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
   const filteredResults = useMemo(() => {
     if (selectedCategory === 'all') return results;
     if (selectedCategory === 'books') return results.filter((r) => r.category === 'book');
+    if (selectedCategory === 'research-papers') return results.filter((r) => r.category === 'research-paper');
     if (selectedCategory === 'authors') return results.filter((r) => r.category === 'author');
     if (selectedCategory === 'articles') return results.filter((r) => r.category === 'article');
     if (selectedCategory === 'commands') return results.filter((r) => r.category === 'command');
@@ -455,6 +467,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
     return {
       all: results.length,
       books: results.filter((r) => r.category === 'book').length,
+      'research-papers': results.filter((r) => r.category === 'research-paper').length,
       authors: results.filter((r) => r.category === 'author').length,
       articles: results.filter((r) => r.category === 'article').length,
       commands: results.filter((r) => r.category === 'command').length,
@@ -464,6 +477,7 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
   const availableTabs = useMemo<SearchCategory[]>(() => {
     const tabs: SearchCategory[] = ['all'];
     if (counts.books > 0) tabs.push('books');
+    if (counts['research-papers'] > 0) tabs.push('research-papers');
     if (counts.authors > 0) tabs.push('authors');
     if (counts.articles > 0) tabs.push('articles');
     if (counts.commands > 0) tabs.push('commands');
@@ -551,6 +565,8 @@ export function EnhancedGlobalSearch({ isOpen, onClose }: EnhancedGlobalSearchPr
     switch (category) {
       case 'book':
         return <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />;
+      case 'research-paper':
+        return <FileText className="w-4 h-4 text-sky-600 dark:text-sky-400" aria-hidden="true" />;
       case 'author':
         return <User className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />;
       case 'article':
