@@ -109,7 +109,8 @@ const ResearchPapers = () => {
               </div>
               <div className="grid gap-4">
                 {papers.map((paper) => {
-                  const resource = paper.pdf_url || (paper as any).external_url || '';
+                  const resourceCandidate = paper.pdf_url || (paper as any).external_url || '';
+                  const resource = /^https?:\\/\\//i.test(resourceCandidate) ? resourceCandidate : '';
                   const published = paper.publication_year || (paper.created_at ? new Date(paper.created_at).getFullYear() : null);
                   return (
                     <Card key={paper.id} className="border-[#E8E2D9] bg-white transition-shadow hover:shadow-md dark:border-[#26302A] dark:bg-[#141815]">
