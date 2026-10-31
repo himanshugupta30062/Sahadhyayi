@@ -277,7 +277,7 @@ const App = memo(() => {
                   <BookExpertProvider>
                     <ScrollToTop />
                     <PageTracker />
-                  <SidebarProvider defaultOpen>
+                  <SidebarProvider defaultOpen={false}>
                     <AppSidebar />
                     <SidebarInset className="min-w-0 bg-background">
                   <div className="min-h-screen bg-background text-foreground flex flex-col">

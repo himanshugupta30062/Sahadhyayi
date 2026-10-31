@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/authHelpers";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -160,7 +161,6 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
 ];
 
 const PEOPLE_AND_MORE: NavigationItem[] = [
-  { name: "Authors", href: "/authors" },
   { name: "Scientists", href: "/scientists" },
   { name: "Publishers", href: "/publishers" },
   { name: "Author Connect", href: "/author-connect" },
@@ -710,6 +710,13 @@ const Navigation = () => {
             )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+              {!isMobile && (
+                <SidebarTrigger
+                  aria-label="Open page navigation"
+                  title="Open page navigation"
+                  className="h-10 w-10 rounded-full border border-border/70 bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
+                />
+              )}
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
@@ -800,9 +807,9 @@ const Navigation = () => {
               {renderDrawerLink({ name: homeLabel, href: homeHref })}
               {user ? (
                 <>
-                  {NAVIGATION_SECTIONS.map(renderDrawerSection)}
-                  {renderDrawerLink({ name: "Games", href: "/games" })}
+                  {[...NAVIGATION_SECTIONS].sort((a, b) => NAVIGATION_ORDER.indexOf(a.name) - NAVIGATION_ORDER.indexOf(b.name)).map(renderDrawerSection)}
                   {renderDrawerLink({ name: "Authors", href: "/authors" })}
+                  {renderDrawerLink({ name: "Games", href: "/games" })}
                   {PEOPLE_AND_MORE.map(renderDrawerLink)}
                 </>
               ) : (

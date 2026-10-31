@@ -9,8 +9,7 @@ import {
   PenLine,
   Microscope,
   LibraryBig,
-  PanelLeftClose,
-  PanelLeftOpen,
+  X,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -58,7 +57,7 @@ const sections = [
 
 const AppSidebar = () => {
   const location = useLocation();
-  const { state, open, setOpen } = useSidebar();
+  const { setOpen } = useSidebar();
 
   const isActive = (url: string) => {
     if (url === "/dashboard") return location.pathname === "/dashboard" || location.pathname === "/";
@@ -68,15 +67,15 @@ const AppSidebar = () => {
   return (
     <>
     <Sidebar
-      collapsible="icon"
+      collapsible="offcanvas"
       variant="sidebar"
       className="border-r border-border/70 bg-background md:top-16 md:h-[calc(100svh-4rem)]"
     >
-      <SidebarHeader className="px-4 pb-5 pt-4 group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="border-b border-sidebar-border/70 px-4 py-4">
         <div className="flex items-center justify-between gap-2">
         <Link
           to="/dashboard"
-          className="flex min-w-0 items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/70 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+          className="flex min-w-0 items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/70"
           aria-label="Sahadhyayi home"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-amber-100 ring-1 ring-amber-200/70 dark:bg-amber-950/50 dark:ring-amber-800/50">
@@ -88,7 +87,7 @@ const AppSidebar = () => {
               height={32}
             />
           </span>
-          <span className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
+          <span className="flex min-w-0 flex-col leading-tight">
             <span className="truncate text-[15px] font-bold tracking-tight text-foreground">
               Sahadhyayi
             </span>
@@ -100,28 +99,21 @@ const AppSidebar = () => {
         <Button
           type="button"
           variant="ghost"
-          size="sm"
-          onClick={() => setOpen(!open)}
-          aria-label={state === "expanded" ? "Collapse navigation" : "Expand navigation"}
-          title={state === "expanded" ? "Collapse navigation" : "Expand navigation"}
-          className="h-8 shrink-0 gap-2 rounded-lg px-2 text-muted-foreground hover:bg-muted hover:text-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:px-0"
+          size="icon"
+          onClick={() => setOpen(false)}
+          aria-label="Close page navigation"
+          title="Close page navigation"
+          className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
         >
-          {state === "expanded" ? (
-            <>
-              <PanelLeftClose className="h-4 w-4" />
-              <span className="text-xs font-medium">Collapse</span>
-            </>
-          ) : (
-            <PanelLeftOpen className="h-4 w-4" />
-          )}
+          <X className="h-4 w-4" />
         </Button>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="gap-5 px-3 py-2 group-data-[collapsible=icon]:px-2">
+      <SidebarContent className="gap-5 px-3 py-3">
         {sections.map((section) => (
           <SidebarGroup key={section.label} className="p-0">
-            <SidebarGroupLabel className="mb-2 h-6 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80 group-data-[collapsible=icon]:sr-only">
+            <SidebarGroupLabel className="mb-2 h-6 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80">
               {section.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -165,8 +157,8 @@ const AppSidebar = () => {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="px-3 pb-4 pt-2 group-data-[collapsible=icon]:px-2">
-        <div className="rounded-xl border border-border/70 bg-muted/40 px-3 py-3 group-data-[collapsible=icon]:hidden">
+      <SidebarFooter className="border-t border-sidebar-border/70 px-3 pb-4 pt-3">
+        <div className="rounded-xl border border-border/70 bg-muted/40 px-3 py-3">
           <div className="flex items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
               <Compass className="h-4 w-4" />
