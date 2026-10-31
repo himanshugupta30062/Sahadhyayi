@@ -115,6 +115,25 @@ for (const page of publicPages) {
   writeRoute(page.route, createPage({ ...page, type: "website" }));
 }
 
+const lifeStoryProfiles = [
+  { slug: "kalpana-chawla", name: "Kalpana Chawla", description: "Explore the life of Kalpana Chawla, the astronaut and aerospace engineer from Karnal who became the first woman of Indian origin to travel to space." },
+  { slug: "arunima-sinha", name: "Arunima Sinha", description: "Discover mountaineer Arunima Sinha's journey from recovery after a train accident to becoming the first female amputee to summit Mount Everest." },
+  { slug: "a-p-j-abdul-kalam", name: "A. P. J. Abdul Kalam", description: "Learn about the aerospace scientist, former President of India and educator whose work helped shape India's space and defence programmes." },
+  { slug: "sudha-murty", name: "Sudha Murty", description: "Explore the life of engineer, author, educator and philanthropist Sudha Murty and her work in technology, literature and social initiatives." },
+  { slug: "mary-kom", name: "Mary Kom", description: "Discover the career of Indian boxer Mary Kom, a six-time world champion and Olympic bronze medalist." },
+  { slug: "dashrath-manjhi", name: "Dashrath Manjhi", description: "Read about Dashrath Manjhi, the Mountain Man of Bihar, who spent years carving a passage through a hill for his community." }
+];
+
+for (const person of lifeStoryProfiles) {
+  const route = `/life-stories/${person.slug}`;
+  writeRoute(route, createPage({
+    title: `${person.name} — Life Story | Sahadhyayi`,
+    description: person.description,
+    route,
+    type: "profile"
+  }));
+}
+
 const scientistProfiles = [
   { slug: "amal-kumar-raychaudhuri", name: "Amal Kumar Raychaudhuri", description: "Explore the life and work of Indian physicist Amal Kumar Raychaudhuri, whose equation became a key result in general relativity and cosmology." },
   { slug: "c-v-raman", name: "C. V. Raman", description: "Learn about C. V. Raman, the Indian physicist whose discovery of the Raman Effect earned the 1930 Nobel Prize in Physics." },
