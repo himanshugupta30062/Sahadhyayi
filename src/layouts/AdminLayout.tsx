@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Activity, BookOpen, ChevronRight, FileCheck2, FlaskConical,
   LayoutDashboard, LogOut, Menu, MessageSquare, PanelLeftClose, PanelLeftOpen,
-  ShieldCheck, Users, X, UserRoundCog, WandSparkles, Globe2,
+  ShieldCheck, Users, X, UserRoundCog, WandSparkles, Globe2, Newspaper,
 } from "lucide-react";
 import { useAuth } from "@/contexts/authHelpers";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ const sections = [
       { label: "Library quality", href: "/admin/library-quality", icon: ShieldCheck },
       { label: "Library archive", href: "/admin/library-archive", icon: BookOpen },
       { label: "Author enrichment", href: "/admin/author-enrichment", icon: WandSparkles },
+      { label: "Newsroom manager", href: "/admin/news", icon: Newspaper },
       { label: "Book Expert RAG", href: "/admin/book-expert-rag", icon: FlaskConical },
     ],
   },

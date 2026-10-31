@@ -64,6 +64,8 @@ const Games = lazy(() => import('./pages/Games'));
 const PublishBook = lazy(() => import('./pages/PublishBook'));
 const MyPublications = lazy(() => import('./pages/MyPublications'));
 const Articles = lazy(() => import('./pages/Articles'));
+const Newsroom = lazy(() => import('./pages/Newsroom'));
+const AdminNews = lazy(() => import('./pages/AdminNews'));
 const ArticleWrite = lazy(() => import('./pages/ArticleWrite'));
 const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
 const MyArticles = lazy(() => import('./pages/MyArticles'));
@@ -490,6 +492,9 @@ const App = memo(() => {
                           }
                         />
                         
+                        <Route path="/news" element={<Suspense fallback={<LoadingFallback message="Loading newsroom..." />}><Newsroom /></Suspense>} />
+                        <Route path="/news/:slug" element={<Suspense fallback={<LoadingFallback message="Loading news story..." />}><Newsroom /></Suspense>} />
+
                         <Route
                           path="/articles"
                           element={
@@ -643,6 +648,16 @@ const App = memo(() => {
                             <AdminRoute>
                               <Suspense fallback={<LoadingFallback message="Loading role management..." />}>
                                 <AdminRoleManagement />
+                              </Suspense>
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/news"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading newsroom manager..." />}>
+                                <AdminNews />
                               </Suspense>
                             </AdminRoute>
                           }
