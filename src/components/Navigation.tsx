@@ -285,7 +285,7 @@ const Navigation = () => {
     return sections
       .sort((a, b) => NAVIGATION_ORDER.indexOf(a.name) - NAVIGATION_ORDER.indexOf(b.name))
       .map((section) => ({
-        key: section.name.toLowerCase().replace(/\\s+/g, "-"),
+        key: section.name.toLowerCase().replace(/\s+/g, "-"),
         label: section.name,
         section,
         tourTarget: section.items[0]?.tourTarget,
