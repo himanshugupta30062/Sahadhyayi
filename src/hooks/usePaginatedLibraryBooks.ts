@@ -69,7 +69,7 @@ async function fetchFilteredBooks(
         `title.ilike.%${safeSearchQuery}%,author.ilike.%${safeSearchQuery}%,genre.ilike.%${safeSearchQuery}%`
       );
     }
-    if (selectedGenre && selectedGenre !== 'All') {
+    if (selectedGenre && selectedGenre !== 'All' && contentType !== 'research-papers') {
       if (selectedGenre === 'Hindi') {
         query = query.eq('language', 'Hindi');
       } else {
@@ -103,7 +103,7 @@ async function fetchFilteredBooks(
             `title.ilike.%${safeSearchQuery}%,author.ilike.%${safeSearchQuery}%,genre.ilike.%${safeSearchQuery}%`
           );
         }
-        if (selectedGenre && selectedGenre !== 'All') {
+        if (selectedGenre && selectedGenre !== 'All' && contentType !== 'research-papers') {
           if (selectedGenre === 'Hindi') {
             fallbackQuery = fallbackQuery.eq('language', 'Hindi');
           } else {
@@ -175,11 +175,23 @@ async function fetchFilteredBooks(
   });
 
   // Sort deterministically by library completeness hierarchy
-  const typedBooks = contentType === 'research-papers'
+  let typedBooks = contentType === 'research-papers'
     ? catalogBooks.filter(isNonBookDocument)
     : contentType === 'books'
       ? catalogBooks.filter((item) => !isNonBookDocument(item))
       : catalogBooks;
+
+  // Research-field filtering happens after document classification. Applying an
+  // exact genre filter in PostgREST first can exclude papers whose genre metadata
+  // is incomplete or uses a broader discipline label.
+  if (contentType === 'research-papers' && selectedGenre && selectedGenre !== 'All') {
+    const fieldTerm = selectedGenre.toLowerCase();
+    typedBooks = typedBooks.filter((paper) => {
+      const metadata = [paper.genre, paper.title, paper.description].filter(Boolean).join(' ').toLowerCase();
+      return metadata.includes(fieldTerm);
+    });
+  }
+
   typedBooks.sort(compareLibraryBooks);
 
   // Return deterministically sorted catalog; paginatedData applies dynamic diversification per active pageSize
@@ -195,7 +207,7 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
   // Reset page when filters change
   React.useEffect(() => {
     setPage(1);
-  }, [searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange]);
+  }, [searchQuery, selectedGenre, selectedAuthor, selectedYear, selectedLanguage, priceRange, contentType]);
 
   // Fetch ALL matching books once per filter set (cached 5 min).
   // Page changes just slice this cached array — no new network request.
