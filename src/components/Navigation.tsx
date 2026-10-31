@@ -142,8 +142,8 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
     items: [
       { name: "Blogs", href: "/blog" },
       { name: "News", href: "/news" },
-      { name: "Life Stories", href: "/life-stories", disabled: true },
       { name: "Quotes", href: "/quotes" },
+      { name: "Life Stories", href: "/life-stories" },
     ],
   },
   {
@@ -151,8 +151,10 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/authors",
     items: [
       { name: "Scientists", href: "/scientists" },
-      { name: "Social Activists", href: "/authors", disabled: true },
-      { name: "Freedom Fighters", href: "/authors", disabled: true },
+      // These destinations intentionally remain distinct. Until their pages exist,
+      // React Router's catch-all route displays the standard 404 page.
+      { name: "Social Activists", href: "/social-activists" },
+      { name: "Freedom Fighters", href: "/freedom-fighters" },
     ],
   },
 ];
