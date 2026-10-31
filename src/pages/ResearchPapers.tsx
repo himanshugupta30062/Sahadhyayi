@@ -130,13 +130,13 @@ const ResearchPapers = () => {
                         <div className="min-w-0 flex-1">
                           <div className="mb-3 flex flex-wrap items-center gap-2">
                             <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">{paper.genre || 'Research paper'}</Badge>
-                            {published && <span className="text-xs text-muted-foreground">{published}</span>}
-                            {paper.language && <span className="text-xs text-muted-foreground">{paper.language}</span>}
+                            {Boolean(published) && <span className="text-xs text-muted-foreground">{published}</span>}
+                            {Boolean(paper.language) && <span className="text-xs text-muted-foreground">{paper.language}</span>}
                           </div>
                           <Link to={`/book/${paper.id}`} className="font-serif text-lg font-semibold leading-snug text-[#1C201D] hover:text-[#1C442D] dark:text-[#F3F0E7] dark:hover:text-[#D5B16D]">{paper.title}</Link>
                           <p className="mt-2 text-sm font-medium text-[#59635B] dark:text-[#A5ADA6]">{paper.author || 'Researcher not specified'}</p>
-                          {paper.description && <p className="mt-3 line-clamp-3 max-w-4xl text-sm leading-6 text-[#737B74] dark:text-[#A5ADA6]">{paper.description}</p>}
-                          {paper.pages && <p className="mt-3 text-xs text-muted-foreground">{paper.pages} pages</p>}
+                          {Boolean(paper.description) && <p className="mt-3 line-clamp-3 max-w-4xl text-sm leading-6 text-[#737B74] dark:text-[#A5ADA6]">{paper.description}</p>}
+                          {Boolean(paper.pages) && <p className="mt-3 text-xs text-muted-foreground">{paper.pages} pages</p>}
                         </div>
                         <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col">
                           <Link to={`/book/${paper.id}`} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D9E1DA] px-3 text-sm font-medium hover:bg-[#F3F6F2] dark:border-[#344039] dark:hover:bg-[#1D2821]">View details <ExternalLink className="h-3.5 w-3.5" /></Link>

@@ -24,7 +24,7 @@ interface MapplsMapProps {
 
 const loadMappls = (apiKey: string): Promise<void> => {
   if (window.mappls?.Map && window.mappls?.Marker) return Promise.resolve();
-  if (window.mapplsLoadingPromise) return window.mapplsLoadingPromise;
+  if (window.mapplsLoadingPromise !== undefined) return window.mapplsLoadingPromise;
 
   window.mapplsLoadingPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');

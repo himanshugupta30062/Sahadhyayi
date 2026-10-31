@@ -28,7 +28,7 @@ const plainText = (value, maxLength = 160) => {
   const text = String(value ?? "")
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
+    .replace(/<[^>\r\n]{0,2048}>/g, " ")
     .replace(/&nbsp;|&#160;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&quot;|&#34;/gi, '"')
@@ -68,14 +68,14 @@ function createPage({ title, description, route, image, type }) {
     html = setMeta(html, "name", "twitter:image", image);
   }
   const canonicalTag = `<link rel="canonical" href="${escapeHtml(canonical)}" />`;
-  const canonicalPattern = /<link\s+[^>]*rel="canonical"[^>]*>/i;
+  const canonicalPattern = /<link[ \t]{1,16}[^>\r\n]{0,2048}rel="canonical"[^>\r\n]{0,2048}>/i;
   html = canonicalPattern.test(html)
     ? html.replace(canonicalPattern, canonicalTag)
     : html.replace("</head>", `  ${canonicalTag}\n</head>`);
   // Keep useful, route-specific HTML in the initial response for crawlers and
   // visitors with JavaScript disabled. React replaces this fallback when it mounts.
   const fallback = `<main id="seo-fallback" style="max-width:900px;margin:3rem auto;padding:0 1.25rem;font-family:system-ui,sans-serif;line-height:1.65">
-    <h1>${escapeHtml(title.replace(/\s*\|\s*Sahadhyayi$/i, ""))}</h1>
+    <h1>${escapeHtml(title.replace(/[ \t]{0,16}\|[ \t]{0,16}Sahadhyayi$/i, ""))}</h1>
     <p>${escapeHtml(description)}</p>
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
   </main>`;

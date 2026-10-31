@@ -74,7 +74,7 @@ export class StandardEbooksAdapter implements BookProviderAdapter {
           id: id || `se-${i + 1}`,
           title: title.trim(),
           author: author?.trim() || 'Unknown Author',
-          summary: summary?.replace(/<[^>]+>/g, '').trim() || '',
+          summary: summary?.replace(/<[^>\r\n]{0,2048}>/g, '').trim() || '',
           epubUrl: epubMatch ? epubMatch[1] : '',
           coverUrl: coverMatch ? coverMatch[1] : undefined,
           published: published || '',

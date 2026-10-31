@@ -32,10 +32,10 @@ jobs:
 
       - name: Upgrade directly vulnerable dependencies
         run: |
-          npm install --save-exact dompurify@3.4.17 xml2js@0.6.2 postcss@8.5.12 vite@6.4.4
+          npm install --ignore-scripts --save-exact dompurify@3.4.17 xml2js@0.6.2 postcss@8.5.12 vite@6.4.4
 
       - name: Apply non-breaking security updates to remaining dependencies
-        run: npm audit fix || true
+        run: npm audit fix --ignore-scripts || true
 
       - name: Commit updated manifests and lockfile
         run: |
