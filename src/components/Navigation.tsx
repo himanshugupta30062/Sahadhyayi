@@ -776,7 +776,7 @@ const Navigation = () => {
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent
-          side="left"
+          side={isMobile ? "right" : "left"}
           className="w-[min(88vw,390px)] max-w-[390px] overflow-y-auto border-r border-border bg-background p-0 shadow-2xl sm:max-w-[390px]"
         >
           <SheetHeader className="border-b border-[#263342] bg-[#1F2B39] px-5 py-5 pr-12 text-left text-white dark:bg-[#17212D]">
