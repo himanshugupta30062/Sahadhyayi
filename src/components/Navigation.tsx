@@ -489,7 +489,6 @@ const Navigation = () => {
                     <div
                       className="relative inline-flex items-center gap-0.5"
                       onMouseEnter={() => setOpenDesktopMenu(key)}
-                      onMouseLeave={() => setOpenDesktopMenu((current) => current === key ? null : current)}
                     >
                       <Link
                         to={section.href}
