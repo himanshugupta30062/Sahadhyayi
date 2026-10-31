@@ -30,8 +30,8 @@ jobs:
 
       - name: Install and refresh lockfile
         run: |
-          npm install
-          npm audit fix || echo "::warning::Some audit findings need manual or breaking-change remediation."
+          npm ci --ignore-scripts
+          npm audit fix --ignore-scripts || echo "::warning::Some audit findings need manual or breaking-change remediation."
 
       - name: Commit lockfile updates
         run: |
