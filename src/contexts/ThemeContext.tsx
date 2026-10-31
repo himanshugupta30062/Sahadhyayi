@@ -13,16 +13,23 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('sahadhyayi-theme') as Theme | null;
-      if (savedTheme === 'light' || savedTheme === 'dark') {
-        return savedTheme;
+      try {
+        const savedTheme = window.localStorage.getItem('sahadhyayi-theme') as Theme | null;
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          return savedTheme;
+        }
+      } catch {
+        // Fall back to the system preference when storage is unavailable.
       }
-      // Check system preference
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-        return 'light';
+
+      try {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          return 'light';
+        }
+      } catch {
+        // matchMedia may be unavailable in embedded browsers.
       }
     }
-    // Default to light for a clean open reading experience, or dark if saved
     return 'light';
   });
 
@@ -36,9 +43,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.classList.add('light');
     }
     try {
-      localStorage.setItem('sahadhyayi-theme', theme);
+      window.localStorage.setItem('sahadhyayi-theme', theme);
     } catch {
-      // ignore
+      // Theme remains active for this session even if it cannot be persisted.
     }
   }, [theme]);
 
