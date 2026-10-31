@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - security/dependency-remediation-nov-2026
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
