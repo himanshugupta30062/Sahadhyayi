@@ -7,7 +7,8 @@ describe('cn class-name utility', () => {
   });
 
   it('omits false, null, undefined, and empty conditional values', () => {
-    expect(cn('base', false && 'hidden', null, undefined, '')).toBe('base');
+    const hidden = false;
+    expect(cn('base', hidden && 'hidden', null, undefined, '')).toBe('base');
   });
 
   it('supports arrays and object conditions from clsx', () => {
