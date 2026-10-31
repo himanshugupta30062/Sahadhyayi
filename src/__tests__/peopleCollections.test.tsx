@@ -41,7 +41,7 @@ describe("public people collections", () => {
 
     fireEvent.click(screen.getByText("Arunima Sinha"));
     expect(screen.getByText("Everest summit")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Press Information Bureau/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Mind Over Matter/i })).toHaveAttribute(
       "href",
       "https://www.pib.gov.in/newsite/erelcontent.aspx?lang=2&reg=48&relid=170314"
     );
