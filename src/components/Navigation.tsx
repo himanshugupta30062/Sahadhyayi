@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/authHelpers";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuthors } from "@/hooks/useAuthors";
 import { EnhancedLazyImage } from "@/components/ui/EnhancedLazyImage";
 import {
   DropdownMenu,
@@ -36,6 +37,37 @@ import {
 } from "@/components/ui/sheet";
 
 const ContactFormDialog = lazy(() => import("@/components/ContactFormDialog"));
+
+const AuthorGenreLinks = ({ isCurrentRoute }: { isCurrentRoute: (href: string) => boolean }) => {
+  const { data: authors = [] } = useAuthors();
+  const genres = Array.from(new Set(authors.flatMap((author) => author.genres || []).map((genre) => genre.trim()).filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b));
+
+  if (genres.length === 0) return null;
+
+  return (
+    <div className="mt-4 border-t border-border pt-3">
+      <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Browse authors by genre</p>
+      {genres.map((genre) => {
+        const href = `/authors?genre=${encodeURIComponent(genre)}`;
+        const active = isCurrentRoute(href);
+        return (
+          <Link
+            key={genre}
+            to={href}
+            aria-current={active ? "page" : undefined}
+            className={
+              "flex min-h-[40px] items-center rounded-lg px-3 py-2 text-sm transition-colors " +
+              (active ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]" : "text-foreground hover:bg-muted")
+            }
+          >
+            {genre}
+          </Link>
+        );
+      })}
+    </div>
+  );
+};
 const AuthenticatedUserDropdown = lazy(() => import("@/components/AuthenticatedUserDropdown"));
 
 const EnhancedGlobalSearch = lazy(() =>
@@ -351,8 +383,6 @@ const Navigation = () => {
     ? [
         { name: "All Authors", href: "/authors" },
         { name: "Scientists", href: "/scientists" },
-        { name: "Indian Scientists", href: "/scientists?collection=indian" },
-        { name: "Global Scientists", href: "/scientists?collection=global" },
         { name: "Publishers", href: "/publishers" },
         { name: "Author Connect", href: "/author-connect" },
       ]
@@ -921,6 +951,7 @@ const Navigation = () => {
                   </Link>
                 );
               })}
+            {isAuthorsArea && <AuthorGenreLinks isCurrentRoute={isCurrentRoute} />}
           </nav>
         </SheetContent>
       </Sheet>
