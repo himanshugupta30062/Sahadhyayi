@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FileText, Search, ExternalLink, Download, RefreshCw } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import SEO from '@/components/SEO';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,8 @@ import BookFlipLoader from '@/components/ui/BookFlipLoader';
 import { usePaginatedLibraryBooks } from '@/hooks/usePaginatedLibraryBooks';
 
 const ResearchPapers = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [field, setField] = useState('all');
   const [year, setYear] = useState('all');
   const { data, isLoading, isError, error, refetch, page, pageSize, totalPages, setPage, setPageSize } =
@@ -23,6 +24,14 @@ const ResearchPapers = () => {
       contentType: 'research-papers',
     });
   const papers = data?.books ?? [];
+
+  const updateSearch = (value: string) => {
+    setSearchQuery(value);
+    const next = new URLSearchParams(searchParams);
+    if (value.trim()) next.set('search', value.trim());
+    else next.delete('search');
+    setSearchParams(next, { replace: true });
+  };
 
   return (
     <>
@@ -57,7 +66,7 @@ const ResearchPapers = () => {
             <div className="flex flex-col gap-3 lg:flex-row">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7A817B]" />
-                <Input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search paper titles, researchers, topics..." className="h-11 border-[#E8E2D9] bg-[#FAF7F2] pl-10 dark:border-[#26302A] dark:bg-[#0B0D0C]" />
+                <Input value={searchQuery} onChange={(event) => updateSearch(event.target.value)} placeholder="Search paper titles, researchers, topics..." className="h-11 border-[#E8E2D9] bg-[#FAF7F2] pl-10 dark:border-[#26302A] dark:bg-[#0B0D0C]" />
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Select value={field} onValueChange={setField}>
@@ -83,7 +92,7 @@ const ResearchPapers = () => {
             </div>
             <div className="mt-3 flex items-center justify-between text-xs text-[#737B74] dark:text-[#A5ADA6]">
               <span>{data?.totalCount ?? 0} papers in this view</span>
-              <button type="button" onClick={() => { setSearchQuery(''); setField('all'); setYear('all'); }} className="font-medium text-[#1C442D] hover:underline dark:text-[#D5B16D]">Clear filters</button>
+              <button type="button" onClick={() => { updateSearch(''); setField('all'); setYear('all'); }} className="font-medium text-[#1C442D] hover:underline dark:text-[#D5B16D]">Clear filters</button>
             </div>
           </div>
 
@@ -109,7 +118,10 @@ const ResearchPapers = () => {
               </div>
               <div className="grid gap-4">
                 {papers.map((paper) => {
-                  const resourceCandidate = paper.pdf_url || (paper as any).external_url || '';
+                  const assets = Array.isArray((paper as any).assets) ? (paper as any).assets : [];
+                  const preferredAsset = assets.find((asset: any) => asset.format === 'pdf' && asset.verified !== false)
+                    || assets.find((asset: any) => ['official_reader', 'web_reader', 'html'].includes(asset.format) && asset.verified !== false);
+                  const resourceCandidate = paper.pdf_url || preferredAsset?.downloadUrl || preferredAsset?.readerUrl || (paper as any).external_url || '';
                   const resource = /^https?:\/\//i.test(resourceCandidate) ? resourceCandidate : '';
                   const published = paper.publication_year || (paper.created_at ? new Date(paper.created_at).getFullYear() : null);
                   return (
@@ -128,7 +140,7 @@ const ResearchPapers = () => {
                         </div>
                         <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col">
                           <Link to={`/book/${paper.id}`} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D9E1DA] px-3 text-sm font-medium hover:bg-[#F3F6F2] dark:border-[#344039] dark:hover:bg-[#1D2821]">View details <ExternalLink className="h-3.5 w-3.5" /></Link>
-                          {resource && <a href={resource} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#1C442D] px-3 text-sm font-medium text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]"><Download className="h-3.5 w-3.5" /> Open paper</a>}
+                          {resource && <a href={resource} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#1C442D] px-3 text-sm font-medium text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]"><Download className="h-3.5 w-3.5" /> {preferredAsset?.format === 'html' || preferredAsset?.format === 'official_reader' || preferredAsset?.format === 'web_reader' ? 'Read paper' : 'Open paper'}</a>}
                         </div>
                       </CardContent>
                     </Card>
