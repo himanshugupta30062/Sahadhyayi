@@ -454,7 +454,9 @@ const Navigation = () => {
               <span className="whitespace-nowrap leading-none">Sahadhyayi</span>
             </Link>
 
-              <nav
+              {!isMobile && user && (
+              <>
+                <nav
                 aria-label="Main navigation"
                 className="ml-2 flex min-w-0 flex-1 items-center justify-center gap-1 xl:gap-2"
               >
@@ -601,7 +603,8 @@ const Navigation = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </nav>
-
+              </>
+            )}
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
               <button
