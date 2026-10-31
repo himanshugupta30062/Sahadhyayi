@@ -37,7 +37,7 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
   // Extract edition brackets at end of title or matching edition keywords (including Hindi संस्करण).
   // Scan simple bracket groups first so matching stays linear in the title length.
   let editionTag: string | undefined;
-  const editionKeywords = /illustrated|annotated|revised|expanded|edition|संस्करण|classics?|\d+(?:st|nd|rd|th)?\s+ed\w*/i;
+  const editionKeywords = /illustrated|annotated|revised|expanded|edition|संस्करण|classic|classics|[0-9]{1,4}(?:st|nd|rd|th)?[ \t]{1,8}ed[a-z]{0,32}/i;
   const bracketPattern = /[([]([^()[\]]*)[)\]]/g;
   let editionMatch: RegExpExecArray | null = null;
   let bracketMatch: RegExpExecArray | null;
@@ -93,12 +93,12 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
   // Remove a trailing volume/part marker from the work title. Volume identity is
   // captured separately by normalizeBookIdentity, so it must not pollute the title key.
   cleanTitle = cleanTitle
-    .replace(/\s+(?:vol(?:ume|\.)?|part)\s*(?:\d+|[ivxlcdm]+)\s*$/i, '')
-    .replace(/\s+(?:खण्ड|खंड|भाग)\s*[०-९0-9]+\s*$/u, '')
+    .replace(/[ \t]{1,64}(?:vol(?:ume|\.)?|part)[ \t]{0,16}(?:[0-9]{1,8}|[ivxlcdm]{1,16})[ \t]{0,16}$/i, '')
+    .replace(/[ \t]{1,64}(?:खण्ड|खंड|भाग)[ \t]{0,16}[०-९0-9]{1,8}[ \t]{0,16}$/u, '')
     .trim();
 
   // Clean trailing punctuation
-  cleanTitle = cleanTitle.replace(/[,;:\-\s]+$/, '').trim();
+  cleanTitle = cleanTitle.replace(/[,;:\- \t\r\n]{1,256}$/, '').trim();
 
   return {
     cleanTitle: cleanTitle || rawTitle.trim(),
