@@ -367,7 +367,7 @@ const BooksCollection = ({
                   <Select 
                     value={String(pageSize)} 
                     onValueChange={(value) => {
-                      setPageSize(parseInt(value, 10));
+                      setPageSize(Number.parseInt(value, 10));
                       setPage(1); // Reset to page 1 when changing page size
                     }}
                   >
