@@ -212,7 +212,7 @@ const ResearchPapers = () => {
               <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E8E8E3] bg-white shadow-sm dark:border-white/15 dark:bg-white/10 dark:shadow-lg shadow-black/10">
                 <FileText className="h-7 w-7 text-[#1C442D] dark:text-[#D5B16D]" />
               </div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[#D5B16D]">The open knowledge collection</p>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[#1C442D] dark:text-[#D5B16D]">The open knowledge collection</p>
               <h1 className="font-serif text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">Research Papers</h1>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#636B65] dark:text-white/70 sm:text-lg">
                 Explore ideas that move the world forward. Discover influential studies, follow the evidence and read research from its original source.
@@ -333,7 +333,7 @@ const ResearchPapers = () => {
                             {paper.publication_year && <span className="text-xs text-[#737B74] dark:text-[#A5ADA6]">{paper.publication_year}</span>}
                             {source && <span className="max-w-full truncate text-xs text-[#737B74] dark:text-[#A5ADA6]">· {source}</span>}
                           </div>
-                          <h3 className="font-serif text-lg font-semibold leading-snug text-[#1C201D] transition-colors group-hover:text-[#1C442D] dark:text-[#F3F0E7] dark:group-hover:text-[#D5B16D] sm:text-xl">
+                          <h3 className="font-serif text-lg font-semibold leading-snug text-[#1C201D] transition-colors group-hover:text-[#1C442D] dark:text-[#F3F0E7] dark:group-hover:text-[#1C442D] dark:text-[#D5B16D] sm:text-xl">
                             {paperUrl ? <a href={paperUrl} target="_blank" rel="noopener noreferrer" className="focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D]">{title}</a> : title}
                           </h3>
                           <p className="mt-2 text-sm text-[#59635B] dark:text-[#A5ADA6]">{authors || 'Author details unavailable'}</p>
