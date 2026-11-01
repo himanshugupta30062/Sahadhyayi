@@ -103,7 +103,7 @@ describe('AdminBookPdfReviews', () => {
     mocks.queueError = null;
     mocks.booksLoading = false;
     mocks.queryOptions = [];
-    mocks.invoke.mockReset().mockResolvedValue({ data: { status: 'approved', report: { detected_title: 'A Test Book' } }, error: null });
+    mocks.invoke.mockReset().mockResolvedValue({ data: { success: true, status: 'approved', report: { detected_title: 'A Test Book' } }, error: null });
     mocks.invalidateQueries.mockClear();
     mocks.toast.mockReset();
     mocks.from.mockReset();
@@ -170,7 +170,7 @@ describe('AdminBookPdfReviews', () => {
 
   it('opens a temporary preview and shows the expiry notice', async () => {
     mocks.invoke.mockResolvedValueOnce({ data: { url: 'https://signed.example/preview' }, error: null });
-    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const open = vi.spyOn(window, 'open').mockImplementation(() => ({} as Window));
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Preview PDF/i }));
 
@@ -180,6 +180,58 @@ describe('AdminBookPdfReviews', () => {
     expect(open).toHaveBeenCalledWith('https://signed.example/preview', '_blank', 'noopener,noreferrer');
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Temporary preview opened' }));
     expect(mocks.invalidateQueries).not.toHaveBeenCalled();
+  });
+
+  it('reports a blocked preview popup instead of claiming it opened', async () => {
+    mocks.invoke.mockResolvedValueOnce({ data: { url: 'https://signed.example/preview' }, error: null });
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /Preview PDF/i }));
+
+    await waitFor(() => expect(open).toHaveBeenCalledWith('https://signed.example/preview', '_blank', 'noopener,noreferrer'));
+    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Action failed',
+      description: 'The preview popup was blocked. Allow pop-ups and try again.',
+      variant: 'destructive',
+    }));
+    expect(mocks.toast).not.toHaveBeenCalledWith(expect.objectContaining({ title: 'Temporary preview opened' }));
+  });
+
+  it('surfaces a server-declared review failure even when the function call has no transport error', async () => {
+    mocks.invoke.mockResolvedValueOnce({
+      data: { success: false, error: 'The submission is no longer eligible for review.' },
+      error: null,
+    });
+    renderPage();
+    fireEvent.change(screen.getByLabelText(/Reason/), {
+      target: { value: 'The server says this submission is no longer eligible.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Reject' }));
+
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Action failed',
+      description: 'The submission is no longer eligible for review.',
+      variant: 'destructive',
+    })));
+    expect(mocks.invalidateQueries).not.toHaveBeenCalled();
+  });
+
+  it('extracts a useful message from a JSON function-error response', async () => {
+    const responseError = Object.assign(new Error('Edge Function returned a non-2xx status code'), {
+      context: new Response(JSON.stringify({ error: 'The reviewer role is required.' }), {
+        status: 403,
+        headers: { 'content-type': 'application/json' },
+      }),
+    });
+    mocks.invoke.mockResolvedValueOnce({ data: null, error: responseError });
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /Preview PDF/i }));
+
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Action failed',
+      description: 'The reviewer role is required.',
+      variant: 'destructive',
+    })));
   });
 
   it('runs AI verification, refreshes dependent caches, and keeps the selected submission', async () => {

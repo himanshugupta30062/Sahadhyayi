@@ -243,12 +243,13 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar, state } = useSidebar()
 
   return (
     <Button
       ref={ref}
       data-sidebar="trigger"
+      aria-expanded={state === "expanded"}
       variant="ghost"
       size="icon"
       className={cn("h-7 w-7", className)}
