@@ -90,6 +90,7 @@ describe('ResearchPapers', () => {
     renderPage();
     expect(await screen.findByRole('heading', { name: 'Valid fallback title' })).toBeInTheDocument();
     expect(screen.queryByText('Invalid record')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Read paper/ })).toHaveAttribute('href', 'https://openalex.org/W124');
   });
 
   it('updates the search query and publication year sent to OpenAlex', async () => {
