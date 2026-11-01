@@ -25,7 +25,10 @@ const GlobalFooter = () => {
   const handleEmailClick = () => (window.location.href = "mailto:gyan@sahadhyayi.com");
 
   const handleShowStats = () => {
-    if (!showCount) fetchStats();
+    if (!showCount) {
+      // fetchStats handles and records its own request failures.
+      void fetchStats();
+    }
     setShowCount((s) => !s);
   };
 
