@@ -192,9 +192,17 @@ export const ReadingFeed = () => {
           <CardContent className="p-4 sm:p-6">
             {/* User Header */}
             <div className="flex items-center justify-between mb-4">
-              <div 
-                className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors min-w-0 flex-1"
+              <div
+                role="button"
+                tabIndex={0}
+                className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                 onClick={() => handleUserClick(post)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleUserClick(post);
+                  }
+                }}
               >
                 <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                   <AvatarFallback className="bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-sm">

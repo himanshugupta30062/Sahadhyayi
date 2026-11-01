@@ -94,7 +94,7 @@ Deno.serve(async (req: Request) => {
 
     // This endpoint is only for signup, not a general-purpose mail relay.
     // Reject older accounts to make it harder to abuse the public function URL.
-    const createdAt = registeredUser.created_at ? Date.parse(registeredUser.created_at) : NaN
+    const createdAt = registeredUser.created_at ? Date.parse(registeredUser.created_at) : Number.NaN
     if (!Number.isFinite(createdAt) || Date.now() - createdAt > 60 * 60 * 1000) {
       return new Response(JSON.stringify({ error: 'Welcome emails are only sent shortly after signup' }), {
         status: 403,
