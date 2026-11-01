@@ -40,7 +40,7 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
 
     let totalBooks: number | null = null;
     if (!titleError && Array.isArray(titleData)) {
-      const visible = filterPublicBooks(titleData);
+      const visible = filterPublicBooks(titleData as any[]);
       const uniqueTitles = new Set<string>();
       visible.forEach((b: { title?: string | null }) => {
         const key = (b.title || '').trim().toLowerCase();
@@ -68,7 +68,7 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
     genreQuery = applyPublicBookFilter(genreQuery, caps);
 
     const { data: genreData } = await genreQuery;
-    const visibleGenres = filterPublicBooks(genreData || []);
+    const visibleGenres = filterPublicBooks((genreData || []) as any[]);
     const genres = [...new Set(visibleGenres.map((item: { genre: string }) => item.genre).filter(Boolean))] as string[];
 
     // Get recent books
@@ -83,7 +83,8 @@ export const getWebsiteContext = async (): Promise<WebsiteContext> => {
     recentQuery = applyPublicBookFilter(recentQuery, caps);
 
     const { data: recentBooksRaw } = await recentQuery.limit(20);
-    const recentBooks = filterPublicBooks(recentBooksRaw || []).slice(0, 10);
+    const recentBooks = filterPublicBooks((recentBooksRaw || []) as any[])
+      .slice(0, 10) as BookData[];
 
     return {
       totalBooks,
@@ -156,7 +157,7 @@ export const searchRelevantBooks = async (query: string, limit: number = 5): Pro
     const { data, error } = await queryBuilder.limit(limit * 2);
 
     if (error) throw error;
-    return filterPublicBooks(data || []).slice(0, limit);
+    return filterPublicBooks((data || []) as any[]).slice(0, limit) as BookData[];
   } catch (error) {
     console.error('Error searching books:', error);
     return [];
