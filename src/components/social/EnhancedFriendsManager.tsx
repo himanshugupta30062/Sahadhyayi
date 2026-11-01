@@ -120,6 +120,24 @@ export const EnhancedFriendsManager = () => {
   const relationshipStateUnavailable = Boolean(friendsError || friendRequestsError);
   const followStateUnavailable = Boolean(followingError);
 
+  const renderUserCard = (person: (typeof visibleSearchResults)[number]) => (
+    <UserCard
+      key={person.id}
+      user={person}
+      onSendRequest={handleSendFriendRequest}
+      getInitials={getInitials}
+      isFriend={friends.some((friend) => friend.friend_profile?.id === person.id)}
+      hasPendingRequest={pendingUserIds.has(person.id)}
+      isFollowing={followingIds.includes(person.id)}
+      isFollowPending={toggleUserFollow.isPending}
+      onToggleFollow={handleToggleFollow}
+      onMessage={setChatId}
+      isRequestPending={sendFriendRequest.isPending}
+      relationshipStateUnavailable={relationshipStateUnavailable}
+      followStateUnavailable={followStateUnavailable}
+    />
+  );
+
   return (
     <>
     <div className="space-y-6">
@@ -209,9 +227,7 @@ export const EnhancedFriendsManager = () => {
                       <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => void refetchSearch()}>Retry search</Button>
                     </div>
                   ) : visibleSearchResults.length > 0 ? (
-                    visibleSearchResults.map((result) => (
-                      {renderUserCard(result)}
-                    ))
+                    visibleSearchResults.map((result) => renderUserCard(result))
                   ) : (
                     <div className="text-center py-12 text-muted-foreground">
                       <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-muted flex items-center justify-center">
@@ -234,9 +250,7 @@ export const EnhancedFriendsManager = () => {
                         <Button type="button" size="sm" variant="outline" className="mt-3" onClick={() => void refetchUsers()}>Retry suggestions</Button>
                       </div>
                     ) : visibleAllUsers.length > 0 ? (
-                      visibleAllUsers.map((result) => (
-                        {renderUserCard(result)}
-                      ))
+                      visibleAllUsers.map((result) => renderUserCard(result))
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
                         <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
@@ -264,9 +278,7 @@ export const EnhancedFriendsManager = () => {
                 </div>
               ) : followedReaders.length > 0 ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {followedReaders.map((reader) => (
-                    {renderUserCard(reader)}
-                  ))}
+                  {followedReaders.map((reader) => renderUserCard(reader))}
                 </div>
               ) : (
                 <div className="text-center py-12 text-muted-foreground">
@@ -296,25 +308,7 @@ export const EnhancedFriendsManager = () => {
                     // useFriends returns the other reader in friend_profile.
                     const friendProfile = friendship.friend_profile;
                     
-                    const renderUserCard = (person: (typeof visibleSearchResults)[number]) => (
-    <UserCard
-      key={person.id}
-      user={person}
-      onSendRequest={handleSendFriendRequest}
-      getInitials={getInitials}
-      isFriend={friends.some((friend) => friend.friend_profile?.id === person.id)}
-      hasPendingRequest={pendingUserIds.has(person.id)}
-      isFollowing={followingIds.includes(person.id)}
-      isFollowPending={toggleUserFollow.isPending}
-      onToggleFollow={handleToggleFollow}
-      onMessage={setChatId}
-      isRequestPending={sendFriendRequest.isPending}
-      relationshipStateUnavailable={relationshipStateUnavailable}
-      followStateUnavailable={followStateUnavailable}
-    />
-  );
 
-  return (
                       <div key={friendship.id} className="flex flex-col gap-3 p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-3">
                           <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
