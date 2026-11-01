@@ -84,13 +84,13 @@ const LibraryHero = ({
   ];
 
   return (
-    <div className="relative py-10 sm:py-14 md:py-16 overflow-hidden bg-[#F4F3EF] dark:bg-[#101711]">
+    <div className="relative py-10 sm:py-14 md:py-16 overflow-hidden bg-[#101711]">
       {/* Background with overlay */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-0 dark:opacity-100"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100"
         style={{ backgroundImage: `url(${libraryBg})` }}
       >
-        <div className="absolute inset-0 hidden dark:block bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/65" />
       </div>
 
       {/* Floating book icons */}
@@ -122,14 +122,14 @@ const LibraryHero = ({
               <div className="p-2 sm:p-3 md:p-3.5 bg-[#1C442D] dark:bg-gradient-to-br dark:from-library-primary dark:to-library-secondary rounded-xl shadow-sm dark:shadow-2xl">
                 <BookOpen className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 text-white" />
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-[#1C201D] dark:text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-white leading-tight">
                 Digital Library
               </h1>
             </div>
-            <p className="text-base sm:text-lg md:text-xl text-[#3F4741] dark:text-white/90 font-medium px-2">
+            <p className="text-base sm:text-lg md:text-xl text-white/95 font-medium px-2">
               Discover Your Next Great Adventure
             </p>
-            <p className="text-sm sm:text-base text-[#636B65] dark:text-white/80 max-w-2xl mx-auto leading-relaxed px-4">
+            <p className="text-sm sm:text-base text-white/85 max-w-2xl mx-auto leading-relaxed px-4">
               Explore our vast collection of verified digital books. From timeless classics and spiritual texts to contemporary literature.
             </p>
           </div>
@@ -279,15 +279,15 @@ const LibraryHero = ({
 
           {/* Stats Bar - Sleek compact horizontal strip */}
           <div className="w-full max-w-2xl mx-auto px-4 pt-1">
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-3 px-5 rounded-xl bg-white dark:bg-white/10 border border-[#E8E8E3] dark:border-white/15 text-[#3F4741] dark:text-white/90 text-xs sm:text-sm font-medium shadow-sm dark:shadow-md">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-3 px-5 rounded-xl bg-black/40 dark:bg-black/35 border border-white/25 text-white text-xs sm:text-sm font-medium shadow-sm dark:shadow-md">
               <div className="flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-[#1C442D] dark:text-emerald-300" aria-hidden="true" />
-                <span><strong className="text-[#1C201D] dark:text-white">{totalBooks != null ? totalBooks.toLocaleString() : '—'}</strong> Books</span>
+                <BookOpen className="w-4 h-4 text-emerald-300" aria-hidden="true" />
+                <span><strong className="text-white">{totalBooks != null ? totalBooks.toLocaleString() : '—'}</strong> Books</span>
               </div>
               <span className="text-[#D9D9D1] dark:text-white/40" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-[#526C79] dark:text-sky-300" aria-hidden="true" />
-                <span><strong className="text-[#1C201D] dark:text-white">{activeReaders && activeReaders > 0 ? activeReaders.toLocaleString() : '—'}</strong> Readers</span>
+                <Users className="w-4 h-4 text-sky-300" aria-hidden="true" />
+                <span><strong className="text-white">{activeReaders && activeReaders > 0 ? activeReaders.toLocaleString() : '—'}</strong> Readers</span>
               </div>
               <span className="text-white/40 hidden sm:inline" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5 hidden sm:flex">
