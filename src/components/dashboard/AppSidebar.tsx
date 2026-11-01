@@ -59,6 +59,9 @@ const AppSidebar = () => {
   const location = useLocation();
   const { setOpen } = useSidebar();
 
+  // Admin pages provide their own workspace navigation; keep the global reader sidebar out of that shell.
+  if (location.pathname.startsWith("/admin")) return null;
+
   const isActive = (url: string) => {
     if (url === "/dashboard") return location.pathname === "/dashboard" || location.pathname === "/";
     return location.pathname === url || location.pathname.startsWith(`${url}/`);
