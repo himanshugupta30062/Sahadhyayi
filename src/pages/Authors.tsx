@@ -154,7 +154,7 @@ const Authors = () => {
               </div>
               <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#1C201D] dark:text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
                 Meet the minds
-                <span className="block text-[#1C442D] dark:text-[#1C442D] dark:text-[#E4C17B]">behind the books.</span>
+                <span className="block text-[#1C442D] dark:text-[#E4C17B]">behind the books.</span>
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-[#636B65] dark:text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
                 Discover the writers, ideas, and worlds behind the books you love. Explore by name or genre, then follow the voices you want to hear from.
@@ -190,8 +190,8 @@ const Authors = () => {
               </div>
 
               <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#636B65] dark:text-white/75">
-                <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{authors.length.toLocaleString()}</strong> authors</span>
-                <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
+                <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{authors.length.toLocaleString()}</strong> authors</span>
+                <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
               </div>
             </div>
           </div>
