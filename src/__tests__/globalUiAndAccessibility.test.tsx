@@ -9,6 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import StructuredFooter from '@/components/footer/StructuredFooter';
+import { SidebarProvider } from '@/components/ui/sidebar';
+
+const NavigationWithSidebar = () => (
+  <SidebarProvider defaultOpen={false}>
+    <Navigation />
+  </SidebarProvider>
+);
 
 // Mock contexts
 const mockSignOut = vi.fn();
@@ -118,7 +125,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
     it('renders top navigation inside a semantic <header> landmark', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
@@ -130,25 +137,27 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
     it('renders desktop navigation with <nav aria-label="Main navigation">', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
-      fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
       const mainNav = screen.getByRole('navigation', { name: /main navigation/i });
       expect(mainNav).toBeInTheDocument();
     });
 
-    it('sets aria-current="page" on the active route link', () => {
+    it('sets aria-current="page" on the active mobile navigation link', () => {
+      mockIsMobileValue = true;
       render(
         <MemoryRouter initialEntries={['/library']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
       fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
-      const libraryLink = screen.getByRole('link', { name: /^library$/i });
-      expect(libraryLink).toHaveAttribute('aria-current', 'page');
+      fireEvent.click(screen.getByRole('button', { name: /library submenu/i }));
+      const libraryLinks = screen.getAllByRole('link', { name: /^library$/i });
+      expect(libraryLinks.length).toBeGreaterThan(0);
+      libraryLinks.forEach((link) => expect(link).toHaveAttribute('aria-current', 'page'));
 
       const homeLink = screen.getByRole('link', { name: /^home$/i });
       expect(homeLink).not.toHaveAttribute('aria-current');
@@ -158,7 +167,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       // Unauthenticated
       const { unmount } = render(
         <MemoryRouter initialEntries={['/library']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
@@ -171,7 +180,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       mockCurrentUser = { id: 'u1', email: 'reader@example.com' };
       render(
         <MemoryRouter initialEntries={['/library']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
@@ -188,12 +197,12 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
     it('gives mobile header controls touch targets of at least 44px', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
       const controls = [
-        screen.getByRole('button', { name: /search library and books/i }),
+        screen.getByRole('button', { name: /search sahadhyayi/i }),
         screen.getByRole('button', { name: /switch to dark mode/i }),
         screen.getByRole('button', { name: /open navigation menu/i }),
       ];
@@ -207,7 +216,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
     it('controls mobile menu disclosure with aria-expanded and aria-controls', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
@@ -219,9 +228,9 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       fireEvent.click(toggleButton);
 
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
-      expect(toggleButton).toHaveAttribute('aria-label', 'Open navigation menu');
+      expect(toggleButton).toHaveAttribute('aria-label', 'Close navigation menu');
 
-      const mobileNav = screen.getByRole('navigation', { name: /main navigation/i });
+      const mobileNav = screen.getByRole('navigation', { name: /mobile navigation/i });
       expect(mobileNav).toBeInTheDocument();
       expect(mobileNav).toHaveAttribute('id', 'site-navigation-drawer');
     });
@@ -229,15 +238,16 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
     it('closes the mobile menu after navigating to a route', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
       const toggleButton = screen.getByRole('button', { name: /open navigation menu/i });
       fireEvent.click(toggleButton);
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+      fireEvent.click(screen.getByRole('button', { name: /library submenu/i }));
 
-      fireEvent.click(screen.getByRole('link', { name: /^library$/i }));
+      fireEvent.click(screen.getAllByRole('link', { name: /^library$/i })[0]);
 
       expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
     });
@@ -245,7 +255,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
     it('closes mobile menu on Escape key press and restores focus to menu button', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
@@ -263,11 +273,22 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
     it('renders touch-friendly mobile navigation links with at least 44px min-height', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
       fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+
+      const sectionButtons = [
+        screen.getByRole('button', { name: /library submenu/i }),
+        screen.getByRole('button', { name: /social media submenu/i }),
+        screen.getByRole('button', { name: /articles submenu/i }),
+        screen.getByRole('button', { name: /authors submenu/i }),
+      ];
+      sectionButtons.forEach((button) => {
+        expect(button.className).toContain('min-h-[44px]');
+        fireEvent.click(button);
+      });
 
       const mobileLinks = screen.getAllByRole('link', { name: /library|articles|games|authors/i });
       mobileLinks.forEach((link) => {
@@ -277,32 +298,32 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
   });
 
   describe('Public navigation drawer and dropdown hierarchy', () => {
-    it('opens a left-side public drawer from the desktop header with the requested menu hierarchy', () => {
+    it('exposes keyboard-accessible desktop dropdown triggers', () => {
       mockIsMobileValue = false;
       render(
         <MemoryRouter initialEntries={['/']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
-      expect(screen.queryByRole('link', { name: /^library$/i })).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+      const mainNav = screen.getByRole('navigation', { name: /main navigation/i });
+      expect(mainNav).toBeInTheDocument();
 
-      const drawer = screen.getByRole('navigation', { name: /main navigation/i });
-      expect(drawer).toHaveAttribute('id', 'site-navigation-drawer');
-      expect(screen.getByRole('link', { name: /^home$/i })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: /^library$/i })).toHaveAttribute('href', '/library');
-      expect(screen.getByText('Social Media')).toBeInTheDocument();
-      expect(screen.getByText('Articles')).toBeInTheDocument();
-      expect(screen.getByText('Authors')).toBeInTheDocument();
+      for (const name of [/^library$/i, /^social media$/i, /^articles$/i, /^authors$/i]) {
+        const trigger = screen.getByRole('button', { name });
+        expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+        expect(trigger).toHaveAttribute('aria-expanded', 'false');
+        expect(trigger).toBeVisible();
+      }
+
+      expect(screen.getByRole('link', { name: /^home$/i })).toHaveAttribute('href', '/');
     });
 
     it('expands Book Discussion into its nested links inside the public drawer', () => {
       mockIsMobileValue = true;
       render(
         <MemoryRouter initialEntries={['/']}>
-          <Navigation />
+          <NavigationWithSidebar />
         </MemoryRouter>
       );
 
