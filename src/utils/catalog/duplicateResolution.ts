@@ -1,4 +1,10 @@
-import { supabase } from '@/integrations/supabase/client-universal';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { supabase as typedClient } from '@/integrations/supabase/client-universal';
+
+// Catalog tooling targets RPCs and columns that may not exist in every schema
+// version (capabilities are probed at runtime). A loose client keeps the
+// graceful runtime fallbacks compilable against the generated database types.
+const supabase = typedClient as unknown as SupabaseClient<any>;
 import {
   DuplicateResolutionAction,
   ResolutionOptions,

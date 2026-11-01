@@ -3,6 +3,7 @@ import {
   LibraryDuplicateAudit,
   AuditGroupSummary,
   UserReferenceCounts,
+  DuplicateResolutionAction,
 } from '@/types/bookCatalog';
 import { detectDuplicateGroups } from './duplicateDetection';
 import { recommendBestEditions } from './editionRecommendation';
