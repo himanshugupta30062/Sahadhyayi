@@ -109,9 +109,17 @@ const BookLibrary = () => {
       <div className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
       {/* Photo-led Library hero: real bookshelves anchor the page in the act of reading. */}
       <section aria-labelledby="library-hero-title" className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] dark:border-[#29332D] dark:bg-[#101711]" style={{ scrollMarginTop: '80px' }}>
-        <div aria-hidden="true" className="absolute inset-0 bg-cover bg-center opacity-25 dark:opacity-100" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2400&q=85')", backgroundPosition: 'center 48%' }} />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAFAF8]/95 via-[#FAFAF8]/85 to-[#FAFAF8]/55 dark:bg-gradient-to-r dark:from-[#09120D]/95 dark:via-[#09120D]/79 dark:to-[#09120D]/38" />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#F4F3EF]/75 via-transparent to-white/20 dark:from-[#09120D]/70 dark:via-transparent dark:to-[#09120D]/25" />
+        <img
+          src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2400&q=85"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          loading="eager"
+          fetchPriority="high"
+        />
+        {/* Keep the photograph clearly visible in light mode while preserving readable text. */}
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAFAF8]/72 via-[#FAFAF8]/38 to-[#FAFAF8]/12 dark:from-[#09120D]/78 dark:via-[#09120D]/55 dark:to-[#09120D]/30" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#F4F3EF]/35 via-transparent to-white/10 dark:from-[#09120D]/70 dark:via-transparent dark:to-[#09120D]/25" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
           <div className="mx-auto max-w-4xl text-center">
             <div className="flex items-center justify-center space-x-3 mb-8" style={{marginBottom: '30px', marginTop: '20px'}}>
