@@ -40,6 +40,7 @@ export interface PublishBookInput {
   pdf_url?: string;
   file_size?: number;
   reading_time_minutes?: number;
+  status?: 'draft' | 'pending_review';
 }
 
 export function useMyPublications() {
@@ -71,7 +72,7 @@ export function usePublishBook() {
 
       const { data, error } = await supabase
         .from('user_published_books')
-        .insert({ ...input, user_id: user.id, status: 'draft' })
+        .insert({ ...input, user_id: user.id, status: input.status ?? 'draft' })
         .select()
         .single();
 
@@ -104,6 +105,48 @@ export function usePublishBook() {
     },
   });
 
+  const createQuarantineSubmission = useMutation({
+    mutationFn: async (input: {
+      id: string;
+      authorPublicationId: string;
+      file: File;
+      storagePath: string;
+      title: string;
+      authorName: string;
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase.from('book_pdf_submissions' as any).insert({
+        id: input.id,
+        user_id: user.id,
+        author_publication_id: input.authorPublicationId,
+        submission_source: 'user_upload',
+        original_filename: input.file.name.slice(0, 255),
+        storage_path: input.storagePath,
+        file_size_bytes: input.file.size,
+        submitted_title: input.title,
+        submitted_author: input.authorName,
+        rights_attested: true,
+        rights_statement: 'Contributor attests they are authorized to submit this file for review.',
+        status: 'uploaded',
+      });
+      if (error) throw error;
+
+      // Start verification opportunistically; the admin queue can retry if the
+      // worker is temporarily unavailable. The manuscript remains private.
+      const { error: verificationError } = await supabase.functions.invoke('verify-book-pdf', {
+        body: { submissionId: input.id },
+      });
+      if (verificationError) {
+        console.warn('Author manuscript was quarantined but automatic verification did not start.', verificationError);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-publications'] });
+    },
+  });
+
   const deleteBook = useMutation({
     mutationFn: async (bookId: string) => {
       const { error } = await supabase
@@ -121,7 +164,7 @@ export function usePublishBook() {
     },
   });
 
-  return { createBook, submitForReview, deleteBook };
+  return { createBook, submitForReview, createQuarantineSubmission, deleteBook };
 }
 
 const MAX_COVER_SIZE = 5 * 1024 * 1024; // 5MB
@@ -158,21 +201,24 @@ export async function uploadPublishFile(
   type: 'cover' | 'pdf',
   onProgress?: (percent: number) => void,
 ): Promise<string> {
-  const ext = file.name.split('.').pop();
-  const path = `user-uploads/${userId}/${bookId}/${type === 'cover' ? 'cover' : 'book'}.${ext}`;
+  const ext = type === 'cover'
+    ? (file.name.split('.').pop()?.toLowerCase() || 'jpg')
+    : 'pdf';
+  const path = type === 'cover'
+    ? `covers/${userId}/${bookId}/cover.${ext}`
+    : `${userId}/${bookId}/source.pdf`;
+  const bucket = type === 'cover' ? 'books' : 'book-pdf-quarantine';
 
-  // Simulate progress since Supabase JS doesn't expose upload progress natively
   onProgress?.(10);
-
-  const { error } = await supabase.storage
-    .from('books')
-    .upload(path, file, { upsert: true });
-
+  const { error } = await supabase.storage.from(bucket).upload(path, file, {
+    contentType: type === 'pdf' ? 'application/pdf' : file.type,
+    cacheControl: type === 'pdf' ? '0' : '3600',
+    upsert: false,
+  });
   onProgress?.(90);
-
   if (error) throw error;
 
-  const { data } = supabase.storage.from('books').getPublicUrl(path);
   onProgress?.(100);
-  return data.publicUrl;
+  if (type === 'pdf') return path;
+  return supabase.storage.from('books').getPublicUrl(path).data.publicUrl;
 }
