@@ -158,7 +158,7 @@ const LibraryHero = ({
                         setShowSuggestions(false);
                       }
                     }}
-                    className="pl-10 sm:pl-12 pr-3 sm:pr-32 h-12 sm:h-14 text-sm sm:text-base bg-white dark:bg-white/95 border border-[#E8E8E3] dark:border-0 rounded-xl shadow-sm dark:shadow-2xl focus-visible:ring-2 focus-visible:ring-[#1C442D] transition-all duration-200 relative z-10 w-full"
+                    className="pl-10 sm:pl-12 pr-3 sm:pr-32 h-12 sm:h-14 text-sm sm:text-base bg-white dark:bg-white/95 border border-[#E8E8E3] dark:border-0 rounded-xl shadow-sm dark:shadow-2xl focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] transition-all duration-200 relative z-10 w-full"
                     autoComplete="off"
                   />
                   <Button
@@ -216,7 +216,7 @@ const LibraryHero = ({
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium text-gray-900 group-hover:text-[#1C442D] dark:hover:text-library-primary transition-colors line-clamp-1">
+                                <div className="font-medium text-gray-900 group-hover:text-[#1C442D] dark:group-hover:text-library-primary transition-colors line-clamp-1">
                                   {book.title}
                                 </div>
                                 <div className="text-sm text-gray-600 line-clamp-1">
@@ -238,7 +238,7 @@ const LibraryHero = ({
                             onSearch();
                             setShowSuggestions(false);
                           }}
-                          className="text-sm text-[#1C442D] dark:text-library-primary hover:text-library-secondary font-medium transition-colors"
+                          className="text-sm text-[#1C442D] dark:text-library-primary hover:text-[#143221] dark:hover:text-library-secondary font-medium transition-colors"
                         >
                           View all results for "{searchQuery}"
                         </button>
