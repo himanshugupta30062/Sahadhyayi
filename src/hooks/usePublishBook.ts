@@ -81,7 +81,7 @@ export function usePublishBook() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-publications'] });
-      toast({ title: 'Book created as draft' });
+      toast({ title: 'Book saved', description: 'Your publication record has been created.' });
     },
     onError: (err: any) => {
       toast({ title: 'Failed to create book', description: err.message, variant: 'destructive' });
@@ -202,7 +202,7 @@ export async function uploadPublishFile(
   onProgress?: (percent: number) => void,
 ): Promise<string> {
   const ext = type === 'cover'
-    ? (file.name.split('.').pop()?.toLowerCase() || 'jpg')
+    ? ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' } as Record<string, string>)[file.type] || 'jpg'
     : 'pdf';
   const path = type === 'cover'
     ? `covers/${userId}/${bookId}/cover.${ext}`
