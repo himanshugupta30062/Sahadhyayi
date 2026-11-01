@@ -340,7 +340,7 @@ const ResearchPapers = () => {
                           {abstract && <p className="mt-3 line-clamp-3 max-w-5xl text-sm leading-6 text-[#737B74] dark:text-[#A5ADA6]">{abstract}</p>}
                           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#737B74] dark:text-[#A5ADA6]">
                             <span className="inline-flex items-center gap-1.5"><Quote className="h-3.5 w-3.5" /> {Number(paper.cited_by_count || 0).toLocaleString('en-US')} citations</span>
-                            {paper.type && <span className="capitalize">{paper.type.replace(/_/g, ' ')}</span>}
+                            {typeof paper.type === 'string' && <span className="capitalize">{paper.type.replace(/_/g, ' ')}</span>}
                             <span>Paper {((page - 1) * PAGE_SIZE) + index + 1}</span>
                           </div>
                           <div className="mt-5 flex flex-wrap gap-2">
