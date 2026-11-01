@@ -10,28 +10,10 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3"
+    PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
-      scientists: {
-        Row: { created_at: string; discipline: string; id: string; lifespan: string; name: string; profile_data: Json; region: string; slug: string; sort_order: number; status: string; summary: string; updated_at: string }
-        Insert: { created_at?: string; discipline: string; id?: string; lifespan: string; name: string; profile_data?: Json; region: string; slug: string; sort_order?: number; status?: string; summary: string; updated_at?: string }
-        Update: { created_at?: string; discipline?: string; id?: string; lifespan?: string; name?: string; profile_data?: Json; region?: string; slug?: string; sort_order?: number; status?: string; summary?: string; updated_at?: string }
-        Relationships: []
-      }
-      scientist_publications: {
-        Row: { access: string; authors: string; created_at: string; doi: string | null; id: string; note: string; scientist_id: string; sort_order: number; title: string; updated_at: string; url: string; venue: string; year: string }
-        Insert: { access: string; authors: string; created_at?: string; doi?: string | null; id?: string; note?: string; scientist_id: string; sort_order?: number; title: string; updated_at?: string; url: string; venue: string; year: string }
-        Update: { access?: string; authors?: string; created_at?: string; doi?: string | null; id?: string; note?: string; scientist_id?: string; sort_order?: number; title?: string; updated_at?: string; url?: string; venue?: string; year?: string }
-        Relationships: [{ foreignKeyName: "scientist_publications_scientist_id_fkey"; columns: ["scientist_id"]; isOneToOne: false; referencedRelation: "scientists"; referencedColumns: ["id"] }]
-      }
-      scientist_archives: {
-        Row: { created_at: string; id: string; institution: string; material: string; note: string; scientist_id: string; sort_order: number; title: string; updated_at: string; url: string }
-        Insert: { created_at?: string; id?: string; institution: string; material: string; note?: string; scientist_id: string; sort_order?: number; title: string; updated_at?: string; url: string }
-        Update: { created_at?: string; id?: string; institution?: string; material?: string; note?: string; scientist_id?: string; sort_order?: number; title?: string; updated_at?: string; url?: string }
-        Relationships: [{ foreignKeyName: "scientist_archives_scientist_id_fkey"; columns: ["scientist_id"]; isOneToOne: false; referencedRelation: "scientists"; referencedColumns: ["id"] }]
-      }
       article_author_followers: {
         Row: {
           author_user_id: string
@@ -474,15 +456,27 @@ export type Database = {
       }
       authors: {
         Row: {
+          alternate_names: string[]
           bio: string | null
+          birth_date: string | null
           books_count: number | null
           created_at: string | null
+          death_date: string | null
+          enriched_at: string | null
+          enrichment_error: string | null
+          enrichment_status: string
+          external_source: string | null
+          external_source_url: string | null
           followers_count: number | null
           genres: string[] | null
           id: string
+          image_attribution: string | null
+          image_license: string | null
+          image_source_url: string | null
           is_authentic: boolean
           location: string | null
           name: string
+          openlibrary_author_id: string | null
           profile_image_url: string | null
           rating: number | null
           social_links: Json | null
@@ -491,17 +485,31 @@ export type Database = {
           verification_type: string | null
           verified: boolean
           website_url: string | null
+          wikidata_id: string | null
+          wikipedia_url: string | null
         }
         Insert: {
+          alternate_names?: string[]
           bio?: string | null
+          birth_date?: string | null
           books_count?: number | null
           created_at?: string | null
+          death_date?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_status?: string
+          external_source?: string | null
+          external_source_url?: string | null
           followers_count?: number | null
           genres?: string[] | null
           id?: string
+          image_attribution?: string | null
+          image_license?: string | null
+          image_source_url?: string | null
           is_authentic?: boolean
           location?: string | null
           name: string
+          openlibrary_author_id?: string | null
           profile_image_url?: string | null
           rating?: number | null
           social_links?: Json | null
@@ -510,17 +518,31 @@ export type Database = {
           verification_type?: string | null
           verified?: boolean
           website_url?: string | null
+          wikidata_id?: string | null
+          wikipedia_url?: string | null
         }
         Update: {
+          alternate_names?: string[]
           bio?: string | null
+          birth_date?: string | null
           books_count?: number | null
           created_at?: string | null
+          death_date?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_status?: string
+          external_source?: string | null
+          external_source_url?: string | null
           followers_count?: number | null
           genres?: string[] | null
           id?: string
+          image_attribution?: string | null
+          image_license?: string | null
+          image_source_url?: string | null
           is_authentic?: boolean
           location?: string | null
           name?: string
+          openlibrary_author_id?: string | null
           profile_image_url?: string | null
           rating?: number | null
           social_links?: Json | null
@@ -529,6 +551,8 @@ export type Database = {
           verification_type?: string | null
           verified?: boolean
           website_url?: string | null
+          wikidata_id?: string | null
+          wikipedia_url?: string | null
         }
         Relationships: []
       }
@@ -560,6 +584,7 @@ export type Database = {
           created_at: string
           duration_seconds: number
           id: string
+          library_book_id: string | null
           transcript: string | null
           updated_at: string
         }
@@ -569,6 +594,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          library_book_id?: string | null
           transcript?: string | null
           updated_at?: string
         }
@@ -578,6 +604,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          library_book_id?: string | null
           transcript?: string | null
           updated_at?: string
         }
@@ -587,6 +614,13 @@ export type Database = {
             columns: ["book_id"]
             isOneToOne: true
             referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_audio_summaries_library_book_id_fkey"
+            columns: ["library_book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
             referencedColumns: ["id"]
           },
         ]
@@ -798,6 +832,196 @@ export type Database = {
         }
         Relationships: []
       }
+      book_pdf_admin_audit: {
+        Row: {
+          book_id: string
+          created_at: string
+          file_name: string
+          file_size_bytes: number
+          id: string
+          pdf_url: string
+          previous_pdf_url: string | null
+          rights_basis: string
+          rights_notes: string
+          source_url: string
+          uploaded_by: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          file_name: string
+          file_size_bytes: number
+          id?: string
+          pdf_url: string
+          previous_pdf_url?: string | null
+          rights_basis: string
+          rights_notes: string
+          source_url: string
+          uploaded_by: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          file_name?: string
+          file_size_bytes?: number
+          id?: string
+          pdf_url?: string
+          previous_pdf_url?: string | null
+          rights_basis?: string
+          rights_notes?: string
+          source_url?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_pdf_admin_audit_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_pdf_review_audit: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json
+          id: string
+          reason: string | null
+          reviewer_id: string | null
+          submission_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json
+          id?: string
+          reason?: string | null
+          reviewer_id?: string | null
+          submission_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          reason?: string | null
+          reviewer_id?: string | null
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_pdf_review_audit_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "book_pdf_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_pdf_submissions: {
+        Row: {
+          created_at: string
+          detected_metadata: Json
+          file_size_bytes: number | null
+          id: string
+          match_confidence: number | null
+          original_filename: string
+          published_book_id: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          rights_attested: boolean
+          rights_basis: string | null
+          rights_evidence_url: string | null
+          rights_statement: string | null
+          sha256: string | null
+          status: string
+          storage_path: string
+          submission_source: string
+          submitted_author: string | null
+          submitted_title: string | null
+          target_book_id: string | null
+          updated_at: string
+          user_id: string
+          validation_findings: Json
+          verification_completed_at: string | null
+          verification_model: string | null
+        }
+        Insert: {
+          created_at?: string
+          detected_metadata?: Json
+          file_size_bytes?: number | null
+          id?: string
+          match_confidence?: number | null
+          original_filename: string
+          published_book_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rights_attested?: boolean
+          rights_basis?: string | null
+          rights_evidence_url?: string | null
+          rights_statement?: string | null
+          sha256?: string | null
+          status?: string
+          storage_path: string
+          submission_source?: string
+          submitted_author?: string | null
+          submitted_title?: string | null
+          target_book_id?: string | null
+          updated_at?: string
+          user_id: string
+          validation_findings?: Json
+          verification_completed_at?: string | null
+          verification_model?: string | null
+        }
+        Update: {
+          created_at?: string
+          detected_metadata?: Json
+          file_size_bytes?: number | null
+          id?: string
+          match_confidence?: number | null
+          original_filename?: string
+          published_book_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rights_attested?: boolean
+          rights_basis?: string | null
+          rights_evidence_url?: string | null
+          rights_statement?: string | null
+          sha256?: string | null
+          status?: string
+          storage_path?: string
+          submission_source?: string
+          submitted_author?: string | null
+          submitted_title?: string | null
+          target_book_id?: string | null
+          updated_at?: string
+          user_id?: string
+          validation_findings?: Json
+          verification_completed_at?: string | null
+          verification_model?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_pdf_submissions_published_book_id_fkey"
+            columns: ["published_book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_pdf_submissions_target_book_id_fkey"
+            columns: ["target_book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       book_quiz_questions: {
         Row: {
           book_id: string | null
@@ -982,6 +1206,7 @@ export type Database = {
           pages: number | null
           pdf_url: string | null
           publication_year: number | null
+          publisher_id: string | null
           title: string
         }
         Insert: {
@@ -998,6 +1223,7 @@ export type Database = {
           pages?: number | null
           pdf_url?: string | null
           publication_year?: number | null
+          publisher_id?: string | null
           title: string
         }
         Update: {
@@ -1014,6 +1240,7 @@ export type Database = {
           pages?: number | null
           pdf_url?: string | null
           publication_year?: number | null
+          publisher_id?: string | null
           title?: string
         }
         Relationships: [
@@ -1022,6 +1249,13 @@ export type Database = {
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "books_library_publisher_id_fkey"
+            columns: ["publisher_id"]
+            isOneToOne: false
+            referencedRelation: "publishers"
             referencedColumns: ["id"]
           },
         ]
@@ -1168,6 +1402,7 @@ export type Database = {
       }
       content_feedback: {
         Row: {
+          book_id: string | null
           comment: string | null
           content_id: string | null
           created_at: string
@@ -1176,6 +1411,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          book_id?: string | null
           comment?: string | null
           content_id?: string | null
           created_at?: string
@@ -1184,6 +1420,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          book_id?: string | null
           comment?: string | null
           content_id?: string | null
           created_at?: string
@@ -1270,7 +1507,7 @@ export type Database = {
             foreignKeyName: "detailed_reading_progress_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "books"
+            referencedRelation: "books_library"
             referencedColumns: ["id"]
           },
         ]
@@ -1355,6 +1592,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "friend_requests_addressee_id_fkey"
+            columns: ["addressee_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "friend_requests_requester_id_fkey"
             columns: ["requester_id"]
             isOneToOne: false
@@ -1366,6 +1610,13 @@ export type Database = {
             columns: ["requester_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friend_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1405,6 +1656,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "friends_user1_id_fkey"
+            columns: ["user1_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "friends_user2_id_fkey"
             columns: ["user2_id"]
             isOneToOne: false
@@ -1416,6 +1674,13 @@ export type Database = {
             columns: ["user2_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friends_user2_id_fkey"
+            columns: ["user2_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1640,6 +1905,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "group_chat_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       group_chats: {
@@ -1686,6 +1958,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_chats_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1770,6 +2049,13 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2027,6 +2313,7 @@ export type Database = {
       }
       notifications: {
         Row: {
+          actor_id: string | null
           author_id: string | null
           created_at: string
           id: string
@@ -2038,6 +2325,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          actor_id?: string | null
           author_id?: string | null
           created_at?: string
           id?: string
@@ -2049,6 +2337,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          actor_id?: string | null
           author_id?: string | null
           created_at?: string
           id?: string
@@ -2061,6 +2350,27 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "notifications_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
@@ -2068,6 +2378,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      owner_test_analytics: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          device_type: string | null
+          event_id: string | null
+          event_name: string | null
+          event_type: string
+          id: number
+          ip_address: string
+          metadata: Json
+          page_path: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          event_type?: string
+          id?: never
+          ip_address: string
+          metadata?: Json
+          page_path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          event_type?: string
+          id?: never
+          ip_address?: string
+          metadata?: Json
+          page_path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
       }
       phone_verifications: {
         Row: {
@@ -2191,6 +2555,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "post_comments_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       post_likes: {
@@ -2234,6 +2605,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "post_likes_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       posts: {
@@ -2247,13 +2625,7 @@ export type Database = {
           feeling_label: string | null
           id: string
           image_url: string | null
-          image_alt: string | null
           likes_count: number
-          post_kind: string
-          quote_author: string | null
-          quote_context: string | null
-          quote_source: string | null
-          quote_text: string | null
           repost_of_id: string | null
           reposts_count: number
           updated_at: string
@@ -2269,13 +2641,7 @@ export type Database = {
           feeling_label?: string | null
           id?: string
           image_url?: string | null
-          image_alt?: string | null
           likes_count?: number
-          post_kind?: string
-          quote_author?: string | null
-          quote_context?: string | null
-          quote_source?: string | null
-          quote_text?: string | null
           repost_of_id?: string | null
           reposts_count?: number
           updated_at?: string
@@ -2291,13 +2657,7 @@ export type Database = {
           feeling_label?: string | null
           id?: string
           image_url?: string | null
-          image_alt?: string | null
           likes_count?: number
-          post_kind?: string
-          quote_author?: string | null
-          quote_context?: string | null
-          quote_source?: string | null
-          quote_text?: string | null
           repost_of_id?: string | null
           reposts_count?: number
           updated_at?: string
@@ -2330,6 +2690,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2384,6 +2751,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "private_messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "private_messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
@@ -2397,19 +2771,32 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "private_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
         Row: {
           bio: string | null
           created_at: string
+          dob: string | null
           full_name: string | null
+          gender: string | null
           id: string
           last_seen: string | null
+          life_tags: string[]
+          location: string | null
           location_lat: number | null
           location_lng: number | null
           location_sharing: boolean | null
+          name: string | null
           profile_photo_url: string | null
+          social_links: Json
           stories_read_count: number | null
           stories_written_count: number | null
           tags_used: Json | null
@@ -2420,13 +2807,19 @@ export type Database = {
         Insert: {
           bio?: string | null
           created_at?: string
+          dob?: string | null
           full_name?: string | null
+          gender?: string | null
           id: string
           last_seen?: string | null
+          life_tags?: string[]
+          location?: string | null
           location_lat?: number | null
           location_lng?: number | null
           location_sharing?: boolean | null
+          name?: string | null
           profile_photo_url?: string | null
+          social_links?: Json
           stories_read_count?: number | null
           stories_written_count?: number | null
           tags_used?: Json | null
@@ -2437,19 +2830,127 @@ export type Database = {
         Update: {
           bio?: string | null
           created_at?: string
+          dob?: string | null
           full_name?: string | null
+          gender?: string | null
           id?: string
           last_seen?: string | null
+          life_tags?: string[]
+          location?: string | null
           location_lat?: number | null
           location_lng?: number | null
           location_sharing?: boolean | null
+          name?: string | null
           profile_photo_url?: string | null
+          social_links?: Json
           stories_read_count?: number | null
           stories_written_count?: number | null
           tags_used?: Json | null
           updated_at?: string | null
           username?: string | null
           writing_frequency?: string | null
+        }
+        Relationships: []
+      }
+      publishers: {
+        Row: {
+          alternate_names: string[] | null
+          bio: string | null
+          birth_date: string | null
+          books_count: number | null
+          created_at: string | null
+          death_date: string | null
+          enriched_at: string | null
+          enrichment_error: string | null
+          enrichment_status: string | null
+          external_source: string | null
+          external_source_url: string | null
+          followers_count: number | null
+          genres: string[] | null
+          id: string
+          image_attribution: string | null
+          image_license: string | null
+          image_source_url: string | null
+          is_authentic: boolean | null
+          location: string | null
+          name: string
+          openlibrary_author_id: string | null
+          profile_image_url: string | null
+          rating: number | null
+          social_links: Json | null
+          upcoming_events: number | null
+          updated_at: string | null
+          verification_type: string | null
+          verified: boolean | null
+          website_url: string | null
+          wikidata_id: string | null
+          wikipedia_url: string | null
+        }
+        Insert: {
+          alternate_names?: string[] | null
+          bio?: string | null
+          birth_date?: string | null
+          books_count?: number | null
+          created_at?: string | null
+          death_date?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_status?: string | null
+          external_source?: string | null
+          external_source_url?: string | null
+          followers_count?: number | null
+          genres?: string[] | null
+          id?: string
+          image_attribution?: string | null
+          image_license?: string | null
+          image_source_url?: string | null
+          is_authentic?: boolean | null
+          location?: string | null
+          name: string
+          openlibrary_author_id?: string | null
+          profile_image_url?: string | null
+          rating?: number | null
+          social_links?: Json | null
+          upcoming_events?: number | null
+          updated_at?: string | null
+          verification_type?: string | null
+          verified?: boolean | null
+          website_url?: string | null
+          wikidata_id?: string | null
+          wikipedia_url?: string | null
+        }
+        Update: {
+          alternate_names?: string[] | null
+          bio?: string | null
+          birth_date?: string | null
+          books_count?: number | null
+          created_at?: string | null
+          death_date?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_status?: string | null
+          external_source?: string | null
+          external_source_url?: string | null
+          followers_count?: number | null
+          genres?: string[] | null
+          id?: string
+          image_attribution?: string | null
+          image_license?: string | null
+          image_source_url?: string | null
+          is_authentic?: boolean | null
+          location?: string | null
+          name?: string
+          openlibrary_author_id?: string | null
+          profile_image_url?: string | null
+          rating?: number | null
+          social_links?: Json | null
+          upcoming_events?: number | null
+          updated_at?: string | null
+          verification_type?: string | null
+          verified?: boolean | null
+          website_url?: string | null
+          wikidata_id?: string | null
+          wikipedia_url?: string | null
         }
         Relationships: []
       }
@@ -2510,42 +3011,6 @@ export type Database = {
           name?: string
           updated_at?: string
           user_id?: string | null
-        }
-        Relationships: []
-      }
-      reading_dna: {
-        Row: {
-          generated_at: string
-          genres: Json
-          moods: Json
-          pace: string | null
-          signature_color: string | null
-          summary: string | null
-          themes: Json
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          generated_at?: string
-          genres?: Json
-          moods?: Json
-          pace?: string | null
-          signature_color?: string | null
-          summary?: string | null
-          themes?: Json
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          generated_at?: string
-          genres?: Json
-          moods?: Json
-          pace?: string | null
-          signature_color?: string | null
-          summary?: string | null
-          themes?: Json
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -2612,6 +3077,42 @@ export type Database = {
           is_active?: boolean
           name?: string
           slug?: string
+        }
+        Relationships: []
+      }
+      reading_dna: {
+        Row: {
+          generated_at: string
+          genres: Json
+          moods: Json
+          pace: string | null
+          signature_color: string | null
+          summary: string | null
+          themes: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          generated_at?: string
+          genres?: Json
+          moods?: Json
+          pace?: string | null
+          signature_color?: string | null
+          summary?: string | null
+          themes?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          generated_at?: string
+          genres?: Json
+          moods?: Json
+          pace?: string | null
+          signature_color?: string | null
+          summary?: string | null
+          themes?: Json
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2790,6 +3291,178 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          enabled: boolean
+          permission: string
+          role: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          permission: string
+          role: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          permission?: string
+          role?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      scientist_archives: {
+        Row: {
+          created_at: string
+          id: string
+          institution: string
+          material: string
+          note: string
+          scientist_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          institution: string
+          material: string
+          note?: string
+          scientist_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          institution?: string
+          material?: string
+          note?: string
+          scientist_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scientist_archives_scientist_id_fkey"
+            columns: ["scientist_id"]
+            isOneToOne: false
+            referencedRelation: "scientists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scientist_publications: {
+        Row: {
+          access: string
+          authors: string
+          created_at: string
+          doi: string | null
+          id: string
+          note: string
+          scientist_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          url: string
+          venue: string
+          year: string
+        }
+        Insert: {
+          access: string
+          authors: string
+          created_at?: string
+          doi?: string | null
+          id?: string
+          note?: string
+          scientist_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          url: string
+          venue: string
+          year: string
+        }
+        Update: {
+          access?: string
+          authors?: string
+          created_at?: string
+          doi?: string | null
+          id?: string
+          note?: string
+          scientist_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          url?: string
+          venue?: string
+          year?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scientist_publications_scientist_id_fkey"
+            columns: ["scientist_id"]
+            isOneToOne: false
+            referencedRelation: "scientists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scientists: {
+        Row: {
+          created_at: string
+          discipline: string
+          id: string
+          lifespan: string
+          name: string
+          profile_data: Json
+          region: string
+          slug: string
+          sort_order: number
+          status: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discipline: string
+          id?: string
+          lifespan: string
+          name: string
+          profile_data?: Json
+          region: string
+          slug: string
+          sort_order?: number
+          status?: string
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discipline?: string
+          id?: string
+          lifespan?: string
+          name?: string
+          profile_data?: Json
+          region?: string
+          slug?: string
+          sort_order?: number
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       security_audit_log: {
         Row: {
           action: string
@@ -2925,13 +3598,6 @@ export type Database = {
             referencedRelation: "spoiler_threads"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "spoiler_thread_comments_thread_id_fkey"
-            columns: ["thread_id"]
-            isOneToOne: false
-            referencedRelation: "spoiler_threads_safe"
-            referencedColumns: ["id"]
-          },
         ]
       }
       spoiler_threads: {
@@ -3040,6 +3706,8 @@ export type Database = {
           added_at: string
           book_id: string | null
           id: string
+          last_opened_at: string | null
+          progress: number
           status: string | null
           user_id: string | null
         }
@@ -3047,6 +3715,8 @@ export type Database = {
           added_at?: string
           book_id?: string | null
           id?: string
+          last_opened_at?: string | null
+          progress?: number
           status?: string | null
           user_id?: string | null
         }
@@ -3054,6 +3724,8 @@ export type Database = {
           added_at?: string
           book_id?: string | null
           id?: string
+          last_opened_at?: string | null
+          progress?: number
           status?: string | null
           user_id?: string | null
         }
@@ -3102,6 +3774,7 @@ export type Database = {
           added_at: string | null
           book_id: string
           id: string
+          is_favorite: boolean
           location_sharing: boolean | null
           notes: string | null
           rating: number | null
@@ -3112,6 +3785,7 @@ export type Database = {
           added_at?: string | null
           book_id: string
           id?: string
+          is_favorite?: boolean
           location_sharing?: boolean | null
           notes?: string | null
           rating?: number | null
@@ -3122,6 +3796,7 @@ export type Database = {
           added_at?: string | null
           book_id?: string
           id?: string
+          is_favorite?: boolean
           location_sharing?: boolean | null
           notes?: string | null
           rating?: number | null
@@ -3176,34 +3851,23 @@ export type Database = {
           },
         ]
       }
-      user_reading_badges: {
+      user_follows: {
         Row: {
-          badge_id: string
-          earned_at: string
-          id: string
-          user_id: string
+          created_at: string
+          follower_id: string
+          following_id: string
         }
         Insert: {
-          badge_id: string
-          earned_at?: string
-          id?: string
-          user_id: string
+          created_at?: string
+          follower_id: string
+          following_id: string
         }
         Update: {
-          badge_id?: string
-          earned_at?: string
-          id?: string
-          user_id?: string
+          created_at?: string
+          follower_id?: string
+          following_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_reading_badges_badge_id_fkey"
-            columns: ["badge_id"]
-            isOneToOne: false
-            referencedRelation: "reading_badges"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_game_badges: {
         Row: {
@@ -3560,6 +4224,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_reading_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reading_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "reading_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -3685,6 +4378,75 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           visited_at?: string
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      website_engagement_events: {
+        Row: {
+          created_at: string
+          engaged_seconds: number
+          event_id: string
+          id: number
+          page_path: string
+          session_id: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          engaged_seconds: number
+          event_id: string
+          id?: number
+          page_path?: string
+          session_id: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          engaged_seconds?: number
+          event_id?: string
+          id?: number
+          page_path?: string
+          session_id?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
+      website_visit_events: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          device_type: string | null
+          event_name: string | null
+          event_type: string
+          id: string
+          page_path: string
+          referrer: string | null
+          session_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_name?: string | null
+          event_type?: string
+          id?: string
+          page_path?: string
+          referrer?: string | null
+          session_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_name?: string | null
+          event_type?: string
+          id?: string
+          page_path?: string
+          referrer?: string | null
+          session_id?: string | null
           visitor_id?: string | null
         }
         Relationships: []
@@ -3852,36 +4614,6 @@ export type Database = {
         Relationships: []
       }
     }
-      book_reviews: {
-        Row: {
-          book_id: string
-          contains_spoilers: boolean
-          created_at: string
-          id: string
-          review_text: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          book_id: string
-          contains_spoilers?: boolean
-          created_at?: string
-          id?: string
-          review_text: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          book_id?: string
-          contains_spoilers?: boolean
-          created_at?: string
-          id?: string
-          review_text?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
     Views: {
       profiles_public: {
         Row: {
@@ -3907,6 +4639,42 @@ export type Database = {
           id?: string | null
           profile_photo_url?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          profile_photo_url: string | null
+          stories_read_count: number | null
+          stories_written_count: number | null
+          username: string | null
+          writing_frequency: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          profile_photo_url?: string | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          username?: string | null
+          writing_frequency?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          profile_photo_url?: string | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          username?: string | null
+          writing_frequency?: string | null
         }
         Relationships: []
       }
@@ -3952,53 +4720,35 @@ export type Database = {
           updated_at: string | null
           user_id: string | null
         }
-        Insert: {
-          body?: never
-          book_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_unlocked?: never
-          min_chapter?: number | null
-          title?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          body?: never
-          book_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_unlocked?: never
-          min_chapter?: number | null
-          title?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "spoiler_threads_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_library"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
-      get_profiles_for_social_context: {
-        Args: { profile_ids: string[] }
+      admin_list_role_permissions: {
+        Args: never
         Returns: {
-          id: string
-          username: string | null
-          full_name: string | null
-          bio: string | null
-          profile_photo_url: string | null
-          location_lat: number | null
-          location_lng: number | null
-          location_sharing: boolean | null
-          last_seen: string | null
+          enabled: boolean
+          permission: string
+          role: string
+          updated_at: string
         }[]
+      }
+      admin_list_user_roles: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          role: string
+          user_id: string
+        }[]
+      }
+      admin_set_role_permission: {
+        Args: { p_enabled: boolean; p_permission: string; p_role: string }
+        Returns: Json
+      }
+      admin_set_user_role: {
+        Args: { p_email: string; p_grant: boolean; p_role: string }
+        Returns: Json
       }
       are_friends: {
         Args: { user1_id: string; user2_id: string }
@@ -4059,6 +4809,10 @@ export type Database = {
           visitor_id: string
         }[]
       }
+      get_admin_website_analytics: {
+        Args: { p_timeframe?: string }
+        Returns: Json
+      }
       get_article_author_follower_count: {
         Args: { p_author_user_id: string }
         Returns: number
@@ -4112,6 +4866,15 @@ export type Database = {
           website_url: string
         }[]
       }
+      get_book_feedback_vote_summary: {
+        Args: { p_content_ids: string[] }
+        Returns: {
+          content_id: string
+          viewer_voted: boolean
+          vote_count: number
+          vote_type: string
+        }[]
+      }
       get_community_pulse_action_stats: {
         Args: { p_timeframe?: string }
         Returns: Json
@@ -4141,6 +4904,10 @@ export type Database = {
           vote_count: number
           vote_type: string
         }[]
+      }
+      get_dual_table_website_analytics: {
+        Args: { p_timeframe?: string }
+        Returns: Json
       }
       get_friend_locations: {
         Args: never
@@ -4192,9 +4959,12 @@ export type Database = {
           total_book_locations: number
         }[]
       }
+      get_my_profile: { Args: never; Returns: Json }
       get_nearby_book_readers: {
         Args: { book_uuid: string; radius_km?: number }
         Returns: {
+          approximate_latitude: number
+          approximate_longitude: number
           distance_km: number
           is_friend: boolean
           reader_id: string
@@ -4219,7 +4989,28 @@ export type Database = {
           like_count: number
         }[]
       }
+      get_profiles_for_social_context: {
+        Args: { profile_ids: string[] }
+        Returns: {
+          bio: string
+          full_name: string
+          id: string
+          last_seen: string
+          location_lat: number
+          location_lng: number
+          location_sharing: boolean
+          profile_photo_url: string
+          username: string
+        }[]
+      }
       get_public_community_pulse: { Args: never; Returns: Json }
+      get_public_group_member_counts: {
+        Args: never
+        Returns: {
+          group_id: string
+          member_count: number
+        }[]
+      }
       get_public_profiles_for_search: {
         Args: { search_term?: string }
         Returns: {
@@ -4263,8 +5054,13 @@ export type Database = {
           visits_today: number
         }[]
       }
+      get_website_engagement_stats: {
+        Args: { p_timeframe?: string }
+        Returns: Json
+      }
       get_website_visit_count: { Args: never; Returns: number }
       has_location_consent: { Args: { user_uuid: string }; Returns: boolean }
+      has_permission: { Args: { p_permission: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       increment_article_views: {
         Args: { _article_id: string }
@@ -4325,6 +5121,19 @@ export type Database = {
         Args: { ip_addr?: unknown; user_agent_string?: string }
         Returns: undefined
       }
+      record_pageview: {
+        Args: {
+          p_country_code?: string
+          p_device_type?: string
+          p_event_name?: string
+          p_event_type?: string
+          p_page_path?: string
+          p_referrer?: string
+          p_session_id?: string
+          p_visitor_id?: string
+        }
+        Returns: string
+      }
       record_website_visit:
         | {
             Args: {
@@ -4352,6 +5161,7 @@ export type Database = {
         Returns: string
       }
       update_author_book_counts: { Args: never; Returns: undefined }
+      update_my_profile: { Args: { p_profile: Json }; Returns: Json }
       user_chapter_progress: {
         Args: { _book: string; _user: string }
         Returns: number
