@@ -333,7 +333,7 @@ const ResearchPapers = () => {
                             {paper.publication_year && <span className="text-xs text-[#737B74] dark:text-[#A5ADA6]">{paper.publication_year}</span>}
                             {source && <span className="max-w-full truncate text-xs text-[#737B74] dark:text-[#A5ADA6]">· {source}</span>}
                           </div>
-                          <h3 className="font-serif text-lg font-semibold leading-snug text-[#1C201D] transition-colors group-hover:text-[#1C442D] dark:text-[#F3F0E7] dark:group-hover:text-[#1C442D] dark:text-[#D5B16D] sm:text-xl">
+                          <h3 className="font-serif text-lg font-semibold leading-snug text-[#1C201D] transition-colors group-hover:text-[#1C442D] dark:text-[#F3F0E7] dark:group-hover:text-[#D5B16D] sm:text-xl">
                             {paperUrl ? <a href={paperUrl} target="_blank" rel="noopener noreferrer" className="focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D]">{title}</a> : title}
                           </h3>
                           <p className="mt-2 text-sm text-[#59635B] dark:text-[#A5ADA6]">{authors || 'Author details unavailable'}</p>
