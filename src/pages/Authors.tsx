@@ -167,7 +167,7 @@ const Authors = () => {
                     placeholder="Search for an author by name…"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    className="h-12 rounded-xl border border-white/25 bg-white border-[#E8E8E3] pl-11 pr-11 text-[#1C201D] shadow-xl placeholder:text-[#798179] focus-visible:ring-2 focus-visible:ring-[#D5B16D] sm:h-14"
+                    className="h-12 rounded-xl border border-[#E8E8E3] bg-white dark:border-white/25 pl-11 pr-11 text-[#1C201D] shadow-xl placeholder:text-[#798179] focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] sm:h-14"
                     aria-label="Search authors by name, bio, or genre"
                   />
                   {searchTerm && (
@@ -183,7 +183,7 @@ const Authors = () => {
                 </div>
                 <Link
                   to="/library"
-                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D9D9D1] bg-white text-[#1C442D] dark:border-white/25 dark:bg-white/10 dark:text-white px-5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] sm:h-14"
+                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D9D9D1] bg-white text-[#1C442D] dark:border-white/25 dark:bg-white/10 dark:text-white px-5 text-sm font-semibold backdrop-blur-md transition text-[#1C442D] hover:bg-[#F4F3EF] dark:hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] sm:h-14"
                 >
                   Explore books <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
