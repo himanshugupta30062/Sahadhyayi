@@ -106,26 +106,29 @@ const BookLibrary = () => {
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
       </script>
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-      {/* Fixed SEO-optimized header with proper spacing */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-amber-200" style={{scrollMarginTop: '80px'}}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
+      <div className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
+      {/* Photo-led Library hero: real bookshelves anchor the page in the act of reading. */}
+      <section aria-labelledby="library-hero-title" className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] dark:border-[#29332D] dark:bg-[#101711]" style={{ scrollMarginTop: '80px' }}>
+        <div aria-hidden="true" className="absolute inset-0 bg-cover bg-center opacity-25 dark:opacity-100" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2400&q=85')", backgroundPosition: 'center 48%' }} />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAFAF8]/95 via-[#FAFAF8]/85 to-[#FAFAF8]/55 dark:bg-gradient-to-r dark:from-[#09120D]/95 dark:via-[#09120D]/79 dark:to-[#09120D]/38" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#F4F3EF]/75 via-transparent to-white/20 dark:from-[#09120D]/70 dark:via-transparent dark:to-[#09120D]/25" />
+        <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+          <div className="mx-auto max-w-4xl text-center">
             <div className="flex items-center justify-center space-x-3 mb-8" style={{marginBottom: '30px', marginTop: '20px'}}>
               <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
                 <BookOpen className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent leading-relaxed">
+              <h1 id="library-hero-title" className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1C442D] dark:bg-gradient-to-r dark:from-[#E8CC91] dark:to-[#D5B16D] dark:bg-clip-text dark:text-transparent leading-relaxed">
                 Digital Library
               </h1>
             </div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-8 leading-relaxed">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[#26352C] dark:text-[#F3F0E7] mb-8 leading-relaxed">
               Discover Your Next Great Read
             </h2>
-            <p className="text-gray-600 text-lg max-w-3xl mx-auto mb-8 leading-relaxed">
+            <p className="text-[#59635B] dark:text-white/75 text-lg max-w-3xl mx-auto mb-8 leading-relaxed">
               Browse books across multiple genres and discover your next great read. Reading and PDF availability varies by title; book details show the options currently available.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-[#59635B] dark:text-white/65">
               <span>📚 Books Across Genres</span>
               <span>🌍 Multiple Languages</span>
               <span>👥 Active Reading Community</span>
@@ -133,13 +136,13 @@ const BookLibrary = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filters Section */}
         <section aria-labelledby="search-filters-heading">
-          <h2 id="search-filters-heading" className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 id="search-filters-heading" className="text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-6">
             Find Your Next Great Read
           </h2>
           <div className="mb-8">
