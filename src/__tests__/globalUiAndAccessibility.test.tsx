@@ -155,8 +155,9 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
       fireEvent.click(screen.getByRole('button', { name: /library submenu/i }));
-      const libraryLink = screen.getByRole('link', { name: /^library$/i });
-      expect(libraryLink).toHaveAttribute('aria-current', 'page');
+      const libraryLinks = screen.getAllByRole('link', { name: /^library$/i });
+      expect(libraryLinks.length).toBeGreaterThan(0);
+      libraryLinks.forEach((link) => expect(link).toHaveAttribute('aria-current', 'page'));
 
       const homeLink = screen.getByRole('link', { name: /^home$/i });
       expect(homeLink).not.toHaveAttribute('aria-current');
@@ -201,7 +202,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       );
 
       const controls = [
-        screen.getByRole('button', { name: /search library and books/i }),
+        screen.getByRole('button', { name: /search sahadhyayi/i }),
         screen.getByRole('button', { name: /switch to dark mode/i }),
         screen.getByRole('button', { name: /open navigation menu/i }),
       ];
@@ -229,7 +230,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
       expect(toggleButton).toHaveAttribute('aria-label', 'Close navigation menu');
 
-      const mobileNav = screen.getByRole('navigation', { name: /main navigation/i });
+      const mobileNav = screen.getByRole('navigation', { name: /mobile navigation/i });
       expect(mobileNav).toBeInTheDocument();
       expect(mobileNav).toHaveAttribute('id', 'site-navigation-drawer');
     });
@@ -246,7 +247,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
       fireEvent.click(screen.getByRole('button', { name: /library submenu/i }));
 
-      fireEvent.click(screen.getByRole('link', { name: /^library$/i }));
+      fireEvent.click(screen.getAllByRole('link', { name: /^library$/i })[0]);
 
       expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
     });
