@@ -67,7 +67,7 @@ const LibraryHero = ({
       icon: BookOpen,
       label: 'Books Available',
       value: totalBooks != null ? totalBooks.toLocaleString() : '—',
-      color: 'text-library-primary',
+      color: 'text-[#1C442D] dark:text-library-primary',
     },
     {
       icon: Users,
@@ -166,7 +166,7 @@ const LibraryHero = ({
                       onSearch();
                       setShowSuggestions(false);
                     }}
-                    className="hidden sm:flex absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-library-primary to-library-secondary hover:from-library-secondary hover:to-library-primary text-white px-8 py-3 rounded-xl text-base font-semibold shadow-lg transition-all duration-200 z-20"
+                    className="hidden sm:flex absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#1C442D] hover:bg-[#143221] dark:bg-gradient-to-r dark:from-library-primary dark:to-library-secondary dark:hover:from-library-secondary dark:hover:to-library-primary text-white px-8 py-3 rounded-xl text-base font-semibold shadow-lg transition-all duration-200 z-20"
                   >
                     Search
                   </Button>
@@ -176,7 +176,7 @@ const LibraryHero = ({
                     onSearch();
                     setShowSuggestions(false);
                   }}
-                  className="sm:hidden flex-shrink-0 bg-gradient-to-r from-library-primary to-library-secondary hover:from-library-secondary hover:to-library-primary text-white p-3 rounded-xl shadow-lg transition-all duration-200 z-20"
+                  className="sm:hidden flex-shrink-0 bg-[#1C442D] hover:bg-[#143221] dark:bg-gradient-to-r dark:from-library-primary dark:to-library-secondary dark:hover:from-library-secondary dark:hover:to-library-primary text-white p-3 rounded-xl shadow-lg transition-all duration-200 z-20"
                   aria-label="Search"
                 >
                   <Search className="h-5 w-5" />
@@ -216,7 +216,7 @@ const LibraryHero = ({
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium text-gray-900 group-hover:text-library-primary transition-colors line-clamp-1">
+                                <div className="font-medium text-gray-900 group-hover:text-[#1C442D] dark:text-library-primary transition-colors line-clamp-1">
                                   {book.title}
                                 </div>
                                 <div className="text-sm text-gray-600 line-clamp-1">
@@ -238,7 +238,7 @@ const LibraryHero = ({
                             onSearch();
                             setShowSuggestions(false);
                           }}
-                          className="text-sm text-library-primary hover:text-library-secondary font-medium transition-colors"
+                          className="text-sm text-[#1C442D] dark:text-library-primary hover:text-library-secondary font-medium transition-colors"
                         >
                           View all results for "{searchQuery}"
                         </button>
