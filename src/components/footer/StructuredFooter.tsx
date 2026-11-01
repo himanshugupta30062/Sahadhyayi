@@ -66,7 +66,7 @@ const socialLinks = [
 ];
 
 const footerLinkClass =
-  'group inline-flex max-w-full items-start gap-1.5 text-sm leading-6 text-[#636B65] transition-colors hover:text-[#1C442D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-4 focus-visible:ring-offset-[#F4EFEA] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]';
+  'group inline-flex max-w-full items-start gap-1.5 text-sm leading-6 text-[#636B65] transition-colors hover:text-[#1C442D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-4 focus-visible:ring-offset-[#F4F3EF] dark:text-[#A5ADA6] dark:hover:text-[#D5B16D] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]';
 
 const StructuredFooter = () => {
   const { user } = useAuth();
@@ -80,7 +80,7 @@ const StructuredFooter = () => {
 
   return (
     <footer
-      className="relative mt-auto overflow-hidden border-t border-[#E8E2D9] bg-[#F4EFEA] text-[#1C201D] transition-colors duration-200 dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]"
+      className="relative mt-auto overflow-hidden border-t border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] transition-colors duration-200 dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]"
       role="contentinfo"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -116,14 +116,14 @@ const StructuredFooter = () => {
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
               <Link
                 to="/library"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#1C442D] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#143221] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4EFEA] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#E2C17D] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#1C442D] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#143221] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F3EF] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#E2C17D] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
               >
                 Explore the library
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
               <Link
                 to={user ? '/social' : '/signup'}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#D5CEC2] bg-white/80 px-5 py-3 text-sm font-semibold text-[#1C201D] transition hover:border-[#1C442D]/40 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4EFEA] dark:border-[#34443A] dark:bg-[#111614]/80 dark:text-[#F3F0E7] dark:hover:border-[#D5B16D]/50 dark:hover:bg-[#161D19] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#D5CEC2] bg-white/80 px-5 py-3 text-sm font-semibold text-[#1C201D] transition hover:border-[#1C442D]/40 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F3EF] dark:border-[#34443A] dark:bg-[#111614]/80 dark:text-[#F3F0E7] dark:hover:border-[#D5B16D]/50 dark:hover:bg-[#161D19] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
               >
                 {user ? 'Open reading feed' : 'Join the community'}
               </Link>
@@ -137,7 +137,7 @@ const StructuredFooter = () => {
           <div className="col-span-2 sm:col-span-3 lg:col-span-4">
             <Link
               to={user ? '/dashboard' : '/'}
-              className="inline-flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-4 focus-visible:ring-offset-[#F4EFEA] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
+              className="inline-flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-4 focus-visible:ring-offset-[#F4F3EF] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
               aria-label="Sahadhyayi home"
             >
               <img
@@ -161,7 +161,7 @@ const StructuredFooter = () => {
               type="button"
               onClick={() => setIsPulseOpen(true)}
               aria-label="Open Live Website Stats"
-              className="group mt-5 flex w-full max-w-sm items-center gap-3 rounded-2xl border border-[#DCD5C9] bg-white/70 p-3.5 text-left transition hover:border-[#B68A35]/60 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4EFEA] dark:border-[#29332D] dark:bg-[#111614] dark:hover:border-[#D5B16D]/50 dark:hover:bg-[#151D18] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
+              className="group mt-5 flex w-full max-w-sm items-center gap-3 rounded-2xl border border-[#DCD5C9] bg-white/70 p-3.5 text-left transition hover:border-[#B68A35]/60 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F3EF] dark:border-[#29332D] dark:bg-[#111614] dark:hover:border-[#D5B16D]/50 dark:hover:bg-[#151D18] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#C8DBCB] bg-[#EBF2EC] text-[#1C442D] dark:border-[#315C43] dark:bg-[#1C3024] dark:text-[#D5B16D]">
                 <BarChart3 className="h-5 w-5" aria-hidden="true" />
@@ -190,7 +190,7 @@ const StructuredFooter = () => {
                     rel="noopener noreferrer"
                     aria-label={`Follow us on ${social.name}`}
                     title={social.name}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#DCD5C9] bg-white/70 text-[#636B65] transition hover:-translate-y-0.5 hover:border-[#B68A35]/60 hover:text-[#1C442D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4EFEA] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#A5ADA6] dark:hover:border-[#D5B16D]/50 dark:hover:text-[#D5B16D] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#DCD5C9] bg-white/70 text-[#636B65] transition hover:-translate-y-0.5 hover:border-[#B68A35]/60 hover:text-[#1C442D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F3EF] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#A5ADA6] dark:hover:border-[#D5B16D]/50 dark:hover:text-[#D5B16D] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </a>
