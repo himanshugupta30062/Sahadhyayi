@@ -144,7 +144,7 @@ describe('ReadersNearMeMap', () => {
     expect(screen.getByTestId('map-points')).not.toHaveTextContent('Jane Reader');
     expect(screen.getByTestId('map-points')).not.toHaveTextContent('New Reader');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Chat' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Chat' })[0]);
     expect(screen.getByTestId('chat-window')).toHaveTextContent('Chat with friend-1');
     expect(screen.getAllByRole('button', { name: 'Chat' })[1]).toBeDisabled();
   });
