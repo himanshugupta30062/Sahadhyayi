@@ -122,9 +122,9 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setContinuationSummary('');
-      queryClient.invalidateQueries({ queryKey: continuationQueryKey });
+      await queryClient.invalidateQueries({ queryKey: continuationQueryKey });
       toast({
         title: 'Continuation submitted!',
         description: 'Your sequel summary has been added to the community collection.',
@@ -156,9 +156,11 @@ const BookContinuationSection = ({ bookId, bookTitle, genre }: BookContinuationS
       });
       if (error) throw error;
     },
-    onSuccess: (_, vote) => {
-      queryClient.invalidateQueries({ queryKey: sequelVotesQueryKey });
-      queryClient.invalidateQueries({ queryKey: voteCountsQueryKey });
+    onSuccess: async (_, vote) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: sequelVotesQueryKey }),
+        queryClient.invalidateQueries({ queryKey: voteCountsQueryKey }),
+      ]);
       toast({
         title: 'Vote recorded!',
         description: `Your vote for ${vote === 'yes' ? 'wanting' : 'not wanting'} a sequel has been saved.`,

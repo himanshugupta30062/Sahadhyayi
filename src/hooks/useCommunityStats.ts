@@ -172,7 +172,8 @@ export const useCommunityStats = (autoFetch: boolean = true) => {
 
   React.useEffect(() => {
     if (autoFetch) {
-      fetchStats();
+      // fetchStats handles its own failures; explicitly mark this effect-triggered request as fire-and-forget.
+      void fetchStats();
     }
   }, [autoFetch, fetchStats]);
 

@@ -61,8 +61,12 @@ const AudioSummaryButton = ({ bookId, bookContent }: AudioSummaryButtonProps) =>
         audio.pause();
         setIsPlaying(false);
       } else {
-        audio.play();
-        setIsPlaying(true);
+        void audio.play().then(() => {
+          setIsPlaying(true);
+        }).catch((error: unknown) => {
+          console.error('Failed to resume audio summary:', error);
+          setIsPlaying(false);
+        });
       }
     }
   };
