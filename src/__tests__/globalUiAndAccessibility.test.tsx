@@ -244,6 +244,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       const toggleButton = screen.getByRole('button', { name: /open navigation menu/i });
       fireEvent.click(toggleButton);
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+      fireEvent.click(screen.getByRole('button', { name: /library submenu/i }));
 
       fireEvent.click(screen.getByRole('link', { name: /^library$/i }));
 
@@ -276,6 +277,17 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       );
 
       fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+
+      const sectionButtons = [
+        screen.getByRole('button', { name: /library submenu/i }),
+        screen.getByRole('button', { name: /social media submenu/i }),
+        screen.getByRole('button', { name: /articles submenu/i }),
+        screen.getByRole('button', { name: /authors submenu/i }),
+      ];
+      sectionButtons.forEach((button) => {
+        expect(button.className).toContain('min-h-[44px]');
+        fireEvent.click(button);
+      });
 
       const mobileLinks = screen.getAllByRole('link', { name: /library|articles|games|authors/i });
       mobileLinks.forEach((link) => {
