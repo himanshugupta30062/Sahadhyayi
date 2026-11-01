@@ -776,9 +776,9 @@ const Navigation = () => {
                       ) : (
                         contactButton(() => setContactDialogRequested(true))
                       )}
-                      <Link to="/signup">
+                      <Link to="/signin">
                         <Button size="sm" className="bg-gradient-to-r from-amber-600 to-orange-600 font-medium text-white hover:from-amber-700 hover:to-orange-700">
-                          Sign up
+                          Sign In
                         </Button>
                       </Link>
                     </>
