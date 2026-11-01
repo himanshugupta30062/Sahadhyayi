@@ -20,14 +20,15 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 // UI component imports
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
-import Navigation from "./components/Navigation";
-import AppSidebar from "@/components/dashboard/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import DeferredSection from "./components/DeferredSection";
 import ScrollToTop from "./components/ScrollToTop";
 import BookFlipLoader from "./components/ui/BookFlipLoader";
+
+const Navigation = lazy(() => import("./components/Navigation"));
+const AppSidebar = lazy(() => import("@/components/dashboard/AppSidebar"));
 
 // Immediate load pages (critical path)
 import NotFound from "./pages/NotFound";
@@ -278,7 +279,7 @@ const App = memo(() => {
                     <ScrollToTop />
                     <PageTracker />
                   <SidebarProvider defaultOpen={false}>
-                    <AppSidebar />
+                    <Suspense fallback={null}><AppSidebar /></Suspense>
                     <SidebarInset className="min-w-0 bg-background">
                   <div className="min-h-screen bg-background text-foreground flex flex-col">
                     {/* Skip to main content link for keyboard accessibility */}
@@ -289,7 +290,7 @@ const App = memo(() => {
                       Skip to main content
                     </a>
                     
-                    <Navigation />
+                    <Suspense fallback={null}><Navigation /></Suspense>
                     
                     <main id="main-content" tabIndex={-1} className="flex-1 pt-16 outline-none">
                       <span id="main" className="sr-only" />

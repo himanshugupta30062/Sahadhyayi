@@ -21,7 +21,7 @@ Keep the canonical domain and destination URLs aligned with the active DNS setup
 ## Deploy settings
 
 - Build command: `npm run build`
-- Deploy command: `npx wrangler deploy`
+- Deploy command: `npm run deploy:cloudflare` (pins Wrangler to `4.156.0` for reproducible deployments)
 - Node version: `22`
 
 The build requires the public Supabase URL/key and any enabled frontend integration
