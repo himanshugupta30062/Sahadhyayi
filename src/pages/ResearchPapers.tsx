@@ -219,7 +219,7 @@ const ResearchPapers = () => {
               </p>
               <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs text-[#636B65] dark:text-white/65">
                 <span className="rounded-full border border-[#E8E8E3] bg-white px-3 dark:border-white/15 dark:bg-white/5 py-1.5">Open-access papers</span>
-                <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5">Global research</span>
+                <span className="rounded-full border border-[#E8E8E3] bg-white px-3 py-1.5 dark:border-white/15 dark:bg-white/5">Global research</span>
                 <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5">Citation-ranked discovery</span>
               </div>
             </div>
