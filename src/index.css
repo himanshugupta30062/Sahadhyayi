@@ -46,14 +46,14 @@
     --radius: 0.5rem;
 
     /* Enhanced Sahadhyayi brand colors - 60-30-10 rule (WCAG AA compliant) */
-    --brand-primary: 145 42% 19%; /* tuned to 37% for 4.9:1 AA normal text contrast */
+    --brand-primary: 145 42% 19%; /* forest green primary for the light interface */
     --brand-secondary: 32 52% 42%; /* tuned to 42% for 4.5:1 AA contrast */
     --brand-accent: 20 14% 23%; /* warm brown - 10% accent */
-    --brand-neutral: 60 14% 98%; /* warm cream/off-white */
+    --brand-neutral: 45 10% 95%; /* warm cream/off-white */
     
     /* Text hierarchy */
-    --text-primary: 140 6% 12%; /* dark brown for headings (11.3:1) */
-    --text-secondary: 140 5% 29%; /* medium brown for body (6.9:1) */
+    --text-primary: 140 6% 12%; /* neutral ink for headings */
+    --text-secondary: 140 5% 29%; /* muted neutral for body copy */
     --text-muted: 135 4% 40%; /* tuned to 43% for 5.1:1 AA normal text contrast */
     
     /* Gradients for visual interest */
