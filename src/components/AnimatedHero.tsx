@@ -7,7 +7,7 @@ import HomeFloatingBooks from "./home/HomeFloatingBooks";
 const AnimatedHero: React.FC = () => {
   return (
     <section
-      className="relative min-h-[calc(100svh-4rem)] flex items-center bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden py-10 sm:py-14 lg:py-20 transition-colors duration-300"
+      className="relative min-h-[calc(100svh-4rem)] flex items-center bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden py-10 sm:py-14 lg:py-20 transition-colors duration-300"
       aria-label="Sahadhyayi Hero"
     >
       {/* A quiet paper-toned canvas keeps the animated rings as the hero focal point. */}
