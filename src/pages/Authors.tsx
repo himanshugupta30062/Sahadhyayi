@@ -136,13 +136,13 @@ const Authors = () => {
         <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-cover bg-center opacity-25 dark:opacity-100"
+            className="absolute inset-y-0 right-0 h-full w-full bg-cover bg-center opacity-100 sm:w-[68%] dark:opacity-100"
             style={{
               backgroundImage: "url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2400&q=85')",
               backgroundPosition: 'center 42%',
             }}
           />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF]/95 via-[#F4F3EF]/82 to-[#F4F3EF]/48 dark:hidden" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/92 to-[#F4F3EF]/10 dark:hidden" />
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/79 to-[#09120D]/38" />
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)]" />
