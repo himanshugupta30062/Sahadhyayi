@@ -554,3 +554,38 @@ mark.search-highlight {
     animation: none !important;
   }
 }
+
+/* Light-theme compatibility layer.
+   Older screens still use a few legacy warm palette utility classes.
+   Normalize those classes to the current editorial tokens without touching
+   dark mode or requiring a risky, repo-wide component rewrite. */
+html:not(.dark) [class~="bg-[#FAF7F2]"],
+html:not(.dark) [class~="bg-[#F8F8F2]"] {
+  background-color: var(--editorial-bg);
+}
+
+html:not(.dark) [class~="bg-[#F4EFEA]"],
+html:not(.dark) [class~="bg-[#F1F3EC]"],
+html:not(.dark) [class~="bg-[#F5EEDC]"] {
+  background-color: var(--editorial-bg-alt);
+}
+
+html:not(.dark) [class~="bg-[#E8EDE4]"] {
+  background-color: var(--editorial-green-surface);
+}
+
+html:not(.dark) [class~="border-[#E8E2D9]"],
+html:not(.dark) [class~="border-[#DDE4D9]"],
+html:not(.dark) [class~="border-[#E5DED2]"],
+html:not(.dark) [class~="border-[#EADFC7]"] {
+  border-color: var(--editorial-border);
+}
+
+html:not(.dark) [class~="from-amber-50"] {
+  --tw-gradient-from: var(--editorial-bg) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(250 250 248 / 0) var(--tw-gradient-to-position);
+}
+
+html:not(.dark) [class~="to-orange-50"] {
+  --tw-gradient-to: var(--editorial-bg-alt) var(--tw-gradient-to-position);
+}
