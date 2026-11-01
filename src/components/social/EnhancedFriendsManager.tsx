@@ -307,8 +307,8 @@ export const EnhancedFriendsManager = () => {
                   friends.map((friendship) => {
                     // useFriends returns the other reader in friend_profile.
                     const friendProfile = friendship.friend_profile;
-                    
 
+                    return (
                       <div key={friendship.id} className="flex flex-col gap-3 p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-3">
                           <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">
