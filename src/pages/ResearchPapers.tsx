@@ -205,9 +205,9 @@ const ResearchPapers = () => {
       />
       <main className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
-          {/* Research imagery is deliberately subtle in light mode; dark mode retains its existing visual treatment. */}
-          <div aria-hidden="true" className="absolute inset-0 bg-cover bg-center opacity-[0.18] dark:hidden" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=2400&q=85')", backgroundPosition: 'center 44%' }} />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF]/95 via-[#F4F3EF]/88 to-[#F4F3EF]/65 dark:hidden" />
+          {/* Visible research photography in light mode; retain the existing dark-mode treatment. */}
+          <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=2200&q=85" alt="" aria-hidden="true" className="absolute inset-y-0 right-0 hidden h-full w-[62%] object-cover object-center dark:hidden sm:block" loading="eager" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/95 to-[#F4F3EF]/10 dark:hidden" />
           <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-36 hidden h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:block" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-48 -left-24 hidden h-96 w-96 rounded-full bg-amber-400/10 blur-3xl dark:block" />
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
