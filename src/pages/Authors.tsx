@@ -191,7 +191,7 @@ const Authors = () => {
 
               <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#636B65] dark:text-white/75">
                 <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{authors.length.toLocaleString()}</strong> authors</span>
-                <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
+                <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
               </div>
             </div>
           </div>
