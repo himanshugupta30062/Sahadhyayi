@@ -13,7 +13,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 
 const NavigationWithSidebar = () => (
   <SidebarProvider defaultOpen={false}>
-    <NavigationWithSidebar />
+    <Navigation />
   </SidebarProvider>
 );
 
