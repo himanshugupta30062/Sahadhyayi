@@ -194,9 +194,17 @@ export const SocialFeed = () => {
             </div>
 
             {/* Post Content - Clickable */}
-            <div 
-              className="mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+            <div
+              role="button"
+              tabIndex={0}
+              className="mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
               onClick={() => handlePostClick(post)}
+              onKeyDown={(event) => {
+                if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                  event.preventDefault();
+                  handlePostClick(post);
+                }
+              }}
             >
               <p className="text-gray-800 mb-3">{post.content}</p>
               
