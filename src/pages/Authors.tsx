@@ -138,7 +138,7 @@ const Authors = () => {
             aria-hidden="true"
             className="absolute inset-y-0 right-0 h-full w-full bg-cover bg-center opacity-100 sm:w-[68%] dark:opacity-100"
             style={{
-              backgroundImage: "url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2400&q=85')",
+              backgroundImage: "url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1800&q=85')",
               backgroundPosition: 'center 42%',
             }}
           />
