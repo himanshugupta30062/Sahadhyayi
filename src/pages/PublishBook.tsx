@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
+import { supabase } from '@/integrations/supabase/client';
 import {
   usePublishBook,
   uploadPublishFile,
@@ -20,7 +22,6 @@ import {
 import { useAuth } from '@/contexts/authHelpers';
 import { BookOpen, Upload, Eye, ArrowLeft, ArrowRight, Loader2, X, Tag } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { nanoid } from 'nanoid';
 
 const GENRES = ['Fiction', 'Non-Fiction', 'Science', 'Technology', 'History', 'Philosophy', 'Poetry', 'Biography', 'Self-Help', 'Fantasy', 'Mystery', 'Romance', 'Horror', 'Other'];
 const LANGUAGES = ['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi', 'Other'];
@@ -28,11 +29,12 @@ const LANGUAGES = ['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam'
 export default function PublishBook() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { createBook, submitForReview } = usePublishBook();
+  const { createBook, createQuarantineSubmission, deleteBook } = usePublishBook();
   const [step, setStep] = useState(1);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [tagInput, setTagInput] = useState('');
+  const [rightsAttested, setRightsAttested] = useState(false);
 
   const [form, setForm] = useState({
     title: '',
@@ -83,27 +85,30 @@ export default function PublishBook() {
   };
 
   const canProceedStep1 = form.title.trim() && form.author_name.trim();
-  const canSubmit = canProceedStep1;
+  const canSubmit = Boolean(canProceedStep1 && pdfFile && rightsAttested);
   const readingTime = form.pages ? estimateReadingTime(Number.parseInt(form.pages)) : null;
 
   const handleSubmit = async () => {
-    if (!user) return;
+    if (!user || !pdfFile || !rightsAttested) return;
     setUploading(true);
     setUploadProgress(0);
-    const bookId = nanoid(12);
+    const submissionId = crypto.randomUUID();
+    let coverPath: string | null = null;
+    let quarantinePath: string | null = null;
+    let publicationId: string | null = null;
+
     try {
       let cover_image_url: string | undefined;
-      let pdf_url: string | undefined;
-
       if (coverFile) {
-        cover_image_url = await uploadPublishFile(coverFile, user.id, bookId, 'cover', p => setUploadProgress(Math.round(p * 0.3)));
+        cover_image_url = await uploadPublishFile(coverFile, user.id, submissionId, 'cover', p => setUploadProgress(Math.round(p * 0.2)));
+        const coverExt = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' } as Record<string, string>)[coverFile.type] || 'jpg';
+        coverPath = `covers/${user.id}/${submissionId}/cover.${coverExt}`;
       }
-      if (pdfFile) {
-        pdf_url = await uploadPublishFile(pdfFile, user.id, bookId, 'pdf', p => setUploadProgress(30 + Math.round(p * 0.5)));
-      }
-      setUploadProgress(80);
 
-      const pages = form.pages ? Number.parseInt(form.pages) : undefined;
+      quarantinePath = await uploadPublishFile(pdfFile, user.id, submissionId, 'pdf', p => setUploadProgress(20 + Math.round(p * 0.5)));
+      setUploadProgress(75);
+
+      const pages = form.pages ? Number.parseInt(form.pages, 10) : undefined;
       const book = await createBook.mutateAsync({
         title: form.title.trim(),
         subtitle: form.subtitle.trim() || undefined,
@@ -115,17 +120,39 @@ export default function PublishBook() {
         isbn: form.isbn.trim() || undefined,
         tags: form.tags.length > 0 ? form.tags : undefined,
         cover_image_url,
-        pdf_url,
-        file_size: pdfFile?.size,
+        pdf_url: undefined,
+        file_size: pdfFile.size,
         reading_time_minutes: pages ? estimateReadingTime(pages) : undefined,
+        status: 'pending_review',
+      });
+      publicationId = book.id;
+
+      await createQuarantineSubmission.mutateAsync({
+        id: submissionId,
+        authorPublicationId: book.id,
+        file: pdfFile,
+        storagePath: quarantinePath,
+        title: form.title.trim(),
+        authorName: form.author_name.trim(),
       });
 
-      setUploadProgress(90);
-      await submitForReview.mutateAsync(book.id);
       setUploadProgress(100);
+      toast({ title: 'Book submitted for review', description: 'Your manuscript is stored privately and will appear in the library only after approval.' });
       navigate('/my-publications');
-    } catch {
-      // errors handled by mutation callbacks
+    } catch (error) {
+      // Roll back partial client-side work. A successful submission record is
+      // intentionally not deleted if the verification worker merely fails.
+      if (publicationId) {
+        try { await deleteBook.mutateAsync(publicationId); } catch { /* preserve original error */ }
+      }
+      if (quarantinePath) {
+        await supabase.storage.from('book-pdf-quarantine').remove([quarantinePath]);
+      }
+      if (coverPath) {
+        await supabase.storage.from('books').remove([coverPath]);
+      }
+      const message = error instanceof Error ? error.message : 'Please try again.';
+      toast({ title: 'Submission failed', description: message, variant: 'destructive' });
     } finally {
       setUploading(false);
       setUploadProgress(0);
@@ -249,7 +276,7 @@ export default function PublishBook() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Upload className="h-5 w-5" /> Upload Files</CardTitle>
-              <CardDescription>Add a cover image and PDF of your book</CardDescription>
+              <CardDescription>Add a cover image and PDF of your book. A PDF is required for private review.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -297,7 +324,7 @@ export default function PublishBook() {
               </div>
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setStep(1)}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>
-                <Button onClick={() => setStep(3)}>Preview <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                <Button onClick={() => setStep(3)} disabled={!pdfFile}>Preview <ArrowRight className="ml-2 h-4 w-4" /></Button>
               </div>
             </CardContent>
           </Card>
@@ -344,6 +371,10 @@ export default function PublishBook() {
                   <p className="text-sm text-muted-foreground">{form.description}</p>
                 </div>
               )}
+              <label className="flex items-start gap-3 rounded-lg border p-3 text-sm leading-5">
+                <Checkbox checked={rightsAttested} onCheckedChange={(checked) => setRightsAttested(checked === true)} />
+                <span>I confirm that I am authorized to submit this manuscript for review and that the information provided is accurate. I understand this does not automatically authorize public distribution.</span>
+              </label>
               <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
                 <p>📋 Your book will be submitted for review. Once approved by our team, it will appear in the public library.</p>
               </div>
