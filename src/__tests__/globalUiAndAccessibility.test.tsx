@@ -283,7 +283,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
   });
 
   describe('Public navigation drawer and dropdown hierarchy', () => {
-    it('exposes desktop navigation dropdowns with the current menu hierarchy', () => {
+    it('exposes desktop navigation dropdowns with the current menu hierarchy', async () => {
       mockIsMobileValue = false;
       render(
         <MemoryRouter initialEntries={['/']}>
