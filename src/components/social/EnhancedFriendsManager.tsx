@@ -210,21 +210,7 @@ export const EnhancedFriendsManager = () => {
                     </div>
                   ) : visibleSearchResults.length > 0 ? (
                     visibleSearchResults.map((result) => (
-                      <UserCard
-                        key={result.id}
-                        user={result}
-                        onSendRequest={handleSendFriendRequest}
-                        getInitials={getInitials}
-                        isFriend={friends.some(f => f.friend_profile?.id === result.id)}
-                        hasPendingRequest={pendingUserIds.has(result.id)}
-                        isFollowing={followingIds.includes(result.id)}
-                        isFollowPending={toggleUserFollow.isPending}
-                        onToggleFollow={handleToggleFollow}
-                        onMessage={(id) => setChatId(id)}
-                        isRequestPending={sendFriendRequest.isPending}
-                        relationshipStateUnavailable={relationshipStateUnavailable}
-                        followStateUnavailable={followStateUnavailable}
-                      />
+                      {renderUserCard(result)}
                     ))
                   ) : (
                     <div className="text-center py-12 text-muted-foreground">
@@ -249,21 +235,7 @@ export const EnhancedFriendsManager = () => {
                       </div>
                     ) : visibleAllUsers.length > 0 ? (
                       visibleAllUsers.map((result) => (
-                        <UserCard
-                          key={result.id}
-                          user={result}
-                          onSendRequest={handleSendFriendRequest}
-                          getInitials={getInitials}
-                          isFriend={friends.some(f => f.friend_profile?.id === result.id)}
-                          hasPendingRequest={pendingUserIds.has(result.id)}
-                          isFollowing={followingIds.includes(result.id)}
-                          isFollowPending={toggleUserFollow.isPending}
-                          onToggleFollow={handleToggleFollow}
-                          onMessage={(id) => setChatId(id)}
-                          isRequestPending={sendFriendRequest.isPending}
-                          relationshipStateUnavailable={relationshipStateUnavailable}
-                          followStateUnavailable={followStateUnavailable}
-                        />
+                        {renderUserCard(result)}
                       ))
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
@@ -293,21 +265,7 @@ export const EnhancedFriendsManager = () => {
               ) : followedReaders.length > 0 ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {followedReaders.map((reader) => (
-                    <UserCard
-                      key={reader.id}
-                      user={reader}
-                      onSendRequest={handleSendFriendRequest}
-                      getInitials={getInitials}
-                      isFriend={friends.some(f => f.friend_profile?.id === reader.id)}
-                      hasPendingRequest={pendingUserIds.has(reader.id)}
-                      isFollowing={followingIds.includes(reader.id)}
-                      isFollowPending={toggleUserFollow.isPending}
-                      onToggleFollow={handleToggleFollow}
-                      onMessage={(id) => setChatId(id)}
-                      isRequestPending={sendFriendRequest.isPending}
-                      relationshipStateUnavailable={relationshipStateUnavailable}
-                      followStateUnavailable={followStateUnavailable}
-                    />
+                    {renderUserCard(reader)}
                   ))}
                 </div>
               ) : (
@@ -338,7 +296,25 @@ export const EnhancedFriendsManager = () => {
                     // useFriends returns the other reader in friend_profile.
                     const friendProfile = friendship.friend_profile;
                     
-                    return (
+                    const renderUserCard = (person: (typeof visibleSearchResults)[number]) => (
+    <UserCard
+      key={person.id}
+      user={person}
+      onSendRequest={handleSendFriendRequest}
+      getInitials={getInitials}
+      isFriend={friends.some((friend) => friend.friend_profile?.id === person.id)}
+      hasPendingRequest={pendingUserIds.has(person.id)}
+      isFollowing={followingIds.includes(person.id)}
+      isFollowPending={toggleUserFollow.isPending}
+      onToggleFollow={handleToggleFollow}
+      onMessage={setChatId}
+      isRequestPending={sendFriendRequest.isPending}
+      relationshipStateUnavailable={relationshipStateUnavailable}
+      followStateUnavailable={followStateUnavailable}
+    />
+  );
+
+  return (
                       <div key={friendship.id} className="flex flex-col gap-3 p-3 bg-card border border-border rounded-xl hover:shadow-sm hover:border-brand-primary/30 transition-all sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-3">
                           <Avatar className="w-11 h-11 ring-2 ring-brand-primary/10">

@@ -392,31 +392,45 @@ const Navigation = () => {
     );
   };
 
+  const renderDrawerSectionHeading = (
+    section: NavigationSection,
+    expanded: boolean,
+    panelId: string,
+    onToggle: () => void,
+  ) => (
+    <div className="flex items-center gap-1">
+      <div className="min-w-0 flex-1">
+        {renderDrawerLink({
+          name: section.name,
+          href: section.href,
+          tourTarget: section.items[0]?.tourTarget,
+        })}
+      </div>
+      <button
+        type="button"
+        aria-label={section.name + " submenu"}
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        onClick={onToggle}
+        className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <ChevronDown className={"h-4 w-4 transition-transform " + (expanded ? "rotate-180" : "")} aria-hidden="true" />
+      </button>
+    </div>
+  );
+
   const renderDrawerSection = (section: NavigationSection) => {
     const disclosureKey = "signed-in." + section.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     const panelId = "signed-in-nav-" + disclosureKey.replace(/[^a-z0-9-]/g, "");
     const expanded = Boolean(expandedPublicSections[disclosureKey]);
     return (
       <div key={section.name} className="border-b border-border/70 py-1">
-        <div className="flex items-center gap-1">
-          <div className="min-w-0 flex-1">
-            {renderDrawerLink({
-              name: section.name,
-              href: section.href,
-              tourTarget: section.items[0]?.tourTarget,
-            })}
-          </div>
-          <button
-            type="button"
-            aria-label={section.name + " submenu"}
-            aria-expanded={expanded}
-            aria-controls={panelId}
-            onClick={() => setExpandedPublicSections((current) => ({ ...current, [disclosureKey]: !current[disclosureKey] }))}
-            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <ChevronDown className={"h-4 w-4 transition-transform " + (expanded ? "rotate-180" : "")} aria-hidden="true" />
-          </button>
-        </div>
+        {renderDrawerSectionHeading(
+          section,
+          expanded,
+          panelId,
+          () => setExpandedPublicSections((current) => ({ ...current, [disclosureKey]: !current[disclosureKey] })),
+        )}
         <div id={panelId} hidden={!expanded} className="space-y-0.5 border-l-2 border-border py-1 pl-2">
           {visibleItems(section.items)
             .filter((item) => item.href !== section.href)
@@ -474,25 +488,12 @@ const Navigation = () => {
     const expanded = Boolean(expandedPublicSections[disclosureKey]);
     return (
       <div key={section.name} className="border-b border-border/70 py-1">
-        <div className="flex items-center gap-1">
-          <div className="min-w-0 flex-1">
-            {renderDrawerLink({
-              name: section.name,
-              href: section.href,
-              tourTarget: section.items[0]?.tourTarget,
-            })}
-          </div>
-          <button
-            type="button"
-            aria-label={section.name + " submenu"}
-            aria-expanded={expanded}
-            aria-controls={panelId}
-            onClick={() => togglePublicSection(disclosureKey)}
-            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <ChevronDown className={"h-4 w-4 transition-transform " + (expanded ? "rotate-180" : "")} aria-hidden="true" />
-          </button>
-        </div>
+        {renderDrawerSectionHeading(
+          section,
+          expanded,
+          panelId,
+          () => togglePublicSection(disclosureKey),
+        )}
         <div id={panelId} hidden={!expanded} className="mt-1 max-h-96 overflow-y-auto rounded-md border-l-2 border-border bg-muted/20 py-1 pl-2">
           <div className="space-y-0.5">
             {section.items.map((item) => renderPublicDrawerItem(item, disclosureKey))}
