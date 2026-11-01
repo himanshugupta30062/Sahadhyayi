@@ -15,33 +15,33 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 60 14% 98%;
+    --foreground: 140 6% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 140 6% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 140 6% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 145 42% 19%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary: 45 16% 95%;
+    --secondary-foreground: 140 6% 12%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 45%;
+    --muted: 45 16% 95%;
+    --muted-foreground: 135 4% 40%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent: 130 23% 94%;
+    --accent-foreground: 145 42% 19%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 60 9% 90%;
+    --input: 60 9% 90%;
+    --ring: 145 42% 19%;
 
     --radius: 0.5rem;
 
@@ -66,37 +66,37 @@
     --shadow-button: 0 4px 16px hsl(28 84% 37% / 0.2);
     --shadow-elevated: 0 8px 32px hsl(28 84% 37% / 0.15);
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 7%;
-    --sidebar-primary: 0 0% 12%;
+    --sidebar-background: 60 14% 98%;
+    --sidebar-foreground: 140 6% 12%;
+    --sidebar-primary: 145 42% 19%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 7%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 0 0% 0%;
+    --sidebar-accent: 45 16% 95%;
+    --sidebar-accent-foreground: 140 6% 12%;
+    --sidebar-border: 60 9% 90%;
+    --sidebar-ring: 145 42% 19%;
 
     /* Auth form colors */
     --auth-card: 0 0% 100%;
     --auth-card-foreground: 222.2 84% 4.9%;
     --auth-input: 0 0% 100%;
     --auth-input-border: 214.3 31.8% 91.4%;
-    --auth-button-primary: 28 84% 37%;
+    --auth-button-primary: 145 42% 19%;
     --auth-button-primary-foreground: 0 0% 100%;
     --auth-button-secondary: 0 0% 100%;
-    --auth-button-secondary-foreground: 222.2 84% 4.9%;
-    --auth-button-secondary-border: 214.3 31.8% 91.4%;
+    --auth-button-secondary-foreground: 140 6% 12%;
+    --auth-button-secondary-border: 60 9% 90%;
 
     /* Sahadhyayi Editorial Design Tokens — Light Theme (Warm, Book-Centric, Literary) */
-    --editorial-bg: #FAF7F2;
-    --editorial-bg-alt: #F4EFEA;
+    --editorial-bg: #FAFAF8;
+    --editorial-bg-alt: #F4F3EF;
     --editorial-surface: #FFFFFF;
-    --editorial-surface-muted: #F8F5F0;
-    --editorial-surface-elevated: #FDFBF7;
-    --editorial-border: #E8E2D9;
-    --editorial-border-subtle: #EFEBE4;
-    --editorial-border-strong: #D4C9BC;
+    --editorial-surface-muted: #F4F3EF;
+    --editorial-surface-elevated: #FFFFFF;
+    --editorial-border: #E8E8E3;
+    --editorial-border-subtle: #F0F0EB;
+    --editorial-border-strong: #D9D9D1;
     --editorial-ink: #1C201D;
-    --editorial-ink-secondary: #2E3430;
+    --editorial-ink-secondary: #3F4741;
     --editorial-muted: #636B65;
     --editorial-gold: #8F681C; /* tuned for 4.7:1 AA contrast on light parchment */
     --editorial-gold-hover: #7A5816;
@@ -105,7 +105,7 @@
     --editorial-green-border: #C8DBCB;
     --editorial-shadow-card: 0 2px 12px rgba(28, 32, 29, 0.05);
     --editorial-shadow-hover: 0 10px 24px rgba(28, 32, 29, 0.09);
-    --editorial-fade-edge: #FAF7F2;
+    --editorial-fade-edge: #FAFAF8;
   }
 
   .dark {
