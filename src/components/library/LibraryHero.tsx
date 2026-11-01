@@ -216,7 +216,7 @@ const LibraryHero = ({
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium text-gray-900 group-hover:text-[#1C442D] dark:text-library-primary transition-colors line-clamp-1">
+                                <div className="font-medium text-gray-900 group-hover:text-[#1C442D] dark:hover:text-library-primary transition-colors line-clamp-1">
                                   {book.title}
                                 </div>
                                 <div className="text-sm text-gray-600 line-clamp-1">
