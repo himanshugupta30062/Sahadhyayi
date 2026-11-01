@@ -204,10 +204,18 @@ export const LeftSidebar = ({ onSelectConversation }: LeftSidebarProps) => {
         </CardHeader>
         <CardContent className="space-y-2">
           {friends.map((friend) => (
-            <div 
-              key={friend.id} 
+            <div
+              key={friend.id}
+              role="button"
+              tabIndex={0}
               onClick={() => handleFriendClick(friend.id, friend.name)}
-              className="flex items-center space-x-3 p-3 hover:bg-amber-50 rounded-lg transition-all duration-200 cursor-pointer group border border-transparent hover:border-amber-200"
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  handleFriendClick(friend.id, friend.name);
+                }
+              }}
+              className="flex items-center space-x-3 p-3 hover:bg-amber-50 rounded-lg transition-all duration-200 cursor-pointer group border border-transparent hover:border-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             >
               <div className="relative">
                 <Avatar className="w-12 h-12 border-2 border-white shadow-sm">
@@ -374,8 +382,16 @@ export const LeftSidebar = ({ onSelectConversation }: LeftSidebarProps) => {
           {conversations.map((conv) => (
             <div
               key={conv.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onSelectConversation(conv)}
-              className="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer"
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onSelectConversation(conv);
+                }
+              }}
+              className="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             >
               <div className="flex items-center gap-3">
                 <Avatar className="w-8 h-8">
