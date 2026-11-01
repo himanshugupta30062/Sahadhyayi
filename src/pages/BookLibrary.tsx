@@ -113,13 +113,13 @@ const BookLibrary = () => {
           src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2400&q=85"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute right-0 top-0 z-0 h-full w-full object-cover object-[center_45%] sm:w-[68%] lg:w-[62%]"
           loading="eager"
           fetchPriority="high"
         />
         {/* Keep the photograph clearly visible in light mode while preserving readable text. */}
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAFAF8]/72 via-[#FAFAF8]/38 to-[#FAFAF8]/12 dark:from-[#09120D]/78 dark:via-[#09120D]/55 dark:to-[#09120D]/30" />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#F4F3EF]/35 via-transparent to-white/10 dark:from-[#09120D]/70 dark:via-transparent dark:to-[#09120D]/25" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAFAF8] via-[#FAFAF8]/90 to-[#FAFAF8]/15 dark:from-[#09120D]/78 dark:via-[#09120D]/55 dark:to-[#09120D]/30" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#F4F3EF]/10 via-transparent to-transparent dark:from-[#09120D]/70 dark:via-transparent dark:to-[#09120D]/25" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
           <div className="mx-auto max-w-4xl text-center">
             <div className="flex items-center justify-center space-x-3 mb-8" style={{marginBottom: '30px', marginTop: '20px'}}>
