@@ -23,7 +23,7 @@ export const BookPulseBar: React.FC = () => {
 
   return (
     <div
-      className="rounded-xl border border-[#E8E2D9] dark:border-[#29332D] bg-white/80 dark:bg-[#111614]/80 backdrop-blur-sm px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors"
+      className="rounded-xl border border-[#E8E8E3] dark:border-[#29332D] bg-white/80 dark:bg-[#111614]/80 backdrop-blur-sm px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors"
       aria-label="Book Pulse – live reading activity"
     >
       {/* Header label */}
