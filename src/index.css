@@ -46,14 +46,14 @@
     --radius: 0.5rem;
 
     /* Enhanced Sahadhyayi brand colors - 60-30-10 rule (WCAG AA compliant) */
-    --brand-primary: 145 42% 19%; /* tuned to 37% for 4.9:1 AA normal text contrast */
+    --brand-primary: 145 42% 19%; /* forest green primary for the light interface */
     --brand-secondary: 32 52% 42%; /* tuned to 42% for 4.5:1 AA contrast */
     --brand-accent: 20 14% 23%; /* warm brown - 10% accent */
-    --brand-neutral: 60 14% 98%; /* warm cream/off-white */
+    --brand-neutral: 45 10% 95%; /* warm cream/off-white */
     
     /* Text hierarchy */
-    --text-primary: 140 6% 12%; /* dark brown for headings (11.3:1) */
-    --text-secondary: 140 5% 29%; /* medium brown for body (6.9:1) */
+    --text-primary: 140 6% 12%; /* neutral ink for headings */
+    --text-secondary: 140 5% 29%; /* muted neutral for body copy */
     --text-muted: 135 4% 40%; /* tuned to 43% for 5.1:1 AA normal text contrast */
     
     /* Gradients for visual interest */
@@ -553,4 +553,39 @@ mark.search-highlight {
   .reader-room-launcher-icon {
     animation: none !important;
   }
+}
+
+/* Light-theme compatibility layer.
+   Older screens still use a few legacy warm palette utility classes.
+   Normalize those classes to the current editorial tokens without touching
+   dark mode or requiring a risky, repo-wide component rewrite. */
+html:not(.dark) [class~="bg-[#FAF7F2]"],
+html:not(.dark) [class~="bg-[#F8F8F2]"] {
+  background-color: var(--editorial-bg);
+}
+
+html:not(.dark) [class~="bg-[#F4EFEA]"],
+html:not(.dark) [class~="bg-[#F1F3EC]"],
+html:not(.dark) [class~="bg-[#F5EEDC]"] {
+  background-color: var(--editorial-bg-alt);
+}
+
+html:not(.dark) [class~="bg-[#E8EDE4]"] {
+  background-color: var(--editorial-green-surface);
+}
+
+html:not(.dark) [class~="border-[#E8E2D9]"],
+html:not(.dark) [class~="border-[#DDE4D9]"],
+html:not(.dark) [class~="border-[#E5DED2]"],
+html:not(.dark) [class~="border-[#EADFC7]"] {
+  border-color: var(--editorial-border);
+}
+
+html:not(.dark) [class~="from-amber-50"] {
+  --tw-gradient-from: var(--editorial-bg) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(250 250 248 / 0) var(--tw-gradient-to-position);
+}
+
+html:not(.dark) [class~="to-orange-50"] {
+  --tw-gradient-to: var(--editorial-bg-alt) var(--tw-gradient-to-position);
 }
