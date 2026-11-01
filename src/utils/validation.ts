@@ -81,19 +81,39 @@ export const sanitizeHTML = (dirty: string): string => {
 };
 
 export const validateEmail = (email: string): boolean => {
-  // Enhanced email validation with additional security checks
   if (!email || typeof email !== 'string') return false;
-  
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
   const trimmed = email.trim();
-  
-  // Check length constraints
   if (trimmed.length > 254) return false;
-  
-  // Check for potentially malicious patterns
-  if (trimmed.includes('..') || trimmed.startsWith('.') || trimmed.endsWith('.')) return false;
-  
-  return emailRegex.test(trimmed);
+
+  // Parse the address into bounded components instead of relying on a
+  // nested, backtracking-heavy email regular expression.
+  const atIndex = trimmed.indexOf('@');
+  if (atIndex <= 0 || atIndex !== trimmed.lastIndexOf('@')) return false;
+
+  const local = trimmed.slice(0, atIndex);
+  const domain = trimmed.slice(atIndex + 1);
+  if (local.length > 64 || !domain) return false;
+
+  // Preserve the supported ASCII dot-atom characters and reject malformed
+  // dot placement before validating the domain labels.
+  if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(local)) return false;
+  if (local.includes('..') || local.startsWith('.') || local.endsWith('.')) return false;
+
+  const labels = domain.split('.');
+  for (const label of labels) {
+    if (
+      label.length === 0 ||
+      label.length > 63 ||
+      !/^[a-zA-Z0-9]/.test(label) ||
+      !/[a-zA-Z0-9]$/.test(label) ||
+      !/^[a-zA-Z0-9-]+$/.test(label)
+    ) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
 export const validatePassword = (password: string): { isValid: boolean; message?: string } => {
