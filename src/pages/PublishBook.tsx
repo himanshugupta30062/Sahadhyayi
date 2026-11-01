@@ -22,7 +22,6 @@ import {
 import { useAuth } from '@/contexts/authHelpers';
 import { BookOpen, Upload, Eye, ArrowLeft, ArrowRight, Loader2, X, Tag } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { nanoid } from 'nanoid';
 
 const GENRES = ['Fiction', 'Non-Fiction', 'Science', 'Technology', 'History', 'Philosophy', 'Poetry', 'Biography', 'Self-Help', 'Fantasy', 'Mystery', 'Romance', 'Horror', 'Other'];
 const LANGUAGES = ['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi', 'Other'];
@@ -102,7 +101,7 @@ export default function PublishBook() {
       let cover_image_url: string | undefined;
       if (coverFile) {
         cover_image_url = await uploadPublishFile(coverFile, user.id, submissionId, 'cover', p => setUploadProgress(Math.round(p * 0.2)));
-        const coverExt = coverFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const coverExt = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' } as Record<string, string>)[coverFile.type] || 'jpg';
         coverPath = `covers/${user.id}/${submissionId}/cover.${coverExt}`;
       }
 
