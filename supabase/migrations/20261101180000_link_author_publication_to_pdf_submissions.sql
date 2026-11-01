@@ -20,7 +20,7 @@ CREATE POLICY "Authors can upload own publication covers"
     AND (storage.foldername(name))[1] = 'covers'
     AND (storage.foldername(name))[2] = (SELECT auth.uid())::text
     AND array_length(storage.foldername(name), 1) = 3
-    AND storage.filename(name) ~ '^cover\\.(jpg|jpeg|png|webp)$'
+    AND storage.filename(name) ~ '^cover\.(jpg|jpeg|png|webp)$'
   );
 
 DROP POLICY IF EXISTS "Authors can delete own publication covers" ON storage.objects;
@@ -32,7 +32,7 @@ CREATE POLICY "Authors can delete own publication covers"
     AND (storage.foldername(name))[1] = 'covers'
     AND (storage.foldername(name))[2] = (SELECT auth.uid())::text
     AND array_length(storage.foldername(name), 1) = 3
-    AND storage.filename(name) ~ '^cover\\.(jpg|jpeg|png|webp)$'
+    AND storage.filename(name) ~ '^cover\.(jpg|jpeg|png|webp)$'
   );
 
 COMMIT;
